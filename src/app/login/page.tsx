@@ -113,9 +113,9 @@ export default function Login() {
           </form>      
         </div>
       </div>
-      <div className="md:hidden text-center text-gray-600">
+      {/* <div className="md:hidden text-center text-gray-600">
         <p>Please use a larger screen to access the sign-in page.</p>
-      </div>
+      </div> */}
     </div>
   );
 };
