@@ -40,23 +40,28 @@ export const handleApiError = (error: unknown): ApiError => {
           errorMessage = data?.responsedesc ?? "Invalid request parameters";
           break;
         case 401:
-          errorMessage = "Authentication required";
+          errorMessage = data?.responsedesc ?? "Authentication required";
           break;
         case 403:
-          errorMessage = "You do not have permission to perform this action";
+          errorMessage =
+            data?.responsedesc ??
+            "You do not have permission to perform this action";
           break;
         case 404:
-          errorMessage = "The requested resource was not found";
+          errorMessage =
+            data?.responsedesc ?? "The requested resource was not found";
           break;
         case 422:
           errorMessage = data?.responsedesc ?? "Invalid input data";
           break;
         case 503:
-          errorMessage = "Service temporarily unavailable";
+          errorMessage =
+            data?.responsedesc ?? "Service temporarily unavailable";
           break;
         default:
           if (status >= 500) {
-            errorMessage = "An internal server error occurred";
+            errorMessage =
+              data?.responsedesc ?? "An internal server error occurred";
           }
       }
     } else if (axiosError.request) {

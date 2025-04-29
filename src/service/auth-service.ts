@@ -1,7 +1,7 @@
 import axios from "axios";
-
+import { toast } from "sonner";
 import { type UserInfo } from "../types/user-info";
-import { handleAuthError } from "/utils/error-handler";
+import { handleAuthError } from "@/utils/error-handler";
 
 interface LoginResponse {
   responsecode: string;
@@ -15,7 +15,6 @@ interface LoginResponseData {
 }
 
 const API_URL = "http://172.16.10.60:8081/grid-flex/v1/api";
-
 const CUSTOM_HEADER = "ab@#1cD3fG!mNXyZ$%Kl78&OH@beeb$";
 
 export async function loginApi(
@@ -26,6 +25,7 @@ export async function loginApi(
     const formData = new FormData();
     formData.append("username", email);
     formData.append("password", password);
+
     const response = await axios.post<LoginResponse>(
       `${API_URL}/auth/service/admin/login`,
       formData,
@@ -37,12 +37,17 @@ export async function loginApi(
     );
 
     // Check if the response indicates success
-
-    return response.data.responsedata as LoginResponseData;
+    if (response.data.responsecode === "000") {
+      toast.success("Login successful!");
+      return response.data.responsedata;
+    } else {
+      // If response code is not "00", treat it as an error
+      throw new Error(response.data.responsedesc || "Login failed");
+    }
   } catch (error: unknown) {
     const apiError = handleAuthError(error);
-    console.error(apiError.message);
-
+    // Show error notification to user
+    toast.error(apiError.message);
     throw new Error(apiError.message);
   }
 }

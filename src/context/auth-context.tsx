@@ -10,6 +10,7 @@ interface AuthContextType {
   error: string | null;
   login: (username: string, password: string) => Promise<void>;
   logout: () => void;
+  isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -20,29 +21,53 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [user, setUser] = useState<UserInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const router = useRouter();
 
   const login = useCallback(async (username: string, password: string) => {
-    const response = await loginApi(username, password);
+    setIsLoading(true);
+    try {
+      const response = await loginApi(username, password);
 
-    setUser(response.user_info);
-    setIsAuthenticated(true);
-    setError(null);
+      setUser(response.user_info);
+      setIsAuthenticated(true);
+      setError(null);
 
-    const authToken = response.access_token;
-    if (authToken) {
-      localStorage.setItem("auth_token", authToken);
-      localStorage.setItem("user_info", JSON.stringify(response.user_info));
-      router.push("/data-management/dashboard");
+      const authToken = response.access_token;
+      if (authToken) {
+        localStorage.setItem("auth_token", authToken);
+        localStorage.setItem("user_info", JSON.stringify(response.user_info));
+        router.push("/data-management/dashboard");
+      } else {
+        setError("Login failed");
+        setIsAuthenticated(false);
+        setUser(null);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to login");
+      setIsAuthenticated(false);
+      setUser(null);
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
   const logout = useCallback(() => {
-    // authService.logout();
-    setUser(null);
-    setIsAuthenticated(false);
-    setError(null);
-  }, []);
+    setIsLoading(true);
+    try {
+      // authService.logout();
+      localStorage.removeItem("auth_token");
+      localStorage.removeItem("user_info");
+      setUser(null);
+      setIsAuthenticated(false);
+      setError(null);
+      router.push("/login");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to logout");
+    } finally {
+      setIsLoading(false);
+    }
+  }, [router]);
 
   const value = {
     isAuthenticated,
@@ -50,6 +75,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     error,
     login,
     logout,
+    isLoading,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
