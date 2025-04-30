@@ -69,6 +69,11 @@ const navItems: NavItem[] = [
     href: "/profile",
     icon: <UserRoundPen size={20} />,
   },
+  {
+    title: "Band Management",
+    href: "/band-management",
+    icon: <UserRoundPen size={20} />,
+  }
 ];
 
 export function SidebarNav() {

@@ -109,7 +109,7 @@ export function AuthhForm({
           <div className="flex justify-end">
             <Link
               href="/login/forgotpassword"
-              className="text-black-600 text-sm hover:underline"
+              className="text-black text-sm hover:underline"
             >
               Forgot Password?
             </Link>
@@ -123,7 +123,7 @@ export function AuthhForm({
         className={`w-full rounded-md py-2 text-white transition-colors ${
           !isFormValid || isSubmitting
             ? "cursor-not-allowed bg-[#161CCA]/50"
-            : "bg-[#161CCA] hover:bg-[#161CCA]/90"
+            : "bg-[#161CCA] hover:bg-[#161CCA]/90 cursor-pointer"
         }`}
       >
         {isSubmitting
