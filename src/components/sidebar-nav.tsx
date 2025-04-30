@@ -129,7 +129,7 @@ export function SidebarNav() {
   ];
 
   return (
-    <Sidebar className="border-none">
+    <Sidebar className="border-r border-gray-200">
       <SidebarHeader className="flex items-center justify-center py-10">
         <Link href="/" className="flex items-center gap-2">
           <div className="flex items-center justify-center">
@@ -161,7 +161,7 @@ export function SidebarNav() {
                       onClick={() => toggleExpanded(item.title)}
                     >
                       <div className="flex items-center gap-8 text-xl">
-                        <item.icon className="h-5 w-5" />
+                        <item.icon size={12} />
                         <span>{item.title}</span>
                       </div>
                       {item.hasSubmenu && (
@@ -170,16 +170,21 @@ export function SidebarNav() {
                             "h-4 w-4 transition-transform duration-200",
                             expandedItems[item.title] && "rotate-180",
                           )}
+                          size={12}
                         />
                       )}
                     </SidebarMenuButton>
                   </CollapsibleTrigger>
                   <CollapsibleContent>
                     {item.hasSubmenu && (
-                      <SidebarMenuSub>
+                      <SidebarMenuSub className="mt-2">
                         {item.submenuItems?.map((subItem) => (
                           <SidebarMenuItem
-                            className="my-2 flex items-center px-1.5 text-xl"
+                            className={cn(
+                              "flex items-center p-3.5 text-xl",
+                              pathname === subItem.href &&
+                                "rounded-md bg-[#161CCA] text-white",
+                            )}
                             key={subItem.title}
                           >
                             <Link

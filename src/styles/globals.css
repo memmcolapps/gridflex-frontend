@@ -9,7 +9,7 @@ html {
 }
 
 body {
-  color: #ffffff;
+  background-color: #ffffff;
 }
 
 @theme {
@@ -58,4 +58,8 @@ body {
   body {
     /* @apply bg-background text-foreground; */
   }
+}
+svg {
+  height: fit-content !important;
+  width: fit-content !important;
 }

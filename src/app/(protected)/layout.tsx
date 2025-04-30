@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/auth-context";
 import { SidebarNav } from "@/components/sidebar-nav";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { Navbar } from "@/components/navbar";
 
 export default function ProtectedLayout({
   children,
@@ -41,7 +42,10 @@ export default function ProtectedLayout({
     <SidebarProvider>
       <div className="flex h-screen w-full overflow-hidden">
         <SidebarNav />
-        <main className="flex-1 overflow-auto p-8">{children}</main>
+        <div className="flex flex-1 flex-col">
+          <Navbar />
+          <main className="flex-1 overflow-auto pt-4">{children}</main>
+        </div>
       </div>
     </SidebarProvider>
   );
