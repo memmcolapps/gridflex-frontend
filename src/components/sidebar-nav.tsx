@@ -151,11 +151,11 @@ export function SidebarNav() {
                 className="group/collapsible"
                 key={item.title}
               >
-                <SidebarMenuItem className="my-2 px-1.5">
+                <SidebarMenuItem className="my-1">
                   <CollapsibleTrigger asChild>
                     <SidebarMenuButton
                       className={cn(
-                        "flex items-center justify-between",
+                        "flex items-center justify-between py-6",
                         expandedItems[item.title] && "bg-gray-100",
                       )}
                       onClick={() => toggleExpanded(item.title)}
