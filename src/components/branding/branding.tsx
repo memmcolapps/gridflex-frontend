@@ -4,23 +4,24 @@ interface BrandingProps {
   labelTitle: string;
   label: string;
 }
+
 export function Branding({ labelTitle, label }: BrandingProps) {
   return (
-    <div>
-      <Image
-        className="ml-4"
-        src="/images/gridflexlogo.jpg"
-        alt="Gridflex logo"
-        height={320}
-        width={320}
-        priority
-      />
+    <div className="flex h-full flex-col">
+      <div className="mb-16">
+        <Image
+          src="/images/gridflexlogo.jpg"
+          alt="Gridflex logo"
+          height={200}
+          width={200}
+          priority
+          className="mb-2"
+        />
+      </div>
 
-      <div className="w-1/2 mt-5">
-        <h1 className="text-4xl font-semibold">{labelTitle}</h1>
-        <p className="pt-3 text-lg whitespace-pre-line text-[#6D6D6D]">
-          {label}
-        </p>
+      <div className="max-w-md">
+        <h1 className="mb-4 text-4xl font-bold text-gray-800">{labelTitle}</h1>
+        <p className="text-lg leading-relaxed text-gray-600">{label}</p>
       </div>
     </div>
   );

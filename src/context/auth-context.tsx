@@ -1,5 +1,11 @@
 "use client";
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useEffect,
+} from "react";
 import { loginApi } from "../service/auth-service";
 import { type UserInfo } from "../types/user-info";
 import { useRouter } from "next/navigation";
@@ -24,27 +30,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const router = useRouter();
 
-  const login = useCallback(async (username: string, password: string) => {
-    setIsLoading(true);
+  const checkAuthStatus = useCallback(() => {
     try {
-      const response = await loginApi(username, password);
+      const authToken = localStorage.getItem("auth_token");
+      const userInfo = localStorage.getItem("user_info");
 
-      setUser(response.user_info);
-      setIsAuthenticated(true);
-      setError(null);
-
-      const authToken = response.access_token;
-      if (authToken) {
-        localStorage.setItem("auth_token", authToken);
-        localStorage.setItem("user_info", JSON.stringify(response.user_info));
-        router.push("/data-management/dashboard");
+      if (authToken && userInfo) {
+        setIsAuthenticated(true);
+        setUser(JSON.parse(userInfo));
       } else {
-        setError("Login failed");
         setIsAuthenticated(false);
         setUser(null);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to login");
+      console.error("Error checking auth status:", err);
       setIsAuthenticated(false);
       setUser(null);
     } finally {
@@ -52,10 +51,49 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, []);
 
+  useEffect(() => {
+    checkAuthStatus();
+  }, [checkAuthStatus]);
+
+  const login = useCallback(
+    async (username: string, password: string) => {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const response = await loginApi(username, password);
+
+        if (!response?.access_token) {
+          throw new Error("Invalid response from server");
+        }
+
+        const { access_token, user_info } = response;
+
+        localStorage.setItem("auth_token", access_token);
+        localStorage.setItem("user_info", JSON.stringify(user_info));
+
+        setUser(user_info);
+        setIsAuthenticated(true);
+        router.push("/data-management/dashboard");
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to login";
+        setError(errorMessage);
+        setIsAuthenticated(false);
+        setUser(null);
+
+        localStorage.removeItem("auth_token");
+        localStorage.removeItem("user_info");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [router],
+  );
+
   const logout = useCallback(() => {
     setIsLoading(true);
     try {
-      // authService.logout();
       localStorage.removeItem("auth_token");
       localStorage.removeItem("user_info");
       setUser(null);
@@ -63,7 +101,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setError(null);
       router.push("/login");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to logout");
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to logout";
+      setError(errorMessage);
+      console.error("Logout error:", err);
     } finally {
       setIsLoading(false);
     }

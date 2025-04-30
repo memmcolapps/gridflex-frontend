@@ -1,139 +1,209 @@
 "use client";
-import {
-  Bell,
-  FileText,
-  Grid,
-  Users,
-  LogOut,
-  UserRoundPen,
-  LayoutDashboard,
-  UserRound,
-} from "lucide-react";
-import { type LucideIcon } from "lucide-react";
-import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
-import { useAuth } from "../context/auth-context";
-
+import { usePathname } from "next/navigation";
+import { useState } from "react";
+import Image from "next/image";
+import {
+  ActivitySquare,
+  Building2,
+  ChevronDown,
+  ClipboardList,
+  FileText,
+  LayoutGrid,
+  type LucideIcon,
+  Plug,
+  Settings,
+  Users,
+} from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
-import Image from "next/image";
-import { type ReactElement } from "react";
+import { cn } from "@/lib/utils";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
-interface NavItem {
+interface NavItemProps {
   title: string;
   href: string;
-  icon: ReactElement<LucideIcon>;
+  icon: LucideIcon;
+  isActive?: boolean;
+  hasSubmenu?: boolean;
+  submenuItems?: { title: string; href: string }[];
 }
-
-const navItems: NavItem[] = [
-  {
-    title: "Dashboard",
-    href: "/dashboard",
-    icon: <LayoutDashboard size={20} className="shrink-0" />,
-  },
-  {
-    title: "Organizational Management",
-    href: "/organization",
-    icon: <Users size={20} />,
-  },
-  {
-    title: "Operator Management",
-    href: "/operators",
-    icon: <UserRound size={20} />,
-  },
-  {
-    title: "Breaker Management",
-    href: "/breakers",
-    icon: <Grid size={20} />,
-  },
-  {
-    title: "Tarrif",
-    href: "/data-management/tarrif",
-    icon: <Bell size={20} />,
-  },
-  {
-    title: "Audit Logs",
-    href: "/audit",
-    icon: <FileText size={20} />,
-  },
-  {
-    title: "Profile",
-    href: "/profile",
-    icon: <UserRoundPen size={20} />,
-  },
-];
 
 export function SidebarNav() {
   const pathname = usePathname();
-  const { logout } = useAuth();
+
+  // Track expanded state of each menu item
+  const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>(
+    () => {
+      // Initialize with Data Management expanded if Band Management is active
+      const initialState: Record<string, boolean> = {};
+      if (pathname === "/dashboard") {
+        initialState["Data Management"] = true;
+      }
+      return initialState;
+    },
+  );
+
+  const toggleExpanded = (title: string) => {
+    setExpandedItems((prev) => ({
+      ...prev,
+      [title]: !prev[title],
+    }));
+  };
+
+  const navItems: NavItemProps[] = [
+    {
+      title: "Data Management",
+      href: "/data-management",
+      icon: LayoutGrid,
+      hasSubmenu: true,
+      submenuItems: [
+        { title: "Dashboard", href: "/data-management/dashboard" },
+        { title: "Organization", href: "/organization" },
+        { title: "Meter Management", href: "/meter-management" },
+        { title: "Customer Management", href: "/customer-management" },
+        { title: "Tariff", href: "/data-management/tarrif" },
+        { title: "Band Management", href: "/band-management" },
+      ],
+    },
+    {
+      title: "Feeder Management",
+      href: "/feeder-management",
+      icon: Plug,
+      hasSubmenu: true,
+      submenuItems: [],
+    },
+    {
+      title: "Billing",
+      href: "/billing",
+      icon: FileText,
+      hasSubmenu: true,
+      submenuItems: [],
+    },
+    {
+      title: "Vending",
+      href: "/vending",
+      icon: Settings,
+      hasSubmenu: true,
+      submenuItems: [],
+    },
+    {
+      title: "HES",
+      href: "/hes",
+      icon: Building2,
+      hasSubmenu: true,
+      submenuItems: [],
+    },
+    {
+      title: "User Management",
+      href: "/user-management",
+      icon: Users,
+      hasSubmenu: true,
+      submenuItems: [],
+    },
+    {
+      title: "Audit Log",
+      href: "/audit-log",
+      icon: ActivitySquare,
+      hasSubmenu: false,
+    },
+    {
+      title: "Customized Report",
+      href: "/customized-report",
+      icon: ClipboardList,
+      hasSubmenu: false,
+    },
+  ];
 
   return (
-    <Sidebar className="h-screen bg-[#dddbff] p-8">
-      <div className="flex h-full flex-col bg-[#ffffff]">
-        <SidebarHeader className="flex items-center justify-center pt-14">
-          <Link href="/" className="transition-opacity hover:opacity-80">
+    <Sidebar className="border-r border-gray-200">
+      <SidebarHeader className="flex items-center justify-center py-10">
+        <Link href="/" className="flex items-center gap-2">
+          <div className="flex items-center justify-center">
             <Image
-              width={200}
-              height={43}
-              alt="MOMAS/EPAIL Logo"
-              src="/logo.png"
-              className="mx-auto"
-              priority
-              quality={90}
+              src="/images/logo2.svg"
+              alt="GridFlex Logo"
+              width={42}
+              height={54}
             />
-          </Link>
-        </SidebarHeader>
-        <SidebarContent className="flex-1 px-4 pt-8">
-          <SidebarMenu>
-            {navItems.map((item) => {
-              const isActive = pathname === item.href;
-              return (
-                <SidebarMenuItem key={item.href} className="h-full">
-                  <SidebarMenuButton
-                    asChild
-                    className={cn(
-                      "group w-full rounded-lg transition-all duration-200 hover:bg-[#16085F] hover:text-[#ffffff]",
-                      isActive ? "bg-[#16085F] text-[#ffffff]" : "",
-                    )}
-                  >
-                    <Link
-                      href={item.href}
-                      className="flex h-full items-center gap-3 px-4 py-3"
-                      aria-current={isActive ? "page" : undefined}
-                    >
-                      {item.icon}
-                      <span className="break-words text-lg font-medium transition-transform group-hover:translate-x-1">
-                        {item.title}
-                      </span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              );
-            })}
-          </SidebarMenu>
-        </SidebarContent>
-        <SidebarFooter className="border-t">
-          <SidebarMenu>
-            <SidebarMenuItem className="my-6">
-              <SidebarMenuButton
-                className="text-red-600 hover:bg-red-100 hover:text-red-700"
-                onClick={logout}
+          </div>
+        </Link>
+      </SidebarHeader>
+      <SidebarContent>
+        <SidebarMenu>
+          {navItems.map((item) => {
+            return (
+              <Collapsible
+                defaultOpen
+                className="group/collapsible"
+                key={item.title}
               >
-                <LogOut className="mr-2 h-4 w-4" />
-                Logout
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarFooter>
-      </div>
+                <SidebarMenuItem className="my-2 px-1.5">
+                  <CollapsibleTrigger asChild>
+                    <SidebarMenuButton
+                      className={cn(
+                        "flex items-center justify-between",
+                        expandedItems[item.title] && "bg-gray-100",
+                      )}
+                      onClick={() => toggleExpanded(item.title)}
+                    >
+                      <div className="flex items-center gap-8 text-xl">
+                        <item.icon size={12} />
+                        <span>{item.title}</span>
+                      </div>
+                      {item.hasSubmenu && (
+                        <ChevronDown
+                          className={cn(
+                            "h-4 w-4 transition-transform duration-200",
+                            expandedItems[item.title] && "rotate-180",
+                          )}
+                          size={12}
+                        />
+                      )}
+                    </SidebarMenuButton>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    {item.hasSubmenu && (
+                      <SidebarMenuSub className="mt-2">
+                        {item.submenuItems?.map((subItem) => (
+                          <SidebarMenuItem
+                            className={cn(
+                              "flex items-center p-3.5 text-xl",
+                              pathname === subItem.href &&
+                                "rounded-md bg-[#161CCA] text-white",
+                            )}
+                            key={subItem.title}
+                          >
+                            <Link
+                              href={subItem.href}
+                              className="flex w-full items-center gap-10"
+                            >
+                              <span>{subItem.title}</span>
+                            </Link>
+                          </SidebarMenuItem>
+                        ))}
+                      </SidebarMenuSub>
+                    )}
+                  </CollapsibleContent>
+                </SidebarMenuItem>
+              </Collapsible>
+            );
+          })}
+        </SidebarMenu>
+      </SidebarContent>
     </Sidebar>
   );
 }

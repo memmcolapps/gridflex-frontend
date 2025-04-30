@@ -10,7 +10,7 @@ html {
 }
 
 body {
-  color: #FFFFFF;
+  background-color: #ffffff;
 }
 
 @theme {
@@ -20,7 +20,7 @@ body {
 }
 
 :root {
-  --sidebar: hsl(0 0% 98%);
+  --sidebar: hsla(0, 0%, 100%, 1);
   --sidebar-foreground: hsl(240 5.3% 26.1%);
   --sidebar-primary: hsl(240 5.9% 10%);
   --sidebar-primary-foreground: hsl(0 0% 98%);
@@ -59,4 +59,8 @@ body {
   body {
     /* @apply bg-background text-foreground; */
   }
+}
+svg {
+  height: fit-content !important;
+  width: fit-content !important;
 }
