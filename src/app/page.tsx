@@ -1,23 +1,44 @@
 "use client";
-
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-// import { useAuth } from "@/context/auth-context";
+import { useAuth } from "@/context/auth-context";
 
 export default function HomePage() {
-  // const { user, isLoading } = useAuth();
+  const { user, isLoading } = useAuth();
   const router = useRouter();
+  const [isTimeout, setIsTimeout] = useState(false);
 
   useEffect(() => {
-    // if (!isLoading) {
-    //   if (user) {
-    //     router.push("/dashboard");
-    //   } else {
-    //     router.push("/login");
-    //   }
-    // }
-    router.push("/login");
-  }, [router]);
+    // Add timeout safeguard
+    const timeoutId = setTimeout(() => {
+      setIsTimeout(true);
+      router.push("/login");
+    }, 5000); // 5 second timeout
+
+    if (!isLoading) {
+      if (user) {
+        router.push("/data-management/dashboard"); // Fixed typo in route
+      } else {
+        router.push("/login");
+      }
+    }
+
+    return () => clearTimeout(timeoutId);
+  }, [isLoading, router, user]);
+
+  if (isTimeout) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4">
+        <p className="text-red-500">Loading timeout. Redirecting to login...</p>
+        <button
+          onClick={() => router.push("/login")}
+          className="rounded bg-purple-500 px-4 py-2 text-white hover:bg-purple-600"
+        >
+          Go to Login
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center">
