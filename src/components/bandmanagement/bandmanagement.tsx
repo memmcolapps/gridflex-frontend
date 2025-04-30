@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Label } from "@/components/ui/label";
-import { ArrowUpDown } from 'lucide-react';
+import { ArrowUpDown, PlusCircleIcon, SearchIcon } from 'lucide-react';
 
 type Band = {
     id: string;
@@ -78,8 +78,8 @@ export default function BandManagement() {
                     }}
                     triggerButton={
                         <Button className="flex items-center gap-2 bg-[#161CCA] hover:bg-[#121eb3]">
-                            <div className="flex items-center justify-center rounded-full border border-white p-0.5">
-                                <PlusIcon className="h-4 w-4 text-[#FEFEFE]" />
+                            <div className="flex items-center justify-center p-0.5">
+                                <PlusCircleIcon className="text-[#FEFEFE]" size={12}/>
                             </div>
                             <span className='text-white'>Add Band</span>
                         </Button>
@@ -89,7 +89,7 @@ export default function BandManagement() {
 
             <div className="flex items-center mb-6 gap-4 w-80">
                 <div className="relative flex-1">
-                    <MagnifyingGlassIcon className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+                    <SearchIcon className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" size={12}/>
                     <Input
                         type="text"
                         placeholder="Search by name, ID, cont..."
@@ -99,8 +99,7 @@ export default function BandManagement() {
                     />
                 </div>
                 <Button variant="outline" className="gap-1 border-[rgba(228,231,236,1)]">
-                    <ArrowUpDown className="" strokeWidth={2.5} />
-                    {/* <ArrowLongDownIcon className="h-4 w-4" /> */}
+                    <ArrowUpDown className="" strokeWidth={2.5} size={12} />
                     <Label htmlFor="sortCheckbox" className="cursor-pointer">
                         Sort
                     </Label>

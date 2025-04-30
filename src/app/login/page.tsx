@@ -1,8 +1,6 @@
 "use client";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 import { Branding } from "../../components/branding/branding";
-import { AuthhForm } from "../../components/authform/authform";
+import { AuthForm } from "../../components/authform/authform";
 import { useAuth } from "../../context/auth-context";
 
 export default function Login() {
@@ -13,21 +11,20 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen">
-      <div className="flex min-h-screen w-full items-center justify-between gap-8 overflow-hidden rounded-lg p-20">
+    <div className="min-h-screen bg-white">
+      <div className="flex min-h-screen w-full items-center">
         {/* Left Section: Branding */}
-        <div className="min-h-screen w-1/2 text-black">
+        <div className="flex w-1/2 items-center justify-center px-20 py-10">
           <Branding
             labelTitle="Welcome back!"
-            label="Log in to access your centralized dashboard, where you can manage data, billing,
-          vending, and HES services—all in one streamlined platform."
+            label="Log in to access your centralized dashboard, where you can manage data, billing, vending and HES services—all in one streamlined platform."
           />
         </div>
 
         {/* Right Section: Sign-In Form */}
-        <div className="w-1/2">
-          <div className="w-2/3 rounded-lg p-8 shadow-lg">
-            <AuthhForm formType="signin" onSubmit={handleSubmit} />
+        <div className="flex w-1/3 items-center justify-center border-l border-gray-100">
+          <div className="w-[460px] px-10">
+            <AuthForm formType="signin" onSubmit={handleSubmit} />
           </div>
         </div>
       </div>

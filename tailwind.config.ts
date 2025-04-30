@@ -20,7 +20,7 @@ export default {
         "6xl": "4rem", // 64px
       },
       fontFamily: {
-        sans: ["var(--font-geist-sans)", ...defaultTheme.fontFamily.sans],
+        sans: [],
       },
       borderRadius: {
         lg: "var(--radius)",

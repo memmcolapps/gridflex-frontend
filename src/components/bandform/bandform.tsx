@@ -56,30 +56,6 @@ export default function BandForm({ mode, band, onSave, triggerButton }: BandForm
         closeModal();
     };
 
-    // Default trigger button if none provided
-
-
-    // const defaultTrigger = mode === 'add' ? (
-    //     <Button
-    //         onClick={openModal}
-    //         className="flex items-center gap-2 text-white"
-    //         variant="default"
-    //     >
-    //         <PlusIcon className="h-4 w-4" />
-    //         Add Band
-    //     </Button>
-    // ) : (
-    //     <Button
-    //         onClick={openModal}
-    //         variant="outline"
-    //         size="sm"
-    //         className="gap-1"
-    //     >
-    //         {/* <PencilIcon className="h-4 w-4" /> */}
-    //         Edit
-    //     </Button>
-    // );
-
     return (
         <>
             <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -103,14 +79,14 @@ export default function BandForm({ mode, band, onSave, triggerButton }: BandForm
                     </DialogTrigger>
                 )}
 
-                <DialogContent className="sm:max-w-md bg-white text-black w-500">
+                <DialogContent className="sm:max-w-[500px] h-100 bg-white text-black">
                     <DialogHeader>
                         <DialogTitle>{mode === 'add' ? 'Add Band' : `Edit ${band?.name}`}</DialogTitle>
                     </DialogHeader>
 
                     <form onSubmit={handleSubmit} className='bg-white-700'>
-                        <div className="grid gap-4 py-4 bg-white-700">
-                            <div className="grid gap-2 bg-white-700">
+                        <div className="grid gap-4 bg-white-700">
+                            <div className="grid gap-4 bg-white-700">
                                 <Label htmlFor="name">Band Name</Label>
                                 <Input
                                     id="name"
@@ -140,15 +116,14 @@ export default function BandForm({ mode, band, onSave, triggerButton }: BandForm
                                         ))}
                                     </SelectContent>
                                 </Select>
-                            </div>
-                        </div>
-
-                        <div className="w-full">
+                            </div><br />
+                            <div className="w-full">
                             <DialogFooter className="px-0">
                                 <Button
                                     variant="outline"
                                     onClick={closeModal}
                                     type="button"
+                                    className='border-blue-500 text-blue-500'
                                 >
                                     Cancel
                                 </Button>
@@ -157,7 +132,7 @@ export default function BandForm({ mode, band, onSave, triggerButton }: BandForm
                                 </Button>
                             </DialogFooter>
                         </div>
-
+                        </div>                    
                     </form>
                 </DialogContent>
             </Dialog>
