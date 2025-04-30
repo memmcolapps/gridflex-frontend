@@ -106,7 +106,7 @@ export function AuthhForm({
             </button>
           </div>
 
-          <div className="flex justify-end">
+          <div className="flex justify-end text-black">
             <Link
               href="/login/forgotpassword"
               className="text-black-600 text-sm hover:underline"
@@ -134,7 +134,7 @@ export function AuthhForm({
       </button>
 
       {!isSignInForm && (
-        <div className="flex justify-center">
+        <div className="flex justify-center text-black">
           <Link
             href="/login"
             className="flex items-center space-x-1 rounded bg-transparent px-2 py-1.5 text-gray-700 focus:outline-none"

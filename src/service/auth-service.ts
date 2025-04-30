@@ -42,7 +42,7 @@ export async function loginApi(
       return response.data.responsedata;
     } else {
       // If response code is not "00", treat it as an error
-      throw new Error(response.data.responsedesc || "Login failed");
+      throw new Error(response.data.responsedesc ?? "Login failed");
     }
   } catch (error: unknown) {
     const apiError = handleAuthError(error);

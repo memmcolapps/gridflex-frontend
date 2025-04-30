@@ -3,6 +3,7 @@ import "../styles/globals.css";
 import { type Metadata } from "next";
 import { Geist } from "next/font/google";
 import { Toaster } from "sonner";
+import { manrope } from '@/app/font';
 import { AuthProvider } from "../context/auth-context";
 
 export const metadata: Metadata = {
@@ -20,7 +21,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${geist.variable}`}>
+    <html lang="en" className={`${manrope.variable}`}>
       <body>
         <AuthProvider>
           <Toaster />

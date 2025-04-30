@@ -55,8 +55,8 @@ const navItems: NavItem[] = [
     icon: <Grid size={20} />,
   },
   {
-    title: "Notifications",
-    href: "/notifications",
+    title: "Tarrif",
+    href: "/data-management/tarrif",
     icon: <Bell size={20} />,
   },
   {
