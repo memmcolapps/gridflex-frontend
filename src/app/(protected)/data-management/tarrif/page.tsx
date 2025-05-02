@@ -1,57 +1,129 @@
 'use client';
+
+import { NotificationBar } from '@/components/notificationbar';
+import { TariffTable } from '@/components/tariff/tariff-table';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { ContentHeader } from '@/components/ui/content-header';
 import {
     Dialog,
-    DialogTrigger,
     DialogContent,
     DialogHeader,
     DialogTitle,
-    DialogDescription,
+    DialogTrigger,
 } from '@/components/ui/dialog';
-import { ArrowUpDown, CircleAlert, CirclePlusIcon, ListFilter, Search } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import { TariffDatePicker } from '@/components/ui/tarrif-datepicker';
+import { ArrowUpDown, Check, CirclePlusIcon, ListFilter, Search, SquareArrowOutUpRight } from 'lucide-react';
 import React, { useState } from 'react';
 
-type TariffManagementPageProps = unknown;
-
-const TariffManagementPage: React.FC<TariffManagementPageProps> = () => {
+export default function TariffManagementPage() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    interface Tariff {
+        id: string;
+        name: string;
+        index: string;
+        type: string;
+        effectiveDate: Date | null;
+        bandCode: string;
+        tariffRate: string;
+        status: 'active' | 'inactive';
+        approvalStatus: 'approved' | 'pending' | 'rejected';
+    }
+
+    const [tariffs, setTariffs] = useState<Tariff[]>([]);
+    const [selectedTariffs, setSelectedTariffs] = useState<string[]>([]);
+    const [formData, setFormData] = useState({
+        name: '',
+        index: '',
+        type: '',
+        effectiveDate: null as Date | null,
+        bandCode: '',
+        tariffRate: '',
+        status: 'inactive' as 'active' | 'inactive',
+        approvalStatus: 'pending' as 'approved' | 'pending' | 'rejected',
+    });
+
+    const handleInputChange = (field: string, value: string | Date | null) => {
+        setFormData((prev) => ({ ...prev, [field]: value }));
+    };
+
+    const handleUpdateTariff = (id: string, updates: Partial<Tariff>) => {
+        setTariffs((prev) =>
+            prev.map((tariff) =>
+                tariff.id === id ? { ...tariff, ...updates } : tariff
+            )
+        );
+    };
+
+    const handleBulkApprove = () => {
+        selectedTariffs.forEach((id) => {
+            handleUpdateTariff(id, {
+                approvalStatus: 'approved',
+                status: 'active',
+            });
+        });
+        setSelectedTariffs([]); // Clear selection after approval
+    };
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!isFormValid) return;
+
+        const newTariff = {
+            ...formData,
+            id: Date.now().toString(),
+            status: 'inactive' as 'active' | 'inactive',
+            approvalStatus: 'pending' as 'approved' | 'pending' | 'rejected',
+        };
+
+        setTariffs([...tariffs, newTariff]);
+        setFormData({
+            name: '',
+            index: '',
+            type: '',
+            effectiveDate: null,
+            bandCode: '',
+            tariffRate: '',
+            status: 'inactive',
+            approvalStatus: 'pending',
+        });
+        setIsDialogOpen(false);
+    };
+
+    const isFormValid = formData.name && formData.index && formData.type &&
+        formData.effectiveDate && formData.bandCode && formData.tariffRate;
 
     return (
         <div className="font-sans min-h-screen flex flex-col">
-            {/* Top Navigation Bar */}
-            <div className="bg-[rgba(22,28,202,1)] text-white py-4 px-6 flex justify-between rounded-tl-[10px] rounded-tr-[10px] items-center">
-                <h2 className="text-lg font-medium font-[inter]">Tariff Management</h2>
-                <div className="text-xl">
-                    <CircleAlert strokeWidth={2.75} className='cursor-pointer' />
-                </div>
-            </div>
+            <NotificationBar
+                title="Tariff Management"
+                bgColor="bg-[rgba(22,28,202,1)]"
+                textColor="text-white"
+                isTopBanner={true}
+            />
+            <NotificationBar
+                title2="How to use"
+                description="Note: At least one band must be created"
+                bgColor="bg-[rgba(219,230,254,1)]"
+                textColor="text-[rgba(22,28,202,1)]"
+                closable={true}
+                showIcon={true}
+                isTopBanner={false}
+            />
 
-            {/* Secondary Navigation Bar */}
-            <div className="bg-[rgba(219,230,254,1)] h-30 py-4 px-6 flex gap-5 font-medium text-base items-center">
-                <div className="flex flex-col">
-                    <div className='flex flex-row gap-2'>
-                        <CircleAlert strokeWidth={2.0} size={16} className='cursor-pointer text-[rgba(22,28,202,1)]' />
-                        <h2 className="text-base font-medium font-[manrope] text-[rgba(22,28,202,1)] mb-3">
-                            How to use
-                        </h2>
-                    </div>
-                    <p className="text-base font-medium font-[manrope] text-[rgba(38,38,38,1)]">
-                        Note: At least one band must be created before tariff can be configured.
-                    </p>
-                </div>
-            </div>
-
-            {/* Main Content Container */}
             <div className="flex-1 p-6 flex flex-col">
-                {/* Header Section */}
                 <div className="flex justify-between items-start mb-8">
-                    <div className="flex flex-col">
-                        <h1 className="text-3xl font-[manrope] text-gray-800 font-bold">Tariff</h1>
-                        <p className="text-[rgba(109,109,109,1)] font-medium font-[manrope] text-base">Set and manage tariff plans here</p>
-                    </div>
-
-                    {/* Dialog Implementation */}
+                    <ContentHeader
+                        title={'Tariff'}
+                        description={'Set and manage tariff plans here'}
+                    />
                     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                         <DialogTrigger asChild>
                             <Button
@@ -62,84 +134,187 @@ const TariffManagementPage: React.FC<TariffManagementPageProps> = () => {
                                 Add tariff
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-[425px]">
+                        <DialogContent className="sm:max-w-[400px]">
                             <DialogHeader>
-                                <DialogTitle>Create New Tariff</DialogTitle>
-                                <DialogDescription>
-                                    Configure your new tariff plan here
-                                </DialogDescription>
+                                <DialogTitle className="text-lg font-semibold">Add Tariff</DialogTitle>
                             </DialogHeader>
-                            <div className="grid gap-4 py-4">
-                                {/* Add your form fields here */}
-                                <div className="grid grid-cols-4 items-center gap-4">
-                                    <label htmlFor="name" className="text-right">
-                                        Name
+                            <form onSubmit={handleSubmit} className="flex flex-col gap-6 py-4">
+                                <div className="flex flex-col gap-2">
+                                    <label htmlFor="name" className="text-sm font-medium text-gray-700">
+                                        Tariff Name
                                     </label>
-                                    <Input id="name" placeholder="Tariff name" className="col-span-3" />
+                                    <Input
+                                        id="name"
+                                        placeholder="Enter tariff name"
+                                        className="border-gray-300 focus:ring-[rgba(22,28,202,1)] focus:border-[rgba(22,28,202,1)]"
+                                        value={formData.name}
+                                        onChange={(e) => handleInputChange('name', e.target.value)}
+                                    />
                                 </div>
-                                <div className="grid grid-cols-4 items-center gap-4">
-                                    <label htmlFor="description" className="text-right">
-                                        Description
+                                <div className="flex flex-row justify-between gap-4">
+                                    <div className="flex flex-col gap-2 w-1/2">
+                                        <label htmlFor="index" className="text-sm font-medium text-gray-700">
+                                            Tariff Index
+                                        </label>
+                                        <Select
+                                            value={formData.index}
+                                            onValueChange={(value) => handleInputChange('index', value)}
+                                        >
+                                            <SelectTrigger className="w-full border-gray-300 focus:ring-[rgba(22,28,202,1)] focus:border-[rgba(22,28,202,1)]">
+                                                <SelectValue placeholder="Select tariff ID" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {['1', '2', '3', '4', '5', '6'].map((id) => (
+                                                    <SelectItem key={id} value={id}>
+                                                        {id}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="flex flex-col gap-2 w-1/2">
+                                        <label htmlFor="type" className="text-sm font-medium text-gray-700">
+                                            Tariff Type
+                                        </label>
+                                        <Select
+                                            value={formData.type}
+                                            onValueChange={(value) => handleInputChange('type', value)}
+                                        >
+                                            <SelectTrigger className="w-full border-gray-300 focus:ring-[rgba(22,28,202,1)] focus:border-[rgba(22,28,202,1)]">
+                                                <SelectValue placeholder="Select tariff type" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {['R1', 'R2', 'R3', 'C1', 'C2'].map((type) => (
+                                                    <SelectItem key={type} value={type}>
+                                                        {type}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    <label className="text-sm font-medium text-gray-700">
+                                        Tariff Effective Date
                                     </label>
-                                    <Input id="description" placeholder="Description" className="col-span-3" />
+                                    <TariffDatePicker
+                                        value={formData.effectiveDate instanceof Date ? formData.effectiveDate.toISOString() : undefined}
+                                        onChange={(date) => {
+                                            const currentDate = formData.effectiveDate instanceof Date ? formData.effectiveDate.toISOString() : null;
+                                            if (currentDate !== date) {
+                                                handleInputChange('effectiveDate', date ? new Date(date) : null);
+                                            }
+                                        }}
+                                    />
                                 </div>
-                                {/* Add more fields as needed */}
-                            </div>
-                            <div className="flex justify-end gap-2">
-                                <Button
-                                    variant="outline"
-                                    onClick={() => setIsDialogOpen(false)}
-                                >
-                                    Cancel
-                                </Button>
-                                <Button
-                                    type="submit"
-                                    className="bg-[rgba(22,28,202,1)] hover:bg-[rgba(22,28,202,0.9)]"
-                                >
-                                    Create Tariff
-                                </Button>
-                            </div>
+                                <div className="flex flex-col gap-2">
+                                    <label htmlFor="band-code" className="text-sm font-medium text-gray-700">
+                                        Band Code
+                                    </label>
+                                    <Select
+                                        value={formData.bandCode}
+                                        onValueChange={(value) => handleInputChange('bandCode', value)}
+                                    >
+                                        <SelectTrigger className="w-full border-gray-300 focus:ring-[rgba(22,28,202,1)] focus:border-[rgba(22,28,202,1)]">
+                                            <SelectValue placeholder="Select band code" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {['Band A', 'Band B', 'Band C', 'Band D', 'Band E'].map((band) => (
+                                                <SelectItem key={band} value={band}>
+                                                    {band}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    <label htmlFor="tariff-rate" className="text-sm font-medium text-gray-700">
+                                        Tariff Rate
+                                    </label>
+                                    <Input
+                                        id="tariff-rate"
+                                        placeholder="Enter tariff rate"
+                                        className="border-gray-300 focus:ring-[rgba(22,28,202,1)] focus:border-[rgba(22,28,202,1)]"
+                                        value={formData.tariffRate}
+                                        onChange={(e) => handleInputChange('tariffRate', e.target.value)}
+                                    />
+                                </div>
+                                <div className="flex justify-end gap-3">
+                                    <Button
+                                        variant="secondary"
+                                        type="button"
+                                        onClick={() => setIsDialogOpen(false)}
+                                        className="text-gray-700 border-gray-300"
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button
+                                        type="submit"
+                                        className={`bg-[rgba(22,28,202,1)] text-white hover:bg-[rgba(22,28,202,0.9)] ${isFormValid ? '' : 'opacity-40 cursor-not-allowed'}`}
+                                        disabled={!isFormValid}
+                                    >
+                                        Submit
+                                    </Button>
+                                </div>
+                            </form>
                         </DialogContent>
                     </Dialog>
                 </div>
 
-                {/* Search and Filter Section */}
-                <div className="flex gap-10 items-center mb-8">
-                    <div className="flex border border-[rgba(228,231,236,1)] gap-2 rounded-md px-3 py-2 w-[219px]">
-                        <Search size={14} strokeWidth={2.75} className="text-gray-500 ml-2" />
-                        <input
-                            type="text"
-                            placeholder="Search by name, ID, cont..."
-                            className="outline-none border-none text-sm flex-grow w-full text-[rgba(95,95,95,1)] placeholder-[rgba(95,95,95,1)]"
-                        />
+                <div className="flex justify-between items-center mb-8">
+                    <div className="flex gap-10 items-center mb-8">
+                        <div className="flex border border-[rgba(228,231,236,1)] gap-2 rounded-md px-3 py-2 w-[219px]">
+                            <Search size={14} strokeWidth={2.75} className="text-gray-500 ml-2" />
+                            <input
+                                type="text"
+                                placeholder="Search by name, ID, cont..."
+                                className="outline-none border-none text-sm flex-grow w-full text-[rgba(95,95,95,1)] placeholder-[rgba(95,95,95,1)]"
+                            />
+                        </div>
+                        <div className="flex gap-2">
+                            <Button className="text-gray-700 border border-[rgba(228,231,236,1)] text-sm rounded-md px-4 py-2 focus:outline-none flex items-center gap-2 cursor-pointer">
+                                <ListFilter size={14} />
+                                Filter
+                            </Button>
+                            <Button className="text-gray-700 border border-[rgba(228,231,236,1)] text-sm rounded-md px-4 py-2 focus:outline-none flex items-center gap-2 cursor-pointer">
+                                <ArrowUpDown size={14} />
+                                Sort
+                            </Button>
+                        </div>
                     </div>
-                    <div className="flex gap-2">
-                        <button className="text-gray-700 border border-[rgba(228,231,236,1)] text-sm rounded-md px-4 py-2 focus:outline-none flex items-center gap-2 cursor-pointer">
-                            <ListFilter size={14} />
-                            Filter
-                        </button>
-                        <button className="text-gray-700 border border-[rgba(228,231,236,1)] text-sm rounded-md px-4 py-2 focus:outline-none flex items-center gap-2 cursor-pointer">
-                            <ArrowUpDown size={14} />
-                            Sort
-                        </button>
+                    <div className="flex gap-5">
+                        <Button
+                            variant={'outline'}
+                            className={`border-[rgb(34,194,94)] text-[rgb(34,194,94)] font-semibold text-md gap-2 py-5 px-8 ${selectedTariffs.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            onClick={handleBulkApprove}
+                            disabled={selectedTariffs.length === 0}
+                        >
+                            <Check size={14} />
+                            Bulk Approve
+                        </Button>
+                        <Button
+                            variant={'default'}
+                            className="bg-[rgba(22,28,202,1)] text-[rgba(254,254,254,1)] font-semibold text-md gap-2 py-5 px-8"
+                        >
+                            <SquareArrowOutUpRight size={14} />
+                            Export
+                        </Button>
                     </div>
                 </div>
 
-                {/* Table/Content Area */}
                 <div className="flex-1 bg-white rounded-lg border border-gray-200">
-                    {/* Your table or content goes here */}
-                    <div className="p-4 text-gray-500">
-                        Content area will go here (table, cards, etc.)
-                    </div>
+                    <TariffTable
+                        tariffs={tariffs}
+                        onUpdateTariff={handleUpdateTariff}
+                        selectedTariffs={selectedTariffs}
+                        setSelectedTariffs={setSelectedTariffs}
+                    />
                 </div>
             </div>
 
-            {/* Footer */}
             <div className="text-center py-3 text-gray-500 border-t border-gray-200 mt-auto">
                 © 2025, Powered by MEMMCOL
             </div>
         </div>
     );
 };
-
-export default TariffManagementPage;
