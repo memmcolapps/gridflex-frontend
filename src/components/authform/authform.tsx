@@ -40,7 +40,7 @@ export function AuthForm({
     setIsSubmitting(true);
     try {
       onSubmit(email, password);
-    } catch (error) {
+    } catch (_error) {
       // Error handling is done in the parent component
     } finally {
       setIsSubmitting(false);

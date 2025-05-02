@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { MagnifyingGlassIcon, ChevronUpIcon, ChevronDownIcon, PlusIcon, PencilIcon, ArrowLongUpIcon, ArrowLongDownIcon, ArrowUpIcon, ArrowDownIcon } from '@heroicons/react/24/outline';
+import {ChevronUpIcon, ChevronDownIcon, ArrowUpIcon, ArrowDownIcon } from '@heroicons/react/24/outline';
 import BandForm from '../bandform/bandform';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +11,9 @@ type Band = {
     id: string;
     name: string;
     electricityHour: number;
+    
 };
+
 
 export default function BandManagement() {
     const [bands, setBands] = useState<Band[]>([
@@ -46,7 +48,7 @@ export default function BandManagement() {
     };
 
     const sortedBands = () => {
-        let sortableBands = [...bands];
+       const sortableBands = [...bands];
         if (sortConfig !== null) {
             sortableBands.sort((a, b) => {
                 if (a[sortConfig.key] < b[sortConfig.key]) {
@@ -67,7 +69,7 @@ export default function BandManagement() {
 
     return (
         <div className="p-6 text-black">
-            <h1 className="text-2xl mb-6">Band Management</h1>
+            <h1 className="text-2xl mb-6 font-bold">Band Management</h1>
             <div className="flex justify-between items-center mb-6">
                 <p className="text-sm text-muted-foreground">Add and manage electricity distribution bands.</p>
                 <BandForm
@@ -98,12 +100,12 @@ export default function BandManagement() {
                         onChange={handleSearch}
                     />
                 </div>
-                <Button variant="outline" className="gap-1 border-[rgba(228,231,236,1)]">
+                {/* <Button variant="outline" className="gap-1 border-[rgba(228,231,236,1)]">
                     <ArrowUpDown className="" strokeWidth={2.5} size={12} />
                     <Label htmlFor="sortCheckbox" className="cursor-pointer">
                         Sort
                     </Label>
-                </Button>
+                </Button> */}
             </div>
 
             <div>
