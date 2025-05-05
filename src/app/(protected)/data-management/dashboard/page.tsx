@@ -23,7 +23,7 @@ export default function HomePage() {
           This is a placeholder for the dashboard page.
         </p>
         <p className="mt-4 text-gray-600">
-          You can add your dashboard content here.
+          You can add your dashboard content here. editted by musa..
         </p>
       </div>
     </div>
