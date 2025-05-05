@@ -23,8 +23,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import {
@@ -76,7 +74,7 @@ export function SidebarNav() {
         { title: "Meter Management", href: "/meter-management" },
         { title: "Customer Management", href: "/customer-management" },
         { title: "Tariff", href: "/tariff" },
-        { title: "Band Management", href: "/band-management" },
+        { title: "Band Management", href: "/data-management/band-management" },
       ],
     },
     {
