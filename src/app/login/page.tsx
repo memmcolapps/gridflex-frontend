@@ -1,6 +1,6 @@
 "use client";
-import { Branding } from "../../components/branding/branding";
-import { AuthForm } from "../../components/authform/authform";
+import { Branding } from "../../components/auth/branding";
+import { AuthForm } from "../../components/auth/authform";
 import { useAuth } from "../../context/auth-context";
 
 export default function Login() {
