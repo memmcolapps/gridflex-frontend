@@ -140,7 +140,7 @@ export default function TariffManagementPage() {
             <DialogTrigger asChild>
               <Button
                 className="flex h-fit cursor-pointer items-center gap-2 bg-[rgba(22,28,202,0.4)] text-sm text-white hover:bg-[rgb(22,28,202)]"
-                size="md"
+                size={"sm"}
               >
                 <CirclePlusIcon strokeWidth={2.75} size={15} />
                 Add tariff
