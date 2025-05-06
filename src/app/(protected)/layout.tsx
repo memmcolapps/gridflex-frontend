@@ -44,7 +44,7 @@ export default function ProtectedLayout({
         <SidebarNav />
         <div className="flex flex-1 flex-col">
           <Navbar />
-          <main className="flex-1 overflow-auto pt-4">{children}</main>
+          <main className="flex-1 overflow-auto p-8">{children}</main>
         </div>
       </div>
     </SidebarProvider>
