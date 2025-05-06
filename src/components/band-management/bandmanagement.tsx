@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   ChevronUpIcon,
   ChevronDownIcon,
@@ -16,30 +16,33 @@ import {
   TableBody,
   TableCell,
 } from "@/components/ui/table";
-import { Label } from "@/components/ui/label";
-import { ArrowUpDown, PlusCircleIcon, SearchIcon } from "lucide-react";
-
-type Band = {
-  id: string;
-  name: string;
-  electricityHour: number;
-};
+import { PlusCircleIcon, SearchIcon } from "lucide-react";
+import { fetchBands, createBand, updateBand, type Band } from "@/service/band-service";
 
 export default function BandManagement() {
-  const [bands, setBands] = useState<Band[]>([
-    { id: "1", name: "Band A", electricityHour: 20 },
-    { id: "2", name: "Band B", electricityHour: 16 },
-    { id: "3", name: "Band C", electricityHour: 12 },
-    { id: "4", name: "Band D", electricityHour: 8 },
-    { id: "5", name: "Band E", electricityHour: 4 },
-    { id: "6", name: "Band F", electricityHour: 5 },
-  ]);
-
+  const [bands, setBands] = useState<Band[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState<{
     key: keyof Band;
     direction: "ascending" | "descending";
   } | null>(null);
+
+  useEffect(() => {
+    const loadBands = async () => {
+      setIsLoading(true);
+      try {
+        const fetchedBands = await fetchBands();
+        setBands(fetchedBands);
+      } catch (error) {
+        console.error("Failed to fetch bands:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadBands();
+  }, []);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -61,10 +64,14 @@ export default function BandManagement() {
     const sortableBands = [...bands];
     if (sortConfig !== null) {
       sortableBands.sort((a, b) => {
-        if (a[sortConfig.key] < b[sortConfig.key]) {
+        const aValue = a[sortConfig.key];
+        const bValue = b[sortConfig.key];
+
+        if (aValue === undefined || bValue === undefined) return 0;
+        if (aValue < bValue) {
           return sortConfig.direction === "ascending" ? -1 : 1;
         }
-        if (a[sortConfig.key] > b[sortConfig.key]) {
+        if (aValue > bValue) {
           return sortConfig.direction === "ascending" ? 1 : -1;
         }
         return 0;
@@ -77,6 +84,34 @@ export default function BandManagement() {
     band.name.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
+  const handleAddBand = async (newBand: Omit<Band, "id">) => {
+    const success = await createBand(newBand);
+    if (success) {
+      // Refresh the bands list to get the new band with the correct ID from backend
+      const fetchedBands = await fetchBands();
+      setBands(fetchedBands);
+    }
+  };
+
+  const handleUpdateBand = async (bandId: string | number, updatedBand: Omit<Band, "id">) => {
+    // Create a complete band object with the original ID and updated fields
+    const bandToUpdate: Band = {
+      id: bandId,
+      ...updatedBand,
+      // Preserve other fields from the original band
+      status: bands.find(b => b.id === bandId)?.status,
+      createdat: bands.find(b => b.id === bandId)?.createdat,
+      updatedat: bands.find(b => b.id === bandId)?.updatedat
+    };
+
+    const success = await updateBand(bandToUpdate);
+    if (success) {
+      // Refresh the bands list to get the updated data from backend
+      const fetchedBands = await fetchBands();
+      setBands(fetchedBands);
+    }
+  };
+
   return (
     <div className="p-6 text-black">
       <h1 className="mb-6 text-2xl font-bold">Band Management</h1>
@@ -86,10 +121,7 @@ export default function BandManagement() {
         </p>
         <BandForm
           mode="add"
-          onSave={(newBand) => {
-            console.log("Adding New Band:", newBand);
-            setBands([...bands, { ...newBand, id: Date.now().toString() }]);
-          }}
+          onSave={handleAddBand}
           triggerButton={
             <Button className="flex items-center gap-2 bg-[#161CCA] hover:bg-[#121eb3]">
               <div className="flex items-center justify-center p-0.5">
@@ -115,12 +147,6 @@ export default function BandManagement() {
             onChange={handleSearch}
           />
         </div>
-        {/* <Button variant="outline" className="gap-1 border-[rgba(228,231,236,1)]">
-                    <ArrowUpDown className="" strokeWidth={2.5} size={12} />
-                    <Label htmlFor="sortCheckbox" className="cursor-pointer">
-                        Sort
-                    </Label>
-                </Button> */}
       </div>
 
       <div>
@@ -161,35 +187,56 @@ export default function BandManagement() {
                   )}
                 </div>
               </TableHead>
-              <TableHead>Action</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Created At</TableHead>
+              <TableHead>Updated At</TableHead>
+              <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredBands.map((band) => (
-              <TableRow key={band.id} className="hover:bg-muted/50">
-                <TableCell>{band.name}</TableCell>
-                <TableCell>{band.electricityHour}</TableCell>
-                <TableCell>
-                  <BandForm
-                    mode="edit"
-                    band={band}
-                    onSave={(updatedBand) =>
-                      console.log("Updating:", updatedBand)
-                    }
-                    triggerButton={
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="gap-1 border-[rgba(228,231,236,1)]"
-                      >
-                        {/* <PencilIcon className="h-4 w-4" /> */}
-                        Edit
-                      </Button>
-                    }
-                  />
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center">
+                  Loading bands...
                 </TableCell>
               </TableRow>
-            ))}
+            ) : bands.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center">
+                  No bands found
+                </TableCell>
+              </TableRow>
+            ) : (
+              filteredBands.map((band) => (
+                <TableRow key={band.id} className="hover:bg-muted/50">
+                  <TableCell>{band.name}</TableCell>
+                  <TableCell>{band.electricityHour}</TableCell>
+                  <TableCell>{band.status ? "Active" : "Inactive"}</TableCell>
+                  <TableCell>
+                    {new Date(band.createdat!).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>
+                    {new Date(band.updatedat!).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>
+                    <BandForm
+                      mode="edit"
+                      band={band}
+                      onSave={(updatedBand) => handleUpdateBand(band.id!, updatedBand)}
+                      triggerButton={
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="gap-1 border-[rgba(228,231,236,1)]"
+                        >
+                          Edit
+                        </Button>
+                      }
+                    />
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </div>

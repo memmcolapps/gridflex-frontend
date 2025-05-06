@@ -59,7 +59,7 @@ export function EditTariffDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[400px]">
+      <DialogContent className="bg-white sm:max-w-[400px]">
         <DialogHeader>
           <DialogTitle className="text-lg font-semibold">
             Edit Tariff

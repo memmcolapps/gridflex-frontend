@@ -1,5 +1,5 @@
 "use client";
-
+import { cn } from "@/lib/utils";
 import { NotificationBar } from "@/components/notificationbar";
 import { TariffTable } from "@/components/tariff/tariff-table";
 import { Button } from "@/components/ui/button";
@@ -28,24 +28,22 @@ import {
   Search,
   SquareArrowOutUpRight,
 } from "lucide-react";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import {
+  createTariff,
+  fetchTariffs,
+  type Tariff,
+} from "@/service/tarriff-service";
+import { fetchBands, type Band } from "@/service/band-service";
 
 export default function TariffManagementPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  interface Tariff {
-    id: string;
-    name: string;
-    index: string;
-    type: string;
-    effectiveDate: Date | null;
-    bandCode: string;
-    tariffRate: string;
-    status: "active" | "inactive";
-    approvalStatus: "approved" | "pending" | "rejected";
-  }
-
   const [tariffs, setTariffs] = useState<Tariff[]>([]);
   const [selectedTariffs, setSelectedTariffs] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [bands, setBands] = useState<Band[]>([]);
+  const [isBandsLoading, setIsBandsLoading] = useState(false);
+  const [bandsError, setBandsError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     index: "",
@@ -54,8 +52,44 @@ export default function TariffManagementPage() {
     bandCode: "",
     tariffRate: "",
     status: "inactive" as "active" | "inactive",
-    approvalStatus: "pending" as "approved" | "pending" | "rejected",
+    approvalStatus: "pending" as "Approved" | "pending" | "rejected",
   });
+
+  useEffect(() => {
+    const loadTariffs = async () => {
+      setIsLoading(true);
+      try {
+        const fetchedTariffs = await fetchTariffs();
+        setTariffs(fetchedTariffs);
+      } catch (error) {
+        console.error("Failed to fetch tariffs:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadTariffs();
+  }, []);
+
+  useEffect(() => {
+    const loadBands = async () => {
+      setIsBandsLoading(true);
+      setBandsError(null);
+      try {
+        const fetchedBands = await fetchBands();
+        setBands(fetchedBands);
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "Failed to fetch bands";
+        setBandsError(errorMessage);
+        console.error("Failed to fetch bands:", error);
+      } finally {
+        setIsBandsLoading(false);
+      }
+    };
+
+    loadBands();
+  }, []);
 
   const handleInputChange = (field: string, value: string | Date | null) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -64,44 +98,48 @@ export default function TariffManagementPage() {
   const handleUpdateTariff = (id: string, updates: Partial<Tariff>) => {
     setTariffs((prev) =>
       prev.map((tariff) =>
-        tariff.id === id ? { ...tariff, ...updates } : tariff,
+        tariff.id === +id ? { ...tariff, ...updates } : tariff,
       ),
     );
   };
 
   const handleBulkApprove = () => {
-    selectedTariffs.forEach((id) => {
-      handleUpdateTariff(id, {
-        approvalStatus: "approved",
-        status: "active",
-      });
-    });
+    console.log("handle bulk approve");
     setSelectedTariffs([]); // Clear selection after approval
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isFormValid) return;
 
     const newTariff = {
-      ...formData,
-      id: Date.now().toString(),
-      status: "inactive" as "active" | "inactive",
-      approvalStatus: "pending" as "approved" | "pending" | "rejected",
+      name: formData.name,
+      tariff_index: parseInt(formData.index, 10),
+      tariff_type: formData.type,
+      effective_date: formData.effectiveDate?.toISOString().split("T")[0] ?? "",
+      band: formData.bandCode,
+      tariff_rate: formData.tariffRate,
+      status: true,
     };
 
-    setTariffs([...tariffs, newTariff]);
-    setFormData({
-      name: "",
-      index: "",
-      type: "",
-      effectiveDate: null,
-      bandCode: "",
-      tariffRate: "",
-      status: "inactive",
-      approvalStatus: "pending",
-    });
-    setIsDialogOpen(false);
+    const success = await createTariff(newTariff);
+
+    if (success) {
+      const fetchedTariffs = await fetchTariffs();
+      setTariffs(fetchedTariffs);
+      setIsDialogOpen(false);
+
+      setFormData({
+        name: "",
+        index: "",
+        type: "",
+        effectiveDate: null,
+        bandCode: "",
+        tariffRate: "",
+        status: "inactive",
+        approvalStatus: "pending",
+      });
+    }
   };
 
   const isFormValid =
@@ -139,14 +177,14 @@ export default function TariffManagementPage() {
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button
-                className="flex h-fit cursor-pointer items-center gap-2 bg-[rgba(22,28,202,0.4)] text-sm text-white hover:bg-[rgb(22,28,202)]"
+                className="flex h-fit cursor-pointer items-center gap-2 bg-[rgba(22,28,202,0.4)] px-6 py-2 text-sm text-white hover:bg-[rgb(22,28,202)]"
                 size={"sm"}
               >
                 <CirclePlusIcon strokeWidth={2.75} size={15} />
                 Add tariff
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[400px]">
+            <DialogContent className="h-fit bg-white sm:max-w-[400px]">
               <DialogHeader>
                 <DialogTitle className="text-lg font-semibold">
                   Add Tariff
@@ -259,20 +297,43 @@ export default function TariffManagementPage() {
                     onValueChange={(value: string) =>
                       handleInputChange("bandCode", value)
                     }
+                    disabled={isBandsLoading}
                   >
-                    <SelectTrigger className="w-full border-gray-300 focus:border-[rgba(22,28,202,1)] focus:ring-[rgba(22,28,202,1)]">
-                      <SelectValue placeholder="Select band code" />
+                    <SelectTrigger
+                      className={cn(
+                        "w-full border-gray-300 focus:border-[rgba(22,28,202,1)] focus:ring-[rgba(22,28,202,1)]",
+                        bandsError && "border-red-500",
+                      )}
+                    >
+                      <SelectValue
+                        placeholder={
+                          isBandsLoading
+                            ? "Loading bands..."
+                            : bandsError
+                              ? "Failed to load bands"
+                              : "Select band code"
+                        }
+                      />
                     </SelectTrigger>
                     <SelectContent>
-                      {["Band A", "Band B", "Band C", "Band D", "Band E"].map(
-                        (band) => (
-                          <SelectItem key={band} value={band}>
-                            {band}
+                      {bands.length > 0 ? (
+                        bands.map((band) => (
+                          <SelectItem key={band.id} value={band.name}>
+                            {band.name}
                           </SelectItem>
-                        ),
+                        ))
+                      ) : (
+                        <SelectItem value="" disabled>
+                          {bandsError
+                            ? "Error loading bands"
+                            : "No bands available"}
+                        </SelectItem>
                       )}
                     </SelectContent>
                   </Select>
+                  {bandsError && (
+                    <span className="text-sm text-red-500">{bandsError}</span>
+                  )}
                 </div>
                 <div className="flex flex-col gap-2">
                   <label
@@ -359,12 +420,18 @@ export default function TariffManagementPage() {
         </div>
 
         <div className="flex-1 rounded-lg border border-gray-200 bg-white">
-          <TariffTable
-            tariffs={tariffs}
-            onUpdateTariff={handleUpdateTariff}
-            selectedTariffs={selectedTariffs}
-            setSelectedTariffs={setSelectedTariffs}
-          />
+          {isLoading ? (
+            <div className="flex items-center justify-center p-8">
+              <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-gray-900"></div>
+            </div>
+          ) : (
+            <TariffTable
+              tariffs={tariffs}
+              onUpdateTariff={handleUpdateTariff}
+              selectedTariffs={selectedTariffs}
+              setSelectedTariffs={setSelectedTariffs}
+            />
+          )}
         </div>
       </div>
 
