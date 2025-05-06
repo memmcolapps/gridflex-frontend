@@ -2,6 +2,7 @@ import axios from "axios";
 import { toast } from "sonner";
 import { type UserInfo } from "../types/user-info";
 import { handleAuthError } from "@/utils/error-handler";
+import { env } from "@/env";
 
 interface LoginResponse {
   responsecode: string;
@@ -14,8 +15,8 @@ interface LoginResponseData {
   user_info: UserInfo;
 }
 
-const API_URL = "http://172.16.10.60:8081/grid-flex/v1/api";
-const CUSTOM_HEADER = "ab@#1cD3fG!mNXyZ$%Kl78&OH@beeb$";
+const API_URL = env.NEXT_PUBLIC_BASE_URL;
+const CUSTOM_HEADER = env.NEXT_PUBLIC_CUSTOM_HEADER;
 
 export async function loginApi(
   email: string,

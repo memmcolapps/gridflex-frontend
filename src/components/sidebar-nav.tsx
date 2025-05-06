@@ -23,8 +23,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import {
@@ -76,7 +74,7 @@ export function SidebarNav() {
         { title: "Meter Management", href: "/meter-management" },
         { title: "Customer Management", href: "/customer-management" },
         { title: "Tariff", href: "/data-management/tarrif" },
-        { title: "Band Management", href: "/band-management" },
+        { title: "Band Management", href: "/data-management/band-management" },
       ],
     },
     {
@@ -151,11 +149,11 @@ export function SidebarNav() {
                 className="group/collapsible"
                 key={item.title}
               >
-                <SidebarMenuItem className="my-2 px-1.5">
+                <SidebarMenuItem className="my-1">
                   <CollapsibleTrigger asChild>
                     <SidebarMenuButton
                       className={cn(
-                        "flex items-center justify-between",
+                        "flex items-center justify-between py-6",
                         expandedItems[item.title] && "bg-gray-100",
                       )}
                       onClick={() => toggleExpanded(item.title)}

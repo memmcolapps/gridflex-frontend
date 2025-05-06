@@ -158,7 +158,7 @@ export default function TariffManagementPage() {
                                         </label>
                                         <Select
                                             value={formData.index}
-                                            onValueChange={(value) => handleInputChange('index', value)}
+                                            onValueChange={(value: string) => handleInputChange('index', value)}
                                         >
                                             <SelectTrigger className="w-full border-gray-300 focus:ring-[rgba(22,28,202,1)] focus:border-[rgba(22,28,202,1)]">
                                                 <SelectValue placeholder="Select tariff ID" />
@@ -178,7 +178,7 @@ export default function TariffManagementPage() {
                                         </label>
                                         <Select
                                             value={formData.type}
-                                            onValueChange={(value) => handleInputChange('type', value)}
+                                            onValueChange={(value: string) => handleInputChange('type', value)}
                                         >
                                             <SelectTrigger className="w-full border-gray-300 focus:ring-[rgba(22,28,202,1)] focus:border-[rgba(22,28,202,1)]">
                                                 <SelectValue placeholder="Select tariff type" />
@@ -213,7 +213,7 @@ export default function TariffManagementPage() {
                                     </label>
                                     <Select
                                         value={formData.bandCode}
-                                        onValueChange={(value) => handleInputChange('bandCode', value)}
+                                        onValueChange={(value: string) => handleInputChange('bandCode', value)}
                                     >
                                         <SelectTrigger className="w-full border-gray-300 focus:ring-[rgba(22,28,202,1)] focus:border-[rgba(22,28,202,1)]">
                                             <SelectValue placeholder="Select band code" />
