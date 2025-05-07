@@ -9,6 +9,7 @@ import { MetersInstalledChart } from '@/components/dashboard/MetersInstalledChar
 import { ManufacturerDistribution } from '@/components/dashboard/ManufacturerDistribution';
 import { MeterStatus } from '@/components/dashboard/MeterStatus';
 import { statusCards } from '@/lib/dashboardData';
+import { Footer } from '@/components/footer';
 
 export default function DashboardPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -26,10 +27,10 @@ export default function DashboardPage() {
   }, [router]);
 
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <div className="bg-gray-50 min-h-screen -mt-10">
       <div className="mx-auto px-4 md:px-6">
-        <div className="flex justify-between items-start mb-6 mt-4 max-w-[1000px] mx-auto">
-          <ContentHeader
+        <div className="flex justify-between items-start mb-6 max-w-[1000px] mx-auto pt-6">
+          <ContentHeader className='mt-10'
             title="Overview"
             description="General overview of Data Management Dashboard"
           />
@@ -47,19 +48,28 @@ export default function DashboardPage() {
           />
         </section>
         <section className="mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 w-[1000px] h-[90px] mx-auto">
-            {statusCards.map((card, index) => (
-              <StatusCard key={index} {...card} />
-            ))}
+          <div className="w-[1000px] md:max-w-full mx-auto overflow-x-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 w-[1000px] min-h-[90px]">
+              {statusCards.map((card, index) => (
+                <StatusCard key={index} {...card} />
+              ))}
+            </div>
           </div>
         </section>
-        <div className="mb-6 mx-auto">
-          <MetersInstalledChart />
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-[1000px] mx-auto">
-          <ManufacturerDistribution />
-          <MeterStatus />
-        </div>
+        <section className="mb-6">
+          <div className="w-[1000px] md:max-w-full mx-auto overflow-x-auto">
+            <MetersInstalledChart />
+          </div>
+        </section>
+        <section>
+          <div className="w-[1000px] md:max-w-full mx-auto overflow-x-hidden">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-[1000px]">
+              <ManufacturerDistribution />
+              <MeterStatus />
+            </div>
+          </div>
+        </section>
+        <Footer/>
       </div>
     </div>
   );

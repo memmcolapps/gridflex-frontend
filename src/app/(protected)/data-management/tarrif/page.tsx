@@ -1,5 +1,6 @@
 'use client';
 
+import { Footer } from '@/components/footer';
 import { NotificationBar } from '@/components/notificationbar';
 import { TariffTable } from '@/components/tariff/tariff-table';
 import { Button } from '@/components/ui/button';
@@ -312,9 +313,7 @@ export default function TariffManagementPage() {
                 </div>
             </div>
 
-            <div className="text-center py-3 text-gray-500 border-t border-gray-200 mt-auto">
-                © 2025, Powered by MEMMCOL
-            </div>
+            <Footer/>
         </div>
     );
 };
