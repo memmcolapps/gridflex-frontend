@@ -24,7 +24,7 @@ export const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({
     setSelectedMeterType,
 }) => {
     return (
-        <div className="flex flex-col gap-3 md:flex-row md:items-center">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
             <div className="relative">
                 <Search
                     size={16}

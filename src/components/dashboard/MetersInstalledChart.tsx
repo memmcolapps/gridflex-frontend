@@ -62,7 +62,7 @@ export const MetersInstalledChart = () => {
                     </Button>
                 </div>
             </CardHeader>
-            <CardContent className="h-[400px]">
+            <CardContent className="h-[200px]">
                 <ResponsiveContainer width="100%" height="100%">
                     <LineChart
                         data={currentData}

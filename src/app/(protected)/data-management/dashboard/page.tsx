@@ -27,15 +27,16 @@ export default function DashboardPage() {
   }, [router]);
 
   return (
-    <div className="bg-gray-50 min-h-screen -mt-10">
-      <div className="mx-auto px-4 md:px-6">
-        <div className="flex justify-between items-start mb-6 max-w-[1000px] mx-auto pt-6">
-          <ContentHeader className='mt-10'
+    <div className=" min-h-screen">
+      <div className="mx-auto px-4 sm:px-6 lg:px-8 max-w-screen-2xl space-y-6">
+        <div className="flex justify-between items-start pt-6">
+          <ContentHeader
             title="Overview"
             description="General overview of Data Management Dashboard"
           />
         </div>
-        <section className="mb-6 max-w-[1000px] mx-auto">
+
+        <section>
           <SearchAndFilters
             searchTerm={searchTerm}
             setSearchTerm={setSearchTerm}
@@ -47,29 +48,27 @@ export default function DashboardPage() {
             setSelectedMeterType={setSelectedMeterType}
           />
         </section>
-        <section className="mb-6">
-          <div className="w-[1000px] md:max-w-full mx-auto overflow-x-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 w-[1000px] min-h-[90px]">
-              {statusCards.map((card, index) => (
-                <StatusCard key={index} {...card} />
-              ))}
-            </div>
-          </div>
-        </section>
-        <section className="mb-6">
-          <div className="w-[1000px] md:max-w-full mx-auto overflow-x-auto">
-            <MetersInstalledChart />
-          </div>
-        </section>
+
         <section>
-          <div className="w-[1000px] md:max-w-full mx-auto overflow-x-hidden">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-[1000px]">
-              <ManufacturerDistribution />
-              <MeterStatus />
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 w-full h-40">
+            {statusCards.map((card, index) => (
+              <StatusCard key={index} {...card} />
+            ))}
           </div>
         </section>
-        <Footer/>
+
+        <section className='mt-10 pt-6 rounded-lg bg-white shadow-sm'>
+          <MetersInstalledChart />
+        </section>
+
+        <section>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6">
+            <ManufacturerDistribution/>
+            <MeterStatus/>
+          </div>
+        </section>
+
+        <Footer />
       </div>
     </div>
   );

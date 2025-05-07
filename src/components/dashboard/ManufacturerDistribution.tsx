@@ -22,12 +22,12 @@ export const ManufacturerDistribution = () => {
     const barColor = '#769FCD';
 
     return (
-        <Card className="w-[500px] border-none bg-white shadow-xs border-gray-100">
+        <Card className="w-full border-none bg-white shadow-sm rounded-lg border-gray-100">
             <CardHeader>
                 <CardTitle>Manufacturer Distribution</CardTitle>
             </CardHeader>
             <CardContent>
-                <div className="h-[300px]">
+                <div className="h-[200px]">
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart
                             data={chartData}

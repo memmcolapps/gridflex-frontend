@@ -14,11 +14,11 @@ export const MeterStatus = () => {
     }));
 
     return (
-        <Card className="w-full max-w-[500px] border-none bg-white shadow-xs border-gray-100">
+        <Card className="w-full max-w-[500px] border-none bg-white shadow-sm rounded-lg border-gray-100">
             <CardHeader>
                 <CardTitle>Meter Status</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4 h-[200px]">
                 <div className="flex flex-col md:flex-row gap-4">
                     {/* Legend List */}
                     <div className="w-full md:w-1/2 space-y-3">
