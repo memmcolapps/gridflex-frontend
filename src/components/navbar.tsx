@@ -41,7 +41,7 @@ export function Navbar() {
               <ChevronDown className="text-muted-foreground" size={15} />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="text-[#333333]">
+          <DropdownMenuContent align="end" className="text-[#333333] bg-white p-4">
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem>Profile</DropdownMenuItem>
