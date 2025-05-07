@@ -70,6 +70,10 @@ export function SidebarNav() {
       hasSubmenu: true,
       submenuItems: [
         { title: "Dashboard", href: "/data-management/dashboard" },
+        { title: "Organization", href: "/organization" },
+        { title: "Meter Management", href: "/meter-management" },
+        { title: "Customer Management", href: "/customer-management" },
+        { title: "Tariff", href: "/data-management/tarrif" },
         { title: "Organization", href: "/data-management/organization" },
         { title: "Meter Management", href: "/data-management/meter-management" },
         { title: "Customer Management", href: "/data-management/customer-management" },

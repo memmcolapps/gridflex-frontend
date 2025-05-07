@@ -1,7 +1,7 @@
 "use client";
 
-import { Branding } from "../../../components/branding/branding";
-import { AuthForm } from "../../../components/authform/authform";
+import { Branding } from "../../../components/auth/branding";
+import { AuthForm } from "../../../components/auth/authform";
 
 export default function ForgotPassword() {
   return (

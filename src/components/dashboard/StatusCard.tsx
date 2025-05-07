@@ -1,4 +1,7 @@
+'use client';
+
 import { CircleAlert, CircleCheckBig, CircleX, TrendingUp } from 'lucide-react';
+import { Card } from '@/components/ui/card';
 
 interface StatusCardProps {
     title: string;
@@ -40,9 +43,7 @@ export const StatusCard: React.FC<StatusCardProps> = ({
     };
 
     return (
-        <div
-            className={`flex items-center justify-between p-4 rounded-xl ${bgColor} ${textColor} border ${borderColor} shadow-xs hover:shadow-sm transition-shadow`}
-        >
+        <Card className={`flex-row items-center justify-between p-4 rounded-xl ${bgColor} ${textColor} border ${borderColor} shadow-xs hover:shadow-sm transition-shadow`}>
             <div className='flex flex-col gap-3'>
                 <h3 className="text-base font-semibold">{title}</h3>
                 <p className="text-lg font-semibold flex items-center gap-2">
@@ -54,6 +55,6 @@ export const StatusCard: React.FC<StatusCardProps> = ({
                 </p>
             </div>
             <div className={`${bgColor.replace('50', '100')} rounded-full p-2`}>{renderIcon()}</div>
-        </div>
+        </Card>
     );
 };

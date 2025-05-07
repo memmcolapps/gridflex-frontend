@@ -66,13 +66,13 @@ export const statusCards = [
 ];
 
 export const manufacturerData = {
-    series: [30, 10, 5, 15, 25, 5, 5, 7, 5, 15, 23, 5, 18, 5, 3, 10],
+    series: [20, 10, 5, 5, 5, 5, 5, 5, 5, 15, 5, 5, 5, 5, 5, 5],
     labels: ['Memmcol', 'Google', 'Amazon', 'Prime', 'Netflix', 'CN', 'Nick', 'Disney', 'Shop'],
-    colors: Array(16).fill('#769FCD'),
+    colors: ['#C9E4DE', '#769FCD', '#5D8AA8', '#A4C3B2', '#A3C4F3', '#FFE0AC', '#FFBCBC', '#4CAF50', '#BFD8B8', '#FFE0AC', '#EDE7B1', '#BFD3FE', '#FFBCBC', '#A4C3B2', '#00BCD4', '#8BC34A', '#DDBDD5'],
 };
 
 export const meterStatusData = {
-    series: [15, 85],
+    series: [75, 25],
     labels: ['Active', 'Inactive'],
     colors: ['#BFD3FE', '#60A5FA'],
 };

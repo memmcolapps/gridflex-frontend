@@ -1,55 +1,95 @@
-'use client';
-
-import { Footer } from '@/components/footer';
-import { NotificationBar } from '@/components/notificationbar';
-import { TariffTable } from '@/components/tariff/tariff-table';
-import { Button } from '@/components/ui/button';
-import { ContentHeader } from '@/components/ui/content-header';
+"use client";
+import { cn } from "@/lib/utils";
+import { NotificationBar } from "@/components/notificationbar";
+import { TariffTable } from "@/components/tariff/tariff-table";
+import { Button } from "@/components/ui/button";
+import { ContentHeader } from "@/components/ui/content-header";
 import {
     Dialog,
     DialogContent,
     DialogHeader,
     DialogTitle,
     DialogTrigger,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from '@/components/ui/select';
-import { TariffDatePicker } from '@/components/ui/tarrif-datepicker';
-import { ArrowUpDown, Check, CirclePlusIcon, ListFilter, Search, SquareArrowOutUpRight } from 'lucide-react';
-import React, { useState } from 'react';
+} from "@/components/ui/select";
+import { TariffDatePicker } from "@/components/tarrif-datepicker";
+import {
+    ArrowUpDown,
+    Check,
+    CirclePlusIcon,
+    ListFilter,
+    Search,
+    SquareArrowOutUpRight,
+} from "lucide-react";
+import React, { useState, useEffect } from "react";
+import {
+    createTariff,
+    fetchTariffs,
+    type Tariff,
+} from "@/service/tarriff-service";
+import { fetchBands, type Band } from "@/service/band-service";
 
 export default function TariffManagementPage() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    interface Tariff {
-        id: string;
-        name: string;
-        index: string;
-        type: string;
-        effectiveDate: Date | null;
-        bandCode: string;
-        tariffRate: string;
-        status: 'active' | 'inactive';
-        approvalStatus: 'approved' | 'pending' | 'rejected';
-    }
-
     const [tariffs, setTariffs] = useState<Tariff[]>([]);
     const [selectedTariffs, setSelectedTariffs] = useState<string[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [bands, setBands] = useState<Band[]>([]);
+    const [isBandsLoading, setIsBandsLoading] = useState(false);
+    const [bandsError, setBandsError] = useState<string | null>(null);
     const [formData, setFormData] = useState({
-        name: '',
-        index: '',
-        type: '',
+        name: "",
+        index: "",
+        type: "",
         effectiveDate: null as Date | null,
-        bandCode: '',
-        tariffRate: '',
-        status: 'inactive' as 'active' | 'inactive',
-        approvalStatus: 'pending' as 'approved' | 'pending' | 'rejected',
+        bandCode: "",
+        tariffRate: "",
+        status: "inactive" as "active" | "inactive",
+        approvalStatus: "pending" as "Approved" | "pending" | "rejected",
     });
+
+    useEffect(() => {
+        const loadTariffs = async () => {
+            setIsLoading(true);
+            try {
+                const fetchedTariffs = await fetchTariffs();
+                setTariffs(fetchedTariffs);
+            } catch (error) {
+                console.error("Failed to fetch tariffs:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        loadTariffs();
+    }, []);
+
+    useEffect(() => {
+        const loadBands = async () => {
+            setIsBandsLoading(true);
+            setBandsError(null);
+            try {
+                const fetchedBands = await fetchBands();
+                setBands(fetchedBands);
+            } catch (error) {
+                const errorMessage =
+                    error instanceof Error ? error.message : "Failed to fetch bands";
+                setBandsError(errorMessage);
+                console.error("Failed to fetch bands:", error);
+            } finally {
+                setIsBandsLoading(false);
+            }
+        };
+
+        loadBands();
+    }, []);
 
     const handleInputChange = (field: string, value: string | Date | null) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
@@ -58,51 +98,60 @@ export default function TariffManagementPage() {
     const handleUpdateTariff = (id: string, updates: Partial<Tariff>) => {
         setTariffs((prev) =>
             prev.map((tariff) =>
-                tariff.id === id ? { ...tariff, ...updates } : tariff
-            )
+                tariff.id === +id ? { ...tariff, ...updates } : tariff,
+            ),
         );
     };
 
     const handleBulkApprove = () => {
-        selectedTariffs.forEach((id) => {
-            handleUpdateTariff(id, {
-                approvalStatus: 'approved',
-                status: 'active',
-            });
-        });
+        console.log("handle bulk approve");
         setSelectedTariffs([]); // Clear selection after approval
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!isFormValid) return;
 
         const newTariff = {
-            ...formData,
-            id: Date.now().toString(),
-            status: 'inactive' as 'active' | 'inactive',
-            approvalStatus: 'pending' as 'approved' | 'pending' | 'rejected',
+            name: formData.name,
+            tariff_index: parseInt(formData.index, 10),
+            tariff_type: formData.type,
+            effective_date: formData.effectiveDate?.toISOString().split("T")[0] ?? "",
+            band: formData.bandCode,
+            tariff_rate: formData.tariffRate,
+            status: true,
         };
 
-        setTariffs([...tariffs, newTariff]);
-        setFormData({
-            name: '',
-            index: '',
-            type: '',
-            effectiveDate: null,
-            bandCode: '',
-            tariffRate: '',
-            status: 'inactive',
-            approvalStatus: 'pending',
-        });
-        setIsDialogOpen(false);
+        const success = await createTariff(newTariff);
+
+        if (success) {
+            const fetchedTariffs = await fetchTariffs();
+            setTariffs(fetchedTariffs);
+            setIsDialogOpen(false);
+
+            setFormData({
+                name: "",
+                index: "",
+                type: "",
+                effectiveDate: null,
+                bandCode: "",
+                tariffRate: "",
+                status: "inactive",
+                approvalStatus: "pending",
+            });
+        }
     };
 
-    const isFormValid = formData.name && formData.index && formData.type &&
-        formData.effectiveDate && formData.bandCode && formData.tariffRate;
+    const isFormValid =
+        formData.name &&
+        formData.index &&
+        formData.type &&
+        formData.effectiveDate &&
+        formData.bandCode &&
+        formData.tariffRate;
 
     return (
-        <div className="font-sans min-h-screen flex flex-col">
+        <div className="flex min-h-screen flex-col font-sans">
             <NotificationBar
                 title="Tariff Management"
                 bgColor="bg-[rgba(22,28,202,1)]"
@@ -119,53 +168,66 @@ export default function TariffManagementPage() {
                 isTopBanner={false}
             />
 
-            <div className="flex-1 p-6 flex flex-col">
-                <div className="flex justify-between items-start mb-8">
+            <div className="flex flex-1 flex-col p-6">
+                <div className="mb-8 flex items-start justify-between">
                     <ContentHeader
-                        title={'Tariff'}
-                        description={'Set and manage tariff plans here'}
+                        title={"Tariff"}
+                        description={"Set and manage tariff plans here"}
                     />
                     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                         <DialogTrigger asChild>
                             <Button
-                                className="bg-[rgba(22,28,202,0.4)] text-white hover:bg-[rgb(22,28,202)] flex items-center gap-2 text-sm h-fit cursor-pointer"
-                                size="default"
+                                className="flex h-fit cursor-pointer items-center gap-2 bg-[rgba(22,28,202,0.4)] px-6 py-2 text-sm text-white hover:bg-[rgb(22,28,202)]"
+                                size={"sm"}
                             >
                                 <CirclePlusIcon strokeWidth={2.75} size={15} />
                                 Add tariff
                             </Button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-[400px] bg-white rounded-lg border h-[425px] border-gray-200">
+                        <DialogContent className="h-fit bg-white sm:max-w-[400px]">
                             <DialogHeader>
-                                <DialogTitle className="text-lg font-semibold">Add Tariff</DialogTitle>
+                                <DialogTitle className="text-lg font-semibold">
+                                    Add Tariff
+                                </DialogTitle>
                             </DialogHeader>
-                            <form onSubmit={handleSubmit} className="flex flex-col gap-6 py-4">
+                            <form
+                                onSubmit={handleSubmit}
+                                className="flex flex-col gap-6 py-4"
+                            >
                                 <div className="flex flex-col gap-2">
-                                    <label htmlFor="name" className="text-sm font-medium text-gray-700">
+                                    <label
+                                        htmlFor="name"
+                                        className="text-sm font-medium text-gray-700"
+                                    >
                                         Tariff Name
                                     </label>
                                     <Input
                                         id="name"
                                         placeholder="Enter tariff name"
-                                        className="border-gray-300 focus:ring-[rgba(22,28,202,1)] focus:border-[rgba(22,28,202,1)]"
+                                        className="border-gray-300 focus:border-[rgba(22,28,202,1)] focus:ring-[rgba(22,28,202,1)]"
                                         value={formData.name}
-                                        onChange={(e) => handleInputChange('name', e.target.value)}
+                                        onChange={(e) => handleInputChange("name", e.target.value)}
                                     />
                                 </div>
                                 <div className="flex flex-row justify-between gap-4">
-                                    <div className="flex flex-col gap-2 w-1/2">
-                                        <label htmlFor="index" className="text-sm font-medium text-gray-700">
+                                    <div className="flex w-1/2 flex-col gap-2">
+                                        <label
+                                            htmlFor="index"
+                                            className="text-sm font-medium text-gray-700"
+                                        >
                                             Tariff Index
                                         </label>
                                         <Select
                                             value={formData.index}
-                                            onValueChange={(value: string) => handleInputChange('index', value)}
+                                            onValueChange={(value: string) =>
+                                                handleInputChange("index", value)
+                                            }
                                         >
-                                            <SelectTrigger className="w-full border-gray-300 focus:ring-[rgba(22,28,202,1)] focus:border-[rgba(22,28,202,1)]">
+                                            <SelectTrigger className="w-full border-gray-300 focus:border-[rgba(22,28,202,1)] focus:ring-[rgba(22,28,202,1)]">
                                                 <SelectValue placeholder="Select tariff ID" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                {['1', '2', '3', '4', '5', '6'].map((id) => (
+                                                {["1", "2", "3", "4", "5", "6"].map((id) => (
                                                     <SelectItem key={id} value={id}>
                                                         {id}
                                                     </SelectItem>
@@ -173,19 +235,24 @@ export default function TariffManagementPage() {
                                             </SelectContent>
                                         </Select>
                                     </div>
-                                    <div className="flex flex-col gap-2 w-1/2">
-                                        <label htmlFor="type" className="text-sm font-medium text-gray-700">
+                                    <div className="flex w-1/2 flex-col gap-2">
+                                        <label
+                                            htmlFor="type"
+                                            className="text-sm font-medium text-gray-700"
+                                        >
                                             Tariff Type
                                         </label>
                                         <Select
                                             value={formData.type}
-                                            onValueChange={(value: string) => handleInputChange('type', value)}
+                                            onValueChange={(value: string) =>
+                                                handleInputChange("type", value)
+                                            }
                                         >
-                                            <SelectTrigger className="w-full border-gray-300 focus:ring-[rgba(22,28,202,1)] focus:border-[rgba(22,28,202,1)]">
+                                            <SelectTrigger className="w-full border-gray-300 focus:border-[rgba(22,28,202,1)] focus:ring-[rgba(22,28,202,1)]">
                                                 <SelectValue placeholder="Select tariff type" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                {['R1', 'R2', 'R3', 'C1', 'C2'].map((type) => (
+                                                {["R1", "R2", "R3", "C1", "C2"].map((type) => (
                                                     <SelectItem key={type} value={type}>
                                                         {type}
                                                     </SelectItem>
@@ -199,45 +266,90 @@ export default function TariffManagementPage() {
                                         Tariff Effective Date
                                     </label>
                                     <TariffDatePicker
-                                        value={formData.effectiveDate instanceof Date ? formData.effectiveDate.toISOString() : undefined}
+                                        value={
+                                            formData.effectiveDate instanceof Date
+                                                ? formData.effectiveDate.toISOString()
+                                                : undefined
+                                        }
                                         onChange={(date) => {
-                                            const currentDate = formData.effectiveDate instanceof Date ? formData.effectiveDate.toISOString() : null;
+                                            const currentDate =
+                                                formData.effectiveDate instanceof Date
+                                                    ? formData.effectiveDate.toISOString()
+                                                    : null;
                                             if (currentDate !== date) {
-                                                handleInputChange('effectiveDate', date ? new Date(date) : null);
+                                                handleInputChange(
+                                                    "effectiveDate",
+                                                    date ? new Date(date) : null,
+                                                );
                                             }
                                         }}
                                     />
                                 </div>
                                 <div className="flex flex-col gap-2">
-                                    <label htmlFor="band-code" className="text-sm font-medium text-gray-700">
+                                    <label
+                                        htmlFor="band-code"
+                                        className="text-sm font-medium text-gray-700"
+                                    >
                                         Band Code
                                     </label>
                                     <Select
                                         value={formData.bandCode}
-                                        onValueChange={(value: string) => handleInputChange('bandCode', value)}
+                                        onValueChange={(value: string) =>
+                                            handleInputChange("bandCode", value)
+                                        }
+                                        disabled={isBandsLoading}
                                     >
-                                        <SelectTrigger className="w-full border-gray-300 focus:ring-[rgba(22,28,202,1)] focus:border-[rgba(22,28,202,1)]">
-                                            <SelectValue placeholder="Select band code" />
+                                        <SelectTrigger
+                                            className={cn(
+                                                "w-full border-gray-300 focus:border-[rgba(22,28,202,1)] focus:ring-[rgba(22,28,202,1)]",
+                                                bandsError && "border-red-500",
+                                            )}
+                                        >
+                                            <SelectValue
+                                                placeholder={
+                                                    isBandsLoading
+                                                        ? "Loading bands..."
+                                                        : bandsError
+                                                            ? "Failed to load bands"
+                                                            : "Select band code"
+                                                }
+                                            />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {['Band A', 'Band B', 'Band C', 'Band D', 'Band E'].map((band) => (
-                                                <SelectItem key={band} value={band}>
-                                                    {band}
+                                            {bands.length > 0 ? (
+                                                bands.map((band) => (
+                                                    <SelectItem key={band.id} value={band.name}>
+                                                        {band.name}
+                                                    </SelectItem>
+                                                ))
+                                            ) : (
+                                                <SelectItem value="" disabled>
+                                                    {bandsError
+                                                        ? "Error loading bands"
+                                                        : "No bands available"}
                                                 </SelectItem>
-                                            ))}
+                                            )}
                                         </SelectContent>
                                     </Select>
+                                    {bandsError && (
+                                        <span className="text-sm text-red-500">{bandsError}</span>
+                                    )}
                                 </div>
                                 <div className="flex flex-col gap-2">
-                                    <label htmlFor="tariff-rate" className="text-sm font-medium text-gray-700">
+                                    <label
+                                        htmlFor="tariff-rate"
+                                        className="text-sm font-medium text-gray-700"
+                                    >
                                         Tariff Rate
                                     </label>
                                     <Input
                                         id="tariff-rate"
                                         placeholder="Enter tariff rate"
-                                        className="border-gray-300 focus:ring-[rgba(22,28,202,1)] focus:border-[rgba(22,28,202,1)]"
+                                        className="border-gray-300 focus:border-[rgba(22,28,202,1)] focus:ring-[rgba(22,28,202,1)]"
                                         value={formData.tariffRate}
-                                        onChange={(e) => handleInputChange('tariffRate', e.target.value)}
+                                        onChange={(e) =>
+                                            handleInputChange("tariffRate", e.target.value)
+                                        }
                                     />
                                 </div>
                                 <div className="flex justify-end gap-3">
@@ -245,13 +357,13 @@ export default function TariffManagementPage() {
                                         variant="secondary"
                                         type="button"
                                         onClick={() => setIsDialogOpen(false)}
-                                        className="text-gray-700 border-gray-300"
+                                        className="border-gray-300 text-gray-700"
                                     >
                                         Cancel
                                     </Button>
                                     <Button
                                         type="submit"
-                                        className={`bg-[rgba(22,28,202,1)] text-white hover:bg-[rgba(22,28,202,0.9)] ${isFormValid ? '' : 'opacity-40 cursor-not-allowed'}`}
+                                        className={`bg-[rgba(22,28,202,1)] text-white hover:bg-[rgba(22,28,202,0.9)] ${isFormValid ? "" : "cursor-not-allowed opacity-40"}`}
                                         disabled={!isFormValid}
                                     >
                                         Submit
@@ -262,22 +374,26 @@ export default function TariffManagementPage() {
                     </Dialog>
                 </div>
 
-                <div className="flex justify-between items-center mb-8">
-                    <div className="flex gap-10 items-center mb-8">
-                        <div className="flex border border-[rgba(228,231,236,1)] gap-2 rounded-md px-3 py-2 w-[219px]">
-                            <Search size={14} strokeWidth={2.75} className="text-gray-500 ml-2" />
+                <div className="mb-8 flex items-center justify-between">
+                    <div className="mb-8 flex items-center gap-10">
+                        <div className="flex w-[219px] gap-2 rounded-md border border-[rgba(228,231,236,1)] px-3 py-2">
+                            <Search
+                                size={14}
+                                strokeWidth={2.75}
+                                className="ml-2 text-gray-500"
+                            />
                             <input
                                 type="text"
                                 placeholder="Search by name, ID, cont..."
-                                className="outline-none border-none text-sm flex-grow w-full text-[rgba(95,95,95,1)] placeholder-[rgba(95,95,95,1)]"
+                                className="w-full flex-grow border-none text-sm text-[rgba(95,95,95,1)] placeholder-[rgba(95,95,95,1)] outline-none"
                             />
                         </div>
                         <div className="flex gap-2">
-                            <Button className="text-gray-700 border border-[rgba(228,231,236,1)] text-sm rounded-md px-4 py-2 focus:outline-none flex items-center gap-2 cursor-pointer">
+                            <Button className="flex cursor-pointer items-center gap-2 rounded-md border border-[rgba(228,231,236,1)] px-4 py-2 text-sm text-gray-700 focus:outline-none">
                                 <ListFilter size={14} />
                                 Filter
                             </Button>
-                            <Button className="text-gray-700 border border-[rgba(228,231,236,1)] text-sm rounded-md px-4 py-2 focus:outline-none flex items-center gap-2 cursor-pointer">
+                            <Button className="flex cursor-pointer items-center gap-2 rounded-md border border-[rgba(228,231,236,1)] px-4 py-2 text-sm text-gray-700 focus:outline-none">
                                 <ArrowUpDown size={14} />
                                 Sort
                             </Button>
@@ -285,8 +401,8 @@ export default function TariffManagementPage() {
                     </div>
                     <div className="flex gap-5">
                         <Button
-                            variant={'outline'}
-                            className={`border-[rgb(34,194,94)] text-[rgb(34,194,94)] font-semibold text-md gap-2 py-5 px-8 ${selectedTariffs.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            variant={"outline"}
+                            className={`text-md gap-2 border-[rgb(34,194,94)] px-8 py-5 font-semibold text-[rgb(34,194,94)] ${selectedTariffs.length === 0 ? "cursor-not-allowed opacity-50" : ""}`}
                             onClick={handleBulkApprove}
                             disabled={selectedTariffs.length === 0}
                         >
@@ -294,8 +410,8 @@ export default function TariffManagementPage() {
                             Bulk Approve
                         </Button>
                         <Button
-                            variant={'default'}
-                            className="bg-[rgba(22,28,202,1)] text-[rgba(254,254,254,1)] font-semibold text-md gap-2 py-5 px-8"
+                            variant={"default"}
+                            className="text-md gap-2 bg-[rgba(22,28,202,1)] px-8 py-5 font-semibold text-[rgba(254,254,254,1)]"
                         >
                             <SquareArrowOutUpRight size={14} />
                             Export
@@ -303,17 +419,25 @@ export default function TariffManagementPage() {
                     </div>
                 </div>
 
-                <div className="flex-1 bg-white rounded-lg border border-gray-200">
-                    <TariffTable
-                        tariffs={tariffs}
-                        onUpdateTariff={handleUpdateTariff}
-                        selectedTariffs={selectedTariffs}
-                        setSelectedTariffs={setSelectedTariffs}
-                    />
+                <div className="flex-1 rounded-lg border border-gray-200 bg-white">
+                    {isLoading ? (
+                        <div className="flex items-center justify-center p-8">
+                            <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-gray-900"></div>
+                        </div>
+                    ) : (
+                        <TariffTable
+                            tariffs={tariffs}
+                            onUpdateTariff={handleUpdateTariff}
+                            selectedTariffs={selectedTariffs}
+                            setSelectedTariffs={setSelectedTariffs}
+                        />
+                    )}
                 </div>
             </div>
 
-            <Footer/>
+            <div className="mt-auto border-t border-gray-200 py-3 text-center text-gray-500">
+                © 2025, Powered by MEMMCOL
+            </div>
         </div>
     );
-};
+}

@@ -1,12 +1,7 @@
-'use client';
+"use client";
 
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { type Tariff } from "@/service/tarriff-service";
+// import { format } from "date-fns";
 import {
   Table,
   TableBody,
@@ -14,247 +9,189 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { Checkbox } from '@/components/ui/checkbox';
-import { format } from 'date-fns';
+} from "@/components/ui/table";
+import { Checkbox } from "@/components/ui/checkbox";
+import { MoreVertical } from "lucide-react";
 import {
-  Ban,
-  Check,
-  CircleAlert,
-  CircleX,
-  Edit2,
-  EllipsisVertical,
-} from 'lucide-react';
-import type { Dispatch, SetStateAction } from 'react';
-import { useState } from 'react';
-import { DeactivateTariffDialog } from './deactivate-tarrif-dialog';
-import { EditTariffDialog } from './tarrif-edit-dialog';
-
-interface Tariff {
-  id: string;
-  name: string;
-  index: string;
-  type: string;
-  effectiveDate: Date | null;
-  bandCode: string;
-  tariffRate: string;
-  status: 'active' | 'inactive';
-  approvalStatus: 'approved' | 'pending' | 'rejected';
-}
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { useState } from "react";
 
 interface TariffTableProps {
   tariffs: Tariff[];
   onUpdateTariff: (id: string, updates: Partial<Tariff>) => void;
   selectedTariffs: string[];
-  setSelectedTariffs: Dispatch<SetStateAction<string[]>>;
+  setSelectedTariffs: (ids: string[]) => void;
 }
 
-export const TariffTable = ({
+export function TariffTable({
   tariffs,
   onUpdateTariff,
   selectedTariffs,
   setSelectedTariffs,
-}: TariffTableProps) => {
-  const [dialogState, setDialogState] = useState<{
-    type: 'edit' | 'deactivate' | 'approve' | 'reject' | null;
-    tariff: Tariff | null;
-  }>({ type: null, tariff: null });
+}: TariffTableProps) {
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    description: string;
+    action: () => void;
+  }>({
+    isOpen: false,
+    title: "",
+    description: "",
+    action: () => console.log("No action specified"),
+  });
 
-  const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      setSelectedTariffs(tariffs.map((tariff) => tariff.id));
-    } else {
-      setSelectedTariffs([]);
-    }
-  };
-
-  const handleSelectTariff = (tariffId: string, checked: boolean) => {
-    if (checked) {
-      setSelectedTariffs((prev) => [...prev, tariffId]);
-    } else {
-      setSelectedTariffs((prev) => prev.filter((id) => id !== tariffId));
-    }
-  };
-
-  const handleAction = (
-    type: 'edit' | 'deactivate' | 'approve' | 'reject',
-    tariff: Tariff
-  ) => {
-    if (type === 'approve') {
-      onUpdateTariff(tariff.id, {
-        approvalStatus: 'approved',
-        status: 'active',
-      });
-    } else if (type === 'reject') {
-      onUpdateTariff(tariff.id, {
-        approvalStatus: 'rejected',
-        status: 'inactive',
-      });
-    } else {
-      setDialogState({ type, tariff });
-    }
-  };
-
-  const handleCloseDialog = () => {
-    setDialogState({ type: null, tariff: null });
-  };
-
-  const handleSave = (updatedTariff: Omit<Tariff, 'id' | 'status' | 'approvalStatus'>) => {
-    if (dialogState.tariff) {
-      onUpdateTariff(dialogState.tariff.id, {
-        ...updatedTariff,
-        status: dialogState.tariff.status,
-        approvalStatus: dialogState.tariff.approvalStatus,
-      });
-    }
-    handleCloseDialog();
-  };
-
-  const handleDeactivate = () => {
-    if (dialogState.tariff) {
-      onUpdateTariff(dialogState.tariff.id, {
-        status: 'inactive',
-        approvalStatus: 'rejected',
-      });
-    }
-    handleCloseDialog();
-  };
-
-  if (tariffs.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center p-8 text-gray-500 bg-white rounded-lg border border-gray-200">
-        <CircleAlert className="h-8 w-8 mb-2" />
-        <p className="text-sm font-medium">No tariff records found</p>
-      </div>
+  const toggleSelection = (id: string) => {
+    setSelectedTariffs(
+      selectedTariffs.includes(id)
+        ? selectedTariffs.filter((selectedId) => selectedId !== id)
+        : [...selectedTariffs, id],
     );
-  }
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedTariffs.length === tariffs.length) {
+      setSelectedTariffs([]);
+    } else {
+      setSelectedTariffs(tariffs.map((tariff) => tariff.id?.toString() ?? ""));
+    }
+  };
+
+  const handleStatusChange = (tariffId: string, newStatus: boolean) => {
+    setConfirmDialog({
+      isOpen: true,
+      title: `${newStatus ? "Activate" : "Deactivate"} Tariff`,
+      description: `Are you sure you want to ${newStatus ? "activate" : "deactivate"} this tariff?`,
+      action: () => {
+        onUpdateTariff(tariffId, { status: newStatus });
+        setConfirmDialog((prev) => ({ ...prev, isOpen: false }));
+      },
+    });
+  };
+
+  const handleApprovalChange = (
+    tariffId: string,
+    newStatus: "Approved" | "Rejected",
+  ) => {
+    setConfirmDialog({
+      isOpen: true,
+      title: `${newStatus} Tariff`,
+      description: `Are you sure you want to ${newStatus.toLowerCase()} this tariff?`,
+      action: () => {
+        onUpdateTariff(tariffId, { approve_status: newStatus });
+        setConfirmDialog((prev) => ({ ...prev, isOpen: false }));
+      },
+    });
+  };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200">
+    <>
       <Table>
         <TableHeader>
-          <TableRow className="bg-gray-50">
+          <TableRow>
             <TableHead className="w-[50px]">
               <Checkbox
-                checked={selectedTariffs.length === tariffs.length && tariffs.length > 0}
-                onCheckedChange={handleSelectAll}
-                className="border-gray-300"
+                checked={
+                  tariffs.length > 0 &&
+                  selectedTariffs.length === tariffs.length
+                }
+                onCheckedChange={toggleSelectAll}
               />
             </TableHead>
-            <TableHead className="text-gray-600 font-semibold">S/N</TableHead>
-            <TableHead className="text-gray-600 font-semibold">Tariff Name</TableHead>
-            <TableHead className="text-gray-600 font-semibold">Tariff Index</TableHead>
-            <TableHead className="text-gray-600 font-semibold">Tariff Type</TableHead>
-            <TableHead className="text-gray-600 font-semibold">Band Code</TableHead>
-            <TableHead className="text-gray-600 font-semibold">Effective Date</TableHead>
-            <TableHead className="text-gray-600 font-semibold">Rate</TableHead>
-            <TableHead className="text-gray-600 font-semibold">Approval Status</TableHead>
-            <TableHead className="text-gray-600 font-semibold">Status</TableHead>
-            <TableHead className="text-right text-gray-600 font-semibold">Actions</TableHead>
+            <TableHead>Name</TableHead>
+            <TableHead>Index</TableHead>
+            <TableHead>Type</TableHead>
+            <TableHead>Effective Date</TableHead>
+            <TableHead>Band</TableHead>
+            <TableHead>Rate</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Approval Status</TableHead>
+            <TableHead>Created At</TableHead>
+            <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {tariffs.map((tariff, index) => (
-            <TableRow
-              key={tariff.id}
-              className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}
-            >
+          {tariffs.map((tariff) => (
+            <TableRow key={tariff.id}>
               <TableCell>
                 <Checkbox
-                  checked={selectedTariffs.includes(tariff.id)}
-                  onCheckedChange={(checked) => handleSelectTariff(tariff.id, checked as boolean)}
-                  className="border-gray-300"
+                  checked={selectedTariffs.includes(
+                    tariff.id?.toString() ?? "",
+                  )}
+                  onCheckedChange={() =>
+                    toggleSelection(tariff.id?.toString() ?? "")
+                  }
                 />
               </TableCell>
-              <TableCell className="text-gray-600">{String(index + 1).padStart(2, '0')}</TableCell>
-              <TableCell className="font-medium text-gray-900">{tariff.name}</TableCell>
-              <TableCell className="text-gray-600">{tariff.index}</TableCell>
-              <TableCell className="text-gray-600">{tariff.type}</TableCell>
-              <TableCell className="text-gray-600">{tariff.bandCode}</TableCell>
-              <TableCell className="text-gray-600">
-                {tariff.effectiveDate
-                  ? format(tariff.effectiveDate, 'MMM dd, yyyy')
-                  : 'N/A'}
-              </TableCell>
-              <TableCell className="text-gray-600">{tariff.tariffRate}</TableCell>
+              <TableCell>{tariff.name}</TableCell>
+              <TableCell>{tariff.tariff_index}</TableCell>
+              <TableCell>{tariff.tariff_type}</TableCell>
+              <TableCell>{tariff.effective_date}</TableCell>
+              <TableCell>{tariff.band}</TableCell>
+              <TableCell>{tariff.tariff_rate}</TableCell>
+              <TableCell>{tariff.status ? "Active" : "Inactive"}</TableCell>
               <TableCell>
-                <div className="flex items-center">
-                  {tariff.approvalStatus === 'approved' && (
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                      Approved
-                    </span>
-                  )}
-                  {tariff.approvalStatus === 'pending' && (
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                      Pending
-                    </span>
-                  )}
-                  {tariff.approvalStatus === 'rejected' && (
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                      Rejected
-                    </span>
-                  )}
-                </div>
+                <span
+                  className={`capitalize ${
+                    tariff.approve_status === "Approved"
+                      ? "text-green-600"
+                      : tariff.approve_status === "Rejected"
+                        ? "text-red-600"
+                        : "text-yellow-600"
+                  }`}
+                >
+                  {tariff.approve_status}
+                </span>
               </TableCell>
               <TableCell>
-                <div className="flex items-center">
-                  {tariff.status === 'active' ? (
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                      Active
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                      Inactive
-                    </span>
-                  )}
-                </div>
+                {" "}
+                {new Date(tariff.created_at!).toLocaleDateString()}
               </TableCell>
-              <TableCell className="text-right">
+              <TableCell>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      className="h-8 w-8 border border-gray-200 hover:bg-gray-100 p-2"
-                    >
+                    <Button variant="ghost" className="h-8 w-8 p-0">
                       <span className="sr-only">Open menu</span>
-                      <EllipsisVertical size={14} className="text-gray-500" />
+                      <MoreVertical className="h-4 w-4" size={12} />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="bg-white border-gray-200">
-                    {tariff.approvalStatus !== 'approved' && (
+                  <DropdownMenuContent align="end">
+                    {tariff.approve_status !== "Approved" && (
                       <DropdownMenuItem
-                        onClick={() => handleAction('approve', tariff)}
-                        className="text-gray-800 hover:bg-gray-100 focus:bg-gray-100"
+                        onClick={() =>
+                          handleApprovalChange(tariff.id.toString(), "Approved")
+                        }
+                        className="text-green-600"
                       >
-                        <Check size={14} className="text-green-600 mr-2" />
-                        Approve tariff
+                        Approve Tariff
                       </DropdownMenuItem>
                     )}
-                    <DropdownMenuItem
-                      onClick={() => handleAction('edit', tariff)}
-                      className="text-gray-800 hover:bg-gray-100 focus:bg-gray-100"
-                    >
-                      <Edit2 size={14} className="text-blue-600 mr-2" />
-                      Edit details
-                    </DropdownMenuItem>
-                    {tariff.approvalStatus !== 'rejected' && (
+                    {tariff.approve_status !== "Rejected" && (
                       <DropdownMenuItem
-                        onClick={() => handleAction('reject', tariff)}
-                        className="text-gray-800 hover:bg-gray-100 focus:bg-gray-100"
+                        onClick={() =>
+                          handleApprovalChange(tariff.id.toString(), "Rejected")
+                        }
+                        className="text-red-600"
                       >
-                        <CircleX size={14} className="text-red-600 mr-2" />
                         Reject Tariff
                       </DropdownMenuItem>
                     )}
-                    {tariff.status !== 'inactive' && (
-                      <DropdownMenuItem
-                        onClick={() => handleAction('deactivate', tariff)}
-                        className="text-gray-800 hover:bg-gray-100 focus:bg-gray-100"
-                      >
-                        <Ban size={14} className="text-red-600 mr-2" />
-                        Deactivate tariff
-                      </DropdownMenuItem>
-                    )}
+                    <DropdownMenuItem
+                      onClick={() =>
+                        handleStatusChange(tariff.id.toString(), !tariff.status)
+                      }
+                      className={
+                        tariff.status ? "text-red-600" : "text-green-600"
+                      }
+                    >
+                      {tariff.status ? "Deactivate" : "Activate"}
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </TableCell>
@@ -263,22 +200,13 @@ export const TariffTable = ({
         </TableBody>
       </Table>
 
-      {dialogState.type === 'edit' && dialogState.tariff && (
-        <EditTariffDialog
-          open={dialogState.type === 'edit'}
-          onOpenChange={handleCloseDialog}
-          tariff={dialogState.tariff}
-          onSave={handleSave}
-        />
-      )}
-
-      {dialogState.type === 'deactivate' && dialogState.tariff && (
-        <DeactivateTariffDialog
-          open={dialogState.type === 'deactivate'}
-          onOpenChange={handleCloseDialog}
-          onConfirm={handleDeactivate}
-        />
-      )}
-    </div>
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        onClose={() => setConfirmDialog((prev) => ({ ...prev, isOpen: false }))}
+        onConfirm={confirmDialog.action}
+        title={confirmDialog.title}
+        description={confirmDialog.description}
+      />
+    </>
   );
-};
+}

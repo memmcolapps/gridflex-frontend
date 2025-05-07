@@ -1,19 +1,20 @@
+'use client';
+
 import { useState } from 'react';
-import { Line } from 'react-chartjs-2';
 import {
-    Chart as ChartJS,
-    CategoryScale,
-    LinearScale,
-    PointElement,
-    LineElement,
+    LineChart,
+    Line,
+    XAxis,
+    YAxis,
+    CartesianGrid,
     Tooltip,
-} from 'chart.js';
+    ResponsiveContainer,
+} from 'recharts';
 import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { chartData } from '@/lib/dashboardData';
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip);
-
-export const MetersInstalledChart: React.FC = () => {
+export const MetersInstalledChart = () => {
     const [activeChart, setActiveChart] = useState<'monthly' | 'quarterly' | 'yearly'>('monthly');
 
     const dataByType = {
@@ -34,86 +35,84 @@ export const MetersInstalledChart: React.FC = () => {
     const currentData = dataByType[activeChart];
 
     return (
-        <section className="bg-white p-5 rounded-xl shadow-xs border border-gray-100 w-[1000px]">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
-                <h2 className="text-lg font-semibold text-gray-800 mb-2 md:mb-0">Meters Installed Over Time</h2>
-                <div className="flex gap-1">
+        <Card className="w-full max-w-[1000px] border-none bg-white shadow-xs border-gray-100">
+            <CardHeader className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+                <CardTitle>Meters Installed Over Time</CardTitle>
+                <div className="flex gap-2">
                     <Button
+                        variant={activeChart === 'monthly' ? 'secondary' : 'ghost'}
+                        size="sm"
                         onClick={() => setActiveChart('monthly')}
-                        className={`px-3 py-1 text-sm rounded-lg ${activeChart === 'monthly' ? 'bg-blue-50 text-blue-600' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
-                            }`}
                     >
                         Monthly
                     </Button>
                     <Button
+                        variant={activeChart === 'quarterly' ? 'secondary' : 'ghost'}
+                        size="sm"
                         onClick={() => setActiveChart('quarterly')}
-                        className={`px-3 py-1 text-sm rounded-lg ${activeChart === 'quarterly' ? 'bg-blue-50 text-blue-600' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
-                            }`}
                     >
                         Quarterly
                     </Button>
                     <Button
+                        variant={activeChart === 'yearly' ? 'secondary' : 'ghost'}
+                        size="sm"
                         onClick={() => setActiveChart('yearly')}
-                        className={`px-3 py-1 text-sm rounded-lg ${activeChart === 'yearly' ? 'bg-blue-50 text-blue-600' : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
-                            }`}
                     >
                         Yearly
                     </Button>
                 </div>
-            </div>
-            <div className="min-h-[16rem]">
-                {typeof window !== 'undefined' && (
-                    <Line
-                        data={{
-                            labels: currentData.map((item) => item.month),
-                            datasets: [
-                                {
-                                    label: 'Meters Installed',
-                                    data: currentData.map((item) => item.value),
-                                    borderColor: '#3B82F6',
-                                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                                    borderWidth: 2,
-                                    pointBackgroundColor: '#3B82F6',
-                                    pointBorderColor: '#fff',
-                                    pointBorderWidth: 2,
-                                    pointRadius: 4,
-                                    pointHoverRadius: 6,
-                                    tension: 0.1,
-                                    fill: true,
-                                },
-                            ],
-                        }}
-                        options={{
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: { display: false },
-                                tooltip: {
-                                    backgroundColor: '#fff',
-                                    titleColor: '#1f2937',
-                                    bodyColor: '#1f2937',
-                                    borderColor: '#e2e8f0',
-                                    borderWidth: 1,
-                                    padding: 12,
-                                    callbacks: {
-                                        label: (context) => `${context.parsed.y} meters`,
-                                    },
-                                },
-                            },
-                            scales: {
-                                x: {
-                                    grid: { display: false },
-                                    ticks: { color: '#6b7280' },
-                                },
-                                y: {
-                                    grid: { color: '#f0f0f0', lineWidth: 0 },
-                                    ticks: { color: '#6b7280' },
-                                },
-                            },
-                        }}
-                    />
-                )}
-            </div>
-        </section>
+            </CardHeader>
+            <CardContent className="h-[400px]">
+                <ResponsiveContainer width="100%" height="100%">
+                    <LineChart
+                        data={currentData}
+                        margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
+                    >
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+                        <XAxis
+                            dataKey="month"
+                            tick={{ fill: '#6b7280' }}
+                            tickMargin={12}
+                        />
+                        <YAxis
+                            tick={{ fill: '#6b7280' }}
+                            tickFormatter={(value) => `${value}`}
+                        />
+                        <Tooltip
+                            content={({ active, payload }) => {
+                                if (!active || !payload?.length) return null;
+                                return (
+                                    <div className="bg-white p-3 border rounded-md shadow-sm">
+                                        <p className="font-medium">{payload?.[0]?.payload?.month ?? 'N/A'}</p>
+                                        <p className="text-sm">
+                                            {payload[0]?.value ?? 'N/A'} meters installed
+                                        </p>
+                                    </div>
+                                );
+                            }}
+                        />
+                        <Line
+                            type="monotone"
+                            dataKey="value"
+                            stroke="#3B82F6"
+                            strokeWidth={2}
+                            dot={{
+                                stroke: '#fff',
+                                strokeWidth: 2,
+                                r: 4,
+                                fill: '#3B82F6',
+                            }}
+                            activeDot={{
+                                r: 6,
+                                stroke: '#fff',
+                                strokeWidth: 2,
+                                fill: '#3B82F6',
+                            }}
+                            className='cursor-pointer'
+                        />
+                    </LineChart>
+                </ResponsiveContainer>
+            </CardContent>
+        </Card>
     );
 };
