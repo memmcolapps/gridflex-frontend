@@ -230,7 +230,7 @@ function Calendar({
             setNavView={setNavView}
             {...props}
           >
-            {children} {/* Pass children by nesting them */}
+            {children}
           </MonthGrid>
         ),
         ...components,

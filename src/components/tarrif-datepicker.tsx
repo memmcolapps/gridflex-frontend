@@ -51,7 +51,7 @@ export function TariffDatePicker({ value, onChange }: TariffDatePickerProps) {
                 className="flex w-auto flex-col space-y-2 p-2"
             >
                 <Select
-                    onValueChange={(value) =>
+                    onValueChange={(value: string) =>
                         setDate(addDays(new Date(), parseInt(value)))
                     }
                 >

@@ -1,0 +1,78 @@
+// src/lib/dashboardData.ts
+export const chartData = [
+    { month: 'Jan', value: 70 },
+    { month: 'Feb', value: 60 },
+    { month: 'Mar', value: 35 },
+    { month: 'Apr', value: 30 },
+    { month: 'May', value: 40 },
+    { month: 'Jun', value: 15 },
+    { month: 'Jul', value: 20 },
+    { month: 'Aug', value: 60 },
+    { month: 'Sep', value: 95 },
+    { month: 'Oct', value: 90 },
+    { month: 'Nov', value: 75 },
+    { month: 'Dec', value: 80 },
+];
+
+export const statusCards = [
+    {
+        title: 'Total Meters',
+        value: '4,200',
+        change: '+11.01%',
+        changeColor: 'text-black',
+        bgColor: 'bg-[rgba(219,230,254,1)]',
+        borderColor: 'border-blue-100',
+        textColor: 'text-black',
+        icon: 'CircleCheckBig',
+        iconBgColor: 'bg-[rgba(191,211,254,1)]',
+        iconColor: 'text-[rgba(22,28,202,1)]',
+    },
+    {
+        title: 'Blocked',
+        value: '400',
+        change: '-1.01%',
+        changeColor: 'text-black',
+        bgColor: 'bg-[rgb(254,246,195)]',
+        borderColor: 'border-yellow-100',
+        textColor: 'text-black',
+        icon: 'CircleAlert',
+        iconBgColor: 'bg-[rgba(254,231,138,1)]',
+        iconColor: 'text-[rgba(235,161,62,1)]',
+    },
+    {
+        title: 'Deactivated',
+        value: '320',
+        change: '-2.08%',
+        changeColor: 'text-black',
+        bgColor: 'bg-[rgb(216,219,223)]',
+        borderColor: 'border-gray-200',
+        textColor: 'text-black',
+        icon: 'CircleX',
+        iconBgColor: 'bg-[rgba(182,186,195,1)]',
+        iconColor: 'text-[rgb(37,39,44)]',
+    },
+    {
+        title: 'Allocated',
+        value: '1,200',
+        change: '+2.20%',
+        changeColor: 'text-black',
+        bgColor: 'bg-emerald-100',
+        borderColor: 'border-green-100',
+        textColor: 'text-black',
+        icon: 'CircleCheckBig',
+        iconBgColor: 'bg-emerald-200',
+        iconColor: 'text-[rgba(34,197,94,1)]',
+    },
+];
+
+export const manufacturerData = {
+    series: [20, 10, 5, 5, 5, 5, 5, 5, 5, 15, 5, 5, 5, 5, 5, 5],
+    labels: ['Memmcol', 'Google', 'Amazon', 'Prime', 'Netflix', 'CN', 'Nick', 'Disney', 'Shop'],
+    colors: ['#C9E4DE', '#769FCD', '#5D8AA8', '#A4C3B2', '#A3C4F3', '#FFE0AC', '#FFBCBC', '#4CAF50', '#BFD8B8', '#FFE0AC', '#EDE7B1', '#BFD3FE', '#FFBCBC', '#A4C3B2', '#00BCD4', '#8BC34A', '#DDBDD5'],
+};
+
+export const meterStatusData = {
+    series: [75, 25],
+    labels: ['Active', 'Inactive'],
+    colors: ['#BFD3FE', '#60A5FA'],
+};
