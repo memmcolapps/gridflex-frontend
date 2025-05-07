@@ -4,7 +4,7 @@ import type React from "react";
 
 import { useState } from "react";
 import Link from "next/link";
-import { EyeIcon, EyeOffIcon } from "lucide-react";
+import { ArrowLeftIcon, EyeIcon, EyeOffIcon } from "lucide-react";
 
 type FormType = "signin" | "resetpassword";
 
@@ -121,6 +121,21 @@ export function AuthForm({
       >
         {isSubmitting ? "Signing in..." : "Sign Up"}
       </button>
+
+      {!isSignInForm && (
+        <div className="flex justify-center">
+          <Link
+            href="/login"
+            className="flex items-center space-x-1 rounded bg-transparent px-2 py-1.5 text-gray-700 focus:outline-none"
+          >
+            <ArrowLeftIcon
+              className="h-4 w-5 text-[#161CCA]"
+              aria-hidden="true"
+            />
+            <span>Back to Login</span>
+          </Link>
+        </div>
+      )}
     </form>
   );
 }
