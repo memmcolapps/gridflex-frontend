@@ -15,7 +15,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export function Navbar() {
   return (
-    <header className="sticky top-0 z-30 flex h-18 w-full items-center justify-between border-b border-gray-200 px-8 text-black">
+    <header className="sticky top-0 z-30 flex h-18 w-full items-center justify-between border-b 
+     border-gray-200 px-8 text-black">
       <div className="flex items-center gap-2 md:gap-4">
         <div className="relative flex-1 md:w-80 md:flex-none"></div>
       </div>
