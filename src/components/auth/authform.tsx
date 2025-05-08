@@ -119,7 +119,7 @@ export function AuthForm({
             : "bg-blue-600 hover:bg-blue-700"
         }`}
       >
-        {isSubmitting ? "Signing in..." : "Sign Up"}
+        {isSubmitting ? "Signing in..." : "Sign In"}
       </button>
 
       {!isSignInForm && (
