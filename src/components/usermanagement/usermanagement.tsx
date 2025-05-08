@@ -171,11 +171,11 @@ export default function UserManagement() {
             user.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    const handleDeactivateUser = (userId: string) => {
-        setUsers(users.map((user) =>
-            user.id === userId ? { ...user, status: 'inactive' } : user
-        ));
-    };
+    // const handleDeactivateUser = (userId: string) => {
+    //     setUsers(users.map((user) =>
+    //         user.id === userId ? { ...user, status: 'inactive' } : user
+    //     ));
+    // };
 
     const [rowsPerPage, setRowsPerPage] = useState(12);
     const [currentPage, setCurrentPage] = useState(1);

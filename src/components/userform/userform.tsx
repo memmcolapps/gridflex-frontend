@@ -189,7 +189,7 @@ export default function UserForm({ mode, user, onSave, triggerButton, isOpen: co
         <Dialog open={isOpen} onOpenChange={handleOpenChange}>
             {mode === 'add' && (
                 <DialogTrigger asChild>
-                    {triggerButton || (
+                    {triggerButton ?? (
                         <Button className="flex items-center gap-2 text-black" variant="default">
                             <Plus className="h-4 w-4" />
                             Add User
