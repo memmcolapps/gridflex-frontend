@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { MoreVertical } from "lucide-react";
+import { Ban, CircleCheck, CircleX, MoreVertical } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -135,16 +135,21 @@ export function TariffTable({
               <TableCell>{tariff.effective_date}</TableCell>
               <TableCell>{tariff.band}</TableCell>
               <TableCell>{tariff.tariff_rate}</TableCell>
-              <TableCell>{tariff.status ? "Active" : "Inactive"}</TableCell>
               <TableCell>
                 <span
-                  className={`capitalize ${
-                    tariff.approve_status === "Approved"
-                      ? "text-green-600"
-                      : tariff.approve_status === "Rejected"
-                        ? "text-red-600"
-                        : "text-yellow-600"
-                  }`}
+                  className={`py-0.6 px-2.5 rounded-xl ${tariff.status ? "bg-[#eef5f0] text-[#22C55E]" : "bg-[#FBE9E9] text-[#F75555]"}`}
+                >
+                  {tariff.status ? "Active" : "Inactive"}
+                </span>
+              </TableCell>
+              <TableCell>
+                <span
+                  className={`py-0.6 px-2.5 rounded-xl capitalize ${tariff.approve_status === "Approved"
+                    ? "text-[#225BFF] bg-[#E9F6FF] "
+                    : tariff.approve_status === "Rejected"
+                      ? "text-[#F75555] bg-[#FBE9E9]"
+                      : "text-[#FACC15] bg-[#FFF5EA]"
+                    }`}
                 >
                   {tariff.approve_status}
                 </span>
@@ -161,24 +166,27 @@ export function TariffTable({
                       <MoreVertical className="h-4 w-4" size={12} />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
+                  <DropdownMenuContent align="end" className="bg-white">
                     {tariff.approve_status !== "Approved" && (
                       <DropdownMenuItem
                         onClick={() =>
                           handleApprovalChange(tariff.id.toString(), "Approved")
                         }
-                        className="text-green-600"
+                        className="py-3 px-3 "
                       >
+                        <CircleCheck size={13} />
                         Approve Tariff
                       </DropdownMenuItem>
                     )}
+
                     {tariff.approve_status !== "Rejected" && (
                       <DropdownMenuItem
                         onClick={() =>
                           handleApprovalChange(tariff.id.toString(), "Rejected")
                         }
-                        className="text-red-600"
+                        className="py-3 px-3"
                       >
+                        <CircleX size={13} />
                         Reject Tariff
                       </DropdownMenuItem>
                     )}
@@ -186,11 +194,13 @@ export function TariffTable({
                       onClick={() =>
                         handleStatusChange(tariff.id.toString(), !tariff.status)
                       }
-                      className={
-                        tariff.status ? "text-red-600" : "text-green-600"
-                      }
+                      className="py-3 px-3"
                     >
-                      {tariff.status ? "Deactivate" : "Activate"}
+                      {tariff.status ? (
+                        <><Ban size={13} /> Deactivate</>
+                      ) : (
+                        <><CircleCheck size={13} /> Activate</>
+                      )}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
