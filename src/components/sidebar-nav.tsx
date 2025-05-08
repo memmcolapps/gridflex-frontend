@@ -110,7 +110,10 @@ export function SidebarNav() {
       href: "/user-management",
       icon: Users,
       hasSubmenu: true,
-      submenuItems: [],
+      submenuItems: [
+        { title: "Users", href: "/user-management"},
+        { title: "Group Permission", href: "user-management/group-permission"}
+      ],
     },
     {
       title: "Audit Log",
