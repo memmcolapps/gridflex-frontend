@@ -12,9 +12,9 @@ export function ContentHeader({
 }) {
     return (
         <div className={cn("flex flex-col space-y-1", className)}>
-            <h1 className="text-3xl font-bold leading-tight tracking-tight">{title}</h1>
+            <h1 className="text-4xl font-bold leading-tight tracking-tight mb-3 mt-2">{title}</h1>
             {description && (
-                <p className="text-muted-foreground text-sm">{description}</p>
+                <p className="text-muted-foreground text-md">{description}</p>
             )}
         </div>
     )

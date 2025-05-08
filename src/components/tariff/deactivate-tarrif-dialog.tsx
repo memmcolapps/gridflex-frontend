@@ -14,17 +14,20 @@ interface DeactivateTariffDialogProps {
 export function DeactivateTariffDialog({ open, onOpenChange, onConfirm }: DeactivateTariffDialogProps) {
     return (
         <Dialog open={open} onOpenChange={onOpenChange} >
-            <DialogContent className="sm:max-w-[300px]">
+            <DialogContent className="sm:max-w-[300px] sm:max-h-[180px] bg-white p-6 rounded-lg shadow-md">
                 <DialogHeader>
                     <DialogTitle>
-                        <AlertTriangle size={16} className="text-red-500 bg-red-300 p-2 rounded-full" />
+                        <AlertTriangle size={16} className="text-red-600 bg-red-200 p-2 rounded-full -mb-30" />
                     </DialogTitle>
                     <DialogDescription className="text-lg font-semibold">
-                        Deactivate Tariff
+                        {/* Deactivate Tariff */}
                     </DialogDescription>
                 </DialogHeader>
 
-                <div>
+                <div className="flex flex-col -mb-30">
+                    <h3 className="text-lg font-semibold">
+                        Deactivate Tariff
+                    </h3>
                     <p className="text-sm text-gray-700">
                         Are you sure you want to deactivate Tariff?
                     </p>
