@@ -1,12 +1,11 @@
-"use client"
+"use client";
 
-import BandManagement from "@/components/bandmanagement/bandmanagement"
+import BandManagement from "@/components/band-management/bandmanagement";
 
-export default function BandPage(){
-
-    return(
-        <div>
-            <BandManagement/>
-        </div>
-    )
+export default function BandPage() {
+  return (
+    <div>
+      <BandManagement />
+    </div>
+  );
 }

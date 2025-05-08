@@ -4,16 +4,16 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import Image from "next/image";
 import {
-  ActivitySquare,
   Building2,
   ChevronDown,
   ClipboardList,
-  FileText,
-  LayoutGrid,
+  Cylinder,
   type LucideIcon,
+  CreditCard,
   Plug,
-  Settings,
   Users,
+  Zap,
+  Activity,
 } from "lucide-react";
 import {
   Sidebar,
@@ -66,14 +66,14 @@ export function SidebarNav() {
     {
       title: "Data Management",
       href: "/data-management",
-      icon: LayoutGrid,
+      icon: Cylinder,
       hasSubmenu: true,
       submenuItems: [
         { title: "Dashboard", href: "/data-management/dashboard" },
         { title: "Organization", href: "/organization" },
         { title: "Meter Management", href: "/meter-management" },
         { title: "Customer Management", href: "/customer-management" },
-        { title: "Tariff", href: "/tariff" },
+        { title: "Tariff", href: "/data-management/tarrif" },
         { title: "Band Management", href: "/data-management/band-management" },
       ],
     },
@@ -87,14 +87,14 @@ export function SidebarNav() {
     {
       title: "Billing",
       href: "/billing",
-      icon: FileText,
+      icon: CreditCard,
       hasSubmenu: true,
       submenuItems: [],
     },
     {
       title: "Vending",
       href: "/vending",
-      icon: Settings,
+      icon: Zap,
       hasSubmenu: true,
       submenuItems: [],
     },
@@ -118,7 +118,7 @@ export function SidebarNav() {
     {
       title: "Audit Log",
       href: "/audit-log",
-      icon: ActivitySquare,
+      icon: Activity,
       hasSubmenu: false,
     },
     {
@@ -130,8 +130,8 @@ export function SidebarNav() {
   ];
 
   return (
-    <Sidebar className="border-r border-gray-200">
-      <SidebarHeader className="flex items-center justify-center py-10">
+    <Sidebar className="border-r border-gray-200 w-[264px] ">
+      <SidebarHeader className="flex items-center justify-center py-4">
         <Link href="/" className="flex items-center gap-2">
           <div className="flex items-center justify-center">
             <Image
@@ -144,15 +144,15 @@ export function SidebarNav() {
         </Link>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarMenu>
+        <SidebarMenu className="px-6 py-5 ">
           {navItems.map((item) => {
             return (
               <Collapsible
-                defaultOpen
+              // defaultOpen
                 className="group/collapsible"
                 key={item.title}
               >
-                <SidebarMenuItem className="my-1">
+                <SidebarMenuItem className="">
                   <CollapsibleTrigger asChild>
                     <SidebarMenuButton
                       className={cn(
@@ -169,7 +169,7 @@ export function SidebarNav() {
                         <ChevronDown
                           className={cn(
                             "h-4 w-4 transition-transform duration-200",
-                            expandedItems[item.title] && "rotate-180",
+                            expandedItems[item.title] ? "rotate-0" : "-rotate-90",
                           )}
                           size={12}
                         />
@@ -178,11 +178,11 @@ export function SidebarNav() {
                   </CollapsibleTrigger>
                   <CollapsibleContent>
                     {item.hasSubmenu && (
-                      <SidebarMenuSub className="mt-2">
+                      <SidebarMenuSub className="mt-1">
                         {item.submenuItems?.map((subItem) => (
                           <SidebarMenuItem
                             className={cn(
-                              "flex items-center p-3.5 text-xl",
+                              "flex items-center p-2.5 text-xl",
                               pathname === subItem.href &&
                                 "rounded-md bg-[#161CCA] text-white",
                             )}
