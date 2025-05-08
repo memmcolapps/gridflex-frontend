@@ -1,0 +1,664 @@
+// components/meter-management/add-edit-meter-dialog.tsx
+"use client";
+
+import { useState, useEffect } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+
+interface MeterData {
+    meterNumber: string;
+    simNumber: string;
+    model: string;
+    accountNumber: string;
+    sgc: string;
+    tariff: string;
+    id: string;
+    approvalStatus: string;
+    status: string;
+}
+
+interface AddMeterDialogProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onSaveMeter: (meter: MeterData) => void;
+    editMeter?: MeterData;
+}
+
+export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddMeterDialogProps) {
+    const [step, setStep] = useState(1);
+    const [formData, setFormData] = useState({
+        meterNumber: "",
+        simNumber: "",
+        substation: "",
+        feederLine: "",
+        transformer: "",
+        meterCategory: "",
+        meterClass: "",
+        meterManufacturer: "",
+        creditType: "",
+        state: "",
+        ctRatioNumerator: 0,
+        ctRatioDenominator: 0,
+        voltageRatioNumerator: 0,
+        voltageRatioDenominator: 0,
+        multiplier: 0,
+        meterRating: 0,
+        initReading: 0,
+        dial: 0,
+        longitude: 0,
+        latitude: 0,
+    });
+
+    const [errors, setErrors] = useState<Record<string, string>>({});
+
+    // Pre-populate form data if in edit mode
+    useEffect(() => {
+        if (editMeter) {
+            setFormData({
+                meterNumber: editMeter.meterNumber ?? "",
+                simNumber: editMeter.simNumber ?? "",
+                substation: "",
+                feederLine: "",
+                transformer: "",
+                meterCategory: "",
+                meterClass: "",
+                meterManufacturer: editMeter.model ?? "",
+                creditType: editMeter.tariff ?? "",
+                state: "",
+                ctRatioNumerator: 0,
+                ctRatioDenominator: 0,
+                voltageRatioNumerator: 0,
+                voltageRatioDenominator: 0,
+                multiplier: 0,
+                meterRating: 0,
+                initReading: 0,
+                dial: 0,
+                longitude: 0,
+                latitude: 0,
+            });
+            setStep(1);
+            setErrors({});
+        } else {
+            setFormData({
+                meterNumber: "",
+                simNumber: "",
+                substation: "",
+                feederLine: "",
+                transformer: "",
+                meterCategory: "",
+                meterClass: "",
+                meterManufacturer: "",
+                creditType: "",
+                state: "",
+                ctRatioNumerator: 0,
+                ctRatioDenominator: 0,
+                voltageRatioNumerator: 0,
+                voltageRatioDenominator: 0,
+                multiplier: 0,
+                meterRating: 0,
+                initReading: 0,
+                dial: 0,
+                longitude: 0,
+                latitude: 0,
+            });
+            setErrors({});
+        }
+    }, [editMeter, isOpen]);
+
+    const validateStep1 = () => {
+        const newErrors: Record<string, string> = {};
+        if (!formData.meterNumber) newErrors.meterNumber = "Meter Number is required";
+        if (!formData.simNumber) newErrors.simNumber = "Sim Card is required";
+        if (!formData.meterCategory) newErrors.meterCategory = "Meter Category is required";
+        if (!formData.meterClass) newErrors.meterClass = "Meter Class is required";
+        if (!formData.meterManufacturer) newErrors.meterManufacturer = "Meter Manufacturer is required";
+        if (!formData.creditType) newErrors.creditType = "Credit Type is required";
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
+    const validateStep2 = () => {
+        const newErrors: Record<string, string> = {};
+        if (formData.ctRatioNumerator <= 0) newErrors.ctRatioNumerator = "Must be greater than 0";
+        if (formData.ctRatioDenominator <= 0) newErrors.ctRatioDenominator = "Must be greater than 0";
+        if (formData.voltageRatioNumerator <= 0) newErrors.voltageRatioNumerator = "Must be greater than 0";
+        if (formData.voltageRatioDenominator <= 0) newErrors.voltageRatioDenominator = "Must be greater than 0";
+        if (formData.multiplier <= 0) newErrors.multiplier = "Must be greater than 0";
+        if (formData.meterRating <= 0) newErrors.meterRating = "Must be greater than 0";
+        if (formData.initReading < 0) newErrors.initReading = "Must be 0 or greater";
+        if (formData.dial <= 0) newErrors.dial = "Must be greater than 0";
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setFormData((prev) => ({
+            ...prev,
+            [name]: name === "meterNumber" || name === "simNumber" ? value : parseFloat(value) || 0,
+        }));
+        setErrors((prev) => ({ ...prev, [name]: "" }));
+    };
+
+    const handleSelectChange = (name: string, value: string) => {
+        setFormData((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
+        setErrors((prev) => ({ ...prev, [name]: "" }));
+    };
+
+    const handleNext = () => {
+        if (validateStep1()) {
+            if (formData.meterClass === "MD") {
+                setStep(2);
+            } else {
+                saveMeter();
+            }
+        }
+    };
+
+    const handleBack = () => {
+        setStep(1);
+        setErrors({});
+    };
+
+    const saveMeter = () => {
+        if (step === 2 && !validateStep2()) return;
+
+        const updatedMeter: MeterData = {
+            meterNumber: formData.meterNumber || "N/A",
+            simNumber: formData.simNumber || "N/A",
+            model: formData.meterManufacturer || "N/A",
+            accountNumber: "N/A",
+            sgc: "N/A",
+            tariff: formData.creditType || "N/A",
+            id: editMeter ? editMeter.id : Math.random().toString(36).substring(2, 9),
+            approvalStatus: editMeter ? editMeter.approvalStatus : "Pending",
+            status: editMeter ? editMeter.status : "In-Stock",
+        };
+        onSaveMeter(updatedMeter);
+        onClose();
+        setStep(1);
+        setFormData({
+            meterNumber: "",
+            simNumber: "",
+            substation: "",
+            feederLine: "",
+            transformer: "",
+            meterCategory: "",
+            meterClass: "",
+            meterManufacturer: "",
+            creditType: "",
+            state: "",
+            ctRatioNumerator: 0,
+            ctRatioDenominator: 0,
+            voltageRatioNumerator: 0,
+            voltageRatioDenominator: 0,
+            multiplier: 0,
+            meterRating: 0,
+            initReading: 0,
+            dial: 0,
+            longitude: 0,
+            latitude: 0,
+        });
+        setErrors({});
+    };
+
+    const dialogTitle = editMeter ? "Edit Meter" : "Add new meter";
+
+    return (
+        <Dialog open={isOpen} onOpenChange={onClose}>
+            <DialogContent className="sm:max-w-[600px] h-auto bg-white p-6 rounded-lg">
+                <DialogHeader className="flex flex-row items-center justify-between pb-3">
+                    <DialogTitle className="text-lg font-semibold text-gray-900">{dialogTitle}</DialogTitle>
+                </DialogHeader>
+
+                <div className="max-h-[60vh] overflow-y-auto px-1">
+                    {step === 1 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 py-4">
+                            <div className="space-y-1">
+                                <Label htmlFor="meterNumber" className="text-sm font-medium text-gray-700">
+                                    Meter Number <span className="text-red-500">*</span>
+                                </Label>
+                                <Input
+                                    type="number"
+                                    id="meterNumber"
+                                    name="meterNumber"
+                                    value={formData.meterNumber}
+                                    onChange={handleInputChange}
+                                    placeholder="E.g 0404040404040"
+                                    className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.meterNumber ? "border-red-500" : ""
+                                        } [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                                    required
+                                />
+                                {errors.meterNumber && (
+                                    <p className="text-xs text-red-500 mt-1">{errors.meterNumber}</p>
+                                )}
+                            </div>
+                            <div className="space-y-1">
+                                <Label htmlFor="simNumber" className="text-sm font-medium text-gray-700">
+                                    Sim Card <span className="text-red-500">*</span>
+                                </Label>
+                                <Input
+                                    type="number"
+                                    id="simNumber"
+                                    name="simNumber"
+                                    value={formData.simNumber}
+                                    onChange={handleInputChange}
+                                    placeholder="E.g 8900080734059874"
+                                    className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.meterNumber ? "border-red-500" : ""
+                                        } [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                                    required
+                                />
+                                {errors.simNumber && (
+                                    <p className="text-xs text-red-500 mt-1">{errors.simNumber}</p>
+                                )}
+                            </div>
+                            <div className="space-y-1">
+                                <Label htmlFor="substation" className="text-sm font-medium text-gray-700">
+                                    Substation
+                                </Label>
+                                <Select onValueChange={(value) => handleSelectChange("substation", value)}>
+                                    <SelectTrigger
+                                        id="substation"
+                                        className="w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                                    >
+                                        <SelectValue placeholder="Select Substation" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {/* <SelectItem value="Search and find">Search and find</SelectItem> */}
+                                        <SelectItem value="Ojoo">Ojoo</SelectItem>
+                                        <SelectItem value="Ijeun">Ijeun</SelectItem>
+                                        <SelectItem value="Eko">Eko</SelectItem>
+                                        <SelectItem value="Agbara">Agbara</SelectItem>
+                                        <SelectItem value="Molete">Molete</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-1">
+                                <Label htmlFor="feederLine" className="text-sm font-medium text-gray-700">
+                                    Feeder Line
+                                </Label>
+                                <Select onValueChange={(value) => handleSelectChange("feederLine", value)}>
+                                    <SelectTrigger
+                                        id="feederLine"
+                                        className="w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                                    >
+                                        <SelectValue placeholder="Select Feeder Line" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {/* <SelectItem value="Search and find">Search and find</SelectItem> */}
+                                        <SelectItem value="Ojoo">Ojoo</SelectItem>
+                                        <SelectItem value="Ijeun">Ijeun</SelectItem>
+                                        <SelectItem value="Eko">Eko</SelectItem>
+                                        <SelectItem value="Agbara">Agbara</SelectItem>
+                                        <SelectItem value="Molete">Molete</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-1">
+                                <Label htmlFor="transformer" className="text-sm font-medium text-gray-700">
+                                    Transformer
+                                </Label>
+                                <Select onValueChange={(value) => handleSelectChange("transformer", value)}>
+                                    <SelectTrigger
+                                        id="transformer"
+                                        className="w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                                    >
+                                        <SelectValue placeholder="Select Transformer" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Abia">Abia</SelectItem>
+                                        <SelectItem value="Adamawa">Adamawa</SelectItem>
+                                        <SelectItem value="Akwa Ibom">Akwa Ibom</SelectItem>
+                                        <SelectItem value="Anambra">Anambra</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-1">
+                                <Label htmlFor="meterCategory" className="text-sm font-medium text-gray-700">
+                                    Meter Category <span className="text-red-500">*</span>
+                                </Label>
+                                <Select onValueChange={(value) => handleSelectChange("meterCategory", value)}>
+                                    <SelectTrigger
+                                        id="meterCategory"
+                                        className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.meterCategory ? "border-red-500" : ""
+                                            }`}
+                                    >
+                                        <SelectValue placeholder="Select Meter Category" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Prepaid">Prepaid</SelectItem>
+                                        <SelectItem value="Postpaid">Postpaid</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                {errors.meterCategory && (
+                                    <p className="text-xs text-red-500 mt-1">{errors.meterCategory}</p>
+                                )}
+                            </div>
+                            <div className="space-y-1">
+                                <Label htmlFor="meterClass" className="text-sm font-medium text-gray-700">
+                                    Meter Class <span className="text-red-500">*</span>
+                                </Label>
+                                <Select onValueChange={(value) => handleSelectChange("meterClass", value)}>
+                                    <SelectTrigger
+                                        id="meterClass"
+                                        className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.meterClass ? "border-red-500" : ""
+                                            }`}
+                                    >
+                                        <SelectValue placeholder="Select Meter Class" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="MD">MD</SelectItem>
+                                        <SelectItem value="NMD">Non-MD</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                {errors.meterClass && (
+                                    <p className="text-xs text-red-500 mt-1">{errors.meterClass}</p>
+                                )}
+                            </div>
+                            <div className="space-y-1">
+                                <Label htmlFor="meterManufacturer" className="text-sm font-medium text-gray-700">
+                                    Meter Manufacturer <span className="text-red-500">*</span>
+                                </Label>
+                                <Select onValueChange={(value) => handleSelectChange("meterManufacturer", value)}>
+                                    <SelectTrigger
+                                        id="meterManufacturer"
+                                        className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.meterManufacturer ? "border-red-500" : ""
+                                            }`}
+                                    >
+                                        <SelectValue placeholder="Select Meter Manufacturer" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Momas">Momas</SelectItem>
+                                        <SelectItem value="Honglian">Honglian</SelectItem>
+                                        <SelectItem value="Mojec">Mojec</SelectItem>
+                                        <SelectItem value="Hexing">Hexing</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                {errors.meterManufacturer && (
+                                    <p className="text-xs text-red-500 mt-1">{errors.meterManufacturer}</p>
+                                )}
+                            </div>
+                            <div className="space-y-1">
+                                <Label htmlFor="creditType" className="text-sm font-medium text-gray-700">
+                                    Credit Type <span className="text-red-500">*</span>
+                                </Label>
+                                <Select onValueChange={(value) => handleSelectChange("creditType", value)}>
+                                    <SelectTrigger
+                                        id="creditType"
+                                        className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.creditType ? "border-red-500" : ""
+                                            }`}
+                                    >
+                                        <SelectValue placeholder="Select Credit Type" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Electricity (1)">Electricity (0)</SelectItem>
+                                        <SelectItem value="Water (1)">Water (1)</SelectItem>
+                                        <SelectItem value="Gas (2)">Gas (2)</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                {errors.creditType && (
+                                    <p className="text-xs text-red-500 mt-1">{errors.creditType}</p>
+                                )}
+                            </div>
+                            <div className="space-y-1">
+                                <Label htmlFor="state" className="text-sm font-medium text-gray-700">
+                                    State
+                                </Label>
+                                <Select onValueChange={(value) => handleSelectChange("state", value)}>
+                                    <SelectTrigger
+                                        id="state"
+                                        className="w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                                    >
+                                        <SelectValue placeholder="Select State" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Abia">Abia</SelectItem>
+                                        <SelectItem value="Abule Egba">Abule Egba</SelectItem>
+                                        <SelectItem value="Ado">Ado</SelectItem>
+                                        <SelectItem value="Agbara">Agbara</SelectItem>
+                                        <SelectItem value="Akungba">Akungba</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 py-4">
+                            <div className="space-y-1">
+                                <Label htmlFor="ctRatioNumerator" className="text-sm font-medium text-gray-700">
+                                    CT Ratio Numerator <span className="text-red-500">*</span>
+                                </Label>
+                                <Input
+                                    id="ctRatioNumerator"
+                                    name="ctRatioNumerator"
+                                    type="number"
+                                    value={formData.ctRatioNumerator}
+                                    onChange={handleInputChange}
+                                    placeholder="0"
+                                    className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.meterNumber ? "border-red-500" : ""
+                                        } [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                                    required
+                                />
+                                {errors.ctRatioNumerator && (
+                                    <p className="text-xs text-red-500 mt-1">{errors.ctRatioNumerator}</p>
+                                )}
+                            </div>
+                            <div className="space-y-1">
+                                <Label htmlFor="ctRatioDenominator" className="text-sm font-medium text-gray-700">
+                                    CT Ratio Denominator <span className="text-red-500">*</span>
+                                </Label>
+                                <Input
+                                    id="ctRatioDenominator"
+                                    name="ctRatioDenominator"
+                                    type="number"
+                                    value={formData.ctRatioDenominator}
+                                    onChange={handleInputChange}
+                                    placeholder="0"
+                                    className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.meterNumber ? "border-red-500" : ""
+                                        } [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                                    required
+                                />
+                                {errors.ctRatioDenominator && (
+                                    <p className="text-xs text-red-500 mt-1">{errors.ctRatioDenominator}</p>
+                                )}
+                            </div>
+                            <div className="space-y-1">
+                                <Label htmlFor="voltageRatioNumerator" className="text-sm font-medium text-gray-700">
+                                    Voltage Ratio Numerator <span className="text-red-500">*</span>
+                                </Label>
+                                <Input
+                                    id="voltageRatioNumerator"
+                                    name="voltageRatioNumerator"
+                                    type="number"
+                                    value={formData.voltageRatioNumerator}
+                                    onChange={handleInputChange}
+                                    placeholder="0"
+                                    className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.meterNumber ? "border-red-500" : ""
+                                        } [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                                    required
+                                />
+                                {errors.voltageRatioNumerator && (
+                                    <p className="text-xs text-red-500 mt-1">{errors.voltageRatioNumerator}</p>
+                                )}
+                            </div>
+                            <div className="space-y-1">
+                                <Label htmlFor="voltageRatioDenominator" className="text-sm font-medium text-gray-700">
+                                    Voltage Ratio Denominator <span className="text-red-500">*</span>
+                                </Label>
+                                <Input
+                                    id="voltageRatioDenominator"
+                                    name="voltageRatioDenominator"
+                                    type="number"
+                                    value={formData.voltageRatioDenominator}
+                                    onChange={handleInputChange}
+                                    placeholder="0"
+                                    className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.meterNumber ? "border-red-500" : ""
+                                        } [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                                    required
+                                />
+                                {errors.voltageRatioDenominator && (
+                                    <p className="text-xs text-red-500 mt-1">{errors.voltageRatioDenominator}</p>
+                                )}
+                            </div>
+                            <div className="space-y-1">
+                                <Label htmlFor="multiplier" className="text-sm font-medium text-gray-700">
+                                    Multiplier <span className="text-red-500">*</span>
+                                </Label>
+                                <Input
+                                    id="multiplier"
+                                    name="multiplier"
+                                    type="number"
+                                    value={formData.multiplier}
+                                    onChange={handleInputChange}
+                                    placeholder="0"
+                                    className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.meterNumber ? "border-red-500" : ""
+                                        } [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                                    required
+                                />
+                                {errors.multiplier && (
+                                    <p className="text-xs text-red-500 mt-1">{errors.multiplier}</p>
+                                )}
+                            </div>
+                            <div className="space-y-1">
+                                <Label htmlFor="meterRating" className="text-sm font-medium text-gray-700">
+                                    Meter Rating <span className="text-red-500">*</span>
+                                </Label>
+                                <Input
+                                    id="meterRating"
+                                    name="meterRating"
+                                    type="number"
+                                    value={formData.meterRating}
+                                    onChange={handleInputChange}
+                                    placeholder="0"
+                                    className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.meterNumber ? "border-red-500" : ""
+                                        } [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                                    required
+                                />
+                                {errors.meterRating && (
+                                    <p className="text-xs text-red-500 mt-1">{errors.meterRating}</p>
+                                )}
+                            </div>
+                            <div className="space-y-1">
+                                <Label htmlFor="initReading" className="text-sm font-medium text-gray-700">
+                                    Init Reading <span className="text-red-500">*</span>
+                                </Label>
+                                <Input
+                                    id="initReading"
+                                    name="initReading"
+                                    type="number"
+                                    value={formData.initReading}
+                                    onChange={handleInputChange}
+                                    placeholder="0"
+                                    className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.meterNumber ? "border-red-500" : ""
+                                        } [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                                    required
+                                />
+                                {errors.initReading && (
+                                    <p className="text-xs text-red-500 mt-1">{errors.initReading}</p>
+                                )}
+                            </div>
+                            <div className="space-y-1">
+                                <Label htmlFor="dial" className="text-sm font-medium text-gray-700">
+                                    Dial <span className="text-red-500">*</span>
+                                </Label>
+                                <Input
+                                    id="dial"
+                                    name="dial"
+                                    type="number"
+                                    value={formData.dial}
+                                    onChange={handleInputChange}
+                                    placeholder="0"
+                                    className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.meterNumber ? "border-red-500" : ""
+                                        } [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                                    required
+                                />
+                                {errors.dial && (
+                                    <p className="text-xs text-red-500 mt-1">{errors.dial}</p>
+                                )}
+                            </div>
+                            <div className="space-y-1">
+                                <Label htmlFor="longitude" className="text-sm font-medium text-gray-700">
+                                    Longitude <span className="text-red-500">*</span>
+                                </Label>
+                                <Input
+                                    id="longitude"
+                                    name="longitude"
+                                    type="number"
+                                    value={formData.longitude}
+                                    onChange={handleInputChange}
+                                    placeholder="0.0"
+                                    className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.meterNumber ? "border-red-500" : ""
+                                        } [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-1">
+                                <Label htmlFor="latitude" className="text-sm font-medium text-gray-700">
+                                    Latitude <span className="text-red-500">*</span>
+                                </Label>
+                                <Input
+                                    id="latitude"
+                                    name="latitude"
+                                    type="number"
+                                    value={formData.latitude}
+                                    onChange={handleInputChange}
+                                    placeholder="0.0"
+                                    className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.meterNumber ? "border-red-500" : ""
+                                        } [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                                    required
+                                />
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                <DialogFooter className="pt-4 mt-4 flex justify-end gap-3">
+                    {step === 1 ? (
+                        <>
+                            <Button
+                                variant="outline"
+                                onClick={onClose}
+                                size={"lg"}
+                                className="text-sm font-medium text-[#161CCA] border-[#161CCA] hover:bg-gray-50"
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                onClick={handleNext}
+                                size={"lg"}
+                                disabled={!formData.meterNumber || !formData.simNumber || !formData.meterCategory || !formData.meterClass || !formData.meterManufacturer || !formData.creditType}
+                                style={{ opacity: (!formData.meterNumber || !formData.simNumber || !formData.meterCategory || !formData.meterClass || !formData.meterManufacturer || !formData.creditType) ? 0.4 : 1 }}
+                                className="text-sm font-medium bg-[#161CCA] text-white hover:bg-blue-700"
+                            >
+                                {formData.meterClass === "MD" ? "Next" : "Submit"}
+                            </Button>
+                        </>
+                    ) : (
+                        <>
+                            <Button
+                                variant="outline"
+                                onClick={handleBack}
+                                className="text-sm font-medium text-gray-700 border-gray-300 hover:bg-gray-50"
+                            >
+                                Back
+                            </Button>
+                            <Button
+                                onClick={saveMeter}
+                                disabled={!formData.ctRatioNumerator || !formData.ctRatioDenominator || !formData.voltageRatioNumerator || !formData.voltageRatioDenominator || !formData.multiplier || !formData.meterRating || formData.initReading < 0 || !formData.dial}
+                                style={{ opacity: (!formData.ctRatioNumerator || !formData.ctRatioDenominator || !formData.voltageRatioNumerator || !formData.voltageRatioDenominator || !formData.multiplier || !formData.meterRating || formData.initReading < 0 || !formData.dial) ? 0.4 : 1 }}
+                                className="text-sm font-medium bg-[#161CCA] text-white hover:bg-blue-700"
+                            >
+                                {editMeter ? "Save Changes" : "Add Meter"}
+                            </Button>
+                        </>
+                    )}
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+}
