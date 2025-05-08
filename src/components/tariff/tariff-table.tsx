@@ -21,7 +21,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useState } from "react";
-import { DropdownMenuSeparator } from "@radix-ui/react-dropdown-menu";
 
 interface TariffTableProps {
   tariffs: Tariff[];
