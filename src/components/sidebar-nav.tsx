@@ -72,7 +72,7 @@ export function SidebarNav() {
         { title: "Dashboard", href: "/data-management/dashboard" },
         { title: "Organization", href: "/organization" },
         { title: "Meter Management", href: "/meter-management" },
-        { title: "Customer Management", href: "/customer-management" },
+        { title: "Customer Management", href: "/data-management/customer-management" },
         { title: "Tariff", href: "/data-management/tarrif" },
         { title: "Band Management", href: "/data-management/band-management" },
       ],
