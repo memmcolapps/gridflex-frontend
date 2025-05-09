@@ -72,7 +72,7 @@ export default function UserManagement() {
             groupPermission: 'Data Manager',
             lastActive: new Date(Date.now() - 1000 * 60 * 5),
             dateAdded: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
-        },  {
+        }, {
             id: '04',
             firstName: 'Jane',
             lastName: 'Smith',
@@ -80,7 +80,7 @@ export default function UserManagement() {
             groupPermission: 'Data Manager',
             lastActive: new Date(Date.now() - 1000 * 60 * 5),
             dateAdded: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
-        } 
+        }
         //  {
         //     id: '05',
         //     firstName: 'Jane',
@@ -418,46 +418,46 @@ export default function UserManagement() {
                     </Table>
 
                 </div>
-                    {/* Sticky Pagination Bar */}
-                    <div className="sticky bottom-0 bg-white border-t border-gray-200 flex items-center justify-between px-4 py-3 mt-4 z-10">
-                        <div className="flex items-center gap-2">
-                            <span className="text-sm text-gray-600">Rows per page</span>
-                            <select
-                                value={rowsPerPage}
-                                onChange={(e) => {
-                                    setRowsPerPage(Number(e.target.value));
-                                    setCurrentPage(1); // reset to page 1 when page size changes
-                                }}
-                                className="text-sm border border-gray-300 rounded-md px-2 py-1 focus:outline-none"
-                            >
-                                {[5, 10, 12, 20, 50].map((num) => (
-                                    <option key={num} value={num}>
-                                        {num}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                        <span className="text-sm text-gray-600 ml-4">
-                            {startIndex + 1}-{Math.min(endIndex, totalRows)} of {totalRows} rows
-                        </span>
-
-                        <div className="flex items-center gap-2">
-                            <button
-                                disabled={currentPage === 1}
-                                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                                className="px-3 py-1 border border-gray-300 rounded-md text-sm text-black-600 disabled:opacity-50 cursor-pointer"
-                            >
-                                Previous
-                            </button>
-                            <button
-                                disabled={endIndex >= totalRows}
-                                onClick={() => setCurrentPage((prev) => prev + 1)}
-                                className="px-3 py-1 border border-gray-300 rounded-md text-sm text-black-600 disabled:opacity-50 cursor-pointer"
-                            >
-                                Next
-                            </button>
-                        </div>
+                {/* Sticky Pagination Bar */}
+                <div className="sticky bottom-0 bg-white border-t border-gray-200 flex items-center justify-between px-4 py-3 mt-4 z-10">
+                    <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-600">Rows per page</span>
+                        <select
+                            value={rowsPerPage}
+                            onChange={(e) => {
+                                setRowsPerPage(Number(e.target.value));
+                                setCurrentPage(1); // reset to page 1 when page size changes
+                            }}
+                            className="text-sm border border-gray-300 rounded-md px-2 py-1 focus:outline-none"
+                        >
+                            {[5, 10, 12, 20, 50].map((num) => (
+                                <option key={num} value={num}>
+                                    {num}
+                                </option>
+                            ))}
+                        </select>
                     </div>
+                    <span className="text-sm text-gray-600 ml-4">
+                        {startIndex + 1}-{Math.min(endIndex, totalRows)} of {totalRows} rows
+                    </span>
+
+                    <div className="flex items-center gap-2">
+                        <button
+                            disabled={currentPage === 1}
+                            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                            className="px-3 py-1 border border-gray-300 rounded-md text-sm text-black-600 disabled:opacity-50 cursor-pointer"
+                        >
+                            Previous
+                        </button>
+                        <button
+                            disabled={endIndex >= totalRows}
+                            onClick={() => setCurrentPage((prev) => prev + 1)}
+                            className="px-3 py-1 border border-gray-300 rounded-md text-sm text-black-600 disabled:opacity-50 cursor-pointer"
+                        >
+                            Next
+                        </button>
+                    </div>
+                </div>
 
                 {editingUser && (
                     <UserForm
@@ -489,7 +489,6 @@ export default function UserManagement() {
                     />
                 )}
             </div>
-            {/* <Footer/> */}
         </div>
     );
 }

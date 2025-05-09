@@ -264,7 +264,7 @@ export default function GroupPermissionManagement() {
         </div>
       </div>
 
-      <div>
+      <div className='h-4/6'>
         <Table>
           <TableHeader>
             <TableRow>
@@ -348,10 +348,10 @@ export default function GroupPermissionManagement() {
               ))
             )}
           </TableBody>
-        </Table>
-
-        {/* Sticky Pagination Bar */}
-        <div className="sticky bottom-0 bg-white border-t border-gray-200 flex items-center justify-between px-4 py-3 mt-4 z-10 text-black-500">
+        </Table>      
+      </div> 
+       {/* Sticky Pagination Bar */}
+      <div className="sticky bottom-0 bg-white border-t border-gray-200 flex items-center justify-between px-4 py-3 mt-4 z-10 text-black-500">
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-600">Rows per page</span>
             <select
@@ -388,9 +388,7 @@ export default function GroupPermissionManagement() {
               Next
             </button>
           </div>
-        </div>
-      </div>
-      
+        </div>    
     </div>
   );
 }
