@@ -125,7 +125,7 @@ export default function BandManagement() {
           mode="add"
           onSave={handleAddBand}
           triggerButton={
-            <Button className="flex items-center gap-2 bg-[#161CCA] hover:bg-[#121eb3]">
+            <Button className="flex items-center gap-2 bg-[#161CCA] hover:bg-[#121eb3] cursor-pointer">
               <div className="flex items-center justify-center p-0.5">
                 <PlusCircleIcon className="text-[#FEFEFE]" size={12} />
               </div>

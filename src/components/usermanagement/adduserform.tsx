@@ -23,16 +23,11 @@ export type User = {
     hierarchy?: string;
     dateAdded?: Date;
     defaultPassword?: string;
-    updatedUser?: () => void;
 };
 
-type UserFormModalProps = {
-    mode: 'add' | 'edit';
-    user?: User;
+type AddUserFormProps = {
     onSave: (user: User) => void;
     triggerButton?: React.ReactNode;
-    isOpen?: boolean;
-    onClose?: () => void;
 };
 
 const groupPermissions = [
@@ -49,10 +44,8 @@ const hierarchies = [
     { value: 'level4', label: 'Level 4' },
 ];
 
-export default function UserForm({ mode, user, onSave, triggerButton, isOpen: controlledIsOpen, onClose }: UserFormModalProps) {
-    const [internalIsOpen, setInternalIsOpen] = useState(false);
-    const isOpen = mode === 'add' ? internalIsOpen : controlledIsOpen ?? false;
-
+export default function AddUserForm({ onSave, triggerButton }: AddUserFormProps) {
+    const [isOpen, setIsOpen] = useState(false);
     const [formData, setFormData] = useState<User>({
         firstName: "",
         lastName: "",
@@ -63,56 +56,20 @@ export default function UserForm({ mode, user, onSave, triggerButton, isOpen: co
         defaultPassword: ""
     });
 
-    // Function to reload the page
-    const reloadPage = useCallback(() => {
-        console.log('Reloading page after edit dialog close');
-        if (typeof window !== 'undefined') {
-            window.location.reload();
-        }
-    }, []);
-
-    // Clean up overlay
     const cleanUpOverlay = useCallback(() => {
-        console.log('Attempting overlay cleanup');
+        console.log('Attempting overlay cleanup in AddUserForm');
         const overlays = document.querySelectorAll('[data-radix-dialog-overlay]');
-        console.log('Overlay count:', overlays.length);
         if (overlays.length > 0) {
             overlays.forEach((overlay) => {
-                console.warn('Removing overlay:', {
-                    id: overlay.id,
-                    className: overlay.className,
-                    attributes: Array.from(overlay.attributes).map(attr => `${attr.name}=${attr.value}`)
-                });
+                console.warn('Removing overlay:', overlay);
                 overlay.remove();
             });
-        } else {
-            console.log('No overlays found');
         }
     }, []);
 
-    // Log state changes and clean up overlay
     useEffect(() => {
-        console.log('Dialog isOpen:', isOpen);
         if (!isOpen) {
-            setTimeout(cleanUpOverlay, 100); // Delay for Radix UI animations
-        }
-    }, [isOpen, cleanUpOverlay]);
-
-    // Cleanup on unmount
-    useEffect(() => {
-        return () => {
-            console.log('UserForm unmounting, cleaning up overlay');
-            cleanUpOverlay();
-        };
-    }, [cleanUpOverlay]);
-
-    // Initialize form data
-    useEffect(() => {
-        if (isOpen && user && mode === 'edit') {
-            console.log('Setting formData with user:', user);
-            setFormData(user);
-        } else if (!isOpen) {
-            console.log('Resetting formData');
+            setTimeout(cleanUpOverlay, 100);
             setFormData({
                 firstName: "",
                 lastName: "",
@@ -123,24 +80,14 @@ export default function UserForm({ mode, user, onSave, triggerButton, isOpen: co
                 defaultPassword: ""
             });
         }
-    }, [user, isOpen, mode]);
+    }, [isOpen, cleanUpOverlay]);
 
-    // Handle dialog open/close
-    const handleOpenChange = useCallback((open: boolean) => {
-        console.log('Dialog open change:', open);
-        if (mode === 'add') {
-            setInternalIsOpen(open);
-        }
-        if (!open) {
-            cleanUpOverlay(); // Force cleanup on close
-            if (onClose) {
-                onClose();
-            }
-            if (mode === 'edit') {
-                reloadPage(); // Reload only for edit mode
-            }
-        }
-    }, [mode, onClose, cleanUpOverlay, reloadPage]);
+    useEffect(() => {
+        return () => {
+            console.log('AddUserForm unmounting, cleaning up overlay');
+            cleanUpOverlay();
+        };
+    }, [cleanUpOverlay]);
 
     const handleChange = useCallback(
         (e: React.ChangeEvent<HTMLInputElement> | string, field?: string) => {
@@ -163,51 +110,29 @@ export default function UserForm({ mode, user, onSave, triggerButton, isOpen: co
     const handleSubmit = useCallback(
         (e: React.FormEvent) => {
             e.preventDefault();
-            console.log('Submitting form with data:', formData);
+            console.log('Submitting AddUserForm with data:', formData);
             onSave(formData);
-            if (mode === 'add') {
-                setInternalIsOpen(false);
-            }
-            cleanUpOverlay(); // Force cleanup on submit
-            if (onClose) {
-                onClose();
-            }
-            if (mode === 'edit') {
-                reloadPage(); // Reload only for edit mode
-            }
+            setIsOpen(false);
+            cleanUpOverlay();
         },
-        [formData, onSave, mode, onClose, cleanUpOverlay, reloadPage]
+        [formData, onSave, cleanUpOverlay]
     );
 
-    // Guard against invalid user prop in edit mode
-    if (mode === 'edit' && !user) {
-        console.error('User prop is required in edit mode');
-        return null;
-    }
-
     return (
-        <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-            {mode === 'add' && (
-                <DialogTrigger asChild>
-                    {triggerButton ?? (
-                        <Button className="flex items-center gap-2 text-black" variant="default">
-                            <Plus className="h-4 w-4" />
-                            Add User
-                        </Button>
-                    )}
-                </DialogTrigger>
-            )}
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogTrigger asChild>
+                {triggerButton ?? (
+                    <Button className="flex items-center gap-2 text-black" variant="default">
+                        <Plus className="h-4 w-4" />
+                        Add User
+                    </Button>
+                )}
+            </DialogTrigger>
 
             <DialogContent className="sm:max-w-[500px] bg-white text-black h-fit">
                 <DialogHeader>
-                    <DialogTitle>
-                        {mode === 'add' ? 'Add User' : `Edit ${user?.firstName} ${user?.lastName}`}
-                    </DialogTitle>
-                    <DialogDescription>
-                        {mode === 'add'
-                            ? 'Fill out the form to add a new user.'
-                            : 'Edit the user details below.'}
-                    </DialogDescription>
+                    <DialogTitle>Add User</DialogTitle>
+                    <DialogDescription>Fill out the form to add a new user.</DialogDescription>
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit} className="mt-4">
@@ -257,7 +182,7 @@ export default function UserForm({ mode, user, onSave, triggerButton, isOpen: co
                                 required
                             >
                                 <SelectTrigger className="border-[rgba(228,231,236,1)] w-72">
-                                    <SelectValue placeholder="Select permission"/>
+                                    <SelectValue placeholder="Select permission" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {groupPermissions.map((permission) => (
@@ -268,7 +193,6 @@ export default function UserForm({ mode, user, onSave, triggerButton, isOpen: co
                                 </SelectContent>
                             </Select>
                         </div>
-
                         <div className="col-span-2 space-y-2">
                             <Label htmlFor="hierarchy">Hierarchy</Label>
                             <Select
@@ -304,26 +228,14 @@ export default function UserForm({ mode, user, onSave, triggerButton, isOpen: co
                     <div className="mt-12 flex justify-between gap-3">
                         <Button
                             variant="outline"
-                            onClick={() => {
-                                console.log('Cancel clicked');
-                                if (mode === 'add') {
-                                    setInternalIsOpen(false);
-                                }
-                                cleanUpOverlay(); // Force cleanup on cancel
-                                if (onClose) {
-                                    onClose();
-                                }
-                                if (mode === 'edit') {
-                                    reloadPage(); // Reload only for edit mode
-                                }
-                            }}
+                            onClick={() => setIsOpen(false)}
                             type="button"
                             className="border-[#161CCA] text-[#161CCA]"
                         >
                             Cancel
                         </Button>
                         <Button type="submit" className="bg-[#161CCA] text-white">
-                            {mode === 'add' ? 'Add User' : 'Save'}
+                            Add User
                         </Button>
                     </div>
                 </form>

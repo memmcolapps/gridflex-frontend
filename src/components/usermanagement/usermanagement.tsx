@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
-import UserForm from './userform';
+import AddUserForm from './adduserform'; // Import the new AddUserForm
+import EditUserDialog from './edituserdialog'; // Import the new EditUserDialog
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
@@ -15,7 +16,6 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import DeactivateUserDropdownItem from './deactivateuserdropdownitem';
 import { Footer } from '../footer';
-
 
 export type User = {
     id: string;
@@ -64,7 +64,8 @@ export default function UserManagement() {
             groupPermission: 'Data Manager',
             lastActive: new Date(Date.now() - 1000 * 60 * 5),
             dateAdded: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
-        }, {
+        },
+        {
             id: '03',
             firstName: 'Jane',
             lastName: 'Smith',
@@ -72,7 +73,8 @@ export default function UserManagement() {
             groupPermission: 'Data Manager',
             lastActive: new Date(Date.now() - 1000 * 60 * 5),
             dateAdded: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
-        }, {
+        },
+        {
             id: '04',
             firstName: 'Jane',
             lastName: 'Smith',
@@ -80,56 +82,7 @@ export default function UserManagement() {
             groupPermission: 'Data Manager',
             lastActive: new Date(Date.now() - 1000 * 60 * 5),
             dateAdded: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
-        }
-        //  {
-        //     id: '05',
-        //     firstName: 'Jane',
-        //     lastName: 'Smith',
-        //     email: 'jane.smith@example.com',
-        //     groupPermission: 'Data Manager',
-        //     lastActive: new Date(Date.now() - 1000 * 60 * 5),
-        //     dateAdded: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
-        // },  {
-        //     id: '06',
-        //     firstName: 'Jane',
-        //     lastName: 'Smith',
-        //     email: 'jane.smith@example.com',
-        //     groupPermission: 'Data Manager',
-        //     lastActive: new Date(Date.now() - 1000 * 60 * 5),
-        //     dateAdded: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
-        // },  {
-        //     id: '07',
-        //     firstName: 'Jane',
-        //     lastName: 'Smith',
-        //     email: 'jane.smith@example.com',
-        //     groupPermission: 'Data Manager',
-        //     lastActive: new Date(Date.now() - 1000 * 60 * 5),
-        //     dateAdded: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
-        // },  {
-        //     id: '08',
-        //     firstName: 'Jane',
-        //     lastName: 'Smith',
-        //     email: 'jane.smith@example.com',
-        //     groupPermission: 'Data Manager',
-        //     lastActive: new Date(Date.now() - 1000 * 60 * 5),
-        //     dateAdded: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
-        // },  {
-        //     id: '09',
-        //     firstName: 'Jane',
-        //     lastName: 'Smith',
-        //     email: 'jane.smith@example.com',
-        //     groupPermission: 'Data Manager',
-        //     lastActive: new Date(Date.now() - 1000 * 60 * 5),
-        //     dateAdded: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
-        // },  {
-        //     id: '10',
-        //     firstName: 'Jane',
-        //     lastName: 'Smith',
-        //     email: 'jane.smith@example.com',
-        //     groupPermission: 'Data Manager',
-        //     lastActive: new Date(Date.now() - 1000 * 60 * 5),
-        //     dateAdded: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
-        // }, 
+        },
     ]);
     const [searchTerm, setSearchTerm] = useState('');
     const [sortConfig, setSortConfig] = useState<{
@@ -140,7 +93,6 @@ export default function UserManagement() {
     const [editingUser, setEditingUser] = useState<User | null>(null);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
-    // Log state changes for debugging
     useEffect(() => {
         console.log('isEditDialogOpen:', isEditDialogOpen, 'editingUser:', editingUser);
     }, [isEditDialogOpen, editingUser]);
@@ -212,8 +164,7 @@ export default function UserManagement() {
                     <p className="text-sm text-muted-foreground">
                         Manage your team members and their group permissions here
                     </p>
-                    <UserForm
-                        mode="add"
+                    <AddUserForm
                         onSave={(newUser) => {
                             console.log('Adding New User:', newUser);
                             setUsers([
@@ -272,18 +223,17 @@ export default function UserManagement() {
                             <TableRow>
                                 <TableHead className="w-[70px]">
                                     <div className='flex items-center gap-2'>
-                                    <Checkbox
-                                        checked={
-                                            selectedUsers.length === filteredUsers.length &&
-                                            filteredUsers.length > 0
-                                        }
-                                        onCheckedChange={toggleSelectAll}
-                                        className="border-[rgba(228,231,236,1)]"
-                                    />
-                                    <span>S/N</span>
+                                        <Checkbox
+                                            checked={
+                                                selectedUsers.length === filteredUsers.length &&
+                                                filteredUsers.length > 0
+                                            }
+                                            onCheckedChange={toggleSelectAll}
+                                            className="border-[rgba(228,231,236,1)]"
+                                        />
+                                        <span>S/N</span>
                                     </div>
                                 </TableHead>
-
                                 <TableHead
                                     className="cursor-pointer"
                                     onClick={() => requestSort('firstName')}
@@ -360,15 +310,14 @@ export default function UserManagement() {
                                 <TableRow key={user.id} className="hover:bg-muted/50">
                                     <TableCell>
                                         <div className='flex items-center gap-2'>
-                                        <Checkbox
-                                            checked={selectedUsers.includes(user.id)}
-                                            onCheckedChange={() => toggleUserSelection(user.id)}
-                                            className="border-[rgba(228,231,236,1)]"
-                                        />
-                                        <span>{startIndex + index + 1}</span>
+                                            <Checkbox
+                                                checked={selectedUsers.includes(user.id)}
+                                                onCheckedChange={() => toggleUserSelection(user.id)}
+                                                className="border-[rgba(228,231,236,1)]"
+                                            />
+                                            <span>{startIndex + index + 1}</span>
                                         </div>
                                     </TableCell>
-                                    
                                     <TableCell>
                                         <div className="flex flex-col">
                                             <span className="font-medium">
@@ -422,7 +371,6 @@ export default function UserManagement() {
                             ))}
                         </TableBody>
                     </Table>
-
                 </div>
                 {/* Sticky Pagination Bar */}
                 <div className="sticky bottom-0 bg-white border-t border-gray-200 flex items-center justify-between px-4 py-3 mt-4 z-10">
@@ -432,7 +380,7 @@ export default function UserManagement() {
                             value={rowsPerPage}
                             onChange={(e) => {
                                 setRowsPerPage(Number(e.target.value));
-                                setCurrentPage(1); // reset to page 1 when page size changes
+                                setCurrentPage(1);
                             }}
                             className="text-sm border border-gray-300 rounded-md px-2 py-1 focus:outline-none"
                         >
@@ -466,8 +414,7 @@ export default function UserManagement() {
                 </div>
 
                 {editingUser && (
-                    <UserForm
-                        mode="edit"
+                    <EditUserDialog
                         user={editingUser}
                         isOpen={isEditDialogOpen}
                         onSave={(updatedUser) => {
@@ -480,12 +427,13 @@ export default function UserManagement() {
                                             id: editingUser.id,
                                             lastActive: editingUser.lastActive,
                                             dateAdded: editingUser.dateAdded,
-                                            groupPermission: editingUser.groupPermission ?? "",
+                                            groupPermission: updatedUser.groupPermission ?? "",
                                         }
                                         : u
                                 )
                             );
                             setIsEditDialogOpen(false);
+                            setEditingUser(null);
                         }}
                         onClose={() => {
                             console.log('Edit dialog closed');
