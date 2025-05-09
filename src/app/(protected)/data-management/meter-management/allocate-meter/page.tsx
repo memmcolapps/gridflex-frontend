@@ -170,7 +170,7 @@ export default function AllocateMetersPage() {
                 </div>
             </Card>
 
-            <div className="bg-white rounded-md shadow-sm border border-gray-200">
+            <div className="bg-white rounded-md h-4/6 shadow-sm border border-gray-200">
                 <Table>
                     <TableHeader>
                         <TableRow>
