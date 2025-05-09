@@ -18,6 +18,7 @@ import { ArrowUpDown, ListFilter, PlusCircleIcon, SearchIcon } from "lucide-reac
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 
+
 // Define the GroupPermission type
 interface GroupPermission {
   id: string;
@@ -93,6 +94,8 @@ export default function GroupPermissionManagement() {
     key: keyof GroupPermission;
     direction: "ascending" | "descending";
   } | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(12);
 
   useEffect(() => {
     const loadGroupPermissions = async () => {
@@ -113,6 +116,7 @@ export default function GroupPermissionManagement() {
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
+    setCurrentPage(1);
   };
 
   const requestSort = (key: keyof GroupPermission) => {
@@ -150,9 +154,17 @@ export default function GroupPermissionManagement() {
     group.groupTitle.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const totalRows = filteredGroupPermissions.length;
+  const startIndex = (currentPage - 1) * rowsPerPage;
+  const endIndex = startIndex + rowsPerPage;
+  const paginatedGroups = filteredGroupPermissions.slice(startIndex, endIndex);
+
   console.log("Rendering table with:", {
     groupPermissions,
     filteredGroupPermissions,
+    paginatedGroups,
+    currentPage,
+    rowsPerPage,
   });
 
   const handleAddGroupPermission = async (newGroup: GroupPermissionFormData) => {
@@ -201,7 +213,7 @@ export default function GroupPermissionManagement() {
   };
 
   return (
-    <div className="p-6 text-black h-210 overflow-y-auto">
+    <div className="p-6 text-black h-210 overflow-y-hidden">
       <h1 className="mb-10 text-2xl font-bold">Group Permission</h1>
       <div className="flex justify-between">
         <p className="text-muted-foreground text-sm">
@@ -220,6 +232,7 @@ export default function GroupPermissionManagement() {
           }
         />
       </div>
+
 
       <div className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -251,7 +264,7 @@ export default function GroupPermissionManagement() {
         </div>
       </div>
 
-      <div className="h-4/6">
+      <div className='h-4/6'>
         <Table>
           <TableHeader>
             <TableRow>
@@ -285,14 +298,14 @@ export default function GroupPermissionManagement() {
                   Loading group permissions...
                 </TableCell>
               </TableRow>
-            ) : filteredGroupPermissions.length === 0 ? (
+            ) : paginatedGroups.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="text-center">
                   No group permissions found
                 </TableCell>
               </TableRow>
             ) : (
-              filteredGroupPermissions.map((group) => (
+              paginatedGroups.map((group) => (
                 <TableRow key={group.id} className="hover:bg-muted/50 bg-gray-50">
                   <TableCell>{group.groupTitle || "N/A"}</TableCell>
                   <TableCell>
@@ -337,6 +350,45 @@ export default function GroupPermissionManagement() {
           </TableBody>
         </Table>      
       </div> 
+       {/* Sticky Pagination Bar */}
+      <div className="sticky bottom-0 bg-white border-t border-gray-200 flex items-center justify-between px-4 py-3 mt-4 z-10 text-black-500">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-600">Rows per page</span>
+            <select
+              value={rowsPerPage}
+              onChange={(e) => {
+                setRowsPerPage(Number(e.target.value));
+                setCurrentPage(1); // Reset to page 1 when page size changes
+              }}
+              className="text-sm border border-gray-300 rounded-md px-2 py-1 focus:outline-none"
+            >
+              {[5, 10, 12, 20, 50].map((num) => (
+                <option key={num} value={num}>
+                  {num}
+                </option>
+              ))}
+            </select>
+          </div>
+          <span className="text-sm text-black-500">
+            {startIndex + 1}-{Math.min(endIndex, totalRows)} of {totalRows} rows
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              className="px-3 py-1 border border-gray-300 rounded-md text-sm text-black-500 disabled:opacity-50 cursor-pointer"
+            >
+              Previous
+            </button>
+            <button
+              disabled={endIndex >= totalRows}
+              onClick={() => setCurrentPage((prev) => prev + 1)}
+              className="px-3 py-1 border border-gray-300 rounded-md text-sm text-black-500 disabled:opacity-50 cursor-pointer"
+            >
+              Next
+            </button>
+          </div>
+        </div>    
     </div>
   );
 }
