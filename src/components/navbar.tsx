@@ -12,8 +12,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useAuth } from "@/context/auth-context";
 
 export function Navbar() {
+
+  const { logout, isLoading } = useAuth();
+
   return (
     <header className="sticky top-0 z-30 flex h-18 w-full items-center justify-between border-b 
      border-gray-200 px-8 text-black">
@@ -45,10 +49,15 @@ export function Navbar() {
           <DropdownMenuContent align="end" className="text-[#333333] bg-white p-4">
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Profile</DropdownMenuItem>
-            <DropdownMenuItem>Settings</DropdownMenuItem>
+            <DropdownMenuItem className="hover:bg-gray-100 focus:bg-gray-100">Profile</DropdownMenuItem>
+            <DropdownMenuItem className="hover:bg-gray-100 focus:bg-gray-100">Settings</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Log out</DropdownMenuItem>
+            <DropdownMenuItem className="hover:bg-gray-100 focus:bg-gray-100"     
+              onClick={logout}
+              disabled={isLoading}
+            >
+              Log out
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
