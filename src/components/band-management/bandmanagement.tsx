@@ -20,6 +20,8 @@ import { PlusCircleIcon, SearchIcon } from "lucide-react";
 import { fetchBands, createBand, updateBand, type Band } from "@/service/band-service";
 
 export default function BandManagement() {
+
+  
   const [bands, setBands] = useState<Band[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -123,7 +125,7 @@ export default function BandManagement() {
           mode="add"
           onSave={handleAddBand}
           triggerButton={
-            <Button className="flex items-center gap-2 bg-[#161CCA] hover:bg-[#121eb3]">
+            <Button className="flex items-center gap-2 bg-[#161CCA] hover:bg-[#121eb3] cursor-pointer">
               <div className="flex items-center justify-center p-0.5">
                 <PlusCircleIcon className="text-[#FEFEFE]" size={12} />
               </div>

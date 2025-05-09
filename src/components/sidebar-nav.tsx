@@ -91,7 +91,7 @@ export function SidebarNav() {
             { title: "Allocate Meters", href: "/data-management/meter-management/allocate-meter" }
           ]
         },
-        { title: "Customer Management", href: "/customer-management" },
+        { title: "Customer Management", href: "/data-management/customer-management" },
         { title: "Tariff", href: "/data-management/tarrif" },
         { title: "Band Management", href: "/data-management/band-management" },
       ],
@@ -129,7 +129,10 @@ export function SidebarNav() {
       href: "/user-management",
       icon: Users,
       hasSubmenu: true,
-      submenuItems: [],
+      submenuItems: [
+        { title: "Users", href: "/user-management"},
+        { title: "Group Permission", href: "/user-management/group-permission"}
+      ],
     },
     {
       title: "Audit Log",
