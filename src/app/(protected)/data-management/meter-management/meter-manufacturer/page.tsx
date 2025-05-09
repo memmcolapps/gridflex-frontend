@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Card } from "@/components/ui/card";
-import { Search, Filter, ArrowUpDown, Trash2, Edit2, CirclePlus} from "lucide-react";
+import { Search, Filter, ArrowUpDown, CirclePlus, Ban, MoreVertical, Pencil } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ContentHeader } from "@/components/ui/content-header";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -15,6 +15,7 @@ import {
     DialogTitle,
     DialogFooter,
 } from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 // Types
 interface Manufacturer {
@@ -212,152 +213,173 @@ export default function ManufacturersPage() {
     };
 
     return (
-        <main className="flex-1 p-6 bg-gray-50 overflow-auto">
-            {/* Header */}
-            <div className="mb-6">
-                <div className="flex justify-between items-center">
-                    <ContentHeader
-                        title="Manufacturer"
-                        description="Manage and Access Manufacturers."
-                    />
-                    <Button
-                        className="bg-[#161CCA] text-white hover:bg-[#161CCA]/90 px-4 py-2 rounded-md"
-                        onClick={() => setIsDialogOpen(true)}
-                        size="lg"
-                    >
-                        <CirclePlus size={14} strokeWidth={2.3} className="mr-2" /> Add Manufacturer
-                    </Button>
-                </div>
-            </div>
-
-            {/* Search and Filter Section */}
-            <Card className="p-4 mb-6 border-none shadow-none bg-white">
-                <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-                    <div className="flex items-center gap-2 w-full md:w-auto">
-                        <div className="relative w-full md:w-[300px]">
-                            <Search
-                                size={14}
-                                className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400"
-                            />
-                            <Input
-                                type="text"
-                                placeholder="Search by meter no., account no., ..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="pl-10 w-full border-gray-300 focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
-                            />
-                        </div>
-                        <Button variant="outline" className="gap-2 border-gray-300">
-                            <Filter className="text-gray-500" size={14} />
-                            <span className="text-gray-800">Filter</span>
-                        </Button>
-                        <Button variant="outline" className="gap-2 border-gray-300">
-                            <ArrowUpDown className="text-gray-500" size={14} />
-                            <span className="text-gray-800">Sort</span>
-                        </Button>
-                    </div>
-                </div>
-            </Card>
-
-            {/* Table */}
-            <Card className="border-none shadow-none bg-white overflow-x-auto">
-                <Table>
-                    <TableHeader>
-                        <TableRow className="bg-gray-50 hover:bg-gray-50">
-                            <TableHead className="w-[50px] px-4 py-3 text-left">
-                                <Checkbox className="h-4 w-4 border-gray-500" />
-                            </TableHead>
-                            <TableHead className="min-w-[100px] px-4 py-3 text-left text-sm font-semibold text-gray-700">S/N</TableHead>
-                            <TableHead className="min-w-[150px] px-4 py-3 text-left text-sm font-semibold text-gray-700">Manufacturer</TableHead>
-                            <TableHead className="min-w-[120px] px-4 py-3 text-left text-sm font-semibold text-gray-700">Manufacturer ID</TableHead>
-                            <TableHead className="min-w-[100px] px-4 py-3 text-left text-sm font-semibold text-gray-700">SGC</TableHead>
-                            <TableHead className="min-w-[150px] px-4 py-3 text-left text-sm font-semibold text-gray-700">Contact Person</TableHead>
-                            <TableHead className="min-w-[100px] px-4 py-3 text-left text-sm font-semibold text-gray-700">Location</TableHead>
-                            <TableHead className="min-w-[200px] px-4 py-3 text-left text-sm font-semibold text-gray-700">Address</TableHead>
-                            <TableHead className="min-w-[80px] px-4 py-3 text-right text-sm font-semibold text-gray-700">Actions</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {paginatedData.length === 0 ? (
-                            <TableRow>
-                                <TableCell colSpan={9} className="h-24 text-center text-sm text-gray-500">
-                                    No data available
-                                </TableCell>
-                            </TableRow>
-                        ) : (
-                            paginatedData.map((item) => (
-                                <TableRow key={item.id} className="hover:bg-gray-50">
-                                    <TableCell className="px-4 py-3">
-                                        <Checkbox className="h-4 w-4 border-gray-500" />
-                                    </TableCell>
-                                    <TableCell className="px-4 py-3 text-sm text-gray-900">{item.id}</TableCell>
-                                    <TableCell className="px-4 py-3 text-sm text-gray-900">{item.sin}</TableCell>
-                                    <TableCell className="px-4 py-3 text-sm text-gray-900">{item.manufacturerId}</TableCell>
-                                    <TableCell className="px-4 py-3 text-sm text-gray-900">{item.sgc}</TableCell>
-                                    <TableCell className="px-4 py-3 text-sm text-gray-900">{item.contactPerson}</TableCell>
-                                    <TableCell className="px-4 py-3 text-sm text-gray-900">{item.location}</TableCell>
-                                    <TableCell className="px-4 py-3 text-sm text-gray-900">{item.address}</TableCell>
-                                    <TableCell className="px-4 py-3 text-right">
-                                        <div className="flex justify-end gap-2">
-                                            <button className="p-1 hover:bg-gray-100 rounded">
-                                                <Edit2 size={16} className="text-gray-500" />
-                                            </button>
-                                            <button className="p-1 hover:bg-gray-100 rounded">
-                                                <Trash2 size={16} className="text-gray-500" />
-                                            </button>
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            ))
-                        )}
-                    </TableBody>
-                </Table>
-            </Card>
-
-            {/* Pagination */}
-            <div className="flex justify-between items-center py-4 px-6 text-sm text-gray-600">
-                <div className="flex items-center gap-2">
-                    <span>Rows per page</span>
-                    <Select value={rowsPerPage.toString()} onValueChange={(value) => onRowsPerPageChange(parseInt(value))}>
-                        <SelectTrigger className="w-16 border-gray-300">
-                            <SelectValue placeholder={rowsPerPage} />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="10">10</SelectItem>
-                            <SelectItem value="20">20</SelectItem>
-                            <SelectItem value="50">50</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-                <div className="flex items-center gap-2">
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onPageChange(Math.max(currentPage - 1, 1))}
-                        disabled={currentPage === 1}
-                        className="cursor-pointer"
-                    >
-                        Previous
-                    </Button>
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onPageChange(Math.min(currentPage + 1, totalPages))}
-                        disabled={currentPage === totalPages || data.length === 0}
-                        className="cursor-pointer"
-                    >
-                        Next
-                    </Button>
-                </div>
-            </div>
-
-            {/* Add Manufacturer Dialog */}
-            <AddManufacturerDialog
-                isOpen={isDialogOpen}
-                onClose={() => setIsDialogOpen(false)}
-                onAdd={handleAddManufacturer}
-                data={data}
+        <main className="p-4 sm:p-6 h-full overflow-hidden">
+    {/* Header */}
+    <div className="mb-4 sm:mb-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <ContentHeader
+                title="Manufacturer"
+                description="Manage and Access Manufacturers."
             />
-        </main>
+            <Button
+                className="bg-[#161CCA] text-white hover:bg-[#161CCA]/90 px-3 py-1.5 sm:px-4 sm:py-2 rounded-md w-full sm:w-auto"
+                onClick={() => setIsDialogOpen(true)}
+                size="lg"
+            >
+                <CirclePlus size={14} strokeWidth={2.3} className="mr-2" /> 
+                <span className="hidden sm:inline">Add Manufacturer</span>
+                <span className="sm:hidden">Add</span>
+            </Button>
+        </div>
+    </div>
+
+    {/* Search and Filter Section */}
+    <Card className="p-3 sm:p-4 mb-4 sm:mb-6 border-none shadow-none bg-white">
+        <div className="flex flex-col gap-3 sm:flex-row justify-between items-start sm:items-center w-full">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto">
+                <div className="relative w-full sm:w-[250px] lg:w-[300px]">
+                    <Search
+                        size={14}
+                        className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400"
+                    />
+                    <Input
+                        type="text"
+                        placeholder="Search manufacturers..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-10 w-full border-gray-300 focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50 text-sm sm:text-base"
+                    />
+                </div>
+                <div className="flex gap-2 w-full sm:w-auto">
+                    <Button variant="outline" className="gap-2 border-gray-300 w-1/2 sm:w-auto">
+                        <Filter className="text-gray-500" size={14} />
+                        <span className="hidden sm:inline text-gray-800">Filter</span>
+                    </Button>
+                    <Button variant="outline" className="gap-2 border-gray-300 w-1/2 sm:w-auto">
+                        <ArrowUpDown className="text-gray-500" size={14} />
+                        <span className="hidden sm:inline text-gray-800">Sort</span>
+                    </Button>
+                </div>
+            </div>
+        </div>
+    </Card>
+
+    {/* Table */}
+    <Card className="border-none h-[calc(100%-220px)] sm:h-[calc(100%-200px)] shadow-none bg-white overflow-x-auto">
+        <div className="min-w-[800px]">
+            <Table>
+                <TableHeader>
+                    <TableRow className="bg-gray-50 hover:bg-gray-50">
+                        <TableHead className="w-[40px] sm:w-[50px] px-2 sm:px-4 py-2 sm:py-3 text-left">
+                            <Checkbox className="h-4 w-4 border-gray-500" />
+                        </TableHead>
+                        <TableHead className="min-w-[60px] sm:min-w-[100px] px-2 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-semibold text-gray-700">S/N</TableHead>
+                        <TableHead className="min-w-[120px] sm:min-w-[150px] px-2 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-semibold text-gray-700">Manufacturer</TableHead>
+                        <TableHead className="min-w-[100px] sm:min-w-[120px] px-2 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-semibold text-gray-700">ID</TableHead>
+                        <TableHead className="min-w-[80px] sm:min-w-[100px] px-2 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-semibold text-gray-700 hidden sm:table-cell">SGC</TableHead>
+                        <TableHead className="min-w-[100px] sm:min-w-[150px] px-2 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-semibold text-gray-700 hidden md:table-cell">Contact</TableHead>
+                        <TableHead className="min-w-[80px] sm:min-w-[100px] px-2 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-semibold text-gray-700 hidden lg:table-cell">Location</TableHead>
+                        <TableHead className="min-w-[120px] sm:min-w-[200px] px-2 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-semibold text-gray-700 hidden xl:table-cell">Address</TableHead>
+                        <TableHead className="min-w-[60px] sm:min-w-[80px] px-2 sm:px-4 py-2 sm:py-3 text-right text-xs sm:text-sm font-semibold text-gray-700">Actions</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {paginatedData.length === 0 ? (
+                        <TableRow>
+                            <TableCell colSpan={9} className="h-24 text-center text-xs sm:text-sm text-gray-500">
+                                No data available
+                            </TableCell>
+                        </TableRow>
+                    ) : (
+                        paginatedData.map((item) => (
+                            <TableRow key={item.id} className="hover:bg-gray-50">
+                                <TableCell className="px-2 sm:px-4 py-2 sm:py-3">
+                                    <Checkbox className="h-4 w-4 border-gray-500" />
+                                </TableCell>
+                                <TableCell className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900">{item.id}</TableCell>
+                                <TableCell className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900">{item.sin}</TableCell>
+                                <TableCell className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900">{item.manufacturerId}</TableCell>
+                                <TableCell className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900 hidden sm:table-cell">{item.sgc}</TableCell>
+                                <TableCell className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900 hidden md:table-cell">{item.contactPerson}</TableCell>
+                                <TableCell className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900 hidden lg:table-cell">{item.location}</TableCell>
+                                <TableCell className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900 hidden xl:table-cell">{item.address}</TableCell>
+                                <TableCell className="px-4 py-3 text-right">
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button className="border-gray-500 outline-none focus:outline-none focus:ring-gray-500" variant="ghost" size="sm">
+                                                    <MoreVertical size={16} className="text-gray-500" />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end" className="w-48 bg-white shadow-lg">
+                                                <DropdownMenuItem
+                                                    className="flex items-center gap-2"
+                                                    onClick={() => alert("Edit action triggered")}
+                                                >
+                                                    <Pencil size={14} className="text-gray-500" />
+                                                    <span className="text-sm text-gray-700">Edit Manufacturer</span>
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem
+                                                    className="flex items-center gap-2"
+                                                    onClick={() => alert("Deactivate action triggered")}
+                                                >
+                                                    <Ban size={16} className="text-gray-500" />
+                                                    <span className="text-sm text-gray-700">Deactivate</span>
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </TableCell>
+                            </TableRow>
+                        ))
+                    )}
+                </TableBody>
+            </Table>
+        </div>
+    </Card>
+
+    {/* Pagination */}
+    <div className="flex flex-col sm:flex-row justify-between items-center py-3 px-4 sm:py-4 sm:px-6 text-xs sm:text-sm text-gray-600 gap-3 sm:gap-0">
+        <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-start">
+            <span className="whitespace-nowrap">Rows per page</span>
+            <Select value={rowsPerPage.toString()} onValueChange={(value) => onRowsPerPageChange(parseInt(value))}>
+                <SelectTrigger className="w-16 border-gray-300">
+                    <SelectValue placeholder={rowsPerPage} />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="10">10</SelectItem>
+                    <SelectItem value="20">20</SelectItem>
+                    <SelectItem value="50">50</SelectItem>
+                </SelectContent>
+            </Select>
+        </div>
+        <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-start">
+            <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onPageChange(Math.max(currentPage - 1, 1))}
+                disabled={currentPage === 1}
+                className="cursor-pointer px-2 sm:px-3"
+            >
+                Previous
+            </Button>
+            <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onPageChange(Math.min(currentPage + 1, totalPages))}
+                disabled={currentPage === totalPages || data.length === 0}
+                className="cursor-pointer px-2 sm:px-3"
+            >
+                Next
+            </Button>
+        </div>
+    </div>
+    
+    {/* Add Manufacturer Dialog */}
+    <AddManufacturerDialog
+        isOpen={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        onAdd={handleAddManufacturer}
+        data={data}
+    />
+</main>
     );
 }

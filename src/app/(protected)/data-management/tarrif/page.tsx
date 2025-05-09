@@ -434,10 +434,6 @@ export default function TariffManagementPage() {
                     )}
                 </div>
             </div>
-
-            <div className="mt-auto border-t border-gray-200 py-3 text-center text-gray-500">
-                © 2025, Powered by MEMMCOL
-            </div>
         </div>
     );
 }

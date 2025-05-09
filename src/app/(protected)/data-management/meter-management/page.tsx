@@ -1,6 +1,5 @@
 "use client";
 
-import { Footer } from "@/components/footer";
 import { ContentHeader } from "@/components/ui/content-header";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -146,7 +145,7 @@ export default function MeterManagementPage() {
     const paginatedData = data.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
 
     return (
-        <div className="min-h-screen">
+        <div className="h-full p-6">
             {/* Header */}
             <div className="flex justify-between items-center mb-4">
                 <ContentHeader
@@ -228,7 +227,7 @@ export default function MeterManagementPage() {
             </Card>
 
             {/* Table */}
-            <Card className="border-none shadow-none bg-white overflow-x-auto">
+            <Card className="border-none h-4/6 shadow-none bg-white overflow-x-auto">
                 <Table>
                     <TableHeader>
                         <TableRow className="bg-gray-50 hover:bg-gray-50">
@@ -338,7 +337,7 @@ export default function MeterManagementPage() {
                                     <TableCell className="px-4 py-3 text-right">
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" size="sm">
+                                                <Button variant="ghost" size="sm" className="border-gray-500 focus:ring-gray-500">
                                                     <MoreVertical size={16} className="text-gray-500" />
                                                 </Button>
                                             </DropdownMenuTrigger>
@@ -474,8 +473,6 @@ export default function MeterManagementPage() {
                 onClose={() => setIsBulkUploadDialogOpen(false)}
                 onSave={handleBulkUpload}
             />
-
-            <Footer />
         </div>
     );
 }
