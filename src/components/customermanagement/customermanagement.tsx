@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ArrowUpDown, PlusCircleIcon, SearchIcon, MoreVertical, ListFilter, Lock } from 'lucide-react';
+import { ArrowUpDown, PlusCircleIcon, SearchIcon, MoreVertical, ListFilter, Lock, User } from 'lucide-react';
 import CustomerForm from './customerform';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -68,7 +68,7 @@ export default function CustomerManagement() {
             houseNo: 'Lagos',
             streetName: 'KM 40, Lagos Ibadan Exp. way, Ogun',
         },
-        // Add more sample data as per the screenshot
+
         ...Array.from({ length: 10 }, (_, index) => ({
             id: String(index + 3).padStart(2, '0'),
             firstName: 'Margaret',
@@ -78,7 +78,7 @@ export default function CustomerManagement() {
             location: 'Lagos',
             phoneNumber: '0812354648',
             address: 'Olowotedo, Mowe',
-            status: (index % 2 === 0 ? 'Unassigned' : 'Assigned') as 'Assigned' | 'Unassigned', // Explicitly cast to fix the status type
+            status: (index % 2 === 0 ? 'Unassigned' : 'Assigned') as 'Assigned' | 'Unassigned',
             nin: '012345678900',
             email: 'margaret@gmail.com',
             state: 'Lagos',
@@ -181,8 +181,11 @@ export default function CustomerManagement() {
                         Manage and access customer records.
                     </p>
                     <div className="flex gap-2">
-                        <Button variant="outline" className="border-[#161CCA] text-[#161CCA]">
-                            Bulk Upload
+                        <Button variant="outline" className="border-[#161CCA] text-[#161CCA] cursor-pointer">
+                            <div className="flex items-center justify-center p-0.5">
+                                <PlusCircleIcon className="text-[#161CCA]" size={12} />
+                            </div>
+                            <span>Bulk Upload</span>
                         </Button>
                         <CustomerForm
                             mode="add"
@@ -192,10 +195,10 @@ export default function CustomerManagement() {
                                     {
                                         ...newCustomer,
                                         id: Date.now().toString(),
-                                        meterNumber: newCustomer.accountNumber, // Example: set meterNumber same as accountNumber
-                                        location: newCustomer.city, // Example: set location same as city
-                                        address: `${newCustomer.streetName}, ${newCustomer.city}`, // Combine street and city
-                                        status: 'Unassigned', // Default status
+                                        meterNumber: newCustomer.accountNumber,
+                                        location: newCustomer.city,
+                                        address: `${newCustomer.streetName}, ${newCustomer.city}`,
+                                        status: 'Unassigned',
                                     },
                                 ]);
                             }}
@@ -243,7 +246,8 @@ export default function CustomerManagement() {
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead className="w-[50px]">
+                                <TableHead className="w-[30px] pr-0">
+                                    <div className='flex items-center gap-2'>
                                     <Checkbox
                                         checked={
                                             selectedCustomers.length === filteredCustomers.length &&
@@ -252,8 +256,12 @@ export default function CustomerManagement() {
                                         onCheckedChange={toggleSelectAll}
                                         className="border-[rgba(228,231,236,1)]"
                                     />
+                                      <span>
+                                    S/N
+                                </span>
+                                    </div>
                                 </TableHead>
-                                <TableHead className="w-[60px]">S/N</TableHead>
+                              
                                 <TableHead onClick={() => requestSort('firstName')}>
                                     First Name
                                 </TableHead>
@@ -285,13 +293,16 @@ export default function CustomerManagement() {
                             {paginatedCustomers.map((customer, index) => (
                                 <TableRow key={customer.id} className="hover:bg-muted/50">
                                     <TableCell>
+                                        <div className='flex items-center gap-2'>
                                         <Checkbox
                                             checked={selectedCustomers.includes(customer.id)}
                                             onCheckedChange={() => toggleCustomerSelection(customer.id)}
                                             className="border-[rgba(228,231,236,1)]"
                                         />
+                                         <span>{startIndex + index + 1}</span>
+                                         </div>
                                     </TableCell>
-                                    <TableCell>{startIndex + index + 1}</TableCell>
+                                   
                                     <TableCell>{customer.firstName}</TableCell>
                                     <TableCell>{customer.lastName}</TableCell>
                                     <TableCell>{customer.meterNumber}</TableCell>
@@ -325,6 +336,7 @@ export default function CustomerManagement() {
                                                     }}
                                                 >
                                                     <div className="flex items-center w-full gap-2">
+                                                        <User size={14} />
                                                         <span className='cursor-pointer'>Edit Customer</span>
                                                     </div>
                                                 </DropdownMenuItem>
@@ -393,13 +405,13 @@ export default function CustomerManagement() {
                                 customers.map((c) =>
                                     c.id === editingCustomer.id
                                         ? {
-                                              ...updatedCustomer,
-                                              id: editingCustomer.id,
-                                              meterNumber: updatedCustomer.meterNumber ?? editingCustomer.meterNumber,
-                                              location: updatedCustomer.city ?? editingCustomer.location,
-                                              address: updatedCustomer.address ?? `${updatedCustomer.streetName}, ${updatedCustomer.city}`,
-                                              status: editingCustomer.status, // Preserve status
-                                          }
+                                            ...updatedCustomer,
+                                            id: editingCustomer.id,
+                                            meterNumber: updatedCustomer.meterNumber ?? editingCustomer.meterNumber,
+                                            location: updatedCustomer.city ?? editingCustomer.location,
+                                            address: updatedCustomer.address ?? `${updatedCustomer.streetName}, ${updatedCustomer.city}`,
+                                            status: editingCustomer.status, // Preserve status
+                                        }
                                         : c
                                 )
                             );

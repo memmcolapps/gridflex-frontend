@@ -198,7 +198,7 @@ export default function UserForm({ mode, user, onSave, triggerButton, isOpen: co
                 </DialogTrigger>
             )}
 
-            <DialogContent className="sm:max-w-[500px] bg-white text-black">
+            <DialogContent className="sm:max-w-[500px] bg-white text-black h-fit">
                 <DialogHeader>
                     <DialogTitle>
                         {mode === 'add' ? 'Add User' : `Edit ${user?.firstName} ${user?.lastName}`}

@@ -270,7 +270,8 @@ export default function UserManagement() {
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead className="w-[50px]">
+                                <TableHead className="w-[70px]">
+                                    <div className='flex items-center gap-2'>
                                     <Checkbox
                                         checked={
                                             selectedUsers.length === filteredUsers.length &&
@@ -279,8 +280,10 @@ export default function UserManagement() {
                                         onCheckedChange={toggleSelectAll}
                                         className="border-[rgba(228,231,236,1)]"
                                     />
+                                    <span>S/N</span>
+                                    </div>
                                 </TableHead>
-                                <TableHead className="w-[60px]">S/N</TableHead>
+
                                 <TableHead
                                     className="cursor-pointer"
                                     onClick={() => requestSort('firstName')}
@@ -356,13 +359,16 @@ export default function UserManagement() {
                             {paginatedUsers.map((user, index) => (
                                 <TableRow key={user.id} className="hover:bg-muted/50">
                                     <TableCell>
+                                        <div className='flex items-center gap-2'>
                                         <Checkbox
                                             checked={selectedUsers.includes(user.id)}
                                             onCheckedChange={() => toggleUserSelection(user.id)}
                                             className="border-[rgba(228,231,236,1)]"
                                         />
+                                        <span>{startIndex + index + 1}</span>
+                                        </div>
                                     </TableCell>
-                                    <TableCell>{startIndex + index + 1}</TableCell>
+                                    
                                     <TableCell>
                                         <div className="flex flex-col">
                                             <span className="font-medium">

@@ -172,7 +172,7 @@ export default function GroupPermissionForm({
       }}
     >
       <DialogTrigger asChild>{triggerButton}</DialogTrigger>
-      <DialogContent className="bg-white sm:max-w-[425px] h-110">
+      <DialogContent className="bg-white sm:max-w-[425px] h-fit">
         <DialogHeader>
           <DialogTitle>Add Group Permission</DialogTitle>
         </DialogHeader>
@@ -229,7 +229,7 @@ export default function GroupPermissionForm({
                                 }))
                               }
                               onClick={(e) => e.stopPropagation()}
-                              className="border-green-500 data-[state=checked]:bg-green-500 data-[state=checked]:text-white"
+                              className="border-gray-200 data-[state=checked]:bg-green-500 data-[state=checked]:text-white"
                             />
                           </div>
                         ))}
@@ -265,7 +265,7 @@ export default function GroupPermissionForm({
                                   }))
                                 }
                                 onClick={(e) => e.stopPropagation()}
-                                className="border-green-500 data-[state=checked]:bg-green-500 data-[state=checked]:text-white"
+                                className="border-gray-200 data-[state=checked]:bg-green-500 data-[state=checked]:text-white"
                               />
                             </div>
                           ))}
@@ -289,7 +289,7 @@ export default function GroupPermissionForm({
                                 }))
                               }
                               onClick={(e) => e.stopPropagation()}
-                              className="border-green-500 data-[state=checked]:bg-green-500 data-[state=checked]:text-white"
+                              className="border-gray-200 data-[state=checked]:bg-green-500 data-[state=checked]:text-white"
                             />
                           </div>
                         ))}
@@ -333,7 +333,7 @@ export default function GroupPermissionForm({
                             }))
                           }
                           onClick={(e) => e.stopPropagation()}
-                          className="border-green-500 data-[state=checked]:bg-green-500 data-[state=checked]:text-white"
+                          className="border-gray-200 data-[state=checked]:bg-green-500 data-[state=checked]:text-white"
                         />
                       </div>
                     ))}

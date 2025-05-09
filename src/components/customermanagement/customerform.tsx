@@ -156,7 +156,7 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
                 </DialogTrigger>
             )}
 
-            <DialogContent className="sm:max-w-[500px] bg-white text-black">
+            <DialogContent className="sm:max-w-[500px] bg-white text-black h-fit">
                 <DialogHeader>
                     <DialogTitle>
                         {mode === 'add' ? 'Add Customer' : 'Edit Customer'}
