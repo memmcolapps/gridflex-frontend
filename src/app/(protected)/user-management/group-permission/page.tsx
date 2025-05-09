@@ -1,7 +1,7 @@
 "use client"
 
 import { Footer } from "@/components/footer"
-import GroupPermissionManagement from "@/components/group-permission/grouppermissionmgt"
+import GroupPermissionManagement from "@/components/usermanagement/grouppermissionmgt"
 
 export default function GrouppermissionPagePage(){
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
-import UserForm from '../userform/userform';
+import UserForm from './userform';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
@@ -13,7 +13,8 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Checkbox } from "@/components/ui/checkbox";
-import DeactivateUserDropdownItem from '../deactivateuserdropdownitem/deactivateuserdropdownitem';
+import DeactivateUserDropdownItem from './deactivateuserdropdownitem';
+import { Footer } from '../footer';
 
 
 export type User = {
@@ -71,7 +72,7 @@ export default function UserManagement() {
             groupPermission: 'Data Manager',
             lastActive: new Date(Date.now() - 1000 * 60 * 5),
             dateAdded: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
-        }, {
+        },  {
             id: '04',
             firstName: 'Jane',
             lastName: 'Smith',
@@ -79,31 +80,56 @@ export default function UserManagement() {
             groupPermission: 'Data Manager',
             lastActive: new Date(Date.now() - 1000 * 60 * 5),
             dateAdded: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
-        }, {
-            id: '05',
-            firstName: 'Jane',
-            lastName: 'Smith',
-            email: 'jane.smith@example.com',
-            groupPermission: 'Data Manager',
-            lastActive: new Date(Date.now() - 1000 * 60 * 5),
-            dateAdded: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
-        }, {
-            id: '06',
-            firstName: 'Jane',
-            lastName: 'Smith',
-            email: 'jane.smith@example.com',
-            groupPermission: 'Data Manager',
-            lastActive: new Date(Date.now() - 1000 * 60 * 5),
-            dateAdded: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
-        }, {
-            id: '07',
-            firstName: 'Jane',
-            lastName: 'Smith',
-            email: 'jane.smith@example.com',
-            groupPermission: 'Data Manager',
-            lastActive: new Date(Date.now() - 1000 * 60 * 5),
-            dateAdded: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
-        },
+        } 
+        //  {
+        //     id: '05',
+        //     firstName: 'Jane',
+        //     lastName: 'Smith',
+        //     email: 'jane.smith@example.com',
+        //     groupPermission: 'Data Manager',
+        //     lastActive: new Date(Date.now() - 1000 * 60 * 5),
+        //     dateAdded: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
+        // },  {
+        //     id: '06',
+        //     firstName: 'Jane',
+        //     lastName: 'Smith',
+        //     email: 'jane.smith@example.com',
+        //     groupPermission: 'Data Manager',
+        //     lastActive: new Date(Date.now() - 1000 * 60 * 5),
+        //     dateAdded: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
+        // },  {
+        //     id: '07',
+        //     firstName: 'Jane',
+        //     lastName: 'Smith',
+        //     email: 'jane.smith@example.com',
+        //     groupPermission: 'Data Manager',
+        //     lastActive: new Date(Date.now() - 1000 * 60 * 5),
+        //     dateAdded: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
+        // },  {
+        //     id: '08',
+        //     firstName: 'Jane',
+        //     lastName: 'Smith',
+        //     email: 'jane.smith@example.com',
+        //     groupPermission: 'Data Manager',
+        //     lastActive: new Date(Date.now() - 1000 * 60 * 5),
+        //     dateAdded: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
+        // },  {
+        //     id: '09',
+        //     firstName: 'Jane',
+        //     lastName: 'Smith',
+        //     email: 'jane.smith@example.com',
+        //     groupPermission: 'Data Manager',
+        //     lastActive: new Date(Date.now() - 1000 * 60 * 5),
+        //     dateAdded: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
+        // },  {
+        //     id: '10',
+        //     firstName: 'Jane',
+        //     lastName: 'Smith',
+        //     email: 'jane.smith@example.com',
+        //     groupPermission: 'Data Manager',
+        //     lastActive: new Date(Date.now() - 1000 * 60 * 5),
+        //     dateAdded: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3),
+        // }, 
     ]);
     const [searchTerm, setSearchTerm] = useState('');
     const [sortConfig, setSortConfig] = useState<{
@@ -179,7 +205,7 @@ export default function UserManagement() {
     const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
 
     return (
-        <div className="min-h-210 flex flex-col text-black overflow-hidden">
+        <div className="h-full overflow-hidden flex flex-col text-black">
             <div className="p-6 flex-grow">
                 <h1 className="text-2xl mb-6 font-bold">Users</h1>
                 <div className="flex justify-between items-center mb-6">
@@ -240,7 +266,7 @@ export default function UserManagement() {
                         </Label>
                     </Button>
                 </div>
-                <div>
+                <div className='h-4/6'>
                     <Table>
                         <TableHeader>
                             <TableRow>
@@ -391,6 +417,7 @@ export default function UserManagement() {
                         </TableBody>
                     </Table>
 
+                </div>
                     {/* Sticky Pagination Bar */}
                     <div className="sticky bottom-0 bg-white border-t border-gray-200 flex items-center justify-between px-4 py-3 mt-4 z-10">
                         <div className="flex items-center gap-2">
@@ -431,7 +458,6 @@ export default function UserManagement() {
                             </button>
                         </div>
                     </div>
-                </div>
 
                 {editingUser && (
                     <UserForm
@@ -463,6 +489,7 @@ export default function UserManagement() {
                     />
                 )}
             </div>
+            {/* <Footer/> */}
         </div>
     );
 }
