@@ -213,7 +213,7 @@ export default function GroupPermissionManagement() {
   };
 
   return (
-    <div className="p-6 text-black h-210 overflow-y-hidden">
+    <div className="p-6 text-black h-screen overflow-y-hidden">
       <h1 className="mb-10 text-2xl font-bold">Group Permission</h1>
       <div className="flex justify-between">
         <p className="text-muted-foreground text-sm">

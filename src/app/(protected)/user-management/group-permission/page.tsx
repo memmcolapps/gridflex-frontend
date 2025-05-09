@@ -3,11 +3,11 @@
 
 import GroupPermissionManagement from "@/components/usermanagement/grouppermissionmgt"
 
-export default function GrouppermissionPagePage(){
+export default function GrouppermissionPagePage() {
 
-    return(
+    return (
         <div className="overflow-y-hidden h-screen w-full flex flex-col">
-            <GroupPermissionManagement/>
+            <GroupPermissionManagement />
         </div>
     )
 }
