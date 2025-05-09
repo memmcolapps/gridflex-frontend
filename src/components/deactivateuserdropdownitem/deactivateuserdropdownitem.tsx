@@ -24,7 +24,7 @@ export default function DeactivateUserDropdownItem({ user }: { user: { id: strin
       <AlertDialogTrigger asChild>
         <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
           <Ban size={14}/>
-          <span>Deactivate</span>
+          <span className="cursor-pointer">Deactivate</span>
         </DropdownMenuItem>
       </AlertDialogTrigger>
       <AlertDialogContent className="max-w-sm rounded-xl p-6 border-[rgba(228,231,236,1)]">

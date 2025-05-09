@@ -112,7 +112,7 @@ export function SidebarNav() {
       hasSubmenu: true,
       submenuItems: [
         { title: "Users", href: "/user-management"},
-        { title: "Group Permission", href: "user-management/group-permission"}
+        { title: "Group Permission", href: "/user-management/group-permission"}
       ],
     },
     {

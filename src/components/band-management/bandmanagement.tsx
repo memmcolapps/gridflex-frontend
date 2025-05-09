@@ -20,6 +20,8 @@ import { PlusCircleIcon, SearchIcon } from "lucide-react";
 import { fetchBands, createBand, updateBand, type Band } from "@/service/band-service";
 
 export default function BandManagement() {
+
+  
   const [bands, setBands] = useState<Band[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
