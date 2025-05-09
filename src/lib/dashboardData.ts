@@ -72,7 +72,7 @@ export const manufacturerData = {
 };
 
 export const meterStatusData = {
-    series: [75, 25],
-    labels: ['Active', 'Inactive'],
-    colors: ['#BFD3FE', '#60A5FA'],
+    series: [45, 25, 15, 10, 5],
+    labels: ['In-Stock', 'Assigned', 'Deactivated'],
+    colors: ['#FFB000', '#10B981', '#B22222']
 };

@@ -319,7 +319,7 @@ function Nav({
     }
     goToMonth(previousMonth);
     onPrevClick?.(previousMonth);
-  }, [previousMonth, goToMonth]);
+  }, [previousMonth, goToMonth, displayYears.from, displayYears.to, navView, onPrevClick, setDisplayYears]);
 
   const handleNextClick = React.useCallback(() => {
     if (!nextMonth) return;
@@ -339,7 +339,7 @@ function Nav({
     }
     goToMonth(nextMonth);
     onNextClick?.(nextMonth);
-  }, [goToMonth, nextMonth]);
+  }, [goToMonth, nextMonth, displayYears.from, displayYears.to, navView, onNextClick, setDisplayYears]);
   return (
     <nav className={cn("flex items-center", className)}>
       <Button
