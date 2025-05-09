@@ -53,7 +53,7 @@ export default function BandForm({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{triggerButton}</DialogTrigger>
-      <DialogContent className="bg-white sm:max-w-[425px]">
+      <DialogContent className="bg-white sm:max-w-[425px] h-70">
         <DialogHeader>
           <DialogTitle>
             {mode === "add" ? "Add New Band" : "Edit Band"}
@@ -69,6 +69,7 @@ export default function BandForm({
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Enter band name"
                 required
+                className="border-[rgba(228,231,236,1)]"
               />
             </div>
             <div className="grid gap-2">
@@ -82,18 +83,20 @@ export default function BandForm({
                 required
                 min="0"
                 max="24"
+                className="border-[rgba(228,231,236,1)]"
               />
             </div>
           </div>
-          <div className="flex justify-end gap-4">
+          <div className="flex justify-between gap-4 mt-4">
             <Button
               type="button"
               variant="outline"
               onClick={() => setOpen(false)}
+              className="border-[#161CCA] text-[#161CCA]"
             >
               Cancel
             </Button>
-            <Button type="submit">Save</Button>
+            <Button type="submit" className="bg-[#161CCA] text-white">Save</Button>
           </div>
         </form>
       </DialogContent>
