@@ -74,5 +74,5 @@ export const manufacturerData = {
 export const meterStatusData = {
     series: [45, 25, 15, 10, 5],
     labels: ['In-Stock', 'Assigned', 'Deactivated'],
-    colors: ['#BFD3FE', '#60A5FA', '#10B981'],
+    colors: ['#FFB000', '#10B981', '#B22222']
 };

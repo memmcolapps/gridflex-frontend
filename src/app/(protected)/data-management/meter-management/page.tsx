@@ -145,43 +145,43 @@ export default function MeterManagementPage() {
     const paginatedData = data.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
 
     return (
-        <div className="h-full p-6">
+        <div className="p-6 h-screen overflow-auto">
             {/* Header */}
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
                 <ContentHeader
                     title="Meter Management"
                     description="Manage and Access All Meter Records."
                 />
-                <div className="flex gap-2">
+                <div className="flex flex-col md:flex-row gap-2">
                     <Button
-                        className="flex items-center gap-2 border font-medium border-[#161CCA] text-[#161CCA]"
+                        className="flex items-center gap-2 border font-medium border-[#161CCA] text-[#161CCA] w-full md:w-auto"
                         variant="outline"
-                        size={"lg"}
+                        size="lg"
                         onClick={() => setIsBulkUploadDialogOpen(true)}
                     >
                         <CirclePlus size={14} strokeWidth={2.3} className="h-4 w-4" />
-                        <span>Bulk Upload</span>
+                        <span className="text-sm md:text-base">Bulk Upload</span>
                     </Button>
                     <Button
-                        className="flex items-center gap-2 bg-[#161CCA] text-white font-medium"
+                        className="flex items-center gap-2 bg-[#161CCA] text-white font-medium w-full md:w-auto"
                         variant="secondary"
-                        size={"lg"}
+                        size="lg"
                         onClick={() => {
                             setEditMeter(undefined);
                             setIsAddDialogOpen(true);
                         }}
                     >
                         <CirclePlus size={14} strokeWidth={2.3} className="h-4 w-4" />
-                        <span>Add New Meter</span>
+                        <span className="text-sm md:text-base">Add New Meter</span>
                     </Button>
                 </div>
             </div>
 
             {/* Search and Filter Section */}
             <Card className="p-4 mb-4 border-none shadow-none bg-white">
-                <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-                    <div className="flex items-center gap-2 w-full md:w-auto">
-                        <div className="relative w-full md:w-[300px]">
+                <div className="flex flex-col lg:flex-row justify-between items-center gap-4">
+                    <div className="flex items-center gap-2 w-full lg:w-auto">
+                        <div className="relative w-full lg:w-[300px]">
                             <Search
                                 size={14}
                                 className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400"
@@ -191,44 +191,44 @@ export default function MeterManagementPage() {
                                 placeholder="Search by meter no., account no..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="pl-10 w-full border-gray-300 focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
+                                className="pl-10 w-full border-gray-300 focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50 text-sm lg:text-base"
                             />
                         </div>
-                        <Button variant="outline" className="gap-2 border-gray-300">
+                        <Button variant="outline" className="gap-2 border-gray-300 w-full lg:w-auto">
                             <Filter className="text-gray-500" size={14} />
-                            <span className="text-gray-800">Filter</span>
+                            <span className="text-gray-800 text-sm lg:text-base">Filter</span>
                         </Button>
-                        <Button variant="outline" className="gap-2 border-gray-300">
+                        <Button variant="outline" className="gap-2 border-gray-300 w-full lg:w-auto">
                             <ArrowUpDown className="text-gray-500" size={14} />
-                            <span className="text-gray-800">Sort</span>
+                            <span className="text-gray-800 text-sm lg:text-base">Sort</span>
                         </Button>
                     </div>
-                    <div className="flex gap-2 w-full md:w-auto">
+                    <div className="flex gap-2 w-full lg:w-auto">
                         <Button
                             variant="secondary"
-                            size={"lg"}
-                            className="gap-2 bg-[#22C55E] text-white font-medium"
+                            size="lg"
+                            className="gap-2 bg-[#22C55E] text-white font-medium w-full lg:w-auto"
                             onClick={handleBulkApprove}
                             disabled={isBulkApproveDisabled}
                         >
                             <Check className="text-white" size={15} strokeWidth={2.3} />
-                            <span className="text-md font-medium">Bulk Approve</span>
+                            <span className="text-sm lg:text-base font-medium">Bulk Approve</span>
                         </Button>
                         <Button
                             variant="outline"
-                            size={"lg"}
-                            className="gap-2 border border-[#161CCA] text-[#161CCA] font-medium"
+                            size="lg"
+                            className="gap-2 border border-[#161CCA] text-[#161CCA] font-medium w-full lg:w-auto"
                         >
                             <SquareArrowOutUpRight className="text-[#161CCA]" size={15} strokeWidth={2.3} />
-                            <span className="text-md font-medium">Export</span>
+                            <span className="text-sm lg:text-base font-medium">Export</span>
                         </Button>
                     </div>
                 </div>
             </Card>
 
             {/* Table */}
-            <Card className="border-none h-4/6 shadow-none bg-white overflow-x-auto">
-                <Table>
+            <Card className="border-none shadow-none bg-white overflow-x-auto min-h-[calc(100vh-300px)]">
+                <Table className="table-fixed w-full">
                     <TableHeader>
                         <TableRow className="bg-gray-50 hover:bg-gray-50">
                             <TableHead className="w-[80px] px-4 py-3 text-left">
@@ -239,45 +239,45 @@ export default function MeterManagementPage() {
                                         checked={data.length > 0 && selectedTariffs.length === data.length}
                                         onCheckedChange={toggleSelectAll}
                                     />
-                                    <Label htmlFor="select-all" className="text-sm font-semibold text-gray-700">
+                                    <Label htmlFor="select-all" className="text-sm lg:text-base font-semibold text-gray-700">
                                         S/N
                                     </Label>
                                 </div>
                             </TableHead>
-                            <TableHead className="min-w-[120px] px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                            <TableHead className="min-w-[120px] px-4 py-3 text-left text-sm lg:text-base font-semibold text-gray-700">
                                 Meter Number
                             </TableHead>
-                            <TableHead className="min-w-[100px] px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                            <TableHead className="min-w-[100px] px-4 py-3 text-left text-sm lg:text-base font-semibold text-gray-700">
                                 SIM No
                             </TableHead>
-                            <TableHead className="min-w-[80px] px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                            <TableHead className="min-w-[80px] px-4 py-3 text-left text-sm lg:text-base font-semibold text-gray-700">
                                 Model
                             </TableHead>
-                            <TableHead className="min-w-[100px] px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                            <TableHead className="min-w-[100px] px-4 py-3 text-left text-sm lg:text-base font-semibold text-gray-700">
                                 Account No
                             </TableHead>
-                            <TableHead className="min-w-[80px] px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                            <TableHead className="min-w-[80px] px-4 py-3 text-left text-sm lg:text-base font-semibold text-gray-700">
                                 SGC
                             </TableHead>
-                            <TableHead className="min-w-[80px] px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                            <TableHead className="min-w-[80px] px-4 py-3 text-left text-sm lg:text-base font-semibold text-gray-700">
                                 Tariff
                             </TableHead>
-                            <TableHead className="min-w-[80px] px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                            <TableHead className="min-w-[80px] px-4 py-3 text-left text-sm lg:text-base font-semibold text-gray-700">
                                 ID
                             </TableHead>
-                            <TableHead className="min-w-[120px] px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                            <TableHead className="min-w-[120px] px-4 py-3 text-left text-sm lg:text-base font-semibold text-gray-700">
                                 <div className="flex items-center gap-1">
                                     Approval Status
                                     <ChevronUp size={14} className="text-gray-500" />
                                 </div>
                             </TableHead>
-                            <TableHead className="min-w-[100px] px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                            <TableHead className="min-w-[100px] px-4 py-3 text-left text-sm lg:text-base font-semibold text-gray-700">
                                 <div className="flex items-center gap-1">
                                     Status
                                     <ChevronUp size={14} className="text-gray-500" />
                                 </div>
                             </TableHead>
-                            <TableHead className="min-w-[80px] px-4 py-3 text-right text-sm font-semibold text-gray-700">
+                            <TableHead className="min-w-[80px] px-4 py-3 text-right text-sm lg:text-base font-semibold text-gray-700">
                                 Actions
                             </TableHead>
                         </TableRow>
@@ -285,7 +285,7 @@ export default function MeterManagementPage() {
                     <TableBody>
                         {data.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={11} className="h-24 text-center text-sm text-gray-500">
+                                <TableCell colSpan={11} className="h-24 text-center text-sm lg:text-base text-gray-500">
                                     No data available
                                 </TableCell>
                             </TableRow>
@@ -300,38 +300,38 @@ export default function MeterManagementPage() {
                                                 checked={selectedTariffs.includes(item.id)}
                                                 onCheckedChange={() => toggleSelection(item.id)}
                                             />
-                                            <span className="text-sm text-gray-900">
+                                            <span className="text-sm lg:text-base text-gray-900">
                                                 {index + 1 + (currentPage - 1) * rowsPerPage}
                                             </span>
                                         </div>
                                     </TableCell>
-                                    <TableCell className="px-4 py-3 text-sm text-gray-900">{item.meterNumber}</TableCell>
-                                    <TableCell className="px-4 py-3 text-sm text-gray-900">{item.simNumber}</TableCell>
-                                    <TableCell className="px-4 py-3 text-sm text-gray-900">{item.model}</TableCell>
-                                    <TableCell className="px-4 py-3 text-sm text-gray-900">{item.accountNumber}</TableCell>
-                                    <TableCell className="px-4 py-3 text-sm text-gray-900">{item.sgc}</TableCell>
-                                    <TableCell className="px-4 py-3 text-sm text-gray-900">{item.tariff}</TableCell>
-                                    <TableCell className="px-4 py-3 text-sm text-gray-900">{item.id}</TableCell>
+                                    <TableCell className="px-4 py-3 text-sm lg:text-base text-gray-900">{item.meterNumber}</TableCell>
+                                    <TableCell className="px-4 py-3 text-sm lg:text-base text-gray-900">{item.simNumber}</TableCell>
+                                    <TableCell className="px-4 py-3 text-sm lg:text-base text-gray-900">{item.model}</TableCell>
+                                    <TableCell className="px-4 py-3 text-sm lg:text-base text-gray-900">{item.accountNumber}</TableCell>
+                                    <TableCell className="px-4 py-3 text-sm lg:text-base text-gray-900">{item.sgc}</TableCell>
+                                    <TableCell className="px-4 py-3 text-sm lg:text-base text-gray-900">{item.tariff}</TableCell>
+                                    <TableCell className="px-4 py-3 text-sm lg:text-base text-gray-900">{item.id}</TableCell>
                                     <TableCell className="px-4 py-3">
                                         {item.approvalStatus === "Approved" ? (
-                                            <span className="text-green-600 font-medium text-sm">Approved</span>
+                                            <span className="text-green-600 font-medium text-sm lg:text-base">Approved</span>
                                         ) : item.approvalStatus === "Rejected" ? (
-                                            <span className="text-red-600 font-medium text-sm">Rejected</span>
+                                            <span className="text-red-600 font-medium text-sm lg:text-base">Rejected</span>
                                         ) : item.approvalStatus === "Pending" ? (
-                                            <span className="text-orange-500 font-medium text-sm">Pending</span>
+                                            <span className="text-orange-500 font-medium text-sm lg:text-base">Pending</span>
                                         ) : (
-                                            <span className="text-sm text-gray-900">{item.approvalStatus}</span>
+                                            <span className="text-sm lg:text-base text-gray-900">{item.approvalStatus}</span>
                                         )}
                                     </TableCell>
                                     <TableCell className="px-4 py-3">
                                         {item.status === "Assigned" ? (
-                                            <span className="text-green-600 font-medium text-sm">Assigned</span>
+                                            <span className="text-green-600 font-medium text-sm lg:text-base">Assigned</span>
                                         ) : item.status === "In-Stock" ? (
-                                            <span className="text-blue-600 font-medium text-sm">In-Stock</span>
+                                            <span className="text-blue-600 font-medium text-sm lg:text-base">In-Stock</span>
                                         ) : item.status === "Deactivated" ? (
-                                            <span className="text-red-600 font-medium text-sm">Deactivated</span>
+                                            <span className="text-red-600 font-medium text-sm lg:text-base">Deactivated</span>
                                         ) : (
-                                            <span className="text-sm text-gray-900">{item.status}</span>
+                                            <span className="text-sm lg:text-base text-gray-900">{item.status}</span>
                                         )}
                                     </TableCell>
                                     <TableCell className="px-4 py-3 text-right">
@@ -351,7 +351,7 @@ export default function MeterManagementPage() {
                                                     }}
                                                 >
                                                     <Pencil size={14} className="text-gray-500" />
-                                                    <span className="text-sm text-gray-700">Edit Meter</span>
+                                                    <span className="text-sm lg:text-base text-gray-700">Edit Meter</span>
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem
                                                     className="flex items-center gap-2"
@@ -362,7 +362,7 @@ export default function MeterManagementPage() {
                                                     disabled={item.approvalStatus === "Approved"}
                                                 >
                                                     <CircleCheck size={10} className="text-gray-500" />
-                                                    <span className="text-sm text-gray-700">Approve</span>
+                                                    <span className="text-sm lg:text-base text-gray-700">Approve</span>
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem
                                                     className="flex items-center gap-2"
@@ -373,7 +373,7 @@ export default function MeterManagementPage() {
                                                     disabled={item.status === "Assigned"}
                                                 >
                                                     <Link size={16} className="text-gray-500" />
-                                                    <span className="text-sm text-gray-700">Assign</span>
+                                                    <span className="text-sm lg:text-base text-gray-700">Assign</span>
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem
                                                     className="flex items-center gap-2"
@@ -384,7 +384,7 @@ export default function MeterManagementPage() {
                                                     disabled={item.status === "Deactivated"}
                                                 >
                                                     <Ban size={16} className="text-gray-500" />
-                                                    <span className="text-sm text-gray-700">Deactivate</span>
+                                                    <span className="text-sm lg:text-base text-gray-700">Deactivate</span>
                                                 </DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
@@ -397,7 +397,7 @@ export default function MeterManagementPage() {
             </Card>
 
             {/* Pagination */}
-            <div className="flex justify-between items-center py-4 px-6 text-sm text-gray-600">
+            <div className="flex justify-between items-center py-4 px-6 text-sm lg:text-base text-gray-600">
                 <div className="flex items-center gap-2">
                     <span>Rows per page</span>
                     <Select value={rowsPerPage.toString()} onValueChange={(value) => setRowsPerPage(parseInt(value))}>

@@ -1,9 +1,10 @@
-'use client';
+// app/allocate-meters/page.tsx
+"use client";
 
-import React, { useState } from 'react';
-import { Input } from '@/components/ui/input';
-import { ArrowRightLeft, ArrowUpDown, Search } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import React, { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { ArrowRightLeft, ArrowUpDown, Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
     Table,
     TableBody,
@@ -11,21 +12,28 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from '@/components/ui/table';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Filter, CirclePlus } from 'lucide-react';
+} from "@/components/ui/table";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Filter, CirclePlus } from "lucide-react";
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from '@/components/ui/select';
-import { PaginationContent } from '@/components/ui/pagination';
-import { Card } from '@/components/ui/card';
-import { ContentHeader } from '@/components/ui/content-header';
+} from "@/components/ui/select";
+import { Card } from "@/components/ui/card";
+import { ContentHeader } from "@/components/ui/content-header";
+import { Label } from "@/components/ui/label";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogFooter,
+} from "@/components/ui/dialog";
 
-// Sample data type (adjust based on your actual data)
+// Sample data type
 interface MeterData {
     id: number;
     meterNumber: string;
@@ -38,26 +46,31 @@ interface MeterData {
     actions: string;
 }
 
-// Sample data (replace with your actual data fetching)
+// Sample data
 const initialMeters: MeterData[] = [
-    { id: 1, meterNumber: '61245269523', manufactureName: 'Momas', model: 'Mem 3-ph', meterId: 'Ojoo', meterType: 'Electricity', category: 'Prepaid', dateAdded: '09-04-2025', actions: '' },
-    { id: 2, meterNumber: '61245269523', manufactureName: 'Momas', model: 'Mem 3-ph', meterId: 'Ojoo', meterType: 'Electricity', category: 'Prepaid', dateAdded: '09-04-2025', actions: '' },
-    { id: 3, meterNumber: '61245269523', manufactureName: 'Momas', model: 'Mem 3-ph', meterId: 'Ojoo', meterType: 'Gas', category: 'Prepaid', dateAdded: '09-04-2025', actions: '' },
-    { id: 4, meterNumber: '61245269523', manufactureName: 'Momas', model: 'Mem 1-ph', meterId: 'Ojoo', meterType: 'Electricity', category: 'Postpaid', dateAdded: '09-04-2025', actions: '' },
-    { id: 5, meterNumber: '61245269523', manufactureName: 'Momas', model: 'Mem 1-ph', meterId: 'Ojoo', meterType: 'Water', category: 'Prepaid', dateAdded: '09-04-2025', actions: '' },
-    { id: 6, meterNumber: '61245269523', manufactureName: 'Momas', model: 'Mem 1-ph', meterId: 'Ojoo', meterType: 'Electricity', category: 'Prepaid', dateAdded: '09-04-2025', actions: '' },
-    { id: 7, meterNumber: '61245269523', manufactureName: 'Mojec', model: 'Mem 3-ph', meterId: 'Ojoo', meterType: 'Electricity', category: 'Postpaid', dateAdded: '09-04-2025', actions: '' },
-    { id: 8, meterNumber: '61245269523', manufactureName: 'Mojec', model: 'Mem 3-ph', meterId: 'Ojoo', meterType: 'Electricity', category: 'Postpaid', dateAdded: '09-04-2025', actions: '' },
-    { id: 9, meterNumber: '61245269523', manufactureName: 'Mojec', model: 'Mem 1-ph', meterId: 'Ojoo', meterType: 'Electricity', category: 'Postpaid', dateAdded: '09-04-2025', actions: '' },
-    { id: 10, meterNumber: '61245269523', manufactureName: 'Heixing', model: 'Mem 3-ph', meterId: 'Ojoo', meterType: 'Electricity', category: 'Postpaid', dateAdded: '09-04-2025', actions: '' },
-    { id: 11, meterNumber: '61245269523', manufactureName: 'Heixing', model: 'Mem 3-ph', meterId: 'Ojoo', meterType: 'Electricity', category: 'Postpaid', dateAdded: '09-04-2025', actions: '' },
+    { id: 1, meterNumber: "61245269523", manufactureName: "Momas", model: "Mem 3-ph", meterId: "Ojoo", meterType: "Electricity", category: "Prepaid", dateAdded: "09-04-2025", actions: "" },
+    { id: 2, meterNumber: "61245269523", manufactureName: "Momas", model: "Mem 3-ph", meterId: "Ojoo", meterType: "Electricity", category: "Prepaid", dateAdded: "09-04-2025", actions: "" },
+    { id: 3, meterNumber: "61245269523", manufactureName: "Momas", model: "Mem 3-ph", meterId: "Ojoo", meterType: "Gas", category: "Prepaid", dateAdded: "09-04-2025", actions: "" },
+    { id: 4, meterNumber: "61245269523", manufactureName: "Momas", model: "Mem 1-ph", meterId: "Ojoo", meterType: "Electricity", category: "Postpaid", dateAdded: "09-04-2025", actions: "" },
+    { id: 5, meterNumber: "61245269523", manufactureName: "Momas", model: "Mem 1-ph", meterId: "Ojoo", meterType: "Water", category: "Prepaid", dateAdded: "09-04-2025", actions: "" },
+    { id: 6, meterNumber: "61245269523", manufactureName: "Momas", model: "Mem 1-ph", meterId: "Ojoo", meterType: "Electricity", category: "Prepaid", dateAdded: "09-04-2025", actions: "" },
+    { id: 7, meterNumber: "61245269523", manufactureName: "Mojec", model: "Mem 3-ph", meterId: "Ojoo", meterType: "Electricity", category: "Postpaid", dateAdded: "09-04-2025", actions: "" },
+    { id: 8, meterNumber: "61245269523", manufactureName: "Mojec", model: "Mem 3-ph", meterId: "Ojoo", meterType: "Electricity", category: "Postpaid", dateAdded: "09-04-2025", actions: "" },
+    { id: 9, meterNumber: "61245269523", manufactureName: "Mojec", model: "Mem 1-ph", meterId: "Ojoo", meterType: "Electricity", category: "Postpaid", dateAdded: "09-04-2025", actions: "" },
+    { id: 10, meterNumber: "61245269523", manufactureName: "Heixing", model: "Mem 3-ph", meterId: "Ojoo", meterType: "Electricity", category: "Postpaid", dateAdded: "09-04-2025", actions: "" },
+    { id: 11, meterNumber: "61245269523", manufactureName: "Heixing", model: "Mem 3-ph", meterId: "Ojoo", meterType: "Electricity", category: "Postpaid", dateAdded: "09-04-2025", actions: "" },
 ];
 
 export default function AllocateMetersPage() {
-    const [meters] = useState<MeterData[]>(initialMeters);
+    const [meters, setMeters] = useState<MeterData[]>(initialMeters); // Made mutable to allow deletion
     const [selectedMeters, setSelectedMeters] = useState<number[]>([]);
     const [rowsPerPage, setRowsPerPage] = useState<number>(10);
-    const [currentPage] = useState<number>(1);
+    const [currentPage, setCurrentPage] = useState<number>(1);
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [selectedMeter, setSelectedMeter] = useState<MeterData | null>(null);
+    const [organizationId, setOrganizationId] = useState<string>("");
+    const [isBulkDialogOpen, setIsBulkDialogOpen] = useState(false);
+    const [bulkOrganizationId, setBulkOrganizationId] = useState<string>("");
 
     const handleSelectAll = (checked: boolean) => {
         if (checked) {
@@ -81,16 +94,52 @@ export default function AllocateMetersPage() {
     const endIndex = startIndex + rowsPerPage;
     const currentMeters = meters.slice(startIndex, endIndex);
 
+    const handleAllocate = () => {
+        if (selectedMeter && organizationId) {
+            console.log("Allocated:", { meterNumber: selectedMeter.meterNumber, organizationId });
+            // Remove the allocated meter from the table
+            setMeters(meters.filter((meter) => meter.id !== selectedMeter.id));
+            setSelectedMeters(selectedMeters.filter((id) => id !== selectedMeter.id));
+            setIsDialogOpen(false);
+            setOrganizationId("");
+        } else {
+            alert("Please select an Organization ID.");
+        }
+    };
+
+    const handleBulkAllocate = () => {
+        if (selectedMeters.length === 0) {
+            alert("Please select at least one meter to allocate.");
+            return;
+        }
+        if (!bulkOrganizationId) {
+            alert("Please select an Organization ID for bulk allocation.");
+            return;
+        }
+        console.log("Bulk Allocated:", { selectedMeters, organizationId: bulkOrganizationId });
+        // Remove the selected meters from the table
+        setMeters(meters.filter((meter) => !selectedMeters.includes(meter.id)));
+        setSelectedMeters([]);
+        setIsBulkDialogOpen(false);
+        setBulkOrganizationId("");
+        // Adjust current page if necessary
+        const totalPages = Math.ceil((meters.length - selectedMeters.length) / rowsPerPage);
+        if (currentPage > totalPages) {
+            setCurrentPage(totalPages || 1);
+        }
+    };
+
     return (
         <div className="p-6 h-screen">
             <div className="flex items-center justify-between mb-4">
-                <ContentHeader
-                    title="Allocate Meter"
-                    description='Manage and access meter allocation.' />
+                <ContentHeader title="Allocate Meters" description="Manage and access meter allocation." />
                 <Button
-                    size={"lg"}
-                    className="bg-[#161CCA] text-white text-md font-semibold rounded-md shadow-sm hover:translate-0.5 cursor-pointer transition-transform duration-200 ease-in-out active:scale-95">
-                    <CirclePlus size={14} strokeWidth={2.5} />
+                    size="lg"
+                    className="bg-[#161CCA] text-white text-md font-semibold rounded-md shadow-sm hover:translate-0.5 cursor-pointer transition-transform duration-200 ease-in-out active:scale-95"
+                    onClick={() => setIsBulkDialogOpen(true)}
+                    disabled={selectedMeters.length === 0}
+                >
+                    <CirclePlus size={14} strokeWidth={2.5} className="mr-2" />
                     Bulk Allocate Meter
                 </Button>
             </div>
@@ -121,19 +170,23 @@ export default function AllocateMetersPage() {
                 </div>
             </Card>
 
-            <div className="bg-white h-3/5 rounded-md shadow-sm border border-gray-200">
+            <div className="bg-white rounded-md shadow-sm border border-gray-200">
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead className="w-12">
-                                <Checkbox
-                                    className='border-gray-500'
-                                    checked={isAllSelected}
-                                    onCheckedChange={handleSelectAll}
-                                    aria-label="Select all meters"
-                                />
+                            <TableHead className="w-[80px] px-4 py-3 text-left">
+                                <div className="flex items-center gap-2">
+                                    <Checkbox
+                                        className="border-gray-500"
+                                        checked={isAllSelected}
+                                        onCheckedChange={handleSelectAll}
+                                        aria-label="Select all meters"
+                                    />
+                                    <Label htmlFor="select-all" className="text-sm font-semibold text-gray-700">
+                                        S/N
+                                    </Label>
+                                </div>
                             </TableHead>
-                            <TableHead>S/N</TableHead>
                             <TableHead>Meter Number <span className="text-red-500">*</span></TableHead>
                             <TableHead>Manufacture Name</TableHead>
                             <TableHead>Model</TableHead>
@@ -147,15 +200,19 @@ export default function AllocateMetersPage() {
                     <TableBody>
                         {currentMeters.map((meter, index) => (
                             <TableRow key={meter.id}>
-                                <TableCell className="w-12">
-                                    <Checkbox
-                                        className='border-gray-500'
-                                        checked={selectedMeters.includes(meter.id)}
-                                        onCheckedChange={(checked) => handleSelectItem(checked as boolean, meter.id)}
-                                        aria-label={`Select meter ${meter.meterNumber}`}
-                                    />
+                                <TableCell className="px-4 py-3">
+                                    <div className="flex items-center gap-2">
+                                        <Checkbox
+                                            className="border-gray-500"
+                                            checked={selectedMeters.includes(meter.id)}
+                                            onCheckedChange={(checked) => handleSelectItem(checked as boolean, meter.id)}
+                                            aria-label={`Select meter ${meter.meterNumber}`}
+                                        />
+                                        <span className="text-sm text-gray-900">
+                                            {index + 1 + (currentPage - 1) * rowsPerPage}
+                                        </span>
+                                    </div>
                                 </TableCell>
-                                <TableCell>{startIndex + index + 1}</TableCell>
                                 <TableCell>{meter.meterNumber}</TableCell>
                                 <TableCell>{meter.manufactureName}</TableCell>
                                 <TableCell>{meter.model}</TableCell>
@@ -164,7 +221,14 @@ export default function AllocateMetersPage() {
                                 <TableCell>{meter.category}</TableCell>
                                 <TableCell>{meter.dateAdded}</TableCell>
                                 <TableCell className="text-right">
-                                    <Button variant="ghost" size="icon">
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => {
+                                            setSelectedMeter(meter);
+                                            setIsDialogOpen(true);
+                                        }}
+                                    >
                                         <ArrowRightLeft size={16} strokeWidth={2.5} className="text-gray-600" />
                                     </Button>
                                 </TableCell>
@@ -172,7 +236,7 @@ export default function AllocateMetersPage() {
                         ))}
                         {currentMeters.length === 0 && (
                             <TableRow>
-                                <TableCell colSpan={10} className="text-center py-4 text-gray-500">
+                                <TableCell colSpan={9} className="text-center py-4 text-gray-500">
                                     No meters found.
                                 </TableCell>
                             </TableRow>
@@ -194,11 +258,99 @@ export default function AllocateMetersPage() {
                             <SelectItem value="50">50</SelectItem>
                         </SelectContent>
                     </Select>
-                    <span>{`${startIndex + 1}-${Math.min(endIndex, meters.length)} of ${meters.length} row${meters.length !== 1 ? 's' : ''}`}</span>
+                    <span>{`${startIndex + 1}-${Math.min(endIndex, meters.length)} of ${meters.length} row${meters.length !== 1 ? "s" : ""}`}</span>
                 </div>
-                <PaginationContent
-                />
             </div>
+
+            {/* Single Meter Allocation Dialog */}
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogContent className="sm:max-w-fit h-auto p-8 bg-white rounded-lg shadow-lg">
+                    <DialogHeader>
+                        <DialogTitle className="text-lg font-semibold text-gray-900">Allocate Meter</DialogTitle>
+                    </DialogHeader>
+                    <div className="flex items-center gap-4 py-4">
+                        <div className="flex-1">
+                            <Label htmlFor="meterNumber" className="text-sm font-medium mb-2 text-gray-700">
+                                Meter Number <span className="text-red-500">*</span>
+                            </Label>
+                            <Input
+                                id="meterNumber"
+                                value={selectedMeter?.meterNumber ?? ""}
+                                disabled
+                                className="w-full border-gray-300 focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
+                            />
+                        </div>
+                        <div className="flex items-center justify-center">
+                            <ArrowRightLeft
+                                className="text-white bg-green-500 p-1 rounded-full cursor-pointer"
+                                size={18}
+                                strokeWidth={2.75}
+                                onClick={handleAllocate}
+                            />
+                        </div>
+                        <div className="flex-1">
+                            <Label htmlFor="organizationId" className="text-sm font-medium mb-2 text-gray-700">
+                                Organization ID <span className="text-red-500">*</span>
+                            </Label>
+                            <Select value={organizationId} onValueChange={setOrganizationId}>
+                                <SelectTrigger className="w-full border-gray-300 focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50">
+                                    <SelectValue placeholder="Select Organization ID" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="Ojoo">Ojoo</SelectItem>
+                                    <SelectItem value="Molete">Molete</SelectItem>
+                                    <SelectItem value="Ibadan">Ibadan</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Bulk Allocation Dialog */}
+            <Dialog open={isBulkDialogOpen} onOpenChange={setIsBulkDialogOpen}>
+                <DialogContent className="sm:max-w-[350px] h-fit bg-white rounded-lg shadow-lg">
+                    <DialogHeader>
+                        <DialogTitle className="text-lg font-semibold text-gray-900">Bulk Allocate Meter</DialogTitle>
+                    </DialogHeader>
+                    <div className="gap-4 py-4">
+                        <div className="items-center w-full gap-4">
+                            <Label htmlFor="bulkOrganizationId" className="text-sm mb-3 font-medium text-gray-700">
+                                Organization ID <span className="text-red-500">*</span>
+                            </Label>
+                            <Select
+                                value={bulkOrganizationId}
+                                onValueChange={setBulkOrganizationId}
+                                // className="col-span-3"
+                            >
+                                <SelectTrigger className="w-full border-gray-300 focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50">
+                                    <SelectValue placeholder="Select Organization ID" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="Ojoo">Ojoo</SelectItem>
+                                    <SelectItem value="Molete">Molete</SelectItem>
+                                    <SelectItem value="Ibadan">Ibadan</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() => setIsBulkDialogOpen(false)}
+                            className="mr-2 bg-transparent text-[#161CCA] border-[#161CCA]"
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            onClick={handleBulkAllocate}
+                            className="bg-[#161CCA] text-white hover:bg-[#161CCA]/90"
+                        >
+                            Allocate
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
