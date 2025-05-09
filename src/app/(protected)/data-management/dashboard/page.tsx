@@ -9,7 +9,6 @@ import { MetersInstalledChart } from '@/components/dashboard/MetersInstalledChar
 import { ManufacturerDistribution } from '@/components/dashboard/ManufacturerDistribution';
 import { MeterStatus } from '@/components/dashboard/MeterStatus';
 import { statusCards } from '@/lib/dashboardData';
-import { Footer } from '@/components/footer';
 
 export default function DashboardPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -67,8 +66,6 @@ export default function DashboardPage() {
             <MeterStatus/>
           </div>
         </section>
-
-        <Footer />
       </div>
     </div>
   );

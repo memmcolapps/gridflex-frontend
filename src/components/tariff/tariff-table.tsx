@@ -107,10 +107,10 @@ export function TariffTable({
             <TableHead>Name</TableHead>
             <TableHead>Index</TableHead>
             <TableHead>Type</TableHead>
-            <TableHead>Effective Date</TableHead>
-            <TableHead>Band</TableHead>
+            <TableHead>Band Code</TableHead>
             <TableHead>Rate</TableHead>
             <TableHead>Status</TableHead>
+            <TableHead>Effective Date</TableHead>
             <TableHead>Approval Status</TableHead>
             <TableHead>Created At</TableHead>
             <TableHead>Actions</TableHead>
@@ -132,7 +132,6 @@ export function TariffTable({
               <TableCell>{tariff.name}</TableCell>
               <TableCell>{tariff.tariff_index}</TableCell>
               <TableCell>{tariff.tariff_type}</TableCell>
-              <TableCell>{tariff.effective_date}</TableCell>
               <TableCell>{tariff.band}</TableCell>
               <TableCell>{tariff.tariff_rate}</TableCell>
               <TableCell>
@@ -154,6 +153,7 @@ export function TariffTable({
                   {tariff.approve_status}
                 </span>
               </TableCell>
+              <TableCell>{tariff.effective_date}</TableCell>
               <TableCell>
                 {" "}
                 {new Date(tariff.created_at!).toLocaleDateString()}
