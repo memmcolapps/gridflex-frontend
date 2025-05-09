@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
-import { ArrowUpDown, Search } from 'lucide-react';
+import { ArrowRightLeft, ArrowUpDown, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
     Table,
@@ -13,7 +13,7 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Filter, Link, CirclePlus } from 'lucide-react';
+import { Filter, CirclePlus } from 'lucide-react';
 import {
     Select,
     SelectContent,
@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/select';
 import { PaginationContent } from '@/components/ui/pagination';
 import { Card } from '@/components/ui/card';
+import { ContentHeader } from '@/components/ui/content-header';
 
 // Sample data type (adjust based on your actual data)
 interface MeterData {
@@ -49,6 +50,7 @@ const initialMeters: MeterData[] = [
     { id: 8, meterNumber: '61245269523', manufactureName: 'Mojec', model: 'Mem 3-ph', meterId: 'Ojoo', meterType: 'Electricity', category: 'Postpaid', dateAdded: '09-04-2025', actions: '' },
     { id: 9, meterNumber: '61245269523', manufactureName: 'Mojec', model: 'Mem 1-ph', meterId: 'Ojoo', meterType: 'Electricity', category: 'Postpaid', dateAdded: '09-04-2025', actions: '' },
     { id: 10, meterNumber: '61245269523', manufactureName: 'Heixing', model: 'Mem 3-ph', meterId: 'Ojoo', meterType: 'Electricity', category: 'Postpaid', dateAdded: '09-04-2025', actions: '' },
+    { id: 11, meterNumber: '61245269523', manufactureName: 'Heixing', model: 'Mem 3-ph', meterId: 'Ojoo', meterType: 'Electricity', category: 'Postpaid', dateAdded: '09-04-2025', actions: '' },
 ];
 
 export default function AllocateMetersPage() {
@@ -80,16 +82,15 @@ export default function AllocateMetersPage() {
     const currentMeters = meters.slice(startIndex, endIndex);
 
     return (
-        <div className="p-6">
+        <div className="p-6 h-screen">
             <div className="flex items-center justify-between mb-4">
-                <div>
-                    <h1 className="text-2xl font-semibold text-gray-800">Allocate Meters</h1>
-                    <p className="text-sm text-gray-600">Manage and access meter allocation.</p>
-                </div>
+                <ContentHeader
+                    title="Allocate Meter"
+                    description='Manage and access meter allocation.' />
                 <Button
-                size={"lg"}
-                className="bg-[#161CCA] text-white text-md font-semibold rounded-md shadow-sm hover:translate-0.5 cursor-pointer transition-transform duration-200 ease-in-out active:scale-95">
-                    <CirclePlus size={14} strokeWidth={2.5}/>
+                    size={"lg"}
+                    className="bg-[#161CCA] text-white text-md font-semibold rounded-md shadow-sm hover:translate-0.5 cursor-pointer transition-transform duration-200 ease-in-out active:scale-95">
+                    <CirclePlus size={14} strokeWidth={2.5} />
                     Bulk Allocate Meter
                 </Button>
             </div>
@@ -120,12 +121,13 @@ export default function AllocateMetersPage() {
                 </div>
             </Card>
 
-            <div className="bg-white rounded-md shadow-sm border border-gray-200">
+            <div className="bg-white h-3/5 rounded-md shadow-sm border border-gray-200">
                 <Table>
                     <TableHeader>
                         <TableRow>
                             <TableHead className="w-12">
                                 <Checkbox
+                                    className='border-gray-500'
                                     checked={isAllSelected}
                                     onCheckedChange={handleSelectAll}
                                     aria-label="Select all meters"
@@ -147,6 +149,7 @@ export default function AllocateMetersPage() {
                             <TableRow key={meter.id}>
                                 <TableCell className="w-12">
                                     <Checkbox
+                                        className='border-gray-500'
                                         checked={selectedMeters.includes(meter.id)}
                                         onCheckedChange={(checked) => handleSelectItem(checked as boolean, meter.id)}
                                         aria-label={`Select meter ${meter.meterNumber}`}
@@ -162,7 +165,7 @@ export default function AllocateMetersPage() {
                                 <TableCell>{meter.dateAdded}</TableCell>
                                 <TableCell className="text-right">
                                     <Button variant="ghost" size="icon">
-                                        <Link size={16} strokeWidth={2.5} className="h-4 w-4" />
+                                        <ArrowRightLeft size={16} strokeWidth={2.5} className="text-gray-600" />
                                     </Button>
                                 </TableCell>
                             </TableRow>
@@ -182,7 +185,7 @@ export default function AllocateMetersPage() {
                 <div className="flex items-center space-x-2 text-sm text-gray-500">
                     <span>Rows per page:</span>
                     <Select value={rowsPerPage.toString()} onValueChange={(value) => setRowsPerPage(parseInt(value))}>
-                        <SelectTrigger className="w-[80px]">
+                        <SelectTrigger className="w-[80px] focus:ring-gray-300 border-gray-300">
                             <SelectValue placeholder={rowsPerPage.toString()} />
                         </SelectTrigger>
                         <SelectContent>
