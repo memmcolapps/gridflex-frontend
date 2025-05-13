@@ -130,7 +130,7 @@ export default function AllocateMetersPage() {
     };
 
     return (
-        <div className="p-6 h-screen">
+        <div className="p-6 h-fit">
             <div className="flex items-center justify-between mb-4">
                 <ContentHeader title="Allocate Meters" description="Manage and access meter allocation." />
                 <Button
@@ -170,7 +170,7 @@ export default function AllocateMetersPage() {
                 </div>
             </Card>
 
-            <div className="bg-white rounded-md h-4/6 shadow-sm border border-gray-200">
+            <Card className="rounded-md h-4/6 border-none">
                 <Table>
                     <TableHeader>
                         <TableRow>
@@ -243,21 +243,20 @@ export default function AllocateMetersPage() {
                         )}
                     </TableBody>
                 </Table>
-            </div>
+            </Card>
 
             <div className="flex items-center justify-between mt-4">
                 <div className="flex items-center space-x-2 text-sm text-gray-500">
                     <span>Rows per page:</span>
-                    <Select value={rowsPerPage.toString()} onValueChange={(value) => setRowsPerPage(parseInt(value))}>
-                        <SelectTrigger className="w-[80px] focus:ring-gray-300 border-gray-300">
-                            <SelectValue placeholder={rowsPerPage.toString()} />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="10">10</SelectItem>
-                            <SelectItem value="20">20</SelectItem>
-                            <SelectItem value="50">50</SelectItem>
-                        </SelectContent>
-                    </Select>
+                    <select
+                        value={rowsPerPage}
+                        onChange={(e) => setRowsPerPage(parseInt(e.target.value))}
+                        className="w-16 border-gray-300 text-sm rounded-md focus:ring-[#161CCA]/50 focus:border-[#161CCA]/30"
+                    >
+                        <option value="10">10</option>
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                    </select>
                     <span>{`${startIndex + 1}-${Math.min(endIndex, meters.length)} of ${meters.length} row${meters.length !== 1 ? "s" : ""}`}</span>
                 </div>
             </div>

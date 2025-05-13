@@ -602,16 +602,15 @@ export default function ManufacturersPage() {
             <div className="flex flex-col sm:flex-row justify-between items-center py-3 px-4 sm:py-4 sm:px-6 text-xs sm:text-sm text-gray-600 gap-3 sm:gap-0">
                 <div className="flex items-center gap-2 justify-between sm:justify-start">
                     <span className="whitespace-nowrap">Rows per page</span>
-                    <Select value={rowsPerPage.toString()} onValueChange={(value) => onRowsPerPageChange(parseInt(value))}>
-                        <SelectTrigger className="w-16 border-gray-300">
-                            <SelectValue placeholder={rowsPerPage} />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="10">10</SelectItem>
-                            <SelectItem value="20">20</SelectItem>
-                            <SelectItem value="50">50</SelectItem>
-                        </SelectContent>
-                    </Select>
+                    <select
+                        value={rowsPerPage}
+                        onChange={(e) => onRowsPerPageChange(parseInt(e.target.value))}
+                        className="w-16 border-gray-300 text-sm rounded-md focus:ring-[#161CCA]/50 focus:border-[#161CCA]/30"
+                    >
+                        <option value="10">10</option>
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                    </select>
                 </div>
                 <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-start">
                     <Button
