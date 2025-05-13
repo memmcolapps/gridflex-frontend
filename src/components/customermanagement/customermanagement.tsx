@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ArrowUpDown, PlusCircleIcon, SearchIcon, MoreVertical, ListFilter, Lock, User } from 'lucide-react';
+import { ArrowUpDown, PlusCircleIcon, SearchIcon, MoreVertical, ListFilter, Lock, User, AlertTriangle, X } from 'lucide-react';
 import CustomerForm from './customerform';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +12,8 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '../ui/alert-dialog';
 
 export type Customer = {
     id: string;
@@ -38,8 +39,8 @@ export default function CustomerManagement() {
             id: '01',
             firstName: 'Margaret',
             lastName: 'Ademola',
-            meterNumber: '6201021223',
-            accountNumber: '',
+            meterNumber: '62501021223',
+            accountNumber: '96844839930',
             location: 'Lagos',
             phoneNumber: '0812354648',
             address: 'Olowotedo, Mowe',
@@ -56,7 +57,7 @@ export default function CustomerManagement() {
             firstName: 'Margaret',
             lastName: 'Ademola',
             meterNumber: '6201021223',
-            accountNumber: '',
+            accountNumber: '076403094494',
             location: 'Lagos',
             phoneNumber: '0812354648',
             address: 'Olowotedo, Mowe',
@@ -68,13 +69,12 @@ export default function CustomerManagement() {
             houseNo: 'Lagos',
             streetName: 'KM 40, Lagos Ibadan Exp. way, Ogun',
         },
-
         ...Array.from({ length: 10 }, (_, index) => ({
             id: String(index + 3).padStart(2, '0'),
             firstName: 'Margaret',
             lastName: 'Ademola',
             meterNumber: '6201021223',
-            accountNumber: '',
+            accountNumber: '8993300282',
             location: 'Lagos',
             phoneNumber: '0812354648',
             address: 'Olowotedo, Mowe',
@@ -97,7 +97,9 @@ export default function CustomerManagement() {
     const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [isBlockDialogOpen, setIsBlockDialogOpen] = useState(false);
+    const [isConfirmBlockDialogOpen, setIsConfirmBlockDialogOpen] = useState(false); // New state for confirmation dialog
     const [customerToBlock, setCustomerToBlock] = useState<Customer | null>(null);
+    const [blockReason, setBlockReason] = useState("");
 
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(e.target.value);
@@ -165,12 +167,24 @@ export default function CustomerManagement() {
     };
 
     const confirmBlockCustomer = () => {
-        if (customerToBlock) {
+        if (customerToBlock && blockReason) {
             // Implement block logic here (e.g., update customer status or remove)
+            console.log(`Blocking customer ${customerToBlock.firstName} for reason: ${blockReason}`);
+            setCustomers(customers.filter((c) => c.id !== customerToBlock.id)); // Example: Remove customer
+            setIsConfirmBlockDialogOpen(false);
             setIsBlockDialogOpen(false);
             setCustomerToBlock(null);
+            setBlockReason("");
         }
     };
+
+    const blockReasons = [
+        "Abusive behavior",
+        "Spam messages",
+        "Fraudulent activity",
+        "Policy violation",
+        "Other",
+    ];
 
     return (
         <div className="h-full overflow-hidden flex flex-col text-black">
@@ -180,7 +194,7 @@ export default function CustomerManagement() {
                     <p className="text-sm text-muted-foreground">
                         Manage and access customer records.
                     </p>
-                    <div className="flex gap-2">
+                    <div className="flex gap-4">
                         <Button variant="outline" className="border-[#161CCA] text-[#161CCA] cursor-pointer">
                             <div className="flex items-center justify-center p-0.5">
                                 <PlusCircleIcon className="text-[#161CCA]" size={12} />
@@ -247,43 +261,40 @@ export default function CustomerManagement() {
                         <TableHeader>
                             <TableRow>
                                 <TableHead className="w-[30px] pr-0">
-                                    <div className='flex items-center gap-2'>
-                                    <Checkbox
-                                        checked={
-                                            selectedCustomers.length === filteredCustomers.length &&
-                                            filteredCustomers.length > 0
-                                        }
-                                        onCheckedChange={toggleSelectAll}
-                                        className="border-[rgba(228,231,236,1)]"
-                                    />
-                                      <span>
-                                    S/N
-                                </span>
+                                    <div className="flex items-center gap-2 text-center">
+                                        <Checkbox
+                                            checked={
+                                                selectedCustomers.length === filteredCustomers.length &&
+                                                filteredCustomers.length > 0
+                                            }
+                                            onCheckedChange={toggleSelectAll} // Fixed from 'on diversoCheckedChange'
+                                            className="border-[rgba(228,231,236,1)] "
+                                        />
+                                        <span>S/N</span>
                                     </div>
                                 </TableHead>
-                              
-                                <TableHead onClick={() => requestSort('firstName')}>
+                                <TableHead onClick={() => requestSort('firstName')} className='text-center'>
                                     First Name
                                 </TableHead>
-                                <TableHead onClick={() => requestSort('lastName')}>
+                                <TableHead onClick={() => requestSort('lastName')} className='text-center'>
                                     Last Name
                                 </TableHead>
-                                <TableHead onClick={() => requestSort('meterNumber')}>
+                                <TableHead onClick={() => requestSort('meterNumber')} className='text-center' >
                                     Meter Number
                                 </TableHead>
-                                <TableHead onClick={() => requestSort('accountNumber')}>
+                                <TableHead onClick={() => requestSort('accountNumber')} className='text-center'>
                                     Account Number
                                 </TableHead>
-                                <TableHead onClick={() => requestSort('location')}>
+                                <TableHead onClick={() => requestSort('location')} className='text-center'>
                                     Location
                                 </TableHead>
-                                <TableHead onClick={() => requestSort('phoneNumber')}>
+                                <TableHead onClick={() => requestSort('phoneNumber')} className='text-center'>
                                     Phone Number
                                 </TableHead>
-                                <TableHead onClick={() => requestSort('address')}>
+                                <TableHead onClick={() => requestSort('address')} className='text-center'>
                                     Address
                                 </TableHead>
-                                <TableHead onClick={() => requestSort('status')}>
+                                <TableHead onClick={() => requestSort('status')} className='text-center'>
                                     Status
                                 </TableHead>
                                 <TableHead>Actions</TableHead>
@@ -292,30 +303,29 @@ export default function CustomerManagement() {
                         <TableBody>
                             {paginatedCustomers.map((customer, index) => (
                                 <TableRow key={customer.id} className="hover:bg-muted/50">
-                                    <TableCell>
+                                    <TableCell className='text-center'>
                                         <div className='flex items-center gap-2'>
-                                        <Checkbox
-                                            checked={selectedCustomers.includes(customer.id)}
-                                            onCheckedChange={() => toggleCustomerSelection(customer.id)}
-                                            className="border-[rgba(228,231,236,1)]"
-                                        />
-                                         <span>{startIndex + index + 1}</span>
-                                         </div>
+                                            <Checkbox
+                                                checked={selectedCustomers.includes(customer.id)}
+                                                onCheckedChange={() => toggleCustomerSelection(customer.id)}
+                                                className="border-[rgba(228,231,236,1)]"
+                                            />
+                                            <span>{startIndex + index + 1}</span>
+                                        </div>
                                     </TableCell>
-                                   
-                                    <TableCell>{customer.firstName}</TableCell>
-                                    <TableCell>{customer.lastName}</TableCell>
-                                    <TableCell>{customer.meterNumber}</TableCell>
-                                    <TableCell>{customer.accountNumber}</TableCell>
-                                    <TableCell>{customer.location}</TableCell>
-                                    <TableCell>{customer.phoneNumber}</TableCell>
-                                    <TableCell>{customer.address}</TableCell>
-                                    <TableCell>
+                                    <TableCell className='text-center'>{customer.firstName}</TableCell>
+                                    <TableCell className='text-center'>{customer.lastName}</TableCell>
+                                    <TableCell className='text-center'>{customer.meterNumber}</TableCell>
+                                    <TableCell className='text-center'>{customer.accountNumber}</TableCell>
+                                    <TableCell className='text-center'>{customer.location}</TableCell>
+                                    <TableCell className='text-center'>{customer.phoneNumber}</TableCell>
+                                    <TableCell className='text-center'>{customer.address}</TableCell>
+                                    <TableCell className='text-center'>
                                         <span
                                             className={
                                                 customer.status === 'Assigned'
-                                                    ? 'text-green-600'
-                                                    : 'text-red-600'
+                                                    ? 'text-[#059E40] bg-[#E9FBF0] rounded-full px-1.5 py-1.5'
+                                                    : 'text-[#F50202] bg-[#FBE9E9] rounded-full px-1.5 py-1.5'
                                             }
                                         >
                                             {customer.status}
@@ -410,7 +420,7 @@ export default function CustomerManagement() {
                                             meterNumber: updatedCustomer.meterNumber ?? editingCustomer.meterNumber,
                                             location: updatedCustomer.city ?? editingCustomer.location,
                                             address: updatedCustomer.address ?? `${updatedCustomer.streetName}, ${updatedCustomer.city}`,
-                                            status: editingCustomer.status, // Preserve status
+                                            status: editingCustomer.status,
                                         }
                                         : c
                                 )
@@ -425,24 +435,135 @@ export default function CustomerManagement() {
                 )}
 
                 {customerToBlock && (
-                    <Dialog open={isBlockDialogOpen} onOpenChange={setIsBlockDialogOpen}>
-                        <DialogContent>
-                            <DialogHeader>
-                                <DialogTitle>Block Customer</DialogTitle>
-                                <DialogDescription>
-                                    Are you sure you want to block {customerToBlock.firstName}?
-                                </DialogDescription>
-                            </DialogHeader>
-                            <div className="flex justify-end gap-3">
-                                <Button variant="outline" onClick={() => setIsBlockDialogOpen(false)}>
-                                    Cancel
-                                </Button>
-                                <Button variant="destructive" onClick={confirmBlockCustomer}>
-                                    Block
-                                </Button>
-                            </div>
-                        </DialogContent>
-                    </Dialog>
+                    <>
+                        {/* First Dialog: Select Block Reason */}
+                        <AlertDialog open={isBlockDialogOpen} onOpenChange={setIsBlockDialogOpen}>
+                            <AlertDialogContent className="bg-white max-w-sm rounded-xl p-10 border-gray-500 h-fit">
+                                <AlertDialogCancel asChild>
+                                    <button
+                                        className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 cursor-pointer"
+                                        onClick={() => {
+                                            setIsBlockDialogOpen(false);
+                                            setBlockReason("");
+                                        }}
+                                    >
+                                        <X size={20} className="text-black cursor-pointer" />
+                                    </button>
+                                </AlertDialogCancel>
+
+                                <div className="flex flex-col space-y-4 mt-10">
+                                    <AlertDialogHeader className="space-y-1">
+                                        <AlertDialogTitle className="text-lg font-semibold">
+                                            Block {customerToBlock.firstName}
+                                        </AlertDialogTitle>
+                                    </AlertDialogHeader>
+
+                                    {/* Reason Select Dropdown */}
+                                    <div className="space-y-2">
+                                        <label htmlFor="blockReason" className="text-sm font-medium text-gray-700">
+                                            Reason
+                                        </label>
+                                        <select
+                                            id="blockReason"
+                                            value={blockReason}
+                                            onChange={(e) => setBlockReason(e.target.value)}
+                                            className="w-full p-2 border-gray-300 rounded-md focus:ring-gray-300 focus:border-gray-300"
+                                            required
+                                        >
+                                            <option value="">Select reason to block</option>
+                                            {blockReasons.map((reason) => (
+                                                <option key={reason} value={reason}>
+                                                    {reason}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <AlertDialogFooter className="flex justify-between pt-4">
+                                        <div className="flex justify-start w-1/2">
+                                            <AlertDialogCancel
+                                                className="border border-red-600 text-red-600 hover:bg-gray-50 px-4 py-2 rounded-md font-medium cursor-pointer"
+                                                onClick={() => {
+                                                    setIsBlockDialogOpen(false);
+                                                    setBlockReason("");
+                                                }}
+                                            >
+                                                Cancel
+                                            </AlertDialogCancel>
+                                        </div>
+                                        <div className="flex justify-end w-1/2">
+                                            <AlertDialogAction
+                                                onClick={() => {
+                                                    if (!blockReason) {
+                                                        alert("Please select a reason for blocking.");
+                                                        return;
+                                                    }
+                                                    setIsConfirmBlockDialogOpen(true); // Open confirmation dialog
+                                                }}
+                                                className="bg-red-600 text-white hover:bg-red-700 px-4 py-2 rounded-md font-medium cursor-pointer"
+                                                disabled={!blockReason}
+                                            >
+                                                Block
+                                            </AlertDialogAction>
+                                        </div>
+                                    </AlertDialogFooter>
+                                </div>
+                            </AlertDialogContent>
+                        </AlertDialog>
+
+                        {/* Second Dialog: Confirm Block Action */}
+                        <AlertDialog open={isConfirmBlockDialogOpen} onOpenChange={setIsConfirmBlockDialogOpen}>
+                            <AlertDialogContent className="max-w-sm rounded-xl p-6 border-[rgba(228,231,236,1)]">
+                                <AlertDialogCancel asChild>
+                                    <button
+                                        className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+                                        onClick={() => {
+                                            setIsConfirmBlockDialogOpen(false);
+                                            setBlockReason("");
+                                        }}
+                                    >
+                                        <X size={20} />
+                                    </button>
+                                </AlertDialogCancel>
+                                <div className="flex flex-col space-y-3 mt-8">
+                                    <div className="w-full flex items-start">
+                                        <div className="text-red-600 p-3 rounded-full w-16 h-16 ml-0">
+                                            <AlertTriangle size={28} />
+                                        </div>
+                                    </div>
+                                    <AlertDialogHeader className="space-y-1">
+                                        <AlertDialogTitle className="text-lg font-semibold">
+                                            Block Customer
+                                        </AlertDialogTitle>
+                                        <AlertDialogDescription className="text-gray-600">
+                                            Are you sure you want to block {customerToBlock.firstName} for {blockReason}?
+                                        </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter className="w-full flex justify-between items-center pt-4 px-0">
+                                        <div className="flex justify-start w-1/2">
+                                            <AlertDialogCancel
+                                                className="border border-red-600 text-red-600 hover:bg-red-50 hover:text-red-700 px-6 py-2 rounded-md font-medium"
+                                                onClick={() => {
+                                                    setIsConfirmBlockDialogOpen(false);
+                                                    setBlockReason("");
+                                                }}
+                                            >
+                                                Cancel
+                                            </AlertDialogCancel>
+                                        </div>
+                                        <div className="flex justify-end w-1/2">
+                                            <AlertDialogAction
+                                                onClick={confirmBlockCustomer}
+                                                className="bg-red-600 text-white hover:bg-red-700 px-6 py-2 rounded-md font-medium"
+                                            >
+                                                Block
+                                            </AlertDialogAction>
+                                        </div>
+                                    </AlertDialogFooter>
+                                </div>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    </>
                 )}
             </div>
         </div>
