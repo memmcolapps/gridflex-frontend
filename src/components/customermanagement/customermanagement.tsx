@@ -337,16 +337,17 @@ export default function CustomerManagement() {
                                                     <MoreVertical size={14} />
                                                 </Button>
                                             </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="center" className="w-35 cursor-pointer">
+                                            <DropdownMenuContent align="center" className="w-fit cursor-pointer">
                                                 <DropdownMenuItem
                                                     onSelect={() => {
                                                         setEditingCustomer(customer);
                                                         setIsEditDialogOpen(true);
                                                     }}
+                                                    className='w-fit'
                                                 >
-                                                    <div className="flex items-center w-full gap-2">
+                                                    <div className="flex items-center w-fit gap-2">
                                                         <User size={14} />
-                                                        <span className='cursor-pointer'>Edit Customer</span>
+                                                        <span className='cursor-pointer w-fit'>Edit Customer</span>
                                                     </div>
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem onSelect={() => handleBlockCustomer(customer)}>
