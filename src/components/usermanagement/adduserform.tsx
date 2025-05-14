@@ -181,8 +181,8 @@ export default function AddUserForm({ onSave, triggerButton }: AddUserFormProps)
                                 onValueChange={(value) => handleChange(value, 'groupPermission')}
                                 required
                             >
-                                <SelectTrigger className="border-[rgba(228,231,236,1)] w-72">
-                                    <SelectValue placeholder="Select permission" />
+                                <SelectTrigger className="border-[rgba(228,231,236,1)] w-56">
+                                    <SelectValue placeholder="Select permission" className='text-black-600' />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {groupPermissions.map((permission) => (

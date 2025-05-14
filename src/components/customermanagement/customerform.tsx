@@ -151,7 +151,7 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
     return (
         <Dialog open={isOpen} onOpenChange={handleOpenChange}>
             {mode === 'add' && (
-                <DialogTrigger asChild>
+                <DialogTrigger asChild className='cursor-pointer'>
                     {triggerButton}
                 </DialogTrigger>
             )}
@@ -162,11 +162,10 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
                         {mode === 'add' ? 'Add Customer' : 'Edit Customer'}
                     </DialogTitle>
                 </DialogHeader>
-
                 <form onSubmit={handleSubmit} className="mt-4">
                     <div className="grid grid-cols-2 gap-6">
                         <div className="space-y-2">
-                            <Label htmlFor="firstName">First Name *</Label>
+                            <Label htmlFor="firstName">First Name <span className='text-red-600'>*</span></Label>
                             <Input
                                 id="firstName"
                                 name="firstName"
@@ -174,20 +173,22 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
                                 onChange={handleChange}
                                 required
                                 placeholder="Enter first name"
+                                className="border-[rgba(228,231,236,1)]"
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="lastName">Last Name</Label>
+                            <Label htmlFor="lastName">Last Name<span className='text-red-600'>*</span></Label>
                             <Input
                                 id="lastName"
                                 name="lastName"
                                 value={formData.lastName}
                                 onChange={handleChange}
                                 placeholder="Enter last name"
+                                className="border-[rgba(228,231,236,1)]"
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="accountNumber">Account Number *</Label>
+                            <Label htmlFor="accountNumber">Account Number<span className='text-red-600'>*</span></Label>
                             <Input
                                 id="accountNumber"
                                 name="accountNumber"
@@ -195,10 +196,11 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
                                 onChange={handleChange}
                                 required
                                 placeholder="Enter account number"
+                                className="border-[rgba(228,231,236,1)]"
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="nin">NIN *</Label>
+                            <Label htmlFor="nin">NIN<span className='text-red-600'>*</span></Label>
                             <Input
                                 id="nin"
                                 name="nin"
@@ -206,10 +208,11 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
                                 onChange={handleChange}
                                 required
                                 placeholder="Enter NIN"
+                                className="border-[rgba(228,231,236,1)]"
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="phoneNumber">Phone Number *</Label>
+                            <Label htmlFor="phoneNumber">Phone Number<span className='text-red-600'>*</span></Label>
                             <Input
                                 id="phoneNumber"
                                 name="phoneNumber"
@@ -217,10 +220,11 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
                                 onChange={handleChange}
                                 required
                                 placeholder="Enter phone number"
+                                className="border-[rgba(228,231,236,1)]"
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="email">Email *</Label>
+                            <Label htmlFor="email">Email <span className='text-red-600'>*</span></Label>
                             <Input
                                 id="email"
                                 name="email"
@@ -229,15 +233,16 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
                                 onChange={handleChange}
                                 required
                                 placeholder="Enter email"
+                                className="border-[rgba(228,231,236,1)]"
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="state">State</Label>
+                            <Label htmlFor="state">State<span className='text-red-600'>*</span></Label>
                             <Select
                                 value={formData.state}
                                 onValueChange={(value) => handleChange(value, 'state')}
                             >
-                                <SelectTrigger>
+                                <SelectTrigger className="border-[rgba(228,231,236,1)] w-full">
                                     <SelectValue placeholder="Select state" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -250,12 +255,12 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
                             </Select>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="city">City</Label>
+                            <Label htmlFor="city">City<span className='text-red-600'>*</span></Label>
                             <Select
                                 value={formData.city}
                                 onValueChange={(value) => handleChange(value, 'city')}
                             >
-                                <SelectTrigger>
+                                <SelectTrigger className="border-[rgba(228,231,236,1)] w-full">
                                     <SelectValue placeholder="Select city" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -268,23 +273,25 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
                             </Select>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="houseNo">House No.</Label>
+                            <Label htmlFor="houseNo">House No.<span className='text-red-600'>*</span></Label>
                             <Input
                                 id="houseNo"
                                 name="houseNo"
                                 value={formData.houseNo}
                                 onChange={handleChange}
                                 placeholder="Enter house no."
+                                className="border-[rgba(228,231,236,1)]"
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="streetName">Street Name</Label>
+                            <Label htmlFor="streetName">Street Name<span className='text-red-600'>*</span></Label>
                             <Input
                                 id="streetName"
                                 name="streetName"
                                 value={formData.streetName}
                                 onChange={handleChange}
                                 placeholder="Enter street name"
+                                className="border-[rgba(228,231,236,1)]"
                             />
                         </div>
                     </div>
@@ -301,11 +308,11 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
                                 }
                             }}
                             type="button"
-                            className="border-[#161CCA] text-[#161CCA]"
+                            className="border-[#161CCA] text-[#161CCA] cursor-pointer"
                         >
                             Cancel
                         </Button>
-                        <Button type="submit" className="bg-[#161CCA] text-white">
+                        <Button type="submit" className="bg-[#161CCA] text-white cursor-pointer">
                             {mode === 'add' ? 'Add Customer' : 'Save Changes'}
                         </Button>
                     </div>
