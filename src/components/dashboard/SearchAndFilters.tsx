@@ -27,7 +27,7 @@ export const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
             <div className="relative">
                 <Search
-                    size={16}
+                    size={10}
                     strokeWidth={2.75}
                     className="text-gray-500 absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
                 />
