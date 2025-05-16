@@ -116,7 +116,7 @@ export function AuthForm({
         className={`w-full rounded-md py-3 font-medium text-white transition-colors ${
           !isFormValid || isSubmitting
             ? "cursor-not-allowed bg-blue-600/50"
-            : "bg-blue-600 hover:bg-blue-700"
+            : "cursor-pointer bg-blue-600 hover:bg-blue-700"
         }`}
       >
         {isSubmitting ? "Signing in..." : "Sign In"}

@@ -37,9 +37,11 @@ export const MetersInstalledChart = () => {
     return (
         <Card className="w-full max-w-[1000px] border-none bg-white shadow-xs border-gray-100">
             <CardHeader className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
-                <CardTitle>Meters Installed Over Time</CardTitle>
+                <CardTitle>Meters Assigned Over Time</CardTitle>
                 <div className="flex gap-2">
                     <Button
+                        className={`cursor-pointer ${
+                            activeChart ==='monthly'? 'border border-gray-300 bg-gray-100' : 'border border-transparent hover:border-gray-100 hover:bg-gray-100'}`}
                         variant={activeChart === 'monthly' ? 'secondary' : 'ghost'}
                         size="sm"
                         onClick={() => setActiveChart('monthly')}
@@ -47,6 +49,8 @@ export const MetersInstalledChart = () => {
                         Monthly
                     </Button>
                     <Button
+                    className={`cursor-pointer ${
+                        activeChart ==='quarterly'? 'border border-gray-300 bg-gray-100' : 'border border-transparent hover:border-gray-100 hover:bg-gray-100'}`}
                         variant={activeChart === 'quarterly' ? 'secondary' : 'ghost'}
                         size="sm"
                         onClick={() => setActiveChart('quarterly')}
@@ -54,6 +58,8 @@ export const MetersInstalledChart = () => {
                         Quarterly
                     </Button>
                     <Button
+                    className={`cursor-pointer ${
+                        activeChart ==='yearly'? 'border border-gray-300 bg-gray-100' : 'border border-transparent hover:border-gray-100 hover:bg-gray-100'}`}
                         variant={activeChart === 'yearly' ? 'secondary' : 'ghost'}
                         size="sm"
                         onClick={() => setActiveChart('yearly')}
