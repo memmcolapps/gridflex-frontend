@@ -22,7 +22,6 @@ import {
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AddMeterDialog } from "@/components/meter-management/add-edit-meter-dialog";
 import { ApproveDialog, AssignDialog, DeactivateDialog } from "@/components/meter-management/meter-dialogs";
@@ -400,16 +399,15 @@ export default function MeterManagementPage() {
             <div className="flex justify-between items-center py-4 px-6 text-sm lg:text-base text-gray-600">
                 <div className="flex items-center gap-2">
                     <span>Rows per page</span>
-                    <Select value={rowsPerPage.toString()} onValueChange={(value) => setRowsPerPage(parseInt(value))}>
-                        <SelectTrigger className="w-16 border-gray-300">
-                            <SelectValue placeholder={rowsPerPage} />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="12">12</SelectItem>
-                            <SelectItem value="24">24</SelectItem>
-                            <SelectItem value="48">48</SelectItem>
-                        </SelectContent>
-                    </Select>
+                    <select
+                        value={rowsPerPage}
+                        onChange={(e) => setRowsPerPage(parseInt(e.target.value))}
+                        className="w-16 border-gray-300 rounded-md text-sm lg:text-base"
+                    >
+                        <option value="12">12</option>
+                        <option value="24">24</option>
+                        <option value="48">48</option>
+                    </select>
                 </div>
                 <div className="flex items-center gap-2">
                     <span>

@@ -402,7 +402,7 @@ export default function TariffManagementPage() {
                     <div className="flex gap-5">
                         <Button
                             variant={"outline"}
-                            className={`text-md gap-2 border-[rgb(34,194,94)] px-8 py-5 font-semibold text-[rgb(34,194,94)] ${selectedTariffs.length === 0 ? "cursor-not-allowed opacity-50" : ""}`}
+                            className={`text-md gap-2 bg-green-600 border-[#22C55E] px-8 py-5 font-semibold text-white cursor-pointer ${selectedTariffs.length === 0 ? "cursor-not-allowed opacity-50" : ""}`}
                             onClick={handleBulkApprove}
                             disabled={selectedTariffs.length === 0}
                         >
@@ -411,7 +411,7 @@ export default function TariffManagementPage() {
                         </Button>
                         <Button
                             variant={"default"}
-                            className="text-md gap-2 bg-[rgba(22,28,202,1)] px-8 py-5 font-semibold text-[rgba(254,254,254,1)]"
+                            className="text-md gap-2 px-8 py-5 font-semibold text-[rgba(22,28,202,1)] border  cursor-pointer"
                         >
                             <SquareArrowOutUpRight size={14} />
                             Export

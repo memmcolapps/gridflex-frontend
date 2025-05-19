@@ -108,13 +108,6 @@ export function SidebarNav() {
       ],
     },
     {
-      title: "Feeder Management",
-      href: "/feeder-management",
-      icon: Plug,
-      hasSubmenu: true,
-      submenuItems: [],
-    },
-    {
       title: "Billing",
       href: "/billing",
       icon: CreditCard,
@@ -160,7 +153,7 @@ export function SidebarNav() {
   ];
 
   return (
-    <Sidebar className="border-r border-gray-200 w-[264px]">
+    <Sidebar className="fixed left-0 top-0 h-screen z-40 border-r border-gray-200 w-[274px]">
       <SidebarHeader className="flex items-center justify-center py-4">
         <Link href="/" className="flex items-center gap-2">
           <div className="flex items-center justify-center">
@@ -186,7 +179,7 @@ export function SidebarNav() {
                 onOpenChange={() => toggleExpanded(item.title)}
                 className="group/collapsible"
               >
-                <SidebarMenuItem>
+                <SidebarMenuItem className="">
                   <CollapsibleTrigger asChild>
                     <SidebarMenuButton
                       className={cn(
@@ -212,7 +205,7 @@ export function SidebarNav() {
 
                   {item.hasSubmenu && (
                     <CollapsibleContent>
-                      <SidebarMenuSub className="mt-1 space-y-1 whitespace-nowrap">
+                      <SidebarMenuSub className="mt-1 space-y-1 whitespace-nowrap ">
                         {item.submenuItems?.map((subItem) => {
                           const isSubActive = isItemActive(subItem.href, subItem.submenuItems);
                           const isSubExpanded = expandedItems[subItem.title] ?? isSubActive;
@@ -224,12 +217,12 @@ export function SidebarNav() {
                                   open={isSubExpanded}
                                   onOpenChange={() => toggleExpanded(subItem.title)}
                                 >
-                                  <SidebarMenuItem>
+                                  <SidebarMenuItem className="">
                                     <CollapsibleTrigger asChild>
                                       <SidebarMenuButton
                                         className={cn(
-                                          "flex items-center justify-between w-full p-2.5 text-xl",
-                                          isSubActive && "text-[#161CCA] font-medium"
+                                          "flex items-center justify-between w-full p-2.5 text-xl ",
+                                          isSubActive && "bg-gray-100 font-medium"
                                         )}
                                       >
                                         <span>{subItem.title}</span>
@@ -243,14 +236,14 @@ export function SidebarNav() {
                                       </SidebarMenuButton>
                                     </CollapsibleTrigger>
                                     <CollapsibleContent>
-                                      <SidebarMenuSub className="mt-1 pl-4 space-y-1">
+                                      <SidebarMenuSub className="mt-1 px-1">
                                         {subItem.submenuItems?.map((nestedItem) => (
                                           <SidebarMenuItem
                                             key={nestedItem.title}
                                             className={cn(
-                                              "p-2.5 text-xl",
-                                              pathname === nestedItem.href &&
-                                              "rounded-md bg-[#161CCA] text-white"
+                                              "p-2.5 text-xl ",
+                                              pathname === nestedItem.href ?
+                                              "rounded-md bg-[#161CCA] text-white" : "hover:bg-gray-100 rounded-md"
                                             )}
                                           >
                                             <Link
@@ -269,8 +262,8 @@ export function SidebarNav() {
                                 <SidebarMenuItem
                                   className={cn(
                                     "p-2.5 text-xl",
-                                    pathname === subItem.href &&
-                                    "rounded-md bg-[#161CCA] text-white"
+                                    pathname === subItem.href ?
+                                    "rounded-md bg-[#161CCA] text-white" : "hover:bg-gray-100 rounded-md"
                                   )}
                                 >
                                   <Link

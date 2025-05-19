@@ -16,7 +16,6 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import DeactivateUserDropdownItem from './deactivateuserdropdownitem';
 
-
 export type User = {
     id: string;
     firstName: string;

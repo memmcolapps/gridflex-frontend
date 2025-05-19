@@ -52,7 +52,7 @@ export const statusCards = [
         iconColor: 'text-[rgb(37,39,44)]',
     },
     {
-        title: 'Allocated',
+        title: 'Assigned',
         value: '1,200',
         change: '+2.20%',
         changeColor: 'text-black',

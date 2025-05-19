@@ -40,7 +40,7 @@ export default function ProtectedLayout({
 
   return (
     <SidebarProvider>
-      <div className="flex h-screen w-full overflow-hidden">
+      <div className="flex w-full overflow-hidden">
         <SidebarNav />
         <div className="flex flex-1 flex-col">
           <Navbar />
