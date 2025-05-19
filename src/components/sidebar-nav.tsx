@@ -102,7 +102,7 @@ export function SidebarNav() {
             { title: "Debt Setting", href: "/data-management/debt-management/debt-setting" },
             { title: "Mode of Payment", href: "/data-management/debt-management/mode-of-payment" },
             { title: "Debit Adjustment", href: "/data-management/debt-management/debit-adjustment" },
-             { title: "Credit Adjustment", href: "/data-management/debt-management/credit-adjustment" }
+            { title: "Credit Adjustment", href: "/data-management/debt-management/credit-adjustment" }
           ]
         },
       ],
@@ -141,8 +141,8 @@ export function SidebarNav() {
       icon: Users,
       hasSubmenu: true,
       submenuItems: [
-        { title: "Users", href: "/user-management"},
-        { title: "Group Permission", href: "/user-management/group-permission"}
+        { title: "Users", href: "/user-management" },
+        { title: "Group Permission", href: "/user-management/group-permission" }
       ],
     },
     {
