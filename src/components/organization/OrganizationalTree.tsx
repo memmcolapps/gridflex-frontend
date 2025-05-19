@@ -46,7 +46,6 @@ const AddDialog = ({ isOpen, onClose, onAdd, nodeType }: AddDialogProps) => {
         voltage: "",
         longitude: "",
         latitude: "",
-        description: "",
     });
     const [isValid, setIsValid] = useState(false);
     const [errors, setErrors] = useState({
@@ -73,11 +72,15 @@ const AddDialog = ({ isOpen, onClose, onAdd, nodeType }: AddDialogProps) => {
     };
 
     const validateForm = (data: Record<string, string | number>) => {
-        const requiredFields = ["name", "id", "phoneNumber", "email", "contactPerson", "address", "status", "voltage"];
+        const requiredFields = ["name", "id", "phoneNumber", "email", "contactPerson", "address"];
+        
+        // Adjust required fields based on node type
+        if (nodeType !== "Root" && nodeType !== "Region") {
+            requiredFields.push("status", "voltage");
+        }
         if (nodeType === "Substation" || nodeType === "Transformer") {
             requiredFields.push("longitude", "latitude");
         }
-        requiredFields.push("description");
 
         // Email validation
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -121,7 +124,6 @@ const AddDialog = ({ isOpen, onClose, onAdd, nodeType }: AddDialogProps) => {
                 voltage: "",
                 longitude: "",
                 latitude: "",
-                description: "",
             });
             setErrors({ email: "", phoneNumber: "", id: "" });
             onClose();
@@ -130,7 +132,7 @@ const AddDialog = ({ isOpen, onClose, onAdd, nodeType }: AddDialogProps) => {
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="bg-white p-6 rounded-lg h-fit shadow-lg">
+            <DialogContent className="bg-white p-6 rounded-lg h-fit shadow-lg [&>button]:w-5 [&>button]:h-5 [&>button>svg]:w-5 [&>button>svg]:h-5">
                 <DialogHeader>
                     <DialogTitle>Add {nodeType}</DialogTitle>
                 </DialogHeader>
@@ -138,25 +140,25 @@ const AddDialog = ({ isOpen, onClose, onAdd, nodeType }: AddDialogProps) => {
                     <div className="grid grid-cols-2 gap-4">
                         <div className="flex flex-col">
                             <label className="text-sm font-medium">
-                                {nodeType === "Root" ? "Root Name" : `${nodeType} Name`} *
+                                {nodeType === "Root" ? "Root Name" : nodeType === "Region" ? "Region Name" : `${nodeType} Name`} *
                             </label>
                             <Input
                                 name="name"
                                 value={formData.name}
                                 onChange={handleInputChange}
-                                placeholder={`Enter ${nodeType === "Root" ? "Root" : nodeType} Name`}
+                                placeholder={`Enter ${nodeType === "Root" ? "Root" : nodeType === "Region" ? "Region" : nodeType} Name`}
                                 className="mt-1 border-gray-300"
                             />
                         </div>
                         <div className="flex flex-col">
                             <label className="text-sm font-medium">
-                                {nodeType === "Root" ? "Root ID" : "ID"} *
+                                {nodeType === "Root" ? "Root ID" : nodeType === "Region" ? "Region ID" : "ID"} *
                             </label>
                             <Input
                                 name="id"
                                 value={formData.id}
                                 onChange={handleInputChange}
-                                placeholder={`Enter ${nodeType === "Root" ? "Root" : ""} ID`}
+                                placeholder={`Enter ${nodeType === "Root" ? "Root" : nodeType === "Region" ? "Region" : ""} ID`}
                                 className="mt-1 border-gray-300"
                             />
                             {errors.id && <p className="text-red-500 text-xs mt-1">{errors.id}</p>}
@@ -208,43 +210,45 @@ const AddDialog = ({ isOpen, onClose, onAdd, nodeType }: AddDialogProps) => {
                             />
                         </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="flex flex-col">
-                            <label className="text-sm font-medium">Status *</label>
-                            <Select
-                                onValueChange={(value) => handleSelectChange("status", value)}
-                                value={formData.status?.toString()}
-                            >
-                                <SelectTrigger className="border-gray-300 ring-opacity-0">
-                                    <SelectValue placeholder="Select Status" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="Active">Active</SelectItem>
-                                    <SelectItem value="Inactive">Inactive</SelectItem>
-                                </SelectContent>
-                            </Select>
+                    {(nodeType !== "Root" && nodeType !== "Region") && (
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="flex flex-col">
+                                <label className="text-sm font-medium">Status *</label>
+                                <Select
+                                    onValueChange={(value) => handleSelectChange("status", value)}
+                                    value={formData.status?.toString()}
+                                >
+                                    <SelectTrigger className="border-gray-300 ring-opacity-0">
+                                        <SelectValue placeholder="Select Status" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Active">Active</SelectItem>
+                                        <SelectItem value="Inactive">Inactive</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="flex flex-col">
+                                <label className="text-sm font-medium">Voltage *</label>
+                                <Select
+                                    onValueChange={(value) => handleSelectChange("voltage", value)}
+                                    value={formData.voltage ? String(formData.voltage) : undefined}
+                                >
+                                    <SelectTrigger className="border-gray-300 ring-opacity-0">
+                                        <SelectValue placeholder="Select Voltage" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="330 KV">330 KV</SelectItem>
+                                        <SelectItem value="132 KV">132 KV</SelectItem>
+                                        <SelectItem value="33 KV">33 KV</SelectItem>
+                                        <SelectItem value="11 KV">11 KV</SelectItem>
+                                        <SelectItem value="415 V">415 V</SelectItem>
+                                        <SelectItem value="240 V">240 V</SelectItem>
+                                        <SelectItem value="3-240 V">3-240 V</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
-                        <div className="flex flex-col">
-                            <label className="text-sm font-medium">Voltage *</label>
-                            <Select
-                                onValueChange={(value) => handleSelectChange("voltage", value)}
-                                value={formData.voltage ? String(formData.voltage) : undefined}
-                            >
-                                <SelectTrigger className="border-gray-300 ring-opacity-0">
-                                    <SelectValue placeholder="Select Voltage" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="330 KV">330 KV</SelectItem>
-                                    <SelectItem value="132 KV">132 KV</SelectItem>
-                                    <SelectItem value="33 KV">33 KV</SelectItem>
-                                    <SelectItem value="11 KV">11 KV</SelectItem>
-                                    <SelectItem value="415 V">415 V</SelectItem>
-                                    <SelectItem value="240 V">240 V</SelectItem>
-                                    <SelectItem value="3-240 V">3-240 V</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </div>
+                    )}
                     {(nodeType === "Substation" || nodeType === "Transformer") && (
                         <div className="grid grid-cols-2 gap-4">
                             <div className="flex flex-col">
@@ -269,16 +273,6 @@ const AddDialog = ({ isOpen, onClose, onAdd, nodeType }: AddDialogProps) => {
                             </div>
                         </div>
                     )}
-                    <div className="flex flex-col">
-                        <label className="text-sm font-medium">Description *</label>
-                        <Input
-                            name="description"
-                            value={formData.description}
-                            onChange={handleInputChange}
-                            placeholder="Enter Description"
-                            className="mt-1 border-gray-300"
-                        />
-                    </div>
                 </div>
                 <DialogFooter>
                     <Button
@@ -324,7 +318,6 @@ const EditDialog = ({ isOpen, onClose, onSave, nodeType, initialData }: EditDial
         voltage: "",
         longitude: "",
         latitude: "",
-        description: "",
     });
     const [isValid, setIsValid] = useState(true);
     const [errors, setErrors] = useState({
@@ -351,11 +344,15 @@ const EditDialog = ({ isOpen, onClose, onSave, nodeType, initialData }: EditDial
     };
 
     const validateForm = (data: Record<string, string | number>) => {
-        const requiredFields = ["name", "id", "phoneNumber", "email", "contactPerson", "address", "status", "voltage"];
+        const requiredFields = ["name", "id", "phoneNumber", "email", "contactPerson", "address"];
+        
+        // Adjust required fields based on node type
+        if (nodeType !== "Root" && nodeType !== "Region") {
+            requiredFields.push("status", "voltage");
+        }
         if (nodeType === "Substation" || nodeType === "Transformer") {
             requiredFields.push("longitude", "latitude");
         }
-        requiredFields.push("description");
 
         // Email validation
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -394,7 +391,7 @@ const EditDialog = ({ isOpen, onClose, onSave, nodeType, initialData }: EditDial
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="bg-white h-fit p-6 rounded-lg shadow-lg">
+            <DialogContent className="bg-white h-fit p-6 rounded-lg shadow-lg [&>button]:w-5 [&>button]:h-5 [&>button>svg]:w-5 [&>button>svg]:h-5">
                 <DialogHeader>
                     <DialogTitle>Edit {nodeType}</DialogTitle>
                 </DialogHeader>
@@ -402,25 +399,25 @@ const EditDialog = ({ isOpen, onClose, onSave, nodeType, initialData }: EditDial
                     <div className="grid grid-cols-2 gap-4">
                         <div className="flex flex-col">
                             <label className="text-sm font-medium">
-                                {nodeType === "Root" ? "Root Name" : `${nodeType} Name`} *
+                                {nodeType === "Root" ? "Root Name" : nodeType === "Region" ? "Region Name" : `${nodeType} Name`} *
                             </label>
                             <Input
                                 name="name"
                                 value={formData.name}
                                 onChange={handleInputChange}
-                                placeholder={`Enter ${nodeType === "Root" ? "Root" : nodeType} Name`}
+                                placeholder={`Enter ${nodeType === "Root" ? "Root" : nodeType === "Region" ? "Region" : nodeType} Name`}
                                 className="mt-1 border-gray-300"
                             />
                         </div>
                         <div className="flex flex-col">
                             <label className="text-sm font-medium">
-                                {nodeType === "Root" ? "Root ID" : "ID"} *
+                                {nodeType === "Root" ? "Root ID" : nodeType === "Region" ? "Region ID" : "ID"} *
                             </label>
                             <Input
                                 name="id"
                                 value={formData.id}
                                 onChange={handleInputChange}
-                                placeholder={`Enter ${nodeType === "Root" ? "Root" : ""} ID`}
+                                placeholder={`Enter ${nodeType === "Root" ? "Root" : nodeType === "Region" ? "Region" : ""} ID`}
                                 className="mt-1 border-gray-300"
                             />
                             {errors.id && <p className="text-red-500 text-xs mt-1">{errors.id}</p>}
@@ -472,43 +469,45 @@ const EditDialog = ({ isOpen, onClose, onSave, nodeType, initialData }: EditDial
                             />
                         </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="flex flex-col">
-                            <label className="text-sm font-medium">Status *</label>
-                            <Select
-                                onValueChange={(value) => handleSelectChange("status", value)}
-                                value={formData.status ? String(formData.status) : undefined}
-                            >
-                                <SelectTrigger className="ring-opacity-0">
-                                    <SelectValue placeholder="Select Status" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="Active">Active</SelectItem>
-                                    <SelectItem value="Inactive">Inactive</SelectItem>
-                                </SelectContent>
-                            </Select>
+                    {(nodeType !== "Root" && nodeType !== "Region") && (
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="flex flex-col">
+                                <label className="text-sm font-medium">Status *</label>
+                                <Select
+                                    onValueChange={(value) => handleSelectChange("status", value)}
+                                    value={formData.status ? String(formData.status) : undefined}
+                                >
+                                    <SelectTrigger className="ring-opacity-0">
+                                        <SelectValue placeholder="Select Status" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Active">Active</SelectItem>
+                                        <SelectItem value="Inactive">Inactive</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="flex flex-col">
+                                <label className="text-sm font-medium">Voltage *</label>
+                                <Select
+                                    onValueChange={(value) => handleSelectChange("voltage", value)}
+                                    value={formData.voltage !== undefined ? String(formData.voltage) : undefined}
+                                >
+                                    <SelectTrigger className="ring-opacity-0">
+                                        <SelectValue placeholder="Select Voltage" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="330 KV">330 KV</SelectItem>
+                                        <SelectItem value="132 KV">132 KV</SelectItem>
+                                        <SelectItem value="33 KV">33 KV</SelectItem>
+                                        <SelectItem value="11 KV">11 KV</SelectItem>
+                                        <SelectItem value="415 V">415 V</SelectItem>
+                                        <SelectItem value="240 V">240 V</SelectItem>
+                                        <SelectItem value="3-240 V">3-240 V</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
-                        <div className="flex flex-col">
-                            <label className="text-sm font-medium">Voltage *</label>
-                            <Select
-                                onValueChange={(value) => handleSelectChange("voltage", value)}
-                                value={formData.voltage !== undefined ? String(formData.voltage) : undefined}
-                            >
-                                <SelectTrigger className="ring-opacity-0">
-                                    <SelectValue placeholder="Select Voltage" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="330 KV">330 KV</SelectItem>
-                                    <SelectItem value="132 KV">132 KV</SelectItem>
-                                    <SelectItem value="33 KV">33 KV</SelectItem>
-                                    <SelectItem value="11 KV">11 KV</SelectItem>
-                                    <SelectItem value="415 V">415 V</SelectItem>
-                                    <SelectItem value="240 V">240 V</SelectItem>
-                                    <SelectItem value="3-240 V">3-240 V</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </div>
+                    )}
                     {(nodeType === "Substation" || nodeType === "Transformer") && (
                         <div className="grid grid-cols-2 gap-4">
                             <div className="flex flex-col">
@@ -533,16 +532,6 @@ const EditDialog = ({ isOpen, onClose, onSave, nodeType, initialData }: EditDial
                             </div>
                         </div>
                     )}
-                    <div className="flex flex-col">
-                        <label className="text-sm font-medium">Description *</label>
-                        <Input
-                            name="description"
-                            value={formData.description}
-                            onChange={handleInputChange}
-                            placeholder="Enter Description"
-                            className="mt-1 border-gray-300"
-                        />
-                    </div>
                 </div>
                 <DialogFooter>
                     <Button variant="outline"
@@ -615,19 +604,19 @@ const OrganizationNode = ({
     const renderNodeIcon = (nodeType: string) => {
         switch (nodeType) {
             case "Root":
-                return <Building2 size={16} className="text-gray-600" />;
+                return <Building2 size={14} className="text-gray-600" />;
             case "Region":
-                return <Grid2X2 size={16} className="text-gray-600" />;
+                return <Grid2X2 size={14} className="text-gray-600" />;
             case "Business Hub":
-                return <Building size={16} className="text-gray-600" />;
+                return <Building size={14} className="text-gray-600" />;
             case "Service Centre":
-                return <Wrench size={16} className="text-gray-600" />;
+                return <Wrench size={14} className="text-gray-600" />;
             case "Substation":
-                return <Database size={16} className="text-gray-600" />;
+                return <Database size={14} className="text-gray-600" />;
             case "Feeder Line":
-                return <Zap size={16} className="text-gray-600" />;
+                return <Zap size={14} className="text-gray-600" />;
             case "Transformer":
-                return <Plug size={16} className="text-gray-600" />;
+                return <Plug size={14} className="text-gray-600" />;
             default:
                 return null;
         }
@@ -642,9 +631,9 @@ const OrganizationNode = ({
                         onClick={() => setIsExpanded(!isExpanded)}
                     >
                         {isExpanded ? (
-                            <ChevronDown size={16} className="text-gray-600" />
+                            <ChevronDown size={14} className="text-gray-600" />
                         ) : (
-                            <ChevronRight size={16} className="text-gray-600" />
+                            <ChevronRight size={14} className="text-gray-600" />
                         )}
                         {renderNodeIcon(nodeType)}
                         {name}
@@ -656,7 +645,7 @@ const OrganizationNode = ({
                                     variant="secondary"
                                     className="p-1 text-gray-600 hover:text-gray-800 border-none cursor-pointer focus:outline-none ring-[rgba(22,28,202,0)]"
                                 >
-                                    <Plus size={16} strokeWidth={2.7} />
+                                    <Plus size={14} strokeWidth={2.7} />
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
@@ -684,7 +673,7 @@ const OrganizationNode = ({
                             onClick={() => setIsEditDialogOpen(true)}
                             className="p-1 text-gray-600 hover:text-gray-800 cursor-pointer border-none focus:outline-none ring-[rgba(22,28,202,0)]"
                         >
-                            <Edit size={16} strokeWidth={2.7} />
+                            <Edit size={14} strokeWidth={2.7} />
                         </Button>
                     </div>
                 </div>
@@ -731,9 +720,6 @@ const OrganizationalTree = () => {
                     email: "abdulmujib@memmcol.com",
                     contactPerson: "Engr Muda",
                     address: "LAGOS-IBADAN EXPRESS WAY",
-                    status: "Active",
-                    voltage: "330 KV",
-                    description: "Root organization",
                 }}
                 initialChildren={[]}
                 initialExpanded={false}
