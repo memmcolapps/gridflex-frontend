@@ -97,13 +97,6 @@ export function SidebarNav() {
       ],
     },
     {
-      title: "Feeder Management",
-      href: "/feeder-management",
-      icon: Plug,
-      hasSubmenu: true,
-      submenuItems: [],
-    },
-    {
       title: "Billing",
       href: "/billing",
       icon: CreditCard,
