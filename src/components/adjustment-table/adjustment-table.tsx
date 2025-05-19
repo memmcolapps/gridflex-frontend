@@ -38,7 +38,6 @@ import {
     Search,
     ArrowUpDown,
     Download,
-    Lock,
     Eye,
     Wallet,
     SquareArrowOutUpRight,
@@ -99,7 +98,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
 
     const filteredCustomers = customers.filter(
         (customer) =>
-            customer.meterNo.includes(searchTerm) || customer.accountNo.includes(searchTerm)
+            customer.meterNo.includes(searchTerm) ??  customer.accountNo.includes(searchTerm)
     );
 
     const totalRows = filteredCustomers.length;
@@ -214,21 +213,21 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
                                                 <Label>First Name</Label>
-                                                <Input defaultValue={selectedCustomer?.name.split(' ')[0] || 'John'} disabled />
+                                                <Input defaultValue={selectedCustomer?.name.split(' ')[0] ?? 'John'} disabled />
                                             </div>
                                             <div>
                                                 <Label>Last Name</Label>
-                                                <Input defaultValue={selectedCustomer?.name.split(' ')[1] || 'Doe'} disabled />
+                                                <Input defaultValue={selectedCustomer?.name.split(' ')[1] ?? 'Doe'} disabled />
                                             </div>
                                         </div>
                                         <div className="grid grid-cols-2 gap-4">
                                             <div>
                                                 <Label>Meter Number</Label>
-                                                <Input defaultValue={selectedCustomer?.meterNo || '6201021223'} disabled />
+                                                <Input defaultValue={selectedCustomer?.meterNo ?? '6201021223'} disabled />
                                             </div>
                                             <div>
                                                 <Label>Account Number</Label>
-                                                <Input defaultValue={selectedCustomer?.accountNo || '0159004612077'} disabled />
+                                                <Input defaultValue={selectedCustomer?.accountNo ?? '0159004612077'} disabled />
                                             </div>
                                         </div>
                                         {type === 'credit' && (
