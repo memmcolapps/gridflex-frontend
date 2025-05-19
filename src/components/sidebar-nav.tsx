@@ -94,6 +94,17 @@ export function SidebarNav() {
         { title: "Customer Management", href: "/data-management/customer-management" },
         { title: "Tariff", href: "/data-management/tarrif" },
         { title: "Band Management", href: "/data-management/band-management" },
+        {
+          title: "Debt Management",
+          href: "/data-management/debt-management",
+          hasSubmenu: true,
+          submenuItems: [
+            { title: "Debt Setting", href: "/data-management/debt-management/debt-setting" },
+            { title: "Mode of Payment", href: "/data-management/debt-management/mode-of-payment" },
+            { title: "Debit Adjustment", href: "/data-management/debt-management/debit-adjustment" },
+             { title: "Credit Adjustment", href: "/data-management/debt-management/credit-adjustment" }
+          ]
+        },
       ],
     },
     {
