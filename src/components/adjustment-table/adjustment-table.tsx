@@ -68,15 +68,15 @@ interface AdjustmentTableProps {
 const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
     const [customers, setCustomers] = useState<Customer[]>([
         { id: 1, name: 'John Doe', meterNo: '6201021223', accountNo: '0159004612077', balance: 0 },
-        { id: 2, name: 'John Doe', meterNo: '6201021223', accountNo: '0159004612077', balance: 500000 },
-        { id: 3, name: 'John Doe', meterNo: '6201021223', accountNo: '0159004612077', balance: 500000 },
-        { id: 4, name: 'John Doe', meterNo: '6201021223', accountNo: '0159004612077', balance: 500000 },
-        { id: 5, name: 'John Doe', meterNo: '6201021223', accountNo: '0159004612077', balance: 500000 },
-        { id: 6, name: 'John Doe', meterNo: '6201021223', accountNo: '0159004612077', balance: 500000 },
-        { id: 7, name: 'John Doe', meterNo: '6201021223', accountNo: '0159004612077', balance: 500000 },
-        { id: 8, name: 'John Doe', meterNo: '6201021223', accountNo: '0159004612077', balance: 500000 },
-        { id: 9, name: 'John Doe', meterNo: '6201021223', accountNo: '0159004612077', balance: 500000 },
-        { id: 10, name: 'John Doe', meterNo: '6201021223', accountNo: '0159004612077', balance: 500000 },
+        { id: 2, name: 'Jane Smith', meterNo: '6201021224', accountNo: '0159004612078', balance: 500000 },
+        { id: 3, name: 'Alice Johnson', meterNo: '6201021225', accountNo: '0159004612079', balance: 500000 },
+        { id: 4, name: 'Bob Brown', meterNo: '6201021226', accountNo: '0159004612080', balance: 500000 },
+        { id: 5, name: 'Emma Davis', meterNo: '6201021227', accountNo: '0159004612081', balance: 500000 },
+        { id: 6, name: 'Michael Lee', meterNo: '6201021228', accountNo: '0159004612082', balance: 500000 },
+        { id: 7, name: 'Sarah Wilson', meterNo: '6201021229', accountNo: '0159004612083', balance: 500000 },
+        { id: 8, name: 'David Clark', meterNo: '6201021230', accountNo: '0159004612084', balance: 500000 },
+        { id: 9, name: 'Laura Martinez', meterNo: '6201021231', accountNo: '0159004612085', balance: 500000 },
+        { id: 10, name: 'James Taylor', meterNo: '6201021232', accountNo: '0159004612086', balance: 500000 },
     ]);
 
     const [transactions] = useState<Transaction[]>([
@@ -84,6 +84,10 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
         { date: '05-05-2025', liabilityCause: 'Null', liabilityCode: 'Null', credit: 10000, debit: 0, balance: 500000 },
         { date: '05-05-2025', liabilityCause: 'Electricity Deficit', liabilityCode: 'C90BQT', credit: 10000, debit: 10000, balance: 500000 },
         { date: '05-05-2025', liabilityCause: 'Null', liabilityCode: 'Null', credit: 10000, debit: 0, balance: 500000 },
+        { date: '04-05-2025', liabilityCause: 'Null', liabilityCode: 'Null', credit: 8000, debit: 0, balance: 200000 },
+        { date: '04-05-2025', liabilityCause: 'Null', liabilityCode: 'Null', credit: 8000, debit: 0, balance: 200000 },
+        { date: '04-05-2025', liabilityCause: 'Null', liabilityCode: 'Null', credit: 8000, debit: 0, balance: 200000 },
+        { date: '04-05-2025', liabilityCause: 'Null', liabilityCode: 'Null', credit: 8000, debit: 0, balance: 200000 },
         { date: '04-05-2025', liabilityCause: 'Null', liabilityCode: 'Null', credit: 8000, debit: 0, balance: 200000 },
     ]);
 
@@ -105,16 +109,10 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
     const [accountNo, setAccountNo] = useState('');
     const [reconcileAmount, setReconcileAmount] = useState('');
 
-    // Disable condition: Check if any required field is empty
-    const isDisabled =
-        !firstName.trim() ||
-        !lastName.trim() ||
-        !meterNo.trim() ||
-        !accountNo.trim() ||
-        !amount.trim() ||
-        !liabilityCause;
+    // Disable condition: Check if any required editable field is empty
+    const isDisabled = !amount.trim() || !liabilityCause;
 
-    // Disable logic for Reconcile Debit dialog (new)
+    // Disable logic for Reconcile Debit dialog
     const isReconcileDisabled = !reconcileAmount.trim();
 
     const filteredCustomers = customers.filter(
@@ -144,16 +142,16 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(e.target.value);
         setCurrentPage(1);
-    }; 
+    };
 
     const handleProceed = () => {
         const customer = customers.find((c) => c.meterNo === meterNumber);
         if (customer) {
             setSelectedCustomer(customer);
-            setFirstName('');
-            setLastName('');
-            setMeterNo('');
-            setAccountNo('');
+            setFirstName(customer.name.split(' ')[0] || '');
+            setLastName(customer.name.split(' ')[1] || '');
+            setMeterNo(customer.meterNo);
+            setAccountNo(customer.accountNo);
             setAmount('');
             setLiabilityCause('');
             setDialogStep('fullForm');
@@ -178,9 +176,8 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
     const handleReconcileDebit = () => {
         console.log('Reconcile Debit submitted:', { amount: reconcileAmount });
         setIsReconcileDialogOpen(false);
-        setReconcileAmount(''); // Reset after submission
+        setReconcileAmount('');
     };
-
 
     return (
         <div className="h-full overflow-hidden flex flex-col text-black">
@@ -276,6 +273,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                                                     }}
                                                     placeholder="Enter first name"
                                                     className="border-[rgba(228,231,236,1)]"
+                                                    disabled
                                                 />
                                             </div>
                                             <div className="space-y-4">
@@ -288,6 +286,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                                                     }}
                                                     placeholder="Enter last name"
                                                     className="border-[rgba(228,231,236,1)]"
+                                                    disabled
                                                 />
                                             </div>
                                         </div>
@@ -302,6 +301,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                                                     }}
                                                     placeholder="Enter meter number"
                                                     className="border-[rgba(228,231,236,1)]"
+                                                    disabled
                                                 />
                                             </div>
                                             <div className="space-y-4">
@@ -314,15 +314,19 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                                                     }}
                                                     placeholder="Enter account number"
                                                     className="border-[rgba(228,231,236,1)]"
+                                                    disabled
                                                 />
                                             </div>
                                         </div>
                                         <div className="space-y-4">
                                             <Label>Liability Cause</Label>
-                                            <Select onValueChange={(value) => {
-                                                console.log('Liability Cause selected:', value);
-                                                setLiabilityCause(value);
-                                            }}>
+                                            <Select
+                                                value={liabilityCause}
+                                                onValueChange={(value) => {
+                                                    console.log('Liability Cause selected:', value);
+                                                    setLiabilityCause(value);
+                                                }}
+                                            >
                                                 <SelectTrigger className="border-[rgba(228,231,236,1)] w-full">
                                                     <SelectValue placeholder="Select liability cause" />
                                                 </SelectTrigger>
@@ -346,7 +350,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                                                 className="border-[rgba(228,231,236,1)]"
                                             />
                                         </div>
-                                        <div className='w-full flex justify-end'>
+                                        <div className="w-full flex justify-end">
                                             <Button
                                                 onClick={handleAddAdjustment}
                                                 disabled={isDisabled}
@@ -355,7 +359,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                                                     : 'bg-[#161CCA] hover:bg-[#121eb3] cursor-pointer'
                                                     }`}
                                             >
-                                                {type === 'credit' ? 'Add Credit' : 'Add Debit'}
+                                                Add {type === 'credit' ? 'Credit' : 'Debit'}
                                             </Button>
                                         </div>
                                     </div>
@@ -364,8 +368,9 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                         </Dialog>
                     </div>
                 </div>
+
                 {/* Rest of the component remains unchanged */}
-                <div className='flex justify-between'>
+                <div className="flex justify-between">
                     <div className="flex items-center mb-6 gap-4 w-80">
                         <div className="relative flex-1">
                             <Search
@@ -414,7 +419,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                                         <span>S/N</span>
                                     </div>
                                 </TableHead>
-                                <TableHead className='text-center'>Customer Name</TableHead>
+                                <TableHead className="text-center">Customer Name</TableHead>
                                 <TableHead>Meter No.</TableHead>
                                 <TableHead>Account No.</TableHead>
                                 <TableHead>{type === 'credit' ? 'Credit Balance' : 'Debit Balance'}</TableHead>
@@ -435,7 +440,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                                             <span>{startIndex + index + 1}</span>
                                         </div>
                                     </TableCell>
-                                    <TableCell className='text-center'>{customer.name}</TableCell>
+                                    <TableCell className="text-center">{customer.name}</TableCell>
                                     <TableCell>{customer.meterNo}</TableCell>
                                     <TableCell>{customer.accountNo}</TableCell>
                                     <TableCell>
@@ -554,43 +559,81 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                             </div>
                         </div>
                     </DialogHeader>
-                    <Table className="w-full">
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead className="min-w-[100px]">Date</TableHead>
-                                <TableHead className="min-w-[150px]">Liability Cause</TableHead>
-                                <TableHead className="min-w-[100px]">Liability Code</TableHead>
-                                <TableHead className="min-w-[100px]">Credit</TableHead>
-                                <TableHead className="min-w-[100px]">Debit</TableHead>
-                                <TableHead className="min-w-[100px]">Balance</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {transactions.map((transaction, index) => (
-                                <TableRow key={index}>
-                                    <TableCell>{transaction.date}</TableCell>
-                                    <TableCell>{transaction.liabilityCause}</TableCell>
-                                    <TableCell>{transaction.liabilityCode}</TableCell>
-                                    <TableCell><span className='text-[#059E40] bg-[#E9FBF0] rounded-full px-1.5 py-1.5'>{transaction.credit.toLocaleString()}</span></TableCell>
-                                    <TableCell><span className='text-[#F50202] bg-[#FBE9E9] rounded-full px-1.5 py-1.5'>{transaction.debit.toLocaleString()}</span></TableCell>
-                                    <TableCell>
-                                        <span className={
-                                            type === 'debit'
-                                                ? 'text-[#F50202] bg-[#FBE9E9] rounded-full px-1.5 py-1.5'
-                                                : 'text-[#059E40] bg-[#E9FBF0] rounded-full px-1.5 py-1.5'
-                                        }>
-                                            {transaction.balance.toLocaleString()}
-                                        </span>
-                                    </TableCell>
+                    <div className="overflow-x-hidden">
+                        <Table className="w-full">
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead className="min-w-[100px]">Date</TableHead>
+                                    <TableHead className="min-w-[150px]">Liability Cause</TableHead>
+                                    <TableHead className="min-w-[100px]">Liability Code</TableHead>
+                                    {type === 'debit' ? (
+                                        <>
+                                            <TableHead className="min-w-[100px]">Debit</TableHead>
+                                            <TableHead className="min-w-[100px]">Credit</TableHead>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <TableHead className="min-w-[100px]">Credit</TableHead>
+                                            <TableHead className="min-w-[100px]">Debit</TableHead>
+                                        </>
+                                    )}
+                                    <TableHead className="min-w-[100px]">Balance</TableHead>
                                 </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                            </TableHeader>
+                            <TableBody className="">
+                                {transactions.map((transaction, index) => (
+                                    <TableRow key={index}>
+                                        <TableCell>{transaction.date}</TableCell>
+                                        <TableCell>{transaction.liabilityCause}</TableCell>
+                                        <TableCell>{transaction.liabilityCode}</TableCell>
+                                        {type === 'debit' ? (
+                                            <>
+                                                <TableCell>
+                                                    <span className="text-[#F50202] bg-[#FBE9E9] rounded-full px-1.5 py-1.5">
+                                                        {transaction.debit.toLocaleString()}
+                                                    </span>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <span className="text-[#059E40] bg-[#E9FBF0] rounded-full px-1.5 py-1.5">
+                                                        {transaction.credit.toLocaleString()}
+                                                    </span>
+                                                </TableCell>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <TableCell>
+                                                    <span className="text-[#059E40] bg-[#E9FBF0] rounded-full px-1.5 py-1.5">
+                                                        {transaction.credit.toLocaleString()}
+                                                    </span>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <span className="text-[#F50202] bg-[#FBE9E9] rounded-full px-1.5 py-1.5">
+                                                        {transaction.debit.toLocaleString()}
+                                                    </span>
+                                                </TableCell>
+                                            </>
+                                        )}
+                                        <TableCell>
+                                            <span
+                                                className={
+                                                    type === 'debit'
+                                                        ? 'text-[#F50202] bg-[#FBE9E9] rounded-full px-1.5 py-1.5'
+                                                        : 'text-[#059E40] bg-[#E9FBF0] rounded-full px-1.5 py-1.5'
+                                                }
+                                            >
+                                                {transaction.balance.toLocaleString()}
+                                            </span>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
                     <div className="flex justify-between mt-4">
-                        <Button variant="outline" onClick={() => setIsTransactionsDialogOpen(false)} className='border-[#161CCA] text-[#161CCA] cursor-pointer'>
+                        <Button variant="outline" onClick={() => setIsTransactionsDialogOpen(false)} className="border-[#161CCA] text-[#161CCA] cursor-pointer">
                             Cancel
                         </Button>
-                        <Button className='bg-[#161CCA] text-white border-[#161CCA] cursor-pointer'>
+                        <Button className="bg-[#161CCA] text-white border-[#161CCA] cursor-pointer">
                             <Printer size={14} /> Print
                         </Button>
                     </div>
@@ -616,7 +659,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                                     <Input
                                         defaultValue="John"
                                         className="border-[rgba(228,231,236,1)]"
-
+                                        disabled
                                     />
                                 </div>
                                 <div className="space-y-4">
@@ -624,7 +667,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                                     <Input
                                         defaultValue="Doe"
                                         className="border-[rgba(228,231,236,1)]"
-
+                                        disabled
                                     />
                                 </div>
                             </div>
@@ -634,7 +677,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                                     <Input
                                         defaultValue="6201021223"
                                         className="border-[rgba(228,231,236,1)]"
-
+                                        disabled
                                     />
                                 </div>
                                 <div className="space-y-4">
@@ -642,7 +685,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                                     <Input
                                         defaultValue="0159004612077"
                                         className="border-[rgba(228,231,236,1)]"
-
+                                        disabled
                                     />
                                 </div>
                             </div>
@@ -658,7 +701,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                                     className="border-[rgba(228,231,236,1)]"
                                 />
                             </div>
-                            <div className='w-full flex justify-end'>
+                            <div className="w-full flex justify-end">
                                 <Button
                                     onClick={handleReconcileDebit}
                                     disabled={isReconcileDisabled}
