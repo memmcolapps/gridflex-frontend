@@ -1,20 +1,9 @@
 "use client";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
-import Image from "next/image";
 import {
-  Building2,
-  ChevronDown,
-  ClipboardList,
-  Cylinder,
-  type LucideIcon,
-  CreditCard,
-  Plug,
-  Users,
-  Zap,
-  Activity,
-} from "lucide-react";
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import {
   Sidebar,
   SidebarContent,
@@ -26,10 +15,21 @@ import {
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+  Activity,
+  Building2,
+  ChevronDown,
+  ClipboardList,
+  CreditCard,
+  Cylinder,
+  Plug,
+  Users,
+  Zap,
+  type LucideIcon,
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
 
 interface NavItemProps {
   title: string;
@@ -80,7 +80,7 @@ export function SidebarNav() {
       hasSubmenu: true,
       submenuItems: [
         { title: "Dashboard", href: "/data-management/dashboard" },
-        { title: "Organization", href: "/organization" },
+        { title: "Organization", href: "/data-management/organization" },
         {
           title: "Meter Management",
           href: "/data-management/meter-management",
