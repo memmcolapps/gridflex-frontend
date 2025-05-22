@@ -39,10 +39,10 @@ export async function loginApi(
 
     // Check if the response indicates success
     if (response.data.responsecode === "000") {
-      toast.success("Login successful!");
+      toast.success(response.data.responsedesc);
       return response.data.responsedata;
     } else {
-      // If response code is not "00", treat it as an error
+      // If response code is not "000", treat it as an error
       throw new Error(response.data.responsedesc ?? "Login failed");
     }
   } catch (error: unknown) {
