@@ -21,7 +21,6 @@ import {
   ClipboardList,
   CreditCard,
   Cylinder,
-  Plug,
   Users,
   Zap,
   type LucideIcon,
