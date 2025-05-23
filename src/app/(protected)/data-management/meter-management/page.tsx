@@ -148,7 +148,7 @@ export default function MeterManagementPage() {
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
                 <ContentHeader
-                    title="Meter Management"
+                    title="Meters"
                     description="Manage and Access All Meter Records."
                 />
                 <div className="flex flex-col md:flex-row gap-2">
@@ -250,19 +250,16 @@ export default function MeterManagementPage() {
                                 SIM No
                             </TableHead>
                             <TableHead className="min-w-[80px] px-4 py-3 text-left text-sm lg:text-base font-semibold text-gray-700">
-                                Model
+                                Meter Type
                             </TableHead>
                             <TableHead className="min-w-[100px] px-4 py-3 text-left text-sm lg:text-base font-semibold text-gray-700">
-                                Account No
+                                Manufacturer
                             </TableHead>
                             <TableHead className="min-w-[80px] px-4 py-3 text-left text-sm lg:text-base font-semibold text-gray-700">
-                                SGC
+                                Class
                             </TableHead>
                             <TableHead className="min-w-[80px] px-4 py-3 text-left text-sm lg:text-base font-semibold text-gray-700">
-                                Tariff
-                            </TableHead>
-                            <TableHead className="min-w-[80px] px-4 py-3 text-left text-sm lg:text-base font-semibold text-gray-700">
-                                ID
+                                Category
                             </TableHead>
                             <TableHead className="min-w-[120px] px-4 py-3 text-left text-sm lg:text-base font-semibold text-gray-700">
                                 <div className="flex items-center gap-1">
