@@ -37,7 +37,6 @@ import {
     PlusCircle,
     Search,
     ArrowUpDown,
-    Download,
     Eye,
     Wallet,
     SquareArrowOutUpRight,
@@ -110,14 +109,14 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
     const [reconcileAmount, setReconcileAmount] = useState('');
 
     // Disable condition: Check if any required editable field is empty
-    const isDisabled = !amount.trim() || !liabilityCause;
+    const isDisabled = (amount ?? "").trim() === "" ? true : !(liabilityCause ?? false);
 
     // Disable logic for Reconcile Debit dialog
     const isReconcileDisabled = !reconcileAmount.trim();
 
     const filteredCustomers = customers.filter(
         (customer) =>
-            customer.meterNo.includes(searchTerm) || customer.accountNo.includes(searchTerm)
+            customer.meterNo.includes(searchTerm) ?? customer.accountNo.includes(searchTerm)
     );
 
     const totalRows = filteredCustomers.length;
@@ -148,8 +147,8 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
         const customer = customers.find((c) => c.meterNo === meterNumber);
         if (customer) {
             setSelectedCustomer(customer);
-            setFirstName(customer.name.split(' ')[0] || '');
-            setLastName(customer.name.split(' ')[1] || '');
+            setFirstName(customer.name.split(' ')[0] ?? '');
+            setLastName(customer.name.split(' ')[1] ?? '');
             setMeterNo(customer.meterNo);
             setAccountNo(customer.accountNo);
             setAmount('');
