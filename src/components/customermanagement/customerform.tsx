@@ -10,9 +10,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from '../ui/badge';
 
 export type Customer = {
     id?: string;
+    customerId?: string;
     firstName: string;
     lastName: string;
     accountNumber: string;
@@ -156,13 +158,13 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
                 </DialogTrigger>
             )}
 
-            <DialogContent className="sm:max-w-[500px] bg-white text-black h-fit">
-                <DialogHeader>
+            <DialogContent className="sm:max-w-[430px] bg-white text-black h-fit rounded-2xl">
+                <DialogHeader className='mt-6'>
                     <DialogTitle>
                         {mode === 'add' ? 'Add Customer' : 'Edit Customer'}
                     </DialogTitle>
                 </DialogHeader>
-                <form onSubmit={handleSubmit} className="mt-4">
+                <form onSubmit={handleSubmit} className="mt-6">
                     <div className="grid grid-cols-2 gap-6">
                         <div className="space-y-2">
                             <Label htmlFor="firstName">First Name <span className='text-red-600'>*</span></Label>
@@ -187,15 +189,17 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
                                 className="border-[rgba(228,231,236,1)]"
                             />
                         </div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-6 mt-6">
                         <div className="space-y-2">
-                            <Label htmlFor="accountNumber">Account Number<span className='text-red-600'>*</span></Label>
+                            <Label htmlFor="phoneNumber">Phone Number<span className='text-red-600'>*</span></Label>
                             <Input
-                                id="accountNumber"
-                                name="accountNumber"
-                                value={formData.accountNumber}
+                                id="phoneNumber"
+                                name="phoneNumber"
+                                value={formData.phoneNumber}
                                 onChange={handleChange}
                                 required
-                                placeholder="Enter account number"
+                                placeholder="Enter phone number"
                                 className="border-[rgba(228,231,236,1)]"
                             />
                         </div>
@@ -212,18 +216,6 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="phoneNumber">Phone Number<span className='text-red-600'>*</span></Label>
-                            <Input
-                                id="phoneNumber"
-                                name="phoneNumber"
-                                value={formData.phoneNumber}
-                                onChange={handleChange}
-                                required
-                                placeholder="Enter phone number"
-                                className="border-[rgba(228,231,236,1)]"
-                            />
-                        </div>
-                        <div className="space-y-2">
                             <Label htmlFor="email">Email <span className='text-red-600'>*</span></Label>
                             <Input
                                 id="email"
@@ -236,6 +228,8 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
                                 className="border-[rgba(228,231,236,1)]"
                             />
                         </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-6 mt-6">
                         <div className="space-y-2">
                             <Label htmlFor="state">State<span className='text-red-600'>*</span></Label>
                             <Select
@@ -272,17 +266,8 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
                                 </SelectContent>
                             </Select>
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="houseNo">House No.<span className='text-red-600'>*</span></Label>
-                            <Input
-                                id="houseNo"
-                                name="houseNo"
-                                value={formData.houseNo}
-                                onChange={handleChange}
-                                placeholder="Enter house no."
-                                className="border-[rgba(228,231,236,1)]"
-                            />
-                        </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-6 mt-6">
                         <div className="space-y-2">
                             <Label htmlFor="streetName">Street Name<span className='text-red-600'>*</span></Label>
                             <Input
@@ -294,7 +279,38 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
                                 className="border-[rgba(228,231,236,1)]"
                             />
                         </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="houseNo">House No.<span className='text-red-600'>*</span></Label>
+                            <Input
+                                id="houseNo"
+                                name="houseNo"
+                                value={formData.houseNo}
+                                onChange={handleChange}
+                                placeholder="Enter house no."
+                                className="border-[rgba(228,231,236,1)]"
+                            />
+                        </div>
                     </div>
+
+                    {formData.status === 'Assigned' && (
+                        <div className="mt-6 space-y-2">
+                            <Label>
+                                Assigned Meter ({formData.meterNumber ? formData.meterNumber.split(',').length : 0})
+                            </Label>                            
+                            <div className="flex flex-wrap gap-4 mt-2">
+                                {formData.meterNumber?.split(',').map((meter, index) => (
+                                    <Badge
+                                        key={index}
+                                        variant="outline"
+                                        className="px-3 py-1 text-sm font-normal"
+                                    >
+                                        {meter.trim()}
+                                    </Badge>
+
+                                ))}
+                            </div>
+                        </div>
+                    )}
                     <div className="mt-12 flex justify-between gap-3">
                         <Button
                             variant="outline"
@@ -318,6 +334,6 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
                     </div>
                 </form>
             </DialogContent>
-        </Dialog>
+        </Dialog >
     );
 }
