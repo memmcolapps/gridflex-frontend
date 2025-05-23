@@ -55,8 +55,8 @@ interface Transaction {
     date: string;
     liabilityCause: string;
     liabilityCode: string;
-    credit: number;
-    debit: number;
+    credit: number | string;
+    debit: number | string;
     balance: number;
 }
 
@@ -78,16 +78,23 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
         { id: 10, name: 'James Taylor', meterNo: '6201021232', accountNo: '0159004612086', balance: 500000 },
     ]);
 
-    const [transactions] = useState<Transaction[]>([
-        { date: '05-05-2025', liabilityCause: 'Electricity Deficit', liabilityCode: 'C90BQT', credit: 10000, debit: 10000, balance: 500000 },
-        { date: '05-05-2025', liabilityCause: 'Null', liabilityCode: 'Null', credit: 10000, debit: 0, balance: 500000 },
-        { date: '05-05-2025', liabilityCause: 'Electricity Deficit', liabilityCode: 'C90BQT', credit: 10000, debit: 10000, balance: 500000 },
-        { date: '05-05-2025', liabilityCause: 'Null', liabilityCode: 'Null', credit: 10000, debit: 0, balance: 500000 },
-        { date: '04-05-2025', liabilityCause: 'Null', liabilityCode: 'Null', credit: 8000, debit: 0, balance: 200000 },
-        { date: '04-05-2025', liabilityCause: 'Null', liabilityCode: 'Null', credit: 8000, debit: 0, balance: 200000 },
-        { date: '04-05-2025', liabilityCause: 'Null', liabilityCode: 'Null', credit: 8000, debit: 0, balance: 200000 },
-        { date: '04-05-2025', liabilityCause: 'Null', liabilityCode: 'Null', credit: 8000, debit: 0, balance: 200000 },
-        { date: '04-05-2025', liabilityCause: 'Null', liabilityCode: 'Null', credit: 8000, debit: 0, balance: 200000 },
+    // Separate arrays for credit and debit transactions
+    const [creditTransactions] = useState<Transaction[]>([
+        { date: '05-05-2025', liabilityCause: 'Electricity Deficit', liabilityCode: 'CR1234', credit: 10000, debit: "", balance: 10000 },
+        { date: '05-04-2025', liabilityCause: 'Null', liabilityCode:'Null', credit: "", debit: 10000, balance: 0 },
+        { date: '05-03-2025', liabilityCause: 'Electricity Deficit', liabilityCode: 'CR1234', credit: 10000, debit: "", balance: 10000 },
+        { date: '05-02-2025', liabilityCause: 'Null', liabilityCode: 'Null', credit: "", debit: 10000, balance: 0 },
+     
+    ]);
+
+    const [debitTransactions] = useState<Transaction[]>([
+        { date: '05-05-2025', liabilityCause: 'Meter Refund', liabilityCode: 'DB1234', credit: "", debit: 500000, balance: 500000 },
+        { date: '05-04-2025', liabilityCause: 'Null', liabilityCode: 'Null', credit: 100000, debit: "", balance: 400000 },
+        { date: '05-03-2025', liabilityCause: 'Null', liabilityCode: 'Null', credit: 100000, debit: "", balance: 300000 },
+        { date: '05-02-2025', liabilityCause: 'Null', liabilityCode: 'Null', credit: 100000, debit: "", balance: 200000 },
+        { date: '05-01-2025', liabilityCause: 'Null', liabilityCode: 'Null', credit: 100000, debit: "", balance: 100000 },
+        { date: '05-01-2025', liabilityCause: 'Null', liabilityCode: 'Null', credit: 100000, debit: "", balance: 100000 },
+         { date: '05-01-2025', liabilityCause: 'Null', liabilityCode: 'Null', credit: 100000, debit: "", balance: 0 },
     ]);
 
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -108,7 +115,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
     const [accountNo, setAccountNo] = useState('');
     const [reconcileAmount, setReconcileAmount] = useState('');
 
-    // Disable condition: Check if any required editable field is empty
+    // Disable condition: Updated as per your request
     const isDisabled = (amount ?? "").trim() === "" ? true : !(liabilityCause ?? false);
 
     // Disable logic for Reconcile Debit dialog
@@ -368,7 +375,6 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                     </div>
                 </div>
 
-                {/* Rest of the component remains unchanged */}
                 <div className="flex justify-between">
                     <div className="flex items-center mb-6 gap-4 w-80">
                         <div className="relative flex-1">
@@ -580,7 +586,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                                 </TableRow>
                             </TableHeader>
                             <TableBody className="">
-                                {transactions.map((transaction, index) => (
+                                {(type === 'credit' ? creditTransactions : debitTransactions).map((transaction, index) => (
                                     <TableRow key={index}>
                                         <TableCell>{transaction.date}</TableCell>
                                         <TableCell>{transaction.liabilityCause}</TableCell>
@@ -588,27 +594,43 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                                         {type === 'debit' ? (
                                             <>
                                                 <TableCell>
-                                                    <span className="text-[#F50202] bg-[#FBE9E9] rounded-full px-1.5 py-1.5">
-                                                        {transaction.debit.toLocaleString()}
-                                                    </span>
+                                                    {typeof transaction.debit === 'number' && transaction.debit !== 0 ? (
+                                                        <span className="text-[#F50202] bg-[#FBE9E9] rounded-full px-1.5 py-1.5">
+                                                            {transaction.debit.toLocaleString()}
+                                                        </span>
+                                                    ) : (
+                                                        transaction.debit
+                                                    )}
                                                 </TableCell>
                                                 <TableCell>
-                                                    <span className="text-[#059E40] bg-[#E9FBF0] rounded-full px-1.5 py-1.5">
-                                                        {transaction.credit.toLocaleString()}
-                                                    </span>
+                                                    {typeof transaction.credit === 'number' && transaction.credit !== 0 ? (
+                                                        <span className="text-[#059E40] bg-[#E9FBF0] rounded-full px-1.5 py-1.5">
+                                                            {transaction.credit.toLocaleString()}
+                                                        </span>
+                                                    ) : (
+                                                        transaction.credit
+                                                    )}
                                                 </TableCell>
                                             </>
                                         ) : (
                                             <>
                                                 <TableCell>
-                                                    <span className="text-[#059E40] bg-[#E9FBF0] rounded-full px-1.5 py-1.5">
-                                                        {transaction.credit.toLocaleString()}
-                                                    </span>
+                                                    {typeof transaction.credit === 'number' && transaction.credit !== 0 ? (
+                                                        <span className="text-[#059E40] bg-[#E9FBF0] rounded-full px-1.5 py-1.5">
+                                                            {transaction.credit.toLocaleString()}
+                                                        </span>
+                                                    ) : (
+                                                        transaction.credit
+                                                    )}
                                                 </TableCell>
                                                 <TableCell>
-                                                    <span className="text-[#F50202] bg-[#FBE9E9] rounded-full px-1.5 py-1.5">
-                                                        {transaction.debit.toLocaleString()}
-                                                    </span>
+                                                    {typeof transaction.debit === 'number' && transaction.debit !== 0 ? (
+                                                        <span className="text-[#F50202] bg-[#FBE9E9] rounded-full px-1.5 py-1.5">
+                                                            {transaction.debit.toLocaleString()}
+                                                        </span>
+                                                    ) : (
+                                                        transaction.debit
+                                                    )}
                                                 </TableCell>
                                             </>
                                         )}
