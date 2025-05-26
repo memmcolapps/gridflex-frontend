@@ -10,18 +10,61 @@ interface UserNode {
 }
 
 export interface UserInfo {
-  id: number;
+  id: string;
+  orgId: string;
+  nodeId: string;
   firstname: string;
   lastname: string;
   email: string;
-  contact: string;
-  ustate: boolean;
-  permission: boolean;
+  status: boolean;
   active: boolean;
-  roleId: number;
-  hierarchy: number;
-  roles: UserRole[];
-  nodes: UserNode[];
+  lastActive: string;
+  password: string;
+  groups: {
+    id: string;
+    orgId: string;
+    groupTitle: string;
+    modules: Array<{
+      id: string;
+      orgId: string;
+      name: string;
+      access: boolean;
+      groupId: string;
+      subModules: Array<{
+        id: string;
+        orgId: string;
+        name: string;
+        access: boolean;
+        moduleId: string;
+      }>;
+    }>;
+    permissions: {
+      id: string;
+      orgId: string;
+      view: boolean;
+      edit: boolean;
+      approve: boolean;
+      disable: boolean;
+    };
+  };
+  business: {
+    id: string;
+    businessName: string;
+    businessType: string;
+    businessContact: string;
+    registrationNumber: string;
+    country: string;
+    state: string;
+    email: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+  nodes: Array<{
+    id: string;
+    org_id: string;
+    name: string;
+    parent_id: string | null;
+  }>;
   createdAt: string;
   updatedAt: string;
 }

@@ -4,7 +4,7 @@ import type React from "react";
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeftIcon, EyeIcon, EyeOffIcon } from "lucide-react";
+import { ArrowLeftIcon, EyeIcon, EyeOffIcon, Loader } from "lucide-react";
 
 type FormType = "signin" | "resetpassword";
 
@@ -39,7 +39,7 @@ export function AuthForm({
 
     setIsSubmitting(true);
     try {
-      onSubmit(email, password);
+      await onSubmit(email, password);
     } catch {
       // Error handling is done in the parent component
     } finally {
@@ -113,13 +113,23 @@ export function AuthForm({
       <button
         type="submit"
         disabled={!isFormValid || isSubmitting}
-        className={`w-full rounded-md py-3 font-medium text-white transition-colors ${
-          !isFormValid || isSubmitting
+        className={`
+          w-full rounded-md py-3 font-medium text-white
+          transition-colors flex items-center justify-center gap-2
+          ${!isFormValid || isSubmitting
             ? "cursor-not-allowed bg-blue-600/50"
             : "cursor-pointer bg-blue-600 hover:bg-blue-700"
-        }`}
+          }
+        `}
       >
-        {isSubmitting ? "Signing in..." : "Sign In"}
+        {isSubmitting ? (
+          <>
+            <Loader className=" animate-spin" size={15} />
+            <span>Signing in...</span>
+          </>
+        ) : (
+          "Sign In"
+        )}
       </button>
 
       {!isSignInForm && (

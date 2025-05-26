@@ -1,4 +1,4 @@
-import { useState} from 'react';
+import { useState } from 'react';
 import { ArrowUpDown, PlusCircleIcon, SearchIcon, MoreVertical, ListFilter, Lock, User, AlertTriangle, X } from 'lucide-react';
 import CustomerForm from './customerform';
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 
 export type Customer = {
     id: string;
+    customerId: string;
     firstName: string;
     lastName: string;
     meterNumber: string;
@@ -36,6 +37,7 @@ export default function CustomerManagement() {
     const [customers, setCustomers] = useState<Customer[]>([
         {
             id: '01',
+            customerId: 'C-1234567',
             firstName: 'Margaret',
             lastName: 'Ademola',
             meterNumber: '62501021223',
@@ -53,6 +55,7 @@ export default function CustomerManagement() {
         },
         {
             id: '02',
+            customerId: 'C-1234567',
             firstName: 'Margaret',
             lastName: 'Ademola',
             meterNumber: '6201021223',
@@ -70,6 +73,7 @@ export default function CustomerManagement() {
         },
         ...Array.from({ length: 10 }, (_, index) => ({
             id: String(index + 3).padStart(2, '0'),
+            customerId: 'C-1234567',
             firstName: 'Margaret',
             lastName: 'Ademola',
             meterNumber: '6201021223',
@@ -208,6 +212,7 @@ export default function CustomerManagement() {
                                     {
                                         ...newCustomer,
                                         id: Date.now().toString(),
+                                        customerId: newCustomer.customerId ?? "",
                                         meterNumber: newCustomer.accountNumber,
                                         location: newCustomer.city,
                                         address: `${newCustomer.streetName}, ${newCustomer.city}`,
@@ -272,26 +277,26 @@ export default function CustomerManagement() {
                                         <span>S/N</span>
                                     </div>
                                 </TableHead>
+                                <TableHead onClick={() => requestSort('customerId')} className='text-center'>
+                                    Customer ID
+                                </TableHead>
                                 <TableHead onClick={() => requestSort('firstName')} className='text-center'>
                                     First Name
                                 </TableHead>
                                 <TableHead onClick={() => requestSort('lastName')} className='text-center'>
                                     Last Name
                                 </TableHead>
-                                <TableHead onClick={() => requestSort('meterNumber')} className='text-center' >
-                                    Meter Number
-                                </TableHead>
-                                <TableHead onClick={() => requestSort('accountNumber')} className='text-center'>
-                                    Account Number
-                                </TableHead>
-                                <TableHead onClick={() => requestSort('location')} className='text-center'>
-                                    Location
-                                </TableHead>
                                 <TableHead onClick={() => requestSort('phoneNumber')} className='text-center'>
                                     Phone Number
                                 </TableHead>
                                 <TableHead onClick={() => requestSort('address')} className='text-center'>
                                     Address
+                                </TableHead>
+                                <TableHead onClick={() => requestSort('location')} className='text-center'>
+                                    City
+                                </TableHead>
+                                <TableHead onClick={() => requestSort('location')} className='text-center'>
+                                    State
                                 </TableHead>
                                 <TableHead onClick={() => requestSort('status')} className='text-center'>
                                     Status
@@ -312,13 +317,13 @@ export default function CustomerManagement() {
                                             <span>{startIndex + index + 1}</span>
                                         </div>
                                     </TableCell>
+                                    <TableCell className='text-center'>{customer.customerId}</TableCell>
                                     <TableCell className='text-center'>{customer.firstName}</TableCell>
                                     <TableCell className='text-center'>{customer.lastName}</TableCell>
-                                    <TableCell className='text-center'>{customer.meterNumber}</TableCell>
-                                    <TableCell className='text-center'>{customer.accountNumber}</TableCell>
-                                    <TableCell className='text-center'>{customer.location}</TableCell>
                                     <TableCell className='text-center'>{customer.phoneNumber}</TableCell>
                                     <TableCell className='text-center'>{customer.address}</TableCell>
+                                    <TableCell className='text-center'>{customer.city}</TableCell>
+                                    <TableCell className='text-center'>{customer.state}</TableCell>
                                     <TableCell className='text-center'>
                                         <span
                                             className={
@@ -417,6 +422,7 @@ export default function CustomerManagement() {
                                         ? {
                                             ...updatedCustomer,
                                             id: editingCustomer.id,
+                                            customerId: editingCustomer.customerId,
                                             meterNumber: updatedCustomer.meterNumber ?? editingCustomer.meterNumber,
                                             location: updatedCustomer.city ?? editingCustomer.location,
                                             address: updatedCustomer.address ?? `${updatedCustomer.streetName}, ${updatedCustomer.city}`,
