@@ -1,13 +1,13 @@
-interface UserRole {
-  roleId: number;
-  operatorRole: string;
-}
+// interface UserRole {
+//   roleId: number;
+//   operatorRole: string;
+// }
 
-interface UserNode {
-  id: number;
-  name: string;
-  parent_id: number | null;
-}
+// interface UserNode {
+//   id: number;
+//   name: string;
+//   parent_id: number | null;
+// }
 
 export interface UserInfo {
   id: string;

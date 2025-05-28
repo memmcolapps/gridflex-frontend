@@ -100,7 +100,7 @@ export function BulkUploadDialog({ isOpen, onClose, onSave }: BulkUploadDialogPr
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-[400px] bg-white rounded-lg p-6">
+            <DialogContent className="sm:max-w-[400px] h-fit bg-white rounded-lg p-6">
                 <DialogHeader>
                     <DialogTitle className="text-lg font-semibold text-gray-900">Bulk Upload Meters</DialogTitle>
                 </DialogHeader>

@@ -1,3 +1,5 @@
+
+"use client"
 import AdjustmentTable from "@/components/adjustment-table/adjustment-table";
 
 

@@ -118,7 +118,9 @@ export function SidebarNav() {
       href: "/vending",
       icon: Zap,
       hasSubmenu: true,
-      submenuItems: [],
+      submenuItems: [
+        {title: "Dashboard", href: "/vending/vending-dashboard"}
+      ],
     },
     {
       title: "HES",
