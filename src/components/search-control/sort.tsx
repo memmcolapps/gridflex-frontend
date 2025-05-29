@@ -9,7 +9,7 @@ interface SortControlProps {
 export function SortControl({ onSortChange, currentSort = "" }: SortControlProps) {
     return (
         <div className="flex items-center gap-2">
-            <Button 
+            <Button
                 variant="outline"
                 className="gap-2 border-gray-300 w-full lg:w-auto cursor-pointer"
                 onClick={() => onSortChange?.(currentSort)}

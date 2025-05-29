@@ -7,6 +7,7 @@ interface FilterControlProps {
 
 export function FilterControl({ onFilterClick }: FilterControlProps) {
     return (
+        
         <div className="flex items-center gap-2">
             <Button 
                 variant="outline" 

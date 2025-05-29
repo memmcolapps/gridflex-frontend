@@ -18,8 +18,9 @@ export function SearchControl({ onSearchChange, value = "" }: SearchControlProps
             onSearchChange(value);
         }
     };
-    
+
     return (
+        
         <div className="relative w-full lg:w-[300px]">
             <Search
                 size={14}

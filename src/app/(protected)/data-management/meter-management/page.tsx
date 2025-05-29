@@ -401,8 +401,6 @@ export default function MeterManagementPage() {
         currentPage * rowsPerPage
     );
 
-
-
     return (
         <div className="p-6 h-screen overflow-auto">
             {/* Header */}
