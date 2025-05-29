@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PlusCircle } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 
 type AddPercentageRangeDialogProps = {
     onAddPercentageRange: (range: { percentage: string; amountStartRange: string; amountEndRange: string }) => void;
@@ -60,7 +61,34 @@ const AddPercentageRangeDialog = ({ onAddPercentageRange }: AddPercentageRangeDi
                     </div>
                     <div className="grid gap-2 grid-cols-2 gap-x-4">
                         <div>
-                            <Label htmlFor="amountStartRange">Amount Start Range</Label>
+                            <Label htmlFor="percentagecode" className="mb-2">Percentage Code</Label>
+                            <Input
+                                id="percentagecode"
+                                placeholder="Percentage code"
+                                value={amountStartRange}
+                                onChange={(e) => setAmountStartRange(e.target.value)}
+                                className="border-[#bebebe] focus:ring-ring/50"
+                            />
+                        </div>
+                        <div>
+                            <Label htmlFor="band" className="mb-2">Band</Label>
+                            <Select value={amountEndRange} onValueChange={setAmountEndRange}>
+                                <SelectTrigger className="w-full border-[#bebebe] focus:ring-ring/50 rounded-md h-10 px-3">
+                                    <SelectValue placeholder="Select Band"/>
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="Band A">Band A</SelectItem>
+                                    <SelectItem value="Band B">Band B</SelectItem>
+                                    <SelectItem value="Band C">Band C</SelectItem>
+                                    <SelectItem value="Band D">Band D</SelectItem>
+                                    <SelectItem value="Band E">Band E</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+                    <div className="grid gap-2 grid-cols-2 gap-x-4">
+                        <div>
+                            <Label htmlFor="amountStartRange" className="mb-2">Amount Start Range</Label>
                             <Input
                                 id="amountStartRange"
                                 placeholder="Enter amount"
@@ -70,7 +98,7 @@ const AddPercentageRangeDialog = ({ onAddPercentageRange }: AddPercentageRangeDi
                             />
                         </div>
                         <div>
-                            <Label htmlFor="amountEndRange">Amount End Range</Label>
+                            <Label htmlFor="amountEndRange" className="mb-2">Amount End Range</Label>
                             <Input
                                 id="amountEndRange"
                                 placeholder="Enter amount"

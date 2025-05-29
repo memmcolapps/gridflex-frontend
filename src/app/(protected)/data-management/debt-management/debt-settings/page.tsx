@@ -74,7 +74,17 @@ export default function DebtSettingsPage() {
                 </div>
                 <section>
                     <LiabilityTable
-                        data={view === "liability" ? liabilities : percentageRanges}
+                        data={
+                            view === "liability"
+                                ? liabilities
+                                : percentageRanges.map((range) => ({
+                                    ...range,
+                                    percentageCode: "", // Provide appropriate value if available
+                                    band: "",            // Provide appropriate value if available
+                                    amountStartRange: range.amountRange.split("-")[0] ?? "",
+                                    amountEndRange: range.amountRange.split("-")[1] ?? "",
+                                }))
+                        }
                         view={view}
                         onViewChange={setView}
                     />
