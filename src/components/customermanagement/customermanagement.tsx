@@ -266,13 +266,14 @@ export default function CustomerManagement() {
                             <TableRow>
                                 <TableHead className="w-[30px] pr-0">
                                     <div className="flex items-center gap-2 text-center">
-                                        <Checkbox
+                                        <input
+                                            type="checkbox"
                                             checked={
                                                 selectedCustomers.length === filteredCustomers.length &&
                                                 filteredCustomers.length > 0
                                             }
-                                            onCheckedChange={toggleSelectAll} // Fixed from 'on diversoCheckedChange'
-                                            className="border-[rgba(228,231,236,1)] "
+                                            onChange={toggleSelectAll}
+                                            className="border-[rgba(228,231,236,1)]"
                                         />
                                         <span>S/N</span>
                                     </div>
@@ -309,9 +310,10 @@ export default function CustomerManagement() {
                                 <TableRow key={customer.id} className="hover:bg-muted/50">
                                     <TableCell className='text-center'>
                                         <div className='flex items-center gap-2'>
-                                            <Checkbox
+                                            <input
+                                                type="checkbox"
                                                 checked={selectedCustomers.includes(customer.id)}
-                                                onCheckedChange={() => toggleCustomerSelection(customer.id)}
+                                                onChange={() => toggleCustomerSelection(customer.id)}
                                                 className="border-[rgba(228,231,236,1)]"
                                             />
                                             <span>{startIndex + index + 1}</span>
