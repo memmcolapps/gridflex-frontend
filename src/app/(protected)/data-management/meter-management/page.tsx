@@ -260,8 +260,6 @@ export default function MeterManagementPage() {
 
     // Sort handler
     const handleSortChange = () => {
-        // For simplicity, we'll sort by meterNumber first
-        // You can make this configurable via dropdown
         const sortKey: keyof MeterData = sortConfig.key ?? "meterNumber";
         const newDirection = sortConfig.direction === "asc" ? "desc" : "asc";
 
@@ -300,8 +298,6 @@ export default function MeterManagementPage() {
 
         setProcessedData(results);
     };
-
-
 
     const toggleSelection = (id: string) => {
         setSelectedTariffs(
@@ -400,6 +396,8 @@ export default function MeterManagementPage() {
         (currentPage - 1) * rowsPerPage,
         currentPage * rowsPerPage
     );
+
+
 
     return (
         <div className="p-6 h-screen overflow-auto">
