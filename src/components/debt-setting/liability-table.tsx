@@ -15,10 +15,22 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "../ui/card";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
-import { ArrowUpDown, CircleAlert, CircleCheck, EllipsisVertical, Search } from "lucide-react";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogFooter,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { ArrowUpDown, Ban, CircleCheck, CircleX, EllipsisVertical, Pencil, Search } from "lucide-react";
 import React, { useState } from "react";
-
 type Liability = {
     sNo: number;
     liabilityName: string;
@@ -36,13 +48,122 @@ type PercentageRange = {
 type TableData = Liability | PercentageRange;
 
 type LiabilityTableProps = {
-    data: TableData[];
+    data?: TableData[];
     view: "liability" | "percentage";
     onViewChange: (view: "liability" | "percentage") => void;
 };
 
+// Sample data for Liability Cause table
+const defaultLiabilityData: Liability[] = [
+    {
+        sNo: 1,
+        liabilityName: "Loan Default",
+        liabilityCode: "LD001",
+        approvalStatus: "Pending",
+    },
+    {
+        sNo: 2,
+        liabilityName: "Overdraft",
+        liabilityCode: "OD002",
+        approvalStatus: "Approved",
+    },
+    {
+        sNo: 3,
+        liabilityName: "Credit Card Debt",
+        liabilityCode: "CC003",
+        approvalStatus: "Rejected",
+    },
+    {
+        sNo: 4,
+        liabilityName: "Mortgage",
+        liabilityCode: "MG004",
+        approvalStatus: "Approved",
+    },
+];
+
 const LiabilityTable = ({ data, view, onViewChange }: LiabilityTableProps) => {
     const [searchTerm, setSearchTerm] = useState("");
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+    const [selectedRow, setSelectedRow] = useState<TableData | null>(null);
+    const [editFormData, setEditFormData] = useState<Partial<TableData>>({});
+
+    // Use provided data or fallback to default data for liability view
+    const [tableData, setTableData] = useState<TableData[]>(
+        data && data.length > 0
+            ? data
+            : view === "liability"
+            ? defaultLiabilityData
+            : []
+    );
+
+    React.useEffect(() => {
+        if (data && data.length > 0) {
+            setTableData(data);
+        } else if (view === "liability") {
+            setTableData(defaultLiabilityData);
+        } else {
+            setTableData([]);
+        }
+    }, [data, view]);
+
+    const handleEditClick = (row: TableData) => {
+        setSelectedRow(row);
+        setEditFormData({
+            sNo: row.sNo,
+            liabilityName: "liabilityName" in row ? row.liabilityName : undefined,
+            liabilityCode: "liabilityCode" in row ? row.liabilityCode : undefined,
+            percentage: "percentage" in row ? row.percentage : undefined,
+            amountRange: "amountRange" in row ? row.amountRange : undefined,
+            approvalStatus: row.approvalStatus,
+        });
+        setIsEditDialogOpen(true);
+    };
+
+    const handleEditFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setEditFormData((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
+    };
+
+    const handleEditSubmit = () => {
+        if (!selectedRow) return;
+
+        const updatedData = tableData.map((item) => {
+            if (item.sNo === selectedRow.sNo) {
+                if (view === "liability") {
+                    return {
+                        ...item,
+                        liabilityName:
+                            "liabilityName" in editFormData && editFormData.liabilityName !== undefined
+                                ? editFormData.liabilityName
+                                : (item as Liability).liabilityName,
+                        liabilityCode:
+                            "liabilityCode" in editFormData && editFormData.liabilityCode !== undefined
+                                ? editFormData.liabilityCode
+                                : (item as Liability).liabilityCode,
+                    };
+                } else {
+                    return {
+                        ...item,
+                        percentage: "percentage" in editFormData && editFormData.percentage !== undefined
+                            ? editFormData.percentage
+                            : (item as PercentageRange).percentage,
+                        amountRange: "amountRange" in editFormData && editFormData.amountRange !== undefined
+                            ? editFormData.amountRange
+                            : (item as PercentageRange).amountRange,
+                    };
+                }
+            }
+            return item;
+        });
+
+        setTableData(updatedData);
+        setIsEditDialogOpen(false);
+        setSelectedRow(null);
+        setEditFormData({});
+    };
 
     const getColumns = (): ColumnDef<TableData>[] => {
         if (view === "liability") {
@@ -93,7 +214,7 @@ const LiabilityTable = ({ data, view, onViewChange }: LiabilityTableProps) => {
                 {
                     id: "actions",
                     header: "Actions",
-                    cell: () => (
+                    cell: ({ row }) => (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button
@@ -104,13 +225,24 @@ const LiabilityTable = ({ data, view, onViewChange }: LiabilityTableProps) => {
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
+                                <DropdownMenuItem
+                                    className="cursor-pointer gap-2"
+                                    onClick={() => handleEditClick(row.original)}
+                                >
+                                    <Pencil size={14} className="text-gray-700" />
+                                    Edit Liability
+                                </DropdownMenuItem>
                                 <DropdownMenuItem className="cursor-pointer gap-2">
                                     <CircleCheck size={14} className="text-gray-700" />
                                     Approve
                                 </DropdownMenuItem>
                                 <DropdownMenuItem className="cursor-pointer gap-2">
-                                    <CircleAlert size={14} className="text-gray-700" />
+                                    <CircleX size={14} className="text-gray-700" />
                                     Reject
+                                </DropdownMenuItem>
+                                <DropdownMenuItem className="cursor-pointer gap-2">
+                                    <Ban size={14} className="text-gray-700" />
+                                    Deactivate Liability
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
@@ -165,7 +297,7 @@ const LiabilityTable = ({ data, view, onViewChange }: LiabilityTableProps) => {
                 {
                     id: "actions",
                     header: "Actions",
-                    cell: () => (
+                    cell: ({ row }) => (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button
@@ -176,13 +308,24 @@ const LiabilityTable = ({ data, view, onViewChange }: LiabilityTableProps) => {
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
+                                <DropdownMenuItem
+                                    className="cursor-pointer gap-2"
+                                    onClick={() => handleEditClick(row.original)}
+                                >
+                                    <Pencil size={14} className="text-gray-700" />
+                                    Edit Range
+                                </DropdownMenuItem>
                                 <DropdownMenuItem className="cursor-pointer gap-2">
                                     <CircleCheck size={14} className="text-gray-700" />
                                     Approve
                                 </DropdownMenuItem>
                                 <DropdownMenuItem className="cursor-pointer gap-2">
-                                    <CircleAlert size={14} className="text-gray-700" />
+                                    <CircleX size={14} className="text-gray-700" />
                                     Reject
+                                </DropdownMenuItem>
+                                <DropdownMenuItem className="cursor-pointer gap-2">
+                                    <Ban size={14} className="text-gray-700" />
+                                    Deactivate Range
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
@@ -194,7 +337,7 @@ const LiabilityTable = ({ data, view, onViewChange }: LiabilityTableProps) => {
 
     const columns = getColumns();
     const table = useReactTable({
-        data,
+        data: tableData,
         columns,
         getCoreRowModel: getCoreRowModel(),
     });
@@ -202,7 +345,7 @@ const LiabilityTable = ({ data, view, onViewChange }: LiabilityTableProps) => {
     return (
         <div className="w-full">
             <div className="flex justify-between mb-4 items-center">
-                <div className="space-x-2 border-[rgba(22,28,202,1)] border rounded-lg px-2 py-1 cursor-pointer">
+                <div className="space-x-2 border-[rgba(22,28,202,1)] border rounded-lg p-1 cursor-pointer">
                     <Button
                         variant="default"
                         className={`px-8 cursor-pointer ${view === "liability" ? "bg-[rgba(22,28,202,1)] text-white" : "bg-white text-gray-800"}`}
@@ -233,7 +376,8 @@ const LiabilityTable = ({ data, view, onViewChange }: LiabilityTableProps) => {
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="pl-10 w-fit border-gray-300 focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50 text-sm lg:text-base"
                         />
-                    </div><DropdownMenu>
+                    </div>
+                    <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="outline" className="gap-2 border-gray-300 w-full lg:w-auto ring-gray-100/20">
                                 <ArrowUpDown className="text-gray-500" size={14} />
@@ -299,6 +443,89 @@ const LiabilityTable = ({ data, view, onViewChange }: LiabilityTableProps) => {
                     </TableBody>
                 </Table>
             </Card>
+
+            {/* Edit Dialog */}
+            <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+                <DialogContent className="bg-white border-none w-full h-fit">
+                    <DialogHeader>
+                        <DialogTitle>
+                            {view === "liability" ? "Edit Liability" : "Edit Percentage Range"}
+                        </DialogTitle>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                        {view === "liability" ? (
+                            <>
+                                <div className="grid grid-cols-4 items-center gap-4">
+                                    <Label htmlFor="liabilityName" className="text-right">
+                                        Liability Name
+                                    </Label>
+                                    <Input
+                                        id="liabilityName"
+                                        name="liabilityName"
+                                        value={"liabilityName" in editFormData ? editFormData.liabilityName ?? "" : ""}
+                                        onChange={handleEditFormChange}
+                                        className="col-span-3 border-gray-300"
+                                    />
+                                </div>
+                                <div className="grid grid-cols-4 items-center gap-4">
+                                    <Label htmlFor="liabilityCode" className="text-right">
+                                        Liability Code
+                                    </Label>
+                                    <Input
+                                        id="liabilityCode"
+                                        name="liabilityCode"
+                                        value={"liabilityCode" in editFormData ? editFormData.liabilityCode ?? "" : ""}
+                                        onChange={handleEditFormChange}
+                                        className="col-span-3 border-gray-300"
+                                    />
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                <div className="grid grid-cols-4 items-center gap-4">
+                                    <Label htmlFor="percentage" className="text-right">
+                                        Percentage
+                                    </Label>
+                                    <Input
+                                        id="percentage"
+                                        name="percentage"
+                                        value={"percentage" in editFormData ? editFormData.percentage ?? "" : ""}
+                                        onChange={handleEditFormChange}
+                                        className="col-span-3 border-gray-300"
+                                    />
+                                </div>
+                                <div className="grid grid-cols-4 items-center gap-4">
+                                    <Label htmlFor="amountRange" className="text-right">
+                                        Amount Range
+                                    </Label>
+                                    <Input
+                                        id="amountRange"
+                                        name="amountRange"
+                                        value={view === "percentage" && "amountRange" in editFormData ? editFormData.amountRange ?? "" : ""}
+                                        onChange={handleEditFormChange}
+                                        className="col-span-3 border-gray-300"
+                                    />
+                                </div>
+                            </>
+                        )}
+                    </div>
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() => setIsEditDialogOpen(false)}
+                            className="border-[#161CCA] text-[#161CCA]"
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            onClick={handleEditSubmit}
+                            className="bg-[#161CCA] text-white"
+                        >
+                            Save Changes
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };
