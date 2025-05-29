@@ -1,19 +1,14 @@
 "use client";
 
 import { ContentHeader } from "@/components/ui/content-header";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Card } from "@/components/ui/card";
 import {
-    Filter,
-    ArrowUpDown,
     CirclePlus,
-    Search,
     Check,
     SquareArrowOutUpRight,
-    ChevronUp,
     MoreVertical,
     Ban,
     Link,
@@ -26,6 +21,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { AddMeterDialog } from "@/components/meter-management/add-edit-meter-dialog";
 import { ApproveDialog, AssignDialog, DeactivateDialog } from "@/components/meter-management/meter-dialogs";
 import { BulkUploadDialog } from "@/components/meter-management/bulk-upload";
+import { FilterControl, SearchControl, SortControl } from "@/components/search-control";
+
 
 export default function MeterManagementPage() {
     const [searchTerm, setSearchTerm] = useState<string>("");
@@ -35,23 +32,276 @@ export default function MeterManagementPage() {
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [isBulkUploadDialogOpen, setIsBulkUploadDialogOpen] = useState(false);
     const [editMeter, setEditMeter] = useState<MeterData | undefined>(undefined);
-    const [data, setData] = useState<MeterData[]>([]);
     const [isDeactivateDialogOpen, setIsDeactivateDialogOpen] = useState(false);
     const [isApproveDialogOpen, setIsApproveDialogOpen] = useState(false);
     const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
     const [selectedMeter, setSelectedMeter] = useState<MeterData | null>(null);
 
+
     interface MeterData {
+        id: string;
         meterNumber: string;
         simNumber: string;
         model: string;
+        meterManufacturer: string;
         accountNumber: string;
         sgc: string;
         tariff: string;
-        id: string;
         approvalStatus: string;
         status: string;
     }
+
+    const [data, setData] = useState<MeterData[]>([
+        {
+            id: "MT-1001",
+            meterNumber: "MN-784512",
+            simNumber: "SIM-895623",
+            model: "Single Phase",
+            meterManufacturer: "MOMAS",
+            accountNumber: "001/654321",
+            sgc: "Class A",
+            tariff: "Residential",
+            approvalStatus: "Approved",
+            status: "Assigned"
+        },
+        {
+            id: "MT-1002",
+            meterNumber: "MN-784513",
+            simNumber: "SIM-895624",
+            model: "Three Phase",
+            meterManufacturer: "MOMAS",
+            accountNumber: "001/654321",
+            sgc: "Class B",
+            tariff: "Commercial",
+            approvalStatus: "Pending",
+            status: "In-Stock"
+        },
+        {
+            id: "MT-1003",
+            meterNumber: "MN-784514",
+            simNumber: "SIM-895625",
+            model: "Single Phase",
+            meterManufacturer: "MOMAS",
+            accountNumber: "001/654321",
+            sgc: "Class A",
+            tariff: "Residential",
+            approvalStatus: "Rejected",
+            status: "In-Stock"
+        },
+        {
+            id: "MT-1004",
+            meterNumber: "MN-784515",
+            simNumber: "SIM-895626",
+            model: "Three Phase",
+            meterManufacturer: "MOMAS",
+            accountNumber: "001/654321",
+            sgc: "Class C",
+            tariff: "Industrial",
+            approvalStatus: "Approved",
+            status: "Assigned"
+        },
+        {
+            id: "MT-1005",
+            meterNumber: "MN-784516",
+            simNumber: "SIM-895627",
+            model: "Single Phase",
+            meterManufacturer: "MOMAS",
+            accountNumber: "001/654321",
+            sgc: "Class A",
+            tariff: "Residential",
+            approvalStatus: "Pending",
+            status: "In-Stock"
+        },
+        {
+            id: "MT-1006",
+            meterNumber: "MN-784517",
+            simNumber: "SIM-895628",
+            model: "Three Phase",
+            meterManufacturer: "MOMAS",
+            accountNumber: "001/654321",
+            sgc: "Class B",
+            tariff: "Commercial",
+            approvalStatus: "Approved",
+            status: "Deactivated"
+        },
+        {
+            id: "MT-1007",
+            meterNumber: "MN-784518",
+            simNumber: "SIM-895629",
+            model: "Single Phase",
+            meterManufacturer: "MOMAS",
+            accountNumber: "001/654321",
+            sgc: "Class A",
+            tariff: "Residential",
+            approvalStatus: "Approved",
+            status: "Assigned"
+        },
+        {
+            id: "MT-1008",
+            meterNumber: "MN-784519",
+            simNumber: "SIM-895630",
+            model: "Three Phase",
+            meterManufacturer: "MOMAS",
+            accountNumber: "001/654321",
+            sgc: "Class C",
+            tariff: "Industrial",
+            approvalStatus: "Pending",
+            status: "In-Stock"
+        },
+        {
+            id: "MT-1009",
+            meterNumber: "MN-784520",
+            simNumber: "SIM-895631",
+            model: "Single Phase",
+            meterManufacturer: "MOMAS",
+            accountNumber: "001/654321",
+            sgc: "Class A",
+            tariff: "Residential",
+            approvalStatus: "Rejected",
+            status: "In-Stock"
+        },
+        {
+            id: "MT-1010",
+            meterNumber: "MN-784521",
+            simNumber: "SIM-895632",
+            model: "Three Phase",
+            meterManufacturer: "MOMAS",
+            accountNumber: "001/654321",
+            sgc: "Class B",
+            tariff: "Commercial",
+            approvalStatus: "Approved",
+            status: "Assigned"
+        },
+        {
+            id: "MT-1011",
+            meterNumber: "MN-784522",
+            simNumber: "SIM-895633",
+            model: "Single Phase",
+            meterManufacturer: "MOMAS",
+            accountNumber: "001/654321",
+            sgc: "Class A",
+            tariff: "Residential",
+            approvalStatus: "Pending",
+            status: "In-Stock"
+        },
+        {
+            id: "MT-1012",
+            meterNumber: "MN-784523",
+            simNumber: "SIM-895634",
+            model: "Three Phase",
+            meterManufacturer: "MOMAS",
+            accountNumber: "001/654321",
+            sgc: "Class C",
+            tariff: "Industrial",
+            approvalStatus: "Approved",
+            status: "Deactivated"
+        },
+        {
+            id: "MT-1013",
+            meterNumber: "MN-784524",
+            simNumber: "SIM-895635",
+            model: "Single Phase",
+            meterManufacturer: "MOMAS",
+            accountNumber: "001/654321",
+            sgc: "Class A",
+            tariff: "Residential",
+            approvalStatus: "Approved",
+            status: "Assigned"
+        },
+        {
+            id: "MT-1014",
+            meterNumber: "MN-784525",
+            simNumber: "SIM-895636",
+            model: "Three Phase",
+            meterManufacturer: "MOMAS",
+            accountNumber: "001/654321",
+            sgc: "Class B",
+            tariff: "Commercial",
+            approvalStatus: "Pending",
+            status: "In-Stock"
+        },
+        {
+            id: "MT-1015",
+            meterNumber: "MN-784526",
+            simNumber: "SIM-895637",
+            model: "Single Phase",
+            meterManufacturer: "MOMAS",
+            accountNumber: "001/654321",
+            sgc: "Class A",
+            tariff: "Residential",
+            approvalStatus: "Rejected",
+            status: "In-Stock"
+        }
+    ]);
+
+
+    // Add these state variables
+    const [sortConfig, setSortConfig] = useState<{
+        key: keyof MeterData | null;
+        direction: "asc" | "desc";
+    }>({ key: null, direction: "asc" });
+
+    const [processedData, setProcessedData] = useState<MeterData[]>(data);
+
+    useEffect(() => {
+        setProcessedData(data);
+    }, [data]);
+
+    // Enhanced search handler
+    const handleSearchChange = (term: string) => {
+        setSearchTerm(term);
+        applyFiltersAndSort(term, sortConfig.key, sortConfig.direction);
+    };
+
+    // Enhanced filter handler
+    const handleFilterClick = () => {
+        applyFiltersAndSort(searchTerm, sortConfig.key, sortConfig.direction);
+    };
+
+    // Sort handler
+    const handleSortChange = () => {
+        // For simplicity, we'll sort by meterNumber first
+        // You can make this configurable via dropdown
+        const sortKey: keyof MeterData = sortConfig.key ?? "meterNumber";
+        const newDirection = sortConfig.direction === "asc" ? "desc" : "asc";
+
+        setSortConfig({ key: sortKey, direction: newDirection });
+        applyFiltersAndSort(searchTerm, sortKey, newDirection);
+    };
+
+    // Combined filter and sort function
+    const applyFiltersAndSort = (
+        term: string,
+        sortBy: keyof MeterData | null,
+        direction: "asc" | "desc"
+    ) => {
+        // 1. Filter first
+        let results = data;
+        if (term.trim() !== "") {
+            results = data.filter(item =>
+                item.meterNumber?.toLowerCase().includes(term.toLowerCase()) ||
+                item.approvalStatus?.toLowerCase().includes(term.toLowerCase()) ||
+                item.status?.toLowerCase().includes(term.toLowerCase()) ||
+                item.model?.toLowerCase().includes(term.toLowerCase())
+            );
+        }
+
+        // 2. Then sort if a sort field is selected
+        if (sortBy) {
+            results = [...results].sort((a, b) => {
+                const aValue = a[sortBy] || "";
+                const bValue = b[sortBy] || "";
+
+                if (aValue < bValue) return direction === "asc" ? -1 : 1;
+                if (aValue > bValue) return direction === "asc" ? 1 : -1;
+                return 0;
+            });
+        }
+
+        setProcessedData(results);
+    };
+
+
 
     const toggleSelection = (id: string) => {
         setSelectedTariffs(
@@ -138,10 +388,20 @@ export default function MeterManagementPage() {
         setData((prev) => [...prev, ...newData]);
     };
 
-    const isBulkApproveDisabled = selectedTariffs.length === 0 || data.every((meter) => selectedTariffs.includes(meter.id) && meter.approvalStatus === "Approved");
-
+    const isBulkApproveDisabled =
+        selectedTariffs.length === 0 ||
+        processedData.every((meter) =>
+            selectedTariffs.includes(meter.id) &&
+            meter.approvalStatus === "Approved"
+        );
+        
     const totalPages = Math.ceil(data.length / rowsPerPage);
-    const paginatedData = data.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
+    const paginatedData = processedData.slice(
+        (currentPage - 1) * rowsPerPage,
+        currentPage * rowsPerPage
+    );
+
+
 
     return (
         <div className="p-6 h-screen overflow-auto">
@@ -153,7 +413,7 @@ export default function MeterManagementPage() {
                 />
                 <div className="flex flex-col md:flex-row gap-2">
                     <Button
-                        className="flex items-center gap-2 border font-medium border-[#161CCA] text-[#161CCA] w-full md:w-auto"
+                        className="flex items-center gap-2 border font-medium border-[#161CCA] text-[#161CCA] w-full md:w-auto cursor-pointer"
                         variant="outline"
                         size="lg"
                         onClick={() => setIsBulkUploadDialogOpen(true)}
@@ -162,7 +422,7 @@ export default function MeterManagementPage() {
                         <span className="text-sm md:text-base">Bulk Upload</span>
                     </Button>
                     <Button
-                        className="flex items-center gap-2 bg-[#161CCA] text-white font-medium w-full md:w-auto"
+                        className="flex items-center gap-2 bg-[#161CCA] text-white font-medium w-full md:w-auto cursor-pointer"
                         variant="secondary"
                         size="lg"
                         onClick={() => {
@@ -180,33 +440,25 @@ export default function MeterManagementPage() {
             <Card className="p-4 mb-4 border-none shadow-none bg-white">
                 <div className="flex flex-col lg:flex-row justify-between items-center gap-4">
                     <div className="flex items-center gap-2 w-full lg:w-auto">
-                        <div className="relative w-full lg:w-[300px]">
-                            <Search
-                                size={14}
-                                className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400"
-                            />
-                            <Input
-                                type="text"
-                                placeholder="Search by meter no., account no..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="pl-10 w-full border-gray-300 focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50 text-sm lg:text-base"
-                            />
-                        </div>
-                        <Button variant="outline" className="gap-2 border-gray-300 w-full lg:w-auto">
-                            <Filter className="text-gray-500" size={14} />
-                            <span className="text-gray-800 text-sm lg:text-base">Filter</span>
-                        </Button>
-                        <Button variant="outline" className="gap-2 border-gray-300 w-full lg:w-auto">
-                            <ArrowUpDown className="text-gray-500" size={14} />
-                            <span className="text-gray-800 text-sm lg:text-base">Sort</span>
-                        </Button>
+                        <SearchControl
+                            onSearchChange={handleSearchChange}
+                            value={searchTerm}
+                        />
+                        <FilterControl
+                            onFilterClick={handleFilterClick}
+                        />
+                        <SortControl
+                            onSortChange={handleSortChange}
+                            currentSort={sortConfig.key ? `${
+                                sortConfig.key} (${sortConfig.direction})` : ""}
+
+                        />
                     </div>
                     <div className="flex gap-2 w-full lg:w-auto">
                         <Button
                             variant="secondary"
                             size="lg"
-                            className="gap-2 bg-[#22C55E] text-white font-medium w-full lg:w-auto"
+                            className={`gap-2 bg-[#22C55E] text-white font-medium w-full lg:w-auto ${!isBulkApproveDisabled ? "cursor-pointer" : ""}`}
                             onClick={handleBulkApprove}
                             disabled={isBulkApproveDisabled}
                         >
@@ -216,7 +468,7 @@ export default function MeterManagementPage() {
                         <Button
                             variant="outline"
                             size="lg"
-                            className="gap-2 border border-[#161CCA] text-[#161CCA] font-medium w-full lg:w-auto"
+                            className="gap-2 border border-[#161CCA] text-[#161CCA] font-medium w-full lg:w-auto cursor-pointer"
                         >
                             <SquareArrowOutUpRight className="text-[#161CCA]" size={15} strokeWidth={2.3} />
                             <span className="text-sm lg:text-base font-medium">Export</span>
@@ -261,19 +513,17 @@ export default function MeterManagementPage() {
                             <TableHead className="min-w-[80px] px-4 py-3 text-left text-sm lg:text-base font-semibold text-gray-700">
                                 Category
                             </TableHead>
-                            <TableHead className="min-w-[120px] px-4 py-3 text-left text-sm lg:text-base font-semibold text-gray-700">
+                            <TableHead className="min-w-[120px] px-2 py-3 text-left text-sm lg:text-base font-semibold text-gray-700">
                                 <div className="flex items-center gap-1">
                                     Approval Status
-                                    <ChevronUp size={14} className="text-gray-500" />
                                 </div>
                             </TableHead>
-                            <TableHead className="min-w-[100px] px-4 py-3 text-left text-sm lg:text-base font-semibold text-gray-700">
+                            <TableHead className="min-w-[100px] px-6 py-3 text-left text-sm lg:text-base font-semibold text-gray-700">
                                 <div className="flex items-center gap-1">
                                     Status
-                                    <ChevronUp size={14} className="text-gray-500" />
                                 </div>
                             </TableHead>
-                            <TableHead className="min-w-[80px] px-4 py-3 text-right text-sm lg:text-base font-semibold text-gray-700">
+                            <TableHead className="min-w-[80px] px-5 py-3 text-right text-sm lg:text-base font-semibold text-gray-700">
                                 Actions
                             </TableHead>
                         </TableRow>
@@ -304,36 +554,35 @@ export default function MeterManagementPage() {
                                     <TableCell className="px-4 py-3 text-sm lg:text-base text-gray-900">{item.meterNumber}</TableCell>
                                     <TableCell className="px-4 py-3 text-sm lg:text-base text-gray-900">{item.simNumber}</TableCell>
                                     <TableCell className="px-4 py-3 text-sm lg:text-base text-gray-900">{item.model}</TableCell>
-                                    <TableCell className="px-4 py-3 text-sm lg:text-base text-gray-900">{item.accountNumber}</TableCell>
+                                    <TableCell className="px-4 py-3 text-sm lg:text-base text-gray-900">{item.meterManufacturer}</TableCell>
                                     <TableCell className="px-4 py-3 text-sm lg:text-base text-gray-900">{item.sgc}</TableCell>
                                     <TableCell className="px-4 py-3 text-sm lg:text-base text-gray-900">{item.tariff}</TableCell>
-                                    <TableCell className="px-4 py-3 text-sm lg:text-base text-gray-900">{item.id}</TableCell>
                                     <TableCell className="px-4 py-3">
                                         {item.approvalStatus === "Approved" ? (
-                                            <span className="text-green-600 font-medium text-sm lg:text-base">Approved</span>
+                                            <span className="text-green-600 font-medium text-sm lg:text-base px-2 rounded-2xl bg-green-100">Approved</span>
                                         ) : item.approvalStatus === "Rejected" ? (
-                                            <span className="text-red-600 font-medium text-sm lg:text-base">Rejected</span>
+                                            <span className="text-red-600 font-medium text-sm lg:text-base px-2 rounded-2xl bg-red-100">Rejected</span>
                                         ) : item.approvalStatus === "Pending" ? (
-                                            <span className="text-orange-500 font-medium text-sm lg:text-base">Pending</span>
+                                            <span className="text-yellow-500 font-medium text-sm lg:text-base px-2 rounded-2xl bg-yellow-100">Pending</span>
                                         ) : (
                                             <span className="text-sm lg:text-base text-gray-900">{item.approvalStatus}</span>
                                         )}
                                     </TableCell>
                                     <TableCell className="px-4 py-3">
                                         {item.status === "Assigned" ? (
-                                            <span className="text-green-600 font-medium text-sm lg:text-base">Assigned</span>
+                                            <span className="text-green-600 font-medium text-sm lg:text-base px-2 rounded-2xl bg-green-100">Assigned</span>
                                         ) : item.status === "In-Stock" ? (
-                                            <span className="text-blue-600 font-medium text-sm lg:text-base">In-Stock</span>
+                                            <span className="text-blue-600 font-medium text-sm lg:text-base px-2 rounded-2xl bg-blue-100">In-Stock</span>
                                         ) : item.status === "Deactivated" ? (
-                                            <span className="text-red-600 font-medium text-sm lg:text-base">Deactivated</span>
+                                            <span className="text-red-600 font-medium text-sm lg:text-base px-2 rounded-2xl bg-red-100">Deactivated</span>
                                         ) : (
                                             <span className="text-sm lg:text-base text-gray-900">{item.status}</span>
                                         )}
                                     </TableCell>
-                                    <TableCell className="px-4 py-3 text-right">
+                                    <TableCell className="px-5 py-3 text-right">
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" size="sm" className="border-gray-500 focus:ring-gray-500">
+                                                <Button variant="ghost" size="sm" className="border-gray-500 focus:ring-gray-500 cursor-pointer">
                                                     <MoreVertical size={16} className="text-gray-500" />
                                                 </Button>
                                             </DropdownMenuTrigger>
