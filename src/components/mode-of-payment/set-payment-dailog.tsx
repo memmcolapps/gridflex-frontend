@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from "react";
+import type { ReactNode } from "react";
 import {
     Dialog,
     DialogContent,
@@ -19,7 +20,7 @@ import {
 } from "../ui/select";
 import { WalletCards } from "lucide-react";
 
-type SetPaymentDialogProps = {
+export interface SetPaymentDialogProps {
     onSave: (data: {
         meterNumber: string;
         debitModeOfPayment: string;
@@ -28,7 +29,8 @@ type SetPaymentDialogProps = {
         creditPercentage: string;
     }) => void;
     asChild?: boolean;
-};
+    children?: ReactNode;
+}
 
 export function SetPaymentDialog({ onSave, asChild }: SetPaymentDialogProps) {
     const [open, setOpen] = useState(false);
@@ -76,7 +78,7 @@ export function SetPaymentDialog({ onSave, asChild }: SetPaymentDialogProps) {
                 <div className="space-y-4 py-4">
                     <div className="space-y-2">
                         <Label className="text-sm font-medium text-gray-700">
-                            Meter Number <span className="text-red-500">*</span>
+                            Account Number <span className="text-red-500">*</span>
                         </Label>
                         <Input
                             placeholder="Enter Meter Number"
@@ -88,10 +90,12 @@ export function SetPaymentDialog({ onSave, asChild }: SetPaymentDialogProps) {
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label className="text-sm font-medium text-gray-700">
-                                Debit <span className="text-red-500">*</span>
+                                Debit
                             </Label>
                             <div className="space-y-2">
-                                <Label className="text-sm font-medium text-gray-700">Mode of Payment</Label>
+                                <Label className="text-sm font-medium text-gray-700">
+                                    Mode of Payment <span className="text-red-500">*</span>
+                                </Label>
                                 <Select
                                     value={debitModeOfPayment}
                                     onValueChange={setDebitModeOfPayment}
@@ -105,9 +109,9 @@ export function SetPaymentDialog({ onSave, asChild }: SetPaymentDialogProps) {
                                         <SelectItem value="Monthly">Monthly</SelectItem>
                                     </SelectContent>
                                 </Select>
-                                <Label className="text-sm font-medium text-gray-700">Percentage</Label>
+                                <Label className="text-sm font-medium text-gray-700">Installment Range</Label>
                                 <Input
-                                    placeholder="Enter Percentage"
+                                    placeholder="Enter Installment Range"
                                     value={debitPercentage}
                                     onChange={(e) => setDebitPercentage(e.target.value)}
                                     className="w-full border-gray-300 focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50 text-sm lg:text-base"
@@ -116,10 +120,12 @@ export function SetPaymentDialog({ onSave, asChild }: SetPaymentDialogProps) {
                         </div>
                         <div className="space-y-2">
                             <Label className="text-sm font-medium text-gray-700">
-                                Credit <span className="text-red-500">*</span>
+                                Credit
                             </Label>
                             <div className="space-y-2">
-                                <Label className="text-sm font-medium text-gray-700">Mode of Payment</Label>
+                                <Label className="text-sm font-medium text-gray-700">
+                                    Mode of Payment<span className="text-red-500">*</span>
+                                </Label>
                                 <Select
                                     value={creditModeOfPayment}
                                     onValueChange={setCreditModeOfPayment}
@@ -133,9 +139,9 @@ export function SetPaymentDialog({ onSave, asChild }: SetPaymentDialogProps) {
                                         <SelectItem value="Monthly">Monthly</SelectItem>
                                     </SelectContent>
                                 </Select>
-                                <Label className="text-sm font-medium text-gray-700">Percentage</Label>
+                                <Label className="text-sm font-medium text-gray-700">Installment Range</Label>
                                 <Input
-                                    placeholder="Enter Percentage"
+                                    placeholder="Enter Installment Range"
                                     value={creditPercentage}
                                     onChange={(e) => setCreditPercentage(e.target.value)}
                                     className="w-full border-gray-300 focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50 text-sm lg:text-base"

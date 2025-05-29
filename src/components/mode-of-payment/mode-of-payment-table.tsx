@@ -5,7 +5,6 @@ import { Card } from "../ui/card";
 import { Input } from "../ui/input";
 import React, { useState } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
-import { Checkbox } from "../ui/checkbox";
 import { Label } from "../ui/label";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
 
@@ -119,11 +118,12 @@ export function ModeOfPaymentTable() {
                         <TableRow className="bg-gray-50 hover:bg-gray-50">
                             <TableHead className="w-[80px] px-4 py-3 text-left">
                                 <div className="flex items-center gap-2">
-                                    <Checkbox
-                                        className="h-4 w-4 border-gray-500"
+                                    <input
+                                        type="checkbox"
+                                        className="border-gray-500"
                                         id="select-all"
                                         checked={data.length > 0 && selectedItems.length === data.length}
-                                        onCheckedChange={toggleSelectAll}
+                                        onChange={toggleSelectAll}
                                     />
                                     <Label htmlFor="select-all" className="text-sm lg:text-base font-semibold text-gray-700">
                                         S/N
@@ -165,11 +165,12 @@ export function ModeOfPaymentTable() {
                                 <TableRow key={item.id} className="hover:bg-gray-50">
                                     <TableCell className="px-4 py-3">
                                         <div className="flex items-center gap-2">
-                                            <Checkbox
+                                            <input
+                                                type="checkbox"
                                                 className="border-gray-500"
                                                 id={`select-${item.id}`}
                                                 checked={selectedItems.includes(item.id)}
-                                                onCheckedChange={() => toggleSelection(item.id)}
+                                                onChange={() => toggleSelection(item.id)}
                                             />
                                             <span className="text-sm lg:text-base text-gray-900">
                                                 {index + 1 + (currentPage - 1) * rowsPerPage}
