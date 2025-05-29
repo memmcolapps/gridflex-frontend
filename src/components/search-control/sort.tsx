@@ -31,6 +31,7 @@ export function SortControl({ onSortChange, currentSort = "" }: SortControlProps
         };
     }, [isOpen]);
 
+    
     return (
         <div className="relative">
             <div className="flex items-center gap-2">

@@ -50,6 +50,7 @@ export default function MeterManagementPage() {
         approvalStatus: string;
         status: string;
     }
+    
 
     const [data, setData] = useState<MeterData[]>([
         {

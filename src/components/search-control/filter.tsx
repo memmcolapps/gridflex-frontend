@@ -9,7 +9,7 @@ interface FilterControlProps {
     onReset?: () => void;
 }
 
-export function FilterControl({ onFilterClick, onApply, onReset }: FilterControlProps) {
+export function FilterControl({ onApply, onReset }: FilterControlProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [filters, setFilters] = useState<Record<string, boolean>>({
         inStock: false,
