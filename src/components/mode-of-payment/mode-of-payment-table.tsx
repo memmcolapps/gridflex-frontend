@@ -130,25 +130,25 @@ export function ModeOfPaymentTable() {
                                     </Label>
                                 </div>
                             </TableHead>
-                            <TableHead className="min-w-[120px] px-4 py-3 text-left text-sm lg:text-base font-semibold text-gray-700">
+                            <TableHead className="px-4 py-3 text-left text-sm lg:text-base font-semibold text-gray-700 w-[14.28%]">
                                 Meter No.
                             </TableHead>
-                            <TableHead className="min-w-[150px] px-4 py-3 text-left text-sm lg:text-base font-semibold text-gray-700">
+                            <TableHead className="px-4 py-3 text-left text-sm lg:text-base font-semibold text-gray-700 w-[14.28%]">
                                 Account No.
                             </TableHead>
-                            <TableHead className="min-w-[180px] px-4 py-3 text-left text-sm lg:text-base font-semibold text-gray-700">
+                            <TableHead className="px-4 py-3 text-left text-sm lg:text-base font-semibold text-gray-700 w-[14.28%]">
                                 Debit Mode of Payment
                             </TableHead>
-                            <TableHead className="min-w-[150px] px-4 py-3 text-left text-sm lg:text-base font-semibold text-gray-700">
+                            <TableHead className="px-4 py-3 text-left text-sm lg:text-base font-semibold text-gray-700 w-[14.28%]">
                                 Installment Range
                             </TableHead>
-                            <TableHead className="min-w-[180px] px-4 py-3 text-left text-sm lg:text-base font-semibold text-gray-700">
+                            <TableHead className="px-4 py-3 text-left text-sm lg:text-base font-semibold text-gray-700 w-[14.28%]">
                                 Credit Mode of Payment
                             </TableHead>
-                            <TableHead className="min-w-[150px] px-4 py-3 text-left text-sm lg:text-base font-semibold text-gray-700">
+                            <TableHead className="px-4 py-3 text-left text-sm lg:text-base font-semibold text-gray-700 w-[14.28%]">
                                 Installment Range
                             </TableHead>
-                            <TableHead className="min-w-[80px] px-4 py-3 text-right text-sm lg:text-base font-semibold text-gray-700">
+                            <TableHead className="px-4 py-3 text-right text-sm lg:text-base font-semibold text-gray-700 w-[80px]">
                                 Actions
                             </TableHead>
                         </TableRow>
@@ -177,12 +177,12 @@ export function ModeOfPaymentTable() {
                                             </span>
                                         </div>
                                     </TableCell>
-                                    <TableCell className="px-4 py-3 text-sm lg:text-base text-gray-900">{item.meterNumber}</TableCell>
-                                    <TableCell className="px-4 py-3 text-sm lg:text-base text-gray-900">{item.accountNumber}</TableCell>
-                                    <TableCell className="px-4 py-3 text-sm lg:text-base text-gray-900">{item.debitModeOfPayment}</TableCell>
-                                    <TableCell className="px-4 py-3 text-sm lg:text-base text-gray-900">{item.debitInstallmentRange}</TableCell>
-                                    <TableCell className="px-4 py-3 text-sm lg:text-base text-gray-900">{item.creditModeOfPayment}</TableCell>
-                                    <TableCell className="px-4 py-3 text-sm lg:text-base text-gray-900">{item.creditInstallmentRange}</TableCell>
+                                    <TableCell className="px-4 py-3 text-sm lg:text-base text-gray-900 w-[14.28%]">{item.meterNumber}</TableCell>
+                                    <TableCell className="px-4 py-3 text-sm lg:text-base text-gray-900 w-[14.28%]">{item.accountNumber}</TableCell>
+                                    <TableCell className="px-4 py-3 text-sm lg:text-base text-gray-900 w-[14.28%]">{item.debitModeOfPayment}</TableCell>
+                                    <TableCell className="px-4 py-3 text-sm lg:text-base text-gray-900 w-[14.28%]">{item.debitInstallmentRange}</TableCell>
+                                    <TableCell className="px-4 py-3 text-sm lg:text-base text-gray-900 w-[14.28%]">{item.creditModeOfPayment}</TableCell>
+                                    <TableCell className="px-4 py-3 text-sm lg:text-base text-gray-900 w-[14.28%]">{item.creditInstallmentRange}</TableCell>
                                     <TableCell className="px-4 py-3 text-right">
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>

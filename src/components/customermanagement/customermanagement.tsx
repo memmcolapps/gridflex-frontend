@@ -1,6 +1,7 @@
-import { useState } from 'react';
-import { ArrowUpDown, PlusCircleIcon, SearchIcon, MoreVertical, ListFilter, Lock, User, AlertTriangle, X } from 'lucide-react';
-import CustomerForm from './customerform';
+"use client";
+import { useState } from "react";
+import { ArrowUpDown, PlusCircleIcon, SearchIcon, MoreVertical, ListFilter, Lock, User, AlertTriangle, X } from "lucide-react";
+import CustomerForm from "./customerform";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
@@ -11,96 +12,103 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Checkbox } from "@/components/ui/checkbox";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '../ui/alert-dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "../ui/alert-dialog";
 
 export type Customer = {
     id: string;
     customerId: string;
     firstName: string;
     lastName: string;
-    meterNumber: string;
     accountNumber: string;
-    location: string;
-    phoneNumber: string;
-    address: string;
-    status: 'Assigned' | 'Unassigned';
     nin: string;
+    phoneNumber: string;
     email: string;
     state: string;
     city: string;
     houseNo: string;
     streetName: string;
+    meterNumber?: string;
+    location?: string;
+    address?: string;
+    status?: "Active" | "Blocked";
+    virtual?: number;
+    actual?: number;
 };
 
 export default function CustomerManagement() {
     const [customers, setCustomers] = useState<Customer[]>([
         {
-            id: '01',
-            customerId: 'C-1234567',
-            firstName: 'Margaret',
-            lastName: 'Ademola',
-            meterNumber: '62501021223',
-            accountNumber: '96844839930',
-            location: 'Lagos',
-            phoneNumber: '0812354648',
-            address: 'Olowotedo, Mowe',
-            status: 'Unassigned',
-            nin: '012345678900',
-            email: 'margaret@gmail.com',
-            state: 'Lagos',
-            city: 'Lagos',
-            houseNo: 'Lagos',
-            streetName: 'KM 40, Lagos Ibadan Exp. way, Ogun',
+            id: "01",
+            customerId: "C-1234567",
+            firstName: "Margaret",
+            lastName: "Ademola",
+            meterNumber: "62501021223",
+            accountNumber: "96844839930",
+            location: "Lagos",
+            phoneNumber: "0812354648",
+            address: "Olowotedo, Mowe",
+            status: "Blocked",
+            nin: "012345678900",
+            email: "margaret@gmail.com",
+            state: "Lagos",
+            city: "Lagos",
+            houseNo: "Lagos",
+            streetName: "KM 40, Lagos Ibadan Exp. way, Ogun",
+            virtual: 5,
+            actual: 7,
         },
         {
-            id: '02',
-            customerId: 'C-1234567',
-            firstName: 'Margaret',
-            lastName: 'Ademola',
-            meterNumber: '6201021223',
-            accountNumber: '076403094494',
-            location: 'Lagos',
-            phoneNumber: '0812354648',
-            address: 'Olowotedo, Mowe',
-            status: 'Assigned',
-            nin: '012345678900',
-            email: 'margaret@gmail.com',
-            state: 'Lagos',
-            city: 'Lagos',
-            houseNo: 'Lagos',
-            streetName: 'KM 40, Lagos Ibadan Exp. way, Ogun',
+            id: "02",
+            customerId: "C-1234567",
+            firstName: "Margaret",
+            lastName: "Ademola",
+            meterNumber: "6201021223",
+            accountNumber: "076403094494",
+            location: "Lagos",
+            phoneNumber: "0812354648",
+            address: "Olowotedo, Mowe",
+            status: "Active",
+            nin: "012345678900",
+            email: "margaret@gmail.com",
+            state: "Lagos",
+            city: "Lagos",
+            houseNo: "Lagos",
+            streetName: "KM 40, Lagos Ibadan Exp. way, Ogun",
+            virtual: 12,
+            actual: 15,
         },
         ...Array.from({ length: 10 }, (_, index) => ({
-            id: String(index + 3).padStart(2, '0'),
-            customerId: 'C-1234567',
-            firstName: 'Margaret',
-            lastName: 'Ademola',
-            meterNumber: '6201021223',
-            accountNumber: '8993300282',
-            location: 'Lagos',
-            phoneNumber: '0812354648',
-            address: 'Olowotedo, Mowe',
-            status: (index % 2 === 0 ? 'Unassigned' : 'Assigned') as 'Assigned' | 'Unassigned',
-            nin: '012345678900',
-            email: 'margaret@gmail.com',
-            state: 'Lagos',
-            city: 'Lagos',
-            houseNo: 'Lagos',
-            streetName: 'KM 40, Lagos Ibadan Exp. way, Ogun',
+            id: String(index + 3).padStart(2, "0"),
+            customerId: "C-1234567",
+            firstName: "Margaret",
+            lastName: "Ademola",
+            meterNumber: "6201021223",
+            accountNumber: "8993300282",
+            location: "Lagos",
+            phoneNumber: "0812354648",
+            address: "Olowotedo, Mowe",
+            status: (index % 2 === 0 ? "Blocked" : "Active") as "Active" | "Blocked",
+            nin: "012345678900",
+            email: "margaret@gmail.com",
+            state: "Lagos",
+            city: "Lagos",
+            houseNo: "Lagos",
+            streetName: "KM 40, Lagos Ibadan Exp. way, Ogun",
+            virtual: Math.floor(Math.random() * 20) + 1, // Random number between 1 and 20
+            actual: Math.floor(Math.random() * 20) + 1,   // Random number between 1 and 20
         })),
     ]);
 
-    const [searchTerm, setSearchTerm] = useState('');
+    const [searchTerm, setSearchTerm] = useState("");
     const [sortConfig, setSortConfig] = useState<{
         key: keyof Customer;
-        direction: 'ascending' | 'descending';
+        direction: "ascending" | "descending";
     } | null>(null);
     const [selectedCustomers, setSelectedCustomers] = useState<string[]>([]);
     const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [isBlockDialogOpen, setIsBlockDialogOpen] = useState(false);
-    const [isConfirmBlockDialogOpen, setIsConfirmBlockDialogOpen] = useState(false); // New state for confirmation dialog
+    const [isConfirmBlockDialogOpen, setIsConfirmBlockDialogOpen] = useState(false);
     const [customerToBlock, setCustomerToBlock] = useState<Customer | null>(null);
     const [blockReason, setBlockReason] = useState("");
 
@@ -125,9 +133,9 @@ export default function CustomerManagement() {
     };
 
     const requestSort = (key: keyof Customer) => {
-        let direction: 'ascending' | 'descending' = 'ascending';
-        if (sortConfig?.key === key && sortConfig.direction === 'ascending') {
-            direction = 'descending';
+        let direction: "ascending" | "descending" = "ascending";
+        if (sortConfig?.key === key && sortConfig.direction === "ascending") {
+            direction = "descending";
         }
         setSortConfig({ key, direction });
     };
@@ -136,11 +144,12 @@ export default function CustomerManagement() {
         const sortableCustomers = [...customers];
         if (sortConfig !== null) {
             sortableCustomers.sort((a, b) => {
-                if (a[sortConfig.key] < b[sortConfig.key]) {
-                    return sortConfig.direction === 'ascending' ? -1 : 1;
+                if (!sortConfig) return 0;
+                if ((a[sortConfig.key] ?? "") < (b[sortConfig.key] ?? "")) {
+                    return sortConfig.direction === "ascending" ? -1 : 1;
                 }
-                if (a[sortConfig.key] > b[sortConfig.key]) {
-                    return sortConfig.direction === 'ascending' ? 1 : -1;
+                if ((a[sortConfig.key] ?? "") > (b[sortConfig.key] ?? "")) {
+                    return sortConfig.direction === "ascending" ? 1 : -1;
                 }
                 return 0;
             });
@@ -153,7 +162,7 @@ export default function CustomerManagement() {
             `${customer.firstName} ${customer.lastName}`
                 .toLowerCase()
                 .includes(searchTerm.toLowerCase()) ||
-            customer.meterNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (customer.meterNumber ?? "").toLowerCase().includes(searchTerm.toLowerCase()) ||
             customer.accountNumber.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
@@ -171,9 +180,8 @@ export default function CustomerManagement() {
 
     const confirmBlockCustomer = () => {
         if (customerToBlock && blockReason) {
-            // Implement block logic here (e.g., update customer status or remove)
             console.log(`Blocking customer ${customerToBlock.firstName} for reason: ${blockReason}`);
-            setCustomers(customers.filter((c) => c.id !== customerToBlock.id)); // Example: Remove customer
+            setCustomers(customers.filter((c) => c.id !== customerToBlock.id));
             setIsConfirmBlockDialogOpen(false);
             setIsBlockDialogOpen(false);
             setCustomerToBlock(null);
@@ -216,7 +224,9 @@ export default function CustomerManagement() {
                                         meterNumber: newCustomer.accountNumber,
                                         location: newCustomer.city,
                                         address: `${newCustomer.streetName}, ${newCustomer.city}`,
-                                        status: 'Unassigned',
+                                        status: "Unassigned" as "Active" | "Blocked", // Default to "Active" for new customers
+                                        virtual: Math.floor(Math.random() * 20) + 1,
+                                        actual: Math.floor(Math.random() * 20) + 1,
                                     },
                                 ]);
                             }}
@@ -260,45 +270,52 @@ export default function CustomerManagement() {
                         </Label>
                     </Button>
                 </div>
-                <div className='h-4/6'>
+                <div className="h-4/6 overflow-auto">
                     <Table>
                         <TableHeader>
                             <TableRow>
                                 <TableHead className="w-[30px] pr-0">
                                     <div className="flex items-center gap-2 text-center">
-                                        <Checkbox
+                                        <input
+                                            type="checkbox"
                                             checked={
                                                 selectedCustomers.length === filteredCustomers.length &&
                                                 filteredCustomers.length > 0
                                             }
-                                            onCheckedChange={toggleSelectAll} // Fixed from 'on diversoCheckedChange'
-                                            className="border-[rgba(228,231,236,1)] "
+                                            onChange={toggleSelectAll}
+                                            className="border-[rgba(228,231,236,1)]"
                                         />
                                         <span>S/N</span>
                                     </div>
                                 </TableHead>
-                                <TableHead onClick={() => requestSort('customerId')} className='text-center'>
+                                <TableHead onClick={() => requestSort("customerId")} className="text-center">
                                     Customer ID
                                 </TableHead>
-                                <TableHead onClick={() => requestSort('firstName')} className='text-center'>
+                                <TableHead onClick={() => requestSort("firstName")} className="text-center">
                                     First Name
                                 </TableHead>
-                                <TableHead onClick={() => requestSort('lastName')} className='text-center'>
+                                <TableHead onClick={() => requestSort("lastName")} className="text-center">
                                     Last Name
                                 </TableHead>
-                                <TableHead onClick={() => requestSort('phoneNumber')} className='text-center'>
+                                <TableHead onClick={() => requestSort("phoneNumber")} className="text-center">
                                     Phone Number
                                 </TableHead>
-                                <TableHead onClick={() => requestSort('address')} className='text-center'>
+                                <TableHead onClick={() => requestSort("address")} className="text-center">
                                     Address
                                 </TableHead>
-                                <TableHead onClick={() => requestSort('location')} className='text-center'>
+                                <TableHead onClick={() => requestSort("location")} className="text-center">
                                     City
                                 </TableHead>
-                                <TableHead onClick={() => requestSort('location')} className='text-center'>
+                                <TableHead onClick={() => requestSort("state")} className="text-center">
                                     State
                                 </TableHead>
-                                <TableHead onClick={() => requestSort('status')} className='text-center'>
+                                <TableHead onClick={() => requestSort("virtual")} className="text-center">
+                                    Virtual
+                                </TableHead>
+                                <TableHead onClick={() => requestSort("actual")} className="text-center">
+                                    Actual
+                                </TableHead>
+                                <TableHead onClick={() => requestSort("status")} className="text-center">
                                     Status
                                 </TableHead>
                                 <TableHead>Actions</TableHead>
@@ -307,29 +324,32 @@ export default function CustomerManagement() {
                         <TableBody>
                             {paginatedCustomers.map((customer, index) => (
                                 <TableRow key={customer.id} className="hover:bg-muted/50">
-                                    <TableCell className='text-center'>
-                                        <div className='flex items-center gap-2'>
-                                            <Checkbox
+                                    <TableCell className="text-center">
+                                        <div className="flex items-center gap-2">
+                                            <input
+                                                type="checkbox"
                                                 checked={selectedCustomers.includes(customer.id)}
-                                                onCheckedChange={() => toggleCustomerSelection(customer.id)}
+                                                onChange={() => toggleCustomerSelection(customer.id)}
                                                 className="border-[rgba(228,231,236,1)]"
                                             />
                                             <span>{startIndex + index + 1}</span>
                                         </div>
                                     </TableCell>
-                                    <TableCell className='text-center'>{customer.customerId}</TableCell>
-                                    <TableCell className='text-center'>{customer.firstName}</TableCell>
-                                    <TableCell className='text-center'>{customer.lastName}</TableCell>
-                                    <TableCell className='text-center'>{customer.phoneNumber}</TableCell>
-                                    <TableCell className='text-center'>{customer.address}</TableCell>
-                                    <TableCell className='text-center'>{customer.city}</TableCell>
-                                    <TableCell className='text-center'>{customer.state}</TableCell>
-                                    <TableCell className='text-center'>
+                                    <TableCell className="text-center">{customer.customerId}</TableCell>
+                                    <TableCell className="text-center">{customer.firstName}</TableCell>
+                                    <TableCell className="text-center">{customer.lastName}</TableCell>
+                                    <TableCell className="text-center">{customer.phoneNumber}</TableCell>
+                                    <TableCell className="text-center">{customer.address}</TableCell>
+                                    <TableCell className="text-center">{customer.city}</TableCell>
+                                    <TableCell className="text-center">{customer.state}</TableCell>
+                                    <TableCell className="text-center">{customer.virtual}</TableCell>
+                                    <TableCell className="text-center">{customer.actual}</TableCell>
+                                    <TableCell className="text-center">
                                         <span
                                             className={
-                                                customer.status === 'Assigned'
-                                                    ? 'text-[#059E40] bg-[#E9FBF0] rounded-full px-1.5 py-1.5'
-                                                    : 'text-[#F50202] bg-[#FBE9E9] rounded-full px-1.5 py-1.5'
+                                                customer.status === "Active"
+                                                    ? "text-[#059E40] bg-[#E9FBF0] rounded-full px-1.5 py-1.5"
+                                                    : "text-[#F50202] bg-[#FBE9E9] rounded-full px-1.5 py-1.5"
                                             }
                                         >
                                             {customer.status}
@@ -348,17 +368,17 @@ export default function CustomerManagement() {
                                                         setEditingCustomer(customer);
                                                         setIsEditDialogOpen(true);
                                                     }}
-                                                    className='w-fit'
+                                                    className="w-fit"
                                                 >
                                                     <div className="flex items-center w-fit gap-2">
                                                         <User size={14} />
-                                                        <span className='cursor-pointer w-fit'>Edit Customer</span>
+                                                        <span className="cursor-pointer w-fit">Edit Customer</span>
                                                     </div>
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem onSelect={() => handleBlockCustomer(customer)}>
                                                     <div className="flex items-center w-full gap-2">
                                                         <Lock size={14} />
-                                                        <span className='cursor-pointer'>Block</span>
+                                                        <span className="cursor-pointer">Block</span>
                                                     </div>
                                                 </DropdownMenuItem>
                                             </DropdownMenuContent>
@@ -415,11 +435,12 @@ export default function CustomerManagement() {
                         mode="edit"
                         customer={editingCustomer}
                         isOpen={isEditDialogOpen}
-                        onSave={(updatedCustomer) => {
+                        onSave={(updatedCustomer: Customer) => {
                             setCustomers(
                                 customers.map((c) =>
                                     c.id === editingCustomer.id
                                         ? {
+                                            ...c,
                                             ...updatedCustomer,
                                             id: editingCustomer.id,
                                             customerId: editingCustomer.customerId,
@@ -427,6 +448,8 @@ export default function CustomerManagement() {
                                             location: updatedCustomer.city ?? editingCustomer.location,
                                             address: updatedCustomer.address ?? `${updatedCustomer.streetName}, ${updatedCustomer.city}`,
                                             status: editingCustomer.status,
+                                            virtual: updatedCustomer.virtual ?? (c.virtual ?? 0),
+                                            actual: updatedCustomer.actual ?? (c.actual ?? 0),
                                         }
                                         : c
                                 )
@@ -442,7 +465,6 @@ export default function CustomerManagement() {
 
                 {customerToBlock && (
                     <>
-                        {/* First Dialog: Select Block Reason */}
                         <AlertDialog open={isBlockDialogOpen} onOpenChange={setIsBlockDialogOpen}>
                             <AlertDialogContent className="bg-white max-w-sm rounded-xl p-10 border-gray-500 h-fit">
                                 <AlertDialogCancel asChild>
@@ -453,7 +475,7 @@ export default function CustomerManagement() {
                                             setBlockReason("");
                                         }}
                                     >
-                                        <X size={20} className="text-black cursor-pointer" />
+                                        <X size={16} className="text-gray-700 cursor-pointer" />
                                     </button>
                                 </AlertDialogCancel>
 
@@ -464,25 +486,30 @@ export default function CustomerManagement() {
                                         </AlertDialogTitle>
                                     </AlertDialogHeader>
 
-                                    {/* Reason Select Dropdown */}
                                     <div className="space-y-2">
-                                        <label htmlFor="blockReason" className="text-sm font-medium text-gray-700">
-                                            Reason
-                                        </label>
-                                        <select
-                                            id="blockReason"
-                                            value={blockReason}
-                                            onChange={(e) => setBlockReason(e.target.value)}
-                                            className="w-full p-2 border-gray-300 rounded-md focus:ring-gray-300 focus:border-gray-300"
-                                            required
-                                        >
-                                            <option value="">Select reason to block</option>
-                                            {blockReasons.map((reason) => (
-                                                <option key={reason} value={reason}>
-                                                    {reason}
-                                                </option>
-                                            ))}
-                                        </select>
+                                        <div className="w-full">
+                                            <Label htmlFor="blockReason" className="text-sm font-medium text-gray-700">
+                                                Reason
+                                            </Label>
+                                            <div className="w-full">
+                                                <div className="relative">
+                                                    <select
+                                                        id="blockReason"
+                                                        value={blockReason}
+                                                        onChange={(e) => setBlockReason(e.target.value)}
+                                                        className="w-full p-2 border border-gray-300 rounded-md focus:ring-ring focus:border-ring bg-background text-foreground ring-gray-50/10"
+                                                        required
+                                                    >
+                                                        <option value="">Select reason to block</option>
+                                                        {blockReasons.map((reason) => (
+                                                            <option key={reason} value={reason}>
+                                                                {reason}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
 
                                     <AlertDialogFooter className="flex justify-between pt-4">
@@ -504,7 +531,7 @@ export default function CustomerManagement() {
                                                         alert("Please select a reason for blocking.");
                                                         return;
                                                     }
-                                                    setIsConfirmBlockDialogOpen(true); // Open confirmation dialog
+                                                    setIsConfirmBlockDialogOpen(true);
                                                 }}
                                                 className="bg-red-600 text-white hover:bg-red-700 px-4 py-2 rounded-md font-medium cursor-pointer"
                                                 disabled={!blockReason}
@@ -517,7 +544,6 @@ export default function CustomerManagement() {
                             </AlertDialogContent>
                         </AlertDialog>
 
-                        {/* Second Dialog: Confirm Block Action */}
                         <AlertDialog open={isConfirmBlockDialogOpen} onOpenChange={setIsConfirmBlockDialogOpen}>
                             <AlertDialogContent className="max-w-sm rounded-xl p-6 border-[rgba(228,231,236,1)]">
                                 <AlertDialogCancel asChild>

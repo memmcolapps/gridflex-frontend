@@ -81,7 +81,7 @@ export function SetPaymentDialog({ onSave, asChild }: SetPaymentDialogProps) {
                             Account Number <span className="text-red-500">*</span>
                         </Label>
                         <Input
-                            placeholder="Enter Meter Number"
+                            placeholder="Enter Account Number"
                             value={meterNumber}
                             onChange={(e) => setMeterNumber(e.target.value)}
                             className="w-full border-gray-300 focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50 text-sm lg:text-base"
