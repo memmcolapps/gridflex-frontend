@@ -10,50 +10,39 @@ type Liability = {
     liabilityName: string;
     liabilityCode: string;
     approvalStatus: "Pending" | "Rejected" | "Approved";
+    deactivated?: boolean;
 };
 
 type PercentageRange = {
     sNo: number;
     percentage: string;
-    amountRange: string;
+    percentageCode: string;
+    band: string;
+    amountStartRange: string;
+    amountEndRange: string;
     approvalStatus: "Pending" | "Rejected" | "Approved";
+    deactivated?: boolean;
 };
+
+type TableData = (Liability | PercentageRange) & { deactivated?: boolean };
+
 
 export default function DebtSettingsPage() {
     const [view, setView] = useState<"liability" | "percentage">("liability");
-    const [liabilities, setLiabilities] = useState<Liability[]>([
-        { sNo: 1, liabilityName: "Bypass", liabilityCode: "C90bqt", approvalStatus: "Pending" },
-        { sNo: 2, liabilityName: "Meter Refund", liabilityCode: "C90bqt", approvalStatus: "Pending" },
-        { sNo: 3, liabilityName: "Outstanding Debit", liabilityCode: "C90bqt", approvalStatus: "Rejected" },
-        { sNo: 4, liabilityName: "Capme", liabilityCode: "C90bqt", approvalStatus: "Approved" },
-        { sNo: 5, liabilityName: "Electricity Deficit", liabilityCode: "C90bqt", approvalStatus: "Approved" },
-    ]);
-    const [percentageRanges, setPercentageRanges] = useState<PercentageRange[]>([
-        { sNo: 1, percentage: "2%", amountRange: "0-9.999", approvalStatus: "Pending" },
-        { sNo: 2, percentage: "5%", amountRange: "10,000-99.999", approvalStatus: "Pending" },
-        { sNo: 3, percentage: "10%", amountRange: "100,000-999.999", approvalStatus: "Approved" },
-        { sNo: 4, percentage: "15%", amountRange: "1,000,000-9,999.999", approvalStatus: "Approved" },
-        { sNo: 5, percentage: "20%", amountRange: "10,000,000-99,999.999", approvalStatus: "Approved" },
-    ]);
-
-    const handleAddLiability = (newLiability: { liabilityName: string; liabilityCode: string }) => {
-        const newLiabilityEntry: Liability = {
-            sNo: liabilities.length + 1,
-            liabilityName: newLiability.liabilityName,
-            liabilityCode: newLiability.liabilityCode,
-            approvalStatus: "Pending",
-        };
-        setLiabilities([...liabilities, newLiabilityEntry]);
+    
+    const handleDataChange = (_data: TableData[]) => {
+        // Optional: Store data for display or other purposes
     };
 
-    const handleAddPercentageRange = (range: { percentage: string; amountStartRange: string; amountEndRange: string }) => {
-        const newRangeEntry: PercentageRange = {
-            sNo: percentageRanges.length + 1,
-            percentage: range.percentage,
-            amountRange: `${range.amountStartRange}-${range.amountEndRange}`,
-            approvalStatus: "Pending",
-        };
-        setPercentageRanges([...percentageRanges, newRangeEntry]);
+    // Handle adding a percentage range (passed to LiabilityTable)
+    const handleAddPercentageRange = (_range: { percentage: string; amountStartRange: string; amountEndRange: string }) => {
+        // LiabilityTable will handle the addition internally
+    };
+
+    // Handle adding a liability (placeholder; implement in LiabilityTable if needed)
+    const handleAddLiability = (newLiability: { liabilityName: string; liabilityCode: string }) => {
+        console.log("Add Liability action triggered:", newLiability);
+        // This would need to be implemented in LiabilityTable if you want to add liabilities
     };
 
     return (
@@ -74,19 +63,10 @@ export default function DebtSettingsPage() {
                 </div>
                 <section>
                     <LiabilityTable
-                        data={
-                            view === "liability"
-                                ? liabilities
-                                : percentageRanges.map((range) => ({
-                                    ...range,
-                                    percentageCode: "", // Provide appropriate value if available
-                                    band: "",            // Provide appropriate value if available
-                                    amountStartRange: range.amountRange.split("-")[0] ?? "",
-                                    amountEndRange: range.amountRange.split("-")[1] ?? "",
-                                }))
-                        }
                         view={view}
                         onViewChange={setView}
+                        onDataChange={handleDataChange}
+                        onAddPercentageRange={handleAddPercentageRange}
                     />
                 </section>
             </div>

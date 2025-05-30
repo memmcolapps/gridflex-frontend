@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { ArrowUpDown, Ban, CircleCheck, CircleX, EllipsisVertical, Pencil, Search, AlertTriangle } from "lucide-react";
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 
 type Liability = {
@@ -56,112 +56,84 @@ type PercentageRange = {
 type TableData = (Liability | PercentageRange) & { deactivated?: boolean };
 
 type LiabilityTableProps = {
-    data?: TableData[];
     view: "liability" | "percentage";
     onViewChange: (view: "liability" | "percentage") => void;
+    onDataChange?: (data: TableData[]) => void; // Callback to send updated data to parent
+    onAddPercentageRange?: (range: { percentage: string; percentageCode: string; band: string; amountStartRange: string; amountEndRange: string }) => void;
 };
 
 // Sample data for Liability Cause table
 const defaultLiabilityData: Liability[] = [
-    {
-        sNo: 1,
-        liabilityName: "Loan Default",
-        liabilityCode: "LD001",
-        approvalStatus: "Pending",
-        deactivated: false,
-    },
-    {
-        sNo: 2,
-        liabilityName: "Overdraft",
-        liabilityCode: "OD002",
-        approvalStatus: "Approved",
-        deactivated: false,
-    },
-    {
-        sNo: 3,
-        liabilityName: "Credit Card Debt",
-        liabilityCode: "CC003",
-        approvalStatus: "Rejected",
-        deactivated: false,
-    },
-    {
-        sNo: 4,
-        liabilityName: "Mortgage",
-        liabilityCode: "MG004",
-        approvalStatus: "Approved",
-        deactivated: false,
-    },
+    { sNo: 1, liabilityName: "Loan Default", liabilityCode: "LD001", approvalStatus: "Pending", deactivated: false },
+    { sNo: 2, liabilityName: "Overdraft", liabilityCode: "OD002", approvalStatus: "Approved", deactivated: false },
+    { sNo: 3, liabilityName: "Credit Card Debt", liabilityCode: "CC003", approvalStatus: "Rejected", deactivated: false },
+    { sNo: 4, liabilityName: "Mortgage", liabilityCode: "MG004", approvalStatus: "Approved", deactivated: false },
 ];
 
 // Sample data for Percentage Range table
 const defaultPercentageData: PercentageRange[] = [
-    {
-        sNo: 1,
-        percentage: "5%",
-        percentageCode: "PC001",
-        band: "Band A",
-        amountStartRange: "1000",
-        amountEndRange: "5000",
-        approvalStatus: "Pending",
-        deactivated: false,
-    },
-    {
-        sNo: 2,
-        percentage: "10%",
-        percentageCode: "PC002",
-        band: "Band B",
-        amountStartRange: "5001",
-        amountEndRange: "10000",
-        approvalStatus: "Approved",
-        deactivated: true,
-    },
-    {
-        sNo: 3,
-        percentage: "15%",
-        percentageCode: "PC003",
-        band: "Band C",
-        amountStartRange: "10001",
-        amountEndRange: "20000",
-        approvalStatus: "Rejected",
-        deactivated: true,
-    },
-    {
-        sNo: 4,
-        percentage: "20%",
-        percentageCode: "PC004",
-        band: "Band D",
-        amountStartRange: "20001",
-        amountEndRange: "30000",
-        approvalStatus: "Approved",
-        deactivated: true,
-    },
+    { sNo: 1, percentage: "2%", percentageCode: "C90bqt", band: "Band A", amountStartRange: "0", amountEndRange: "9,999", approvalStatus: "Pending", deactivated: true },
+    { sNo: 2, percentage: "5%", percentageCode: "C90bqt", band: "Band A", amountStartRange: "10,000", amountEndRange: "99,999", approvalStatus: "Approved", deactivated: false },
+    { sNo: 3, percentage: "10%", percentageCode: "C90bqt", band: "Band A", amountStartRange: "100,000", amountEndRange: "999,999", approvalStatus: "Approved", deactivated: false },
+    { sNo: 4, percentage: "15%", percentageCode: "C90bqt", band: "Band A", amountStartRange: "1,000,000", amountEndRange: "9,999,999", approvalStatus: "Approved", deactivated: false },
+    { sNo: 5, percentage: "20%", percentageCode: "C90bqt", band: "Band A", amountStartRange: "10,000,000", amountEndRange: "99,999,999", approvalStatus: "Approved", deactivated: false },
+    { sNo: 6, percentage: "2%", percentageCode: "C90bqt", band: "Band B", amountStartRange: "0", amountEndRange: "4,999", approvalStatus: "Approved", deactivated: false },
+    { sNo: 7, percentage: "5%", percentageCode: "C90bqt", band: "Band B", amountStartRange: "5,000", amountEndRange: "9,999", approvalStatus: "Rejected", deactivated: true },
+    { sNo: 8, percentage: "10%", percentageCode: "C90bqt", band: "Band B", amountStartRange: "10,000", amountEndRange: "14,999", approvalStatus: "Approved", deactivated: false },
+    { sNo: 9, percentage: "15%", percentageCode: "C90bqt", band: "Band B", amountStartRange: "15,000", amountEndRange: "19,999", approvalStatus: "Approved", deactivated: false },
+    { sNo: 10, percentage: "20%", percentageCode: "C90bqt", band: "Band B", amountStartRange: "20,000", amountEndRange: "24,999", approvalStatus: "Approved", deactivated: false },
 ];
 
-const LiabilityTable = ({ data, view, onViewChange }: LiabilityTableProps) => {
+const LiabilityTable = ({ view, onViewChange, onDataChange, onAddPercentageRange: _onAddPercentageRange }: LiabilityTableProps) => {
     const [searchTerm, setSearchTerm] = useState("");
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [isDeactivateDialogOpen, setIsDeactivateDialogOpen] = useState(false);
     const [selectedRow, setSelectedRow] = useState<TableData | null>(null);
     const [editFormData, setEditFormData] = useState<Partial<TableData>>({});
+    const [tableData, setTableData] = useState<TableData[]>(() => {
+        return view === "liability"
+            ? defaultLiabilityData.map(item => ({ ...item, deactivated: item.deactivated ?? false }))
+            : defaultPercentageData.map(item => ({ ...item, deactivated: item.deactivated ?? false }));
+    });
 
-    // Use provided data or fallback to default data
-    const [tableData, setTableData] = useState<TableData[]>(
-        data && data.length > 0
-            ? data.map(item => ({ ...item, deactivated: item.deactivated ?? false }))
-            : view === "liability"
-                ? defaultLiabilityData
-                : defaultPercentageData
-    );
+    // Custom comparison function for deep equality of TableData arrays
+    const areDataArraysEqual = (arr1: TableData[], arr2: TableData[]): boolean => {
+        if (arr1.length !== arr2.length) return false;
+        return arr1.every((item1, index) => {
+            const item2 = arr2[index];
+            if (!item2) return false;
+            return (
+                item1.sNo === item2.sNo &&
+                ("liabilityName" in item1 ? item1.liabilityName === (item2 as Liability).liabilityName : true) &&
+                ("liabilityCode" in item1 ? item1.liabilityCode === (item2 as Liability).liabilityCode : true) &&
+                ("percentage" in item1 ? item1.percentage === (item2 as PercentageRange).percentage : true) &&
+                ("percentageCode" in item1 ? item1.percentageCode === (item2 as PercentageRange).percentageCode : true) &&
+                ("band" in item1 ? item1.band === (item2 as PercentageRange).band : true) &&
+                ("amountStartRange" in item1 ? item1.amountStartRange === (item2 as PercentageRange).amountStartRange : true) &&
+                ("amountEndRange" in item1 ? item1.amountEndRange === (item2 as PercentageRange).amountEndRange : true) &&
+                item1.approvalStatus === item2.approvalStatus &&
+                (item1.deactivated ?? false) === (item2.deactivated ?? false)
+            );
+        });
+    };
 
-    React.useEffect(() => {
-        if (data && data.length > 0) {
-            setTableData(data.map(item => ({ ...item, deactivated: item.deactivated ?? false })));
-        } else if (view === "liability") {
-            setTableData(defaultLiabilityData);
-        } else {
-            setTableData(defaultPercentageData);
+    // Update tableData when view changes
+    useEffect(() => {
+        const newData = view === "liability"
+            ? defaultLiabilityData.map(item => ({ ...item, deactivated: item.deactivated ?? false }))
+            : defaultPercentageData.map(item => ({ ...item, deactivated: item.deactivated ?? false }));
+        if (!areDataArraysEqual(tableData, newData)) {
+            setTableData(newData);
         }
-    }, [data, view]);
+    }, [view, tableData]);
+
+    // Notify parent of data changes
+    useEffect(() => {
+        if (onDataChange) {
+            onDataChange(tableData);
+        }
+    }, [tableData, onDataChange]);
+
 
     const handleEditClick = (row: TableData) => {
         setSelectedRow(row);
@@ -185,22 +157,16 @@ const LiabilityTable = ({ data, view, onViewChange }: LiabilityTableProps) => {
     };
 
     const handleApproveClick = (row: TableData) => {
-        const updatedData = tableData.map((item) => {
-            if (item.sNo === row.sNo) {
-                return { ...item, approvalStatus: "Approved" as const, deactivated: false };
-            }
-            return item;
-        });
+        const updatedData = tableData.map((item) =>
+            item.sNo === row.sNo ? { ...item, approvalStatus: "Approved" as const, deactivated: false } : item
+        );
         setTableData(updatedData);
     };
 
     const handleRejectClick = (row: TableData) => {
-        const updatedData = tableData.map((item) => {
-            if (item.sNo === row.sNo) {
-                return { ...item, approvalStatus: "Rejected" as const };
-            }
-            return item;
-        });
+        const updatedData = tableData.map((item) =>
+            item.sNo === row.sNo ? { ...item, approvalStatus: "Rejected" as const } : item
+        );
         setTableData(updatedData);
     };
 
@@ -220,38 +186,31 @@ const LiabilityTable = ({ data, view, onViewChange }: LiabilityTableProps) => {
                 if (view === "liability") {
                     return {
                         ...item,
-                        liabilityName:
-                            "liabilityName" in editFormData && editFormData.liabilityName !== undefined
-                                ? editFormData.liabilityName
-                                : (item as Liability).liabilityName,
-                        liabilityCode:
-                            "liabilityCode" in editFormData && editFormData.liabilityCode !== undefined
-                                ? editFormData.liabilityCode
-                                : (item as Liability).liabilityCode,
+                        liabilityName: ("liabilityName" in editFormData && editFormData.liabilityName !== undefined)
+                            ? editFormData.liabilityName
+                            : (item as Liability).liabilityName,
+                        liabilityCode: ("liabilityCode" in editFormData && editFormData.liabilityCode !== undefined)
+                            ? editFormData.liabilityCode
+                            : (item as Liability).liabilityCode,
                     };
                 } else {
                     return {
                         ...item,
-                        percentage:
-                            "percentage" in editFormData && editFormData.percentage !== undefined
-                                ? editFormData.percentage
-                                : (item as PercentageRange).percentage,
-                        percentageCode:
-                            "percentageCode" in editFormData && editFormData.percentageCode !== undefined
-                                ? editFormData.percentageCode
-                                : (item as PercentageRange).percentageCode,
-                        band:
-                            "band" in editFormData && editFormData.band !== undefined
-                                ? editFormData.band
-                                : (item as PercentageRange).band,
-                        amountStartRange:
-                            "amountStartRange" in editFormData && editFormData.amountStartRange !== undefined
-                                ? editFormData.amountStartRange
-                                : (item as PercentageRange).amountStartRange,
-                        amountEndRange:
-                            "amountEndRange" in editFormData && editFormData.amountEndRange !== undefined
-                                ? editFormData.amountEndRange
-                                : (item as PercentageRange).amountEndRange,
+                        percentage: ("percentage" in editFormData && editFormData.percentage !== undefined)
+                            ? editFormData.percentage
+                            : (item as PercentageRange).percentage,
+                        percentageCode: ("percentageCode" in editFormData && editFormData.percentageCode !== undefined)
+                            ? editFormData.percentageCode
+                            : (item as PercentageRange).percentageCode,
+                        band: ("band" in editFormData && editFormData.band !== undefined)
+                            ? editFormData.band
+                            : (item as PercentageRange).band,
+                        amountStartRange: ("amountStartRange" in editFormData && editFormData.amountStartRange !== undefined)
+                            ? editFormData.amountStartRange
+                            : (item as PercentageRange).amountStartRange,
+                        amountEndRange: ("amountEndRange" in editFormData && editFormData.amountEndRange !== undefined)
+                            ? editFormData.amountEndRange
+                            : (item as PercentageRange).amountEndRange,
                     };
                 }
             }
@@ -267,13 +226,9 @@ const LiabilityTable = ({ data, view, onViewChange }: LiabilityTableProps) => {
     const handleDeactivateSubmit = () => {
         if (!selectedRow) return;
 
-        const updatedData = tableData.map((item) => {
-            if (item.sNo === selectedRow.sNo) {
-                return { ...item, deactivated: true };
-            }
-            return item;
-        });
-
+        const updatedData = tableData.map((item) =>
+            item.sNo === selectedRow.sNo ? { ...item, deactivated: true } : item
+        );
         setTableData(updatedData);
         setIsDeactivateDialogOpen(false);
         setSelectedRow(null);
@@ -297,32 +252,19 @@ const LiabilityTable = ({ data, view, onViewChange }: LiabilityTableProps) => {
                         </div>
                     ),
                 },
-                {
-                    accessorKey: "liabilityName",
-                    header: "Liability Name",
-                },
-                {
-                    accessorKey: "liabilityCode",
-                    header: "Liability Code",
-                },
+                { accessorKey: "liabilityName", header: "Liability Name" },
+                { accessorKey: "liabilityCode", header: "Liability Code" },
                 {
                     accessorKey: "approvalStatus",
                     header: "Approval Status",
                     cell: ({ row }) => {
                         const status = row.getValue("approvalStatus") as string;
-                        const getStatusColor = (status: string) => {
-                            switch (status) {
-                                case "Pending": return "bg-yellow-100 text-yellow-800";
-                                case "Rejected": return "bg-red-100 text-red-800";
-                                case "Approved": return "bg-blue-100 text-blue-800";
-                                default: return "bg-gray-100 text-gray-800";
-                            }
-                        };
-                        return (
-                            <span className={`px-2 py-1 rounded ${getStatusColor(status)}`}>
-                                {status}
-                            </span>
-                        );
+                        const getStatusColor = (status: string) => ({
+                            Pending: "bg-yellow-100 text-yellow-800",
+                            Rejected: "bg-red-100 text-red-800",
+                            Approved: "bg-blue-100 text-blue-800",
+                        }[status] ?? "bg-gray-100 text-gray-800");
+                        return <span className={`px-2 py-1 rounded ${getStatusColor(status)}`}>{status}</span>;
                     },
                 },
                 {
@@ -345,8 +287,7 @@ const LiabilityTable = ({ data, view, onViewChange }: LiabilityTableProps) => {
                                     onClick={() => handleEditClick(row.original)}
                                     disabled={row.original.deactivated}
                                 >
-                                    <Pencil size={14} className="text-gray-700" />
-                                    Edit Liability
+                                    <Pencil size={14} className="text-gray-700" /> Edit Liability
                                 </DropdownMenuItem>
                                 {row.original.approvalStatus === "Pending" && (
                                     <DropdownMenuItem
@@ -354,8 +295,7 @@ const LiabilityTable = ({ data, view, onViewChange }: LiabilityTableProps) => {
                                         onClick={() => handleApproveClick(row.original)}
                                         disabled={row.original.deactivated}
                                     >
-                                        <CircleCheck size={14} className="text-gray-700" />
-                                        Approve
+                                        <CircleCheck size={14} className="text-gray-700" /> Approve
                                     </DropdownMenuItem>
                                 )}
                                 {row.original.approvalStatus === "Pending" && (
@@ -364,8 +304,7 @@ const LiabilityTable = ({ data, view, onViewChange }: LiabilityTableProps) => {
                                         onClick={() => handleRejectClick(row.original)}
                                         disabled={row.original.deactivated}
                                     >
-                                        <CircleX size={14} className="text-gray-700" />
-                                        Reject
+                                        <CircleX size={14} className="text-gray-700" /> Reject
                                     </DropdownMenuItem>
                                 )}
                                 <DropdownMenuItem
@@ -373,8 +312,7 @@ const LiabilityTable = ({ data, view, onViewChange }: LiabilityTableProps) => {
                                     onClick={() => handleDeactivateClick(row.original)}
                                     disabled={row.original.deactivated}
                                 >
-                                    <Ban size={14} className="text-gray-700" />
-                                    Deactivate Liability
+                                    <Ban size={14} className="text-gray-700" /> Deactivate Liability
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
@@ -398,49 +336,22 @@ const LiabilityTable = ({ data, view, onViewChange }: LiabilityTableProps) => {
                         </div>
                     ),
                 },
-                {
-                    accessorKey: "percentage",
-                    header: "Percentage",
-                    cell: ({ row }) => row.getValue("percentage"),
-                },
-                {
-                    accessorKey: "percentageCode",
-                    header: "Percentage Code",
-                    cell: ({ row }) => row.getValue("percentageCode"),
-                },
-                {
-                    accessorKey: "band",
-                    header: "Band",
-                    cell: ({ row }) => row.getValue("band"),
-                },
-                {
-                    accessorKey: "amountStartRange",
-                    header: "Amount Start Range",
-                    cell: ({ row }) => row.getValue("amountStartRange"),
-                },
-                {
-                    accessorKey: "amountEndRange",
-                    header: "Amount End Range",
-                    cell: ({ row }) => row.getValue("amountEndRange"),
-                },
+                { accessorKey: "percentage", header: "Percentage" },
+                { accessorKey: "percentageCode", header: "Percentage Code" },
+                { accessorKey: "band", header: "Band" },
+                { accessorKey: "amountStartRange", header: "Amount Start Range" },
+                { accessorKey: "amountEndRange", header: "Amount End Range" },
                 {
                     accessorKey: "approvalStatus",
                     header: "Approval Status",
                     cell: ({ row }) => {
                         const status = row.getValue("approvalStatus") as string;
-                        const getStatusColor = (status: string) => {
-                            switch (status) {
-                                case "Pending": return "bg-yellow-100 text-yellow-800";
-                                case "Rejected": return "bg-red-100 text-red-800";
-                                case "Approved": return "bg-blue-100 text-blue-800";
-                                default: return "bg-gray-100 text-gray-800";
-                            }
-                        };
-                        return (
-                            <span className={`px-2 py-1 rounded ${getStatusColor(status)}`}>
-                                {status}
-                            </span>
-                        );
+                        const getStatusColor = (status: string) => ({
+                            Pending: "bg-yellow-100 text-yellow-800",
+                            Rejected: "bg-red-100 text-red-800",
+                            Approved: "bg-blue-100 text-blue-800",
+                        }[status] ?? "bg-gray-100 text-gray-800");
+                        return <span className={`px-2 py-1 rounded ${getStatusColor(status)}`}>{status}</span>;
                     },
                 },
                 {
@@ -449,10 +360,7 @@ const LiabilityTable = ({ data, view, onViewChange }: LiabilityTableProps) => {
                     cell: ({ row }) => {
                         const isActive = !row.original.deactivated;
                         return (
-                            <span
-                                className={`px-2 py-1 rounded ${isActive ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                                    }`}
-                            >
+                            <span className={`px-2 py-1 rounded ${isActive ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
                                 {isActive ? "Active" : "Inactive"}
                             </span>
                         );
@@ -478,8 +386,7 @@ const LiabilityTable = ({ data, view, onViewChange }: LiabilityTableProps) => {
                                     onClick={() => handleEditClick(row.original)}
                                     disabled={row.original.deactivated}
                                 >
-                                    <Pencil size={14} className="text-gray-700" />
-                                    Edit Range
+                                    <Pencil size={14} className="text-gray-700" /> Edit Range
                                 </DropdownMenuItem>
                                 {row.original.approvalStatus === "Pending" && (
                                     <DropdownMenuItem
@@ -487,8 +394,7 @@ const LiabilityTable = ({ data, view, onViewChange }: LiabilityTableProps) => {
                                         onClick={() => handleApproveClick(row.original)}
                                         disabled={row.original.deactivated}
                                     >
-                                        <CircleCheck size={14} className="text-gray-700" />
-                                        Approve
+                                        <CircleCheck size={14} className="text-gray-700" /> Approve
                                     </DropdownMenuItem>
                                 )}
                                 {row.original.approvalStatus === "Pending" && (
@@ -497,8 +403,7 @@ const LiabilityTable = ({ data, view, onViewChange }: LiabilityTableProps) => {
                                         onClick={() => handleRejectClick(row.original)}
                                         disabled={row.original.deactivated}
                                     >
-                                        <CircleX size={14} className="text-gray-700" />
-                                        Reject
+                                        <CircleX size={14} className="text-gray-700" /> Reject
                                     </DropdownMenuItem>
                                 )}
                                 <DropdownMenuItem
@@ -506,8 +411,7 @@ const LiabilityTable = ({ data, view, onViewChange }: LiabilityTableProps) => {
                                     onClick={() => handleDeactivateClick(row.original)}
                                     disabled={row.original.deactivated}
                                 >
-                                    <Ban size={14} className="text-gray-700" />
-                                    Deactivate Range
+                                    <Ban size={14} className="text-gray-700" /> Deactivate Range
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
@@ -517,25 +421,26 @@ const LiabilityTable = ({ data, view, onViewChange }: LiabilityTableProps) => {
         }
     };
 
-    // Filter table data based on search term
-    const filteredTableData = tableData.filter((item) => {
-        if (!searchTerm) return true;
-        const lowerSearch = searchTerm.toLowerCase();
-        if (view === "liability") {
-            return (
-                ("liabilityName" in item && item.liabilityName.toLowerCase().includes(lowerSearch)) ||
-                ("liabilityCode" in item && item.liabilityCode.toLowerCase().includes(lowerSearch))
-            );
-        } else {
-            return (
-                ("percentage" in item && item.percentage.toLowerCase().includes(lowerSearch)) ||
-                ("percentageCode" in item && item.percentageCode.toLowerCase().includes(lowerSearch)) ||
-                ("band" in item && item.band.toLowerCase().includes(lowerSearch)) ||
-                ("amountStartRange" in item && item.amountStartRange.toLowerCase().includes(lowerSearch)) ||
-                ("amountEndRange" in item && item.amountEndRange.toLowerCase().includes(lowerSearch))
-            );
-        }
-    });
+    const filteredTableData = useMemo(() => {
+        return tableData.filter((item) => {
+            if (!searchTerm) return true;
+            const lowerSearch = searchTerm.toLowerCase();
+            if (view === "liability") {
+                return (
+                    ("liabilityName" in item && item.liabilityName.toLowerCase().includes(lowerSearch)) ||
+                    ("liabilityCode" in item && item.liabilityCode.toLowerCase().includes(lowerSearch))
+                );
+            } else {
+                return (
+                    ("percentage" in item && item.percentage.toLowerCase().includes(lowerSearch)) ||
+                    ("percentageCode" in item && item.percentageCode.toLowerCase().includes(lowerSearch)) ||
+                    ("band" in item && item.band.toLowerCase().includes(lowerSearch)) ||
+                    ("amountStartRange" in item && item.amountStartRange.toLowerCase().includes(lowerSearch)) ||
+                    ("amountEndRange" in item && item.amountEndRange.toLowerCase().includes(lowerSearch))
+                );
+            }
+        });
+    }, [tableData, searchTerm, view]);
 
     const columns = getColumns();
     const table = useReactTable({
@@ -587,18 +492,10 @@ const LiabilityTable = ({ data, view, onViewChange }: LiabilityTableProps) => {
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="w-full p-3 shadow-lg">
-                            <DropdownMenuItem className="cursor-pointer">
-                                Newest - Oldest
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="cursor-pointer">
-                                Oldest - Newest
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="cursor-pointer">
-                                Highest - Lowest
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="cursor-pointer">
-                                Lowest - Highest
-                            </DropdownMenuItem>
+                            <DropdownMenuItem className="cursor-pointer">Newest - Oldest</DropdownMenuItem>
+                            <DropdownMenuItem className="cursor-pointer">Oldest - Newest</DropdownMenuItem>
+                            <DropdownMenuItem className="cursor-pointer">Highest - Lowest</DropdownMenuItem>
+                            <DropdownMenuItem className="cursor-pointer">Lowest - Highest</DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
@@ -612,10 +509,7 @@ const LiabilityTable = ({ data, view, onViewChange }: LiabilityTableProps) => {
                                     <TableHead key={header.id}>
                                         {header.isPlaceholder
                                             ? null
-                                            : flexRender(
-                                                header.column.columnDef.header,
-                                                header.getContext()
-                                            )}
+                                            : flexRender(header.column.columnDef.header, header.getContext())}
                                     </TableHead>
                                 ))}
                             </TableRow>
@@ -651,9 +545,7 @@ const LiabilityTable = ({ data, view, onViewChange }: LiabilityTableProps) => {
             <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
                 <DialogContent className="bg-white border-none w-full h-fit">
                     <DialogHeader>
-                        <DialogTitle>
-                            {view === "liability" ? "Edit Liability" : "Edit Percentage Range"}
-                        </DialogTitle>
+                        <DialogTitle>{view === "liability" ? "Edit Liability" : "Edit Percentage Range"}</DialogTitle>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
                         {view === "liability" ? (
@@ -710,9 +602,7 @@ const LiabilityTable = ({ data, view, onViewChange }: LiabilityTableProps) => {
                                         <Label htmlFor="band" className="mb-2">Band</Label>
                                         <Select
                                             value={"band" in editFormData ? editFormData.band ?? "" : ""}
-                                            onValueChange={(value) =>
-                                                setEditFormData((prev) => ({ ...prev, band: value }))
-                                            }
+                                            onValueChange={(value) => setEditFormData((prev) => ({ ...prev, band: value }))}
                                         >
                                             <SelectTrigger className="w-full border-[#bebebe] focus:ring-ring/50 rounded-md h-10 px-3">
                                                 <SelectValue placeholder="Select Band" />
@@ -788,9 +678,7 @@ const LiabilityTable = ({ data, view, onViewChange }: LiabilityTableProps) => {
                     <DialogHeader>
                         <div className="flex items-center space-x-3">
                             <AlertTriangle size={16} className="text-[#F50202] p-2 rounded-full bg-[#FEE2E2]" />
-                            <DialogTitle>
-                                {view === "liability" ? "Deactivate Liability Cause" : "Deactivate Percentage Range"}
-                            </DialogTitle>
+                            <DialogTitle>{view === "liability" ? "Deactivate Liability Cause" : "Deactivate Percentage Range"}</DialogTitle>
                         </div>
                         <DialogDescription className="pt-2">
                             Are you sure you want to deactivate this {view === "liability" ? "liability cause" : "percentage range"}? This action cannot be undone.

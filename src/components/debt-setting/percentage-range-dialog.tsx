@@ -13,19 +13,23 @@ import { PlusCircle } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 
 type AddPercentageRangeDialogProps = {
-    onAddPercentageRange: (range: { percentage: string; amountStartRange: string; amountEndRange: string }) => void;
+    onAddPercentageRange: (range: { percentage: string; percentageCode: string; band: string; amountStartRange: string; amountEndRange: string }) => void;
 };
 
 const AddPercentageRangeDialog = ({ onAddPercentageRange }: AddPercentageRangeDialogProps) => {
     const [open, setOpen] = useState(false);
     const [percentage, setPercentage] = useState("");
+    const [percentageCode, setPercentageCode] = useState("");
+    const [band, setBand] = useState("");
     const [amountStartRange, setAmountStartRange] = useState("");
     const [amountEndRange, setAmountEndRange] = useState("");
 
     const handleSubmit = () => {
-        if (percentage && amountStartRange && amountEndRange) {
-            onAddPercentageRange({ percentage, amountStartRange, amountEndRange });
+        if (percentage && percentageCode && band && amountStartRange && amountEndRange) {
+            onAddPercentageRange({ percentage, percentageCode, band, amountStartRange, amountEndRange });
             setPercentage("");
+            setPercentageCode("");
+            setBand("");
             setAmountStartRange("");
             setAmountEndRange("");
             setOpen(false);
@@ -64,15 +68,15 @@ const AddPercentageRangeDialog = ({ onAddPercentageRange }: AddPercentageRangeDi
                             <Label htmlFor="percentagecode" className="mb-2">Percentage Code</Label>
                             <Input
                                 id="percentagecode"
-                                placeholder="Percentage code"
-                                value={amountStartRange}
-                                onChange={(e) => setAmountStartRange(e.target.value)}
+                                placeholder="Enter percentage code"
+                                value={percentageCode}
+                                onChange={(e) => setPercentageCode(e.target.value)}
                                 className="border-[#bebebe] focus:ring-ring/50"
                             />
                         </div>
                         <div>
                             <Label htmlFor="band" className="mb-2">Band</Label>
-                            <Select value={amountEndRange} onValueChange={setAmountEndRange}>
+                            <Select value={band} onValueChange={setBand}>
                                 <SelectTrigger className="w-full border-[#bebebe] focus:ring-ring/50 rounded-md h-10 px-3">
                                     <SelectValue placeholder="Select Band"/>
                                 </SelectTrigger>
@@ -112,7 +116,7 @@ const AddPercentageRangeDialog = ({ onAddPercentageRange }: AddPercentageRangeDi
                 <Button
                     onClick={handleSubmit}
                     className="bg-[rgba(22,28,202,1)] text-white"
-                    disabled={!percentage || !amountStartRange || !amountEndRange}
+                    disabled={!percentage || !percentageCode || !band || !amountStartRange || !amountEndRange}
                 >
                     Add
                 </Button>
