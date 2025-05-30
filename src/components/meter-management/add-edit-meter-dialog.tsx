@@ -8,10 +8,12 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 
+
 interface MeterData {
     meterNumber: string;
     simNumber: string;
     model: string;
+    meterManufacturer: string;
     accountNumber: string;
     sgc: string;
     tariff: string;
@@ -65,7 +67,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                 transformer: "",
                 meterCategory: "",
                 meterClass: "",
-                meterManufacturer: editMeter.model ?? "",
+                meterManufacturer: editMeter.meterManufacturer ?? "",
                 creditType: editMeter.tariff ?? "",
                 state: "",
                 ctRatioNumerator: 0,
@@ -173,6 +175,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
             meterNumber: formData.meterNumber || "N/A",
             simNumber: formData.simNumber || "N/A",
             model: formData.meterManufacturer || "N/A",
+            meterManufacturer: formData.meterManufacturer || "N/A",
             accountNumber: "N/A",
             sgc: "N/A",
             tariff: formData.creditType || "N/A",
