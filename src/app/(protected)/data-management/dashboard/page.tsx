@@ -118,7 +118,6 @@ export default function DashboardPage() {
     // Real-time validation for all fields
     const error = validateField(id, value);
     setErrors((prev) => ({ ...prev, [id]: error }));
-
     if (id === 'otp') setOtpError(null);
   };
 
@@ -191,7 +190,6 @@ export default function DashboardPage() {
       newErrors.otp = 'OTP must be 6 digits';
       isValid = false;
     }
-
     setErrors(newErrors);
     return isValid;
   };
@@ -234,7 +232,6 @@ export default function DashboardPage() {
       setOtpError('Wrong OTP');
       return;
     }
-
     setShowEditProfileModal(false);
     setShowCompleteProfileModal(false);
   };
@@ -337,7 +334,7 @@ export default function DashboardPage() {
                   value={formData.lastName}
                   onChange={handleInputChange}
                   onBlur={handleBlur}
-                  className={`border-gray-200 ${errors.lastName ? 'border-red-500' : ''}`}
+                  className={`border-gray-200 ${errors.lastName ? 'border-red-500 text-sm' : ''}`}
                 />
                 {errors.lastName && (
                   <p className="text-red-500 text-sm">{errors.lastName}</p>
@@ -355,7 +352,7 @@ export default function DashboardPage() {
                   value={formData.email}
                   onChange={handleInputChange}
                   onBlur={handleBlur}
-                  className={`border-gray-200 ${errors.email ? 'border-red-500' : ''}`}
+                  className={`border-gray-200 ${errors.email ? 'border-red-500 text-sm' : ''}`}
                 />
                 {errors.email && (
                   <p className="text-red-500 text-sm">{errors.email}</p>
@@ -371,7 +368,7 @@ export default function DashboardPage() {
                   value={formData.phoneNumber}
                   onChange={handleInputChange}
                   onBlur={handleBlur}
-                  className={`border-gray-200 ${errors.phoneNumber ? 'border-red-500' : ''}`}
+                  className={`border-gray-200 ${errors.phoneNumber ? 'border-red-500 text-sm' : ''}`}
                 />
                 {errors.phoneNumber && (
                   <p className="text-red-500 text-sm">{errors.phoneNumber}</p>
@@ -390,14 +387,14 @@ export default function DashboardPage() {
                     value={formData.newPassword}
                     onChange={handleInputChange}
                     onBlur={handleBlur}
-                    className={`border-gray-200 pr-10 ${errors.newPassword ? 'border-red-500' : ''}`}
+                    className={`border-gray-200 pr-10 ${errors.newPassword ? 'border-red-500 text-sm' : ''}`}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500"
                   >
-                    {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+                    {showPassword ? <EyeOff size={14} className='cursor-pointer'/> : <Eye size={14} className='cursor-pointer'/>}
                   </button>
                 </div>
                 {errors.newPassword && (
@@ -423,7 +420,7 @@ export default function DashboardPage() {
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500"
                   >
-                    {showConfirmPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+                    {showConfirmPassword ? <EyeOff size={14} className='cursor-pointer' /> : <Eye size={14} className='cursor-pointer' />}
                   </button>
                 </div>
                 {errors.confirmPassword && (
@@ -431,7 +428,6 @@ export default function DashboardPage() {
                 )}
               </div>
             </div>
-
             <div className='space-y-2'>
               <Label htmlFor="otp">
                 OTP <span className="text-red-500">*</span>
@@ -448,7 +444,7 @@ export default function DashboardPage() {
                 {otpError && <p className="text-red-500 text-sm">{otpError}</p>}
                 {otpSent && otpTimer > 0 && (
                   <p className="text-sm text-gray-500 flex justify-end">
-                    Remaining time <span className='text-[#161CCA]'>{Math.floor(otpTimer / 60)}:
+                    Remaining time &nbsp;&nbsp;<span className='text-[#161CCA]'>{Math.floor(otpTimer / 60)}:
                       {otpTimer % 60 < 10 ? `0${otpTimer % 60}` : otpTimer % 60}s</span>
                   </p>
                 )}
