@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 import {
   fetchOrganizationNodes,
   type Node,
-} from "../../service/organaization-service"; // Adjust path
-import { OrganizationNode } from "./OrganizationNode"; // Import the separated component
+} from "../../service/organaization-service";
+import { OrganizationNode } from "./OrganizationNode";
 
 const OrganizationalTree = () => {
   const [organizationNodes, setOrganizationNodes] = useState<Node[]>([]);

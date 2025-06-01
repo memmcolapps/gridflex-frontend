@@ -29,10 +29,10 @@ import { mapNodeInfoToFormData, renderNodeIcon } from "./utils/nodeUtils";
 import type { FormData } from "./hooks/useNodeFormValidation";
 
 interface OrganizationNodeProps {
-  node: Node; // Expect a Node object from the API
+  node: Node;
   level?: number;
-  onNodeUpdated: () => void; // Callback to notify parent about updates
-  onNodeAdded: () => void; // Callback to notify parent about new nodes
+  onNodeUpdated: () => void;
+  onNodeAdded: () => void;
 }
 
 export const OrganizationNode = ({
@@ -61,23 +61,15 @@ export const OrganizationNode = ({
     nodeType: string;
     data: FormData;
   }) => {
-    setIsExpanded(true); // Automatically expand the parent when a new child is added
+    setIsExpanded(true);
     toast.success(`Successfully added "${data.name}" as a ${data.nodeType}`);
-    onNodeAdded(); // Notify the parent to potentially re-fetch or update its state
+    onNodeAdded();
   };
 
   const handleEditNode = (data: FormData) => {
-    // THIS IS A SIMULATION.
-    // In a real application, you would make an API call here
-    // to update the node on the backend.
-    // After a successful API call, you would likely:
-    // 1. Re-fetch the entire tree or
-    // 2. Update the local state (nodeDataForEdit) and then call onNodeUpdated.
-    // For this example, we'll update local state and notify parent.
-
-    setNodeDataForEdit(data); // Update the local state for the edit dialog
+    setNodeDataForEdit(data);
     toast.success(`Successfully updated "${data.name}"`);
-    onNodeUpdated(); // Notify the parent to potentially re-fetch or update its state
+    onNodeUpdated();
   };
 
   const openAddDialog = (type: string) => {
@@ -86,7 +78,7 @@ export const OrganizationNode = ({
   };
 
   const displayName = node.nodeInfo?.name ?? node.name;
-  const displayNodeType = node.nodeInfo?.type ?? node.name; // Fallback to node.name if type is missing
+  const displayNodeType = node.nodeInfo?.type ?? node.name;
 
   return (
     <Card className="border-none">
