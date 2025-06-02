@@ -18,6 +18,7 @@ import {
     DialogFooter,
 } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { FilterControl, SearchControl, SortControl } from "@/components/search-control";
 
 // Types
 interface Manufacturer {
@@ -429,6 +430,65 @@ export default function ManufacturersPage() {
     const [isDeactivateDialogOpen, setIsDeactivateDialogOpen] = useState(false);
     const [selectedManufacturer, setSelectedManufacturer] = useState<Manufacturer | null>(null);
 
+    // Add these state variables
+    const [sortConfig, setSortConfig] = useState<{
+        key: keyof Manufacturer | null;
+        direction: "asc" | "desc";
+    }>({ key: null, direction: "asc" });
+
+    const [processedData, setProcessedData] = useState<Manufacturer[]>(data);
+
+    useEffect(() => {
+        setProcessedData(data);
+    }, [data]);
+
+    // Enhanced search handler
+    const handleSearchChange = (term: string) => {
+        setSearchTerm(term);
+        applyFiltersAndSort(term, sortConfig.key, sortConfig.direction);
+    };
+
+
+    // Sort handler
+    const handleSortChange = () => {
+        const sortKey: keyof Manufacturer = sortConfig.key ?? "sin";
+        const newDirection = sortConfig.direction === "asc" ? "desc" : "asc";
+
+        setSortConfig({ key: sortKey, direction: newDirection });
+        applyFiltersAndSort(searchTerm, sortKey, newDirection);
+    };
+
+    // Combined filter and sort function
+    const applyFiltersAndSort = (
+        term: string,
+        sortBy: keyof Manufacturer | null,
+        direction: "asc" | "desc"
+    ) => {
+        // 1. Filter first
+        let results = data;
+        if (term.trim() !== "") {
+            results = data.filter(item =>
+                item.sin?.toLowerCase().includes(term.toLowerCase()) ||
+                item.manufacturerId?.toLowerCase().includes(term.toLowerCase())
+            );
+        }
+
+        // 2. Then sort if a sort field is selected
+        if (sortBy) {
+            results = [...results].sort((a, b) => {
+                const aValue = a[sortBy] || "";
+                const bValue = b[sortBy] || "";
+
+                if (aValue < bValue) return direction === "asc" ? -1 : 1;
+                if (aValue > bValue) return direction === "asc" ? 1 : -1;
+                return 0;
+            });
+        }
+
+        setProcessedData(results);
+    };
+
+
     const totalPages = Math.ceil(data.length / rowsPerPage);
     const paginatedData = data.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
 
@@ -485,29 +545,16 @@ export default function ManufacturersPage() {
             <Card className="p-3 sm:p-4 mb-4 sm:mb-6 border-none shadow-none bg-white">
                 <div className="flex flex-col gap-3 sm:flex-row justify-between items-start sm:items-center w-full">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto">
-                        <div className="relative w-full sm:w-[250px] lg:w-[300px]">
-                            <Search
-                                size={14}
-                                className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400"
-                            />
-                            <Input
-                                type="text"
-                                placeholder="Search manufacturers..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="pl-10 w-full border-gray-300 focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50 text-sm sm:text-base"
-                            />
-                        </div>
-                        <div className="flex gap-2 w-full sm:w-auto">
-                            <Button variant="outline" className="gap-2 border-gray-300 w-full sm:w-auto">
-                                <Filter className="text-gray-500" size={14} />
-                                <span className="hidden sm:inline text-gray-800">Filter</span>
-                            </Button>
-                            <Button variant="outline" className="gap-2 border-gray-300 w-full sm:w-auto">
-                                <ArrowUpDown className="text-gray-500" size={14} />
-                                <span className="hidden sm:inline text-gray-800">Sort</span>
-                            </Button>
-                        </div>
+                        <SearchControl
+                            onSearchChange={handleSearchChange}
+                            value={searchTerm}
+                        />
+                    
+                        <SortControl
+                        onSortChange={handleSortChange}
+                        currentSort={sortConfig.key ? `${sortConfig.key} (${sortConfig.direction})` : ""}
+
+                        />
                     </div>
                 </div>
             </Card>

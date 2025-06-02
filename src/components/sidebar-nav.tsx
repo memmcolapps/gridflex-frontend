@@ -85,7 +85,7 @@ export function SidebarNav() {
           href: "/data-management/meter-management",
           hasSubmenu: true,
           submenuItems: [
-            { title: "Meters", href: "/data-management/meter-management" },
+            { title: "Meters", href: "/data-management/meter-management/meters" },
             { title: "Meter Manufacturers", href: "/data-management/meter-management/meter-manufacturer" },
             { title: "Allocate Meters", href: "/data-management/meter-management/allocate-meter" }
           ]
