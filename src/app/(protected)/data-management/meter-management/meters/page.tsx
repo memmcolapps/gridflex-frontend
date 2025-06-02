@@ -36,6 +36,7 @@ export default function MeterManagementPage() {
     const [isApproveDialogOpen, setIsApproveDialogOpen] = useState(false);
     const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
     const [selectedMeter, setSelectedMeter] = useState<MeterData | null>(null);
+    const [activeFilters, setActiveFilters] = useState({});
 
 
     interface MeterData {
@@ -50,7 +51,25 @@ export default function MeterManagementPage() {
         approvalStatus: string;
         status: string;
     }
-    
+
+    const filterSections = [
+        {
+            title: "Status",
+            options: [
+                { id: "inStock", label: "In-stock" },
+                { id: "assigned", label: "Assigned" },
+                { id: "deactivated", label: "Deactivated" }
+            ]
+        },
+        {
+            title: "Meter Class",
+            options: [
+                { id: "singlePhase", label: "Single phase" },
+                { id: "threePhase", label: "Three Phase" },
+                { id: "mdMeter", label: "MD Meter" }
+            ]
+        }
+    ];
 
     const [data, setData] = useState<MeterData[]>([
         {
@@ -254,10 +273,6 @@ export default function MeterManagementPage() {
         applyFiltersAndSort(term, sortConfig.key, sortConfig.direction);
     };
 
-    // Enhanced filter handler
-    const handleFilterClick = () => {
-        applyFiltersAndSort(searchTerm, sortConfig.key, sortConfig.direction);
-    };
 
     // Sort handler
     const handleSortChange = () => {
@@ -267,6 +282,7 @@ export default function MeterManagementPage() {
         setSortConfig({ key: sortKey, direction: newDirection });
         applyFiltersAndSort(searchTerm, sortKey, newDirection);
     };
+    
 
     // Combined filter and sort function
     const applyFiltersAndSort = (
@@ -391,7 +407,7 @@ export default function MeterManagementPage() {
             selectedTariffs.includes(meter.id) &&
             meter.approvalStatus === "Approved"
         );
-        
+
     const totalPages = Math.ceil(data.length / rowsPerPage);
     const paginatedData = processedData.slice(
         (currentPage - 1) * rowsPerPage,
@@ -442,12 +458,13 @@ export default function MeterManagementPage() {
                             value={searchTerm}
                         />
                         <FilterControl
-                            onFilterClick={handleFilterClick}
+                            sections={filterSections}
+                            onApply={(filters) => setActiveFilters(filters)}
+                            onReset={() => setActiveFilters({})}
                         />
                         <SortControl
                             onSortChange={handleSortChange}
-                            currentSort={sortConfig.key ? `${
-                                sortConfig.key} (${sortConfig.direction})` : ""}
+                            currentSort={sortConfig.key ? `${sortConfig.key} (${sortConfig.direction})` : ""}
 
                         />
                     </div>
