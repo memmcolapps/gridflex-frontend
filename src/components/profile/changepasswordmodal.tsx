@@ -210,7 +210,7 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
               {otpError && <p className="text-red-500 text-sm">{otpError}</p>}
               {otpSent && otpTimer > 0 && (
                 <p className="text-sm text-gray-500 flex justify-end">
-                  Remaining time <span className="text-[#161CCA]">
+                  Remaining time &nbsp;&nbsp; <span className="text-[#161CCA]">
                     {Math.floor(otpTimer / 60)}:
                     {otpTimer % 60 < 10 ? `0${otpTimer % 60}` : otpTimer % 60}s
                   </span>

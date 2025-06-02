@@ -444,7 +444,7 @@ export default function DashboardPage() {
                 {otpError && <p className="text-red-500 text-sm">{otpError}</p>}
                 {otpSent && otpTimer > 0 && (
                   <p className="text-sm text-gray-500 flex justify-end">
-                    Remaining time   <span className='text-[#161CCA]'>{Math.floor(otpTimer / 60)}:
+                    Remaining time &nbsp;&nbsp;  <span className='text-[#161CCA]'>{Math.floor(otpTimer / 60)}:
                       {otpTimer % 60 < 10 ? `0${otpTimer % 60}` : otpTimer % 60}s</span>
                   </p>
                 )}
