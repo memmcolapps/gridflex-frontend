@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import ChangePasswordModal from "./changepasswordmodal";
+
 
 interface ProfileDropdownProps {
     closeDropdown: () => void;
@@ -10,8 +9,7 @@ interface ProfileDropdownProps {
 }
 
 export default function ProfileDropdown({ closeDropdown, openEditProfileModal }: ProfileDropdownProps) {
-    const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
-
+   
     return (
         <>
             <div className="flex items-center gap-4 w-full">
@@ -43,11 +41,7 @@ export default function ProfileDropdown({ closeDropdown, openEditProfileModal }:
             </div>
 
             <hr className="text-gray-200 mt-6" />
-            {/* <div className="mt-4 flex gap-2">
-                <Button onClick={() => setIsChangePasswordOpen(true)} variant="link" className="p-0">
-                    Change Password
-                </Button>
-            </div> */}
+       
             <div className="mt-4 flex gap-2 justify-between">
 
                 <Button variant="outline" onClick={closeDropdown} className="cursor-pointer text-[#161CCA]">
@@ -64,11 +58,7 @@ export default function ProfileDropdown({ closeDropdown, openEditProfileModal }:
                 </Button>
             </div>
 
-            {/* Modals */}
-            {/* <ChangePasswordModal
-                isOpen={isChangePasswordOpen}
-                onClose={() => setIsChangePasswordOpen(false)}
-            /> */}
+         
         </>
     );
 }

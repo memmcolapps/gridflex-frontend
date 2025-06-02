@@ -41,7 +41,7 @@ export function Navbar() {
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
-                className="flex items-center gap-2 rounded-full"
+                className="flex items-center gap-2 rounded-full cursor-pointer"
               >
                 <Avatar className="">
                   <AvatarImage

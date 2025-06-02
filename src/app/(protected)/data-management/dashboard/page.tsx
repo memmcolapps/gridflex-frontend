@@ -394,7 +394,7 @@ export default function DashboardPage() {
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500"
                   >
-                    {showPassword ? <EyeOff size={14} className='cursor-pointer'/> : <Eye size={14} className='cursor-pointer'/>}
+                    {showPassword ? <EyeOff size={14} className='cursor-pointer' /> : <Eye size={14} className='cursor-pointer' />}
                   </button>
                 </div>
                 {errors.newPassword && (
@@ -444,7 +444,7 @@ export default function DashboardPage() {
                 {otpError && <p className="text-red-500 text-sm">{otpError}</p>}
                 {otpSent && otpTimer > 0 && (
                   <p className="text-sm text-gray-500 flex justify-end">
-                    Remaining time &nbsp;&nbsp;<span className='text-[#161CCA]'>{Math.floor(otpTimer / 60)}:
+                    Remaining time   <span className='text-[#161CCA]'>{Math.floor(otpTimer / 60)}:
                       {otpTimer % 60 < 10 ? `0${otpTimer % 60}` : otpTimer % 60}s</span>
                   </p>
                 )}
@@ -467,7 +467,7 @@ export default function DashboardPage() {
                     className={`text-sm text-black cursor-pointer ${otpTimer > 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
                     onClick={otpTimer === 0 ? handleGetOtp : undefined}
                   >
-                    Didn't get an OTP? <span className='text-[#161CCA]'>Resend</span>
+                    Didn’t get an OTP? <span className='text-[#161CCA]'>Resend</span>
                   </p>
                 )}
               </div>

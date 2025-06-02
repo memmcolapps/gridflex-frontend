@@ -26,13 +26,15 @@ export default function EditProfileModal({ isOpen, onClose }: EditProfileModalPr
                             <label htmlFor="firstName" className="text-sm font-medium">
                                 First Name <span className="text-red-500">*</span>
                             </label>
-                            <Input id="firstName" defaultValue="Abdulmjib" />
+                            <Input id="firstName" defaultValue="Abdulmjib"
+                                className="border-[rgba(228,231,236,1)]" />
                         </div>
                         <div>
                             <label htmlFor="lastName" className="text-sm font-medium">
                                 Last Name <span className="text-red-500">*</span>
                             </label>
-                            <Input id="lastName" defaultValue="Oyewo" />
+                            <Input id="lastName" defaultValue="Oyewo"
+                                className="border-[rgba(228,231,236,1)]" />
                         </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
@@ -40,13 +42,15 @@ export default function EditProfileModal({ isOpen, onClose }: EditProfileModalPr
                             <label htmlFor="email" className="text-sm font-medium">
                                 Email <span className="text-red-500">*</span>
                             </label>
-                            <Input id="email" defaultValue="oyewoabdulmjib2@gmail.com" />
+                            <Input id="email" defaultValue="oyewoabdulmjib2@gmail.com"
+                                className="border-[rgba(228,231,236,1)]" />
                         </div>
                         <div>
                             <label htmlFor="phone" className="text-sm font-medium">
                                 Phone Number <span className="text-red-500">*</span>
                             </label>
-                            <Input id="phone" defaultValue="08107255252" />
+                            <Input id="phone" defaultValue="08107255252"
+                                className="border-[rgba(228,231,236,1)]" />
                         </div>
                     </div>
                     <div>
@@ -58,7 +62,7 @@ export default function EditProfileModal({ isOpen, onClose }: EditProfileModalPr
                                 id="password"
                                 type={showPassword ? "text" : "password"}
                                 defaultValue="12345678"
-                                className="pr-10"
+                                className="pr-10 border-[rgba(228,231,236,1)]"
                             />
                             <button
                                 type="button"
@@ -66,9 +70,9 @@ export default function EditProfileModal({ isOpen, onClose }: EditProfileModalPr
                                 className="absolute inset-y-0 right-0 flex items-center pr-3"
                             >
                                 {showPassword ? (
-                                    <EyeOff className="text-gray-500" size={16} />
+                                    <Eye className="text-gray-500" size={14} />
                                 ) : (
-                                    <Eye className="text-gray-500" size={16} />
+                                    <EyeOff className="text-gray-500" size={14} />
                                 )}
                             </button>
                         </div>
@@ -79,8 +83,9 @@ export default function EditProfileModal({ isOpen, onClose }: EditProfileModalPr
                                 onClick={(e) => {
                                     e.preventDefault(); // Prevent default link behavior
                                     setIsChangePasswordOpen(true); // Open ChangePasswordModal
+                                    onClose(); // Close EditProfileModal
                                 }}
-                                className="text-sm text-blue-600 hover:underline"
+                                className="text-sm text-[#161CCA] cursor-pointer"
                             >
                                 Change Password
                             </a>
@@ -88,11 +93,11 @@ export default function EditProfileModal({ isOpen, onClose }: EditProfileModalPr
                     </div>
                 </div>
 
-                <div className="flex justify-end gap-2">
-                    <Button variant="outline" onClick={onClose}>
+                <div className="flex justify-between w-full">
+                    <Button variant="outline" onClick={onClose} className="text-[#161CCA] bg-white">
                         Cancel
                     </Button>
-                    <Button onClick={onClose}>Save</Button>
+                    <Button onClick={onClose} className="bg-[#161CCA] text-white">Save</Button>
                 </div>
             </DialogContent>
             {/* Render ChangePasswordModal */}
