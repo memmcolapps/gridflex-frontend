@@ -540,6 +540,7 @@ export default function ManufacturersPage() {
                     <span className="sm:hidden">Add</span>
                 </Button>
             </div>
+            
 
             {/* Search and Filter Section */}
             <Card className="p-3 sm:p-4 mb-4 sm:mb-6 border-none shadow-none bg-white">

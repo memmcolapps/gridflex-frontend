@@ -282,6 +282,7 @@ export default function MeterManagementPage() {
         setSortConfig({ key: sortKey, direction: newDirection });
         applyFiltersAndSort(searchTerm, sortKey, newDirection);
     };
+    
 
     // Combined filter and sort function
     const applyFiltersAndSort = (
