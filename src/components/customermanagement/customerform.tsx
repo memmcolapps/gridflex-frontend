@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -10,11 +10,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from '../ui/badge';
+import { Badge } from "../ui/badge";
 
 export type Customer = {
-    id?: string;
-    customerId?: string;
+    id: string;
+    customerId: string;
     firstName: string;
     lastName: string;
     accountNumber: string;
@@ -28,11 +28,13 @@ export type Customer = {
     meterNumber?: string;
     location?: string;
     address?: string;
-    status?: 'Assigned' | 'Unassigned';
+    status?: "Active" | "Blocked";
+    virtual?: number;
+    actual?: number;
 };
 
 type CustomerFormModalProps = {
-    mode: 'add' | 'edit';
+    mode: "add" | "edit";
     customer?: Customer;
     onSave: (customer: Customer) => void;
     triggerButton?: React.ReactNode;
@@ -41,20 +43,22 @@ type CustomerFormModalProps = {
 };
 
 const states = [
-    { value: 'Lagos', label: 'Lagos' },
+    { value: "Lagos", label: "Lagos" },
     // Add more states as needed
 ];
 
 const cities = [
-    { value: 'Lagos', label: 'Lagos' },
+    { value: "Lagos", label: "Lagos" },
     // Add more cities as needed
 ];
 
 export default function CustomerForm({ mode, customer, onSave, triggerButton, isOpen: controlledIsOpen, onClose }: CustomerFormModalProps) {
     const [internalIsOpen, setInternalIsOpen] = useState(false);
-    const isOpen = mode === 'add' ? internalIsOpen : controlledIsOpen ?? false;
+    const isOpen = mode === "add" ? internalIsOpen : controlledIsOpen ?? false;
 
     const [formData, setFormData] = useState<Customer>({
+        id: "",
+        customerId: "", // Changed to required string with empty default
         firstName: "",
         lastName: "",
         accountNumber: "",
@@ -68,21 +72,25 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
         meterNumber: "",
         location: "",
         address: "",
-        status: 'Unassigned',
+        status: "Active",
+        virtual: undefined,
+        actual: undefined,
     });
 
     const cleanUpOverlay = useCallback(() => {
-        const overlays = document.querySelectorAll('[data-radix-dialog-overlay]');
+        const overlays = document.querySelectorAll("[data-radix-dialog-overlay]");
         if (overlays.length > 0) {
             overlays.forEach((overlay) => overlay.remove());
         }
     }, []);
 
     useEffect(() => {
-        if (isOpen && customer && mode === 'edit') {
+        if (isOpen && customer && mode === "edit") {
             setFormData(customer);
         } else if (!isOpen) {
             setFormData({
+                id: "",
+                customerId: "", // Reset to empty string for new customers
                 firstName: "",
                 lastName: "",
                 accountNumber: "",
@@ -96,13 +104,15 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
                 meterNumber: "",
                 location: "",
                 address: "",
-                status: 'Unassigned',
+                status: "Active",
+                virtual: undefined,
+                actual: undefined,
             });
         }
     }, [customer, isOpen, mode]);
 
     const handleOpenChange = useCallback((open: boolean) => {
-        if (mode === 'add') {
+        if (mode === "add") {
             setInternalIsOpen(open);
         }
         if (!open) {
@@ -134,8 +144,14 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
     const handleSubmit = useCallback(
         (e: React.FormEvent) => {
             e.preventDefault();
-            onSave(formData);
-            if (mode === 'add') {
+            // Ensure customerId is set before saving, especially for 'add' mode
+            const customerToSave = {
+                ...formData,
+                id: formData.id || Date.now().toString(), // Default to timestamp if not provided
+                customerId: formData.customerId || `C-${Date.now().toString().slice(-6)}`, // Default to a unique customerId if not provided
+            };
+            onSave(customerToSave);
+            if (mode === "add") {
                 setInternalIsOpen(false);
             }
             cleanUpOverlay();
@@ -146,28 +162,28 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
         [formData, onSave, mode, onClose, cleanUpOverlay]
     );
 
-    if (mode === 'edit' && !customer) {
+    if (mode === "edit" && !customer) {
         return null;
     }
 
     return (
         <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-            {mode === 'add' && (
-                <DialogTrigger asChild className='cursor-pointer'>
+            {mode === "add" && (
+                <DialogTrigger asChild className="cursor-pointer">
                     {triggerButton}
                 </DialogTrigger>
             )}
 
             <DialogContent className="sm:max-w-[430px] bg-white text-black h-fit rounded-2xl">
-                <DialogHeader className='mt-6'>
+                <DialogHeader className="mt-6">
                     <DialogTitle>
-                        {mode === 'add' ? 'Add Customer' : 'Edit Customer'}
+                        {mode === "add" ? "Add Customer" : "Edit Customer"}
                     </DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSubmit} className="mt-6">
                     <div className="grid grid-cols-2 gap-6">
                         <div className="space-y-2">
-                            <Label htmlFor="firstName">First Name <span className='text-red-600'>*</span></Label>
+                            <Label htmlFor="firstName">First Name <span className="text-red-600">*</span></Label>
                             <Input
                                 id="firstName"
                                 name="firstName"
@@ -179,7 +195,7 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="lastName">Last Name<span className='text-red-600'>*</span></Label>
+                            <Label htmlFor="lastName">Last Name<span className="text-red-600">*</span></Label>
                             <Input
                                 id="lastName"
                                 name="lastName"
@@ -192,7 +208,7 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
                     </div>
                     <div className="grid grid-cols-3 gap-6 mt-6">
                         <div className="space-y-2">
-                            <Label htmlFor="phoneNumber">Phone Number<span className='text-red-600'>*</span></Label>
+                            <Label htmlFor="phoneNumber">Phone Number<span className="text-red-600">*</span></Label>
                             <Input
                                 id="phoneNumber"
                                 name="phoneNumber"
@@ -204,7 +220,7 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="nin">NIN<span className='text-red-600'>*</span></Label>
+                            <Label htmlFor="nin">NIN<span className="text-red-600">*</span></Label>
                             <Input
                                 id="nin"
                                 name="nin"
@@ -216,7 +232,7 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="email">Email <span className='text-red-600'>*</span></Label>
+                            <Label htmlFor="email">Email <span className="text-red-600">*</span></Label>
                             <Input
                                 id="email"
                                 name="email"
@@ -231,10 +247,10 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
                     </div>
                     <div className="grid grid-cols-2 gap-6 mt-6">
                         <div className="space-y-2">
-                            <Label htmlFor="state">State<span className='text-red-600'>*</span></Label>
+                            <Label htmlFor="state">State<span className="text-red-600">*</span></Label>
                             <Select
                                 value={formData.state}
-                                onValueChange={(value) => handleChange(value, 'state')}
+                                onValueChange={(value) => handleChange(value, "state")}
                             >
                                 <SelectTrigger className="border-[rgba(228,231,236,1)] w-full">
                                     <SelectValue placeholder="Select state" />
@@ -249,10 +265,10 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
                             </Select>
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="city">City<span className='text-red-600'>*</span></Label>
+                            <Label htmlFor="city">City<span className="text-red-600">*</span></Label>
                             <Select
                                 value={formData.city}
-                                onValueChange={(value) => handleChange(value, 'city')}
+                                onValueChange={(value) => handleChange(value, "city")}
                             >
                                 <SelectTrigger className="border-[rgba(228,231,236,1)] w-full">
                                     <SelectValue placeholder="Select city" />
@@ -269,7 +285,7 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
                     </div>
                     <div className="grid grid-cols-2 gap-6 mt-6">
                         <div className="space-y-2">
-                            <Label htmlFor="streetName">Street Name<span className='text-red-600'>*</span></Label>
+                            <Label htmlFor="streetName">Street Name<span className="text-red-600">*</span></Label>
                             <Input
                                 id="streetName"
                                 name="streetName"
@@ -280,7 +296,7 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="houseNo">House No.<span className='text-red-600'>*</span></Label>
+                            <Label htmlFor="houseNo">House No.<span className="text-red-600">*</span></Label>
                             <Input
                                 id="houseNo"
                                 name="houseNo"
@@ -292,13 +308,13 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
                         </div>
                     </div>
 
-                    {formData.status === 'Assigned' && (
+                    {formData.status === "Active" && (
                         <div className="mt-6 space-y-2">
                             <Label>
-                                Assigned Meter ({formData.meterNumber ? formData.meterNumber.split(',').length : 0})
-                            </Label>                            
+                                Assigned Meter ({formData.meterNumber ? formData.meterNumber.split(",").length : 0})
+                            </Label>
                             <div className="flex flex-wrap gap-4 mt-2">
-                                {formData.meterNumber?.split(',').map((meter, index) => (
+                                {formData.meterNumber?.split(",").map((meter, index) => (
                                     <Badge
                                         key={index}
                                         variant="outline"
@@ -306,7 +322,6 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
                                     >
                                         {meter.trim()}
                                     </Badge>
-
                                 ))}
                             </div>
                         </div>
@@ -315,7 +330,7 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
                         <Button
                             variant="outline"
                             onClick={() => {
-                                if (mode === 'add') {
+                                if (mode === "add") {
                                     setInternalIsOpen(false);
                                 }
                                 cleanUpOverlay();
@@ -329,11 +344,11 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
                             Cancel
                         </Button>
                         <Button type="submit" className="bg-[#161CCA] text-white cursor-pointer">
-                            {mode === 'add' ? 'Add Customer' : 'Save Changes'}
+                            {mode === "add" ? "Add Customer" : "Save Changes"}
                         </Button>
                     </div>
                 </form>
             </DialogContent>
-        </Dialog >
+        </Dialog>
     );
 }
