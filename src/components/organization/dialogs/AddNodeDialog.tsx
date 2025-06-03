@@ -14,11 +14,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import {
   useNodeFormValidation,
-  FormData,
 } from "../hooks/useNodeFormValidation";
+import type { FormData } from "../hooks/useNodeFormValidation";
 
 interface AddDialogProps {
   isOpen: boolean;
@@ -45,6 +46,8 @@ export const AddNodeDialog = ({
     longitude: "",
     latitude: "",
     description: "",
+    assetId: "",
+    serialNo: "",
   });
 
   const { errors, isValid, validateForm } = useNodeFormValidation({
@@ -54,7 +57,6 @@ export const AddNodeDialog = ({
 
   useEffect(() => {
     if (isOpen) {
-      // Reset form data and validation on dialog open
       const resetData: FormData = {
         name: "",
         id: "",
@@ -67,13 +69,17 @@ export const AddNodeDialog = ({
         longitude: "",
         latitude: "",
         description: "",
+        assetId: "",
+        serialNo: "",
       };
       setFormData(resetData);
-      validateForm(resetData); // Re-validate with empty data
+      validateForm(resetData);
     }
   }, [isOpen, validateForm]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     const { name, value } = e.target;
     const newData = { ...formData, [name]: value };
     setFormData(newData);
@@ -86,12 +92,17 @@ export const AddNodeDialog = ({
     validateForm(newData);
   };
 
-  const handleAdd = () => {
+  const handleAdd = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault(); // Prevent any potential default behavior
     if (isValid) {
       onAdd({ name: formData.name, nodeType, data: formData });
       onClose();
     }
   };
+
+  const isIdRequired = ["Root", "Region", "Business Hub", "Service Centre"].includes(nodeType);
+  const isAssetIdRequired = ["Substation", "Feeder Line", "Distribution Substation (DSS)"].includes(nodeType);
+  const isSerialNoRequired = ["Substation", "Feeder Line", "Distribution Substation (DSS)"].includes(nodeType);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -118,26 +129,42 @@ export const AddNodeDialog = ({
                 className="mt-1 border-gray-300"
               />
             </div>
-            <div className="flex flex-col">
-              <label className="text-sm font-medium">
-                {nodeType === "Root"
-                  ? "Root ID"
-                  : nodeType === "Region"
-                    ? "Region ID"
-                    : "ID"}{" "}
-                *
-              </label>
-              <Input
-                name="id"
-                value={formData.id}
-                onChange={handleInputChange}
-                placeholder={`Enter ${nodeType === "Root" ? "Root" : nodeType === "Region" ? "Region" : ""} ID`}
-                className="mt-1 border-gray-300"
-              />
-              {errors.id && (
-                <p className="mt-1 text-xs text-red-500">{errors.id}</p>
-              )}
-            </div>
+            {isIdRequired && (
+              <div className="flex flex-col">
+                <label className="text-sm font-medium">
+                  {nodeType === "Root"
+                    ? "Root ID"
+                    : nodeType === "Region"
+                      ? "Region ID"
+                      : nodeType === "Business Hub"
+                        ? "Business Hub ID"
+                        : "Service Centre ID"}{" "}
+                  *
+                </label>
+                <Input
+                  name="id"
+                  value={formData.id}
+                  onChange={handleInputChange}
+                  placeholder={`Enter ${nodeType === "Root" ? "Root" : nodeType === "Region" ? "Region" : nodeType === "Business Hub" ? "Business Hub" : "Service Centre"} ID`}
+                  className="mt-1 border-gray-300"
+                />
+                {errors.id && (
+                  <p className="mt-1 text-xs text-red-500">{errors.id}</p>
+                )}
+              </div>
+            )}
+            {isSerialNoRequired && (
+              <div className="flex flex-col">
+                <label className="text-sm font-medium">Serial Number *</label>
+                <Input
+                  name="serialNo"
+                  value={formData.serialNo}
+                  onChange={handleInputChange}
+                  placeholder="Enter Serial Number"
+                  className="mt-1 border-gray-300"
+                />
+              </div>
+            )}
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col">
@@ -150,9 +177,7 @@ export const AddNodeDialog = ({
                 className="mt-1 border-gray-300"
               />
               {errors.phoneNumber && (
-                <p className="mt-1 text-xs text-red-500">
-                  {errors.phoneNumber}
-                </p>
+                <p className="mt-1 text-xs text-red-500">{errors.phoneNumber}</p>
               )}
             </div>
             <div className="flex flex-col">
@@ -191,8 +216,21 @@ export const AddNodeDialog = ({
               />
             </div>
           </div>
-          {nodeType !== "Root" && nodeType !== "Region" && (
-            <div className="grid grid-cols-2 gap-4">
+          {isAssetIdRequired && (
+            <div className="grid grid-cols-3 gap-4">
+              <div className="flex flex-col">
+                <label className="text-sm font-medium">Asset ID *</label>
+                <Input
+                  name="assetId"
+                  value={formData.assetId}
+                  onChange={handleInputChange}
+                  placeholder="Enter Asset ID"
+                  className="mt-1 border-gray-300"
+                />
+                {errors.assetId && (
+                  <p className="mt-1 text-xs text-red-500">{errors.assetId}</p>
+                )}
+              </div>
               <div className="flex flex-col">
                 <label className="text-sm font-medium">Status *</label>
                 <Select
@@ -211,12 +249,8 @@ export const AddNodeDialog = ({
               <div className="flex flex-col">
                 <label className="text-sm font-medium">Voltage *</label>
                 <Select
-                  onValueChange={(value) =>
-                    handleSelectChange("voltage", value)
-                  }
-                  value={
-                    formData.voltage ? String(formData.voltage) : undefined
-                  }
+                  onValueChange={(value) => handleSelectChange("voltage", value)}
+                  value={formData.voltage ? String(formData.voltage) : undefined}
                 >
                   <SelectTrigger className="ring-opacity-0 border-gray-300">
                     <SelectValue placeholder="Select Voltage" />
@@ -234,7 +268,7 @@ export const AddNodeDialog = ({
               </div>
             </div>
           )}
-          {(nodeType === "Substation" || nodeType === "Transformer") && (
+          {(nodeType === "Substation" || nodeType === "Distribution Substation (DSS)") && (
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col">
                 <label className="text-sm font-medium">Longitude *</label>
@@ -256,6 +290,19 @@ export const AddNodeDialog = ({
                   className="mt-1 border-gray-300"
                 />
               </div>
+            </div>
+          )}
+          {isSerialNoRequired && (
+            <div className="flex flex-col">
+              <label className="text-sm font-medium">Description</label>
+              <Textarea
+                name="description"
+                value={formData.description}
+                onChange={handleInputChange}
+                placeholder="Enter Description"
+                className="mt-1 border-gray-300"
+                rows={4}
+              />
             </div>
           )}
         </div>

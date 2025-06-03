@@ -18,11 +18,11 @@ import {
   Wrench,
   Database,
   Zap,
-  Plug,
   Grid2X2,
+  Lightbulb,
 } from "lucide-react";
 import { toast } from "sonner";
-import type { Node } from "../../service/organaization-service"; // Adjust path
+import type { Node } from "../../service/organaization-service";
 import { AddNodeDialog } from "./dialogs/AddNodeDialog";
 import { EditNodeDialog } from "./dialogs/EditNodeDialog";
 import { mapNodeInfoToFormData, renderNodeIcon } from "./utils/nodeUtils";
@@ -50,11 +50,13 @@ export const OrganizationNode = ({
     mapNodeInfoToFormData(node.nodeInfo),
   );
 
-  // Update internal state when the 'node' prop changes
   useEffect(() => {
     setChildren(node.nodesTree ?? []);
+  }, [node.nodesTree]);
+
+  useEffect(() => {
     setNodeDataForEdit(mapNodeInfoToFormData(node.nodeInfo));
-  }, [node]);
+  }, [node.nodeInfo]);
 
   const handleAddNode = (data: {
     name: string;
@@ -112,24 +114,19 @@ export const OrganizationNode = ({
                   <Grid2X2 size={14} className="mr-2 text-gray-700" /> Region
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => openAddDialog("Business Hub")}>
-                  <Building size={14} className="mr-2 text-gray-700" /> Business
-                  Hub
+                  <Building size={14} className="mr-2 text-gray-700" /> Business Hub
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => openAddDialog("Service Centre")}
-                >
-                  <Wrench size={14} className="mr-2 text-gray-700" /> Service
-                  Centre
+                <DropdownMenuItem onClick={() => openAddDialog("Service Centre")}>
+                  <Wrench size={14} className="mr-2 text-gray-700" /> Service Centre
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => openAddDialog("Substation")}>
-                  <Database size={14} className="mr-2 text-gray-700" />{" "}
-                  Substation
+                  <Database size={14} className="mr-2 text-gray-700" /> Substation
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => openAddDialog("Feeder Line")}>
                   <Zap size={14} className="mr-2 text-gray-700" /> Feeder Line
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => openAddDialog("Transformer")}>
-                  <Plug size={14} className="mr-2 text-gray-700" /> Transformer
+                <DropdownMenuItem onClick={() => openAddDialog("Distribution Substation (DSS)")}>
+                  <Lightbulb size={14} className="mr-2 text-gray-700" /> Distribution Substation (DSS)
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -147,8 +144,8 @@ export const OrganizationNode = ({
               key={childNode.id}
               node={childNode}
               level={level + 1}
-              onNodeUpdated={onNodeUpdated} // Pass callbacks down
-              onNodeAdded={onNodeAdded} // Pass callbacks down
+              onNodeUpdated={onNodeUpdated}
+              onNodeAdded={onNodeAdded}
             />
           ))}
         <AddNodeDialog
