@@ -61,10 +61,14 @@ export default function DashboardPage() {
   // Open "Complete Your Profile" modal on page load
   useEffect(() => {
     const token = localStorage.getItem('auth_token');
+    const isFreshLogin = localStorage.getItem('fresh_login');
+
     if (!token) {
       router.push('/login');
-    } else {
+    } else if (isFreshLogin === 'true') {
       setShowCompleteProfileModal(true);
+      // Clear the flag after showing the modal
+      localStorage.setItem('fresh_login', 'false');
     }
   }, [router]);
 
