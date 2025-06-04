@@ -83,11 +83,11 @@ function AddManufacturerDialog({
                 <DialogHeader>
                     <DialogTitle className="text-lg font-semibold text-gray-900">Add Manufacturer</DialogTitle>
                 </DialogHeader>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 py-4">
-                    {/* Column 1 */}
-                    <div className="space-y-2">
-                        <div className="space-y-1">
-                            <label htmlFor="manufacturerName" className="text-xs font-medium text-gray-700">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 py-4">
+                    {/* Column 1: Manufacturer Name */}
+                    <div className="space-y-4">
+                        <div>
+                            <label htmlFor="manufacturerName" className="block text-xs font-medium text-gray-700">
                                 Manufacturer Name <span className="text-red-500">*</span>
                             </label>
                             <Input
@@ -95,37 +95,14 @@ function AddManufacturerDialog({
                                 required
                                 value={manufacturerName}
                                 onChange={(e) => setManufacturerName(e.target.value)}
-                                className="w-full text-xs border-gray-300 focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
-                            />
-                        </div>
-                        <div className="space-y-1">
-                            <label htmlFor="sgc" className="text-xs font-medium text-gray-700">
-                                Manufacturer SGC
-                            </label>
-                            <Input
-                                id="sgc"
-                                value={sgc}
-                                onChange={(e) => setSgc(e.target.value)}
-                                className="w-full text-xs border-gray-300 focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
-                            />
-                        </div>
-                        <div className="space-y-1">
-                            <label htmlFor="contactPerson" className="text-xs font-medium text-gray-700">
-                                Contact Person <span className="text-red-500">*</span>
-                            </label>
-                            <Input
-                                id="contactPerson"
-                                required
-                                value={contactPerson}
-                                onChange={(e) => setContactPerson(e.target.value)}
-                                className="w-full text-xs border-gray-300 focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
+                                className="mt-1 w-full text-xs border-gray-300 focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50 h-9"
                             />
                         </div>
                     </div>
-                    {/* Column 2 */}
-                    <div className="space-y-2">
-                        <div className="space-y-1">
-                            <label htmlFor="manufacturerId" className="text-xs font-medium text-gray-700">
+                    {/* Column 2: Manufacturer ID */}
+                    <div className="space-y-4">
+                        <div>
+                            <label htmlFor="manufacturerId" className="block text-xs font-medium text-gray-700">
                                 Manufacturer ID <span className="text-red-500">*</span>
                             </label>
                             <Input
@@ -135,26 +112,29 @@ function AddManufacturerDialog({
                                 placeholder="e.g. 123456"
                                 value={manufacturerId}
                                 onChange={(e) => setManufacturerId(e.target.value)}
-                                className={`mt-1 border-gray-300 focus:border-blue-500 focus:ring-blue-500 
-                  [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                                className="mt-1 w-full text-xs border-gray-300 focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50 h-9 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             />
                         </div>
-                        <div className="space-y-1">
-                            <label htmlFor="location" className="text-xs font-medium text-gray-700">
-                                State
+                    </div>
+                    {/* Full-width Contact Person */}
+                    <div className="sm:col-span-2 space-y-4">
+                        <div>
+                            <label htmlFor="contactPerson" className="block text-xs font-medium text-gray-700">
+                                Contact Person <span className="text-red-500">*</span>
                             </label>
-                            <Select value={location} onValueChange={setLocation}>
-                                <SelectTrigger className="w-full text-xs border-gray-300 focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50 h-9">
-                                    <SelectValue placeholder="Select State" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="Lagos" className="text-xs">Lagos</SelectItem>
-                                    <SelectItem value="Ogun" className="text-xs">Ogun</SelectItem>
-                                </SelectContent>
-                            </Select>
+                            <Input
+                                id="contactPerson"
+                                required
+                                value={contactPerson}
+                                onChange={(e) => setContactPerson(e.target.value)}
+                                className="mt-1 w-full text-xs border-gray-300 focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50 h-9"
+                            />
                         </div>
-                        <div className="space-y-1">
-                            <label htmlFor="phoneNumber" className="text-xs font-medium text-gray-700">
+                    </div>
+                    {/* Column 1: Phone Number */}
+                    <div className="space-y-4">
+                        <div>
+                            <label htmlFor="phoneNumber" className="block text-xs font-medium text-gray-700">
                                 Phone Number <span className="text-red-500">*</span>
                             </label>
                             <Input
@@ -168,9 +148,25 @@ function AddManufacturerDialog({
                                 minLength={11}
                                 value={phoneNumber}
                                 onChange={(e) => setPhoneNumber(e.target.value)}
-                                className={`mt-1 border-gray-300 focus:border-blue-500 focus:ring-blue-500 
-                  [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                                className="mt-1 w-full text-xs border-gray-300 focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50 h-9 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             />
+                        </div>
+                    </div>
+                    {/* Column 2: State */}
+                    <div className="space-y-4">
+                        <div>
+                            <label htmlFor="location" className="block text-xs font-medium text-gray-700">
+                                State
+                            </label>
+                            <Select value={location} onValueChange={setLocation}>
+                                <SelectTrigger className="mt-1 w-full text-xs border-gray-300 focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50 h-9">
+                                    <SelectValue placeholder="Select State" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="Lagos" className="text-xs">Lagos</SelectItem>
+                                    <SelectItem value="Ogun" className="text-xs">Ogun</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
                     </div>
                 </div>
@@ -499,14 +495,40 @@ export default function ManufacturersPage() {
                             />
                         </div>
                         <div className="flex gap-2 w-full sm:w-auto">
-                            <Button variant="outline" className="gap-2 border-gray-300 w-full sm:w-auto">
+                            {/* <Button variant="outline" className="gap-2 border-gray-300 w-full sm:w-auto">
                                 <Filter className="text-gray-500" size={14} />
                                 <span className="hidden sm:inline text-gray-800">Filter</span>
-                            </Button>
-                            <Button variant="outline" className="gap-2 border-gray-300 w-full sm:w-auto">
-                                <ArrowUpDown className="text-gray-500" size={14} />
-                                <span className="hidden sm:inline text-gray-800">Sort</span>
-                            </Button>
+                            </Button> */}
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" className="gap-2 border-gray-300 w-full sm:w-auto">
+                                        <ArrowUpDown className="text-gray-500" size={14} />
+                                        <span className="hidden sm:inline text-gray-800">Sort</span>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-48">
+                                    <DropdownMenuItem
+                                        className="text-sm cursor-pointer hover:bg-gray-100"
+                                    >
+                                        A-Z
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        className="text-sm cursor-pointer hover:bg-gray-100"
+                                    >
+                                        Z-A
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        className="text-sm cursor-pointer hover:bg-gray-100"
+                                    >
+                                        Newest-Oldest
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        className="text-sm cursor-pointer hover:bg-gray-100"
+                                    >
+                                        Oldest-Newest
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         </div>
                     </div>
                 </div>
@@ -522,10 +544,9 @@ export default function ManufacturersPage() {
                             </TableHead>
                             <TableHead className=" px-2 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-semibold text-gray-700">S/N</TableHead>
                             <TableHead className=" px-2 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-semibold text-gray-700">Manufacturer</TableHead>
-                            <TableHead className=" px-2 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-semibold text-gray-700">ID</TableHead>
-                            <TableHead className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-semibold text-gray-700 hidden sm:table-cell">SGC</TableHead>
-                            <TableHead className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-semibold text-gray-700 hidden md:table-cell">Contact</TableHead>
-                            <TableHead className=" px-2 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-semibold text-gray-700 hidden lg:table-cell">Location</TableHead>
+                            <TableHead className=" px-2 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-semibold text-gray-700">Manufacturer ID</TableHead>
+                            <TableHead className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-semibold text-gray-700 hidden md:table-cell">Contact Person</TableHead>
+                            <TableHead className=" px-2 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-semibold text-gray-700 hidden lg:table-cell">State</TableHead>
                             <TableHead className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-semibold text-gray-700 hidden xl:table-cell">Address</TableHead>
                             <TableHead className="px-2 sm:px-4 py-2 sm:py-3 text-right text-xs sm:text-sm font-semibold text-gray-700">Actions</TableHead>
                         </TableRow>
@@ -549,7 +570,6 @@ export default function ManufacturersPage() {
                                     <TableCell className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm">{item.id}</TableCell>
                                     <TableCell className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm">{item.sin}</TableCell>
                                     <TableCell className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm">{item.manufacturerId}</TableCell>
-                                    <TableCell className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm hidden sm:table-cell">{item.sgc}</TableCell>
                                     <TableCell className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm hidden md:table-cell">{item.contactPerson}</TableCell>
                                     <TableCell className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm hidden lg:table-cell">{item.location}</TableCell>
                                     <TableCell className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm hidden xl:table-cell">{item.address}</TableCell>
