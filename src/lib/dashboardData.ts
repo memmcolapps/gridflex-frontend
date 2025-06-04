@@ -31,7 +31,7 @@ export const statusCards = [
     iconColor: "text-[rgba(22,28,202,1)]",
   },
   {
-    title: "Blocked",
+    title: "Allocated",
     value: "400",
     change: "-1.01%",
     changeColor: "text-black",
@@ -42,19 +42,6 @@ export const statusCards = [
     icon: "CircleAlert",
     iconBgColor: "bg-[rgba(254,231,138,1)]",
     iconColor: "text-[rgba(235,161,62,1)]",
-  },
-  {
-    title: "Deactivated",
-    value: "320",
-    change: "-2.08%",
-    changeColor: "text-black",
-    url: "",
-    bgColor: "bg-[rgb(216,219,223)]",
-    borderColor: "border-gray-200",
-    textColor: "text-black",
-    icon: "CircleX",
-    iconBgColor: "bg-[rgba(182,186,195,1)]",
-    iconColor: "text-[rgb(37,39,44)]",
   },
   {
     title: "Assigned",
@@ -69,6 +56,20 @@ export const statusCards = [
     iconBgColor: "bg-emerald-200",
     iconColor: "text-[rgba(34,197,94,1)]",
   },
+  {
+    title: "Deactivated",
+    value: "320",
+    change: "-2.08%",
+    changeColor: "text-black",
+    url: "",
+    bgColor: "bg-[rgb(216,219,223)]",
+    borderColor: "border-gray-200",
+    textColor: "text-black",
+    icon: "CircleX",
+    iconBgColor: "bg-[rgba(182,186,195,1)]",
+    iconColor: "text-[rgb(37,39,44)]",
+  },
+  
 ];
 
 export const manufacturerData = {
@@ -106,7 +107,7 @@ export const manufacturerData = {
 };
 
 export const meterStatusData = {
-  series: [45, 25, 15, 10, 5],
-  labels: ["In-Stock", "Assigned", "Deactivated"],
-  colors: ["#FFB000", "#10B981", "#B22222"],
+  series: [25, 50, 10, 15],
+  labels: ["In-stock", "Assigned", "Deactivated", "Unassigned"],
+  colors: ["#1E4BAF", "#10B981", "#B22222", "#FFB000"],
 };

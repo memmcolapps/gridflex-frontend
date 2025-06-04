@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { useState, useRef } from "react";
 import * as XLSX from "xlsx";
 
+
 interface BulkUploadDialogProps {
     isOpen: boolean;
     onClose: () => void;
@@ -18,6 +19,7 @@ interface MeterData {
     meterNumber: string;
     simNumber: string;
     model: string;
+    meterManufacturer: string;
     accountNumber: string;
     sgc: string;
     tariff: string;
@@ -83,6 +85,7 @@ export function BulkUploadDialog({ isOpen, onClose, onSave }: BulkUploadDialogPr
                 meterNumber: headers.includes("meterNumber") ? row[headers.indexOf("meterNumber")]?.toString() ?? "" : "",
                 simNumber: headers.includes("simNumber") ? row[headers.indexOf("simNumber")]?.toString() ?? "" : "",
                 model: headers.includes("model") ? row[headers.indexOf("model")]?.toString() ?? "" : "",
+                meterManufacturer: headers.includes("meterManufacturer") ? row[headers.indexOf("meterManufacturer")]?.toString() ?? "" : "",
                 accountNumber: headers.includes("accountNumber") ? row[headers.indexOf("accountNumber")]?.toString() ?? "" : "",
                 sgc: headers.includes("sgc") ? row[headers.indexOf("sgc")]?.toString() ?? "" : "",
                 tariff: headers.includes("tariff") ? row[headers.indexOf("tariff")]?.toString() ?? "" : "",

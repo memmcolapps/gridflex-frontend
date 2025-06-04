@@ -24,9 +24,10 @@ const tokenColors = [
 const statusData = [
   { name: "Successful Transaction", value: 95 },
   { name: "Failed Transaction", value: 5 },
+  { name: "Pending Transaction", value: 9 },
 ];
 
-const statusColors = ["#10B981", "#B22222"];
+const statusColors = ["#10B981", "#B22222", "#FACC15"];
 
 export default function TokenTransactionCharts() {
   return (
@@ -72,7 +73,7 @@ export default function TokenTransactionCharts() {
                 <Tooltip />
               </PieChart>
               {/* Credit Token: 30% Right Beside the Pie Chart, at the Top */}
-              <div className="text-white bg-[#166533] rounded px-2 py-2 w-fit mt-6">
+              <div className="text-white bg-[#166533] rounded px-2 py-2 w-fit mt-6 whitespace-nowrap">
                 <span>Credit Token: 30%</span>
               </div>
             </div>
