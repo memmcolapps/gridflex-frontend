@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Ban, CircleCheck, CircleX, MoreVertical, Power } from "lucide-react";
+import {  CircleCheck, CircleX, MoreVertical } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
