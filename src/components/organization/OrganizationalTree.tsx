@@ -3,9 +3,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  fetchOrganizationNodes,
+  type Node,
+} from "../../service/organaization-service";
 import { OrganizationNode } from "./OrganizationNode";
-import { fetchOrganizationNodes } from "@/service/organaization-service";
-import type { Node } from "@/service/organaization-service";
 
 const OrganizationalTree = () => {
   const [organizationNodes, setOrganizationNodes] = useState<Node[]>([]);
@@ -30,8 +32,8 @@ const OrganizationalTree = () => {
     loadOrganizationNodes();
   }, [loadOrganizationNodes]);
 
+  // Callback to trigger a re-fetch of the tree when a node is added/updated
   const handleTreeUpdate = useCallback(() => {
-    console.log("Tree update triggered");
     loadOrganizationNodes();
   }, [loadOrganizationNodes]);
 

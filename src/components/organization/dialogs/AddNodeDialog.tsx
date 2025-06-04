@@ -14,12 +14,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import {
   useNodeFormValidation,
 } from "../hooks/useNodeFormValidation";
 import type { FormData } from "../hooks/useNodeFormValidation";
+import { Textarea } from "@/components/ui/textarea";
 
 interface AddDialogProps {
   isOpen: boolean;
@@ -47,7 +47,6 @@ export const AddNodeDialog = ({
     latitude: "",
     description: "",
     assetId: "",
-    serialNo: "",
   });
 
   const { errors, isValid, validateForm } = useNodeFormValidation({
@@ -70,16 +69,20 @@ export const AddNodeDialog = ({
         latitude: "",
         description: "",
         assetId: "",
-        serialNo: "",
       };
       setFormData(resetData);
       validateForm(resetData);
     }
   }, [isOpen, validateForm]);
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-  ) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    const newData = { ...formData, [name]: value };
+    setFormData(newData);
+    validateForm(newData);
+  };
+
+  const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     const newData = { ...formData, [name]: value };
     setFormData(newData);
@@ -92,17 +95,14 @@ export const AddNodeDialog = ({
     validateForm(newData);
   };
 
-  const handleAdd = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault(); // Prevent any potential default behavior
+  const handleAdd = () => {
     if (isValid) {
       onAdd({ name: formData.name, nodeType, data: formData });
       onClose();
     }
   };
 
-  const isIdRequired = ["Root", "Region", "Business Hub", "Service Centre"].includes(nodeType);
-  const isAssetIdRequired = ["Substation", "Feeder Line", "Distribution Substation (DSS)"].includes(nodeType);
-  const isSerialNoRequired = ["Substation", "Feeder Line", "Distribution Substation (DSS)"].includes(nodeType);
+  const isTechnicalNode = ["Substation", "Feeder Line", "Distribution Substation (DSS)"].includes(nodeType);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -129,42 +129,26 @@ export const AddNodeDialog = ({
                 className="mt-1 border-gray-300"
               />
             </div>
-            {isIdRequired && (
-              <div className="flex flex-col">
-                <label className="text-sm font-medium">
-                  {nodeType === "Root"
-                    ? "Root ID"
-                    : nodeType === "Region"
-                      ? "Region ID"
-                      : nodeType === "Business Hub"
-                        ? "Business Hub ID"
-                        : "Service Centre ID"}{" "}
-                  *
-                </label>
-                <Input
-                  name="id"
-                  value={formData.id}
-                  onChange={handleInputChange}
-                  placeholder={`Enter ${nodeType === "Root" ? "Root" : nodeType === "Region" ? "Region" : nodeType === "Business Hub" ? "Business Hub" : "Service Centre"} ID`}
-                  className="mt-1 border-gray-300"
-                />
-                {errors.id && (
-                  <p className="mt-1 text-xs text-red-500">{errors.id}</p>
-                )}
-              </div>
-            )}
-            {isSerialNoRequired && (
-              <div className="flex flex-col">
-                <label className="text-sm font-medium">Serial Number *</label>
-                <Input
-                  name="serialNo"
-                  value={formData.serialNo}
-                  onChange={handleInputChange}
-                  placeholder="Enter Serial Number"
-                  className="mt-1 border-gray-300"
-                />
-              </div>
-            )}
+            <div className="flex flex-col">
+              <label className="text-sm font-medium">
+                {nodeType === "Root"
+                  ? "Root ID"
+                  : nodeType === "Region"
+                    ? "Region ID"
+                    : "ID"}{" "}
+                *
+              </label>
+              <Input
+                name="id"
+                value={formData.id}
+                onChange={handleInputChange}
+                placeholder={`Enter ${nodeType === "Root" ? "Root" : nodeType === "Region" ? "Region" : ""} ID`}
+                className="mt-1 border-gray-300"
+              />
+              {errors.id && (
+                <p className="mt-1 text-xs text-red-500">{errors.id}</p>
+              )}
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col">
@@ -216,7 +200,7 @@ export const AddNodeDialog = ({
               />
             </div>
           </div>
-          {isAssetIdRequired && (
+          {isTechnicalNode && (
             <div className="grid grid-cols-3 gap-4">
               <div className="flex flex-col">
                 <label className="text-sm font-medium">Asset ID *</label>
@@ -227,9 +211,6 @@ export const AddNodeDialog = ({
                   placeholder="Enter Asset ID"
                   className="mt-1 border-gray-300"
                 />
-                {errors.assetId && (
-                  <p className="mt-1 text-xs text-red-500">{errors.assetId}</p>
-                )}
               </div>
               <div className="flex flex-col">
                 <label className="text-sm font-medium">Status *</label>
@@ -268,41 +249,40 @@ export const AddNodeDialog = ({
               </div>
             </div>
           )}
-          {(nodeType === "Substation" || nodeType === "Distribution Substation (DSS)") && (
-            <div className="grid grid-cols-2 gap-4">
+          {(nodeType === "Substation" || nodeType === "Distribution Substation (DSS)" || nodeType ==="Feeder Line") && (
+            <div className="grid gap-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col">
+                  <label className="text-sm font-medium">Longitude *</label>
+                  <Input
+                    name="longitude"
+                    value={formData.longitude}
+                    onChange={handleInputChange}
+                    placeholder="Enter Longitude"
+                    className="mt-1 border-gray-300"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="text-sm font-medium">Latitude *</label>
+                  <Input
+                    name="latitude"
+                    value={formData.latitude}
+                    onChange={handleInputChange}
+                    placeholder="Enter Latitude"
+                    className="mt-1 border-gray-300"
+                  />
+                </div>
+              </div>
               <div className="flex flex-col">
-                <label className="text-sm font-medium">Longitude *</label>
-                <Input
-                  name="longitude"
-                  value={formData.longitude}
-                  onChange={handleInputChange}
-                  placeholder="Enter Longitude"
+                <label className="text-sm font-medium">Description</label>
+                <Textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleTextareaChange}
+                  placeholder="Enter Description"
                   className="mt-1 border-gray-300"
                 />
               </div>
-              <div className="flex flex-col">
-                <label className="text-sm font-medium">Latitude *</label>
-                <Input
-                  name="latitude"
-                  value={formData.latitude}
-                  onChange={handleInputChange}
-                  placeholder="Enter Latitude"
-                  className="mt-1 border-gray-300"
-                />
-              </div>
-            </div>
-          )}
-          {isSerialNoRequired && (
-            <div className="flex flex-col">
-              <label className="text-sm font-medium">Description</label>
-              <Textarea
-                name="description"
-                value={formData.description}
-                onChange={handleInputChange}
-                placeholder="Enter Description"
-                className="mt-1 border-gray-300"
-                rows={4}
-              />
             </div>
           )}
         </div>

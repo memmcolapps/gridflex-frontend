@@ -52,11 +52,8 @@ export const OrganizationNode = ({
 
   useEffect(() => {
     setChildren(node.nodesTree ?? []);
-  }, [node.nodesTree]);
-
-  useEffect(() => {
     setNodeDataForEdit(mapNodeInfoToFormData(node.nodeInfo));
-  }, [node.nodeInfo]);
+  }, [node]);
 
   const handleAddNode = (data: {
     name: string;
@@ -114,13 +111,18 @@ export const OrganizationNode = ({
                   <Grid2X2 size={14} className="mr-2 text-gray-700" /> Region
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => openAddDialog("Business Hub")}>
-                  <Building size={14} className="mr-2 text-gray-700" /> Business Hub
+                  <Building size={14} className="mr-2 text-gray-700" /> Business
+                  Hub
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => openAddDialog("Service Centre")}>
-                  <Wrench size={14} className="mr-2 text-gray-700" /> Service Centre
+                <DropdownMenuItem
+                  onClick={() => openAddDialog("Service Centre")}
+                >
+                  <Wrench size={14} className="mr-2 text-gray-700" /> Service
+                  Centre
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => openAddDialog("Substation")}>
-                  <Database size={14} className="mr-2 text-gray-700" /> Substation
+                  <Database size={14} className="mr-2 text-gray-700" /> 
+                  Substation
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => openAddDialog("Feeder Line")}>
                   <Zap size={14} className="mr-2 text-gray-700" /> Feeder Line

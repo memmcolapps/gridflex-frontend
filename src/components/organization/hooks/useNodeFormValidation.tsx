@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
+import { useCallback } from "react";
+import { useState, useEffect } from "react";
 
 export interface FormData {
   name: string;
@@ -12,21 +13,20 @@ export interface FormData {
   longitude?: string;
   latitude?: string;
   description?: string;
-  serialNo?: string;
-  assetId?: string; // Added assetId to FormData
+  assetId: string;
+  serialNo?: string; // Potentially distinct from 'id' for API
 }
 
 export interface FormErrors {
   email: string;
   phoneNumber: string;
   id: string;
-  assetId: string; // Added assetId to FormErrors
 }
 
 interface UseNodeFormValidationProps {
   formData: FormData;
   nodeType: string;
-  isInitialValidation?: boolean;
+  isInitialValidation?: boolean; // For edit dialogs, validate on load
 }
 
 export const useNodeFormValidation = ({
@@ -38,43 +38,32 @@ export const useNodeFormValidation = ({
     email: "",
     phoneNumber: "",
     id: "",
-    assetId: "",
   });
   const [isValid, setIsValid] = useState(false);
 
+
   const validateForm = useCallback((data: FormData) => {
-    const newErrors: FormErrors = { email: "", phoneNumber: "", id: "", assetId: "" };
+    const newErrors: FormErrors = { email: "", phoneNumber: "", id: "" };
     let allFieldsValid = true;
 
     const requiredFields: (keyof FormData)[] = [
       "name",
+      "id",
       "phoneNumber",
       "email",
       "contactPerson",
       "address",
     ];
 
-    // Only require id for Root, Region, and Business Hub
-    if (["Root", "Region", "Business Hub"].includes(nodeType)) {
-      requiredFields.push("id");
-    }
-
-    // Require status, voltage, and assetId for non-Root, non-Region nodes
     if (nodeType !== "Root" && nodeType !== "Region") {
-      requiredFields.push("status", "voltage", "assetId");
+      requiredFields.push("status", "voltage");
     }
-
-    // Require longitude and latitude for Substation and Distribution Substation (DSS)
-    if (nodeType === "Substation" || nodeType === "Distribution Substation (DSS)") {
+    if (nodeType === "Substation" || nodeType === "Transformer") {
       requiredFields.push("longitude", "latitude");
     }
 
-    // Check for empty required fields
     requiredFields.forEach((field) => {
       if (!data[field]) {
-        if (field in newErrors) {
-          newErrors[field as keyof FormErrors] = `${field === "assetId" ? "Asset ID" : field.charAt(0).toUpperCase() + field.slice(1)} is required`;
-        }
         allFieldsValid = false;
       }
     });
@@ -93,22 +82,11 @@ export const useNodeFormValidation = ({
       allFieldsValid = false;
     }
 
-    // ID validation (only for Root, Region, Business Hub)
-    if (["Root", "Region", "Business Hub"].includes(nodeType)) {
-      const idRegex = /^[a-zA-Z0-9]+$/;
-      if (data.id && !idRegex.test(data.id)) {
-        newErrors.id = "ID must be alphanumeric";
-        allFieldsValid = false;
-      }
-    }
-
-    // Asset ID validation (for Substation, Feeder Line, Distribution Substation)
-    if (["Substation", "Feeder Line", "Distribution Substation (DSS)"].includes(nodeType)) {
-      const assetIdRegex = /^[a-zA-Z0-9]+$/;
-      if (data.assetId && !assetIdRegex.test(data.assetId)) {
-        newErrors.assetId = "Asset ID must be alphanumeric";
-        allFieldsValid = false;
-      }
+    // ID (serial number) validation
+    const idRegex = /^[a-zA-Z0-9]+$/;
+    if (data.id && !idRegex.test(data.id)) {
+      newErrors.id = "ID must be alphanumeric";
+      allFieldsValid = false;
     }
 
     setErrors(newErrors);
