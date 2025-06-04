@@ -173,6 +173,24 @@ export function SidebarNav() {
             const isActive = isItemActive(item.href, item.submenuItems);
             const isExpanded = expandedItems[item.title] ?? isActive;
 
+            if (!item.hasSubmenu) {
+              return (
+                <SidebarMenuItem
+                  key={item.title}
+                  className={cn(
+                    "p-2.5 text-xl",
+                    isActive ? "rounded-md bg-[#161CCA] text-white" : "hover:bg-gray-100 rounded-md"
+                  )}
+                >
+                  <Link href={item.href} className="flex w-full items-center">
+                    <item.icon size={12} />
+                    <span className="ml-2">{item.title}</span>
+                  </Link>
+                </SidebarMenuItem>
+              );
+            }
+            
+
             return (
               <Collapsible
                 key={item.title}

@@ -36,6 +36,7 @@ export default function MeterManagementPage() {
     const [isApproveDialogOpen, setIsApproveDialogOpen] = useState(false);
     const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
     const [selectedMeter, setSelectedMeter] = useState<MeterData | null>(null);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [activeFilters, setActiveFilters] = useState({});
 
 
