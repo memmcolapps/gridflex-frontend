@@ -17,8 +17,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
   useNodeFormValidation,
-  FormData,
 } from "../hooks/useNodeFormValidation";
+import type { FormData } from "../hooks/useNodeFormValidation";
 
 interface AddDialogProps {
   isOpen: boolean;
