@@ -2,8 +2,9 @@ import axios from "axios";
 import { toast } from "sonner";
 import { handleApiError } from "@/utils/error-handler";
 import { env } from "@/env";
-// Define FormData type here if the import is missing or incorrect
+
 export interface FormData {
+  nodeType: string;
   id: string;
   name: string;
   phoneNumber: string;
@@ -21,7 +22,7 @@ export interface FormData {
 
 export interface NodeInfo {
   id: string;
-  nodeId: string;
+  nodeId?: string;
   regionId?: string;
   bhubId?: string;
   name: string;
@@ -75,7 +76,18 @@ export async function fetchOrganizationNodes(): Promise<Node[]> {
     );
 
     if (response.data.responsecode === "000") {
-      return response.data.responsedata;
+      // Map response to ensure id is populated correctly based on node type
+      return response.data.responsedata.map((node) => ({
+        ...node,
+        nodeInfo: node.nodeInfo
+          ? {
+              ...node.nodeInfo,
+              id: node.nodeInfo.type === "Region"
+                ? node.nodeInfo.regionId ?? node.nodeInfo.nodeId ?? node.id
+                : node.nodeInfo.nodeId ?? node.id,
+            }
+          : undefined,
+      }));
     } else {
       throw new Error(
         response.data.responsedesc ?? "Failed to fetch organization nodes",
@@ -93,7 +105,7 @@ export async function updateNode(nodeId: string, data: FormData): Promise<void> 
     const token = localStorage.getItem("auth_token");
     const payload = {
       name: data.name,
-      nodeId: data.id,
+      [data.nodeType === "Region" ? "regionId" : "nodeId"]: data.id,
       phoneNo: data.phoneNumber,
       email: data.email,
       contactPerson: data.contactPerson,
@@ -137,7 +149,7 @@ export async function addNode(data: { name: string; nodeType: string; data: Form
     const payload = {
       name: data.name,
       type: data.nodeType,
-      nodeId: data.data.id ?? undefined,
+      [data.nodeType === "Region" ? "regionId" : "nodeId"]: data.data.id,
       phoneNo: data.data.phoneNumber,
       email: data.data.email,
       contactPerson: data.data.contactPerson,
