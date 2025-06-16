@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { ArrowRightLeft, ArrowUpDown, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -32,6 +32,26 @@ import {
     DialogFooter,
 } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { FilterControl } from "@/components/search-control";
+
+// Define filter sections for FilterControl
+const filterSections = [
+    {
+        title: "Meter Class",
+        options: [
+            { label: "Single Phase", id: "singlePhase" },
+            { label: "Three Phase", id: "threePhase" },
+            { label: "MD", id: "md" },
+        ],
+    },
+    {
+        title: "Meter Type",
+        options: [
+            { label: "Prepaid", id: "prepaid" },
+            { label: "Postpaid", id: "postPaid" },
+        ],
+    },
+];
 
 // Sample data type
 interface MeterData {
@@ -72,6 +92,10 @@ export default function AllocateMetersPage() {
     const [isBulkDialogOpen, setIsBulkDialogOpen] = useState(false);
     const [bulkOrganizationId, setBulkOrganizationId] = useState<string>("");
     const [meterNumberInput, setMeterNumberInput] = useState<string>("");
+    const [searchTerm, setSearchTerm] = useState<string>("");
+
+    // Add state for active filters
+    const [activeFilters, setActiveFilters] = useState<Record<string, boolean>>({});
 
     const handleSelectAll = (checked: boolean) => {
         if (checked) {
@@ -94,6 +118,16 @@ export default function AllocateMetersPage() {
     const startIndex = (currentPage - 1) * rowsPerPage;
     const endIndex = startIndex + rowsPerPage;
     const currentMeters = meters.slice(startIndex, endIndex);
+     const totalPages = Math.ceil(meters.length / rowsPerPage);
+
+      const onRowsPerPageChange = (value: number) => {
+        setRowsPerPage(value);
+        setCurrentPage(1); // Reset to first page when rows per page changes
+    };
+
+      const onPageChange = (newPage: number) => {
+        setCurrentPage(newPage);
+    };
 
     const handleMeterNumberChange = (value: string) => {
         setMeterNumberInput(value);
@@ -140,6 +174,113 @@ export default function AllocateMetersPage() {
         }
     };
 
+    // Add these state variables
+    const [sortConfig, setSortConfig] = useState<{
+        key: keyof MeterData | null;
+        direction: "asc" | "desc";
+    }>({ key: null, direction: "asc" });
+
+    useEffect(() => {
+        setMeters(initialMeters);
+    }, []);
+
+    // Enhanced search handler
+    const handleSearchChange = (term: string) => {
+        setSearchTerm(term);
+        applyFiltersAndSort(term, sortConfig.key, sortConfig.direction);
+    };
+
+    // Sort handler
+    const handleSortChange = () => {
+        const sortKey: keyof MeterData = sortConfig.key ?? "meterNumber";
+        const newDirection = sortConfig.direction === "asc" ? "desc" : "asc";
+
+        setSortConfig({ key: sortKey, direction: newDirection });
+        applyFiltersAndSort(searchTerm, sortKey, newDirection);
+    };
+
+    // Combined filter and sort function
+    const applyFiltersAndSort = (
+        term: string,
+        sortBy: keyof MeterData | null,
+        direction: "asc" | "desc"
+    ) => {
+        // 1. Filter first
+        let results = initialMeters;
+        if (term.trim() !== "") {
+            results = initialMeters.filter(item =>
+                item.meterNumber?.toLowerCase().includes(term.toLowerCase()) ||
+                item.manufactureName?.toLowerCase().includes(term.toLowerCase()) ||
+                item.meterId?.toLowerCase().includes(term.toLowerCase()) ||
+                item.category?.toLowerCase().includes(term.toLowerCase())
+            );
+        }
+
+        // 2. Then sort if a sort field is selected
+        if (sortBy) {
+            results = [...results].sort((a, b) => {
+                const aValue = a[sortBy] || "";
+                const bValue = b[sortBy] || "";
+
+                if (aValue < bValue) return direction === "asc" ? -1 : 1;
+                if (aValue > bValue) return direction === "asc" ? 1 : -1;
+                return 0;
+            });
+        }
+
+        setMeters(results);
+    };
+
+    // Moved setActiveFilters logic outside of return
+    const handleSetActiveFilters = (filters: Record<string, boolean>) => {
+        // Reset to first page when filters change
+        setCurrentPage(1);
+
+        let filtered = initialMeters;
+
+        // Apply search filter if term exists
+        if (searchTerm.trim() !== "") {
+            const term = searchTerm.toLowerCase();
+            filtered = filtered.filter(meter =>
+                meter.meterNumber.toLowerCase().includes(term) ||
+                meter.manufactureName.toLowerCase().includes(term) ||
+                meter.meterId.toLowerCase().includes(term) ||
+                meter.category.toLowerCase().includes(term)
+            );
+        }
+
+        // Apply other filters
+        filtered = filtered.filter((meter) => {
+            // Meter Class filter
+            const classMatch =
+                (!filters.singlePhase && !filters.threePhase && !filters.md) ||
+                (filters.singlePhase && meter.class.toLowerCase().includes("single phase")) ||
+                (filters.threePhase && meter.class.toLowerCase().includes("three phase")) ||
+                (filters.md && meter.class.toLowerCase().includes("md"));
+
+            // Meter Type filter
+            const typeMatch =
+                (!filters.prepaid && !filters.postPaid) ||
+                (filters.prepaid && meter.category.toLowerCase() === "prepaid") ||
+                (filters.postPaid && meter.category.toLowerCase() === "postpaid");
+
+            return classMatch && typeMatch;
+        });
+
+        // Apply sorting
+        if (sortConfig.key) {
+            filtered = [...filtered].sort((a, b) => {
+                const aValue = a[sortConfig.key!] || "";
+                const bValue = b[sortConfig.key!] || "";
+                if (aValue < bValue) return sortConfig.direction === "asc" ? -1 : 1;
+                if (aValue > bValue) return sortConfig.direction === "asc" ? 1 : -1;
+                return 0;
+            });
+        }
+
+        setMeters(filtered);
+    };
+
     return (
         <div className="p-6 h-fit">
             <div className="flex items-center justify-between mb-4">
@@ -167,12 +308,15 @@ export default function AllocateMetersPage() {
                                 type="text"
                                 placeholder="Search by meter no., account no..."
                                 className="pl-10 w-full border-gray-300 focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
+                                value={searchTerm}
+                                onChange={(e) => handleSearchChange(e.target.value)}
                             />
                         </div>
-                        <Button variant="outline" className="gap-2 border-gray-300">
-                            <Filter className="text-gray-500" size={14} />
-                            <span className="text-gray-800">Filter</span>
-                        </Button>
+                        <FilterControl
+                            sections={filterSections}
+                            onApply={(filters) => handleSetActiveFilters(filters)}
+                            onReset={() => handleSetActiveFilters({})}
+                        />
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="outline" className="gap-2 border-gray-300 w-full sm:w-auto">
@@ -182,21 +326,25 @@ export default function AllocateMetersPage() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-48">
                                 <DropdownMenuItem
+                                    onClick={handleSortChange}
                                     className="text-sm cursor-pointer hover:bg-gray-100"
                                 >
                                     A-Z
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
+                                    onClick={handleSortChange}
                                     className="text-sm cursor-pointer hover:bg-gray-100"
                                 >
                                     Z-A
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
+                                    onClick={handleSortChange}
                                     className="text-sm cursor-pointer hover:bg-gray-100"
                                 >
                                     Newest-Oldest
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
+                                    onClick={handleSortChange}
                                     className="text-sm cursor-pointer hover:bg-gray-100"
                                 >
                                     Oldest-Newest
@@ -208,7 +356,7 @@ export default function AllocateMetersPage() {
                 <div className="flex items-center gap-4 py-4">
                     <div className="flex-1">
                         <Label htmlFor="meterNumber" className="text-sm font-medium mb-2 text-gray-700">
-                            Meter Number <span className="text-red-500">*</span>
+                            Meter Number 
                         </Label>
                         <Input
                             id="meterNumber"
@@ -296,8 +444,7 @@ export default function AllocateMetersPage() {
                                 <TableCell>{meter.dateAdded}</TableCell>
                                 <TableCell>
                                     <span
-                                        className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${meter.status === "Pending" ? "bg-[#FFF5EA] text-[#C86900]" : "bg-[#E9F6FF] text-[#161CCA]"
-                                            }`}
+                                        className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${meter.status === "Pending" ? "bg-[#FFF5EA] text-[#C86900]" : "bg-[#E9F6FF] text-[#161CCA]"}`}
                                     >
                                         {meter.status}
                                     </span>
@@ -315,21 +462,41 @@ export default function AllocateMetersPage() {
                 </Table>
             </Card>
 
-            <div className="flex items-center justify-between mt-4">
-                <div className="flex items-center space-x-2 text-sm text-gray-500">
-                    <span>Rows per page:</span>
+     <div className="flex flex-col sm:flex-row justify-between items-center py-3 px-4 sm:py-4 sm:px-6 text-xs sm:text-sm text-gray-600 gap-3 sm:gap-0">
+                <div className="flex items-center gap-2 justify-between sm:justify-start">
+                    <span className="whitespace-nowrap">Rows per page</span>
                     <select
                         value={rowsPerPage}
-                        onChange={(e) => setRowsPerPage(parseInt(e.target.value))}
+                        onChange={(e) => onRowsPerPageChange(parseInt(e.target.value))}
                         className="w-16 border-gray-300 text-sm rounded-md focus:ring-[#161CCA]/50 focus:border-[#161CCA]/30"
                     >
                         <option value="10">10</option>
                         <option value="20">20</option>
                         <option value="50">50</option>
                     </select>
-                    <span>{`${startIndex + 1}-${Math.min(endIndex, meters.length)} of ${meters.length} row${meters.length !== 1 ? "s" : ""}`}</span>
+                </div>
+                <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-start">
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onPageChange(Math.max(currentPage - 1, 1))}
+                        disabled={currentPage === 1}
+                        className="cursor-pointer px-2 sm:px-3"
+                    >
+                        Previous
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onPageChange(Math.min(currentPage + 1, totalPages))}
+                        disabled={currentPage === totalPages || meters.length === 0}
+                        className="cursor-pointer px-2 sm:px-3 text-gray-400"
+                    >
+                        Next
+                    </Button>
                 </div>
             </div>
+
 
             {/* Bulk Allocation Dialog */}
             <Dialog open={isBulkDialogOpen} onOpenChange={setIsBulkDialogOpen}>
