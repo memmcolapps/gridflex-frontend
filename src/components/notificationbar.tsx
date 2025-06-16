@@ -1,6 +1,6 @@
 'use client';
 
-import { CircleAlert} from 'lucide-react';
+import { CircleAlert } from 'lucide-react';
 import { useState } from 'react';
 
 interface NavigationBannerProps {
@@ -28,25 +28,19 @@ export function NotificationBar({
 }: NavigationBannerProps) {
     const [isClosed, setIsClosed] = useState(false);
 
-    const toggleBanner = () => {
-        setIsClosed(!isClosed);
-        if (isClosed && onClose) onClose();
-    };
-
     return (
         <div>
             {isClosed ? (
                 <button
-                    onClick={toggleBanner}
-                    className={"absolute top-27 right-17 m-2 p-1 rounded-full text-white transition duration-200 ease-in-out"}
+                    onClick={() => setIsClosed(false)}
+                    className="absolute top-27 right-17 m-2 p-1 rounded-full text-white transition duration-200 ease-in-out"
                     aria-label="Reopen notification"
                 >
                     <CircleAlert size={18} strokeWidth={2.75} />
                 </button>
             ) : (
                 <div
-                    className={`py-4 px-6 flex justify-between items-center ${bgColor} ${isTopBanner ? 'rounded-tl-[10px] rounded-tr-[10px]' : ''
-                        }`}
+                    className={`py-4 px-6 flex justify-between items-center ${bgColor} ${isTopBanner ? 'rounded-tl-[10px] rounded-tr-[10px]' : ''}`}
                 >
                     <div className="flex flex-col">
                         <div className="flex flex-row gap-2 items-center">
@@ -68,15 +62,15 @@ export function NotificationBar({
                     </div>
                     {closable && (
                         <button
-                        onClick={() => {
-                            setIsClosed(true);
-                            if (onClose) onClose();
-                        }}
-                        className={"p-1 rounded-full -mt-38 text-white transition duration-200 ease-in-out"}
-                        aria-label="Close"
-                    >
-                        <CircleAlert size={18} strokeWidth={2.75} />
-                    </button>
+                            onClick={() => {
+                                setIsClosed(true);
+                                if (onClose) onClose();
+                            }}
+                            className="p-1 rounded-full -mt-38 text-white transition duration-200 ease-in-out"
+                            aria-label="Close"
+                        >
+                            <CircleAlert size={18} strokeWidth={2.75} />
+                        </button>
                     )}
                 </div>
             )}

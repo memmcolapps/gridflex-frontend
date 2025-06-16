@@ -19,6 +19,7 @@ import {
   useNodeFormValidation,
 } from "../hooks/useNodeFormValidation";
 import type { FormData } from "../hooks/useNodeFormValidation";
+import { Textarea } from "@/components/ui/textarea";
 
 interface AddDialogProps {
   isOpen: boolean;
@@ -45,6 +46,7 @@ export const AddNodeDialog = ({
     longitude: "",
     latitude: "",
     description: "",
+    assetId: "",
   });
 
   const { errors, isValid, validateForm } = useNodeFormValidation({
@@ -54,7 +56,6 @@ export const AddNodeDialog = ({
 
   useEffect(() => {
     if (isOpen) {
-      // Reset form data and validation on dialog open
       const resetData: FormData = {
         name: "",
         id: "",
@@ -67,13 +68,21 @@ export const AddNodeDialog = ({
         longitude: "",
         latitude: "",
         description: "",
+        assetId: "",
       };
       setFormData(resetData);
-      validateForm(resetData); // Re-validate with empty data
+      validateForm(resetData);
     }
   }, [isOpen, validateForm]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    const newData = { ...formData, [name]: value };
+    setFormData(newData);
+    validateForm(newData);
+  };
+
+  const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     const newData = { ...formData, [name]: value };
     setFormData(newData);
@@ -92,6 +101,8 @@ export const AddNodeDialog = ({
       onClose();
     }
   };
+
+  const isTechnicalNode = ["Substation", "Feeder Line", "Distribution Substation (DSS)"].includes(nodeType);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -150,9 +161,7 @@ export const AddNodeDialog = ({
                 className="mt-1 border-gray-300"
               />
               {errors.phoneNumber && (
-                <p className="mt-1 text-xs text-red-500">
-                  {errors.phoneNumber}
-                </p>
+                <p className="mt-1 text-xs text-red-500">{errors.phoneNumber}</p>
               )}
             </div>
             <div className="flex flex-col">
@@ -191,8 +200,18 @@ export const AddNodeDialog = ({
               />
             </div>
           </div>
-          {nodeType !== "Root" && nodeType !== "Region" && (
-            <div className="grid grid-cols-2 gap-4">
+          {isTechnicalNode && (
+            <div className="grid grid-cols-3 gap-4">
+              <div className="flex flex-col">
+                <label className="text-sm font-medium">Asset ID *</label>
+                <Input
+                  name="assetId"
+                  value={formData.assetId}
+                  onChange={handleInputChange}
+                  placeholder="Enter Asset ID"
+                  className="mt-1 border-gray-300"
+                />
+              </div>
               <div className="flex flex-col">
                 <label className="text-sm font-medium">Status *</label>
                 <Select
@@ -211,12 +230,8 @@ export const AddNodeDialog = ({
               <div className="flex flex-col">
                 <label className="text-sm font-medium">Voltage *</label>
                 <Select
-                  onValueChange={(value) =>
-                    handleSelectChange("voltage", value)
-                  }
-                  value={
-                    formData.voltage ? String(formData.voltage) : undefined
-                  }
+                  onValueChange={(value) => handleSelectChange("voltage", value)}
+                  value={formData.voltage ? String(formData.voltage) : undefined}
                 >
                   <SelectTrigger className="ring-opacity-0 border-gray-300">
                     <SelectValue placeholder="Select Voltage" />
@@ -234,25 +249,37 @@ export const AddNodeDialog = ({
               </div>
             </div>
           )}
-          {(nodeType === "Substation" || nodeType === "Transformer") && (
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col">
-                <label className="text-sm font-medium">Longitude *</label>
-                <Input
-                  name="longitude"
-                  value={formData.longitude}
-                  onChange={handleInputChange}
-                  placeholder="Enter Longitude"
-                  className="mt-1 border-gray-300"
-                />
+          {(nodeType === "Substation" || nodeType === "Distribution Substation (DSS)" || nodeType ==="Feeder Line") && (
+            <div className="grid gap-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col">
+                  <label className="text-sm font-medium">Longitude *</label>
+                  <Input
+                    name="longitude"
+                    value={formData.longitude}
+                    onChange={handleInputChange}
+                    placeholder="Enter Longitude"
+                    className="mt-1 border-gray-300"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="text-sm font-medium">Latitude *</label>
+                  <Input
+                    name="latitude"
+                    value={formData.latitude}
+                    onChange={handleInputChange}
+                    placeholder="Enter Latitude"
+                    className="mt-1 border-gray-300"
+                  />
+                </div>
               </div>
               <div className="flex flex-col">
-                <label className="text-sm font-medium">Latitude *</label>
-                <Input
-                  name="latitude"
-                  value={formData.latitude}
-                  onChange={handleInputChange}
-                  placeholder="Enter Latitude"
+                <label className="text-sm font-medium">Description</label>
+                <Textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleTextareaChange}
+                  placeholder="Enter Description"
                   className="mt-1 border-gray-300"
                 />
               </div>

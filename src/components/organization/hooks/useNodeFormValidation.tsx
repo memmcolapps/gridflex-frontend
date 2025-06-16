@@ -13,6 +13,7 @@ export interface FormData {
   longitude?: string;
   latitude?: string;
   description?: string;
+  assetId: string;
   serialNo?: string; // Potentially distinct from 'id' for API
 }
 
