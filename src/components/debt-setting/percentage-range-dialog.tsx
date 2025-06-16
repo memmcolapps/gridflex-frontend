@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
     Dialog,
     DialogContent,
@@ -11,6 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PlusCircle } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import type { Band } from "@/service/band-service";
+import { fetchBands } from "@/service/band-service";
 
 type AddPercentageRangeDialogProps = {
     onAddPercentageRange: (range: { percentage: string; percentageCode: string; band: string; amountStartRange: string; amountEndRange: string }) => void;
@@ -23,6 +25,21 @@ const AddPercentageRangeDialog = ({ onAddPercentageRange }: AddPercentageRangeDi
     const [band, setBand] = useState("");
     const [amountStartRange, setAmountStartRange] = useState("");
     const [amountEndRange, setAmountEndRange] = useState("");
+    const [bands, setBands] = useState<Band[]>([]); // State to store fetched bands
+    const [loading, setLoading] = useState(false); // Optional: Loading state for fetching bands
+
+    // Fetch bands when the dialog opens
+    useEffect(() => {
+        if (open) {
+            const loadBands = async () => {
+                setLoading(true);
+                const fetchedBands = await fetchBands();
+                setBands(fetchedBands);
+                setLoading(false);
+            };
+            loadBands();
+        }
+    }, [open]);
 
     const handleSubmit = () => {
         if (percentage && percentageCode && band && amountStartRange && amountEndRange) {
@@ -76,16 +93,28 @@ const AddPercentageRangeDialog = ({ onAddPercentageRange }: AddPercentageRangeDi
                         </div>
                         <div>
                             <Label htmlFor="band" className="mb-2">Band</Label>
-                            <Select value={band} onValueChange={setBand}>
+                            <Select value={band} onValueChange={setBand} disabled={loading || bands.length === 0}>
                                 <SelectTrigger className="w-full border-[#bebebe] focus:ring-ring/50 rounded-md h-10 px-3">
-                                    <SelectValue placeholder="Select Band"/>
+                                    <SelectValue placeholder={loading ? "Loading bands..." : "Select Band"} />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="Band A">Band A</SelectItem>
-                                    <SelectItem value="Band B">Band B</SelectItem>
-                                    <SelectItem value="Band C">Band C</SelectItem>
-                                    <SelectItem value="Band D">Band D</SelectItem>
-                                    <SelectItem value="Band E">Band E</SelectItem>
+                                    {bands.length > 0 ? (
+                                        bands.map((bandItem) => (
+                                            <SelectItem key={bandItem.id} value={bandItem.name}>
+                                                {bandItem.name}
+                                            </SelectItem>
+                                        ))
+                                    ) : (
+                                        loading ? (
+                                            <SelectItem value="loading" disabled>
+                                                Loading...
+                                            </SelectItem>
+                                        ) : (
+                                            <SelectItem value="no-bands" disabled>
+                                                No bands available
+                                            </SelectItem>
+                                        )
+                                    )}
                                 </SelectContent>
                             </Select>
                         </div>
@@ -116,7 +145,7 @@ const AddPercentageRangeDialog = ({ onAddPercentageRange }: AddPercentageRangeDi
                 <Button
                     onClick={handleSubmit}
                     className="bg-[rgba(22,28,202,1)] text-white"
-                    disabled={!percentage || !percentageCode || !band || !amountStartRange || !amountEndRange}
+                    disabled={loading || !percentage || !percentageCode || !band || !amountStartRange || !amountEndRange}
                 >
                     Add
                 </Button>

@@ -1,5 +1,22 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import type { RectangleProps } from "recharts";
+
+const RoundedBar = (props: RectangleProps) => {
+  const { x, y, width, height, fill } = props;
+  const radius = 6;
+  return (
+    <rect
+      x={x}
+      y={y}
+      width={width}
+      height={height}
+      fill={fill}
+      rx={radius}
+      ry={radius}
+    />
+  );
+};
 
 const monthlyData = [
   { month: "JAN", amount: 180, unit: 160, vat: 90 },
@@ -39,14 +56,14 @@ export default function MonthlyTransactionChart() {
         </div>
 
         <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={monthlyData}>
+            <BarChart data={monthlyData} barCategoryGap={12} barGap={4}>
             <XAxis dataKey="month" />
             <YAxis domain={[0, 180]} ticks={[0, 20, 40, 60, 80, 100, 120, 140, 160, 180]} />
             <Tooltip />
-            <Bar dataKey="amount" fill="#1E4BAF" name="Amount Paid" />
-            <Bar dataKey="unit" fill="#166533" name="Cost Of Unit" />
-            <Bar dataKey="vat" fill="#991B1B" name="VAT" />
-          </BarChart>
+            <Bar dataKey="amount" fill="#1E4BAF" name="Amount Paid" shape={<RoundedBar />} barSize={13} />
+            <Bar dataKey="unit" fill="#166533" name="Cost Of Unit" shape={<RoundedBar />} barSize={13} />
+            <Bar dataKey="vat" fill="#991B1B" name="VAT" shape={<RoundedBar />} barSize={13} />
+            </BarChart>
         </ResponsiveContainer>
       </CardContent>
     </Card>
