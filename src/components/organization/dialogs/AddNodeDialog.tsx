@@ -19,6 +19,7 @@ import {
   useNodeFormValidation,
 } from "../hooks/useNodeFormValidation";
 import type { FormData } from "../hooks/useNodeFormValidation";
+import { Textarea } from "@/components/ui/textarea";
 
 interface AddDialogProps {
   isOpen: boolean;
