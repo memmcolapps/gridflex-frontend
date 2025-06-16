@@ -325,18 +325,19 @@ export default function AllocateMetersPage() {
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-48">
+                                  <DropdownMenuItem
+                                    onClick={handleSortChange}
+                                    className="text-sm cursor-pointer hover:bg-gray-100"
+                                >
+                                    Z-A
+                                </DropdownMenuItem>
                                 <DropdownMenuItem
                                     onClick={handleSortChange}
                                     className="text-sm cursor-pointer hover:bg-gray-100"
                                 >
                                     A-Z
                                 </DropdownMenuItem>
-                                <DropdownMenuItem
-                                    onClick={handleSortChange}
-                                    className="text-sm cursor-pointer hover:bg-gray-100"
-                                >
-                                    Z-A
-                                </DropdownMenuItem>
+                              
                                 <DropdownMenuItem
                                     onClick={handleSortChange}
                                     className="text-sm cursor-pointer hover:bg-gray-100"
