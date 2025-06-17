@@ -22,7 +22,6 @@ import {
 import { TariffDatePicker } from "@/components/tarrif-datepicker";
 import {
   ArrowUpDown,
-  Check,
   CirclePlusIcon,
   ListFilter,
   Search,
@@ -107,22 +106,6 @@ export default function TariffManagementPage() {
     },
     [],
   );
-
-  const handleBulkApprove = async () => {
-    // Implement bulk approve logic here
-    try {
-      // Your bulk approve API call
-      const success = true; // Replace with actual API call
-      if (success) {
-        await refreshTariffs(); // Refresh after bulk approve
-        setSelectedTariffs([]); // Clear selection after approval
-        toast.success("Bulk approve successful");
-      }
-    } catch (error) {
-      console.error("Bulk approve error:", error);
-      toast.error("Failed to bulk approve tariffs");
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -443,15 +426,6 @@ export default function TariffManagementPage() {
             </div>
           </div>
           <div className="flex gap-5">
-            <Button
-              variant={"outline"}
-              className={`text-md cursor-pointer gap-2 border-[#22C55E] bg-green-600 px-8 py-5 font-semibold text-white ${selectedTariffs.length === 0 ? "cursor-not-allowed opacity-50" : ""}`}
-              onClick={handleBulkApprove}
-              disabled={selectedTariffs.length === 0}
-            >
-              <Check size={14} />
-              Bulk Approve
-            </Button>
             <Button
               variant={"default"}
               className="text-md cursor-pointer gap-2 border px-8 py-5 font-semibold text-[rgba(22,28,202,1)]"
