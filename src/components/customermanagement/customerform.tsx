@@ -10,7 +10,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "../ui/badge";
 
 export type Customer = {
     id: string;
@@ -28,9 +27,10 @@ export type Customer = {
     meterNumber?: string;
     location?: string;
     address?: string;
-    status?: "Active" | "Blocked";
+    status?: "Active" | "Blocked" | "Inactive";
     virtual?: number;
     actual?: number;
+    valueAddedTax?: "Paying" | "Not Paying";
 };
 
 type CustomerFormModalProps = {
@@ -75,6 +75,7 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
         status: "Active",
         virtual: undefined,
         actual: undefined,
+        valueAddedTax: "Not Paying",
     });
 
     const cleanUpOverlay = useCallback(() => {
@@ -107,6 +108,7 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
                 status: "Active",
                 virtual: undefined,
                 actual: undefined,
+                valueAddedTax: "Not Paying",
             });
         }
     }, [customer, isOpen, mode]);
@@ -140,6 +142,14 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
         },
         []
     );
+
+    const handleTaxChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        const { checked } = e.target;
+        setFormData((prev) => ({
+            ...prev,
+            valueAddedTax: checked ? "Paying" : "Not Paying",
+        }));
+    }, []);
 
     const handleSubmit = useCallback(
         (e: React.FormEvent) => {
@@ -308,24 +318,21 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
                         </div>
                     </div>
 
-                    {formData.status === "Active" && (
-                        <div className="mt-6 space-y-2">
-                            <Label>
-                                Assigned Meter ({formData.meterNumber ? formData.meterNumber.split(",").length : 0})
+                    <div className="mt-6 space-y-2">
+                        <Label>Value Added Tax</Label>
+                        <div className="flex items-center justify-between gap-2 border border-gray-500 p-2 rounded-md">
+                            <Label className="text-sm text-gray-700">
+                                {formData.valueAddedTax === "Paying" ? "Paying" : "Not Paying"}
                             </Label>
-                            <div className="flex flex-wrap gap-4 mt-2">
-                                {formData.meterNumber?.split(",").map((meter, index) => (
-                                    <Badge
-                                        key={index}
-                                        variant="outline"
-                                        className="px-3 py-1 text-sm font-normal"
-                                    >
-                                        {meter.trim()}
-                                    </Badge>
-                                ))}
-                            </div>
+                            <input
+                                type="checkbox"
+                                checked={formData.valueAddedTax === "Paying"}
+                                onChange={handleTaxChange}
+                                className="cursor-pointer accent-green-500"
+                            />
                         </div>
-                    )}
+                    </div>
+
                     <div className="mt-12 flex justify-between gap-3">
                         <Button
                             variant="outline"
