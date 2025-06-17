@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { useState, useEffect } from "react";
 
 export interface FormData {
@@ -12,6 +13,7 @@ export interface FormData {
   longitude?: string;
   latitude?: string;
   description?: string;
+  assetId: string;
   serialNo?: string; // Potentially distinct from 'id' for API
 }
 
@@ -39,7 +41,8 @@ export const useNodeFormValidation = ({
   });
   const [isValid, setIsValid] = useState(false);
 
-  const validateForm = (data: FormData) => {
+
+  const validateForm = useCallback((data: FormData) => {
     const newErrors: FormErrors = { email: "", phoneNumber: "", id: "" };
     let allFieldsValid = true;
 
@@ -88,13 +91,13 @@ export const useNodeFormValidation = ({
 
     setErrors(newErrors);
     setIsValid(allFieldsValid);
-  };
+  }, [nodeType]);
 
   useEffect(() => {
     if (isInitialValidation) {
       validateForm(formData);
     }
-  }, [formData, nodeType, isInitialValidation]);
+  }, [formData, nodeType, isInitialValidation, validateForm]);
 
   return { errors, isValid, validateForm };
 };

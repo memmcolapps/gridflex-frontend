@@ -3,7 +3,7 @@ import {
   Building2,
   Database,
   Grid2X2,
-  Plug,
+  Lightbulb,
   Wrench,
   Zap,
 } from "lucide-react";
@@ -25,6 +25,7 @@ export const mapNodeInfoToFormData = (nodeInfo?: NodeInfo) => {
       latitude: "",
       description: "",
       serialNo: "",
+      assetId: "",
     };
   }
   return {
@@ -45,6 +46,7 @@ export const mapNodeInfoToFormData = (nodeInfo?: NodeInfo) => {
     latitude: nodeInfo.latitude ?? "",
     description: nodeInfo.description ?? "",
     serialNo: nodeInfo.serialNo ?? "",
+    assetId: nodeInfo.assetId ?? "",
   };
 };
 
@@ -64,7 +66,7 @@ export const renderNodeIcon = (nodeTypeString?: string): React.ReactNode => {
     case "feeder line":
       return <Zap size={14} className="text-gray-600" />;
     case "transformer":
-      return <Plug size={14} className="text-gray-600" />;
+      return <Lightbulb size={14} className="text-gray-600" />;
     default:
       return null;
   }

@@ -36,14 +36,14 @@ import {
     MoreVertical,
     PlusCircle,
     Eye,
-    Wallet,
     SquareArrowOutUpRight,
     Printer,
+    Wallet,
 } from 'lucide-react';
 import { SearchControl, SortControl } from '../search-control';
 
 interface Customer {
-    id: number;
+    id: string | number;
     name: string;
     meterNo: string;
     accountNo: string;
@@ -64,26 +64,25 @@ interface AdjustmentTableProps {
 }
 
 const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
-    const [customers, setCustomers] = useState<Customer[]>([
-        { id: 1, name: 'John Doe', meterNo: '6201021223', accountNo: '0159004612077', balance: 0 },
-        { id: 2, name: 'Jane Smith', meterNo: '6201021224', accountNo: '0159004612078', balance: 500000 },
-        { id: 3, name: 'Alice Johnson', meterNo: '6201021225', accountNo: '0159004612079', balance: 500000 },
-        { id: 4, name: 'Bob Brown', meterNo: '6201021226', accountNo: '0159004612080', balance: 500000 },
-        { id: 5, name: 'Emma Davis', meterNo: '6201021227', accountNo: '0159004612081', balance: 500000 },
-        { id: 6, name: 'Michael Lee', meterNo: '6201021228', accountNo: '0159004612082', balance: 500000 },
-        { id: 7, name: 'Sarah Wilson', meterNo: '6201021229', accountNo: '0159004612083', balance: 500000 },
-        { id: 8, name: 'David Clark', meterNo: '6201021230', accountNo: '0159004612084', balance: 500000 },
-        { id: 9, name: 'Laura Martinez', meterNo: '6201021231', accountNo: '0159004612085', balance: 500000 },
-        { id: 10, name: 'James Taylor', meterNo: '6201021232', accountNo: '0159004612086', balance: 500000 },
+    const [customers] = useState<Customer[]>([
+        { id: "C-123456789", name: 'John Doe', meterNo: '6201021223', accountNo: '0159004612077', balance: 1400000 },
+        { id: "C-123456790", name: 'Jane Smith', meterNo: '6201021224', accountNo: '0159004612078', balance: 500000 },
+        { id: "C-123456791", name: 'Alice Johnson', meterNo: '6201021225', accountNo: '0159004612079', balance: 250000 },
+        { id: "C-123456792", name: 'Bob Brown', meterNo: '6201021226', accountNo: '0159004612080', balance: 750000 },
+        { id: "C-123456793", name: 'Emma Davis', meterNo: '6201021227', accountNo: '0159004612081', balance: 300000 },
+        { id: "C-123456794", name: 'Michael Lee', meterNo: '6201021228', accountNo: '0159004612082', balance: 400000 },
+        { id: "C-123456795", name: 'Sarah Wilson', meterNo: '6201021229', accountNo: '0159004612083', balance: 600000 },
+        { id: "C-123456796", name: 'David Clark', meterNo: '6201021230', accountNo: '0159004612084', balance: 200000 },
+        { id: "C-123456797", name: 'Laura Martinez', meterNo: '6201021231', accountNo: '0159004612085', balance: 450000 },
+        { id: "C-123456798", name: 'James Taylor', meterNo: '6201021232', accountNo: '0159004612086', balance: 500000 },
     ]);
 
-    // Separate arrays for credit and debit transactions
     const [creditTransactions] = useState<Transaction[]>([
         { date: '05-05-2025', liabilityCause: 'Electricity Deficit', liabilityCode: 'CR1234', credit: 10000, debit: "", balance: 10000 },
-        { date: '05-04-2025', liabilityCause: 'Null', liabilityCode: 'Null', credit: "", debit: 10000, balance: 0 },
+        { date: '05-04-2025', liabilityCause: 'Null', liabilityCode:'Null', credit: "", debit: 10000, balance: 0 },
         { date: '05-03-2025', liabilityCause: 'Electricity Deficit', liabilityCode: 'CR1234', credit: 10000, debit: "", balance: 10000 },
         { date: '05-02-2025', liabilityCause: 'Null', liabilityCode: 'Null', credit: "", debit: 10000, balance: 0 },
-
+     
     ]);
 
     const [debitTransactions] = useState<Transaction[]>([
@@ -93,13 +92,15 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
         { date: '05-02-2025', liabilityCause: 'Null', liabilityCode: 'Null', credit: 100000, debit: "", balance: 200000 },
         { date: '05-01-2025', liabilityCause: 'Null', liabilityCode: 'Null', credit: 100000, debit: "", balance: 100000 },
         { date: '05-01-2025', liabilityCause: 'Null', liabilityCode: 'Null', credit: 100000, debit: "", balance: 100000 },
-        { date: '05-01-2025', liabilityCause: 'Null', liabilityCode: 'Null', credit: 100000, debit: "", balance: 0 },
+         { date: '05-01-2025', liabilityCause: 'Null', liabilityCode: 'Null', credit: 100000, debit: "", balance: 0 },
     ]);
 
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [isReconcileDialogOpen, setIsReconcileDialogOpen] = useState(false);
     const [isTransactionsDialogOpen, setIsTransactionsDialogOpen] = useState(false);
+    const [isNestedDialogOpen, setIsNestedDialogOpen] = useState(false);
     const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+    const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -114,17 +115,12 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
     const [accountNo, setAccountNo] = useState('');
     const [reconcileAmount, setReconcileAmount] = useState('');
 
-    // Disable condition: Updated as per your request
-    const isDisabled = (amount ?? "").trim() === "" ? true : !(liabilityCause ?? false);
-
-    // Disable logic for Reconcile Debit dialog
+    const isDisabled = !amount.trim() || !liabilityCause;
     const isReconcileDisabled = !reconcileAmount.trim();
 
     const filteredCustomers = customers.filter(
         (customer) =>
-            customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            customer.meterNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            customer.accountNo.toLowerCase().includes(searchTerm.toLowerCase())
+            customer.meterNo.includes(searchTerm) ?? customer.accountNo.includes(searchTerm)
     );
 
     const [sortConfig, setSortConfig] = useState<{
@@ -197,7 +193,11 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
         if (selectedCustomers.length === paginatedCustomers.length) {
             setSelectedCustomers([]);
         } else {
-            setSelectedCustomers(paginatedCustomers.map((customer) => customer.id));
+            setSelectedCustomers(
+                paginatedCustomers
+                    .map((customer) => customer.id)
+                    .filter((id): id is number => typeof id === "number")
+            );
         }
     };
 
@@ -474,9 +474,10 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                                         <span>S/N</span>
                                     </div>
                                 </TableHead>
-                                <TableHead className="text-center">Customer Name</TableHead>
-                                <TableHead>Meter No.</TableHead>
                                 <TableHead>Account No.</TableHead>
+                                <TableHead>Customer ID</TableHead>
+                                <TableHead>Customer Name</TableHead>
+                                <TableHead>Meter No.</TableHead>
                                 <TableHead>{type === 'credit' ? 'Credit Balance' : 'Debit Balance'}</TableHead>
                                 <TableHead>Actions</TableHead>
                             </TableRow>
@@ -488,16 +489,21 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                                         <div className="flex items-center gap-2">
                                             <input
                                                 type="checkbox"
-                                                checked={selectedCustomers.includes(customer.id)}
-                                                onChange={() => toggleCustomerSelection(customer.id)}
+                                                checked={typeof customer.id === "number" && selectedCustomers.includes(customer.id)}
+                                                onChange={() => {
+                                                    if (typeof customer.id === "number") {
+                                                        toggleCustomerSelection(customer.id);
+                                                    }
+                                                }}
                                                 className="border-[rgba(228,231,236,1)]"
                                             />
                                             <span>{startIndex + index + 1}</span>
                                         </div>
                                     </TableCell>
-                                    <TableCell className="text-center">{customer.name}</TableCell>
-                                    <TableCell>{customer.meterNo}</TableCell>
                                     <TableCell>{customer.accountNo}</TableCell>
+                                    <TableCell>{customer.id}</TableCell>
+                                    <TableCell>{customer.name}</TableCell>
+                                    <TableCell>{customer.meterNo}</TableCell>
                                     <TableCell>
                                         <span
                                             className={
@@ -528,19 +534,6 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                                                         <span className="cursor-pointer">View Transactions</span>
                                                     </div>
                                                 </DropdownMenuItem>
-                                                {type === 'debit' && (
-                                                    <DropdownMenuItem
-                                                        onSelect={() => {
-                                                            setSelectedCustomer(customer);
-                                                            setIsReconcileDialogOpen(true);
-                                                        }}
-                                                    >
-                                                        <div className="flex items-center w-fit gap-2">
-                                                            <Wallet size={14} />
-                                                            <span className="cursor-pointer">Reconcile Debit</span>
-                                                        </div>
-                                                    </DropdownMenuItem>
-                                                )}
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     </TableCell>
@@ -550,7 +543,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                     </Table>
                 </div>
 
-                <div className="sticky bottom-0 bg-white border-t border-gray-200 flex items-center justify-between px-4 py-3 mt-4 z-10">
+                <div className="sticky bottom-0 bg-white border-t border-gray-200 flex items-center justify-between px-4 py-3 mt-4 z-10 w-full">
                     <div className="flex items-center gap-2">
                         <span className="text-sm text-gray-600">Rows per page</span>
                         <select
@@ -569,7 +562,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                         </select>
                     </div>
                     <span className="text-sm text-gray-600 ml-4">
-                        {startIndex + 1}-{Math.min(endIndex, totalRows)} of {totalRows} rows
+                        {startIndex + 1} - {Math.min(endIndex, totalRows)} of {totalRows} rows
                     </span>
                     <div className="flex items-center gap-2">
                         <button
@@ -590,11 +583,12 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                 </div>
             </div>
 
-            {/* Transactions Dialog */}
             <Dialog open={isTransactionsDialogOpen} onOpenChange={setIsTransactionsDialogOpen}>
-                <DialogContent className="bg-white text-black !w-[700px] !max-w-none border-gray-500" onClick={() => {
+                <DialogContent className="bg-white text-black !w-[700px] !max-w-none h-fit border-gray-500" onClick={() => {
                     const el = document.querySelector('.bg-white.text-black') as HTMLElement | null;
-                    console.log('Dialog width:', el?.offsetWidth);
+                    if (el) {
+                        console.log('Dialog width:', el?.offsetWidth);
+                    }
                 }}>
                     <DialogHeader>
                         <div className="flex justify-between mt-8 p-4">
@@ -608,7 +602,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                             </div>
                             <div className="flex flex-col text-right space-y-4">
                                 <span className="text-md">Outstanding Balance</span>
-                                <p className="text-2xl text-muted-foreground font-semibold">
+                                <p className="text-2xl font-semibold text-muted-foreground">
                                     {selectedCustomer?.balance?.toLocaleString()}
                                 </p>
                             </div>
@@ -618,82 +612,102 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                         <Table className="w-full">
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead className="min-w-[100px]">Date</TableHead>
-                                    <TableHead className="min-w-[150px]">Liability Cause</TableHead>
-                                    <TableHead className="min-w-[100px]">Liability Code</TableHead>
-                                    {type === 'debit' ? (
-                                        <>
-                                            <TableHead className="min-w-[100px]">Debit</TableHead>
-                                            <TableHead className="min-w-[100px]">Credit</TableHead>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <TableHead className="min-w-[100px]">Credit</TableHead>
-                                            <TableHead className="min-w-[100px]">Debit</TableHead>
-                                        </>
-                                    )}
-                                    <TableHead className="min-w-[100px]">Balance</TableHead>
+                                    <TableHead className="w-fit pr-0">
+                                        <div className="flex items-center gap-2">
+                                            <input
+                                                type="checkbox"
+                                                checked={
+                                                    selectedCustomers.length === paginatedCustomers.length &&
+                                                    paginatedCustomers.length > 0
+                                                }
+                                                onChange={toggleSelectAll}
+                                                className="border-[rgba(228,231,236,1)]"
+                                            />
+                                            <span>S/N</span>
+                                        </div>
+                                    </TableHead>
+                                    <TableHead className="w-fit">Liability Name</TableHead>
+                                    <TableHead className="w-fit">Liability Code</TableHead>
+                                    <TableHead>Credit Balance</TableHead>
+                                    <TableHead>Action</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody className="">
                                 {(type === 'credit' ? creditTransactions : debitTransactions).map((transaction, index) => (
                                     <TableRow key={index}>
-                                        <TableCell>{transaction.date}</TableCell>
+                                        <TableCell>
+                                            <div className="flex items-center gap-2">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={
+                                                        selectedCustomer !== null &&
+                                                        typeof selectedCustomer.id === 'number' &&
+                                                        selectedCustomers.includes(selectedCustomer.id)
+                                                    }
+                                                    onChange={() => {
+                                                        if (
+                                                            selectedCustomer !== null &&
+                                                            typeof selectedCustomer.id === 'number'
+                                                        ) {
+                                                            toggleCustomerSelection(selectedCustomer.id);
+                                                        }
+                                                    }}
+                                                    className="border-[rgba(228,231,236,1)]"
+                                                />
+                                                <span>{startIndex + index + 1}</span>
+                                            </div>
+                                        </TableCell>
                                         <TableCell>{transaction.liabilityCause}</TableCell>
                                         <TableCell>{transaction.liabilityCode}</TableCell>
-                                        {type === 'debit' ? (
-                                            <>
-                                                <TableCell>
-                                                    {typeof transaction.debit === 'number' && transaction.debit !== 0 ? (
-                                                        <span className="text-[#F50202] bg-[#FBE9E9] rounded-full px-1.5 py-1.5">
-                                                            {transaction.debit.toLocaleString()}
-                                                        </span>
-                                                    ) : (
-                                                        transaction.debit
-                                                    )}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {typeof transaction.credit === 'number' && transaction.credit !== 0 ? (
-                                                        <span className="text-[#059E40] bg-[#E9FBF0] rounded-full px-1.5 py-1.5">
-                                                            {transaction.credit.toLocaleString()}
-                                                        </span>
-                                                    ) : (
-                                                        transaction.credit
-                                                    )}
-                                                </TableCell>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <TableCell>
-                                                    {typeof transaction.credit === 'number' && transaction.credit !== 0 ? (
-                                                        <span className="text-[#059E40] bg-[#E9FBF0] rounded-full px-1.5 py-1.5">
-                                                            {transaction.credit.toLocaleString()}
-                                                        </span>
-                                                    ) : (
-                                                        transaction.credit
-                                                    )}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {typeof transaction.debit === 'number' && transaction.debit !== 0 ? (
-                                                        <span className="text-[#F50202] bg-[#FBE9E9] rounded-full px-1.5 py-1.5">
-                                                            {transaction.debit.toLocaleString()}
-                                                        </span>
-                                                    ) : (
-                                                        transaction.debit
-                                                    )}
-                                                </TableCell>
-                                            </>
-                                        )}
                                         <TableCell>
-                                            <span
-                                                className={
-                                                    type === 'debit'
-                                                        ? 'text-[#F50202] bg-[#FBE9E9] rounded-full px-1.5 py-1.5'
-                                                        : 'text-[#059E40] bg-[#E9FBF0] rounded-full px-1.5 py-1.5'
-                                                }
-                                            >
-                                                {transaction.balance.toLocaleString()}
-                                            </span>
+                                            {typeof transaction.credit === 'number' && transaction.credit !== 0 ? (
+                                                <span className="text-[#059E40] bg-[#E9FBF0] rounded-full px-1.5 py-1.5">
+                                                    {transaction.credit.toLocaleString()}
+                                                </span>
+                                            ) : (
+                                                typeof transaction.debit === 'number' && transaction.debit !== 0 ? (
+                                                    <span className="text-[#F50202] bg-[#FBE9E9] rounded-full px-1.5 py-1.5">
+                                                        -{transaction.debit.toLocaleString()}
+                                                    </span>
+                                                ) : (
+                                                    '0'
+                                                )
+                                            )}
+                                        </TableCell>
+                                        <TableCell>
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button size="sm" variant="ghost" className="h-8 w-8 p-2 cursor-pointer">
+                                                        <MoreVertical size={14} />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="center" className="w-fit cursor-pointer">
+                                                    <DropdownMenuItem
+                                                        onSelect={() => {
+                                                            setSelectedTransaction(transaction);
+                                                            setIsNestedDialogOpen(true);
+                                                        }}
+                                                    >
+                                                        <div className="flex items-center w-fit gap-2">
+                                                            <Eye size={14} />
+                                                            <span className="cursor-pointer">View Transactions</span>
+                                                        </div>
+                                                    </DropdownMenuItem>
+                                                    {type === 'debit' && (
+                                                        <DropdownMenuItem
+                                                            onSelect={() => {
+                                                                setSelectedCustomer(selectedCustomer);
+                                                                setIsReconcileDialogOpen(true);
+                                                            }}
+                                                        >
+                                                            <div className="flex items-center w-fit gap-2">
+                                                                <Wallet size={14} />
+                                                                <span className="cursor-pointer">Reconcile Debit</span>
+                                                            </div>
+                                                        </DropdownMenuItem>
+                                                    )}
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
                                         </TableCell>
                                     </TableRow>
                                 ))}
@@ -711,7 +725,96 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                 </DialogContent>
             </Dialog>
 
-            {/* Reconcile Debit Dialog */}
+            <Dialog open={isNestedDialogOpen} onOpenChange={setIsNestedDialogOpen}>
+                <DialogContent className="bg-white text-black !w-[700px] !max-w-none h-fit border-gray-500">
+                    <DialogHeader>
+                        <div className="flex justify-between mt-8 p-4">
+                            <div className="flex flex-col space-y-4">
+                                <DialogTitle className="text-2xl font-semibold">
+                                    {selectedCustomer?.name}
+                                </DialogTitle>
+                                <p className="text-sm text-muted-foreground">
+                                    {selectedCustomer?.accountNo}
+                                </p>
+                            </div>
+                            <div className="flex flex-col text-right space-y-4">
+                                <span className="text-md">Outstanding Balance</span>
+                                <p className="text-2xl font-semibold text-muted-foreground">
+                                    {selectedCustomer?.balance?.toLocaleString() ?? '0'}
+                                </p>
+                            </div>
+                        </div>
+                        <p className="text-sm ml-4 mb-4">{selectedTransaction?.liabilityCause}: {selectedTransaction?.liabilityCode}</p>
+                    </DialogHeader>
+                    <div className="overflow-x-hidden">
+                        <Table className="w-full">
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead className="w-[30px] pr-0">
+                                        <input
+                                            type="checkbox"
+                                            className="border-[rgba(228,231,236,1)]"
+                                        />
+                                    </TableHead>
+                                    <TableHead>Date</TableHead>
+                                    <TableHead>{type === 'credit' ? 'Credit' : 'Debit'}</TableHead>
+                                    <TableHead>{type === 'debit' ? 'Credit' : 'Debit'}</TableHead>
+                                    <TableHead>Balance</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {(type === 'credit' ? creditTransactions : debitTransactions).map((transaction, index) => (
+                                    <TableRow key={index}>
+                                        <TableCell>
+                                            <input
+                                                type="checkbox"
+                                                className="border-[rgba(228,231,236,1)]"
+                                            />
+                                        </TableCell>
+                                        <TableCell>{transaction.date}</TableCell>
+                                        <TableCell>
+                                            {typeof transaction[type === 'credit' ? 'credit' : 'debit'] === 'number' && transaction[type === 'credit' ? 'credit' : 'debit'] !== 0 ? (
+                                                <span className={type === 'credit' ? 'text-[#059E40] bg-[#E9FBF0]' : 'text-[#F50202] bg-[#FBE9E9]'} rounded-full px-2 py-1>
+                                                    {transaction[type === 'credit' ? 'credit' : 'debit'].toLocaleString()}
+                                                </span>
+                                            ) : (
+                                                '-'
+                                            )}
+                                        </TableCell>
+                                        <TableCell>
+                                            {typeof transaction[type === 'debit' ? 'credit' : 'debit'] === 'number' && transaction[type === 'debit' ? 'credit' : 'debit'] !== 0 ? (
+                                                <span className={type === 'debit' ? 'text-[#059E40] bg-[#E9FBF0]' : 'text-[#F50202] bg-[#FBE9E9]'} rounded-full px-2 py-1>
+                                                    {transaction[type === 'debit' ? 'credit' : 'debit'].toLocaleString()}
+                                                </span>
+                                            ) : (
+                                                '-'
+                                            )}
+                                        </TableCell>
+                                        <TableCell>
+                                            {typeof transaction.balance === 'number' ? (
+                                                <span className={type === 'credit' ? 'text-[#059E40] bg-[#E9FBF0]' : 'text-[#F50202] bg-[#FBE9E9]'} rounded-full px-2 py-1>
+                                                    {transaction.balance.toLocaleString()}
+                                                </span>
+                                            ) : (
+                                                transaction.balance
+                                            )}
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
+                    <div className="flex justify-between mt-4 p-4">
+                        <Button variant="outline" onClick={() => setIsNestedDialogOpen(false)} className="bg-transparent text-[#161CCA] border-[#161CCA] cursor-pointer">
+                            Cancel
+                        </Button>
+                        <Button className="bg-[#161CCA] text-white border-[#161CCA] cursor-pointer">
+                            <Printer size={14} /> Print
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
             {type === 'debit' && (
                 <Dialog open={isReconcileDialogOpen} onOpenChange={(open) => {
                     setIsReconcileDialogOpen(open);
@@ -728,7 +831,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                                 <div className="space-y-4">
                                     <Label>First Name</Label>
                                     <Input
-                                        defaultValue="John"
+                                        value={selectedCustomer?.name.split(' ')[0] ?? 'John'}
                                         className="border-[rgba(228,231,236,1)]"
                                         disabled
                                     />
@@ -736,7 +839,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                                 <div className="space-y-4">
                                     <Label>Last Name</Label>
                                     <Input
-                                        defaultValue="Doe"
+                                        value={selectedCustomer?.name.split(' ')[1] ?? 'Doe'}
                                         className="border-[rgba(228,231,236,1)]"
                                         disabled
                                     />
@@ -746,7 +849,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                                 <div className="space-y-4">
                                     <Label>Meter Number</Label>
                                     <Input
-                                        defaultValue="6201021223"
+                                        value={selectedCustomer?.meterNo ?? '6201021223'}
                                         className="border-[rgba(228,231,236,1)]"
                                         disabled
                                     />
@@ -754,7 +857,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                                 <div className="space-y-4">
                                     <Label>Account Number</Label>
                                     <Input
-                                        defaultValue="0159004612077"
+                                        value={selectedCustomer?.accountNo ?? '0159004612077'}
                                         className="border-[rgba(228,231,236,1)]"
                                         disabled
                                     />

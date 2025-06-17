@@ -17,8 +17,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
   useNodeFormValidation,
-  FormData,
+  type FormData,
 } from "../hooks/useNodeFormValidation";
+import { Textarea } from "@/components/ui/textarea";
 
 interface EditDialogProps {
   isOpen: boolean;
@@ -40,13 +41,13 @@ export const EditNodeDialog = ({
   const { errors, isValid, validateForm } = useNodeFormValidation({
     formData,
     nodeType,
-    isInitialValidation: true, // Validate on first load of initialData
+    isInitialValidation: true,
   });
 
   useEffect(() => {
     if (isOpen) {
       setFormData(initialData);
-      validateForm(initialData); // Re-validate when initialData changes or dialog opens
+      validateForm(initialData);
     }
   }, [isOpen, initialData, validateForm]);
 
@@ -69,6 +70,8 @@ export const EditNodeDialog = ({
       onClose();
     }
   };
+
+  const isTechnicalNode = ["Substation", "Feeder Line", "Distribution Substation (DSS)"].includes(nodeType);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -127,9 +130,7 @@ export const EditNodeDialog = ({
                 className="mt-1 border-gray-300"
               />
               {errors.phoneNumber && (
-                <p className="mt-1 text-xs text-red-500">
-                  {errors.phoneNumber}
-                </p>
+                <p className="mt-1 text-xs text-red-500">{errors.phoneNumber}</p>
               )}
             </div>
             <div className="flex flex-col">
@@ -168,15 +169,25 @@ export const EditNodeDialog = ({
               />
             </div>
           </div>
-          {nodeType !== "Root" && nodeType !== "Region" && (
-            <div className="grid grid-cols-2 gap-4">
+          {isTechnicalNode && (
+            <div className="grid grid-cols-3 gap-4">
+              <div className="flex flex-col">
+                <label className="text-sm font-medium">Asset ID *</label>
+                <Input
+                  name="assetId"
+                  value={formData.assetId}
+                  onChange={handleInputChange}
+                  placeholder="Enter Asset ID"
+                  className="mt-1 border-gray-300"
+                />
+              </div>
               <div className="flex flex-col">
                 <label className="text-sm font-medium">Status *</label>
                 <Select
                   onValueChange={(value) => handleSelectChange("status", value)}
-                  value={formData.status ? String(formData.status) : undefined}
+                  value={formData.status?.toString()}
                 >
-                  <SelectTrigger className="ring-opacity-0">
+                  <SelectTrigger className="ring-opacity-0 border-gray-300">
                     <SelectValue placeholder="Select Status" />
                   </SelectTrigger>
                   <SelectContent>
@@ -188,16 +199,10 @@ export const EditNodeDialog = ({
               <div className="flex flex-col">
                 <label className="text-sm font-medium">Voltage *</label>
                 <Select
-                  onValueChange={(value) =>
-                    handleSelectChange("voltage", value)
-                  }
-                  value={
-                    formData.voltage !== undefined
-                      ? String(formData.voltage)
-                      : undefined
-                  }
+                  onValueChange={(value) => handleSelectChange("voltage", value)}
+                  value={formData.voltage ? String(formData.voltage) : undefined}
                 >
-                  <SelectTrigger className="ring-opacity-0">
+                  <SelectTrigger className="ring-opacity-0 border-gray-300">
                     <SelectValue placeholder="Select Voltage" />
                   </SelectTrigger>
                   <SelectContent>
@@ -213,7 +218,7 @@ export const EditNodeDialog = ({
               </div>
             </div>
           )}
-          {(nodeType === "Substation" || nodeType === "Transformer") && (
+          {(nodeType === "Substation" || nodeType === "Distribution Substation (DSS)") && (
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col">
                 <label className="text-sm font-medium">Longitude *</label>
@@ -235,6 +240,18 @@ export const EditNodeDialog = ({
                   className="mt-1 border-gray-300"
                 />
               </div>
+            </div>
+          )}
+          {isTechnicalNode && (
+            <div className="flex flex-col">
+              <label className="text-sm font-medium">Description *</label>
+              <Textarea
+                name="description"
+                value={formData.description}
+                // onChange={handleInputChange}
+                placeholder="Enter Description"
+                className="mt-1 border-gray-300"
+              />
             </div>
           )}
         </div>
