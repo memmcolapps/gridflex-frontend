@@ -48,7 +48,7 @@ export function TariffDatePicker({ value, onChange }: TariffDatePickerProps) {
             </PopoverTrigger>
             <PopoverContent
                 align="start"
-                className="flex w-auto flex-col space-y-2 p-2"
+                className="flex w-fit flex-col space-y-2 p-2 bg-white border-none"
             >
                 <Select
                     onValueChange={(value: string) =>
