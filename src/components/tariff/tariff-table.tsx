@@ -81,14 +81,12 @@ export function TariffTable({
 
   const [formData, setFormData] = useState<{
     name: string;
-    index: string;
     type: string;
     effectiveDate: Date | null;
     bandCode: string;
     tariffRate: string;
   }>({
     name: "",
-    index: "",
     type: "",
     effectiveDate: null,
     bandCode: "",
@@ -107,7 +105,6 @@ export function TariffTable({
   const isFormValid = useMemo(() => {
     return (
       formData.name.trim() !== "" &&
-      formData.index !== "" &&
       formData.type !== "" &&
       formData.effectiveDate !== null &&
       formData.bandCode !== "" &&
@@ -143,9 +140,8 @@ export function TariffTable({
     setConfirmDialog({
       isOpen: true,
       title: `${currentStatus ? "Deactivate" : "Activate"} Tariff`,
-      description: `Are you sure you want to ${
-        currentStatus ? "deactivate" : "activate"
-      } this tariff?`,
+      description: `Are you sure you want to ${currentStatus ? "deactivate" : "activate"
+        } this tariff?`,
       action: async () => {
         try {
           const success = await changeTariffStatus(tariffId, !currentStatus);
@@ -166,7 +162,6 @@ export function TariffTable({
     setEditDialog({ isOpen: true, tariff });
     setFormData({
       name: tariff.name || "",
-      index: tariff.tariff_index !== undefined && tariff.tariff_index !== null ? String(tariff.tariff_index) : "",
       type: tariff.tariff_type || "",
       effectiveDate: tariff.effective_date
         ? new Date(tariff.effective_date)
@@ -178,7 +173,7 @@ export function TariffTable({
 
   const handleInputChange = (
     field: keyof typeof formData,
-    value: string | number | Date | null
+    value: string | Date | null
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
@@ -190,7 +185,6 @@ export function TariffTable({
     try {
       const updates: Partial<Tariff> = {
         name: formData.name,
-        tariff_index: Number(formData.index),
         tariff_type: formData.type,
         effective_date: formData.effectiveDate?.toISOString(),
         band: formData.bandCode,
@@ -225,7 +219,7 @@ export function TariffTable({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[50px]">
+            <TableHead className="w-[50px] flex items-center gap-2 px-4 py-3">
               <Checkbox
                 checked={
                   tariffs.length > 0 &&
@@ -233,10 +227,9 @@ export function TariffTable({
                 }
                 onCheckedChange={toggleSelectAll}
               />
-              <span className="ml-2 mt-1">S/N</span>
+              <span className="mt-1">S/N</span>
             </TableHead>
             <TableHead>Tariff Name</TableHead>
-            <TableHead>Tariff ID</TableHead>
             <TableHead>Tariff Type</TableHead>
             <TableHead>Band Code</TableHead>
             <TableHead>Tariff Rate</TableHead>
@@ -249,14 +242,14 @@ export function TariffTable({
         <TableBody>
           {validTariffs.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={10} className="py-4 text-center">
+              <TableCell colSpan={9} className="py-4 text-center">
                 No tariffs found
               </TableCell>
             </TableRow>
           ) : (
             validTariffs.map((tariff) => (
               <TableRow key={tariff.id}>
-                <TableCell>
+                <TableCell className="flex items-center gap-2 px-4 py-3">
                   <Checkbox
                     checked={selectedTariffs.includes(
                       tariff.id?.toString() ?? "",
@@ -265,20 +258,22 @@ export function TariffTable({
                       toggleSelection(tariff.id?.toString() ?? "")
                     }
                   />
+                  <span className="text-sm lg:text-base text-gray-900">
+                    {/* Replace index and pagination logic as needed */}
+                    {String(validTariffs.findIndex(t => t.id === tariff.id) + 1).padStart(2, "0")}
+                  </span>
                 </TableCell>
                 <TableCell>{tariff.name}</TableCell>
-                <TableCell>{tariff.tariff_index}</TableCell>
                 <TableCell>{tariff.tariff_type}</TableCell>
                 <TableCell>{tariff.band}</TableCell>
                 <TableCell>{tariff.tariff_rate}</TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
                     <span
-                      className={`py-0.6 rounded-xl px-2.5 capitalize ${
-                        tariff.status
-                          ? "bg-[#E9F6EE] text-[#4CAF50]"
-                          : "bg-[#FBE9E9] text-[#F75555]"
-                      }`}
+                      className={`py-0.6 rounded-xl px-2.5 capitalize ${tariff.status
+                        ? "bg-[#E9F6EE] text-[#4CAF50]"
+                        : "bg-[#FBE9E9] text-[#F75555]"
+                        }`}
                     >
                       {tariff.status ? "Active" : "Inactive"}
                     </span>
@@ -287,13 +282,12 @@ export function TariffTable({
                 <TableCell>{tariff.effective_date}</TableCell>
                 <TableCell>
                   <span
-                    className={`py-0.6 rounded-xl px-2.5 capitalize ${
-                      tariff.approve_status === "Approved"
-                        ? "bg-[#E9F6FF] text-[#225BFF]"
-                        : tariff.approve_status === "Rejected"
-                          ? "bg-[#FBE9E9] text-[#F75555]"
-                          : "bg-[#FFF5EA] text-[#FACC15]"
-                    }`}
+                    className={`py-0.6 rounded-xl px-2.5 capitalize ${tariff.approve_status === "Approved"
+                      ? "bg-[#E9F6FF] text-[#225BFF]"
+                      : tariff.approve_status === "Rejected"
+                        ? "bg-[#FBE9E9] text-[#F75555]"
+                        : "bg-[#FFF5EA] text-[#FACC15]"
+                      }`}
                   >
                     {tariff.approve_status}
                   </span>
@@ -348,6 +342,7 @@ export function TariffTable({
         description={confirmDialog.description}
       />
 
+      {/* Edit Dialog */}
       <Dialog
         open={editDialog.isOpen}
         onOpenChange={(open) =>
@@ -379,57 +374,30 @@ export function TariffTable({
                 onChange={(e) => handleInputChange("name", e.target.value)}
               />
             </div>
-            <div className="flex flex-row justify-between gap-4">
-              <div className="flex w-1/2 flex-col gap-2">
-                <label
-                  htmlFor="index"
-                  className="text-sm font-medium text-gray-700"
-                >
-                  Tariff Index
-                </label>
-                <Select
-                  value={formData.index}
-                  onValueChange={(value: string) =>
-                    handleInputChange("index", value)
-                  }
-                >
-                  <SelectTrigger className="w-full border-gray-300 focus:border-[rgba(22,28,202,1)] focus:ring-[rgba(22,28,202,1)]">
-                    <SelectValue placeholder="Select tariff ID" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {["1", "2", "3", "4", "5", "6"].map((id) => (
-                      <SelectItem key={id} value={id}>
-                        {id}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex w-1/2 flex-col gap-2">
-                <label
-                  htmlFor="type"
-                  className="text-sm font-medium text-gray-700"
-                >
-                  Tariff Type
-                </label>
-                <Select
-                  value={formData.type}
-                  onValueChange={(value: string) =>
-                    handleInputChange("type", value)
-                  }
-                >
-                  <SelectTrigger className="w-full border-gray-300 focus:border-[rgba(22,28,202,1)] focus:ring-[rgba(22,28,202,1)]">
-                    <SelectValue placeholder="Select tariff type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {["R1", "R2", "R3", "C1", "C2"].map((type) => (
-                      <SelectItem key={type} value={type}>
-                        {type}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="flex flex-col gap-2">
+              <label
+                htmlFor="type"
+                className="text-sm font-medium text-gray-700"
+              >
+                Tariff Type
+              </label>
+              <Select
+                value={formData.type}
+                onValueChange={(value: string) =>
+                  handleInputChange("type", value)
+                }
+              >
+                <SelectTrigger className="w-full border-gray-300 focus:border-[rgba(22,28,202,1)] focus:ring-[rgba(22,28,202,1)]">
+                  <SelectValue placeholder="Select tariff type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {["R1", "R2", "R3", "C1", "C2"].map((type) => (
+                    <SelectItem key={type} value={type}>
+                      {type}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="flex flex-col gap-2">
               <label className="text-sm font-medium text-gray-700">
