@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Table,
     TableBody,
@@ -35,13 +35,12 @@ import {
 import {
     MoreVertical,
     PlusCircle,
-    Search,
-    ArrowUpDown,
     Eye,
     SquareArrowOutUpRight,
     Printer,
     Wallet,
 } from 'lucide-react';
+import { SearchControl, SortControl } from '../search-control';
 
 interface Customer {
     id: string | number;
@@ -79,20 +78,21 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
     ]);
 
     const [creditTransactions] = useState<Transaction[]>([
-        { date: '05-05-2025', liabilityCause: 'Electricity Deficit', liabilityCode: 'CR1234', credit: 500000, debit: 100000, balance: 10000 },
-        { date: '05-04-2025', liabilityCause: 'Other Reason', liabilityCode: 'CR1234', credit: 400000, debit: 10000, balance: 0 },
-        { date: '05-03-2025', liabilityCause: 'Other Reason', liabilityCode: 'CR1234', credit: 10000, debit: 10000, balance: 10000 },
-        { date: '05-02-2025', liabilityCause: 'Other Reason', liabilityCode: 'CR1234', credit: 300000, debit: 10000, balance: 0 },
+        { date: '05-05-2025', liabilityCause: 'Electricity Deficit', liabilityCode: 'CR1234', credit: 10000, debit: "", balance: 10000 },
+        { date: '05-04-2025', liabilityCause: 'Null', liabilityCode:'Null', credit: "", debit: 10000, balance: 0 },
+        { date: '05-03-2025', liabilityCause: 'Electricity Deficit', liabilityCode: 'CR1234', credit: 10000, debit: "", balance: 10000 },
+        { date: '05-02-2025', liabilityCause: 'Null', liabilityCode: 'Null', credit: "", debit: 10000, balance: 0 },
+     
     ]);
 
     const [debitTransactions] = useState<Transaction[]>([
-        { date: '05-05-2025', liabilityCause: 'Bypass', liabilityCode: 'C90bqt', credit: '', debit: 500000, balance: 500000 },
-        { date: '05-04-2025', liabilityCause: 'Meter Refund', liabilityCode: 'C90bqt', credit: 100000, debit: '', balance: 400000 },
-        { date: '05-03-2025', liabilityCause: 'Capme', liabilityCode: 'C90bqt', credit: 100000, debit: '', balance: 300000 },
-        { date: '05-02-2025', liabilityCause: 'Outstanding Bills', liabilityCode: 'C90bqt', credit: 100000, debit: '', balance: 200000 },
-        { date: '05-01-2025', liabilityCause: 'Payment', liabilityCode: 'C90bqt', credit: 100000, debit: '', balance: 100000 },
-        { date: '04-30-2025', liabilityCode: 'C90bqt', liabilityCause: 'Payment', credit: 100000, debit: '', balance: 0 },
-        { date: '04-29-2025', liabilityCause: 'New Debit', liabilityCode: 'C90bqt', credit: '', debit: 500000, balance: 500000 },
+        { date: '05-05-2025', liabilityCause: 'Meter Refund', liabilityCode: 'DB1234', credit: "", debit: 500000, balance: 500000 },
+        { date: '05-04-2025', liabilityCause: 'Null', liabilityCode: 'Null', credit: 100000, debit: "", balance: 400000 },
+        { date: '05-03-2025', liabilityCause: 'Null', liabilityCode: 'Null', credit: 100000, debit: "", balance: 300000 },
+        { date: '05-02-2025', liabilityCause: 'Null', liabilityCode: 'Null', credit: 100000, debit: "", balance: 200000 },
+        { date: '05-01-2025', liabilityCause: 'Null', liabilityCode: 'Null', credit: 100000, debit: "", balance: 100000 },
+        { date: '05-01-2025', liabilityCause: 'Null', liabilityCode: 'Null', credit: 100000, debit: "", balance: 100000 },
+         { date: '05-01-2025', liabilityCause: 'Null', liabilityCode: 'Null', credit: 100000, debit: "", balance: 0 },
     ]);
 
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -120,8 +120,69 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
 
     const filteredCustomers = customers.filter(
         (customer) =>
-            customer.meterNo.includes(searchTerm) || customer.accountNo.includes(searchTerm)
+            customer.meterNo.includes(searchTerm) ?? customer.accountNo.includes(searchTerm)
     );
+
+    const [sortConfig, setSortConfig] = useState<{
+        key: keyof Customer | null;
+        direction: "asc" | "desc";
+    }>({ key: null, direction: "asc" });
+
+    // If you want to use the customers array as the initial data:
+    const [processedData, setProcessedData] = useState<Customer[]>(customers);
+
+    useEffect(() => {
+        applyFiltersAndSort(searchTerm, sortConfig.key, sortConfig.direction);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [customers]);
+
+    // Enhanced search handler
+    const handleSearchChange = (term: string) => {
+        setSearchTerm(term);
+        applyFiltersAndSort(term, sortConfig.key, sortConfig.direction);
+    };
+
+
+    // Sort handler
+    const handleSortChange = () => {
+        const sortKey: keyof Customer = sortConfig.key ?? "id";
+        const newDirection = sortConfig.direction === "asc" ? "desc" : "asc";
+
+        setSortConfig({ key: sortKey, direction: newDirection });
+        applyFiltersAndSort(searchTerm, sortKey, newDirection);
+    };
+
+    // Combined filter and sort function
+    const applyFiltersAndSort = (
+        term: string,
+        sortBy: keyof Customer | null,
+        direction: "asc" | "desc"
+    ) => {
+        // 1. Filter first
+        let results = customers;
+        if (term.trim() !== "") {
+            results = customers.filter(item =>
+                item.name?.toLowerCase().includes(term.toLowerCase()) ||
+                item.meterNo?.toLowerCase().includes(term.toLowerCase()) ||
+                item.accountNo?.toLowerCase().includes(term.toLowerCase())
+            );
+        }
+
+        // 2. Then sort if a sort field is selected
+        if (sortBy) {
+            results = [...results].sort((a, b) => {
+                const aValue = a[sortBy] || "";
+                const bValue = b[sortBy] || "";
+
+                if (aValue < bValue) return direction === "asc" ? -1 : 1;
+                if (aValue > bValue) return direction === "asc" ? 1 : -1;
+                return 0;
+            });
+        }
+
+        setProcessedData(results);
+    };
+
 
     const totalRows = filteredCustomers.length;
     const startIndex = (currentPage - 1) * rowsPerPage;
@@ -144,11 +205,6 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
         setSelectedCustomers((prev) =>
             prev.includes(id) ? prev.filter((customerId) => customerId !== id) : [...prev, id]
         );
-    };
-
-    const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchTerm(e.target.value);
-        setCurrentPage(1);
     };
 
     const handleProceed = () => {
@@ -378,25 +434,18 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
 
                 <div className="flex justify-between">
                     <div className="flex items-center mb-6 gap-4 w-80">
-                        <div className="relative flex-1">
-                            <Search
-                                className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground"
-                                size={12}
-                            />
-                            <Input
-                                type="text"
-                                placeholder="Search by meter no., account no..."
-                                className="w-100 pl-10 border-[rgba(228,231,236,1)]"
+                        <div className='flex items-center gap-2'>
+
+                            <SearchControl
+                                onSearchChange={handleSearchChange}
                                 value={searchTerm}
-                                onChange={handleSearch}
                             />
                         </div>
-                        <Button variant="outline" className="gap-1 border-[rgba(228,231,236,1)]">
-                            <ArrowUpDown className="" strokeWidth={2.5} size={12} />
-                            <Label htmlFor="sortCheckbox" className="cursor-pointer">
-                                Sort
-                            </Label>
-                        </Button>
+
+                        <SortControl
+                            onSortChange={handleSortChange}
+                            currentSort={sortConfig.key ? `${sortConfig.key} (${sortConfig.direction})` : ""}
+                        />
                     </div>
                     <div>
                         <Button variant="outline" className="gap-1 border-[#161CCA]">

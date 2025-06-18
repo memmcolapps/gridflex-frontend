@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Card } from "@/components/ui/card";
-import { Search, Filter, ArrowUpDown, CirclePlus, Ban, MoreVertical, Pencil, AlertTriangle } from "lucide-react";
+import { CirclePlus, Ban, MoreVertical, Pencil, AlertTriangle } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ContentHeader } from "@/components/ui/content-header";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -18,7 +18,7 @@ import {
     DialogFooter,
 } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { FilterControl, SearchControl, SortControl } from "@/components/search-control";
+import { SearchControl, SortControl } from "@/components/search-control";
 
 // Types
 interface Manufacturer {
@@ -439,7 +439,8 @@ export default function ManufacturersPage() {
     const [processedData, setProcessedData] = useState<Manufacturer[]>(data);
 
     useEffect(() => {
-        setProcessedData(data);
+        applyFiltersAndSort(searchTerm, sortConfig.key, sortConfig.direction);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [data]);
 
     // Enhanced search handler
@@ -489,8 +490,8 @@ export default function ManufacturersPage() {
     };
 
 
-    const totalPages = Math.ceil(data.length / rowsPerPage);
-    const paginatedData = data.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
+    const totalPages = Math.ceil(processedData.length / rowsPerPage);
+    const paginatedData = processedData.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
 
     const onPageChange = (newPage: number) => {
         setCurrentPage(newPage);
@@ -531,7 +532,7 @@ export default function ManufacturersPage() {
                     description="Manage and Access Manufacturers."
                 />
                 <Button
-                    className="bg-[#161CCA] text-white hover:bg-[#161CCA]/90 px-3 py-1.5 sm:px-4 sm:py-2 rounded-md w-full sm:w-auto"
+                    className="bg-[#161CCA] text-white hover:bg-[#161CCA]/90 px-3 py-1.5 sm:px-4 sm:py-2 rounded-md w-full sm:w-auto cursor-pointer"
                     onClick={() => setIsAddDialogOpen(true)}
                     size="lg"
                 >
@@ -540,7 +541,7 @@ export default function ManufacturersPage() {
                     <span className="sm:hidden">Add</span>
                 </Button>
             </div>
-            
+
 
             {/* Search and Filter Section */}
             <Card className="p-3 sm:p-4 mb-4 sm:mb-6 border-none shadow-none bg-white">
