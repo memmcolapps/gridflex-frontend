@@ -39,17 +39,17 @@ export function AuditLogDetailsDialog({
                 <div className="grid gap-4 py-2 px-4">
                     <div className="grid grid-cols-[150px_1fr] items-center gap-4">
                         <span className="text-sm font-medium text-gray-500 ">Username:</span>
-                        <span >{entry.username}</span>
+                        <span className="text-sm ">{entry.username}</span>
                     </div>
 
                     <div className="grid grid-cols-[150px_1fr] items-center gap-4">
                         <span className="text-sm font-medium text-gray-500">Email:</span>
-                        <span className="">{entry.email}</span>
+                        <span className="text-sm ">{entry.email}</span>
                     </div>
 
                     <div className="grid grid-cols-[150px_1fr] items-center gap-4">
                         <span className="text-sm font-medium text-gray-500">Group Permission:</span>
-                        <span className="">{entry.group}</span>
+                        <span className="text-sm ">{entry.group}</span>
                     </div>
 
                     <div className="grid grid-cols-[150px_1fr] items-center gap-4">
@@ -59,12 +59,12 @@ export function AuditLogDetailsDialog({
 
                     <div className="grid grid-cols-[150px_1fr] items-center gap-4">
                         <span className="text-sm font-medium text-gray-500">IP Address:</span>
-                        <span className="">{entry.ip}</span>
+                        <span className="text-sm ">{entry.ip}</span>
                     </div>
 
                     <div className="grid grid-cols-[150px_1fr] items-center gap-4">
                         <span className="text-sm font-medium text-gray-500">Timestamp:</span>
-                        <span className="">
+                        <span className="text-sm ">
                             {new Date(entry.timestamp).toLocaleDateString('en-US', {
                                 day: '2-digit',
                                 month: '2-digit',
@@ -77,7 +77,7 @@ export function AuditLogDetailsDialog({
 
                     <div className="grid grid-cols-[150px_1fr] items-center gap-4">
                         <span className="text-sm font-medium text-gray-500">Activity Description:</span>
-                        <span className="">{entry.activity}</span>
+                        <span className="text-sm ">{entry.activity}</span>
                     </div>
                 </div>
                 <div className="space-y-1 border border-gray-200 px-4 py-4 rounded-lg">
