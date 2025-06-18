@@ -496,47 +496,35 @@ export default function CustomerManagement() {
                                 <DialogClose className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 cursor-pointer ring-gray-50">
                                 </DialogClose>
                             </DialogHeader>
-                            <div className="mt-4 space-y-2">
-                                <div>
-                                    <Label className="text-sm font-medium text-gray-700">First Name:</Label>
-                                    <p className="text-sm">{selectedCustomer.firstName}</p>
-                                </div>
-                                <div>
-                                    <Label className="text-sm font-medium text-gray-700">Last Name:</Label>
-                                    <p className="text-sm">{selectedCustomer.lastName}</p>
-                                </div>
-                                <div>
-                                    <Label className="text-sm font-medium text-gray-700">Phone Number:</Label>
-                                    <p className="text-sm">({selectedCustomer.phoneNumber.startsWith("+") ? "" : "+234"}) {selectedCustomer.phoneNumber}</p>
-                                </div>
-                                <div>
-                                    <Label className="text-sm font-medium text-gray-700">NIN:</Label>
-                                    <p className="text-sm">{selectedCustomer.nin}</p>
-                                </div>
-                                <div>
-                                    <Label className="text-sm font-medium text-gray-700">Email Address:</Label>
-                                    <p className="text-sm">{selectedCustomer.email}</p>
-                                </div>
-                                <div>
-                                    <Label className="text-sm font-medium text-gray-700">State:</Label>
-                                    <p className="text-sm">{selectedCustomer.state}</p>
-                                </div>
-                                <div>
-                                    <Label className="text-sm font-medium text-gray-700">City:</Label>
-                                    <p className="text-sm">{selectedCustomer.city}</p>
-                                </div>
-                                <div>
-                                    <Label className="text-sm font-medium text-gray-700">Street Name:</Label>
-                                    <p className="text-sm">{selectedCustomer.streetName}</p>
-                                </div>
-                                <div>
-                                    <Label className="text-sm font-medium text-gray-700">House Number:</Label>
-                                    <p className="text-sm">{selectedCustomer.houseNo}</p>
-                                </div>
-                                <div>
-                                    <Label className="text-sm font-medium text-gray-700">Value Added Tax:</Label>
-                                    <p className="text-sm">{selectedCustomer.valueAddedTax ?? "Not Paying"}</p>
-                                </div>
+                            <div className="mt-4 space-y-4">
+                                {[
+                                    { label: "First Name", value: selectedCustomer.firstName },
+                                    { label: "Last Name", value: selectedCustomer.lastName },
+                                    {
+                                        label: "Phone Number",
+                                        value: (() => {
+                                            const phone = selectedCustomer.phoneNumber || "";
+                                            if (phone.startsWith("+")) return phone;
+                                            let formatted = phone;
+                                            if (formatted.startsWith("0")) {
+                                                formatted = formatted.slice(1);
+                                            }
+                                            return `(+234) ${formatted}`;
+                                        })(),
+                                    },
+                                    { label: "NIN", value: selectedCustomer.nin },
+                                    { label: "Email Address", value: selectedCustomer.email },
+                                    { label: "State", value: selectedCustomer.state },
+                                    { label: "City", value: selectedCustomer.city },
+                                    { label: "Street Name", value: selectedCustomer.streetName },
+                                    { label: "House Number", value: selectedCustomer.houseNo },
+                                    { label: "Value Added Tax", value: selectedCustomer.valueAddedTax ?? "Not Paying" },
+                                ].map((item, idx) => (
+                                    <div key={idx} className="flex flex-row items-center">
+                                        <Label className="text-sm font-medium text-gray-700 min-w-[160px]">{item.label}:</Label>
+                                        <p className="text-sm font-medium ml-6">{item.value}</p>
+                                    </div>
+                                ))}
                             </div>
                         </DialogContent>
                     </Dialog>
