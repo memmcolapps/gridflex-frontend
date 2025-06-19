@@ -168,7 +168,7 @@ export function SidebarNav() {
         </Link>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarMenu className="px-4 py-5 sm:px-6">
+        <SidebarMenu className="px-6 py-5">
           {navItems.map((item) => {
             const isActive = isItemActive(item.href, item.submenuItems);
             const isExpanded = expandedItems[item.title] ?? isActive;
@@ -184,12 +184,12 @@ export function SidebarNav() {
                   <CollapsibleTrigger asChild>
                     <SidebarMenuButton
                       className={cn(
-                        "flex items-center justify-between py-4 w-full text-base sm:text-lg",
+                        "flex items-center justify-between py-6 w-full text-base sm:text-lg",
                         isActive && "bg-gray-100"
                       )}
                     >
-                      <div className="flex items-center gap-4 sm:gap-8">
-                        <item.icon size={16} className="w-4 h-4 sm:w-5 sm:h-5" />
+                      <div className="flex items-center gap-8 text-xl">
+                        <item.icon size={14} className="w-4 h-4 sm:w-5 sm:h-5" />
                         <span>{item.title}</span>
                       </div>
                       {item.hasSubmenu && (
@@ -222,7 +222,7 @@ export function SidebarNav() {
                                     <CollapsibleTrigger asChild>
                                       <SidebarMenuButton
                                         className={cn(
-                                          "flex items-center justify-between w-full p-2 text-base sm:text-lg",
+                                          "flex items-center justify-between w-full p-2.5 text-xl sm:text-lg",
                                           isSubActive && "bg-gray-100 font-medium"
                                         )}
                                       >
@@ -242,7 +242,7 @@ export function SidebarNav() {
                                           <SidebarMenuItem
                                             key={nestedItem.title}
                                             className={cn(
-                                              "p-2 text-base sm:text-lg",
+                                              "p-2.5 text-xl sm:text-lg",
                                               pathname === nestedItem.href
                                                 ? "rounded-md bg-[#161CCA] text-white"
                                                 : "hover:bg-gray-100 rounded-md"
@@ -263,7 +263,7 @@ export function SidebarNav() {
                               ) : (
                                 <SidebarMenuItem
                                   className={cn(
-                                    "p-2 text-base sm:text-lg",
+                                    "p-2.5 text-xl sm:text-lg",
                                     pathname === subItem.href
                                       ? "rounded-md bg-[#161CCA] text-white"
                                       : "hover:bg-gray-100 rounded-md"
