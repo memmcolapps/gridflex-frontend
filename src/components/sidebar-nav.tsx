@@ -50,7 +50,6 @@ export function SidebarNav() {
   const pathname = usePathname();
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
 
-  // Automatically expand parent items when child is active
   const isItemActive = (href: string, subItems?: SubMenuItemProps[]) => {
     if (pathname === href) return true;
     if (subItems) {
@@ -119,7 +118,7 @@ export function SidebarNav() {
       icon: Zap,
       hasSubmenu: true,
       submenuItems: [
-        {title: "Dashboard", href: "/vending/vending-dashboard"}
+        { title: "Dashboard", href: "/vending/vending-dashboard" }
       ],
     },
     {
@@ -154,7 +153,7 @@ export function SidebarNav() {
   ];
 
   return (
-    <Sidebar className="fixed left-0 top-0 h-screen z-40 border-r border-gray-200 w-[274px]">
+    <Sidebar className="fixed left-0 top-0 h-screen z-40 border-r border-gray-200 w-[274px] lg:w-[250px] xl:w-[274px] hidden md:block overflow-y-auto">
       <SidebarHeader className="flex items-center justify-center py-4">
         <Link href="/" className="flex items-center gap-2">
           <div className="flex items-center justify-center">
@@ -163,12 +162,13 @@ export function SidebarNav() {
               alt="GridFlex Logo"
               width={42}
               height={54}
+              className="w-10 h-auto"
             />
           </div>
         </Link>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarMenu className="px-6 py-5">
+        <SidebarMenu className="px-4 py-5 sm:px-6">
           {navItems.map((item) => {
             const isActive = isItemActive(item.href, item.submenuItems);
             const isExpanded = expandedItems[item.title] ?? isActive;
@@ -180,16 +180,16 @@ export function SidebarNav() {
                 onOpenChange={() => toggleExpanded(item.title)}
                 className="group/collapsible"
               >
-                <SidebarMenuItem className="">
+                <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
                     <SidebarMenuButton
                       className={cn(
-                        "flex items-center justify-between py-6 w-full",
+                        "flex items-center justify-between py-4 w-full text-base sm:text-lg",
                         isActive && "bg-gray-100"
                       )}
                     >
-                      <div className="flex items-center gap-8 text-xl">
-                        <item.icon size={12} />
+                      <div className="flex items-center gap-4 sm:gap-8">
+                        <item.icon size={16} className="w-4 h-4 sm:w-5 sm:h-5" />
                         <span>{item.title}</span>
                       </div>
                       {item.hasSubmenu && (
@@ -206,23 +206,23 @@ export function SidebarNav() {
 
                   {item.hasSubmenu && (
                     <CollapsibleContent>
-                      <SidebarMenuSub className="mt-1 space-y-1 whitespace-nowrap ">
+                      <SidebarMenuSub className="mt-1 space-y-1 whitespace-nowrap">
                         {item.submenuItems?.map((subItem) => {
                           const isSubActive = isItemActive(subItem.href, subItem.submenuItems);
                           const isSubExpanded = expandedItems[subItem.title] ?? isSubActive;
 
                           return (
-                            <div key={subItem.title} className="pl-6">
+                            <div key={subItem.title} className="pl-4 sm:pl-6">
                               {subItem.hasSubmenu ? (
                                 <Collapsible
                                   open={isSubExpanded}
                                   onOpenChange={() => toggleExpanded(subItem.title)}
                                 >
-                                  <SidebarMenuItem className="">
+                                  <SidebarMenuItem>
                                     <CollapsibleTrigger asChild>
                                       <SidebarMenuButton
                                         className={cn(
-                                          "flex items-center justify-between w-full p-2.5 text-xl ",
+                                          "flex items-center justify-between w-full p-2 text-base sm:text-lg",
                                           isSubActive && "bg-gray-100 font-medium"
                                         )}
                                       >
@@ -242,9 +242,10 @@ export function SidebarNav() {
                                           <SidebarMenuItem
                                             key={nestedItem.title}
                                             className={cn(
-                                              "p-2.5 text-xl ",
-                                              pathname === nestedItem.href ?
-                                              "rounded-md bg-[#161CCA] text-white" : "hover:bg-gray-100 rounded-md"
+                                              "p-2 text-base sm:text-lg",
+                                              pathname === nestedItem.href
+                                                ? "rounded-md bg-[#161CCA] text-white"
+                                                : "hover:bg-gray-100 rounded-md"
                                             )}
                                           >
                                             <Link
@@ -262,9 +263,10 @@ export function SidebarNav() {
                               ) : (
                                 <SidebarMenuItem
                                   className={cn(
-                                    "p-2.5 text-xl",
-                                    pathname === subItem.href ?
-                                    "rounded-md bg-[#161CCA] text-white" : "hover:bg-gray-100 rounded-md"
+                                    "p-2 text-base sm:text-lg",
+                                    pathname === subItem.href
+                                      ? "rounded-md bg-[#161CCA] text-white"
+                                      : "hover:bg-gray-100 rounded-md"
                                   )}
                                 >
                                   <Link

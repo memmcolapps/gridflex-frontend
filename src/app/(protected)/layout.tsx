@@ -1,7 +1,5 @@
 "use client";
 
-import type React from "react";
-
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/auth-context";
@@ -18,9 +16,6 @@ export default function ProtectedLayout({
   const router = useRouter();
 
   useEffect(() => {
-    console.log("User:", user);
-    console.log("Is Loading:", isLoading);
-
     if (!isLoading && !user) {
       router.push("/login");
     }
@@ -40,11 +35,27 @@ export default function ProtectedLayout({
 
   return (
     <SidebarProvider>
-      <div className="flex w-full overflow-hidden">
-        <SidebarNav />
-        <div className="flex flex-1 flex-col">
-          <Navbar />
-          <main className="flex-1 overflow-auto p-8">{children}</main>
+      <div className="flex w-full min-h-screen">
+        {/* Mobile message - only shows on small screens */}
+        <div className="md:hidden fixed inset-0 bg-background z-50 flex items-center justify-center p-4">
+          <div className="text-center max-w-md">
+            <h2 className="text-3xl font-black mb-4">Screen Too Small</h2>
+            <p className="mb-4 text-2xl font-semibold">
+              This application is designed for larger screens. Please use a tablet or desktop computer for the best experience.
+            </p>
+            <p>Current screen size: {typeof window !== 'undefined' && `${window.innerWidth}px`}</p>
+          </div>
+        </div>
+
+        {/* Desktop layout */}
+        <div className="hidden md:flex w-full">
+          <SidebarNav />
+          <div className="flex-1 flex flex-col md:ml-[11rem]">
+            <Navbar />
+            <main className="flex-1 p-6 overflow-auto">
+              {children}
+            </main>
+          </div>
         </div>
       </div>
     </SidebarProvider>

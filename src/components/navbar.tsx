@@ -15,59 +15,67 @@ import { useAuth } from "@/context/auth-context";
 import { useState } from "react";
 import ProfileDropdown from "./profile/profiledropdown";
 import EditProfileModal from "./profile/editprofilemodal";
-// Import EditProfileModal
 
 export function Navbar() {
   const { logout, isLoading } = useAuth();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false); // Add state for EditProfileModal
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
 
-  // Function to close the dropdown
   const closeDropdown = () => setIsProfileOpen(false);
 
   return (
-    <header className="sticky top-0 z-30 h-18 border-b border-gray-200 text-black">
-      <div className="mx-auto flex items-center h-full w-full justify-between px-8 pl-[280px]">
+    <header className="sticky top-0 z-30 h-16 border-b border-gray-200 md:-ml-8 bg-white ">
+      <div className="flex h-full w-full items-center justify-between px-4 sm:px-6 lg:px-8">
+        {/* Left side - empty for now but can be used for breadcrumbs or other elements */}
         <div className="flex items-center gap-2 md:gap-4">
           <div className="relative flex-1 md:w-80 md:flex-none"></div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" className="relative rounded-full bg-[#F6F6F6]">
-            <Bell className="text-[#5D5D5D]" size={15} />
-            <span className="absolute top-1.5 right-1.5 flex h-2 w-2 rounded-full" />
+
+        {/* Right side with user controls */}
+        <div className="flex items-center gap-2 sm:gap-4">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="relative rounded-full hover:bg-gray-100"
+          >
+            <Bell className="text-gray-600" size={18} />
+            <span className="absolute top-1.5 right-1.5 flex h-2 w-2 rounded-full bg-red-500" />
             <span className="sr-only">Notifications</span>
           </Button>
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
-                className="flex items-center gap-2 rounded-full cursor-pointer"
+                className="flex items-center gap-2 rounded-full hover:bg-gray-100"
               >
-                <Avatar className="">
-                  <AvatarImage
-                    src="/placeholder.svg?height=32&width=32"
-                    alt="User"
-                  />
-                  <AvatarFallback className="rounded-full bg-[#225BFF] text-white">MA</AvatarFallback>
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src="/placeholder.svg" alt="User" />
+                  <AvatarFallback className="rounded-full bg-blue-600 text-white">
+                    MA
+                  </AvatarFallback>
                 </Avatar>
-                <ChevronDown className="text-muted-foreground" size={15} />
+                <ChevronDown className="text-gray-500" size={16} />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="text-[#333333] bg-white p-4">
+            <DropdownMenuContent 
+              align="end" 
+              className="w-56 bg-white text-gray-700"
+            >
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem
-                className="cursor-pointer hover:bg-gray-100 focus:bg-gray-100"
+                className="cursor-pointer hover:bg-gray-100"
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
               >
                 Profile
               </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer hover:bg-gray-100 focus:bg-gray-100">
+              <DropdownMenuItem className="cursor-pointer hover:bg-gray-100">
                 Settings
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
-                className="cursor-pointer hover:bg-gray-100 focus:bg-gray-100"
+                className="cursor-pointer hover:bg-gray-100 text-red-600"
                 onClick={logout}
                 disabled={isLoading}
               >
@@ -77,16 +85,18 @@ export function Navbar() {
           </DropdownMenu>
         </div>
       </div>
-      {/* Render ProfileDropdown below the navbar */}
+
+      {/* Profile dropdown */}
       {isProfileOpen && (
-        <div className="absolute top-18 right-8 w-150 bg-white shadow-lg rounded-lg p-4 z-20">
+        <div className="absolute right-4 top-16 z-40 w-72 rounded-lg border border-gray-200 bg-white shadow-lg sm:right-6">
           <ProfileDropdown
             closeDropdown={closeDropdown}
-            openEditProfileModal={() => setIsEditProfileOpen(true)} // Pass the function to open the modal
+            openEditProfileModal={() => setIsEditProfileOpen(true)}
           />
         </div>
       )}
-      {/* Render EditProfileModal */}
+
+      {/* Edit profile modal */}
       <EditProfileModal
         isOpen={isEditProfileOpen}
         onClose={() => setIsEditProfileOpen(false)}
