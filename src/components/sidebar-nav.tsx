@@ -118,7 +118,8 @@ export function SidebarNav() {
       icon: Zap,
       hasSubmenu: true,
       submenuItems: [
-        { title: "Dashboard", href: "/vending/vending-dashboard" }
+        { title: "Dashboard", href: "/vending/vending-dashboard" },
+        { title: "Vending", href: "/vending/vending" }
       ],
     },
     {
