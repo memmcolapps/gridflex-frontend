@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
-import {  CircleCheck, CircleX, MoreVertical } from "lucide-react";
+import { CircleCheck, CircleX, MoreVertical } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -39,7 +39,6 @@ interface TariffTableProps {
 
 export function TariffTable({
   tariffs,
-  onUpdateTariff,
   selectedTariffs,
   setSelectedTariffs,
   onRefresh,
@@ -75,25 +74,6 @@ export function TariffTable({
     }
   };
 
-  const handleStatusChange = async (tariffId: string, newStatus: boolean) => {
-    if (!canApprove) {
-      toast.error("You don't have permission to change tariff status");
-      return;
-    }
-
-    setConfirmDialog({
-      isOpen: true,
-      title: `${newStatus ? "Activate" : "Deactivate"} Tariff`,
-      description: `Are you sure you want to ${newStatus ? "activate" : "deactivate"} this tariff?`,
-      action: async () => {
-        const success = await changeTariffStatus(tariffId, newStatus);
-        if (success) {
-          onUpdateTariff(tariffId, { status: newStatus });
-        }
-        setConfirmDialog((prev) => ({ ...prev, isOpen: false }));
-      },
-    });
-  };
 
   const handleApprovalChange = async (
     tariffId: string,
@@ -130,9 +110,8 @@ export function TariffTable({
     setConfirmDialog({
       isOpen: true,
       title: `${currentStatus ? "Deactivate" : "Activate"} Tariff`,
-      description: `Are you sure you want to ${
-        currentStatus ? "deactivate" : "activate"
-      } this tariff?`,
+      description: `Are you sure you want to ${currentStatus ? "deactivate" : "activate"
+        } this tariff?`,
       action: async () => {
         try {
           console.log(`Attempting to change status for tariff ${tariffId}`); // Debug log
@@ -233,13 +212,12 @@ export function TariffTable({
                 <TableCell>{tariff.effective_date}</TableCell>
                 <TableCell>
                   <span
-                    className={`py-0.6 rounded-xl px-2.5 capitalize ${
-                      tariff.approve_status === "Approved"
+                    className={`py-0.6 rounded-xl px-2.5 capitalize ${tariff.approve_status === "Approved"
                         ? "bg-[#E9F6FF] text-[#225BFF]"
                         : tariff.approve_status === "Rejected"
                           ? "bg-[#FBE9E9] text-[#F75555]"
                           : "bg-[#FFF5EA] text-[#FACC15]"
-                    }`}
+                      }`}
                   >
                     {tariff.approve_status}
                   </span>

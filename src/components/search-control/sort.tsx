@@ -1,3 +1,4 @@
+"use client";
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown } from "lucide-react";
 import React, { useEffect, useState, useRef } from "react";

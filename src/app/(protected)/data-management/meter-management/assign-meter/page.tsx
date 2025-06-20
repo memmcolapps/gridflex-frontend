@@ -10,22 +10,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-import {
     ArrowUpDown,
     CirclePlus,
     Search,
@@ -34,7 +18,6 @@ import {
     SquareArrowOutUpRight,
     Navigation,
     Unlink,
-    AlertTriangle,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import {
@@ -45,7 +28,16 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Progress } from "@/components/ui/progress";
+import CustomerIdDialog from "@/components/meter-management/customer-id-dialog";
+import { AssignMeterDialog } from "@/components/meter-management/assign-meter-dialog";
+import type { VirtualMeterData } from "@/types/meter";
+import { EditCustomerDetailsDialog } from "@/components/meter-management/edit-customer-details-dialog";
+import { SetPaymentModeDialog } from "@/components/meter-management/set-payment-mode-dialog";
+import { DeactivateVirtualMeterDialog } from "@/components/meter-management/deactivate-virtual-meter-dialog";
+import { ConfirmationModalDialog } from "@/components/meter-management/confirmation-modal-dialog";
+import { MigrateMeterDialog } from "@/components/meter-management/migrate-meter-dialog";
+import { DetachMeterDialog } from "@/components/meter-management/detach-meter-dialog";
+import { DetachConfirmationDialog } from "@/components/meter-management/detach-confirmation-dialog";
 
 // Define filter sections
 const filterSections = [
@@ -214,7 +206,8 @@ const initialMeterData = [
     },
 ];
 
-interface MeterData {
+export interface MeterData {
+
     customerId: string;
     meterNumber: string;
     accountNumber: string;
@@ -228,9 +221,9 @@ interface MeterData {
     class: string;
     firstName?: string;
     lastName?: string;
-    phoneNumber?: string;
+    phone?: string;
     tariff?: string;
-    feederLine?: string;
+    feeder?: string;
     dss?: string;
     state?: string;
     city?: string;
@@ -247,7 +240,8 @@ export default function AssignMeterPage() {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isMigrateModalOpen, setIsMigrateModalOpen] = useState(false);
     const [progress, setProgress] = useState(50);
-    const [selectedCustomer, setSelectedCustomer] = useState<MeterData | null>(null);
+    const [phone, setPhone] = useState<string>("");
+    const [selectedCustomer, setSelectedCustomer] = useState<MeterData | VirtualMeterData | null>(null);
     const [editCustomer, setEditCustomer] = useState<MeterData | null>(null);
     const [migrateCustomer, setMigrateCustomer] = useState<MeterData | null>(null);
     const [customerIdInput, setCustomerIdInput] = useState<string>("");
@@ -263,7 +257,8 @@ export default function AssignMeterPage() {
     const [cin, setCin] = useState("");
     const [accountNumber, setAccountNumber] = useState("");
     const [tariff, setTariff] = useState("");
-    const [feederLine, setFeederLine] = useState("");
+    const [feeder, setFeeder] = useState("");
+    const [category, setCategory] = useState("");
     const [dss, setDss] = useState("");
     const [state, setState] = useState("");
     const [city, setCity] = useState("");
@@ -285,6 +280,7 @@ export default function AssignMeterPage() {
     const [isDetachConfirmModalOpen, setIsDetachConfirmModalOpen] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(10);
+
 
     // Calculate pagination values
     const totalRows = meterData.length;
@@ -343,11 +339,11 @@ export default function AssignMeterPage() {
             setIsCustomerIdModalOpen(false);
             setIsAssignModalOpen(true);
             setProgress(50);
-            setMeterNumber(customer.meterNumber || "");
-            setCin(customer.cin || "");
-            setAccountNumber(customer.accountNumber || "");
+            setMeterNumber(customer.meterNumber ?? "");
+            setCin(customer.cin ?? "");
+            setAccountNumber(customer.accountNumber ?? "");
             setTariff("");
-            setFeederLine("");
+            setFeeder("");
             setDss("");
             setState("");
             setCity("");
@@ -367,7 +363,7 @@ export default function AssignMeterPage() {
             cin,
             accountNumber,
             tariff,
-            feederLine,
+            feeder,
             dss,
             state,
             city,
@@ -395,7 +391,7 @@ export default function AssignMeterPage() {
 
     const handleConfirmAssignment = () => {
         setIsConfirmationModalOpen(false);
-        alert(`Meter assigned successfully for ${selectedCustomer?.category.toLowerCase()} customer!`);
+        alert(`Meter assigned successfully for ${(selectedCustomer?.category ?? "").toLowerCase()} customer!`);
     };
 
     const handleCancelConfirmation = () => {
@@ -405,28 +401,28 @@ export default function AssignMeterPage() {
     const handleEditDetails = (customer: MeterData) => {
         setEditCustomer({
             ...customer,
-            tariff: customer.tariff || "",
-            feederLine: customer.feederLine || "",
-            dss: customer.dss || "",
-            state: customer.state || "",
-            city: customer.city || "",
-            streetName: customer.streetName || "",
-            houseNo: customer.houseNo || "",
+            tariff: customer.tariff ?? "",
+            feeder: customer.feeder ?? "",
+            dss: customer.dss ?? "",
+            state: customer.state ?? "",
+            city: customer.city ?? "",
+            streetName: customer.streetName ?? "",
+            houseNo: customer.houseNo ?? ""
         });
-        setMeterNumber(customer.meterNumber || "");
-        setCin(customer.cin || "");
-        setAccountNumber(customer.accountNumber || "");
-        setTariff(customer.tariff || "");
-        setFeederLine(customer.feederLine || "");
-        setDss(customer.dss || "");
-        setState(customer.state || "");
-        setCity(customer.city || "");
-        setStreetName(customer.streetName || "");
-        setHouseNo(customer.houseNo || "");
-        setDebitMop(customer.debitMop || "");
-        setCreditMop(customer.creditMop || "");
-        setDebitPaymentPlan(customer.debitPaymentPlan || "");
-        setCreditPaymentPlan(customer.creditPaymentPlan || "");
+        setMeterNumber(customer.meterNumber ?? "");
+        setCin(customer.cin ?? "");
+        setAccountNumber(customer.accountNumber?? "");
+        setTariff(customer.tariff ?? "");
+        setFeeder(customer.feeder ?? "");
+        setDss(customer.dss ?? "");
+        setState(customer.state ?? "");
+        setCity(customer.city ?? "");
+        setStreetName(customer.streetName ?? "");
+        setHouseNo(customer.houseNo ?? "");
+        setDebitMop(customer.debitMop ?? "");
+        setCreditMop(customer.creditMop ?? "");
+        setDebitPaymentPlan(customer.debitPaymentPlan ?? "");
+        setCreditPaymentPlan(customer.creditPaymentPlan ?? "");
         setProgress(50);
         setIsEditModalOpen(true);
     };
@@ -439,7 +435,7 @@ export default function AssignMeterPage() {
                 cin,
                 accountNumber,
                 tariff,
-                feederLine,
+                feeder,
                 dss,
                 state,
                 city,
@@ -449,17 +445,17 @@ export default function AssignMeterPage() {
             setMeterData((prev) =>
                 prev.map((item) =>
                     item.customerId === editCustomer.customerId
-                        ? { ...item, meterNumber, cin, accountNumber, tariff, feederLine, dss, state, city, streetName, houseNo }
+                        ? { ...item, meterNumber, cin, accountNumber, tariff, feeder, dss, state, city, streetName, houseNo }
                         : item
                 )
             );
             setIsEditModalOpen(false);
             setProgress(100);
             if (editCustomer.category === "Prepaid") {
-                setDebitMop(editCustomer.debitMop || "");
-                setCreditMop(editCustomer.creditMop || "");
-                setDebitPaymentPlan(editCustomer.debitPaymentPlan || "");
-                setCreditPaymentPlan(editCustomer.creditPaymentPlan || "");
+                setDebitMop(editCustomer.debitMop ?? "");
+                setCreditMop(editCustomer.creditMop ?? "");
+                setDebitPaymentPlan(editCustomer.debitPaymentPlan ?? "");
+                setCreditPaymentPlan(editCustomer.creditPaymentPlan ?? "");
                 setIsSetPaymentModalOpen(true);
             } else {
                 alert(`Details updated successfully for postpaid customer ${editCustomer.customerId}!`);
@@ -474,10 +470,10 @@ export default function AssignMeterPage() {
                     item.customerId === editCustomer.customerId
                         ? {
                             ...item,
-                            debitMop: debitMop || item.debitMop,
-                            creditMop: creditMop || item.creditMop,
-                            debitPaymentPlan: debitMop === "one-off" ? "" : (debitPaymentPlan || item.debitPaymentPlan),
-                            creditPaymentPlan: creditMop === "one-off" ? "" : (creditPaymentPlan || item.creditPaymentPlan),
+                            debitMop: debitMop ?? item.debitMop,
+                            creditMop: creditMop ?? item.creditMop,
+                            debitPaymentPlan: debitMop === "one-off" ? "" : (debitPaymentPlan ?? item.debitPaymentPlan),
+                            creditPaymentPlan: creditMop === "one-off" ? "" : (creditPaymentPlan ?? item.creditPaymentPlan),
                         }
                         : item
                 )
@@ -517,10 +513,10 @@ export default function AssignMeterPage() {
     const handleMigrateMeter = (customer: MeterData) => {
         setMigrateCustomer(customer);
         setMigrateToCategory(customer.category === "Postpaid" ? "Prepaid" : "Postpaid");
-        setMigrateDebitMop(customer.debitMop || "");
-        setMigrateDebitPaymentPlan(customer.debitPaymentPlan || "");
-        setMigrateCreditMop(customer.creditMop || "");
-        setMigrateCreditPaymentPlan(customer.creditPaymentPlan || "");
+        setMigrateDebitMop(customer.debitMop ?? "");
+        setMigrateDebitPaymentPlan(customer.debitPaymentPlan ?? "");
+        setMigrateCreditMop(customer.creditMop ?? "");
+        setMigrateCreditPaymentPlan(customer.creditPaymentPlan ?? "");
         setIsMigrateModalOpen(true);
     };
 
@@ -531,7 +527,7 @@ export default function AssignMeterPage() {
                     item.customerId === migrateCustomer.customerId
                         ? {
                             ...item,
-                            category: migrateToCategory || item.category,
+                            category: migrateToCategory ?? item.category,
                             ...(migrateToCategory === "Prepaid" && {
                                 debitMop: migrateDebitMop,
                                 debitPaymentPlan: migrateDebitMop === "monthly" ? migrateDebitPaymentPlan : "",
@@ -573,9 +569,9 @@ export default function AssignMeterPage() {
         // Apply search term filter
         if (term.trim() !== "") {
             results = results.filter(item =>
-                item.customerId.toLowerCase().includes(term.toLowerCase()) ||
-                item.meterNumber.toLowerCase().includes(term.toLowerCase()) ||
-                item.accountNumber.toLowerCase().includes(term.toLowerCase()) ||
+                item.customerId.toLowerCase().includes(term.toLowerCase()) ??
+                item.meterNumber.toLowerCase().includes(term.toLowerCase()) ??
+                item.accountNumber.toLowerCase().includes(term.toLowerCase()) ??
                 item.cin.toLowerCase().includes(term.toLowerCase())
             );
         }
@@ -583,14 +579,14 @@ export default function AssignMeterPage() {
         // Apply class and type filters
         results = results.filter((meter) => {
             const classMatch =
-                (!activeFilters.singlePhase && !activeFilters.threePhase && !activeFilters.md) ||
-                (activeFilters.singlePhase && meter.class.toLowerCase().includes("single phase")) ||
-                (activeFilters.threePhase && meter.class.toLowerCase().includes("three phase")) ||
+                (!activeFilters.singlePhase && !activeFilters.threePhase && !activeFilters.md) ??
+                (activeFilters.singlePhase && meter.class.toLowerCase().includes("single phase")) ??
+                (activeFilters.threePhase && meter.class.toLowerCase().includes("three phase")) ??
                 (activeFilters.md && meter.class.toLowerCase().includes("md"));
 
             const typeMatch =
-                (!activeFilters.prepaid && !activeFilters.postPaid) ||
-                (activeFilters.prepaid && meter.category.toLowerCase() === "prepaid") ||
+                (!activeFilters.prepaid && !activeFilters.postPaid) ??
+                (activeFilters.prepaid && meter.category.toLowerCase() === "prepaid") ??
                 (activeFilters.postPaid && meter.category.toLowerCase() === "postpaid");
 
             return classMatch && typeMatch;
@@ -599,8 +595,8 @@ export default function AssignMeterPage() {
         // Apply sorting
         if (sortBy) {
             results = [...results].sort((a, b) => {
-                const aValue = (a as MeterData)[sortBy!] || "";
-                const bValue = (b as MeterData)[sortBy!] || "";
+                const aValue = (a as MeterData)[sortBy!] ?? "";
+                const bValue = (b as MeterData)[sortBy!] ?? "";
                 if (aValue < bValue) return direction === "asc" ? -1 : 1;
                 if (aValue > bValue) return direction === "asc" ? 1 : -1;
                 return 0;
@@ -617,15 +613,15 @@ export default function AssignMeterPage() {
         applyFiltersAndSort(searchTerm, sortConfig.key, sortConfig.direction);
     };
 
-    const isFormComplete =
+    const isFormComplete: boolean =
         tariff !== "" &&
-        feederLine !== "" &&
+        feeder !== "" &&
         dss !== "" &&
         state !== "" &&
         city.trim() !== "" &&
         streetName.trim() !== "" &&
         houseNo.trim() !== "" &&
-        (selectedCustomer?.customerId || editCustomer?.customerId) &&
+        Boolean(selectedCustomer?.customerId ?? editCustomer?.customerId) &&
         meterNumber.trim() !== "" &&
         accountNumber.trim() !== "";
 
@@ -637,7 +633,7 @@ export default function AssignMeterPage() {
             (migrateDebitMop !== "" &&
                 migrateCreditMop !== "" &&
                 (migrateDebitMop !== "monthly" || migrateDebitPaymentPlan !== "") &&
-                (migrateCreditMop !== "monthly" || migrateCreditPaymentPlan !== "")));
+                (migrateCreditMop !== "monthly"  || migrateCreditPaymentPlan !== "")));
 
     return (
         <div className="p-6 h-screen overflow-auto">
@@ -694,17 +690,18 @@ export default function AssignMeterPage() {
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="center" className="w-48">
-                            <DropdownMenuItem
-                                onClick={() => handleSortChange("customerId")}
-                                className="text-sm cursor-pointer hover:bg-gray-100"
-                            >
-                                Newest - Oldest
-                            </DropdownMenuItem>
+
                             <DropdownMenuItem
                                 onClick={() => handleSortChange("customerId")}
                                 className="text-sm cursor-pointer hover:bg-gray-100"
                             >
                                 Oldest - Newest
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                onClick={() => handleSortChange("customerId")}
+                                className="text-sm cursor-pointer hover:bg-gray-100"
+                            >
+                                Newest - Oldest
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
@@ -866,779 +863,141 @@ export default function AssignMeterPage() {
                 </div>
             </div>
 
-            <Dialog
-                open={isCustomerIdModalOpen}
+
+            <CustomerIdDialog
+                isOpen={isCustomerIdModalOpen}
                 onOpenChange={setIsCustomerIdModalOpen}
-            >
-                <DialogContent className="bg-white text-black h-fit max-h-[80vh] overflow-y-auto">
-                    <DialogHeader>
-                        <DialogTitle>Assign Meter to Customer</DialogTitle>
-                        <p className="text-sm">Select customer name to assign meter</p>
-                    </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                        <div className="space-y-2">
-                            <Label>Customer ID <span className="text-red-500">*</span></Label>
-                            <Input
-                                value={customerIdInput}
-                                onChange={(e) => handleCustomerIdChange(e.target.value)}
-                                placeholder="Enter Customer ID"
-                            />
-                            {filteredCustomerIds.length > 0 && (
-                                <ul className="w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-[200px] overflow-y-auto">
-                                    {filteredCustomerIds.map((id) => (
-                                        <li
-                                            key={id}
-                                            className="px-4 py-2 cursor-pointer hover:bg-gray-100"
-                                            onClick={() => handleCustomerIdSelect(id)}
-                                        >
-                                            {id}
-                                        </li>
-                                    ))}
-                                </ul>
-                            )}
-                        </div>
-                    </div>
-                </DialogContent>
-            </Dialog>
-            <Dialog open={isAssignModalOpen} onOpenChange={setIsAssignModalOpen}>
-                <DialogContent className="bg-white text-black h-fit">
-                    {selectedCustomer?.category === "Prepaid" && <Progress value={progress} className="w-full" />}
-                    <DialogHeader>
-                        <DialogTitle>Assign meter to customer</DialogTitle>
-                        <p className="text-sm">Fill all compulsory fields</p>
-                    </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label>Customer ID<span className="text-red-700">*</span></Label>
-                                <Input
-                                    value={selectedCustomer?.customerId ?? ""}
-                                    readOnly
-                                    placeholder="Enter Customer ID"
-                                    className="border-gray-200 text-gray-600"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label>First Name<span className="text-red-700">*</span></Label>
-                                <Input
-                                    value={selectedCustomer?.firstName ?? ""}
-                                    readOnly
-                                    placeholder="Enter First Name"
-                                    className="border-gray-200 text-gray-600"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Last Name<span className="text-red-700">*</span></Label>
-                                <Input
-                                    value={selectedCustomer?.lastName ?? ""}
-                                    readOnly
-                                    placeholder="Enter Last Name"
-                                    className="border-gray-200 text-gray-600"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Phone Number<span className="text-red-700">*</span></Label>
-                                <Input
-                                    value={selectedCustomer?.phoneNumber ?? ""}
-                                    readOnly
-                                    placeholder="Enter Phone Number"
-                                    className="border-gray-200 text-gray-600"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Meter Number<span className="text-red-700">*</span></Label>
-                                <Input
-                                    value={meterNumber}
-                                    onChange={(e) => setMeterNumber(e.target.value)}
-                                    placeholder="Enter Meter Number"
-                                    className="border-gray-200 text-gray-600"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label>CIN</Label>
-                                <Input
-                                    value={cin}
-                                    onChange={(e) => setCin(e.target.value)}
-                                    placeholder="Enter CIN"
-                                    className="border-gray-200 text-gray-600"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Account Number<span className="text-red-700">*</span></Label>
-                                <Input
-                                    value={accountNumber}
-                                    onChange={(e) => setAccountNumber(e.target.value)}
-                                    placeholder="Enter Account Number"
-                                    className="border-gray-200 text-gray-600"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Tariff<span className="text-red-700">*</span></Label>
-                                <Select onValueChange={setTariff}>
-                                    <SelectTrigger className="border-gray-200 text-gray-600 w-full">
-                                        <SelectValue placeholder="Select Tariff" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="tariff1">Tariff 1</SelectItem>
-                                        <SelectItem value="tariff2">Tariff 2</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Feeder Line<span className="text-red-700">*</span></Label>
-                                <Select onValueChange={setFeederLine}>
-                                    <SelectTrigger className="border-gray-100 text-gray-600 w-full">
-                                        <SelectValue placeholder="Select Feeder Line" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="feeder1">Feeder 1</SelectItem>
-                                        <SelectItem value="feeder2">Feeder 2</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Distribution Substation (DSS)<span className="text-red-700">*</span></Label>
-                                <Select onValueChange={setDss}>
-                                    <SelectTrigger className="border-gray-100 text-gray-600 w-full">
-                                        <SelectValue placeholder="Select DSS" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="dss1">DSS 1</SelectItem>
-                                        <SelectItem value="dss2">DSS 2</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-2">
-                                <Label>State<span className="text-red-700">*</span></Label>
-                                <Select onValueChange={setState}>
-                                    <SelectTrigger className="border-gray-100 text-gray-600 w-full">
-                                        <SelectValue placeholder="Select State" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="state1">State 1</SelectItem>
-                                        <SelectItem value="state2">State 2</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-2">
-                                <Label>City<span className="text-red-700">*</span></Label>
-                                <Input
-                                    value={city}
-                                    onChange={(e) => setCity(e.target.value)}
-                                    placeholder="Enter City"
-                                    className="border-gray-100 text-gray-600"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Street Name<span className="text-red-700">*</span></Label>
-                                <Input
-                                    value={streetName}
-                                    onChange={(e) => setStreetName(e.target.value)}
-                                    placeholder="Enter Street Name"
-                                    className="border-gray-100 text-gray-600"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label>House No. <span className="text-red-700">*</span></Label>
-                                <Input
-                                    value={houseNo}
-                                    onChange={(e) => setHouseNo(e.target.value)}
-                                    placeholder="Enter House No"
-                                    className="border-gray-100 text-gray-600"
-                                />
-                            </div>
-                            <DialogFooter className="w-115">
-                                <Button
-                                    variant="outline"
-                                    onClick={() => setIsAssignModalOpen(false)}
-                                    className="border-[#161CCA] text-[#161CCA] cursor-pointer"
-                                >
-                                    Cancel
-                                </Button>
-                                <Button
-                                    onClick={handleProceedFromAssign}
-                                    disabled={!isFormComplete}
-                                    className={
-                                        isFormComplete
-                                            ? "bg-[#161CCA] text-white cursor-pointer"
-                                            : "bg-blue-200 text-white cursor-not-allowed"
-                                    }
-                                >
-                                    Proceed
-                                </Button>
-                            </DialogFooter>
-                        </div>
-                    </div>
-                </DialogContent>
-            </Dialog>
-            <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-                <DialogContent className="bg-white text-black h-fit">
-                    {editCustomer?.category === "Prepaid" && <Progress value={progress} className="w-full" />}
-                    <DialogHeader>
-                        <DialogTitle>Edit Customer Details</DialogTitle>
-                        <p className="text-sm">Fill all compulsory fields</p>
-                    </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label>Customer ID<span className="text-red-700">*</span></Label>
-                                <Input
-                                    value={editCustomer?.customerId ?? ""}
-                                    readOnly
-                                    disabled
-                                    placeholder="Enter Customer ID"
-                                    className="border-gray-200 text-gray-600 bg-gray-100 cursor-not-allowed"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label>First Name<span className="text-red-700">*</span></Label>
-                                <Input
-                                    value={editCustomer?.firstName ?? ""}
-                                    readOnly
-                                    placeholder="Enter First Name"
-                                    className="border-gray-200 text-gray-600"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Last Name<span className="text-red-700">*</span></Label>
-                                <Input
-                                    value={editCustomer?.lastName ?? ""}
-                                    readOnly
-                                    placeholder="Enter Last Name"
-                                    className="border-gray-200 text-gray-600"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Phone Number<span className="text-red-700">*</span></Label>
-                                <Input
-                                    value={editCustomer?.phoneNumber ?? ""}
-                                    readOnly
-                                    placeholder="Enter Phone Number"
-                                    className="border-gray-200 text-gray-600"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Meter Number<span className="text-red-700">*</span></Label>
-                                <Input
-                                    value={meterNumber}
-                                    onChange={(e) => setMeterNumber(e.target.value)}
-                                    placeholder="Enter Meter Number"
-                                    className="border-gray-200 text-gray-600"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label>CIN</Label>
-                                <Input
-                                    value={cin}
-                                    onChange={(e) => setCin(e.target.value)}
-                                    placeholder="Enter CIN"
-                                    className="border-gray-200 text-gray-600"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Account Number<span className="text-red-700">*</span></Label>
-                                <Input
-                                    value={accountNumber}
-                                    onChange={(e) => setAccountNumber(e.target.value)}
-                                    placeholder="Enter Account Number"
-                                    className="border-gray-200 text-gray-600"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Tariff<span className="text-red-700">*</span></Label>
-                                <Select onValueChange={setTariff} value={tariff}>
-                                    <SelectTrigger className="border-gray-200 text-gray-600 w-full">
-                                        <SelectValue placeholder="Select Tariff" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="tariff1">Tariff 1</SelectItem>
-                                        <SelectItem value="tariff2">Tariff 2</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Feeder Line<span className="text-red-700">*</span></Label>
-                                <Select onValueChange={setFeederLine} value={feederLine}>
-                                    <SelectTrigger className="border-gray-100 text-gray-600 w-full">
-                                        <SelectValue placeholder="Select Feeder Line" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="feeder1">Feeder 1</SelectItem>
-                                        <SelectItem value="feeder2">Feeder 2</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Distribution Substation (DSS)<span className="text-red-700">*</span></Label>
-                                <Select onValueChange={setDss} value={dss}>
-                                    <SelectTrigger className="border-gray-100 text-gray-600 w-full">
-                                        <SelectValue placeholder="Select DSS" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="dss1">DSS 1</SelectItem>
-                                        <SelectItem value="dss2">DSS 2</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-2">
-                                <Label>State<span className="text-red-700">*</span></Label>
-                                <Select onValueChange={setState} value={state}>
-                                    <SelectTrigger className="border-gray-100 text-gray-600 w-full">
-                                        <SelectValue placeholder="Select State" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="state1">State 1</SelectItem>
-                                        <SelectItem value="state2">State 2</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-2">
-                                <Label>City<span className="text-red-700">*</span></Label>
-                                <Input
-                                    value={city}
-                                    onChange={(e) => setCity(e.target.value)}
-                                    placeholder="Enter City"
-                                    className="border-gray-100 text-gray-600"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Street Name<span className="text-red-700">*</span></Label>
-                                <Input
-                                    value={streetName}
-                                    onChange={(e) => setStreetName(e.target.value)}
-                                    placeholder="Enter Street Name"
-                                    className="border-gray-100 text-gray-600"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label>House No. <span className="text-red-700">*</span></Label>
-                                <Input
-                                    value={houseNo}
-                                    onChange={(e) => setHouseNo(e.target.value)}
-                                    placeholder="Enter House No"
-                                    className="border-gray-100 text-gray-600"
-                                />
-                            </div>
-                        </div>
-                    </div>
-                    <DialogFooter>
-                        <Button
-                            variant="outline"
-                            onClick={() => setIsEditModalOpen(false)}
-                            className="border-[#161CCA] text-[#161CCA] cursor-pointer"
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            onClick={handleProceedFromEdit}
-                            disabled={editCustomer ? false : !isFormComplete}
-                            className={
-                                editCustomer || isFormComplete
-                                    ? "bg-[#161CCA] text-white cursor-pointer"
-                                    : "bg-blue-200 text-white cursor-not-allowed"
-                            }
-                        >
-                            Proceed
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-            <Dialog
-                open={isSetPaymentModalOpen}
+                customerIdInput={customerIdInput}
+                onCustomerIdChange={handleCustomerIdChange}
+                filteredCustomerIds={filteredCustomerIds}
+                onCustomerSelect={handleCustomerIdSelect}
+            />
+            <AssignMeterDialog
+                isOpen={isAssignModalOpen}
+                onOpenChange={setIsAssignModalOpen}
+                selectedCustomer={selectedCustomer}
+                meterNumber={meterNumber}
+                setMeterNumber={setMeterNumber}
+                cin={cin}
+                setCin={setCin}
+                accountNumber={accountNumber}
+                setAccountNumber={setAccountNumber}
+                tariff={tariff}
+                setTariff={setTariff}
+                feeder={feeder}
+                setFeeder={setFeeder}
+                dss={dss}
+                setDss={setDss}
+                state={state}
+                setState={setState}
+                city={city}
+                setCity={setCity}
+                streetName={streetName}
+                setStreetName={setStreetName}
+                houseNo={houseNo}
+                setHouseNo={setHouseNo}
+                category={category}
+                setCategory={setCategory}
+                onProceed={handleProceedFromAssign}
+                isFormComplete={isFormComplete}
+                progress={progress}
+                phone={phone}
+                setPhone={setPhone}
+            />
+            <EditCustomerDetailsDialog
+                isOpen={isEditModalOpen}
+                onOpenChange={setIsEditModalOpen}
+                editCustomer={editCustomer}
+                meterNumber={meterNumber}
+                setMeterNumber={setMeterNumber}
+                cin={cin}
+                setCin={setCin}
+                accountNumber={accountNumber}
+                setAccountNumber={setAccountNumber}
+                tariff={tariff}
+                setTariff={setTariff}
+                feeder={feeder}
+                setFeeder={setFeeder}
+                dss={dss}
+                setDss={setDss}
+                state={state}
+                setState={setState}
+                city={city}
+                setCity={setCity}
+                streetName={streetName}
+                setStreetName={setStreetName}
+                houseNo={houseNo}
+                setHouseNo={setHouseNo}
+                phone={phone}
+                setPhone={setPhone}
+                progress={progress}
+                isFormComplete={isFormComplete}
+                onProceed={handleProceedFromEdit}
+            />
+            <SetPaymentModeDialog
+                isOpen={isSetPaymentModalOpen}
                 onOpenChange={setIsSetPaymentModalOpen}
-            >
-                <DialogContent className="bg-white text-black h-fit">
-                    <DialogHeader>
-                        <Progress value={progress} className="w-full" />
-                        <DialogTitle className="mt-2 text-xl">Set Payment Mode</DialogTitle>
-                    </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <div>
-                                    <Label className="font-bold text-xl">Debit</Label><br />
-                                    <p className="text-sm">Mode of payment <span className="text-red-600">*</span></p>
-                                </div>
-                                <div>
-                                    <Select onValueChange={setDebitMop} value={debitMop}>
-                                        <SelectTrigger className="w-full">
-                                            <SelectValue placeholder="Select mode of payment" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="monthly">Monthly</SelectItem>
-                                            <SelectItem value="one-off">One off</SelectItem>
-                                            <SelectItem value="percentage">Percentage</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                            </div>
-                            <div className="space-y-2">
-                                <div>
-                                    <Label className="font-bold text-xl">Credit</Label><br />
-                                    <p className="text-sm">Mode of payment <span className="text-red-600">*</span></p>
-                                </div>
-                                <div>
-                                    <Select onValueChange={setCreditMop} value={creditMop}>
-                                        <SelectTrigger className="w-full">
-                                            <SelectValue placeholder="Select mode of payment" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="monthly">Monthly</SelectItem>
-                                            <SelectItem value="one-off">One off</SelectItem>
-                                            <SelectItem value="percentage">Percentage</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Payment Plan</Label>
-                                <Select
-                                    onValueChange={setDebitPaymentPlan}
-                                    disabled={debitMop === "one-off" || debitMop === "percentage"}
-                                    value={debitPaymentPlan}
-                                >
-                                    <SelectTrigger
-                                        className={`w-full ${debitMop === "one-off" || debitMop === "percentage" ? "bg-gray-100 cursor-not-allowed text-gray-300" : ""}`}
-                                    >
-                                        <SelectValue placeholder="Select payment plan" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="6">6</SelectItem>
-                                        <SelectItem value="3">3</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Payment Plan</Label>
-                                <Select
-                                    onValueChange={setCreditPaymentPlan}
-                                    disabled={creditMop === "one-off" || creditMop === "percentage"}
-                                    value={creditPaymentPlan}
-                                >
-                                    <SelectTrigger
-                                        className={`w-full ${creditMop === "one-off" || creditMop === "percentage" ? "bg-gray-100 cursor-not-allowed text-gray-300" : ""}`}
-                                    >
-                                        <SelectValue placeholder="Select payment plan" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="6">6</SelectItem>
-                                        <SelectItem value="3">3</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
-                    </div>
-                    <DialogFooter>
-                        <Button
-                            variant="outline"
-                            onClick={() => setIsSetPaymentModalOpen(false)}
-                            className="text-[#161CCA] border-[#161CCA] cursor-pointer"
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            onClick={editCustomer ? handleConfirmEditFromSetPayment : handleProceedFromSetPayment}
-                            disabled={editCustomer ? false : !isPaymentFormComplete}
-                            className={
-                                editCustomer || isPaymentFormComplete
-                                    ? "bg-[#161CCA] text-white cursor-pointer"
-                                    : "bg-blue-200 text-white cursor-not-allowed"
-                            }
-                        >
-                            Proceed
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-            <Dialog
-                open={isDeactivateModalOpen}
+                debitMop={debitMop}
+                setDebitMop={setDebitMop}
+                creditMop={creditMop}
+                setCreditMop={setCreditMop}
+                debitPaymentPlan={debitPaymentPlan}
+                setDebitPaymentPlan={setDebitPaymentPlan}
+                creditPaymentPlan={creditPaymentPlan}
+                setCreditPaymentPlan={setCreditPaymentPlan}
+                progress={progress}
+                isPaymentFormComplete={isPaymentFormComplete}
+                editCustomer={editCustomer}
+                onProceed={editCustomer ? handleConfirmEditFromSetPayment : handleProceedFromSetPayment}
+            />
+            <DeactivateVirtualMeterDialog
+                isOpen={isDeactivateModalOpen}
                 onOpenChange={setIsDeactivateModalOpen}
-            >
-                <DialogContent className="h-fit bg-white text-black" style={{ width: '500px', maxWidth: 'none' }}>
-                    <DialogHeader>
-                        <DialogTitle className="font-semibold">Deactivate Virtual Meter</DialogTitle>
-                        <DialogDescription>
-                            Deactivate any existing virtual meters at <span className="font-bold"> "5, Glorious Orimerumnu, Obafemi Owode, Ogun State" </span>before assigning an actual meter, or proceed if not applicable.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                        <div>
-                            <Label className="font-medium">Virtual meters <span className="text-red-600">*</span> </Label>
-                            <Select>
-                                <SelectTrigger className="mt-2 w-full">
-                                    <SelectValue placeholder="Select meter" />
-                                </SelectTrigger>
-                                <SelectContent className="w-full">
-                                    <SelectItem value="V-201021223-5" className="flex items-center gap-4 w-full">
-                                        <div className="flex items-center justify-between flex-1 gap-12">
-                                            <span>V-201021223</span>
-                                            <span>5, Glorious Orimerumnu, Obafemi Owode, Ogun State</span>
-                                        </div>
-                                    </SelectItem>
-                                    <SelectItem value="V-201021223-6" className="flex items-center gap-4 w-full">
-                                        <div className="flex items-center justify-between flex-1 gap-12">
-                                            <span>V-201021223</span>
-                                            <span>6, Glorious Orimerumnu, Obafemi Owode, Ogun State</span>
-                                        </div>
-                                    </SelectItem>
-                                    <SelectItem value="V-201021223-7" className="flex items-center gap-4 w-full">
-                                        <div className="flex items-center justify-between flex-1 gap-12">
-                                            <span>V-201021223</span>
-                                            <span>7, Glorious Orimerumnu, Obafemi Owode, Ogun State</span>
-                                        </div>
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </div>
-                    <DialogFooter>
-                        <Button
-                            variant="outline"
-                            onClick={() => setIsDeactivateModalOpen(false)}
-                            className="border border-[#161CCA] text-[#161CCA] cursor-pointer"
-                        >
-                            Cancel
-                        </Button>
-                        <Button onClick={handleProceedFromDeactivate} className="bg-[#161CCA] text-white cursor-pointer">Proceed</Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-            <Dialog
-                open={isConfirmationModalOpen}
+                onProceed={handleProceedFromDeactivate}
+            />
+            <ConfirmationModalDialog
+                isOpen={isConfirmationModalOpen}
                 onOpenChange={setIsConfirmationModalOpen}
-            >
-                <DialogContent className="bg-white text-black h-fit" style={{ width: '400px', maxWidth: 'none' }}>
-                    <DialogHeader>
-                        <div className="flex justify-items-start mb-4">
-                            <div className="bg-blue-100 rounded-full p-3">
-                                <AlertTriangle size={24} className="text-[#161CCA]" />
-                            </div>
-                        </div>
-                        <DialogTitle className="font-semibold">Assign meter</DialogTitle>
-                        <DialogDescription>
-                            Are you sure you want to assign actual meter to <br />
-                            <span>{selectedCustomer?.customerId}</span>?
-                        </DialogDescription>
-                    </DialogHeader>
-                    <DialogFooter>
-                        <Button
-                            variant="outline"
-                            onClick={handleCancelConfirmation}
-                            className="border border-[#161CCA] text-[#161CCA] cursor-pointer"
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            onClick={handleConfirmAssignment}
-                            className="bg-[#161CCA] text-white cursor-pointer"
-                        >
-                            Assign
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-            <Dialog
-                open={isMigrateModalOpen}
+                selectedCustomer={selectedCustomer}
+                onConfirm={handleConfirmAssignment}
+                onCancel={handleCancelConfirmation}
+            />
+            <MigrateMeterDialog
+                isOpen={isMigrateModalOpen}
                 onOpenChange={setIsMigrateModalOpen}
-            >
-                <DialogContent className="bg-white text-black h-fit w-lg" >
-                    <DialogHeader>
-                        <DialogTitle className="font-semibold text-xl">Migrate Meter</DialogTitle>
-                    </DialogHeader>
-                    <div className="grid gap-6 py-4">
-                        <div className="grid grid-cols-2 gap-6">
-                            <div className="space-y-4">
-                                <div className="space-y-2">
-                                    <Label className="text-sm font-medium">Migrate from <span className="text-red-600">*</span></Label>
-                                    <Input
-                                        value={migrateCustomer?.category ?? ""}
-                                        disabled
-                                        className="w-full h-10 bg-gray-100 text-gray-600 cursor-not-allowed border-gray-200 focus:ring-0"
-                                    />
-                                </div>
-                                {migrateToCategory === "Prepaid" && (
-                                    <>
-                                        <h2 className="font-bold">Debit</h2>
-                                        <div className="space-y-2">
-                                            <Label className="text-sm font-medium"> Mode of Payment <span className="text-red-600">*</span></Label>
-                                            <Select onValueChange={setMigrateDebitMop} value={migrateDebitMop}>
-                                                <SelectTrigger className="w-full h-10 border-gray-200 focus:ring-[#161CCA]/50">
-                                                    <SelectValue placeholder="Select mode of payment" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="percentage">Percentage</SelectItem>
-                                                    <SelectItem value="monthly">Monthly</SelectItem>
-                                                    <SelectItem value="one-off">One off</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label className="text-sm font-medium">Payment Plan</Label>
-                                            <Select
-                                                onValueChange={setMigrateDebitPaymentPlan}
-                                                disabled={migrateDebitMop === "percentage" || migrateDebitMop === "one-off"}
-                                                value={migrateDebitPaymentPlan}
-                                            >
-                                                <SelectTrigger
-                                                    className={`w-full h-10 border-gray-200 focus:ring-[#161CCA]/50 ${migrateDebitMop === "percentage" || migrateDebitMop === "one-off" ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "text-gray-600"}`}
-                                                >
-                                                    <SelectValue placeholder="Select payment plan" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="6">6</SelectItem>
-                                                    <SelectItem value="3">3</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                    </>
-                                )}
-                            </div>
-                            <div className="space-y-4">
-                                <div className="space-y-2">
-                                    <Label className="text-sm font-medium">Migrate to <span className="text-red-600">*</span></Label>
-                                    <Select onValueChange={setMigrateToCategory} value={migrateToCategory}>
-                                        <SelectTrigger className="w-full h-10 border-gray-200 focus:ring-[#161CCA]/50">
-                                            <SelectValue placeholder="Select category" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {migrateCustomer?.category === "Postpaid" && <SelectItem value="Prepaid">Prepaid</SelectItem>}
-                                            {migrateCustomer?.category === "Prepaid" && <SelectItem value="Postpaid">Postpaid</SelectItem>}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                {migrateToCategory === "Prepaid" && (
-                                    <>
-                                        <h2 className="font-bold">Credit</h2>
-                                        <div className="space-y-2">
-                                            <Label className="text-sm font-medium"> Mode of Payment <span className="text-red-600">*</span></Label>
-                                            <Select onValueChange={setMigrateCreditMop} value={migrateCreditMop}>
-                                                <SelectTrigger className="w-full h-10 border-gray-200 focus:ring-[#161CCA]/50">
-                                                    <SelectValue placeholder="Select mode of payment" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="percentage">Percentage</SelectItem>
-                                                    <SelectItem value="monthly">Monthly</SelectItem>
-                                                    <SelectItem value="one-off">One off</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label className="text-sm font-medium"> Payment Plan</Label>
-                                            <Select
-                                                onValueChange={setMigrateCreditPaymentPlan}
-                                                disabled={migrateCreditMop === "percentage" || migrateCreditMop === "one-off"}
-                                                value={migrateCreditPaymentPlan}
-                                            >
-                                                <SelectTrigger
-                                                    className={`w-full h-10 border-gray-200 focus:ring-[#161CCA]/50 ${migrateCreditMop === "percentage" || migrateCreditMop === "one-off" ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "text-gray-600"}`}
-                                                >
-                                                    <SelectValue placeholder="Select payment plan" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="6">6</SelectItem>
-                                                    <SelectItem value="3">3</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                    </>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                    <DialogFooter>
-                        <Button
-                            variant="outline"
-                            onClick={() => setIsMigrateModalOpen(false)}
-                            className="border-[#161CCA] text-[#161CCA] hover:bg-[#161CCA]/10 h-10 px-4 cursor-pointer"
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            onClick={handleConfirmMigrate}
-                            disabled={!isMigrateFormComplete}
-                            className={
-                                isMigrateFormComplete
-                                    ? "bg-[#161CCA] text-white hover:bg-[#161CCA]/90 h-10 px-4 cursor-pointer"
-                                    : "bg-blue-200 text-white cursor-not-allowed h-10 px-4"
-                            }
-                        >
-                            Migrate
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+                migrateCustomer={migrateCustomer}
+                migrateToCategory={migrateToCategory}
+                setMigrateToCategory={setMigrateToCategory}
+                migrateDebitMop={migrateDebitMop}
+                setMigrateDebitMop={setMigrateDebitMop}
+                migrateDebitPaymentPlan={migrateDebitPaymentPlan}
+                setMigrateDebitPaymentPlan={setMigrateDebitPaymentPlan}
+                migrateCreditMop={migrateCreditMop}
+                setMigrateCreditMop={setMigrateCreditMop}
+                migrateCreditPaymentPlan={migrateCreditPaymentPlan}
+                setMigrateCreditPaymentPlan={setMigrateCreditPaymentPlan}
+                isMigrateFormComplete={isMigrateFormComplete}
+                onConfirm={handleConfirmMigrate}
+            />
 
             {/* Detach Meter Modal */}
-            <Dialog open={isDetachModalOpen} onOpenChange={setIsDetachModalOpen}>
-                <DialogContent className="bg-white text-black h-fit">
-                    <DialogHeader>
-                        <DialogTitle>Detach Meter</DialogTitle>
-                    </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                        <div className="space-y-2">
-                            <Label>Reason <span className="text-red-500">*</span></Label>
-                            <Input
-                                value={detachReason}
-                                onChange={(e) => setDetachReason(e.target.value)}
-                                placeholder="Enter reason for detaching meter"
-                            />
-                        </div>
-                    </div>
-                    <DialogFooter>
-                        <Button
-                            variant="outline"
-                            onClick={handleCancelDetach}
-                            className="border-[#F50202] text-[#F50202] bg-white cursor-pointer"
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            onClick={handleProceedFromDetach}
-                            disabled={!detachReason.trim()}
-                            className={
-                                detachReason.trim()
-                                    ? "bg-[#F50202] text-white cursor-pointer"
-                                    : "bg-red-200 text-white cursor-not-allowed"
-                            }
-                        >
-                            Detach
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+            <DetachMeterDialog
+                isOpen={isDetachModalOpen}
+                onOpenChange={setIsDetachModalOpen}
+                detachReason={detachReason}
+                setDetachReason={setDetachReason}
+                onProceed={handleProceedFromDetach}
+                onCancel={handleCancelDetach}
+            />
 
             {/* Detach Confirmation Modal */}
-            <Dialog open={isDetachConfirmModalOpen} onOpenChange={setIsDetachConfirmModalOpen}>
-                <DialogContent className="bg-white text-black h-fit" style={{ width: '350px', maxWidth: 'none' }}>
-                    <DialogHeader>
-                        <div className="flex justify-items-start mb-4">
-                            <div className="bg-red-100 rounded-full p-3">
-                                <AlertTriangle size={24} className="text-red-600" />
-                            </div>
-                        </div>
-                        <DialogTitle className="font-semibold">Detach Meter</DialogTitle>
-                        <DialogDescription>
-                            Are you sure you want to detach meter from <br />
-                            <span className="font-bold">{customerToDetach?.customerId}</span>?
-                        </DialogDescription>
-                    </DialogHeader>
-                    <DialogFooter>
-                        <Button
-                            variant="outline"
-                            onClick={() => setIsDetachConfirmModalOpen(false)}
-                            className="border border-[#F50202] text-[#F50202] cursor-pointer"
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            onClick={handleConfirmDetach}
-                            className="bg-[#F50202] text-white hover:bg-red-700 cursor-pointer"
-                        >
-                            Detach
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+            <DetachConfirmationDialog
+                isOpen={isDetachConfirmModalOpen}
+                onOpenChange={setIsDetachConfirmModalOpen}
+                customerToDetach={customerToDetach}
+                onConfirm={handleConfirmDetach}
+                onCancel={() => setIsDetachConfirmModalOpen(false)}
+            />
         </div>
     );
 }

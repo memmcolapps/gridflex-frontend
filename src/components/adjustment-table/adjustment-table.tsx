@@ -65,7 +65,7 @@ interface AdjustmentTableProps {
 }
 
 const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
-    const [customers, setCustomers] = useState<Customer[]>([
+    const [customers] = useState<Customer[]>([
         { id: 1, name: 'John Doe', meterNo: '6201021223', accountNo: '0159004612077', balance: 0 },
         { id: 2, name: 'Jane Smith', meterNo: '6201021224', accountNo: '0159004612078', balance: 500000 },
         { id: 3, name: 'Alice Johnson', meterNo: '6201021225', accountNo: '0159004612079', balance: 500000 },

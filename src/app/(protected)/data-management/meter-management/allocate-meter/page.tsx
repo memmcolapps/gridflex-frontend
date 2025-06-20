@@ -13,7 +13,7 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Filter, CirclePlus } from "lucide-react";
+import {  CirclePlus } from "lucide-react";
 import {
     Select,
     SelectContent,
@@ -86,7 +86,7 @@ export default function AllocateMetersPage() {
     const [selectedMeters, setSelectedMeters] = useState<number[]>([]);
     const [rowsPerPage, setRowsPerPage] = useState<number>(10);
     const [currentPage, setCurrentPage] = useState<number>(1);
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [, setIsDialogOpen] = useState(false);
     const [selectedMeter, setSelectedMeter] = useState<MeterData | null>(null);
     const [organizationId, setOrganizationId] = useState<string>("");
     const [isBulkDialogOpen, setIsBulkDialogOpen] = useState(false);
@@ -95,7 +95,7 @@ export default function AllocateMetersPage() {
     const [searchTerm, setSearchTerm] = useState<string>("");
 
     // Add state for active filters
-    const [activeFilters, setActiveFilters] = useState<Record<string, boolean>>({});
+    // const [activeFilters, setActiveFilters] = useState<Record<string, boolean>>({});
 
     const handleSelectAll = (checked: boolean) => {
         if (checked) {
@@ -118,21 +118,21 @@ export default function AllocateMetersPage() {
     const startIndex = (currentPage - 1) * rowsPerPage;
     const endIndex = startIndex + rowsPerPage;
     const currentMeters = meters.slice(startIndex, endIndex);
-     const totalPages = Math.ceil(meters.length / rowsPerPage);
+    const totalPages = Math.ceil(meters.length / rowsPerPage);
 
-      const onRowsPerPageChange = (value: number) => {
+    const onRowsPerPageChange = (value: number) => {
         setRowsPerPage(value);
         setCurrentPage(1); // Reset to first page when rows per page changes
     };
 
-      const onPageChange = (newPage: number) => {
+    const onPageChange = (newPage: number) => {
         setCurrentPage(newPage);
     };
 
     const handleMeterNumberChange = (value: string) => {
         setMeterNumberInput(value);
         const meter = meters.find((m) => m.meterNumber === value);
-        setSelectedMeter(meter || null);
+        setSelectedMeter(meter ?? null);
     };
 
     const handleAllocate = () => {
@@ -170,7 +170,7 @@ export default function AllocateMetersPage() {
         setBulkOrganizationId("");
         const totalPages = Math.ceil((meters.length - selectedMeters.length) / rowsPerPage);
         if (currentPage > totalPages) {
-            setCurrentPage(totalPages || 1);
+            setCurrentPage(totalPages ?? 1);
         }
     };
 
@@ -209,9 +209,9 @@ export default function AllocateMetersPage() {
         let results = initialMeters;
         if (term.trim() !== "") {
             results = initialMeters.filter(item =>
-                item.meterNumber?.toLowerCase().includes(term.toLowerCase()) ||
-                item.manufactureName?.toLowerCase().includes(term.toLowerCase()) ||
-                item.meterId?.toLowerCase().includes(term.toLowerCase()) ||
+                item.meterNumber?.toLowerCase().includes(term.toLowerCase()) ??
+                item.manufactureName?.toLowerCase().includes(term.toLowerCase()) ??
+                item.meterId?.toLowerCase().includes(term.toLowerCase()) ??
                 item.category?.toLowerCase().includes(term.toLowerCase())
             );
         }
@@ -219,8 +219,8 @@ export default function AllocateMetersPage() {
         // 2. Then sort if a sort field is selected
         if (sortBy) {
             results = [...results].sort((a, b) => {
-                const aValue = a[sortBy] || "";
-                const bValue = b[sortBy] || "";
+                const aValue = a[sortBy] ?? "";
+                const bValue = b[sortBy] ?? "";
 
                 if (aValue < bValue) return direction === "asc" ? -1 : 1;
                 if (aValue > bValue) return direction === "asc" ? 1 : -1;
@@ -242,9 +242,9 @@ export default function AllocateMetersPage() {
         if (searchTerm.trim() !== "") {
             const term = searchTerm.toLowerCase();
             filtered = filtered.filter(meter =>
-                meter.meterNumber.toLowerCase().includes(term) ||
-                meter.manufactureName.toLowerCase().includes(term) ||
-                meter.meterId.toLowerCase().includes(term) ||
+                meter.meterNumber.toLowerCase().includes(term) ??
+                meter.manufactureName.toLowerCase().includes(term) ??
+                meter.meterId.toLowerCase().includes(term) ??
                 meter.category.toLowerCase().includes(term)
             );
         }
@@ -253,15 +253,15 @@ export default function AllocateMetersPage() {
         filtered = filtered.filter((meter) => {
             // Meter Class filter
             const classMatch =
-                (!filters.singlePhase && !filters.threePhase && !filters.md) ||
-                (filters.singlePhase && meter.class.toLowerCase().includes("single phase")) ||
-                (filters.threePhase && meter.class.toLowerCase().includes("three phase")) ||
+                (!filters.singlePhase && !filters.threePhase && !filters.md) ??
+                (filters.singlePhase && meter.class.toLowerCase().includes("single phase")) ??
+                (filters.threePhase && meter.class.toLowerCase().includes("three phase")) ??
                 (filters.md && meter.class.toLowerCase().includes("md"));
 
             // Meter Type filter
             const typeMatch =
-                (!filters.prepaid && !filters.postPaid) ||
-                (filters.prepaid && meter.category.toLowerCase() === "prepaid") ||
+                (!filters.prepaid && !filters.postPaid) ??
+                (filters.prepaid && meter.category.toLowerCase() === "prepaid") ??
                 (filters.postPaid && meter.category.toLowerCase() === "postpaid");
 
             return classMatch && typeMatch;
@@ -270,8 +270,8 @@ export default function AllocateMetersPage() {
         // Apply sorting
         if (sortConfig.key) {
             filtered = [...filtered].sort((a, b) => {
-                const aValue = a[sortConfig.key!] || "";
-                const bValue = b[sortConfig.key!] || "";
+                const aValue = a[sortConfig.key!] ?? "";
+                const bValue = b[sortConfig.key!] ?? "";
                 if (aValue < bValue) return sortConfig.direction === "asc" ? -1 : 1;
                 if (aValue > bValue) return sortConfig.direction === "asc" ? 1 : -1;
                 return 0;
@@ -325,7 +325,7 @@ export default function AllocateMetersPage() {
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-48">
-                                  <DropdownMenuItem
+                                <DropdownMenuItem
                                     onClick={handleSortChange}
                                     className="text-sm cursor-pointer hover:bg-gray-100"
                                 >
@@ -337,7 +337,6 @@ export default function AllocateMetersPage() {
                                 >
                                     A-Z
                                 </DropdownMenuItem>
-                              
                                 <DropdownMenuItem
                                     onClick={handleSortChange}
                                     className="text-sm cursor-pointer hover:bg-gray-100"
@@ -357,7 +356,7 @@ export default function AllocateMetersPage() {
                 <div className="flex items-center gap-4 py-4">
                     <div className="flex-1">
                         <Label htmlFor="meterNumber" className="text-sm font-medium mb-2 text-gray-700">
-                            Meter Number 
+                            Meter Number
                         </Label>
                         <Input
                             id="meterNumber"
@@ -463,7 +462,7 @@ export default function AllocateMetersPage() {
                 </Table>
             </Card>
 
-     <div className="flex flex-col sm:flex-row justify-between items-center py-3 px-4 sm:py-4 sm:px-6 text-xs sm:text-sm text-gray-600 gap-3 sm:gap-0">
+            <div className="flex flex-col sm:flex-row justify-between items-center py-3 px-4 sm:py-4 sm:px-6 text-xs sm:text-sm text-gray-600 gap-3 sm:gap-0">
                 <div className="flex items-center gap-2 justify-between sm:justify-start">
                     <span className="whitespace-nowrap">Rows per page</span>
                     <select

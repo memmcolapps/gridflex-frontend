@@ -15,18 +15,27 @@ interface BulkUploadDialogProps {
     onSave: (data: MeterData[]) => void;
 }
 
-interface MeterData {
-    meterNumber: string;
-    simNumber: string;
-    model: string;
-    meterManufacturer: string;
-    accountNumber: string;
-    sgc: string;
-    tariff: string;
-    id: string;
-    approvalStatus: string;
-    status: string;
-}
+
+    interface MeterData {
+        id: string;
+        meterNumber: string;
+        simNumber: string;
+        class: string;
+        category?: string;
+        meterType: string;
+        oldTariffIndex: string;
+        newTariffIndex: string;
+        meterManufacturer: string;
+        accountNumber: string;
+        oldsgc: string;
+        oldkrn: string;
+        newkrn: string;
+        newsgc: string;
+        tariff: string;
+        approvalStatus: string;
+        status: string;
+    }
+
 
 export function BulkUploadDialog({ isOpen, onClose, onSave }: BulkUploadDialogProps) {
     const [file, setFile] = useState<File | null>(null);
@@ -84,14 +93,20 @@ export function BulkUploadDialog({ isOpen, onClose, onSave }: BulkUploadDialogPr
             const newData: MeterData[] = rows.map((row: (string | undefined)[]) => ({
                 meterNumber: headers.includes("meterNumber") ? row[headers.indexOf("meterNumber")]?.toString() ?? "" : "",
                 simNumber: headers.includes("simNumber") ? row[headers.indexOf("simNumber")]?.toString() ?? "" : "",
-                model: headers.includes("model") ? row[headers.indexOf("model")]?.toString() ?? "" : "",
+                class: headers.includes("class") ? row[headers.indexOf("class")]?.toString() ?? "" : "",
                 meterManufacturer: headers.includes("meterManufacturer") ? row[headers.indexOf("meterManufacturer")]?.toString() ?? "" : "",
                 accountNumber: headers.includes("accountNumber") ? row[headers.indexOf("accountNumber")]?.toString() ?? "" : "",
-                sgc: headers.includes("sgc") ? row[headers.indexOf("sgc")]?.toString() ?? "" : "",
+                oldsgc: headers.includes("oldsgc") ? row[headers.indexOf("oldsgc")]?.toString() ?? "" : "",
+                newsgc: headers.includes("newsgc") ? row[headers.indexOf("newsgc")]?.toString() ?? "" : "",
+                oldkrn: headers.includes("oldkrn") ? row[headers.indexOf("oldkrn")]?.toString() ?? "" : "",
+                newkrn: headers.includes("newkrn") ? row[headers.indexOf("newkrn")]?.toString() ?? "" : "",
                 tariff: headers.includes("tariff") ? row[headers.indexOf("tariff")]?.toString() ?? "" : "",
                 id: headers.includes("id") ? row[headers.indexOf("id")]?.toString() ?? "" : "",
                 approvalStatus: headers.includes("approvalStatus") ? row[headers.indexOf("approvalStatus")]?.toString() ?? "Pending" : "Pending",
                 status: headers.includes("status") ? row[headers.indexOf("status")]?.toString() ?? "In-Stock" : "In-Stock",
+                meterType: headers.includes("meterType") ? row[headers.indexOf("meterType")]?.toString() ?? "" : "",
+                oldTariffIndex: headers.includes("oldTariffIndex") ? row[headers.indexOf("oldtariffindex")]?.toString() ?? "" : "",
+                newTariffIndex: headers.includes("newTariffIndex") ? row[headers.indexOf("newtariffindex")]?.toString() ?? "" : "",
             }));
 
             onSave(newData);
