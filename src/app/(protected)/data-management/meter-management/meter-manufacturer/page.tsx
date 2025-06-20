@@ -18,7 +18,7 @@ import {
     DialogFooter,
 } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import {  SearchControl, SortControl } from "@/components/search-control";
+import { FilterControl, SearchControl, SortControl } from "@/components/search-control";
 
 // Types
 interface Manufacturer {
@@ -428,10 +428,11 @@ export default function ManufacturersPage() {
         direction: "asc" | "desc";
     }>({ key: null, direction: "asc" });
 
-    const [, setProcessedData] = useState<Manufacturer[]>(data);
-
+    const [processedData, setProcessedData] = useState<Manufacturer[]>(data);
+    
     useEffect(() => {
-        setProcessedData(data);
+        applyFiltersAndSort(searchTerm, sortConfig.key, sortConfig.direction);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [data]);
 
     // Enhanced search handler
@@ -481,8 +482,8 @@ export default function ManufacturersPage() {
     };
 
 
-    const totalPages = Math.ceil(data.length / rowsPerPage);
-    const paginatedData = data.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
+    const totalPages = Math.ceil(processedData.length / rowsPerPage);
+    const paginatedData = processedData.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
 
     const onPageChange = (newPage: number) => {
         setCurrentPage(newPage);

@@ -12,6 +12,7 @@ export interface FormData {
   longitude?: string;
   latitude?: string;
   description?: string;
+  assetId: string;
   serialNo?: string; // Potentially distinct from 'id' for API
 }
 
@@ -39,10 +40,9 @@ export const useNodeFormValidation = ({
   });
   const [isValid, setIsValid] = useState(false);
 
-  const validateForm = useCallback(
-    (data: FormData) => {
-      const newErrors: FormErrors = { email: "", phoneNumber: "", id: "" };
-      let allFieldsValid = true;
+  const validateForm = (data: FormData) => {
+    const newErrors: FormErrors = { email: "", phoneNumber: "", id: "" };
+    let allFieldsValid = true;
 
       const requiredFields: (keyof FormData)[] = [
         "name",
@@ -87,17 +87,15 @@ export const useNodeFormValidation = ({
         allFieldsValid = false;
       }
 
-      setErrors(newErrors);
-      setIsValid(allFieldsValid);
-    },
-    [nodeType] // Dependency for nodeType used in validation logic
-  );
+    setErrors(newErrors);
+    setIsValid(allFieldsValid);
+  };
 
   useEffect(() => {
     if (isInitialValidation) {
       validateForm(formData);
     }
-  }, [formData, nodeType, isInitialValidation, validateForm]); // Add validateForm
+  }, [formData, nodeType, isInitialValidation]);
 
   return { errors, isValid, validateForm };
 };

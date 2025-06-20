@@ -22,7 +22,6 @@ import {
 import { TariffDatePicker } from "@/components/tarrif-datepicker";
 import {
   ArrowUpDown,
-  Check,
   CirclePlusIcon,
   ListFilter,
   Search,
@@ -47,7 +46,6 @@ export default function TariffManagementPage() {
   const [bandsError, setBandsError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: "",
-    index: "",
     type: "",
     effectiveDate: null as Date | null,
     bandCode: "",
@@ -108,34 +106,17 @@ export default function TariffManagementPage() {
     [],
   );
 
-  const handleBulkApprove = async () => {
-    // Implement bulk approve logic here
-    try {
-      // Your bulk approve API call
-      const success = true; // Replace with actual API call
-      if (success) {
-        await refreshTariffs(); // Refresh after bulk approve
-        setSelectedTariffs([]); // Clear selection after approval
-        toast.success("Bulk approve successful");
-      }
-    } catch (error) {
-      console.error("Bulk approve error:", error);
-      toast.error("Failed to bulk approve tariffs");
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isFormValid) return;
 
     const newTariff = {
       name: formData.name,
-      tariff_index: parseInt(formData.index, 10),
+      tariff_index: 0, // Set this to the appropriate index value as needed
       tariff_type: formData.type,
       effective_date: formData.effectiveDate?.toISOString().split("T")[0] ?? "",
       band: formData.bandCode,
       tariff_rate: formData.tariffRate,
-      status: true,
     };
 
     const success = await createTariff(newTariff);
@@ -147,7 +128,6 @@ export default function TariffManagementPage() {
 
       setFormData({
         name: "",
-        index: "",
         type: "",
         effectiveDate: null,
         bandCode: "",
@@ -160,7 +140,6 @@ export default function TariffManagementPage() {
 
   const isFormValid =
     formData.name &&
-    formData.index &&
     formData.type &&
     formData.effectiveDate &&
     formData.bandCode &&
@@ -252,60 +231,36 @@ export default function TariffManagementPage() {
                     onChange={(e) => handleInputChange("name", e.target.value)}
                   />
                 </div>
-                <div className="flex flex-row justify-between gap-4">
-                  <div className="flex w-1/2 flex-col gap-2">
-                    <label
-                      htmlFor="index"
-                      className="text-sm font-medium text-gray-700"
-                    >
-                      Tariff Index
-                    </label>
-                    <Select
-                      value={formData.index}
-                      onValueChange={(value: string) =>
-                        handleInputChange("index", value)
-                      }
-                    >
-                      <SelectTrigger className="w-full border-gray-300 focus:border-[rgba(22,28,202,1)] focus:ring-[rgba(22,28,202,1)]">
-                        <SelectValue placeholder="Select tariff ID" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {["1", "2", "3", "4", "5", "6"].map((id) => (
-                          <SelectItem key={id} value={id}>
-                            {id}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="flex w-1/2 flex-col gap-2">
-                    <label
-                      htmlFor="type"
-                      className="text-sm font-medium text-gray-700"
-                    >
-                      Tariff Type
-                    </label>
-                    <Select
-                      value={formData.type}
-                      onValueChange={(value: string) =>
-                        handleInputChange("type", value)
-                      }
-                    >
-                      <SelectTrigger className="w-full border-gray-300 focus:border-[rgba(22,28,202,1)] focus:ring-[rgba(22,28,202,1)]">
-                        <SelectValue placeholder="Select tariff type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {["R1", "R2", "R3", "C1", "C2"].map((type) => (
-                          <SelectItem key={type} value={type}>
-                            {type}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                <div className="flex flex-col gap-2">
+                  <label
+                    htmlFor="type"
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    Tariff Type
+                  </label>
+                  <Select
+                    value={formData.type}
+                    onValueChange={(value: string) =>
+                      handleInputChange("type", value)
+                    }
+                  >
+                    <SelectTrigger className="w-full border-gray-300 focus:border-[rgba(22,28,202,1)] focus:ring-[rgba(22,28,202,1)]">
+                      <SelectValue placeholder="Select tariff type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {["R1", "R2", "R3", "C1", "C2"].map((type) => (
+                        <SelectItem key={type} value={type}>
+                          {type}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <label className="text-sm font-medium text-gray-700">
+                  <label className="text-sm font-medium超过了最大字符数限制。以下是继续的代码部分：
+
+```typescript
+text-gray-700">
                     Tariff Effective Date
                   </label>
                   <TariffDatePicker
@@ -427,7 +382,7 @@ export default function TariffManagementPage() {
               />
               <input
                 type="text"
-                placeholder="Search by name, ID, cont..."
+                placeholder="Search by name, cont..."
                 className="w-full flex-grow border-none text-sm text-[rgba(95,95,95,1)] placeholder-[rgba(95,95,95,1)] outline-none"
               />
             </div>
@@ -443,15 +398,6 @@ export default function TariffManagementPage() {
             </div>
           </div>
           <div className="flex gap-5">
-            <Button
-              variant={"outline"}
-              className={`text-md cursor-pointer gap-2 border-[#22C55E] bg-green-600 px-8 py-5 font-semibold text-white ${selectedTariffs.length === 0 ? "cursor-not-allowed opacity-50" : ""}`}
-              onClick={handleBulkApprove}
-              disabled={selectedTariffs.length === 0}
-            >
-              <Check size={14} />
-              Bulk Approve
-            </Button>
             <Button
               variant={"default"}
               className="text-md cursor-pointer gap-2 border px-8 py-5 font-semibold text-[rgba(22,28,202,1)]"

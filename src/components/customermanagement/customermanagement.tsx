@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { ArrowUpDown, PlusCircleIcon, SearchIcon, MoreVertical, ListFilter, Lock, User, AlertTriangle, X } from "lucide-react";
+import { ArrowUpDown, PlusCircleIcon, SearchIcon, MoreVertical, ListFilter, Lock, User, AlertTriangle, X, Eye, Printer, ChevronDown } from "lucide-react";
 import CustomerForm from "./customerform";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "../ui/alert-dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose, DialogFooter } from "@/components/ui/dialog";
 
 export type Customer = {
     id: string;
@@ -30,9 +31,9 @@ export type Customer = {
     meterNumber?: string;
     location?: string;
     address?: string;
-    status?: "Active" | "Blocked";
-    virtual?: number;
-    actual?: number;
+    status?: "Active" | "Blocked" | "Inactive";
+    operator?: string;
+    valueAddedTax?: "Paying" | "Not Paying";
 };
 
 export default function CustomerManagement() {
@@ -40,22 +41,22 @@ export default function CustomerManagement() {
         {
             id: "01",
             customerId: "C-1234567",
-            firstName: "Margaret",
+            firstName: "Margeret",
             lastName: "Ademola",
             meterNumber: "62501021223",
             accountNumber: "96844839930",
             location: "Lagos",
             phoneNumber: "0812354648",
             address: "Olowotedo, Mowe",
-            status: "Blocked",
-            nin: "012345678900",
-            email: "margaret@gmail.com",
+            status: "Inactive",
+            nin: "0123456789",
+            email: "margareta@gmail.com",
             state: "Lagos",
-            city: "Lagos",
-            houseNo: "Lagos",
-            streetName: "KM 40, Lagos Ibadan Exp. way, Ogun",
-            virtual: 5,
-            actual: 7,
+            city: "Obafemi Owode",
+            houseNo: "4",
+            streetName: "Olowotedo",
+            operator: "Margaret",
+            valueAddedTax: "Paying",
         },
         {
             id: "02",
@@ -74,8 +75,7 @@ export default function CustomerManagement() {
             city: "Lagos",
             houseNo: "Lagos",
             streetName: "KM 40, Lagos Ibadan Exp. way, Ogun",
-            virtual: 12,
-            actual: 15,
+            operator: "Ademola",
         },
         ...Array.from({ length: 10 }, (_, index) => ({
             id: String(index + 3).padStart(2, "0"),
@@ -94,8 +94,8 @@ export default function CustomerManagement() {
             city: "Lagos",
             houseNo: "Lagos",
             streetName: "KM 40, Lagos Ibadan Exp. way, Ogun",
-            virtual: Math.floor(Math.random() * 20) + 1, // Random number between 1 and 20
-            actual: Math.floor(Math.random() * 20) + 1,   // Random number between 1 and 20
+            operator: index % 2 === 0 ? "Margaret" : "Ademola",
+            valueAddedTax: (index % 2 === 0 ? "Not Paying" : "Paying") as "Paying" | "Not Paying",
         })),
     ]);
 
@@ -111,6 +111,10 @@ export default function CustomerManagement() {
     const [isConfirmBlockDialogOpen, setIsConfirmBlockDialogOpen] = useState(false);
     const [customerToBlock, setCustomerToBlock] = useState<Customer | null>(null);
     const [blockReason, setBlockReason] = useState("");
+    const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+    const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+    const [isMeterDialogOpen, setIsMeterDialogOpen] = useState(false);
+    const [selectedMeterCustomer, setSelectedMeterCustomer] = useState<Customer | null>(null);
 
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(e.target.value);
@@ -178,6 +182,16 @@ export default function CustomerManagement() {
         setIsBlockDialogOpen(true);
     };
 
+    const handleViewMeter = (customer: Customer) => {
+        setSelectedMeterCustomer(customer);
+        setIsMeterDialogOpen(true);
+    };
+
+    const handleViewCustomer = (customer: Customer) => {
+        setSelectedCustomer(customer);
+        setIsViewDialogOpen(true);
+    };
+
     const confirmBlockCustomer = () => {
         if (customerToBlock && blockReason) {
             console.log(`Blocking customer ${customerToBlock.firstName} for reason: ${blockReason}`);
@@ -224,9 +238,9 @@ export default function CustomerManagement() {
                                         meterNumber: newCustomer.accountNumber,
                                         location: newCustomer.city,
                                         address: `${newCustomer.streetName}, ${newCustomer.city}`,
-                                        status: "Unassigned" as "Active" | "Blocked", // Default to "Active" for new customers
-                                        virtual: Math.floor(Math.random() * 20) + 1,
-                                        actual: Math.floor(Math.random() * 20) + 1,
+                                        status: "Unassigned" as "Active" | "Blocked" | "Inactive",
+                                        operator: newCustomer.firstName,
+                                        valueAddedTax: "Not Paying",
                                     },
                                 ]);
                             }}
@@ -309,11 +323,8 @@ export default function CustomerManagement() {
                                 <TableHead onClick={() => requestSort("state")} className="text-center">
                                     State
                                 </TableHead>
-                                <TableHead onClick={() => requestSort("virtual")} className="text-center">
-                                    Virtual
-                                </TableHead>
-                                <TableHead onClick={() => requestSort("actual")} className="text-center">
-                                    Actual
+                                <TableHead onClick={() => requestSort("operator")} className="text-center">
+                                    Operator
                                 </TableHead>
                                 <TableHead onClick={() => requestSort("status")} className="text-center">
                                     Status
@@ -323,13 +334,20 @@ export default function CustomerManagement() {
                         </TableHeader>
                         <TableBody>
                             {paginatedCustomers.map((customer, index) => (
-                                <TableRow key={customer.id} className="hover:bg-muted/50">
+                                <TableRow
+                                    key={customer.id}
+                                    className="hover:bg-muted/50 cursor-pointer"
+                                    onClick={() => handleViewCustomer(customer)}
+                                >
                                     <TableCell className="text-center">
                                         <div className="flex items-center gap-2">
                                             <input
                                                 type="checkbox"
                                                 checked={selectedCustomers.includes(customer.id)}
-                                                onChange={() => toggleCustomerSelection(customer.id)}
+                                                onChange={(e) => {
+                                                    e.stopPropagation();
+                                                    toggleCustomerSelection(customer.id);
+                                                }}
                                                 className="border-[rgba(228,231,236,1)]"
                                             />
                                             <span>{startIndex + index + 1}</span>
@@ -342,20 +360,21 @@ export default function CustomerManagement() {
                                     <TableCell className="text-center">{customer.address}</TableCell>
                                     <TableCell className="text-center">{customer.city}</TableCell>
                                     <TableCell className="text-center">{customer.state}</TableCell>
-                                    <TableCell className="text-center">{customer.virtual}</TableCell>
-                                    <TableCell className="text-center">{customer.actual}</TableCell>
+                                    <TableCell className="text-center">{customer.operator}</TableCell>
                                     <TableCell className="text-center">
                                         <span
                                             className={
                                                 customer.status === "Active"
                                                     ? "text-[#059E40] bg-[#E9FBF0] rounded-full px-1.5 py-1.5"
-                                                    : "text-[#F50202] bg-[#FBE9E9] rounded-full px-1.5 py-1.5"
+                                                    : customer.status === "Inactive"
+                                                        ? "text-[#D97706] bg-[#FEF3C7] rounded-full px-1.5 py-1.5"
+                                                        : "text-[#F50202] bg-[#FBE9E9] rounded-full px-1.5 py-1.5"
                                             }
                                         >
                                             {customer.status}
                                         </span>
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell onClick={(e) => e.stopPropagation()}>
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
                                                 <Button size="sm" variant="ghost" className="h-8 w-8 p-2 cursor-pointer">
@@ -373,6 +392,12 @@ export default function CustomerManagement() {
                                                     <div className="flex items-center w-fit gap-2">
                                                         <User size={14} />
                                                         <span className="cursor-pointer w-fit">Edit Customer</span>
+                                                    </div>
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem onSelect={() => handleViewMeter(customer)}>
+                                                    <div className="flex items-center w-full gap-2">
+                                                        <Eye size={14} />
+                                                        <span className="cursor-pointer">View Meter</span>
                                                     </div>
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem onSelect={() => handleBlockCustomer(customer)}>
@@ -448,8 +473,8 @@ export default function CustomerManagement() {
                                             location: updatedCustomer.city ?? editingCustomer.location,
                                             address: updatedCustomer.address ?? `${updatedCustomer.streetName}, ${updatedCustomer.city}`,
                                             status: editingCustomer.status,
-                                            virtual: updatedCustomer.virtual ?? (c.virtual ?? 0),
-                                            actual: updatedCustomer.actual ?? (c.actual ?? 0),
+                                            operator: updatedCustomer.operator ?? c.operator,
+                                            valueAddedTax: updatedCustomer.valueAddedTax ?? c.valueAddedTax,
                                         }
                                         : c
                                 )
@@ -461,6 +486,48 @@ export default function CustomerManagement() {
                             setEditingCustomer(null);
                         }}
                     />
+                )}
+
+                {selectedCustomer && (
+                    <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+                        <DialogContent className="bg-white w-full h-fit p-6 rounded-lg border border-gray-200 max-w-2xl">
+                            <DialogHeader>
+                                <DialogTitle className="text-lg font-semibold">View Details</DialogTitle>
+                                <DialogClose className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 cursor-pointer ring-gray-50">
+                                </DialogClose>
+                            </DialogHeader>
+                            <div className="mt-4 space-y-4">
+                                {[
+                                    { label: "First Name", value: selectedCustomer.firstName },
+                                    { label: "Last Name", value: selectedCustomer.lastName },
+                                    {
+                                        label: "Phone Number",
+                                        value: (() => {
+                                            const phone = selectedCustomer.phoneNumber || "";
+                                            if (phone.startsWith("+")) return phone;
+                                            let formatted = phone;
+                                            if (formatted.startsWith("0")) {
+                                                formatted = formatted.slice(1);
+                                            }
+                                            return `(+234) ${formatted}`;
+                                        })(),
+                                    },
+                                    { label: "NIN", value: selectedCustomer.nin },
+                                    { label: "Email Address", value: selectedCustomer.email },
+                                    { label: "State", value: selectedCustomer.state },
+                                    { label: "City", value: selectedCustomer.city },
+                                    { label: "Street Name", value: selectedCustomer.streetName },
+                                    { label: "House Number", value: selectedCustomer.houseNo },
+                                    { label: "Value Added Tax", value: selectedCustomer.valueAddedTax ?? "Not Paying" },
+                                ].map((item, idx) => (
+                                    <div key={idx} className="flex flex-row items-center">
+                                        <Label className="text-sm font-medium text-gray-700 min-w-[160px]">{item.label}:</Label>
+                                        <p className="text-sm font-medium ml-6">{item.value}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </DialogContent>
+                    </Dialog>
                 )}
 
                 {customerToBlock && (
@@ -491,7 +558,7 @@ export default function CustomerManagement() {
                                             <Label htmlFor="blockReason" className="text-sm font-medium text-gray-700">
                                                 Reason
                                             </Label>
-                                            <div className="w-full">
+                                            <div>
                                                 <div className="relative">
                                                     <select
                                                         id="blockReason"
@@ -500,7 +567,7 @@ export default function CustomerManagement() {
                                                         className="w-full p-2 border border-gray-300 rounded-md focus:ring-ring focus:border-ring bg-background text-foreground ring-gray-50/10"
                                                         required
                                                     >
-                                                        <option value="">Select reason to block</option>
+                                                        <option value="">Select a reason to block</option>
                                                         {blockReasons.map((reason) => (
                                                             <option key={reason} value={reason}>
                                                                 {reason}
@@ -564,12 +631,14 @@ export default function CustomerManagement() {
                                         </div>
                                     </div>
                                     <AlertDialogHeader className="space-y-1">
-                                        <AlertDialogTitle className="text-lg font-semibold">
-                                            Block Customer
-                                        </AlertDialogTitle>
-                                        <AlertDialogDescription className="text-gray-600">
-                                            Are you sure you want to block {customerToBlock.firstName} for {blockReason}?
-                                        </AlertDialogDescription>
+                                        <div>
+                                            <AlertDialogTitle className="text-lg font-semibold">
+                                                Block Customer
+                                            </AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                Are you sure you want to block {customerToBlock.firstName} for {blockReason}?
+                                            </AlertDialogDescription>
+                                        </div>
                                     </AlertDialogHeader>
                                     <AlertDialogFooter className="w-full flex justify-between items-center pt-4 px-0">
                                         <div className="flex justify-start w-1/2">
@@ -584,18 +653,110 @@ export default function CustomerManagement() {
                                             </AlertDialogCancel>
                                         </div>
                                         <div className="flex justify-end w-1/2">
-                                            <AlertDialogAction
-                                                onClick={confirmBlockCustomer}
-                                                className="bg-red-600 text-white hover:bg-red-700 px-6 py-2 rounded-md font-medium"
-                                            >
-                                                Block
-                                            </AlertDialogAction>
+                                            <div>
+                                                <AlertDialogAction
+                                                    onClick={confirmBlockCustomer}
+                                                    className="bg-red-600 text-white hover:bg-red-700 px-6 py-2 rounded-md font-medium"
+                                                >
+                                                    Block
+                                                </AlertDialogAction>
+                                            </div>
                                         </div>
                                     </AlertDialogFooter>
                                 </div>
                             </AlertDialogContent>
                         </AlertDialog>
                     </>
+                )}
+
+                {selectedMeterCustomer && (
+                    <Dialog open={isMeterDialogOpen} onOpenChange={setIsMeterDialogOpen}>
+                        <DialogContent className="bg-white w-full min-w-[500px] h-fit p-6 rounded-lg">
+                            <DialogHeader>
+                                <DialogTitle className="text-lg font-semibold flex items-center justify-between mt-8 -mb-4">
+                                    {selectedMeterCustomer.firstName} {selectedMeterCustomer.lastName}
+                                    <div>
+                                        <Label className="text-sm font-medium text-gray-900 mt-2">
+                                            Total Number of meters
+                                        </Label>
+                                        <h1 className="text-3xl font-bold text-gray-900 text-right">
+                                            25
+                                        </h1>
+                                    </div>
+                                </DialogTitle>
+                                <DialogClose className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 cursor-pointer">
+                                </DialogClose>
+                            </DialogHeader>
+                            <div className="mt-4">
+                                <p className="text-sm text-gray-600">
+                                    C-{selectedMeterCustomer.accountNumber}
+                                </p>
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Account Number</TableHead>
+                                            <TableHead>Meter Number</TableHead>
+                                            <TableHead>Meter Category</TableHead>
+                                            <TableHead>Feeder Line</TableHead>
+                                            <TableHead>DSS</TableHead>
+                                            <TableHead className="flex gap-1 items-center">Status <ChevronDown size={14} /></TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {[
+                                            { accountNumber: "620102123", meterNumber: "V-201021223", category: "Post paid", feeder: "ljeun", dss: "ljeun", status: "Active" },
+                                            { accountNumber: "620102123", meterNumber: "V-201021223", category: "Post Paid", feeder: "ljeun", dss: "ljeun", status: "Active" },
+                                            { accountNumber: "620102123", meterNumber: "620102123", category: "Post Paid", feeder: "ljeun", dss: "ljeun", status: "Active" },
+                                            { accountNumber: "620102123", meterNumber: "620102123", category: "Prepaid", feeder: "ljeun", dss: "ljeun", status: "Active" },
+                                            { accountNumber: "620102123", meterNumber: "620102123", category: "Prepaid", feeder: "ljeun", dss: "ljeun", status: "Deactivated" },
+                                            { accountNumber: "620102123", meterNumber: "620102123", category: "Post Paid", feeder: "ljeun", dss: "ljeun", status: "Active" },
+                                            { accountNumber: "620102123", meterNumber: "620102123", category: "-----", feeder: "-----", dss: "-----", status: "Active" },
+                                        ].map((meter, index) => (
+                                            <TableRow key={index}>
+                                                <TableCell>{meter.accountNumber}</TableCell>
+                                                <TableCell>{meter.meterNumber}</TableCell>
+                                                <TableCell>{meter.category}</TableCell>
+                                                <TableCell>{meter.feeder}</TableCell>
+                                                <TableCell>{meter.dss}</TableCell>
+                                                <TableCell>
+                                                    <span
+                                                        className={
+                                                            meter.status === "Active"
+                                                                ? "text-[#059E40] bg-[#E9FBF0] rounded-full px-1.5 py-1.5"
+                                                                : "text-[#F50202] bg-[#FBE9E9] rounded-full px-1.5 py-1.5"
+                                                        }
+                                                    >
+                                                        {meter.status}
+                                                    </span>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                                <DialogFooter className="flex justify-between mt-4">
+                                    <Button
+                                        variant="outline"
+                                        className="border-[#161CCA] text-[#161CCA] hover:bg-[#161CCA]/10"
+                                        onClick={() => setIsMeterDialogOpen(false)}
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button
+                                        variant="default"
+                                        className="bg-[#161CCA] text-white hover:bg-[#161CCA]/90"
+                                        onClick={() => {
+                                            setIsMeterDialogOpen(false);
+                                            setSelectedMeterCustomer(null);
+                                        }}
+                                        size={"lg"}
+                                    >
+                                        <Printer size={16} />
+                                        Print
+                                    </Button>
+                                </DialogFooter>
+                            </div>
+                        </DialogContent>
+                    </Dialog>
                 )}
             </div>
         </div>
