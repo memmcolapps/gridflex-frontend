@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
   useNodeFormValidation,
-  type FormData,
+ type FormData,
 } from "../hooks/useNodeFormValidation";
 import { Textarea } from "@/components/ui/textarea";
 

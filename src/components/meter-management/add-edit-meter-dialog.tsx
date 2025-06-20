@@ -9,19 +9,47 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 
 
-interface MeterData {
-    meterNumber: string;
-    simNumber: string;
-    model: string;
-    meterManufacturer: string;
-    accountNumber: string;
-    sgc: string;
-    tariff: string;
-    id: string;
-    approvalStatus: string;
-    status: string;
-}
+// export interface MeterData {
+//     id: string;
+//     meterNumber: string;
+//     simNumber: string;
+//     class: string;
+//     category?: string;
+//     meterType: string;
+//     oldtariffIndex: string;
+//     newtariffIndex: string;
+//     meterManufacturer: string;
+//     accountNumber: string;
+//     oldsgc: string;
+//     oldkrn: string;
+//     newkrn: string;
+//     newsgc: string;
+//     tariff: string;
+//     approvalStatus: string;
+//     status: string;
+// }
 
+    export interface MeterData {
+        id: string;
+        meterNumber: string;
+        simNumber: string;
+        class: string;
+        category?: string;
+        meterType: string;
+        oldTariffIndex: string;
+        newTariffIndex: string;
+        meterManufacturer: string;
+        accountNumber: string;
+        oldsgc: string;
+        oldkrn: string;
+        newkrn: string;
+        newsgc: string;
+        tariff: string;
+        approvalStatus: string;
+        status: string;
+    }
+
+// add-edit-meter-dialog.tsx
 interface AddMeterDialogProps {
     isOpen: boolean;
     onClose: () => void;
@@ -39,9 +67,16 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
         transformer: "",
         meterCategory: "",
         meterClass: "",
+        meterType: "",
         meterManufacturer: "",
         creditType: "",
         state: "",
+        oldsgc: "",
+        newsgc: "",
+        oldkrn: "",
+        newkrn: "",
+        oldtariffindex: "",
+        newtariffindex: "",
         ctRatioNumerator: 0,
         ctRatioDenominator: 0,
         voltageRatioNumerator: 0,
@@ -67,9 +102,16 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                 transformer: "",
                 meterCategory: "",
                 meterClass: "",
+                meterType: "",
                 meterManufacturer: editMeter.meterManufacturer ?? "",
                 creditType: editMeter.tariff ?? "",
                 state: "",
+                oldsgc: "",
+                newsgc: "",
+                oldkrn: "",
+                newkrn: "",
+                oldtariffindex: "",
+                newtariffindex: "",
                 ctRatioNumerator: 0,
                 ctRatioDenominator: 0,
                 voltageRatioNumerator: 0,
@@ -92,9 +134,16 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                 transformer: "",
                 meterCategory: "",
                 meterClass: "",
+                meterType: "",
                 meterManufacturer: "",
                 creditType: "",
                 state: "",
+                oldsgc: "",
+                newsgc: "",
+                oldkrn: "",
+                newkrn: "",
+                oldtariffindex: "",
+                newtariffindex: "",
                 ctRatioNumerator: 0,
                 ctRatioDenominator: 0,
                 voltageRatioNumerator: 0,
@@ -117,7 +166,12 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
         if (!formData.meterCategory) newErrors.meterCategory = "Meter Category is required";
         if (!formData.meterClass) newErrors.meterClass = "Meter Class is required";
         if (!formData.meterManufacturer) newErrors.meterManufacturer = "Meter Manufacturer is required";
-        if (!formData.creditType) newErrors.creditType = "Credit Type is required";
+        if (!formData.oldsgc) newErrors.oldsgc = "Old SGC is required";
+        if (!formData.newsgc) newErrors.newsgc = "New SGC is required";
+        if (!formData.oldkrn) newErrors.oldkrn = "Old KRN is required";
+        if (!formData.newkrn) newErrors.newkrn = "New KRN is required";
+        if (!formData.oldtariffindex) newErrors.oldtariffindex = "Old Tariff Index is required";
+        if (!formData.newtariffindex) newErrors.newtariffindex = "New Tariff Index is required";
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -132,6 +186,8 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
         if (formData.meterRating <= 0) newErrors.meterRating = "Must be greater than 0";
         if (formData.initReading < 0) newErrors.initReading = "Must be 0 or greater";
         if (formData.dial <= 0) newErrors.dial = "Must be greater than 0";
+        if (formData.longitude === 0) newErrors.longitude = "Longitude is required";
+        if (formData.latitude === 0) newErrors.latitude = "Latitude is required";
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -140,7 +196,17 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
         const { name, value } = e.target;
         setFormData((prev) => ({
             ...prev,
-            [name]: name === "meterNumber" || name === "simNumber" ? value : parseFloat(value) || 0,
+            [name]:
+                name === "meterNumber" ||
+                    name === "simNumber" ||
+                    name === "oldsgc" ||
+                    name === "newsgc" ||
+                    name === "oldkrn" ||
+                    name === "newkrn" ||
+                    name === "oldtariffindex" ||
+                    name === "newtariffindex"
+                    ? value
+                    : parseFloat(value) || 0,
         }));
         setErrors((prev) => ({ ...prev, [name]: "" }));
     };
@@ -174,10 +240,16 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
         const updatedMeter: MeterData = {
             meterNumber: formData.meterNumber || "N/A",
             simNumber: formData.simNumber || "N/A",
-            model: formData.meterManufacturer || "N/A",
+            class: formData.meterManufacturer || "N/A",
             meterManufacturer: formData.meterManufacturer || "N/A",
             accountNumber: "N/A",
-            sgc: "N/A",
+            oldsgc: "N/A",
+            newsgc: "N/A",
+            oldkrn: "N/A",
+            newkrn: "N/A",
+            meterType: "N/A",
+            oldTariffIndex: formData.oldtariffindex || "N/A",
+            newTariffIndex: formData.newtariffindex || "N/A",
             tariff: formData.creditType || "N/A",
             id: editMeter ? editMeter.id : Math.random().toString(36).substring(2, 9),
             approvalStatus: editMeter ? editMeter.approvalStatus : "Pending",
@@ -194,9 +266,16 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
             transformer: "",
             meterCategory: "",
             meterClass: "",
+            meterType: "",
             meterManufacturer: "",
             creditType: "",
             state: "",
+            oldsgc: "",
+            newsgc: "",
+            oldkrn: "",
+            newkrn: "",
+            oldtariffindex: "",
+            newtariffindex: "",
             ctRatioNumerator: 0,
             ctRatioDenominator: 0,
             voltageRatioNumerator: 0,
@@ -215,9 +294,19 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-[600px] h-auto bg-white p-6 rounded-lg">
-                <DialogHeader className="flex flex-row items-center justify-between pb-3">
+            <DialogContent className="sm:max-w-lg h-fit bg-white p-6 rounded-lg">
+                <DialogHeader className="flex flex-col">
+                    {/* Progress Bar: Hidden when editing and meterClass is NMD */}
+                    {(!editMeter || formData.meterClass !== "NMD") && (
+                        <div className="w-full h-2 bg-gray-200 rounded-full mb-4">
+                            <div
+                                className={`h-full bg-[#161CCA] rounded-full transition-all duration-300 ${step === 1 ? "w-1/2" : "w-full"
+                                    }`}
+                            ></div>
+                        </div>
+                    )}
                     <DialogTitle className="text-lg font-semibold text-gray-900">{dialogTitle}</DialogTitle>
+                    <p className="text-gray-600 text-sm">Basic Information</p>
                 </DialogHeader>
 
                 <div className="max-h-[60vh] overflow-y-auto px-1">
@@ -244,7 +333,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                             </div>
                             <div className="space-y-1">
                                 <Label htmlFor="simNumber" className="text-sm font-medium text-gray-700">
-                                    Sim Card <span className="text-red-500">*</span>
+                                    Sim Card Number <span className="text-red-500">*</span>
                                 </Label>
                                 <Input
                                     type="number"
@@ -253,7 +342,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                                     value={formData.simNumber}
                                     onChange={handleInputChange}
                                     placeholder="E.g 8900080734059874"
-                                    className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.meterNumber ? "border-red-500" : ""
+                                    className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.simNumber ? "border-red-500" : ""
                                         } [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
                                     required
                                 />
@@ -263,62 +352,19 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                             </div>
                             <div className="space-y-1">
                                 <Label htmlFor="substation" className="text-sm font-medium text-gray-700">
-                                    Substation
+                                    Meter Type
                                 </Label>
                                 <Select onValueChange={(value) => handleSelectChange("substation", value)}>
                                     <SelectTrigger
-                                        id="substation"
+                                        id="metertype"
                                         className="w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                                     >
-                                        <SelectValue placeholder="Select Substation" />
+                                        <SelectValue placeholder="Select Meter Type" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {/* <SelectItem value="Search and find">Search and find</SelectItem> */}
-                                        <SelectItem value="Ojoo">Ojoo</SelectItem>
-                                        <SelectItem value="Ijeun">Ijeun</SelectItem>
-                                        <SelectItem value="Eko">Eko</SelectItem>
-                                        <SelectItem value="Agbara">Agbara</SelectItem>
-                                        <SelectItem value="Molete">Molete</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-1">
-                                <Label htmlFor="feederLine" className="text-sm font-medium text-gray-700">
-                                    Feeder Line
-                                </Label>
-                                <Select onValueChange={(value) => handleSelectChange("feederLine", value)}>
-                                    <SelectTrigger
-                                        id="feederLine"
-                                        className="w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                                    >
-                                        <SelectValue placeholder="Select Feeder Line" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {/* <SelectItem value="Search and find">Search and find</SelectItem> */}
-                                        <SelectItem value="Ojoo">Ojoo</SelectItem>
-                                        <SelectItem value="Ijeun">Ijeun</SelectItem>
-                                        <SelectItem value="Eko">Eko</SelectItem>
-                                        <SelectItem value="Agbara">Agbara</SelectItem>
-                                        <SelectItem value="Molete">Molete</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-1">
-                                <Label htmlFor="transformer" className="text-sm font-medium text-gray-700">
-                                    Transformer
-                                </Label>
-                                <Select onValueChange={(value) => handleSelectChange("transformer", value)}>
-                                    <SelectTrigger
-                                        id="transformer"
-                                        className="w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                                    >
-                                        <SelectValue placeholder="Select Transformer" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="Abia">Abia</SelectItem>
-                                        <SelectItem value="Adamawa">Adamawa</SelectItem>
-                                        <SelectItem value="Akwa Ibom">Akwa Ibom</SelectItem>
-                                        <SelectItem value="Anambra">Anambra</SelectItem>
+                                        <SelectItem value="Electricity">Electricity</SelectItem>
+                                        <SelectItem value="Water">Water</SelectItem>
+                                        <SelectItem value="Gas">Gas</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -332,7 +378,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                                         className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.meterCategory ? "border-red-500" : ""
                                             }`}
                                     >
-                                        <SelectValue placeholder="Select Meter Category" />
+                                        <SelectValue placeholder="Select Category" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="Prepaid">Prepaid</SelectItem>
@@ -353,11 +399,11 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                                         className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.meterClass ? "border-red-500" : ""
                                             }`}
                                     >
-                                        <SelectValue placeholder="Select Meter Class" />
+                                        <SelectValue placeholder="Select Class" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="MD">MD</SelectItem>
-                                        <SelectItem value="NMD">Non-MD</SelectItem>
+                                        <SelectItem value="NMD">Single Phase</SelectItem>
                                     </SelectContent>
                                 </Select>
                                 {errors.meterClass && (
@@ -374,7 +420,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                                         className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.meterManufacturer ? "border-red-500" : ""
                                             }`}
                                     >
-                                        <SelectValue placeholder="Select Meter Manufacturer" />
+                                        <SelectValue placeholder="Select Manufacturer" />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="Momas">Momas</SelectItem>
@@ -388,46 +434,118 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                                 )}
                             </div>
                             <div className="space-y-1">
-                                <Label htmlFor="creditType" className="text-sm font-medium text-gray-700">
-                                    Credit Type <span className="text-red-500">*</span>
+                                <Label htmlFor="oldsgc" className="text-sm font-medium text-gray-700">
+                                    Old SGC <span className="text-red-500">*</span>
                                 </Label>
-                                <Select onValueChange={(value) => handleSelectChange("creditType", value)}>
-                                    <SelectTrigger
-                                        id="creditType"
-                                        className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.creditType ? "border-red-500" : ""
-                                            }`}
-                                    >
-                                        <SelectValue placeholder="Select Credit Type" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="Electricity (1)">Electricity (0)</SelectItem>
-                                        <SelectItem value="Water (1)">Water (1)</SelectItem>
-                                        <SelectItem value="Gas (2)">Gas (2)</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                {errors.creditType && (
-                                    <p className="text-xs text-red-500 mt-1">{errors.creditType}</p>
+                                <Input
+                                    type="number"
+                                    id="oldsgc"
+                                    name="oldsgc"
+                                    value={formData.oldsgc}
+                                    onChange={handleInputChange}
+                                    placeholder="Enter Old SGC"
+                                    className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.oldsgc ? "border-red-500" : ""
+                                        } [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                                    required
+                                />
+                                {errors.oldsgc && (
+                                    <p className="text-xs text-red-500 mt-1">{errors.oldsgc}</p>
                                 )}
                             </div>
                             <div className="space-y-1">
-                                <Label htmlFor="state" className="text-sm font-medium text-gray-700">
-                                    State
+                                <Label htmlFor="newsgc" className="text-sm font-medium text-gray-700">
+                                    New SGC <span className="text-red-500">*</span>
                                 </Label>
-                                <Select onValueChange={(value) => handleSelectChange("state", value)}>
-                                    <SelectTrigger
-                                        id="state"
-                                        className="w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                                    >
-                                        <SelectValue placeholder="Select State" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="Abia">Abia</SelectItem>
-                                        <SelectItem value="Abule Egba">Abule Egba</SelectItem>
-                                        <SelectItem value="Ado">Ado</SelectItem>
-                                        <SelectItem value="Agbara">Agbara</SelectItem>
-                                        <SelectItem value="Akungba">Akungba</SelectItem>
-                                    </SelectContent>
-                                </Select>
+                                <Input
+                                    type="number"
+                                    id="newsgc"
+                                    name="newsgc"
+                                    value={formData.newsgc}
+                                    onChange={handleInputChange}
+                                    placeholder="Enter New SGC"
+                                    className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.newsgc ? "border-red-500" : ""
+                                        } [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                                    required
+                                />
+                                {errors.newsgc && (
+                                    <p className="text-xs text-red-500 mt-1">{errors.newsgc}</p>
+                                )}
+                            </div>
+                            <div className="space-y-1">
+                                <Label htmlFor="oldkrn" className="text-sm font-medium text-gray-700">
+                                    Old KRN <span className="text-red-500">*</span>
+                                </Label>
+                                <Input
+                                    type="number"
+                                    id="oldkrn"
+                                    name="oldkrn"
+                                    value={formData.oldkrn}
+                                    onChange={handleInputChange}
+                                    placeholder="Enter Old KRN"
+                                    className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.oldkrn ? "border-red-500" : ""
+                                        } [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                                    required
+                                />
+                                {errors.oldkrn && (
+                                    <p className="text-xs text-red-500 mt-1">{errors.oldkrn}</p>
+                                )}
+                            </div>
+                            <div className="space-y-1">
+                                <Label htmlFor="newkrn" className="text-sm font-medium text-gray-700">
+                                    New KRN <span className="text-red-500">*</span>
+                                </Label>
+                                <Input
+                                    type="number"
+                                    id="newkrn"
+                                    name="newkrn"
+                                    value={formData.newkrn}
+                                    onChange={handleInputChange}
+                                    placeholder="Enter New KRN"
+                                    className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.newkrn ? "border-red-500" : ""
+                                        } [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                                    required
+                                />
+                                {errors.newkrn && (
+                                    <p className="text-xs text-red-500 mt-1">{errors.newkrn}</p>
+                                )}
+                            </div>
+                            <div className="space-y-1">
+                                <Label htmlFor="oldtariffindex" className="text-sm font-medium text-gray-700">
+                                    Old Tariff Index <span className="text-red-500">*</span>
+                                </Label>
+                                <Input
+                                    type="number"
+                                    id="oldtariffindex"
+                                    name="oldtariffindex"
+                                    value={formData.oldtariffindex}
+                                    onChange={handleInputChange}
+                                    placeholder="Enter Old Tariff Index"
+                                    className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.oldtariffindex ? "border-red-500" : ""
+                                        } [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                                    required
+                                />
+                                {errors.oldtariffindex && (
+                                    <p className="text-xs text-red-500 mt-1">{errors.oldtariffindex}</p>
+                                )}
+                            </div>
+                            <div className="space-y-1">
+                                <Label htmlFor="newtariffindex" className="text-sm font-medium text-gray-700">
+                                    New Tariff Index <span className="text-red-500">*</span>
+                                </Label>
+                                <Input
+                                    type="number"
+                                    id="newtariffindex"
+                                    name="newtariffindex"
+                                    value={formData.newtariffindex}
+                                    onChange={handleInputChange}
+                                    placeholder="Enter New Tariff Index"
+                                    className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.newtariffindex ? "border-red-500" : ""
+                                        } [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                                    required
+                                />
+                                {errors.newtariffindex && (
+                                    <p className="text-xs text-red-500 mt-1">{errors.newtariffindex}</p>
+                                )}
                             </div>
                         </div>
                     ) : (
@@ -443,7 +561,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                                     value={formData.ctRatioNumerator}
                                     onChange={handleInputChange}
                                     placeholder="0"
-                                    className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.meterNumber ? "border-red-500" : ""
+                                    className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.ctRatioNumerator ? "border-red-500" : ""
                                         } [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
                                     required
                                 />
@@ -462,7 +580,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                                     value={formData.ctRatioDenominator}
                                     onChange={handleInputChange}
                                     placeholder="0"
-                                    className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.meterNumber ? "border-red-500" : ""
+                                    className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.ctRatioDenominator ? "border-red-500" : ""
                                         } [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
                                     required
                                 />
@@ -481,7 +599,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                                     value={formData.voltageRatioNumerator}
                                     onChange={handleInputChange}
                                     placeholder="0"
-                                    className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.meterNumber ? "border-red-500" : ""
+                                    className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.voltageRatioNumerator ? "border-red-500" : ""
                                         } [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
                                     required
                                 />
@@ -500,7 +618,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                                     value={formData.voltageRatioDenominator}
                                     onChange={handleInputChange}
                                     placeholder="0"
-                                    className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.meterNumber ? "border-red-500" : ""
+                                    className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.voltageRatioDenominator ? "border-red-500" : ""
                                         } [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
                                     required
                                 />
@@ -519,7 +637,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                                     value={formData.multiplier}
                                     onChange={handleInputChange}
                                     placeholder="0"
-                                    className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.meterNumber ? "border-red-500" : ""
+                                    className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.multiplier ? "border-red-500" : ""
                                         } [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
                                     required
                                 />
@@ -538,7 +656,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                                     value={formData.meterRating}
                                     onChange={handleInputChange}
                                     placeholder="0"
-                                    className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.meterNumber ? "border-red-500" : ""
+                                    className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.meterRating ? "border-red-500" : ""
                                         } [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
                                     required
                                 />
@@ -557,7 +675,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                                     value={formData.initReading}
                                     onChange={handleInputChange}
                                     placeholder="0"
-                                    className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.meterNumber ? "border-red-500" : ""
+                                    className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.initReading ? "border-red-500" : ""
                                         } [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
                                     required
                                 />
@@ -576,7 +694,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                                     value={formData.dial}
                                     onChange={handleInputChange}
                                     placeholder="0"
-                                    className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.meterNumber ? "border-red-500" : ""
+                                    className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.dial ? "border-red-500" : ""
                                         } [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
                                     required
                                 />
@@ -595,10 +713,13 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                                     value={formData.longitude}
                                     onChange={handleInputChange}
                                     placeholder="0.0"
-                                    className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.meterNumber ? "border-red-500" : ""
+                                    className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.longitude ? "border-red-500" : ""
                                         } [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
                                     required
                                 />
+                                {errors.longitude && (
+                                    <p className="text-xs text-red-500 mt-1">{errors.longitude}</p>
+                                )}
                             </div>
                             <div className="space-y-1">
                                 <Label htmlFor="latitude" className="text-sm font-medium text-gray-700">
@@ -611,10 +732,13 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                                     value={formData.latitude}
                                     onChange={handleInputChange}
                                     placeholder="0.0"
-                                    className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.meterNumber ? "border-red-500" : ""
+                                    className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.latitude ? "border-red-500" : ""
                                         } [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
                                     required
                                 />
+                                {errors.latitude && (
+                                    <p className="text-xs text-red-500 mt-1">{errors.latitude}</p>
+                                )}
                             </div>
                         </div>
                     )}
@@ -634,9 +758,33 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                             <Button
                                 onClick={handleNext}
                                 size={"lg"}
-                                disabled={!formData.meterNumber || !formData.simNumber || !formData.meterCategory || !formData.meterClass || !formData.meterManufacturer || !formData.creditType}
-                                style={{ opacity: (!formData.meterNumber || !formData.simNumber || !formData.meterCategory || !formData.meterClass || !formData.meterManufacturer || !formData.creditType) ? 0.4 : 1 }}
-                                className="text-sm font-medium bg-[#161CCA] text-white hover:bg-blue-700"
+                                disabled={
+                                    !formData.meterNumber ||
+                                    !formData.simNumber ||
+                                    !formData.meterCategory ||
+                                    !formData.meterClass ||
+                                    !formData.meterManufacturer ||
+                                    !formData.oldsgc ||
+                                    !formData.newsgc ||
+                                    !formData.oldkrn ||
+                                    !formData.newkrn ||
+                                    !formData.oldtariffindex ||
+                                    !formData.newtariffindex
+                                }
+                                className={`text-sm font-medium text-white hover:bg-blue-700 ${!formData.meterNumber ||
+                                    !formData.simNumber ||
+                                    !formData.meterCategory ||
+                                    !formData.meterClass ||
+                                    !formData.meterManufacturer ||
+                                    !formData.oldsgc ||
+                                    !formData.newsgc ||
+                                    !formData.oldkrn ||
+                                    !formData.newkrn ||
+                                    !formData.oldtariffindex ||
+                                    !formData.newtariffindex
+                                    ? "bg-blue-400"
+                                    : "bg-[#161CCA] cursor-pointer"
+                                    }`}
                             >
                                 {formData.meterClass === "MD" ? "Next" : "Submit"}
                             </Button>
@@ -646,15 +794,37 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                             <Button
                                 variant="outline"
                                 onClick={handleBack}
-                                className="text-sm font-medium text-gray-700 border-gray-300 hover:bg-gray-50"
+                                className="text-sm font-medium text-blue-700 border-blue-700 hover:bg-gray-50"
                             >
                                 Back
                             </Button>
                             <Button
                                 onClick={saveMeter}
-                                disabled={!formData.ctRatioNumerator || !formData.ctRatioDenominator || !formData.voltageRatioNumerator || !formData.voltageRatioDenominator || !formData.multiplier || !formData.meterRating || formData.initReading < 0 || !formData.dial}
-                                style={{ opacity: (!formData.ctRatioNumerator || !formData.ctRatioDenominator || !formData.voltageRatioNumerator || !formData.voltageRatioDenominator || !formData.multiplier || !formData.meterRating || formData.initReading < 0 || !formData.dial) ? 0.4 : 1 }}
-                                className="text-sm font-medium bg-[#161CCA] text-white hover:bg-blue-700"
+                                disabled={
+                                    !formData.ctRatioNumerator ||
+                                    !formData.ctRatioDenominator ||
+                                    !formData.voltageRatioNumerator ||
+                                    !formData.voltageRatioDenominator ||
+                                    !formData.multiplier ||
+                                    !formData.meterRating ||
+                                    formData.initReading < 0 ||
+                                    !formData.dial ||
+                                    !formData.longitude ||
+                                    !formData.latitude
+                                }
+                                className={`text-sm font-medium text-white hover:bg-blue-700 ${!formData.ctRatioNumerator ||
+                                    !formData.ctRatioDenominator ||
+                                    !formData.voltageRatioNumerator ||
+                                    !formData.voltageRatioDenominator ||
+                                    !formData.multiplier ||
+                                    !formData.meterRating ||
+                                    formData.initReading < 0 ||
+                                    !formData.dial ||
+                                    !formData.longitude ||
+                                    !formData.latitude
+                                    ? "bg-blue-400"
+                                    : "bg-[#161CCA] cursor-pointer"
+                                    }`}
                             >
                                 {editMeter ? "Save Changes" : "Add Meter"}
                             </Button>

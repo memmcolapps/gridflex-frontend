@@ -65,16 +65,16 @@ interface AdjustmentTableProps {
 
 const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
     const [customers] = useState<Customer[]>([
-        { id: "C-123456789", name: 'John Doe', meterNo: '6201021223', accountNo: '0159004612077', balance: 1400000 },
-        { id: "C-123456790", name: 'Jane Smith', meterNo: '6201021224', accountNo: '0159004612078', balance: 500000 },
-        { id: "C-123456791", name: 'Alice Johnson', meterNo: '6201021225', accountNo: '0159004612079', balance: 250000 },
-        { id: "C-123456792", name: 'Bob Brown', meterNo: '6201021226', accountNo: '0159004612080', balance: 750000 },
-        { id: "C-123456793", name: 'Emma Davis', meterNo: '6201021227', accountNo: '0159004612081', balance: 300000 },
-        { id: "C-123456794", name: 'Michael Lee', meterNo: '6201021228', accountNo: '0159004612082', balance: 400000 },
-        { id: "C-123456795", name: 'Sarah Wilson', meterNo: '6201021229', accountNo: '0159004612083', balance: 600000 },
-        { id: "C-123456796", name: 'David Clark', meterNo: '6201021230', accountNo: '0159004612084', balance: 200000 },
-        { id: "C-123456797", name: 'Laura Martinez', meterNo: '6201021231', accountNo: '0159004612085', balance: 450000 },
-        { id: "C-123456798", name: 'James Taylor', meterNo: '6201021232', accountNo: '0159004612086', balance: 500000 },
+        { id: 1, name: 'John Doe', meterNo: '6201021223', accountNo: '0159004612077', balance: 0 },
+        { id: 2, name: 'Jane Smith', meterNo: '6201021224', accountNo: '0159004612078', balance: 500000 },
+        { id: 3, name: 'Alice Johnson', meterNo: '6201021225', accountNo: '0159004612079', balance: 500000 },
+        { id: 4, name: 'Bob Brown', meterNo: '6201021226', accountNo: '0159004612080', balance: 500000 },
+        { id: 5, name: 'Emma Davis', meterNo: '6201021227', accountNo: '0159004612081', balance: 500000 },
+        { id: 6, name: 'Michael Lee', meterNo: '6201021228', accountNo: '0159004612082', balance: 500000 },
+        { id: 7, name: 'Sarah Wilson', meterNo: '6201021229', accountNo: '0159004612083', balance: 500000 },
+        { id: 8, name: 'David Clark', meterNo: '6201021230', accountNo: '0159004612084', balance: 500000 },
+        { id: 9, name: 'Laura Martinez', meterNo: '6201021231', accountNo: '0159004612085', balance: 500000 },
+        { id: 10, name: 'James Taylor', meterNo: '6201021232', accountNo: '0159004612086', balance: 500000 },
     ]);
 
     const [creditTransactions] = useState<Transaction[]>([
