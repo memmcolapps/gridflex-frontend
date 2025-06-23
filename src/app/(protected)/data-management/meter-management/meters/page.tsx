@@ -1060,7 +1060,7 @@ export default function MeterManagementPage() {
                                     {virtualData.length === 0 ? (
                                         <TableRow>
                                             <TableCell colSpan={10} className="h-24 text-center text-sm text-gray-500">
-                                                No virtual meters available
+                                                No virtual meter available
                                             </TableCell>
                                         </TableRow>
                                     ) : (

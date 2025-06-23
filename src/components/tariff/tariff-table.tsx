@@ -263,7 +263,7 @@ export function TariffTable({
           <TableRow>
             <TableHead className="w-[50px] flex items-center gap-2 px-4 py-3">
               <Checkbox
-                checked={
+                checked={ 
                   tariffs.length > 0 &&
                   selectedTariffs.length === tariffs.length
                 }
