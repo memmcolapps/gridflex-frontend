@@ -177,9 +177,7 @@ export default function MeterManagementPage() {
             status: "In-Stock",
         },
         {
-            id: "MT-1004",
-            meterNumber: "64533729273",
-            meterType: "Electricity",
+            id: "MT-1004", meterNumber: "64533729273", meterType: "Electricity",
             oldTariffIndex: "1",
             newTariffIndex: "2",
             simNumber: "SIM-895623",
@@ -807,7 +805,7 @@ export default function MeterManagementPage() {
     };
 
     return (
-        <div className="p-6 h-screen overflow-auto">
+        <div className="p-6 h-screen overflow-x-hidden">
             <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
                 <ContentHeader
                     title="Meters"
@@ -850,13 +848,13 @@ export default function MeterManagementPage() {
                         <TabsList style={{ border: "2px solid #161CCA" }} className="h-12">
                             <TabsTrigger
                                 value="actual"
-                                className="data-[state=active]:bg-[#161CCA] cursor-pointer data-[state=active]:text-white"
+                                className="data-[state=active]:bg-[#161CCA] cursor-pointer data-[state=active]:text-white p-4"
                             >
                                 Actual Meters
                             </TabsTrigger>
                             <TabsTrigger
                                 value="virtual"
-                                className="data-[state=active]:bg-[#161CCA] cursor-pointer data-[state=active]:text-white"
+                                className="data-[state=active]:bg-[#161CCA] cursor-pointer data-[state=active]:text-white p-4"
                             >
                                 Virtual Meters
                             </TabsTrigger>
@@ -886,7 +884,7 @@ export default function MeterManagementPage() {
                             </Button>
                         </div>
                     </div>
-                    <TabsContent value="actual">
+                    <TabsContent value="actual" className="overflow-x-hidden">
                         <Card className="border-none shadow-none bg-white overflow-x-auto min-h-[calc(100vh-300px)]">
                             <Table className="table-auto w-full">
                                 <TableHeader>
