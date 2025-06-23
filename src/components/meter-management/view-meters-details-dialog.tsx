@@ -1,4 +1,3 @@
-// components/meter-management/ViewMeterDetailsDialog.tsx
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 
 interface MeterData {
@@ -37,51 +36,51 @@ export function ViewMeterDetailsDialog({ isOpen, onClose, meter }: ViewMeterDeta
         </DialogHeader>
         {meter && (
           <div className="grid grid-cols-1 py-4 space-y-4">
-            <div className="flex justify-between">
+            <div className="grid grid-cols-2 gap-4 text-center">
               <span className="font-medium text-gray-700">Meter Number:</span>
               <span className="text-gray-900 font-bold">{meter.meterNumber}</span>
             </div>
-            <div className="flex justify-between">
+            <div className="grid grid-cols-2 gap-4 text-center">
               <span className="font-medium text-gray-700">SIM Number:</span>
               <span className="text-gray-900 font-bold">{meter.simNumber}</span>
             </div>
-            <div className="flex justify-between">
+            <div className="grid grid-cols-2 gap-4 text-center">
               <span className="font-medium text-gray-700">Meter Type:</span>
               <span className="text-gray-900 font-bold">{meter.meterType}</span>
             </div>
-            <div className="flex justify-between">
+            <div className="grid grid-cols-2 gap-4 text-center">
               <span className="font-medium text-gray-700">Meter Manufacturer:</span>
               <span className="text-gray-900 font-bold">{meter.meterManufacturer}</span>
             </div>
-            <div className="flex justify-between">
+            <div className="grid grid-cols-2 gap-4 text-center">
               <span className="font-medium text-gray-700">Meter Class:</span>
               <span className="text-gray-900 font-bold">{meter.class}</span>
             </div>
-            <div className="flex justify-between">
+            <div className="grid grid-cols-2 gap-4 text-center">
               <span className="font-medium text-gray-700">Category:</span>
               <span className="text-gray-900 font-bold">{meter.category ?? "N/A"}</span>
             </div>
-            <div className="flex justify-between">
+            <div className="grid grid-cols-2 gap-4 text-center">
               <span className="font-medium text-gray-700">Old Tariff Index:</span>
               <span className="text-gray-900 font-bold">{meter.oldTariffIndex}</span>
             </div>
-            <div className="flex justify-between">
+            <div className="grid grid-cols-2 gap-4 text-center">
               <span className="font-medium text-gray-700">New Tariff Index:</span>
               <span className="text-gray-900 font-bold">{meter.newTariffIndex}</span>
             </div>
-            <div className="flex justify-between">
+            <div className="grid grid-cols-2 gap-4 text-center">
               <span className="font-medium text-gray-700">Old SGC:</span>
               <span className="text-gray-900 font-bold">{meter.oldsgc}</span>
             </div>
-            <div className="flex justify-between">
+            <div className="grid grid-cols-2 gap-4 text-center">
               <span className="font-medium text-gray-700">New SGC:</span>
               <span className="text-gray-900 font-bold">{meter.newsgc}</span>
             </div>
-            <div className="flex justify-between">
+            <div className="grid grid-cols-2 gap-4 text-center">
               <span className="font-medium text-gray-700">Tariff:</span>
               <span className="text-gray-900 font-bold">{meter.tariff}</span>
             </div>
-            <div className="flex justify-between">
+            <div className="grid grid-cols-2 gap-4 text-center">
               <span className="font-medium text-gray-700">Approval Status:</span>
               <span className="text-gray-900 font-bold">{meter.approvalStatus}</span>
             </div>

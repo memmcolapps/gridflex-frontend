@@ -1,11 +1,11 @@
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"; // Adjust import based on your setup
-import { Button } from "@/components/ui/button"; // Adjust import based on your setup
-import { Input } from "@/components/ui/input"; // Adjust import based on your setup
-import { Label } from "@/components/ui/label"; // Adjust import based on your setup
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // Adjust import based on your setup
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox"; // Added Checkbox import
 import type { FC } from "react";
-import type { VirtualMeterData } from "@/types/meter"; // Adjust import based on your setup
-
+import type { VirtualMeterData } from "@/types/meter";
 
 interface AddVirtualMeterDetailsDialogProps {
   isOpen: boolean;
@@ -30,6 +30,10 @@ interface AddVirtualMeterDetailsDialogProps {
   setStreetName: (value: string) => void;
   houseNo: string;
   setHouseNo: (value: string) => void;
+  energyType: string;
+  setEnergyType: (value: string) => void;
+  fixedEnergy: string;
+  setFixedEnergy: (value: string) => void;
   onProceed: () => void;
   isFormComplete: boolean;
   nigerianStates: string[];
@@ -48,7 +52,9 @@ const AddVirtualMeterDetailsDialog: FC<AddVirtualMeterDetailsDialogProps> = ({
   setFeederLine,
   dss,
   setDss,
+  tariff,
   setTariff,
+  state,
   setState,
   city,
   setCity,
@@ -56,10 +62,22 @@ const AddVirtualMeterDetailsDialog: FC<AddVirtualMeterDetailsDialogProps> = ({
   setStreetName,
   houseNo,
   setHouseNo,
+  energyType,
+  setEnergyType,
+  fixedEnergy,
+  setFixedEnergy,
   onProceed,
   isFormComplete,
   nigerianStates,
 }) => {
+  // Determine if the Fixed checkbox is selected
+  const isFixedChecked = energyType === "Fixed";
+
+  // Update isFormComplete to include new fields
+  const updatedIsFormComplete =
+    isFormComplete &&
+    (isFixedChecked ? fixedEnergy.trim() !== "" : true); // Require fixedEnergy only if Fixed is checked
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="h-fit overflow-y-auto bg-white w-[800px]">
@@ -223,6 +241,40 @@ const AddVirtualMeterDetailsDialog: FC<AddVirtualMeterDetailsDialogProps> = ({
               />
             </div>
           </div>
+          {/* Added Energy Type Checkbox and Fixed Energy Input */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>
+                Energy Type <span className="text-red-500">*</span>
+              </Label>
+              <div className="flex justify-between gap-2 border border-gray-300 rounded-md px-3 py-2">
+                <Label htmlFor="fixed-energy-type" className="text-sm text-gray-700">
+                  Fixed
+                </Label>
+                <Checkbox
+                  id="fixed-energy-type"
+                  checked={isFixedChecked}
+                  onCheckedChange={(checked) => {
+                    setEnergyType(checked ? "Fixed" : "");
+                    if (!checked) setFixedEnergy(""); // Clear fixedEnergy if unchecked
+                  }}
+                  className="h-4 w-4 border-gray-500 data-[state=checked]:bg-green-500 data-[state=checked]:text-white"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>
+                Fixed Energy <span className="text-red-500">{isFixedChecked ? "*" : ""}</span>
+              </Label>
+              <Input
+                value={fixedEnergy}
+                onChange={(e) => setFixedEnergy(e.target.value)}
+                placeholder="Enter fixed energy"
+                className="border border-gray-300"
+                disabled={!isFixedChecked}
+              />
+            </div>
+          </div>
         </div>
         <div className="flex justify-between mt-4">
           <Button
@@ -234,9 +286,9 @@ const AddVirtualMeterDetailsDialog: FC<AddVirtualMeterDetailsDialogProps> = ({
           </Button>
           <Button
             onClick={onProceed}
-            disabled={!isFormComplete}
+            disabled={!updatedIsFormComplete}
             className={
-              isFormComplete
+              updatedIsFormComplete
                 ? "bg-[#161CCA] text-white cursor-pointer"
                 : "bg-blue-300 text-white cursor-not-allowed"
             }

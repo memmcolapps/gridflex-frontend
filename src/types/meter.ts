@@ -58,4 +58,6 @@ export interface VirtualMeterData {
   debitPaymentPlan?: string;
   creditMop?: string;
   creditPaymentPlan?: string;
+  energyType?: string; 
+  fixedEnergy?: string; 
 }

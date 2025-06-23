@@ -65,6 +65,8 @@ export default function MeterManagementPage() {
     const [city, setCity] = useState("");
     const [streetName, setStreetName] = useState("");
     const [houseNo, setHouseNo] = useState("");
+    const [energyType, setEnergyType] = useState(""); // <-- Added this line
+    const [fixedEnergy, setFixedEnergy] = useState(""); // <-- Added for fixedEnergy
     const [isEditVirtualMeterOpen, setIsEditVirtualMeterOpen] = useState(false);
     const [phoneNumber, setPhoneNumber] = useState("");
     const [isViewDetailsOpen, setIsViewDetailsOpen] = useState(false);
@@ -1028,117 +1030,151 @@ export default function MeterManagementPage() {
                         </Card>
                     </TabsContent>
                     <TabsContent value="virtual">
-                        <Card className="border-none shadow-none bg-white overflow-x-auto min-h-[calc(100vh-300px)]">
-                            <Table className="table-auto w-full">
-                                <TableHeader>
-                                    <TableRow className="bg-gray-50 hover:bg-gray-50">
-                                        <TableHead className="w-20 px-4 py-3 text-left text-sm font-semibold text-gray-700">
-                                            <div className="flex items-center gap-2">
-                                                <Checkbox
-                                                    className="h-4 w-4 border-gray-500"
-                                                    id="select-all-virtual"
-                                                    checked={virtualData.length > 0 && selectedTariffs.length === virtualData.length}
-                                                    onCheckedChange={toggleSelectAll}
-                                                />
-                                                <Label htmlFor="select-all-virtual" className="text-sm font-semibold text-gray-700">
-                                                    S/N
-                                                </Label>
-                                            </div>
-                                        </TableHead>
-                                        <TableHead className="min-w-[120px] px-4 py-3 text-left text-sm font-semibold text-gray-700">Customer ID</TableHead>
-                                        <TableHead className="min-w-[120px] px-4 py-3 text-left text-sm font-semibold text-gray-700">Meter Number</TableHead>
-                                        <TableHead className="min-w-[120px] px-4 py-3 text-left text-sm font-semibold text-gray-700">Account Number</TableHead>
-                                        <TableHead className="min-w-[100px] px-4 py-3 text-left text-sm font-semibold text-gray-700">Feeder</TableHead>
-                                        <TableHead className="min-w-[100px] px-4 py-3 text-left text-sm font-semibold text-gray-700">DSS</TableHead>
-                                        <TableHead className="min-w-[120px] px-4 py-3 text-left text-sm font-semibold text-gray-700">CIN</TableHead>
-                                        <TableHead className="min-w-[100px] px-4 py-3 text-left text-sm font-semibold text-gray-700">Tariff</TableHead>
-                                        <TableHead className="min-w-[100px] px-4 py-3 text-center text-sm font-semibold text-gray-700">Status</TableHead>
-                                        <TableHead className="w-20 px-4 py-3 text-right text-sm font-semibold text-gray-700">Actions</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {virtualData.length === 0 ? (
-                                        <TableRow>
-                                            <TableCell colSpan={10} className="h-24 text-center text-sm text-gray-500">
-                                                No virtual meter available
-                                            </TableCell>
+                        <Card className="border-none shadow-none bg-white min-h-[calc(100vh-300px)]">
+                            <div className="overflow-x-auto">
+                                <Table className="w-full table-auto">
+                                    <TableHeader>
+                                        <TableRow className="bg-gray-50 hover:bg-gray-50">
+                                            <TableHead className="w-20 px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                                                <div className="flex items-center gap-2">
+                                                    <Checkbox
+                                                        className="h-4 w-4 border-gray-500"
+                                                        id="select-all-virtual"
+                                                        checked={virtualData.length > 0 && selectedTariffs.length === virtualData.length}
+                                                        onCheckedChange={toggleSelectAll}
+                                                    />
+                                                    <Label htmlFor="select-all-virtual" className="text-sm font-semibold text-gray-700">
+                                                        S/N
+                                                    </Label>
+                                                </div>
+                                            </TableHead>
+                                            <TableHead className="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-normal">
+                                                Customer ID
+                                            </TableHead>
+                                            <TableHead className="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-normal">
+                                                Meter Number
+                                            </TableHead>
+                                            <TableHead className="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-normal">
+                                                Account Number
+                                            </TableHead>
+                                            <TableHead className="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-normal">
+                                                Feeder
+                                            </TableHead>
+                                            <TableHead className="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-normal">
+                                                DSS
+                                            </TableHead>
+                                            <TableHead className="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-normal">
+                                                CIN
+                                            </TableHead>
+                                            <TableHead className="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-normal">
+                                                Tariff
+                                            </TableHead>
+                                            <TableHead className="px-4 py-3 text-center text-sm font-semibold text-gray-700 whitespace-normal">
+                                                Status
+                                            </TableHead>
+                                            <TableHead className="w-20 px-4 py-3 text-right text-sm font-semibold text-gray-700">
+                                                Actions
+                                            </TableHead>
                                         </TableRow>
-                                    ) : (
-                                        paginatedData.map((item, index) =>
-                                            "customerId" in item ? (
-                                                <TableRow key={item.id} className="hover:bg-gray-50">
-                                                    <TableCell className="px-4 py-3">
-                                                        <div className="flex items-center gap-2">
-                                                            <Checkbox
-                                                                className="h-4 w-4 border-gray-500"
-                                                                id={`select-${item.id}`}
-                                                                checked={selectedTariffs.includes(item.id)}
-                                                                onCheckedChange={() => toggleSelection(item.id)}
-                                                            />
-                                                            <span className="text-sm text-gray-900">
-                                                                {index + 1 + (currentPage - 1) * rowsPerPage}
+                                    </TableHeader>
+                                    <TableBody>
+                                        {virtualData.length === 0 ? (
+                                            <TableRow>
+                                                <TableCell colSpan={10} className="h-24 text-center text-sm text-gray-500">
+                                                    No virtual meter available
+                                                </TableCell>
+                                            </TableRow>
+                                        ) : (
+                                            paginatedData.map((item, index) =>
+                                                "customerId" in item ? (
+                                                    <TableRow key={item.id} className="hover:bg-gray-50">
+                                                        <TableCell className="px-4 py-3">
+                                                            <div className="flex items-center gap-2">
+                                                                <Checkbox
+                                                                    className="h-4 w-4 border-gray-500"
+                                                                    id={`select-${item.id}`}
+                                                                    checked={selectedTariffs.includes(item.id)}
+                                                                    onCheckedChange={() => toggleSelection(item.id)}
+                                                                />
+                                                                <span className="text-sm text-gray-900">
+                                                                    {index + 1 + (currentPage - 1) * rowsPerPage}
+                                                                </span>
+                                                            </div>
+                                                        </TableCell>
+                                                        <TableCell className="px-4 py-3 text-sm text-gray-900 break-words">
+                                                            {item.customerId}
+                                                        </TableCell>
+                                                        <TableCell className="px-4 py-3 text-sm text-gray-900 break-words">
+                                                            {item.meterNumber}
+                                                        </TableCell>
+                                                        <TableCell className="px-4 py-3 text-sm text-gray-900 break-words">
+                                                            {item.accountNumber}
+                                                        </TableCell>
+                                                        <TableCell className="px-4 py-3 text-sm text-gray-900 break-words">
+                                                            {item.feeder}
+                                                        </TableCell>
+                                                        <TableCell className="px-4 py-3 text-sm text-gray-900 break-words">
+                                                            {item.dss}
+                                                        </TableCell>
+                                                        <TableCell className="px-4 py-3 text-sm text-gray-900 break-words">
+                                                            {item.cin}
+                                                        </TableCell>
+                                                        <TableCell className="px-4 py-3 text-sm text-gray-900 break-words">
+                                                            {item.tariff}
+                                                        </TableCell>
+                                                        <TableCell className="px-4 py-3 text-center">
+                                                            <span className="inline-block px-3 py-1 rounded-2xl text-sm font-medium">
+                                                                {item.status === "Assigned" && (
+                                                                    <span className="text-green-600 bg-green-100 p-1 rounded-full">Assigned</span>
+                                                                )}
+                                                                {item.status === "Deactivated" && (
+                                                                    <span className="text-red-600 bg-red-100 p-1 rounded-full">Deactivated</span>
+                                                                )}
+                                                                {item.status !== "Assigned" && item.status !== "Deactivated" && (
+                                                                    <span className="text-gray-900">{item.status}</span>
+                                                                )}
                                                             </span>
-                                                        </div>
-                                                    </TableCell>
-                                                    <TableCell className="px-4 py-3 text-sm text-gray-900">{item.customerId}</TableCell>
-                                                    <TableCell className="px-4 py-3 text-sm text-gray-900">{item.meterNumber}</TableCell>
-                                                    <TableCell className="px-4 py-3 text-sm text-gray-900">{item.accountNumber}</TableCell>
-                                                    <TableCell className="px-4 py-3 text-sm text-gray-900">{item.feeder}</TableCell>
-                                                    <TableCell className="px-4 py-3 text-sm text-gray-900">{item.dss}</TableCell>
-                                                    <TableCell className="px-4 py-3 text-sm text-gray-900">{item.cin}</TableCell>
-                                                    <TableCell className="px-4 py-3 text-sm text-gray-900">{item.tariff}</TableCell>
-                                                    <TableCell className="px-4 py-3 text-center">
-                                                        <span className="inline-block px-3 py-1 rounded-2xl text-sm font-medium">
-                                                            {item.status === "Assigned" && (
-                                                                <span className="text-green-600 bg-green-100 p-1 rounded-full">Assigned</span>
-                                                            )}
-                                                            {item.status === "Deactivated" && (
-                                                                <span className="text-red-600 bg-red-100 p-1 rounded-full">Deactivated</span>
-                                                            )}
-                                                            {item.status !== "Assigned" && item.status !== "Deactivated" && (
-                                                                <span className="text-gray-900">{item.status}</span>
-                                                            )}
-                                                        </span>
-                                                    </TableCell>
-                                                    <TableCell className="px-4 py-3 text-right">
-                                                        <DropdownMenu>
-                                                            <DropdownMenuTrigger asChild>
-                                                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 cursor-pointer">
-                                                                    <MoreVertical size={14} className="text-gray-500" />
-                                                                </Button>
-                                                            </DropdownMenuTrigger>
-                                                            <DropdownMenuContent align="end" className="w-fit bg-white shadow-lg">
-                                                                <DropdownMenuItem
-                                                                    className="flex items-center gap-2 cursor-pointer"
-                                                                    onClick={() => {
-                                                                        setSelectedMeter(item);
-                                                                        setEditMeter(item);
-                                                                        setIsEditVirtualMeterOpen(true); // MODIFIED: Open Edit Virtual Meter dialog
-                                                                    }}
-                                                                >
-                                                                    <Pencil size={14} />
-                                                                    <span className="text-sm text-gray-700">Edit Meter</span>
-                                                                </DropdownMenuItem>
-                                                                <DropdownMenuItem
-                                                                    className="flex items-center gap-2 cursor-pointer"
-                                                                    disabled={item.status === "Deactivated"}
-                                                                    onClick={() => {
-                                                                        setSelectedMeter(item);
-                                                                        setIsDeactivateDialogOpen(true);
-                                                                    }}
-                                                                >
-                                                                    <Ban size={14} />
-                                                                    <span className="text-sm text-gray-700">Deactivate</span>
-                                                                </DropdownMenuItem>
-                                                            </DropdownMenuContent>
-                                                        </DropdownMenu>
-                                                    </TableCell>
-                                                </TableRow>
-                                            ) : null
-                                        )
-                                    )}
-                                </TableBody>
-                            </Table>
+                                                        </TableCell>
+                                                        <TableCell className="px-4 py-3 text-right">
+                                                            <DropdownMenu>
+                                                                <DropdownMenuTrigger asChild>
+                                                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 cursor-pointer">
+                                                                        <MoreVertical size={14} className="text-gray-500" />
+                                                                    </Button>
+                                                                </DropdownMenuTrigger>
+                                                                <DropdownMenuContent align="end" className="w-fit bg-white shadow-lg">
+                                                                    <DropdownMenuItem
+                                                                        className="flex items-center gap-2 cursor-pointer"
+                                                                        onClick={() => {
+                                                                            setSelectedMeter(item);
+                                                                            setEditMeter(item);
+                                                                            setIsEditVirtualMeterOpen(true);
+                                                                        }}
+                                                                    >
+                                                                        <Pencil size={14} />
+                                                                        <span className="text-sm text-gray-700">Edit Meter</span>
+                                                                    </DropdownMenuItem>
+                                                                    <DropdownMenuItem
+                                                                        className="flex items-center gap-2 cursor-pointer"
+                                                                        disabled={item.status === "Deactivated"}
+                                                                        onClick={() => {
+                                                                            setSelectedMeter(item);
+                                                                            setIsDeactivateDialogOpen(true);
+                                                                        }}
+                                                                    >
+                                                                        <Ban size={14} />
+                                                                        <span className="text-sm text-gray-700">Deactivate</span>
+                                                                    </DropdownMenuItem>
+                                                                </DropdownMenuContent>
+                                                            </DropdownMenu>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ) : null
+                                            )
+                                        )}
+                                    </TableBody>
+                                </Table>
+                            </div>
                         </Card>
                     </TabsContent>
                 </Tabs>
@@ -1223,6 +1259,10 @@ export default function MeterManagementPage() {
                 setStreetName={setStreetName}
                 houseNo={houseNo}
                 setHouseNo={setHouseNo}
+                energyType={energyType}
+                setEnergyType={setEnergyType}
+                fixedEnergy={fixedEnergy}
+                setFixedEnergy={setFixedEnergy}
                 onProceed={handleProceedToDeactivate}
                 isFormComplete={!!isFormComplete}
                 nigerianStates={nigerianStates}
@@ -1306,10 +1346,35 @@ export default function MeterManagementPage() {
                 onAssign={handleAssign}
                 meterNumber={selectedMeter?.meterNumber ?? ""}
             />
-            <BulkUploadDialog
+            {/* <BulkUploadDialog
                 isOpen={isBulkUploadDialogOpen}
                 onClose={() => setIsBulkUploadDialogOpen(false)}
                 onSave={handleBulkUpload}
+            /> */}
+            <BulkUploadDialog<MeterData>
+                isOpen={isBulkUploadDialogOpen}
+                onClose={() => setIsBulkUploadDialogOpen(false)}
+                onSave={handleBulkUpload}
+                title="Bulk Upload Meters"
+                requiredColumns={[
+                    "id",
+                    "meterNumber",
+                    "simNumber",
+                    "class",
+                    "meterType",
+                    "oldTariffIndex",
+                    "newTariffIndex",
+                    "meterManufacturer",
+                    "accountNumber",
+                    "oldsgc",
+                    "oldkrn",
+                    "newkrn",
+                    "newsgc",
+                    "tariff",
+                    "approvalStatus",
+                    "status",
+                ]}
+                templateUrl="/templates/meter-template.xlsx"
             />
             <ViewMeterDetailsDialog
                 isOpen={isViewDetailsOpen}

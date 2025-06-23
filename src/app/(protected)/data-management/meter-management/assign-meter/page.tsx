@@ -38,6 +38,7 @@ import { ConfirmationModalDialog } from "@/components/meter-management/confirmat
 import { MigrateMeterDialog } from "@/components/meter-management/migrate-meter-dialog";
 import { DetachMeterDialog } from "@/components/meter-management/detach-meter-dialog";
 import { DetachConfirmationDialog } from "@/components/meter-management/detach-confirmation-dialog";
+import { BulkUploadDialog } from "@/components/meter-management/bulk-upload";
 
 // Define filter sections
 const filterSections = [
@@ -280,6 +281,7 @@ export default function AssignMeterPage() {
     const [isDetachConfirmModalOpen, setIsDetachConfirmModalOpen] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [isBulkUploadModalOpen, setIsBulkUploadModalOpen] = useState(false);
 
 
     // Calculate pagination values
@@ -411,7 +413,7 @@ export default function AssignMeterPage() {
         });
         setMeterNumber(customer.meterNumber ?? "");
         setCin(customer.cin ?? "");
-        setAccountNumber(customer.accountNumber?? "");
+        setAccountNumber(customer.accountNumber ?? "");
         setTariff(customer.tariff ?? "");
         setFeeder(customer.feeder ?? "");
         setDss(customer.dss ?? "");
@@ -633,10 +635,13 @@ export default function AssignMeterPage() {
             (migrateDebitMop !== "" &&
                 migrateCreditMop !== "" &&
                 (migrateDebitMop !== "monthly" || migrateDebitPaymentPlan !== "") &&
-                (migrateCreditMop !== "monthly"  || migrateCreditPaymentPlan !== "")));
+                (migrateCreditMop !== "monthly" || migrateCreditPaymentPlan !== "")));
 
+    const handleBulkUploadSave = (data: MeterData[]) => {
+        setMeterData((prev) => [...prev, ...data]);
+    };
     return (
-        <div className="p-6 h-screen overflow-auto">
+        <div className="p-6 max-h-screen overflow-auto">
             <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
                 <ContentHeader
                     title="Assign Meter"
@@ -647,6 +652,7 @@ export default function AssignMeterPage() {
                         className="flex items-center gap-2 border font-medium border-[#161CCA] text-[#161CCA] w-full md:w-auto cursor-pointer"
                         variant="outline"
                         size="lg"
+                        onClick={() => setIsBulkUploadModalOpen(true)}
                     >
                         <CirclePlus size={14} strokeWidth={2.3} className="h-4 w-4" />
                         <span className="text-sm md:text-base">Bulk Upload</span>
@@ -690,7 +696,6 @@ export default function AssignMeterPage() {
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="center" className="w-48">
-
                             <DropdownMenuItem
                                 onClick={() => handleSortChange("customerId")}
                                 className="text-sm cursor-pointer hover:bg-gray-100"
@@ -823,7 +828,7 @@ export default function AssignMeterPage() {
                     ))}
                 </TableBody>
             </Table>
-            <div className="sticky bottom-0 bg-white border-t border-gray-200 flex items-center justify-between px-4 py-3 mt-4 z-10">
+            <div className="bg-white  flex items-center justify-between px-4 py-3 mt-20">
                 <div className="flex items-center gap-2">
                     <span className="text-sm text-gray-600">Rows per page</span>
                     <select
@@ -841,10 +846,9 @@ export default function AssignMeterPage() {
                         ))}
                     </select>
                 </div>
-                <span className="text-sm text-gray-600 ml-4">
+                <span className="text-sm text-gray-600">
                     {startIndex + 1}-{Math.min(endIndex, totalRows)} of {totalRows} rows
                 </span>
-
                 <div className="flex items-center gap-2">
                     <button
                         disabled={currentPage === 1}
@@ -862,8 +866,6 @@ export default function AssignMeterPage() {
                     </button>
                 </div>
             </div>
-
-
             <CustomerIdDialog
                 isOpen={isCustomerIdModalOpen}
                 onOpenChange={setIsCustomerIdModalOpen}
@@ -979,8 +981,6 @@ export default function AssignMeterPage() {
                 isMigrateFormComplete={isMigrateFormComplete}
                 onConfirm={handleConfirmMigrate}
             />
-
-            {/* Detach Meter Modal */}
             <DetachMeterDialog
                 isOpen={isDetachModalOpen}
                 onOpenChange={setIsDetachModalOpen}
@@ -989,14 +989,34 @@ export default function AssignMeterPage() {
                 onProceed={handleProceedFromDetach}
                 onCancel={handleCancelDetach}
             />
-
-            {/* Detach Confirmation Modal */}
             <DetachConfirmationDialog
                 isOpen={isDetachConfirmModalOpen}
                 onOpenChange={setIsDetachConfirmModalOpen}
                 customerToDetach={customerToDetach}
                 onConfirm={handleConfirmDetach}
                 onCancel={() => setIsDetachConfirmModalOpen(false)}
+            />
+
+            <BulkUploadDialog <MeterData>
+                isOpen={isBulkUploadModalOpen}
+                onClose={() => setIsBulkUploadModalOpen(false)}
+                onSave={handleBulkUploadSave}
+                title="Bulk Upload"
+                description="Click the link to download the required document format for meter assignments. Ensure your file includes all necessary columns before uploading."
+                requiredColumns={[
+                    "customerId",
+                    "meterNumber",
+                    "accountNumber",
+                    "cin",
+                    "category",
+                    "debitMop",
+                    "debitPaymentPlan",
+                    "creditMop",
+                    "creditPaymentPlan",
+                    "approvedStatus",
+                ]}
+                templateUrl="/templates/assign-meter-template.xlsx"
+                maxFileSizeMb={20}
             />
         </div>
     );
