@@ -16,7 +16,7 @@ interface DeactivateDialogProps {
     meterNumber: string;
 }
 
-export function DeactivateDialog({ isOpen, onClose, onDeactivate, meterNumber }: DeactivateDialogProps) {
+export function DeactivateDialog({ isOpen, onClose, onDeactivate }: DeactivateDialogProps) {
     const [reason, setReason] = useState<string>("");
     const [isFinalConfirmOpen, setIsFinalConfirmOpen] = useState(false);
 
@@ -33,25 +33,21 @@ export function DeactivateDialog({ isOpen, onClose, onDeactivate, meterNumber }:
     return (
         <>
             <Dialog open={isOpen} onOpenChange={onClose}>
-                <DialogContent className="sm:max-w-[350px] h-75 bg-white rounded-lg p-8">
+                <DialogContent className="sm:max-w-[350px] h-fit bg-white rounded-lg p-8">
                     <DialogHeader className="flex flex-row items-center justify-between pb-3">
-                        <div className="flex items-center gap-2">
-                            <AlertTriangle size={20} className="text-[#F50202] bg-red-100 p-3 rounded-full" />
-                            <DialogTitle className="text-lg font-semibold text-gray-900">Deactivate Meter</DialogTitle>
+                        <div className="flex-col items-center gap-2">
+                            {/* <AlertTriangle size={20} className="text-[#F50202] bg-red-100 p-3 rounded-full" /> */}
+                            <DialogTitle className="text-lg font-semibold text-gray-900 mt-2">Deactivate Meter</DialogTitle>
                         </div>
                     </DialogHeader>
-                    <div className="py-4">
+                    <div className="">
                         <p className="text-sm text-gray-700">Reason</p>
-                        <Select value={reason} onValueChange={setReason}>
-                            <SelectTrigger className="w-full mt-2 border-gray-300 focus:border-blue-500 focus:ring-blue-500">
-                                <SelectValue placeholder="Select reason to deactivate" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="faulty">Faulty</SelectItem>
-                                <SelectItem value="obsolete">Obsolete</SelectItem>
-                                <SelectItem value="other">Other</SelectItem>
-                            </SelectContent>
-                        </Select>
+                        <Input
+                            value={reason}
+                            onChange={(e) => setReason(e.target.value)}
+                            className="w-full mt-2 border-gray-300"
+                            placeholder="Enter reason to deactivate"
+                        />
                     </div>
                     <DialogFooter className="flex justify-end gap-3">
                         <Button
@@ -62,7 +58,7 @@ export function DeactivateDialog({ isOpen, onClose, onDeactivate, meterNumber }:
                             Cancel
                         </Button>
                         <Button
-                            className="bg-[#F50202] text-white hover:bg-red-700"
+                            className="bg-[#F50202] text-white hover:bg-red-700 cursor-pointer"
                             onClick={handleDeactivate}
                             disabled={!reason}
                         >
@@ -73,16 +69,16 @@ export function DeactivateDialog({ isOpen, onClose, onDeactivate, meterNumber }:
             </Dialog>
 
             <Dialog open={isFinalConfirmOpen} onOpenChange={setIsFinalConfirmOpen}>
-                <DialogContent className="sm:max-w-[350px] h-70 bg-white rounded-lg p-6">
+                <DialogContent className="sm:max-w-[350px] h-fit bg-white rounded-lg p-6">
                     <DialogHeader className="flex flex-row items-center justify-between pb-3">
-                        <div className="flex items-center gap-2">
-                            <AlertTriangle size={20} className="text-[#F50202] bg-red-100 p-3 rounded-full" />
-                            <DialogTitle className="text-lg font-semibold text-gray-900">Confirm Deactivation</DialogTitle>
+                        <div className="flex-col gap-2">
+                            <AlertTriangle size={20} className="text-[#F50202] bg-red-100 p-3 rounded-full mt-4" />
+                            <DialogTitle className="text-lg font-semibold text-gray-900 mt-2">Deactivate meter</DialogTitle>
                         </div>
                     </DialogHeader>
-                    <div className="py-4">
+                    <div className="">
                         <p className="text-sm text-gray-700">
-                            Are you sure you want to deactivate meter {meterNumber} with reason &quot;{reason}&quot;? This action cannot be undone.
+                            Are you sure you want to deactivate meter?
                         </p>
                     </div>
                     <DialogFooter className="flex justify-end gap-3">

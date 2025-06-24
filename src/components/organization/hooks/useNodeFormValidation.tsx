@@ -1,5 +1,4 @@
-import { useCallback } from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 export interface FormData {
   name: string;
@@ -41,63 +40,62 @@ export const useNodeFormValidation = ({
   });
   const [isValid, setIsValid] = useState(false);
 
-
-  const validateForm = useCallback((data: FormData) => {
+  const validateForm = (data: FormData) => {
     const newErrors: FormErrors = { email: "", phoneNumber: "", id: "" };
     let allFieldsValid = true;
 
-    const requiredFields: (keyof FormData)[] = [
-      "name",
-      "id",
-      "phoneNumber",
-      "email",
-      "contactPerson",
-      "address",
-    ];
+      const requiredFields: (keyof FormData)[] = [
+        "name",
+        "id",
+        "phoneNumber",
+        "email",
+        "contactPerson",
+        "address",
+      ];
 
-    if (nodeType !== "Root" && nodeType !== "Region") {
-      requiredFields.push("status", "voltage");
-    }
-    if (nodeType === "Substation" || nodeType === "Transformer") {
-      requiredFields.push("longitude", "latitude");
-    }
+      if (nodeType !== "Root" && nodeType !== "Region") {
+        requiredFields.push("status", "voltage");
+      }
+      if (nodeType === "Substation" || nodeType === "Transformer") {
+        requiredFields.push("longitude", "latitude");
+      }
 
-    requiredFields.forEach((field) => {
-      if (!data[field]) {
+      requiredFields.forEach((field) => {
+        if (!data[field]) {
+          allFieldsValid = false;
+        }
+      });
+
+      // Email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (data.email && !emailRegex.test(data.email)) {
+        newErrors.email = "Invalid email format";
         allFieldsValid = false;
       }
-    });
 
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (data.email && !emailRegex.test(data.email)) {
-      newErrors.email = "Invalid email format";
-      allFieldsValid = false;
-    }
+      // Phone number validation
+      const phoneRegex = /^\+?[0-9]{10,}$/;
+      if (data.phoneNumber && !phoneRegex.test(data.phoneNumber)) {
+        newErrors.phoneNumber = "Phone number must be at least 10 digits";
+        allFieldsValid = false;
+      }
 
-    // Phone number validation
-    const phoneRegex = /^\+?[0-9]{10,}$/;
-    if (data.phoneNumber && !phoneRegex.test(data.phoneNumber)) {
-      newErrors.phoneNumber = "Phone number must be at least 10 digits";
-      allFieldsValid = false;
-    }
-
-    // ID (serial number) validation
-    const idRegex = /^[a-zA-Z0-9]+$/;
-    if (data.id && !idRegex.test(data.id)) {
-      newErrors.id = "ID must be alphanumeric";
-      allFieldsValid = false;
-    }
+      // ID (serial number) validation
+      const idRegex = /^[a-zA-Z0-9]+$/;
+      if (data.id && !idRegex.test(data.id)) {
+        newErrors.id = "ID must be alphanumeric";
+        allFieldsValid = false;
+      }
 
     setErrors(newErrors);
     setIsValid(allFieldsValid);
-  }, [nodeType]);
+  };
 
   useEffect(() => {
     if (isInitialValidation) {
       validateForm(formData);
     }
-  }, [formData, nodeType, isInitialValidation, validateForm]);
+  }, [formData, nodeType, isInitialValidation]);
 
   return { errors, isValid, validateForm };
 };
