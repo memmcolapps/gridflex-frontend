@@ -1346,11 +1346,6 @@ export default function MeterManagementPage() {
                 onAssign={handleAssign}
                 meterNumber={selectedMeter?.meterNumber ?? ""}
             />
-            {/* <BulkUploadDialog
-                isOpen={isBulkUploadDialogOpen}
-                onClose={() => setIsBulkUploadDialogOpen(false)}
-                onSave={handleBulkUpload}
-            /> */}
             <BulkUploadDialog<MeterData>
                 isOpen={isBulkUploadDialogOpen}
                 onClose={() => setIsBulkUploadDialogOpen(false)}
