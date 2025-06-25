@@ -157,7 +157,7 @@ export default function UserManagement() {
 
     return (
         <div className="h-full overflow-hidden flex flex-col text-black">
-            <div className="p-6 flex-grow">
+            <div className="flex-grow">
                 <h1 className="text-2xl mb-6 font-bold">Users</h1>
                 <div className="flex justify-between items-center mb-6">
                     <p className="text-sm text-muted-foreground">

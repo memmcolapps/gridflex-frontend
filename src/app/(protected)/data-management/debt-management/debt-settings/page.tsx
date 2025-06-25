@@ -47,10 +47,10 @@ export default function DebtSettingsPage() {
 
     return (
         <div className="min-h-screen">
-            <div className="mx-auto px-4 sm:px-6 lg:px-8 max-w-screen-2xl space-y-6 border-none bg-white">
+            <div className="mx-auto max-w-screen-2xl space-y-6 border-none bg-white">
                 <div className="flex justify-between items-start pt-6">
                     <ContentHeader
-                        title="Debit Setting"
+                        title="Debt Setting"
                         description="Set and Manage reasons for liability and percentage range here"
                     />
                     <div className="flex gap-2">

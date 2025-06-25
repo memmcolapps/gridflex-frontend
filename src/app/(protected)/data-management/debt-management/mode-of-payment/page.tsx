@@ -19,7 +19,7 @@ export default function ModeOfPaymentPage() {
 
     return (
         <div className="min-h-screen w-full">
-            <div className="mx-auto px-4 sm:px-6 lg:px-8 max-w-screen-2xl w-full space-y-6 bg-white">
+            <div className="mx-auto max-w-screen-2xl w-full space-y-6 bg-white">
                 <div className="flex flex-col sm:flex-row justify-between items-start pt-4 sm:pt-6">
                     <ContentHeader
                         title="Mode Of Payment"
@@ -51,7 +51,7 @@ export default function ModeOfPaymentPage() {
                     </div>
                 </div>
             </div>
-            <div className="mx-auto px-4 sm:px-6 lg:px-8 max-w-screen-2xl w-full">
+            <div className="mx-auto max-w-screen-2xl w-full">
                 <ModeOfPaymentTable />
             </div>
         </div>

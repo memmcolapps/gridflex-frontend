@@ -6,7 +6,7 @@ import { ArrowUpDown, ListFilter, Search, SquareArrowOutUpRight } from "lucide-r
 
 export default function VendingPage() {
     return (
-        <div>
+        <div className="">
             {/* header */}
             <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
                 <ContentHeader

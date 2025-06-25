@@ -49,10 +49,14 @@ export default function ProtectedLayout({
 
         {/* Desktop layout */}
         <div className="hidden md:flex w-full">
-          <SidebarNav />
-          <div className="flex-1 flex flex-col md:ml-[11rem]">
+          {/* Sidebar with fixed width */}
+          <div className="w-[21rem] flex-shrink-0">
+            <SidebarNav />
+          </div>
+          {/* Main content area */}
+          <div className="flex-1 flex flex-col">
             <Navbar />
-            <main className="flex-1 p-6 overflow-auto">
+            <main className="flex-1 py-4 px-8">
               {children}
             </main>
           </div>
