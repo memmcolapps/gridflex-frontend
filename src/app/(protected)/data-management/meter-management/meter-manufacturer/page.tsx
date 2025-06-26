@@ -18,7 +18,7 @@ import {
     DialogFooter,
 } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { FilterControl, SearchControl, SortControl } from "@/components/search-control";
+import { SearchControl, SortControl } from "@/components/search-control";
 
 // Types
 interface Manufacturer {

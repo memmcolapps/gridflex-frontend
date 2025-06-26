@@ -28,7 +28,7 @@ export default function OrganizationPage() {
         showIcon={true}
         isTopBanner={false}
       />
-      <Card className="mx-auto max-w-screen-2xl space-y-6 rounded-lg border-none bg-white px-4 shadow-sm sm:px-6 lg:px-8">
+      <Card className="p-6 max-w-screen-2xl space-y-6 rounded-lg border-none bg-white px-4 shadow-sm sm:px-6 lg:px-8">
         <div className="flex items-start justify-between pt-6">
           <ContentHeader
             title="Organization Hierarchy"

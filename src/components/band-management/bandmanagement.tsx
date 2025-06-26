@@ -18,10 +18,11 @@ import {
 } from "@/components/ui/table";
 import { PlusCircleIcon, SearchIcon } from "lucide-react";
 import { fetchBands, createBand, updateBand, type Band } from "@/service/band-service";
+import { ContentHeader } from "../ui/content-header";
 
 export default function BandManagement() {
 
-  
+
   const [bands, setBands] = useState<Band[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -116,11 +117,11 @@ export default function BandManagement() {
 
   return (
     <div className="p-6 text-black">
-      <h1 className="mb-6 text-2xl font-bold">Band Management</h1>
-      <div className="mb-6 flex items-center justify-between">
-        <p className="text-muted-foreground text-sm">
-          Add and manage electricity distribution bands.
-        </p>
+      <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+        <ContentHeader
+          title="Band Management"
+          description="Add and manage electricity distribution bands"
+        />
         <BandForm
           mode="add"
           onSave={handleAddBand}

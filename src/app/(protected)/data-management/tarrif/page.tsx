@@ -173,7 +173,7 @@ export default function TariffManagementPage() {
   }, [refreshTariffs]);
 
   return (
-    <div className="flex min-h-screen flex-col font-sans">
+    <div className="p-6 flex min-h-screen flex-col font-sans">
       <NotificationBar
         title="Tariff Management"
         bgColor="bg-[rgba(22,28,202,1)]"

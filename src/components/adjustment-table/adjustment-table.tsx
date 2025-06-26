@@ -41,6 +41,7 @@ import {
     Wallet,
 } from 'lucide-react';
 import { SearchControl, SortControl } from '../search-control';
+import { ContentHeader } from '../ui/content-header';
 
 interface Customer {
     id: string | number;
@@ -79,10 +80,10 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
 
     const [creditTransactions] = useState<Transaction[]>([
         { date: '05-05-2025', liabilityCause: 'Electricity Deficit', liabilityCode: 'CR1234', credit: 10000, debit: "", balance: 10000 },
-        { date: '05-04-2025', liabilityCause: 'Null', liabilityCode:'Null', credit: "", debit: 10000, balance: 0 },
+        { date: '05-04-2025', liabilityCause: 'Null', liabilityCode: 'Null', credit: "", debit: 10000, balance: 0 },
         { date: '05-03-2025', liabilityCause: 'Electricity Deficit', liabilityCode: 'CR1234', credit: 10000, debit: "", balance: 10000 },
         { date: '05-02-2025', liabilityCause: 'Null', liabilityCode: 'Null', credit: "", debit: 10000, balance: 0 },
-     
+
     ]);
 
     const [debitTransactions] = useState<Transaction[]>([
@@ -92,7 +93,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
         { date: '05-02-2025', liabilityCause: 'Null', liabilityCode: 'Null', credit: 100000, debit: "", balance: 200000 },
         { date: '05-01-2025', liabilityCause: 'Null', liabilityCode: 'Null', credit: 100000, debit: "", balance: 100000 },
         { date: '05-01-2025', liabilityCause: 'Null', liabilityCode: 'Null', credit: 100000, debit: "", balance: 100000 },
-         { date: '05-01-2025', liabilityCause: 'Null', liabilityCode: 'Null', credit: 100000, debit: "", balance: 0 },
+        { date: '05-01-2025', liabilityCause: 'Null', liabilityCode: 'Null', credit: 100000, debit: "", balance: 0 },
     ]);
 
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -129,7 +130,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
     }>({ key: null, direction: "asc" });
 
     // If you want to use the customers array as the initial data:
-    const [processedData, setProcessedData] = useState<Customer[]>(customers);
+    const [, setProcessedData] = useState<Customer[]>(customers);
 
     useEffect(() => {
         applyFiltersAndSort(searchTerm, sortConfig.key, sortConfig.direction);
@@ -243,13 +244,13 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
     };
 
     return (
-        <div className="h-full overflow-hidden flex flex-col text-black">
+        <div className="p-6 h-full overflow-hidden flex flex-col text-black">
             <div className="p-6 flex-grow">
-                <h1 className="text-2xl mb-6 font-bold">{type === 'credit' ? 'Credit Adjustment' : 'Debit Adjustment'}</h1>
-                <div className="flex justify-between items-center mb-6">
-                    <p className="text-sm text-muted-foreground">
-                        Set and manage account {type} here
-                    </p>
+                <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+                    <ContentHeader
+                        title={type === 'credit' ? 'Credit Adjustment' : 'Debit Adjustment'}
+                        description={`Set and manage account ${type} here`}
+                    />
                     <div className="flex gap-2">
                         <Button variant="outline" className="border-[#161CCA] text-[#161CCA] cursor-pointer">
                             <div className="flex items-center justify-center p-0.5">
