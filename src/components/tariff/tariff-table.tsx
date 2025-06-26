@@ -1,6 +1,6 @@
 "use client";
 
-import { type Tariff } from "@/service/tarriff-service";
+import { changeTariffApprovalStatus, type Tariff } from "@/service/tarriff-service";
 import { toast } from "sonner";
 import {
   Table,
@@ -51,7 +51,6 @@ interface TariffTableProps {
 
 export function TariffTable({
   tariffs,
-  onUpdateTariff,
   selectedTariffs,
   setSelectedTariffs,
   onRefresh,
@@ -128,6 +127,49 @@ export function TariffTable({
     }
   };
 
+  const handleStatusChange = async (tariffId: string, newStatus: boolean) => {
+    if (!canApprove) {
+      toast.error("You don't have permission to change tariff status");
+      return;
+    }
+
+    setConfirmDialog({
+      isOpen: true,
+      title: `${newStatus ? "Activate" : "Deactivate"} Tariff`,
+      description: `Are you sure you want to ${newStatus ? "activate" : "deactivate"} this tariff?`,
+      action: async () => {
+        const success = await changeTariffStatus(tariffId, newStatus);
+        if (success) {
+          await updateTariff(tariffId, { status: newStatus });
+        }
+        setConfirmDialog((prev) => ({ ...prev, isOpen: false }));
+      },
+    });
+  };
+
+  const handleApprovalChange = async (
+    tariffId: string,
+    newStatus: "Approved" | "Rejected",
+  ) => {
+    if (!canApprove) {
+      toast.error("You don't have permission to change approval status");
+      return;
+    }
+
+    setConfirmDialog({
+      isOpen: true,
+      title: `${newStatus} Tariff`,
+      description: `Are you sure you want to ${newStatus.toLowerCase()} this tariff?`,
+      action: async () => {
+        const success = await changeTariffApprovalStatus(tariffId, newStatus);
+        if (success) {
+          await onRefresh(); // Refresh after successful approval change
+        }
+        setConfirmDialog((prev) => ({ ...prev, isOpen: false }));
+      },
+    });
+  };
+
   const handleStatusToggle = async (
     tariffId: string,
     currentStatus: boolean,
@@ -192,7 +234,7 @@ export function TariffTable({
       };
       const success = await updateTariff(editDialog.tariff.id.toString(), updates);
       if (success) {
-        onUpdateTariff(editDialog.tariff.id.toString(), updates);
+        updateTariff(editDialog.tariff.id.toString(), updates);
         toast.success("Tariff updated successfully");
         setEditDialog({ isOpen: false, tariff: null });
         await onRefresh();
@@ -221,7 +263,7 @@ export function TariffTable({
           <TableRow>
             <TableHead className="w-[50px] flex items-center gap-2 px-4 py-3">
               <Checkbox
-                checked={
+                checked={ 
                   tariffs.length > 0 &&
                   selectedTariffs.length === tariffs.length
                 }
@@ -282,12 +324,13 @@ export function TariffTable({
                 <TableCell>{tariff.effective_date}</TableCell>
                 <TableCell>
                   <span
-                    className={`py-0.6 rounded-xl px-2.5 capitalize ${tariff.approve_status === "Approved"
-                      ? "bg-[#E9F6FF] text-[#225BFF]"
-                      : tariff.approve_status === "Rejected"
-                        ? "bg-[#FBE9E9] text-[#F75555]"
-                        : "bg-[#FFF5EA] text-[#FACC15]"
-                      }`}
+                    className={`py-0.6 rounded-xl px-2.5 capitalize ${
+                      tariff.approve_status === "Approved"
+                        ? "bg-[#E9F6FF] text-[#225BFF]"
+                        : tariff.approve_status === "Rejected"
+                          ? "bg-[#FBE9E9] text-[#F75555]"
+                          : "bg-[#FFF5EA] text-[#FACC15]"
+                    }`}
                   >
                     {tariff.approve_status}
                   </span>

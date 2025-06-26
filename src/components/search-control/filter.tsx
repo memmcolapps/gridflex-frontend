@@ -1,16 +1,17 @@
 "use client";
-
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Filter } from "lucide-react";
 import { Checkbox } from "../ui/checkbox";
 
+interface FilterOption {
+    label: string;
+    id: string;
+}
+
 interface FilterSection {
     title: string;
-    options: {
-        id: string;
-        label: string;
-    }[];
+    options: FilterOption[];
 }
 
 interface FilterControlProps {
@@ -33,11 +34,13 @@ export function FilterControl({
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
-            if (isOpen &&
+            if (
+                isOpen &&
                 dropdownRef.current &&
                 !dropdownRef.current.contains(event.target as Node) &&
                 buttonRef.current &&
-                !buttonRef.current.contains(event.target as Node)) {
+                !buttonRef.current.contains(event.target as Node)
+            ) {
                 setIsOpen(false);
             }
         };
@@ -83,6 +86,33 @@ export function FilterControl({
         setIsOpen(false);
     };
 
+    // Check if sections[0] and sections[1] exist
+    if (sections.length < 2) {
+        return (
+            <div className="relative">
+                <div className="flex items-center gap-2">
+                    <Button
+                        ref={buttonRef}
+                        variant="outline"
+                        className="gap-2 border-gray-300 w-full lg:w-auto cursor-pointer"
+                        onClick={() => setIsOpen(!isOpen)}
+                    >
+                        <Filter className="text-gray-500" size={14} />
+                        <span className="text-gray-800 text-sm lg:text-base">Filter</span>
+                    </Button>
+                </div>
+                {isOpen && (
+                    <div
+                        ref={dropdownRef}
+                        className="absolute z-50 mt-2 w-[280px] bg-white rounded-md shadow-lg border border-gray-200 p-4"
+                    >
+                        <div className="text-gray-700 text-sm">Insufficient filter sections provided.</div>
+                    </div>
+                )}
+            </div>
+        );
+    }
+
     return (
         <div className="relative">
             <div className="flex items-center gap-2">
@@ -100,41 +130,69 @@ export function FilterControl({
             {isOpen && (
                 <div
                     ref={dropdownRef}
-                    className="absolute z-50 mt-2 w-120 bg-white rounded-md shadow-lg border-gray-200 pr-2">
-
-                    {sections.map((section, sectionIndex) => (
-                        <div key={section.title} className="flex items-center justify-between border-b border-gray-200">
-                            <div className="w-35 font-medium text-gray-700 px-4">{section.title}</div>
-                            <div className="flex-1 border-l border-gray-200 pl-2">
-                                {section.options.map((option, optionIndex) => (
-                                    <div
-                                        key={option.id}
-                                        className={`flex items-center justify-between py-1 ${optionIndex < section.options.length - 1 ? 'border-b border-gray-200' : ''
-                                            }`}
-                                    >
-                                        <label htmlFor={option.id} className="text-sm text-gray-700 m-2">
-                                            {option.label}
-                                        </label>
-                                        <Checkbox
-                                            id={option.id}
-                                            checked={filters[option.id] ?? false}
-                                            onCheckedChange={() => toggleFilter(option.id, sectionIndex)}
-                                            className={`h-4 w-4 border-2 rounded cursor-pointer ${filters[option.id]
-                                                ? 'bg-blue-500 border-blue-500'
-                                                : 'bg-white border-gray-300'
-                                                }`}
-                                        />
-                                    </div>
-                                ))}
-                            </div>
+                    className="absolute z-50 mt-2 w-[280px] bg-white rounded-md shadow-lg border border-gray-200 p-4"
+                >
+                    <div className="flex gap-4">
+                        {/* Left Column: Meter Class */}
+                        <div className="flex-1 border-r border-gray-200 pr-4">
+                            <div className="text-black-700 text-sm mb-2 font-bold">{sections[0]?.title}</div>
+                            {sections[0]?.options?.map((option) => (
+                                <div
+                                    key={option.id}
+                                    className="flex items-center justify-between py-2"
+                                >
+                                    <label htmlFor={option.id} className="text-sm text-gray-700">
+                                        {option.label}
+                                    </label>
+                                    <Checkbox
+                                        id={option.id}
+                                        checked={filters[option.id] ?? false}
+                                        onCheckedChange={() => toggleFilter(option.id, 0)}
+                                        className={`h-4 w-4 border-2 rounded cursor-pointer ${filters[option.id]
+                                            ? 'bg-[#161CCA] border-[#161CCA]'
+                                            : 'bg-white border-gray-300'
+                                        }`}
+                                    />
+                                </div>
+                            ))}
                         </div>
-                    ))}
+                        {/* Right Column: Meter Type (Category) */}
+                        <div className="flex-1">
+                            <div className="font-bold text-black-700 text-sm mb-2">{sections[1]?.title}</div>
+                            {sections[1]?.options?.map((option) => (
+                                <div
+                                    key={option.id}
+                                    className="flex items-center justify-between py-2"
+                                >
+                                    <label htmlFor={option.id} className="text-sm text-gray-700">
+                                        {option.label}
+                                    </label>
+                                    <Checkbox
+                                        id={option.id}
+                                        checked={filters[option.id] ?? false}
+                                        onCheckedChange={() => toggleFilter(option.id, 1)}
+                                        className={`h-4 w-4 border-2 rounded cursor-pointer ${filters[option.id]
+                                            ? 'bg-[#161CCA] border-[#161CCA]'
+                                            : 'bg-white border-gray-300'
+                                        }`}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
 
-                    <div className="flex justify-between gap-2 mt-4 p-4">
-                        <Button variant="outline" onClick={handleReset} className="text-blue-600 border-blue-600 cursor-pointer">
+                    <div className="flex justify-center gap-2 mt-4">
+                        <Button
+                            variant="outline"
+                            onClick={handleReset}
+                            className="text-xs text-[#161CCA] border-[#161CCA] cursor-pointer flex-1"
+                        >
                             Reset
                         </Button>
-                        <Button onClick={handleApply} className="bg-blue-600 text-white cursor-pointer">
+                        <Button
+                            onClick={handleApply}
+                            className="text-xs bg-[#161CCA] text-white cursor-pointer flex-1"
+                        >
                             Apply
                         </Button>
                     </div>
