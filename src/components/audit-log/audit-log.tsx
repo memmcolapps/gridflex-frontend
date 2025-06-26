@@ -60,7 +60,7 @@ export function AuditLog() {
         setIsDialogOpen(true);
     };
     return (
-        <div className="p-6 h-screen overflow-auto">
+        <div className="h-screen overflow-auto">
             <div className="flex flex-col gap-4 h-full">
                 <h1 className="text-2xl font-bold">Audit Log</h1>
                 <p className="text-gray-600">

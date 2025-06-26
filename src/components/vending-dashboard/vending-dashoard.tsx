@@ -14,7 +14,7 @@ export default function VendingDashboard() {
     const [selectedMeterType, setSelectedMeterType] = useState('Meter Type');
     return (
         <div className="min-h-screen">
-            <div className="mx-auto px-4 sm:px-6 lg:px-8 max-w-screen-2xl space-y-6">
+            <div className="max-w-screen-2xl space-y-6">
                 <div className="flex justify-between items-start">
                     <ContentHeader
                         title="Overview"

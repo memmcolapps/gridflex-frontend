@@ -20,7 +20,7 @@ export default {
         "6xl": "4rem", // 64px
       },
       fontFamily: {
-        sans: [],
+        sans: ["Inter", ...defaultTheme.fontFamily.sans],
       },
       borderRadius: {
         lg: "var(--radius)",

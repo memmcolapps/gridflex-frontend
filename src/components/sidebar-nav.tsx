@@ -119,7 +119,8 @@ export function SidebarNav() {
       icon: Zap,
       hasSubmenu: true,
       submenuItems: [
-        { title: "Dashboard", href: "/vending/vending-dashboard" }
+        { title: "Dashboard", href: "/vending/vending-dashboard" },
+        { title: "Vending", href: "/vending/vending" }
       ],
     },
     {
@@ -154,7 +155,7 @@ export function SidebarNav() {
   ];
 
   return (
-    <Sidebar className="fixed left-0 top-0 h-screen z-40 border-r border-gray-200 w-[274px] lg:w-[250px] xl:w-[274px] hidden md:block overflow-y-auto">
+    <Sidebar className="fixed left-0 top-0 h-screen z-40 border-r border-gray-200 w-fit hidden md:block overflow-y-auto">
       <SidebarHeader className="flex items-center justify-center py-4">
         <Link href="/" className="flex items-center gap-2">
           <div className="flex items-center justify-center">
