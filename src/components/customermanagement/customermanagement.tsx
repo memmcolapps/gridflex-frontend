@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "../ui/alert-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose, DialogFooter } from "@/components/ui/dialog";
+import { ContentHeader } from "../ui/content-header";
 
 export type Customer = {
     id: string;
@@ -213,12 +214,12 @@ export default function CustomerManagement() {
 
     return (
         <div className="h-full overflow-hidden flex flex-col text-black">
-            <div className="p-6 flex-grow">
-                <h1 className="text-2xl mb-6 font-bold">Customers</h1>
-                <div className="flex justify-between items-center mb-6">
-                    <p className="text-sm text-muted-foreground">
-                        Manage and access customer records.
-                    </p>
+            <div className="flex-grow">
+                <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+                    <ContentHeader
+                    title="Customer Management"
+                    description="Manage And Access Customer Records"
+                />
                     <div className="flex gap-4">
                         <Button variant="outline" className="border-[#161CCA] text-[#161CCA] cursor-pointer">
                             <div className="flex items-center justify-center p-0.5">
@@ -284,7 +285,7 @@ export default function CustomerManagement() {
                         </Label>
                     </Button>
                 </div>
-                <div className="h-4/6 overflow-auto">
+                <div className="h-4/6">
                     <Table>
                         <TableHeader>
                             <TableRow>

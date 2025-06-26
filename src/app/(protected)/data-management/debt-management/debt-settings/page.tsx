@@ -46,7 +46,7 @@ export default function DebtSettingsPage() {
     };
 
     return (
-        <div className="min-h-screen">
+        <div className="p-6 min-h-screen">
             <div className="mx-auto max-w-screen-2xl space-y-6 border-none bg-white">
                 <div className="flex justify-between items-start pt-6">
                     <ContentHeader
