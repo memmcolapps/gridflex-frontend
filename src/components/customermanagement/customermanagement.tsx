@@ -15,6 +15,7 @@ import {
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "../ui/alert-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose, DialogFooter } from "@/components/ui/dialog";
 import { ContentHeader } from "../ui/content-header";
+import { getStatusStyle } from "../status-style";
 
 export type Customer = {
     id: string;
@@ -217,9 +218,9 @@ export default function CustomerManagement() {
             <div className="flex-grow">
                 <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
                     <ContentHeader
-                    title="Customer Management"
-                    description="Manage And Access Customer Records"
-                />
+                        title="Customer Management"
+                        description="Manage And Access Customer Records"
+                    />
                     <div className="flex gap-4">
                         <Button variant="outline" className="border-[#161CCA] text-[#161CCA] cursor-pointer">
                             <div className="flex items-center justify-center p-0.5">
@@ -364,13 +365,7 @@ export default function CustomerManagement() {
                                     <TableCell className="text-center">{customer.operator}</TableCell>
                                     <TableCell className="text-center">
                                         <span
-                                            className={
-                                                customer.status === "Active"
-                                                    ? "text-[#059E40] bg-[#E9FBF0] rounded-full px-1.5 py-1.5"
-                                                    : customer.status === "Inactive"
-                                                        ? "text-[#D97706] bg-[#FEF3C7] rounded-full px-1.5 py-1.5"
-                                                        : "text-[#F50202] bg-[#FBE9E9] rounded-full px-1.5 py-1.5"
-                                            }
+                                            className={getStatusStyle(customer.status)}
                                         >
                                             {customer.status}
                                         </span>
