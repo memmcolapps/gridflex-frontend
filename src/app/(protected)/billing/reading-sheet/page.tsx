@@ -7,7 +7,7 @@ import { FilterControl, SortControl } from "@/components/search-control";
 import { Button } from "@/components/ui/button";
 import { ContentHeader } from "@/components/ui/content-header";
 import { Input } from "@/components/ui/input";
-import { CirclePlus, ListFilter, Printer, Search, SquareArrowOutUpRight } from "lucide-react";
+import { CirclePlus, Printer, Search, SquareArrowOutUpRight } from "lucide-react";
 import { useState } from "react";
 
 export default function ReadingSheetPage() {
@@ -19,7 +19,7 @@ export default function ReadingSheetPage() {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => setInputValue(e.target.value);
 
     // Define handleBulkUpload function
-    const handleBulkUpload = (data: any) => {
+    const handleBulkUpload = (_data: unknown) => {
         // Implement your bulk upload logic here
         // For now, just close the dialog
         setIsBulkUploadDialogOpen(false);

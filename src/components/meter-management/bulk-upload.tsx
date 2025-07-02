@@ -163,9 +163,8 @@ import {
     DialogTitle,
     DialogFooter,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { UploadIcon, DownloadIcon } from "lucide-react";
+import { UploadIcon } from "lucide-react";
 import * as XLSX from "xlsx";
 
 interface BulkUploadDialogProps<T> {
@@ -310,7 +309,14 @@ export function BulkUploadDialog<T>({
                     {error && <p className="text-sm text-red-600">{error}</p>}
                 </div>
                 <DialogFooter className="flex justify-end gap-3">
-
+                    <button
+                        type="button"
+                        className="bg-[#161CCA] text-white px-4 py-2 rounded hover:bg-[#0f128a] transition"
+                        onClick={handleUpload}
+                        disabled={!file}
+                    >
+                        Upload
+                    </button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

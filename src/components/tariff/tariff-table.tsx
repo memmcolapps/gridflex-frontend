@@ -1,6 +1,6 @@
 "use client";
 
-import { changeTariffApprovalStatus, type Tariff } from "@/service/tarriff-service";
+import { type Tariff } from "@/service/tarriff-service";
 import { toast } from "sonner";
 import {
   Table,
@@ -128,48 +128,7 @@ export function TariffTable({
     }
   };
 
-  const handleStatusChange = async (tariffId: string, newStatus: boolean) => {
-    if (!canApprove) {
-      toast.error("You don't have permission to change tariff status");
-      return;
-    }
 
-    setConfirmDialog({
-      isOpen: true,
-      title: `${newStatus ? "Activate" : "Deactivate"} Tariff`,
-      description: `Are you sure you want to ${newStatus ? "activate" : "deactivate"} this tariff?`,
-      action: async () => {
-        const success = await changeTariffStatus(tariffId, newStatus);
-        if (success) {
-          await updateTariff(tariffId, { status: newStatus });
-        }
-        setConfirmDialog((prev) => ({ ...prev, isOpen: false }));
-      },
-    });
-  };
-
-  const handleApprovalChange = async (
-    tariffId: string,
-    newStatus: "Approved" | "Rejected",
-  ) => {
-    if (!canApprove) {
-      toast.error("You don't have permission to change approval status");
-      return;
-    }
-
-    setConfirmDialog({
-      isOpen: true,
-      title: `${newStatus} Tariff`,
-      description: `Are you sure you want to ${newStatus.toLowerCase()} this tariff?`,
-      action: async () => {
-        const success = await changeTariffApprovalStatus(tariffId, newStatus);
-        if (success) {
-          await onRefresh(); // Refresh after successful approval change
-        }
-        setConfirmDialog((prev) => ({ ...prev, isOpen: false }));
-      },
-    });
-  };
 
   const handleStatusToggle = async (
     tariffId: string,
