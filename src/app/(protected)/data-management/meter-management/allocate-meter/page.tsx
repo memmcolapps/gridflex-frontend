@@ -399,6 +399,7 @@ export default function AllocateMetersPage() {
                             <TableHead className="w-[80px] px-4 py-3 text-left">
                                 <div className="flex items-center gap-2">
                                     <Checkbox
+                                        variant="native"
                                         className="border-gray-500"
                                         checked={isAllSelected}
                                         onCheckedChange={handleSelectAll}
@@ -425,6 +426,7 @@ export default function AllocateMetersPage() {
                                 <TableCell className="px-4 py-3">
                                     <div className="flex items-center gap-2">
                                         <Checkbox
+                                        variant="native"
                                             className="border-gray-500"
                                             checked={selectedMeters.includes(meter.id)}
                                             onCheckedChange={(checked) => handleSelectItem(checked as boolean, meter.id)}

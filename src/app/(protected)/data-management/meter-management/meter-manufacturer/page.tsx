@@ -559,7 +559,7 @@ export default function ManufacturersPage() {
                     <TableHeader>
                         <TableRow className="bg-gray-50 hover:bg-gray-50">
                             <TableHead className=" px-2 sm:px-4 py-2 sm:py-3 text-left">
-                                <Checkbox className="h-4 w-4 border-gray-500" />
+                                <Checkbox variant="native" className="h-4 w-4 border-gray-500" />
                             </TableHead>
                             <TableHead className=" px-2 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-semibold text-gray-700">S/N</TableHead>
                             <TableHead className=" px-2 sm:px-4 py-2 sm:py-3 text-left text-xs sm:text-sm font-semibold text-gray-700">Manufacturer</TableHead>
@@ -584,7 +584,7 @@ export default function ManufacturersPage() {
                                     className={`hover:bg-gray-50 ${item.status === "Deactivated" ? "bg-gray-100 text-gray-400" : ""}`}
                                 >
                                     <TableCell className="px-2 sm:px-4 py-2 sm:py-3">
-                                        <Checkbox className="h-4 w-4 border-gray-500" disabled={item.status === "Deactivated"} />
+                                        <Checkbox variant="native" className="h-4 w-4 border-gray-500" disabled={item.status === "Deactivated"} />
                                     </TableCell>
                                     <TableCell className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm">{item.id}</TableCell>
                                     <TableCell className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm">{item.sin}</TableCell>

@@ -8,6 +8,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import {
     ArrowUpDown,
@@ -727,16 +728,16 @@ export default function AssignMeterPage() {
                     <TableRow>
                         <TableHead>
                             <div className="flex items-center gap-2">
-                                <input
-                                    type="checkbox"
-                                    checked={selectedRows.length === meterData.length}
-                                    onChange={(e) => {
-                                        if (e.target.checked) {
-                                            setSelectedRows(meterData.map((_, index) => index));
-                                        } else {
-                                            setSelectedRows([]);
-                                        }
-                                    }}
+                                <Checkbox
+                                   variant="native"
+                                   checked={selectedRows.length === meterData.length && meterData.length > 0}
+                                   onCheckedChange={(checked) => {
+                                       if (checked) {
+                                           setSelectedRows(meterData.map((_, index) => index));
+                                       } else {
+                                           setSelectedRows([]);
+                                       }
+                                   }}
                                 />
                                 <span>S/N</span>
                             </div>

@@ -894,6 +894,7 @@ export default function MeterManagementPage() {
                                         <TableHead className="px-4 py-3 w-[100px]">
                                             <div className="flex items-center gap-2">
                                                 <Checkbox
+                                                variant="native"
                                                     className="h-4 w-4 border-gray-500"
                                                     checked={selectedTariffs.length === data.length && data.length > 0}
                                                     onCheckedChange={(checked) => {
@@ -937,6 +938,7 @@ export default function MeterManagementPage() {
                                                     <TableCell className="px-4 py-3">
                                                         <div className="flex items-center gap-2">
                                                             <Checkbox
+                                                            variant="native"
                                                                 className="h-4 w-4 border-gray-500"
                                                                 id={`select-${item.id}`}
                                                                 checked={selectedTariffs.includes(item.id)}
@@ -1038,6 +1040,7 @@ export default function MeterManagementPage() {
                                             <TableHead className="w-20 px-4 py-3 text-left text-sm font-semibold text-gray-700">
                                                 <div className="flex items-center gap-2">
                                                     <Checkbox
+                                                    variant="native"
                                                         className="h-4 w-4 border-gray-500"
                                                         id="select-all-virtual"
                                                         checked={virtualData.length > 0 && selectedTariffs.length === virtualData.length}
@@ -1091,6 +1094,7 @@ export default function MeterManagementPage() {
                                                         <TableCell className="px-4 py-3">
                                                             <div className="flex items-center gap-2">
                                                                 <Checkbox
+                                                                variant="native"
                                                                     className="h-4 w-4 border-gray-500"
                                                                     id={`select-${item.id}`}
                                                                     checked={selectedTariffs.includes(item.id)}
