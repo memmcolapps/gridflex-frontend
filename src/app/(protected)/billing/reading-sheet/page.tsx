@@ -2,7 +2,8 @@
 import AddReadingDialog from "@/components/billing/add-readings";
 import GenerateReadingSheet from "@/components/billing/generate-reading";
 import MeterReadings from "@/components/billing/meter-reading";
-import { SortControl } from "@/components/search-control";
+import { BulkUploadDialog } from "@/components/meter-management/bulk-upload";
+import { FilterControl, SortControl } from "@/components/search-control";
 import { Button } from "@/components/ui/button";
 import { ContentHeader } from "@/components/ui/content-header";
 import { Input } from "@/components/ui/input";
@@ -14,7 +15,22 @@ export default function ReadingSheetPage() {
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
     const [inputValue, setInputValue] = useState("");
+    const [isBulkUploadDialogOpen, setIsBulkUploadDialogOpen] = useState(false);
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => setInputValue(e.target.value);
+
+    // Define handleBulkUpload function
+    const handleBulkUpload = (data: any) => {
+        // Implement your bulk upload logic here
+        // For now, just close the dialog
+        setIsBulkUploadDialogOpen(false);
+    };
+
+    // Add sortConfig state and handleSortChange function
+    const [sortConfig, setSortConfig] = useState<string>("");
+    const handleSortChange = (sortBy: string) => {
+        setSortConfig(sortBy);
+    };
+
 
     return (
         <div className="p-6">
@@ -29,6 +45,7 @@ export default function ReadingSheetPage() {
                         className="flex items-center gap-2 border font-medium border-[#161CCA] text-[#161CCA] w-full md:w-auto cursor-pointer"
                         variant="outline"
                         size="lg"
+                        onClick={() => setIsBulkUploadDialogOpen(true)}
                     >
                         <CirclePlus size={14} strokeWidth={2.3} className="h-4 w-4" />
                         <span className="text-sm md:text-base">Bulk Upload</span>
@@ -63,11 +80,31 @@ export default function ReadingSheetPage() {
                         />
                     </div>
                     <div className="flex gap-2">
-                        <Button className="flex cursor-pointer items-center gap-2 rounded-md border border-[rgba(228,231,236,1)] px-4 py-2 text-sm text-gray-700 focus:outline-none">
-                            <ListFilter size={14} />
-                            Filter
-                        </Button>
-                        <SortControl />
+                        <FilterControl
+                            sections={[
+                                {
+                                    title: "Status",
+                                    options: [
+                                        { label: "All", id: "all" },
+                                        { label: "Pending", id: "pending" },
+                                        { label: "Completed", id: "completed" },
+                                    ],
+                                },
+                                {
+                                    title: "Month",
+                                    options: [
+                                        { label: "January", id: "january" },
+                                        { label: "February", id: "february" },
+                                        { label: "March", id: "march" },
+                                        // Add more months as needed
+                                    ],
+                                },
+                            ]}
+                        />
+                        <SortControl
+                            onSortChange={handleSortChange}
+                            currentSort={sortConfig}
+                        />
                     </div>
                 </div>
                 <div className="flex gap-5">
@@ -100,6 +137,24 @@ export default function ReadingSheetPage() {
             <GenerateReadingSheet
                 open={isGenerateDialogOpen}
                 onClose={() => setIsGenerateDialogOpen(false)}
+            />
+            <BulkUploadDialog
+                isOpen={isBulkUploadDialogOpen}
+                onClose={() => setIsBulkUploadDialogOpen(false)}
+                onSave={handleBulkUpload}
+                title="Bulk Upload readings"
+                requiredColumns={[
+                    "id",
+                    "meterNumber",
+                    "federLine",
+                    "tariff",
+                    "larDate",
+                    "lastActuralReading",
+                    "readingType",
+                    "readingDate",
+                    "currentReadings",
+                ]}
+                templateUrl="/templates/readingSheet-template.xlsx"
             />
         </div>
     );
