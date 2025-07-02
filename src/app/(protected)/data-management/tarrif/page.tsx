@@ -50,8 +50,6 @@ export default function TariffManagementPage() {
     effectiveDate: null as Date | null,
     bandCode: "",
     tariffRate: "",
-    status: "inactive" as "active" | "inactive",
-    approvalStatus: "pending" as "Approved" | "pending" | "rejected",
   });
 
   useEffect(() => {
@@ -132,8 +130,8 @@ export default function TariffManagementPage() {
         effectiveDate: null,
         bandCode: "",
         tariffRate: "",
-        status: "inactive",
-        approvalStatus: "pending",
+        // status: "inactive",
+        // approvalStatus: "pending",
       });
     }
   };
