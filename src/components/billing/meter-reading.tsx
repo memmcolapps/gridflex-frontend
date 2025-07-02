@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/table";
 import { useState } from "react";
 import EditMeterReading from "./edit-reading";
+import { Card } from "../ui/card";
 // import EditMeterReading from "./edit";
 
 export default function MeterReadings() {
@@ -63,7 +64,7 @@ export default function MeterReadings() {
     };
 
     return (
-        <div className="container mx-auto py-10 px-5">
+        <Card className="p-4 border-none shadow-sm rounded">
             <Table>
                 <TableHeader>
                     <TableRow>
@@ -142,6 +143,6 @@ export default function MeterReadings() {
                     }}
                 />
             )}
-        </div>
+        </Card>
     );
 }
