@@ -9,9 +9,10 @@ import { useState } from "react";
 interface SearchControlProps {
     onSearchChange?: (searchTerm: string) => void;
     value?: string;
+    placeholder?: string;
 }
 
-export function SearchControl({ onSearchChange, value = "" }: SearchControlProps) {
+export function SearchControl({ onSearchChange, value = "",placeholder="" }: SearchControlProps) {
     const [inputValue, setInputValue] = useState(value);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -31,7 +32,7 @@ export function SearchControl({ onSearchChange, value = "" }: SearchControlProps
             />
             <Input
                 type="text"
-                placeholder="Search by meter no., account no..."
+                placeholder={placeholder}
                 value={inputValue}
                 onChange={handleChange}
                 className="pl-10 w-full border-gray-300 focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50 text-sm lg:text-base"

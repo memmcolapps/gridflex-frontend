@@ -79,10 +79,10 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
 
     const [creditTransactions] = useState<Transaction[]>([
         { date: '05-05-2025', liabilityCause: 'Electricity Deficit', liabilityCode: 'CR1234', credit: 10000, debit: "", balance: 10000 },
-        { date: '05-04-2025', liabilityCause: 'Null', liabilityCode:'Null', credit: "", debit: 10000, balance: 0 },
+        { date: '05-04-2025', liabilityCause: 'Null', liabilityCode: 'Null', credit: "", debit: 10000, balance: 0 },
         { date: '05-03-2025', liabilityCause: 'Electricity Deficit', liabilityCode: 'CR1234', credit: 10000, debit: "", balance: 10000 },
         { date: '05-02-2025', liabilityCause: 'Null', liabilityCode: 'Null', credit: "", debit: 10000, balance: 0 },
-     
+
     ]);
 
     const [debitTransactions] = useState<Transaction[]>([
@@ -92,7 +92,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
         { date: '05-02-2025', liabilityCause: 'Null', liabilityCode: 'Null', credit: 100000, debit: "", balance: 200000 },
         { date: '05-01-2025', liabilityCause: 'Null', liabilityCode: 'Null', credit: 100000, debit: "", balance: 100000 },
         { date: '05-01-2025', liabilityCause: 'Null', liabilityCode: 'Null', credit: 100000, debit: "", balance: 100000 },
-         { date: '05-01-2025', liabilityCause: 'Null', liabilityCode: 'Null', credit: 100000, debit: "", balance: 0 },
+        { date: '05-01-2025', liabilityCause: 'Null', liabilityCode: 'Null', credit: 100000, debit: "", balance: 0 },
     ]);
 
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);

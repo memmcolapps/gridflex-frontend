@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Filter } from "lucide-react";
+import { Filter, ListFilter } from "lucide-react";
 import { Checkbox } from "../ui/checkbox";
 
 interface FilterOption {
@@ -97,7 +97,7 @@ export function FilterControl({
                         className="gap-2 border-gray-300 w-full lg:w-auto cursor-pointer"
                         onClick={() => setIsOpen(!isOpen)}
                     >
-                        <Filter className="text-gray-500" size={14} />
+                        <ListFilter className="text-gray-500" size={14} />
                         <span className="text-gray-800 text-sm lg:text-base">Filter</span>
                     </Button>
                 </div>
