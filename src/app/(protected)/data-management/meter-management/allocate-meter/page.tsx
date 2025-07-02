@@ -427,7 +427,6 @@ export default function AllocateMetersPage() {
                                     <div className="flex items-center gap-2">
                                         <Checkbox
                                         variant="native"
-                                            className="border-gray-500"
                                             checked={selectedMeters.includes(meter.id)}
                                             onCheckedChange={(checked) => handleSelectItem(checked as boolean, meter.id)}
                                             aria-label={`Select meter ${meter.meterNumber}`}

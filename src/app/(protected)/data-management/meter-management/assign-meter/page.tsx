@@ -642,383 +642,404 @@ export default function AssignMeterPage() {
         setMeterData((prev) => [...prev, ...data]);
     };
     return (
-        <div className="p-6 max-h-screen overflow-auto">
-            <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
-                <ContentHeader
-                    title="Assign Meter"
-                    description="Easily assign meters to customers and switch between postpaid and prepaid accounts."
-                />
-                <div className="flex flex-col md:flex-row gap-2">
-                    <Button
-                        className="flex items-center gap-2 border font-medium border-[#161CCA] text-[#161CCA] w-full md:w-auto cursor-pointer"
-                        variant="outline"
-                        size="lg"
-                        onClick={() => setIsBulkUploadModalOpen(true)}
-                    >
-                        <CirclePlus size={14} strokeWidth={2.3} className="h-4 w-4" />
-                        <span className="text-sm md:text-base">Bulk Upload</span>
-                    </Button>
-                    <Button
-                        className="flex items-center gap-2 bg-[#161CCA] text-white font-medium w-full md:w-auto cursor-pointer"
-                        variant="secondary"
-                        size="lg"
-                        onClick={handleOpenCustomerIdModal}
-                    >
-                        <CirclePlus size={14} strokeWidth={2.3} className="h-4 w-4" />
-                        <span className="text-sm md:text-base">Assign Meter</span>
-                    </Button>
-                </div>
-            </div>
-            <div className="flex justify-between">
-                <div className="flex items-center gap-2 w-full md:w-auto mb-4">
-                    <div className="relative w-full md:w-[300px]">
-                        <Search
-                            size={14}
-                            className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400"
-                        />
-                        <Input
-                            type="text"
-                            placeholder="Search by meter no., account no..."
-                            className="pl-10 w-full border-gray-300 focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
-                            value={searchTerm}
-                            onChange={(e) => handleSearchChange(e.target.value)}
-                        />
-                    </div>
-                    <FilterControl
-                        sections={filterSections}
-                        onApply={handleSetActiveFilters}
-                        onReset={() => handleSetActiveFilters({})}
-                    />
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className="gap-2 border-gray-300 w-full sm:w-auto">
-                                <ArrowUpDown className="text-gray-500" size={14} />
-                                <span className="hidden sm:inline text-gray-800">Sort</span>
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="center" className="w-48">
-                            <DropdownMenuItem
-                                onClick={() => handleSortChange("customerId")}
-                                className="text-sm cursor-pointer hover:bg-gray-100"
-                            >
-                                Oldest - Newest
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onClick={() => handleSortChange("customerId")}
-                                className="text-sm cursor-pointer hover:bg-gray-100"
-                            >
-                                Newest - Oldest
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
-                <div>
-                    <Button
-                        variant="outline"
-                        size="lg"
-                        className="gap-2 border border-[#161CCA] text-[#161CCA] font-medium w-full lg:w-auto cursor-pointer"
-                    >
-                        <SquareArrowOutUpRight className="text-[#161CCA]" size={15} strokeWidth={2.3} />
-                        <span className="text-sm lg:text-base font-medium">Export</span>
-                    </Button>
-                </div>
-            </div>
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead>
-                            <div className="flex items-center gap-2">
-                                <Checkbox
-                                   variant="native"
-                                   checked={selectedRows.length === meterData.length && meterData.length > 0}
-                                   onCheckedChange={(checked) => {
-                                       if (checked) {
-                                           setSelectedRows(meterData.map((_, index) => index));
-                                       } else {
-                                           setSelectedRows([]);
-                                       }
-                                   }}
-                                />
-                                <span>S/N</span>
-                            </div>
-                        </TableHead>
-                        <TableHead>Customer ID</TableHead>
-                        <TableHead>Meter No</TableHead>
-                        <TableHead>Account No</TableHead>
-                        <TableHead>CIN</TableHead>
-                        <TableHead>Category</TableHead>
-                        <TableHead>Debit MOP</TableHead>
-                        <TableHead>Payment Plan</TableHead>
-                        <TableHead>Credit MOP</TableHead>
-                        <TableHead>Payment Plan</TableHead>
-                        <TableHead>Approval Status</TableHead>
-                        <TableHead>Actions</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {currentPageData.map((meter, index) => (
-                        <TableRow key={index}>
-                            <TableCell>
-                                <div className="flex items-center gap-2">
-                                    <input
-                                        type="checkbox"
-                                        checked={selectedRows.includes(index)}
-                                        onChange={() => {
-                                            setSelectedRows((prev) =>
-                                                prev.includes(index)
-                                                    ? prev.filter((i) => i !== index)
-                                                    : [...prev, index]
-                                            );
-                                        }}
-                                    />
-                                    <span>{index + 1}</span>
-                                </div>
-                            </TableCell>
-                            <TableCell>{meter.customerId}</TableCell>
-                            <TableCell>{meter.meterNumber}</TableCell>
-                            <TableCell>{meter.accountNumber}</TableCell>
-                            <TableCell>{meter.cin}</TableCell>
-                            <TableCell>{meter.category}</TableCell>
-                            <TableCell>{meter.debitMop}</TableCell>
-                            <TableCell>{meter.debitPaymentPlan}</TableCell>
-                            <TableCell>{meter.creditMop}</TableCell>
-                            <TableCell>{meter.creditPaymentPlan}</TableCell>
-                            <TableCell>
-                                <span
-                                    className={`${meter.approvedStatus === "Pending"
-                                        ? "text-[#C86900] bg-[#FFF5EA] rounded-full px-2 py-1"
-                                        : "text-[#1A73E8] bg-[#E9F6FF] rounded-full px-2 py-1"
-                                        }`}
-                                >
-                                    {meter.approvedStatus}
-                                </span>
-                            </TableCell>
-                            <TableCell>
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" className="h-8 w-8 p-0 cursor-pointer">
-                                            <MoreVertical size={14} className="cursor-pointer" />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" className="whitespace-nowrap">
-                                        <DropdownMenuItem
-                                            onClick={() => handleEditDetails(meter)}
-                                            className="flex items-center gap-2 cursor-pointer"
-                                        >
-                                            <Pencil size={14} />
-                                            Edit Details
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem
-                                            onClick={() => handleDetachMeter(meter)}
-                                            className="flex items-center gap-2 cursor-pointer"
-                                        >
-                                            <Unlink size={14} />
-                                            Detach Meter
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem
-                                            onClick={() => handleMigrateMeter(meter)}
-                                            className="flex items-center gap-2 cursor-pointer"
-                                        >
-                                            <Navigation size={14} />
-                                            Migrate Meter
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </TableCell>
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
-            <div className="bg-white  flex items-center justify-between px-4 py-3 mt-20">
-                <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-600">Rows per page</span>
-                    <select
-                        value={rowsPerPage}
-                        onChange={(e) => {
-                            setRowsPerPage(Number(e.target.value));
-                            setCurrentPage(1);
-                        }}
-                        className="text-sm border border-gray-300 rounded-md px-2 py-1 focus:outline-none"
-                    >
-                        {[5, 10, 12, 20, 50].map((num) => (
-                            <option key={num} value={num}>
-                                {num}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-                <span className="text-sm text-gray-600">
-                    {startIndex + 1}-{Math.min(endIndex, totalRows)} of {totalRows} rows
-                </span>
-                <div className="flex items-center gap-2">
-                    <button
-                        disabled={currentPage === 1}
-                        onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                        className="px-3 py-1 border border-gray-300 rounded-md text-sm text-black-600 disabled:opacity-50 cursor-pointer"
-                    >
-                        Previous
-                    </button>
-                    <button
-                        disabled={endIndex >= totalRows}
-                        onClick={() => setCurrentPage((prev) => prev + 1)}
-                        className="px-3 py-1 border border-gray-300 rounded-md text-sm text-black-600 disabled:opacity-50 cursor-pointer"
-                    >
-                        Next
-                    </button>
-                </div>
-            </div>
-            <CustomerIdDialog
-                isOpen={isCustomerIdModalOpen}
-                onOpenChange={setIsCustomerIdModalOpen}
-                customerIdInput={customerIdInput}
-                onCustomerIdChange={handleCustomerIdChange}
-                filteredCustomerIds={filteredCustomerIds}
-                onCustomerSelect={handleCustomerIdSelect}
-            />
-            <AssignMeterDialog
-                isOpen={isAssignModalOpen}
-                onOpenChange={setIsAssignModalOpen}
-                selectedCustomer={selectedCustomer}
-                meterNumber={meterNumber}
-                setMeterNumber={setMeterNumber}
-                cin={cin}
-                setCin={setCin}
-                accountNumber={accountNumber}
-                setAccountNumber={setAccountNumber}
-                tariff={tariff}
-                setTariff={setTariff}
-                feeder={feeder}
-                setFeeder={setFeeder}
-                dss={dss}
-                setDss={setDss}
-                state={state}
-                setState={setState}
-                city={city}
-                setCity={setCity}
-                streetName={streetName}
-                setStreetName={setStreetName}
-                houseNo={houseNo}
-                setHouseNo={setHouseNo}
-                category={category}
-                setCategory={setCategory}
-                onProceed={handleProceedFromAssign}
-                isFormComplete={isFormComplete}
-                progress={progress}
-                phone={phone}
-                setPhone={setPhone}
-            />
-            <EditCustomerDetailsDialog
-                isOpen={isEditModalOpen}
-                onOpenChange={setIsEditModalOpen}
-                editCustomer={editCustomer}
-                meterNumber={meterNumber}
-                setMeterNumber={setMeterNumber}
-                cin={cin}
-                setCin={setCin}
-                accountNumber={accountNumber}
-                setAccountNumber={setAccountNumber}
-                tariff={tariff}
-                setTariff={setTariff}
-                feeder={feeder}
-                setFeeder={setFeeder}
-                dss={dss}
-                setDss={setDss}
-                state={state}
-                setState={setState}
-                city={city}
-                setCity={setCity}
-                streetName={streetName}
-                setStreetName={setStreetName}
-                houseNo={houseNo}
-                setHouseNo={setHouseNo}
-                phone={phone}
-                setPhone={setPhone}
-                progress={progress}
-                isFormComplete={isFormComplete}
-                onProceed={handleProceedFromEdit}
-            />
-            <SetPaymentModeDialog
-                isOpen={isSetPaymentModalOpen}
-                onOpenChange={setIsSetPaymentModalOpen}
-                debitMop={debitMop}
-                setDebitMop={setDebitMop}
-                creditMop={creditMop}
-                setCreditMop={setCreditMop}
-                debitPaymentPlan={debitPaymentPlan}
-                setDebitPaymentPlan={setDebitPaymentPlan}
-                creditPaymentPlan={creditPaymentPlan}
-                setCreditPaymentPlan={setCreditPaymentPlan}
-                progress={progress}
-                isPaymentFormComplete={isPaymentFormComplete}
-                editCustomer={editCustomer}
-                onProceed={editCustomer ? handleConfirmEditFromSetPayment : handleProceedFromSetPayment}
-            />
-            <DeactivateVirtualMeterDialog
-                isOpen={isDeactivateModalOpen}
-                onOpenChange={setIsDeactivateModalOpen}
-                onProceed={handleProceedFromDeactivate}
-            />
-            <ConfirmationModalDialog
-                isOpen={isConfirmationModalOpen}
-                onOpenChange={setIsConfirmationModalOpen}
-                selectedCustomer={selectedCustomer}
-                onConfirm={handleConfirmAssignment}
-                onCancel={handleCancelConfirmation}
-            />
-            <MigrateMeterDialog
-                isOpen={isMigrateModalOpen}
-                onOpenChange={setIsMigrateModalOpen}
-                migrateCustomer={migrateCustomer}
-                migrateToCategory={migrateToCategory}
-                setMigrateToCategory={setMigrateToCategory}
-                migrateDebitMop={migrateDebitMop}
-                setMigrateDebitMop={setMigrateDebitMop}
-                migrateDebitPaymentPlan={migrateDebitPaymentPlan}
-                setMigrateDebitPaymentPlan={setMigrateDebitPaymentPlan}
-                migrateCreditMop={migrateCreditMop}
-                setMigrateCreditMop={setMigrateCreditMop}
-                migrateCreditPaymentPlan={migrateCreditPaymentPlan}
-                setMigrateCreditPaymentPlan={setMigrateCreditPaymentPlan}
-                isMigrateFormComplete={isMigrateFormComplete}
-                onConfirm={handleConfirmMigrate}
-            />
-            <DetachMeterDialog
-                isOpen={isDetachModalOpen}
-                onOpenChange={setIsDetachModalOpen}
-                detachReason={detachReason}
-                setDetachReason={setDetachReason}
-                onProceed={handleProceedFromDetach}
-                onCancel={handleCancelDetach}
-            />
-            <DetachConfirmationDialog
-                isOpen={isDetachConfirmModalOpen}
-                onOpenChange={setIsDetachConfirmModalOpen}
-                customerToDetach={customerToDetach}
-                onConfirm={handleConfirmDetach}
-                onCancel={() => setIsDetachConfirmModalOpen(false)}
-            />
-
-            <BulkUploadDialog <MeterData>
-                isOpen={isBulkUploadModalOpen}
-                onClose={() => setIsBulkUploadModalOpen(false)}
-                onSave={handleBulkUploadSave}
-                title="Bulk Upload"
-                description="Click the link to download the required document format for meter assignments. Ensure your file includes all necessary columns before uploading."
-                requiredColumns={[
-                    "customerId",
-                    "meterNumber",
-                    "accountNumber",
-                    "cin",
-                    "category",
-                    "debitMop",
-                    "debitPaymentPlan",
-                    "creditMop",
-                    "creditPaymentPlan",
-                    "approvedStatus",
-                ]}
-                templateUrl="/templates/assign-meter-template.xlsx"
-                maxFileSizeMb={20}
-            />
+      <div className="max-h-screen overflow-auto p-6">
+        <div className="mb-4 flex flex-col items-center justify-between gap-4 md:flex-row">
+          <ContentHeader
+            title="Assign Meter"
+            description="Easily assign meters to customers and switch between postpaid and prepaid accounts."
+          />
+          <div className="flex flex-col gap-2 md:flex-row">
+            <Button
+              className="flex w-full cursor-pointer items-center gap-2 border border-[#161CCA] font-medium text-[#161CCA] md:w-auto"
+              variant="outline"
+              size="lg"
+              onClick={() => setIsBulkUploadModalOpen(true)}
+            >
+              <CirclePlus size={14} strokeWidth={2.3} className="h-4 w-4" />
+              <span className="text-sm md:text-base">Bulk Upload</span>
+            </Button>
+            <Button
+              className="flex w-full cursor-pointer items-center gap-2 bg-[#161CCA] font-medium text-white md:w-auto"
+              variant="secondary"
+              size="lg"
+              onClick={handleOpenCustomerIdModal}
+            >
+              <CirclePlus size={14} strokeWidth={2.3} className="h-4 w-4" />
+              <span className="text-sm md:text-base">Assign Meter</span>
+            </Button>
+          </div>
         </div>
+        <div className="flex justify-between">
+          <div className="mb-4 flex w-full items-center gap-2 md:w-auto">
+            <div className="relative w-full md:w-[300px]">
+              <Search
+                size={14}
+                className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400"
+              />
+              <Input
+                type="text"
+                placeholder="Search by meter no., account no..."
+                className="w-full border-gray-300 pl-10 focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
+                value={searchTerm}
+                onChange={(e) => handleSearchChange(e.target.value)}
+              />
+            </div>
+            <FilterControl
+              sections={filterSections}
+              onApply={handleSetActiveFilters}
+              onReset={() => handleSetActiveFilters({})}
+            />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="w-full gap-2 border-gray-300 sm:w-auto"
+                >
+                  <ArrowUpDown className="text-gray-500" size={14} />
+                  <span className="hidden text-gray-800 sm:inline">Sort</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="center" className="w-48">
+                <DropdownMenuItem
+                  onClick={() => handleSortChange("customerId")}
+                  className="cursor-pointer text-sm hover:bg-gray-100"
+                >
+                  Oldest - Newest
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleSortChange("customerId")}
+                  className="cursor-pointer text-sm hover:bg-gray-100"
+                >
+                  Newest - Oldest
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+          <div>
+            <Button
+              variant="outline"
+              size="lg"
+              className="w-full cursor-pointer gap-2 border border-[#161CCA] font-medium text-[#161CCA] lg:w-auto"
+            >
+              <SquareArrowOutUpRight
+                className="text-[#161CCA]"
+                size={15}
+                strokeWidth={2.3}
+              />
+              <span className="text-sm font-medium lg:text-base">Export</span>
+            </Button>
+          </div>
+        </div>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    variant="native"
+                    checked={
+                      selectedRows.length === meterData.length &&
+                      meterData.length > 0
+                    }
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        setSelectedRows(meterData.map((_, index) => index));
+                      } else {
+                        setSelectedRows([]);
+                      }
+                    }}
+                  />
+                  <span>S/N</span>
+                </div>
+              </TableHead>
+              <TableHead>Customer ID</TableHead>
+              <TableHead>Meter No</TableHead>
+              <TableHead>Account No</TableHead>
+              <TableHead>CIN</TableHead>
+              <TableHead>Category</TableHead>
+              <TableHead>Debit MOP</TableHead>
+              <TableHead>Payment Plan</TableHead>
+              <TableHead>Credit MOP</TableHead>
+              <TableHead>Payment Plan</TableHead>
+              <TableHead>Approval Status</TableHead>
+              <TableHead>Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {currentPageData.map((meter, index) => (
+              <TableRow key={index}>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      variant="native"
+                      checked={selectedRows.includes(index)}
+                      onCheckedChange={(checked) => {
+                        setSelectedRows((prev) =>
+                          checked
+                            ? [...prev, index]
+                            : prev.filter((i) => i !== index),
+                        );
+                      }}
+                    />
+                    <span>{index + 1}</span>
+                  </div>
+                </TableCell>
+                <TableCell>{meter.customerId}</TableCell>
+                <TableCell>{meter.meterNumber}</TableCell>
+                <TableCell>{meter.accountNumber}</TableCell>
+                <TableCell>{meter.cin}</TableCell>
+                <TableCell>{meter.category}</TableCell>
+                <TableCell>{meter.debitMop}</TableCell>
+                <TableCell>{meter.debitPaymentPlan}</TableCell>
+                <TableCell>{meter.creditMop}</TableCell>
+                <TableCell>{meter.creditPaymentPlan}</TableCell>
+                <TableCell>
+                  <span
+                    className={`${
+                      meter.approvedStatus === "Pending"
+                        ? "rounded-full bg-[#FFF5EA] px-2 py-1 text-[#C86900]"
+                        : "rounded-full bg-[#E9F6FF] px-2 py-1 text-[#1A73E8]"
+                    }`}
+                  >
+                    {meter.approvedStatus}
+                  </span>
+                </TableCell>
+                <TableCell>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        className="h-8 w-8 cursor-pointer p-0"
+                      >
+                        <MoreVertical size={14} className="cursor-pointer" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                      align="end"
+                      className="whitespace-nowrap"
+                    >
+                      <DropdownMenuItem
+                        onClick={() => handleEditDetails(meter)}
+                        className="flex cursor-pointer items-center gap-2"
+                      >
+                        <Pencil size={14} />
+                        Edit Details
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => handleDetachMeter(meter)}
+                        className="flex cursor-pointer items-center gap-2"
+                      >
+                        <Unlink size={14} />
+                        Detach Meter
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => handleMigrateMeter(meter)}
+                        className="flex cursor-pointer items-center gap-2"
+                      >
+                        <Navigation size={14} />
+                        Migrate Meter
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+        <div className="mt-20 flex items-center justify-between bg-white px-4 py-3">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-600">Rows per page</span>
+            <select
+              value={rowsPerPage}
+              onChange={(e) => {
+                setRowsPerPage(Number(e.target.value));
+                setCurrentPage(1);
+              }}
+              className="rounded-md border border-gray-300 px-2 py-1 text-sm focus:outline-none"
+            >
+              {[5, 10, 12, 20, 50].map((num) => (
+                <option key={num} value={num}>
+                  {num}
+                </option>
+              ))}
+            </select>
+          </div>
+          <span className="text-sm text-gray-600">
+            {startIndex + 1}-{Math.min(endIndex, totalRows)} of {totalRows} rows
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              className="text-black-600 cursor-pointer rounded-md border border-gray-300 px-3 py-1 text-sm disabled:opacity-50"
+            >
+              Previous
+            </button>
+            <button
+              disabled={endIndex >= totalRows}
+              onClick={() => setCurrentPage((prev) => prev + 1)}
+              className="text-black-600 cursor-pointer rounded-md border border-gray-300 px-3 py-1 text-sm disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+        <CustomerIdDialog
+          isOpen={isCustomerIdModalOpen}
+          onOpenChange={setIsCustomerIdModalOpen}
+          customerIdInput={customerIdInput}
+          onCustomerIdChange={handleCustomerIdChange}
+          filteredCustomerIds={filteredCustomerIds}
+          onCustomerSelect={handleCustomerIdSelect}
+        />
+        <AssignMeterDialog
+          isOpen={isAssignModalOpen}
+          onOpenChange={setIsAssignModalOpen}
+          selectedCustomer={selectedCustomer}
+          meterNumber={meterNumber}
+          setMeterNumber={setMeterNumber}
+          cin={cin}
+          setCin={setCin}
+          accountNumber={accountNumber}
+          setAccountNumber={setAccountNumber}
+          tariff={tariff}
+          setTariff={setTariff}
+          feeder={feeder}
+          setFeeder={setFeeder}
+          dss={dss}
+          setDss={setDss}
+          state={state}
+          setState={setState}
+          city={city}
+          setCity={setCity}
+          streetName={streetName}
+          setStreetName={setStreetName}
+          houseNo={houseNo}
+          setHouseNo={setHouseNo}
+          category={category}
+          setCategory={setCategory}
+          onProceed={handleProceedFromAssign}
+          isFormComplete={isFormComplete}
+          progress={progress}
+          phone={phone}
+          setPhone={setPhone}
+        />
+        <EditCustomerDetailsDialog
+          isOpen={isEditModalOpen}
+          onOpenChange={setIsEditModalOpen}
+          editCustomer={editCustomer}
+          meterNumber={meterNumber}
+          setMeterNumber={setMeterNumber}
+          cin={cin}
+          setCin={setCin}
+          accountNumber={accountNumber}
+          setAccountNumber={setAccountNumber}
+          tariff={tariff}
+          setTariff={setTariff}
+          feeder={feeder}
+          setFeeder={setFeeder}
+          dss={dss}
+          setDss={setDss}
+          state={state}
+          setState={setState}
+          city={city}
+          setCity={setCity}
+          streetName={streetName}
+          setStreetName={setStreetName}
+          houseNo={houseNo}
+          setHouseNo={setHouseNo}
+          phone={phone}
+          setPhone={setPhone}
+          progress={progress}
+          isFormComplete={isFormComplete}
+          onProceed={handleProceedFromEdit}
+        />
+        <SetPaymentModeDialog
+          isOpen={isSetPaymentModalOpen}
+          onOpenChange={setIsSetPaymentModalOpen}
+          debitMop={debitMop}
+          setDebitMop={setDebitMop}
+          creditMop={creditMop}
+          setCreditMop={setCreditMop}
+          debitPaymentPlan={debitPaymentPlan}
+          setDebitPaymentPlan={setDebitPaymentPlan}
+          creditPaymentPlan={creditPaymentPlan}
+          setCreditPaymentPlan={setCreditPaymentPlan}
+          progress={progress}
+          isPaymentFormComplete={isPaymentFormComplete}
+          editCustomer={editCustomer}
+          onProceed={
+            editCustomer
+              ? handleConfirmEditFromSetPayment
+              : handleProceedFromSetPayment
+          }
+        />
+        <DeactivateVirtualMeterDialog
+          isOpen={isDeactivateModalOpen}
+          onOpenChange={setIsDeactivateModalOpen}
+          onProceed={handleProceedFromDeactivate}
+        />
+        <ConfirmationModalDialog
+          isOpen={isConfirmationModalOpen}
+          onOpenChange={setIsConfirmationModalOpen}
+          selectedCustomer={selectedCustomer}
+          onConfirm={handleConfirmAssignment}
+          onCancel={handleCancelConfirmation}
+        />
+        <MigrateMeterDialog
+          isOpen={isMigrateModalOpen}
+          onOpenChange={setIsMigrateModalOpen}
+          migrateCustomer={migrateCustomer}
+          migrateToCategory={migrateToCategory}
+          setMigrateToCategory={setMigrateToCategory}
+          migrateDebitMop={migrateDebitMop}
+          setMigrateDebitMop={setMigrateDebitMop}
+          migrateDebitPaymentPlan={migrateDebitPaymentPlan}
+          setMigrateDebitPaymentPlan={setMigrateDebitPaymentPlan}
+          migrateCreditMop={migrateCreditMop}
+          setMigrateCreditMop={setMigrateCreditMop}
+          migrateCreditPaymentPlan={migrateCreditPaymentPlan}
+          setMigrateCreditPaymentPlan={setMigrateCreditPaymentPlan}
+          isMigrateFormComplete={isMigrateFormComplete}
+          onConfirm={handleConfirmMigrate}
+        />
+        <DetachMeterDialog
+          isOpen={isDetachModalOpen}
+          onOpenChange={setIsDetachModalOpen}
+          detachReason={detachReason}
+          setDetachReason={setDetachReason}
+          onProceed={handleProceedFromDetach}
+          onCancel={handleCancelDetach}
+        />
+        <DetachConfirmationDialog
+          isOpen={isDetachConfirmModalOpen}
+          onOpenChange={setIsDetachConfirmModalOpen}
+          customerToDetach={customerToDetach}
+          onConfirm={handleConfirmDetach}
+          onCancel={() => setIsDetachConfirmModalOpen(false)}
+        />
+
+        <BulkUploadDialog<MeterData>
+          isOpen={isBulkUploadModalOpen}
+          onClose={() => setIsBulkUploadModalOpen(false)}
+          onSave={handleBulkUploadSave}
+          title="Bulk Upload"
+          description="Click the link to download the required document format for meter assignments. Ensure your file includes all necessary columns before uploading."
+          requiredColumns={[
+            "customerId",
+            "meterNumber",
+            "accountNumber",
+            "cin",
+            "category",
+            "debitMop",
+            "debitPaymentPlan",
+            "creditMop",
+            "creditPaymentPlan",
+            "approvedStatus",
+          ]}
+          templateUrl="/templates/assign-meter-template.xlsx"
+          maxFileSizeMb={20}
+        />
+      </div>
     );
 }
