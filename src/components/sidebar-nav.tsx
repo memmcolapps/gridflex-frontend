@@ -99,7 +99,6 @@ export function SidebarNav() {
           hasSubmenu: true,
           submenuItems: [
             { title: "Debt Setting", href: "/data-management/debt-management/debt-settings" },
-            { title: "Mode of Payment", href: "/data-management/debt-management/mode-of-payment" },
             { title: "Debit Adjustment", href: "/data-management/debt-management/debit-adjustment" },
             { title: "Credit Adjustment", href: "/data-management/debt-management/credit-adjustment" }
           ]
