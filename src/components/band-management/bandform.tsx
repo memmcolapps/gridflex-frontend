@@ -10,6 +10,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { Band } from "@/service/band-service";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ChevronDownIcon } from "lucide-react";
+
 
 interface BandFormProps {
   mode: "add" | "edit";
@@ -27,14 +35,14 @@ export default function BandForm({
   const [open, setOpen] = useState(false);
   const [name, setName] = useState(band?.name ?? "");
   const [electricityHour, setElectricityHour] = useState(
-    band?.electricityHour?.toString() ?? "",
+    band?.electricityHour ?? 1,
   );
 
   // Reset form when band prop changes
   useEffect(() => {
     if (band) {
       setName(band.name);
-      setElectricityHour(band.electricityHour.toString());
+      setElectricityHour(band.electricityHour);
     }
   }, [band]);
 
@@ -43,17 +51,20 @@ export default function BandForm({
 
     const updatedBand = {
       name,
-      electricityHour: parseInt(electricityHour, 10),
+      electricityHour: electricityHour,
     };
 
     onSave(updatedBand);
     setOpen(false);
   };
 
+  // Generate hours array from 1 to 24
+  const hours = Array.from({ length: 24 }, (_, i) => i + 1);
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{triggerButton}</DialogTrigger>
-      <DialogContent className="bg-white sm:max-w-[425px] h-70">
+      <DialogContent className="h-70 bg-white sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>
             {mode === "add" ? "Add New Band" : "Edit Band"}
@@ -74,20 +85,31 @@ export default function BandForm({
             </div>
             <div className="grid gap-2">
               <Label htmlFor="electricityHour">Electricity Hours</Label>
-              <Input
-                id="electricityHour"
-                type="number"
-                value={electricityHour}
-                onChange={(e) => setElectricityHour(e.target.value)}
-                placeholder="Enter electricity hours"
-                required
-                min="0"
-                max="24"
-                className="border-[rgba(228,231,236,1)]"
-              />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-between border-[rgba(228,231,236,1)] text-left font-normal"
+                  >
+                    {electricityHour} {electricityHour === 1 ? "hour" : "hours"}
+                    <ChevronDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="max-h-60 w-full overflow-y-auto">
+                  {hours.map((hour) => (
+                    <DropdownMenuItem
+                      key={hour}
+                      onClick={() => setElectricityHour(hour)}
+                      className={electricityHour === hour ? "bg-accent" : ""}
+                    >
+                      {hour} {hour === 1 ? "hour" : "hours"}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
-          <div className="flex justify-between gap-4 mt-4">
+          <div className="mt-4 flex justify-between gap-4">
             <Button
               type="button"
               variant="outline"
@@ -96,7 +118,9 @@ export default function BandForm({
             >
               Cancel
             </Button>
-            <Button type="submit" className="bg-[#161CCA] text-white">Save</Button>
+            <Button type="submit" className="bg-[#161CCA] text-white">
+              Save
+            </Button>
           </div>
         </form>
       </DialogContent>
