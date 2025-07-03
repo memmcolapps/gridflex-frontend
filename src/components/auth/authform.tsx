@@ -89,14 +89,10 @@ export function AuthForm({
           <button
             type="button"
             onClick={togglePasswordVisibility}
-            className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+            className="absolute inset-y-0 right-0 flex w-10 cursor-pointer items-center justify-center pr-3 text-gray-400 hover:text-gray-600"
             aria-label={showPassword ? "Hide password" : "Show password"}
           >
-            {showPassword ? (
-              <EyeIcon className="h-5 w-5" />
-            ) : (
-              <EyeOffIcon className="h-5 w-5" />
-            )}
+            {showPassword ? <EyeIcon size="10" /> : <EyeOffIcon size="10" />}
           </button>
         </div>
       </div>
@@ -113,18 +109,15 @@ export function AuthForm({
       <button
         type="submit"
         disabled={!isFormValid || isSubmitting}
-        className={`
-          w-full rounded-md py-3 font-medium text-white
-          transition-colors flex items-center justify-center gap-2
-          ${!isFormValid || isSubmitting
+        className={`flex w-full items-center justify-center gap-2 rounded-md py-3 font-medium text-white transition-colors ${
+          !isFormValid || isSubmitting
             ? "cursor-not-allowed bg-blue-600/50"
             : "cursor-pointer bg-blue-600 hover:bg-blue-700"
-          }
-        `}
+        } `}
       >
         {isSubmitting ? (
           <>
-            <Loader className=" animate-spin" size={15} />
+            <Loader className="animate-spin" size={15} />
             <span>Signing in...</span>
           </>
         ) : (
