@@ -18,6 +18,7 @@ import { ContentHeader } from "../ui/content-header";
 import { getStatusStyle } from "../status-style";
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "../ui/pagination";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { BulkUploadDialog } from "../meter-management/bulk-upload";
 
 export type Customer = {
     id: string;
@@ -118,6 +119,7 @@ export default function CustomerManagement() {
     const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
     const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
     const [isMeterDialogOpen, setIsMeterDialogOpen] = useState(false);
+    const [isBulkUploadDialogOpen, setIsBulkUploadDialogOpen] = useState(false);
     const [selectedMeterCustomer, setSelectedMeterCustomer] = useState<Customer | null>(null);
 
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -223,6 +225,12 @@ export default function CustomerManagement() {
         }
     };
 
+    const handleBulkUpload = (_data: unknown) => {
+        // Implement your bulk upload logic here
+        // For now, just close the dialog
+        setIsBulkUploadDialogOpen(false);
+    };
+
     const blockReasons = [
         "Abusive behavior",
         "Spam messages",
@@ -240,7 +248,10 @@ export default function CustomerManagement() {
                         description="Manage And Access Customer Records"
                     />
                     <div className="flex gap-4">
-                        <Button variant="outline" className="border-[#161CCA] text-[#161CCA] cursor-pointer">
+                        <Button
+                            onClick={() => setIsBulkUploadDialogOpen(true)}
+                            variant="outline"
+                            className="border-[#161CCA] text-[#161CCA] cursor-pointer">
                             <div className="flex items-center justify-center p-0.5">
                                 <PlusCircleIcon className="text-[#161CCA]" size={12} />
                             </div>
@@ -783,6 +794,24 @@ export default function CustomerManagement() {
                     </Dialog>
                 )}
             </div>
+
+            <BulkUploadDialog
+                isOpen={isBulkUploadDialogOpen}
+                onClose={() => setIsBulkUploadDialogOpen(false)}
+                onSave={handleBulkUpload}
+                title="Bulk Upload readings"
+                requiredColumns={[
+                    "Customer ID",
+                    "First Name",
+                    "Last Name",
+                    "Phone Number",
+                    "Address",
+                    "City",
+                    "State",
+                    "Operator",
+                ]}
+                templateUrl="/templates/readingSheet-template.xlsx"
+            />
         </div>
     );
 }
