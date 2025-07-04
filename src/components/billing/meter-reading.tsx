@@ -14,10 +14,23 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
+import {
+    Pagination,
+    PaginationContent,
+    PaginationItem,
+    PaginationNext,
+    PaginationPrevious,
+} from "@/components/ui/pagination";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { useState } from "react";
 import EditMeterReading from "./edit-reading";
 import { Card } from "../ui/card";
-// import EditMeterReading from "./edit";
 
 export default function MeterReadings() {
     const data = [
@@ -47,6 +60,14 @@ export default function MeterReadings() {
 
     const [, setEditDialogOpen] = useState(false);
     const [selectedItem, setSelectedItem] = useState<MeterReading | null>(null);
+    const [currentPage, setCurrentPage] = useState<number>(1);
+    const [rowsPerPage, setRowsPerPage] = useState<number>(10);
+
+    const totalPages = Math.ceil(data.length / rowsPerPage);
+    const paginatedData = data.slice(
+        (currentPage - 1) * rowsPerPage,
+        currentPage * rowsPerPage
+    );
 
     const handleView = (id: number) => {
         console.log(`Viewing meter reading ${id}`);
@@ -61,6 +82,19 @@ export default function MeterReadings() {
     const handleDialogClose = () => {
         setEditDialogOpen(false);
         setSelectedItem(null);
+    };
+
+    const handlePrevious = () => {
+        setCurrentPage((prev) => Math.max(prev - 1, 1));
+    };
+
+    const handleNext = () => {
+        setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+    };
+
+    const handleRowsPerPageChange = (value: string) => {
+        setRowsPerPage(Number(value));
+        setCurrentPage(1);
     };
 
     return (
@@ -81,9 +115,9 @@ export default function MeterReadings() {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {data.map((item) => (
+                    {paginatedData.map((item, index) => (
                         <TableRow key={item.id}>
-                            <TableCell>{item.id}</TableCell>
+                            <TableCell>{(currentPage - 1) * rowsPerPage + index + 1}</TableCell>
                             <TableCell>{item.meterNo}</TableCell>
                             <TableCell>{item.feederLine}</TableCell>
                             <TableCell>{item.tariffType}</TableCell>
@@ -115,23 +149,55 @@ export default function MeterReadings() {
                     ))}
                 </TableBody>
             </Table>
-            <div className="flex justify-between items-center mt-4">
-                <span>Rows per page 10 - 1 of 40 rows</span>
-                <div>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        className="mr-2 border-gray-300">
-                        Previous
-                    </Button>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        className="border-gray-300">
-                        Next
-                    </Button>
+            <Pagination className="mt-4 flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                    <span className="text-sm font-medium">Rows per page</span>
+                    <Select
+                        value={rowsPerPage.toString()}
+                        onValueChange={handleRowsPerPageChange}
+                    >
+                        <SelectTrigger className="h-8 w-[70px]">
+                            <SelectValue placeholder={rowsPerPage.toString()} />
+                        </SelectTrigger>
+                        <SelectContent
+                            position="popper"
+                            side="top"
+                            align="center"
+                            className="mb-1 ring-gray-50"
+                        >
+                            <SelectItem value="10">10</SelectItem>
+                            <SelectItem value="24">24</SelectItem>
+                            <SelectItem value="48">48</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <span className="text-sm font-medium">
+                        {(currentPage - 1) * rowsPerPage + 1}-
+                        {Math.min(currentPage * rowsPerPage, data.length)} of {data.length}
+                    </span>
                 </div>
-            </div>
+                <PaginationContent>
+                    <PaginationItem>
+                        <PaginationPrevious
+                            href="#"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                handlePrevious();
+                            }}
+                            aria-disabled={currentPage === 1}
+                        />
+                    </PaginationItem>
+                    <PaginationItem>
+                        <PaginationNext
+                            href="#"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                handleNext();
+                            }}
+                            aria-disabled={currentPage === totalPages}
+                        />
+                    </PaginationItem>
+                </PaginationContent>
+            </Pagination>
             {selectedItem && (
                 <EditMeterReading
                     id={selectedItem.id}

@@ -23,6 +23,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+import { getStatusStyle } from "../status-style";
 
 const VendingTable = () => {
     const transactions = [
@@ -39,19 +40,6 @@ const VendingTable = () => {
         { sn: "11", accountNumber: "0159046127", meterNumber: "6201023", tokenType: "Credit Token", tariff: "Tariff A1", amount: "100,000", unitCost: "830.65", vat: "1595.35", units: "780.0", status: "Failed" },
         { sn: "12", accountNumber: "0159046127", meterNumber: "6201023", tokenType: "Credit Token", tariff: "Tariff A1", amount: "100,000", unitCost: "830.65", vat: "1595.35", units: "780.0", status: "Successful" },
     ];
-
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case "Pending":
-                return "text-yellow-600 bg-yellow-100";
-            case "Failed":
-                return "text-red-600 bg-red-100";
-            case "Successful":
-                return "text-green-600 bg-green-100";
-            default:
-                return "";
-        }
-    };
 
     // Define the transaction type
     type Transaction = {
@@ -121,7 +109,7 @@ const VendingTable = () => {
                                 <TableCell>{transaction.units}</TableCell>
                                 <TableCell>
                                     <span
-                                        className={`px-2 py-1 rounded-full ${getStatusColor(transaction.status)}`}
+                                        className={getStatusStyle(transaction.status)}
                                     >
                                         {transaction.status}
                                     </span>

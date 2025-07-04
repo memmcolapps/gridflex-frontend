@@ -171,7 +171,7 @@ export default function TariffManagementPage() {
   }, [refreshTariffs]);
 
   return (
-    <div className="p-6 flex min-h-screen flex-col font-sans">
+    <div className="min-h-screen">
       <NotificationBar
         title="Tariff Management"
         bgColor="bg-[rgba(22,28,202,1)]"
@@ -180,7 +180,11 @@ export default function TariffManagementPage() {
       />
       <NotificationBar
         title2="How to use"
-        description="Note: At least one band must be created"
+        description={
+          <div className="mt-2 flex items-center gap-2">
+            <span>At least one band must be created</span>
+          </div>
+        }
         bgColor="bg-[rgba(219,230,254,1)]"
         textColor="text-[rgba(22,28,202,1)]"
         closable={true}

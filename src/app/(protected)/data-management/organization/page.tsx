@@ -17,7 +17,7 @@ export default function OrganizationPage() {
       <NotificationBar
         title2="How to use"
         description={
-          <div className="mt-2 ml-2 flex items-center gap-2">
+          <div className="mt-2 flex items-center gap-2">
             <Edit size={14} />
             <span>Edit/View an existing organization</span>
           </div>
