@@ -181,7 +181,7 @@ const VendingTable = () => {
                                                 className="flex items-center gap-2 cursor-pointer"
                                                 onClick={() => handleReprintToken(transaction)}
                                             >
-                                                <Printer size={14} />
+                                                <Printer size= {14} />
                                                 Reprint Token
                                             </DropdownMenuItem>
                                         </DropdownMenuContent>
