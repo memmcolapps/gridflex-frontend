@@ -5,6 +5,13 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+    Pagination,
+    PaginationContent,
+    PaginationItem,
+    PaginationNext,
+    PaginationPrevious,
+} from "@/components/ui/pagination"
 import { Button } from "@/components/ui/button";
 import {
     Table,
@@ -14,23 +21,16 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import {
-    Pagination,
-    PaginationContent,
-    PaginationItem,
-    PaginationNext,
-    PaginationPrevious,
-} from "@/components/ui/pagination";
+import { useState } from "react";
+import EditMeterReading from "./edit-reading";
+import { Card } from "../ui/card";
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "@/components/ui/select";
-import { useState } from "react";
-import EditMeterReading from "./edit-reading";
-import { Card } from "../ui/card";
+} from "@/components/ui/select"
 
 export default function MeterReadings() {
     const data = [
@@ -44,6 +44,7 @@ export default function MeterReadings() {
         { id: 8, meterNo: "62010223", feederLine: "jeun", tariffType: "D2", larDate: "16-05-2025", lastReading: 30, readingType: "Normal", readingDate: "16-06-2025", currentReadings: 30 },
         { id: 9, meterNo: "62010223", feederLine: "jeun", tariffType: "D3", larDate: "16-05-2025", lastReading: 99980, readingType: "Normal", readingDate: "16-06-2025", currentReadings: 0 },
         { id: 10, meterNo: "62010223", feederLine: "jeun", tariffType: "R3", larDate: "16-05-2025", lastReading: 99950, readingType: "Normal", readingDate: "16-06-2025", currentReadings: 99950 },
+        { id: 11, meterNo: "62010223", feederLine: "jeun", tariffType: "R3", larDate: "16-05-2025", lastReading: 99950, readingType: "Normal", readingDate: "16-06-2025", currentReadings: 99950 },
     ];
 
     type MeterReading = {
@@ -60,10 +61,11 @@ export default function MeterReadings() {
 
     const [, setEditDialogOpen] = useState(false);
     const [selectedItem, setSelectedItem] = useState<MeterReading | null>(null);
-    const [currentPage, setCurrentPage] = useState<number>(1);
     const [rowsPerPage, setRowsPerPage] = useState<number>(10);
+    const [currentPage, setCurrentPage] = useState<number>(1);
 
     const totalPages = Math.ceil(data.length / rowsPerPage);
+
     const paginatedData = data.slice(
         (currentPage - 1) * rowsPerPage,
         currentPage * rowsPerPage
@@ -84,17 +86,17 @@ export default function MeterReadings() {
         setSelectedItem(null);
     };
 
+    const handleRowsPerPageChange = (value: string) => {
+        setRowsPerPage(Number(value));
+        setCurrentPage(1);
+    };
+
     const handlePrevious = () => {
         setCurrentPage((prev) => Math.max(prev - 1, 1));
     };
 
     const handleNext = () => {
         setCurrentPage((prev) => Math.min(prev + 1, totalPages));
-    };
-
-    const handleRowsPerPageChange = (value: string) => {
-        setRowsPerPage(Number(value));
-        setCurrentPage(1);
     };
 
     return (
@@ -115,9 +117,9 @@ export default function MeterReadings() {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {paginatedData.map((item, index) => (
+                    {paginatedData.map((item) => (
                         <TableRow key={item.id}>
-                            <TableCell>{(currentPage - 1) * rowsPerPage + index + 1}</TableCell>
+                            <TableCell>{item.id}</TableCell>
                             <TableCell>{item.meterNo}</TableCell>
                             <TableCell>{item.feederLine}</TableCell>
                             <TableCell>{item.tariffType}</TableCell>
@@ -179,7 +181,7 @@ export default function MeterReadings() {
                     <PaginationItem>
                         <PaginationPrevious
                             href="#"
-                            onClick={(e) => {
+                            onClick={e => {
                                 e.preventDefault();
                                 handlePrevious();
                             }}
@@ -189,7 +191,7 @@ export default function MeterReadings() {
                     <PaginationItem>
                         <PaginationNext
                             href="#"
-                            onClick={(e) => {
+                            onClick={e => {
                                 e.preventDefault();
                                 handleNext();
                             }}
