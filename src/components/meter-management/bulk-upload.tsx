@@ -6,7 +6,6 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
-    DialogFooter,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { UploadIcon } from "lucide-react";
@@ -130,7 +129,7 @@ export function BulkUploadDialog<T>({
                     <div
                         onClick={() => fileInputRef.current?.click()}
                         className={cn(
-                            "cursor-pointer border border-dashed border-gray-400 rounded-lg py-10 px-4 text-center flex flex-col items-center justify-center gap-2 hover:border-[#161CCA] transition"
+                            "cursor-pointer border border-dashed border-[#161CCA] rounded-lg py-10 px-4 text-center flex flex-col items-center justify-center gap-2 hover:border-[#161CCA] transition"
                         )}
                     >
                         <UploadIcon className="text-[#161CCA] w-8 h-8" />
