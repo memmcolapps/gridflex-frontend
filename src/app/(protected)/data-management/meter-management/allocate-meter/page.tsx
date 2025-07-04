@@ -36,6 +36,7 @@ import { FilterControl } from "@/components/search-control";
 import { BulkUploadDialog } from "@/components/meter-management/bulk-upload";
 import { getStatusStyle } from "@/components/status-style";
 import { cn } from "@/lib/utils";
+import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 
 
 // Define filter sections for FilterControl
@@ -120,20 +121,20 @@ export default function AllocateMetersPage() {
     };
 
     const isAllSelected = meters.length > 0 && selectedMeters.length === meters.length;
-
+    const [processedData, setProcessedData] = useState<(MeterData)[]>([]);
     const startIndex = (currentPage - 1) * rowsPerPage;
     const endIndex = startIndex + rowsPerPage;
     const currentMeters = meters.slice(startIndex, endIndex);
     const totalPages = Math.ceil(meters.length / rowsPerPage);
 
-    const onRowsPerPageChange = (value: number) => {
-        setRowsPerPage(value);
-        setCurrentPage(1); // Reset to first page when rows per page changes
-    };
+    // const onRowsPerPageChange = (value: number) => {
+    //     setRowsPerPage(value);
+    //     setCurrentPage(1); // Reset to first page when rows per page changes
+    // };
 
-    const onPageChange = (newPage: number) => {
-        setCurrentPage(newPage);
-    };
+    // const onPageChange = (newPage: number) => {
+    //     setCurrentPage(newPage);
+    // };
 
     const handleMeterNumberChange = (value: string) => {
         setMeterNumberInput(value);
@@ -270,6 +271,21 @@ export default function AllocateMetersPage() {
 
         setMeters(filtered);
     };
+
+    const handleRowsPerPageChange = (value: string) => {
+        setRowsPerPage(Number(value));
+        setCurrentPage(1);
+    };
+
+
+    const handlePrevious = () => {
+        setCurrentPage((prev) => Math.max(prev - 1, 1));
+    };
+
+    const handleNext = () => {
+        setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+    };
+
 
     return (
         <div className="p-6 h-fit">
@@ -451,44 +467,55 @@ export default function AllocateMetersPage() {
                 </Table>
             </Card>
 
-            <div className="sticky bottom-0 bg-white border-t border-gray-200 flex items-center justify-between px-4 py-3 mt-10 z-10">
-                <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-600">Rows per page</span>
-                    <select
-                        value={rowsPerPage}
-                        onChange={(e) => {
-                            setRowsPerPage(Number(e.target.value));
-                            setCurrentPage(1);
-                        }}
-                        className="text-sm border border-gray-300 rounded-md px-2 py-1 focus:outline-none"
+            <Pagination className="mt-4 flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                    <span className="text-sm font-medium">Rows per page</span>
+                    <Select
+                        value={rowsPerPage.toString()}
+                        onValueChange={handleRowsPerPageChange}
                     >
-                        {[5, 10, 12, 20, 50].map((num) => (
-                            <option key={num} value={num}>
-                                {num}
-                            </option>
-                        ))}
-                    </select>
-                    <span className="text-sm text-gray-600 ml-4">
-                        {startIndex + 1}-{Math.min(endIndex, totalRows)} of {totalRows} rows
+                        <SelectTrigger className="h-8 w-[70px]">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent
+                            position="popper"
+                            side="top"
+                            align="center"
+                            className="mb-1 ring-gray-50"
+                        >
+                            <SelectItem value="10">10</SelectItem>
+                            <SelectItem value="24">24</SelectItem>
+                            <SelectItem value="48">48</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <span className="text-sm font-medium">
+                        {(currentPage - 1) * rowsPerPage + 1}-
+                        {Math.min(currentPage * rowsPerPage, processedData.length)} of {processedData.length}
                     </span>
                 </div>
-                <div className="flex items-center gap-2">
-                    <button
-                        disabled={currentPage === 1}
-                        onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                        className="px-3 py-1 border border-gray-300 rounded-md text-sm text-black-600 disabled:opacity-50 cursor-pointer"
-                    >
-                        Previous
-                    </button>
-                    <button
-                        disabled={endIndex >= totalRows}
-                        onClick={() => setCurrentPage((prev) => prev + 1)}
-                        className="px-3 py-1 border border-gray-300 rounded-md text-sm text-black-600 disabled:opacity-50 cursor-pointer"
-                    >
-                        Next
-                    </button>
-                </div>
-            </div>
+                <PaginationContent>
+                    <PaginationItem>
+                        <PaginationPrevious
+                            href="#"
+                            onClick={e => {
+                                e.preventDefault();
+                                handlePrevious();
+                            }}
+                            aria-disabled={currentPage === 1}
+                        />
+                    </PaginationItem>
+                    <PaginationItem>
+                        <PaginationNext
+                            href="#"
+                            onClick={e => {
+                                e.preventDefault();
+                                handleNext();
+                            }}
+                            aria-disabled={currentPage === totalPages}
+                        />
+                    </PaginationItem>
+                </PaginationContent>
+            </Pagination>
             {/* Bulk Allocation Dialog */}
             <BulkUploadDialog<MeterData>
                 isOpen={isBulkUploadDialogOpen}

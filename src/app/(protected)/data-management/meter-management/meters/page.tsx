@@ -30,12 +30,14 @@ import SelectCustomerDialog from "@/components/meter-management/select-customer-
 import type { VirtualMeterData } from "@/types/meter";
 import { getStatusStyle } from "@/components/status-style";
 import { cn } from "@/lib/utils";
+import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function MeterManagementPage() {
     const [searchTerm, setSearchTerm] = useState<string>("");
     const [selectedTariffs, setSelectedTariffs] = useState<string[]>([]);
     const [currentPage, setCurrentPage] = useState<number>(1);
-    const [rowsPerPage, setRowsPerPage] = useState<number>(12);
+    const [rowsPerPage, setRowsPerPage] = useState<number>(10);
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [isBulkUploadDialogOpen, setIsBulkUploadDialogOpen] = useState(false);
     const [editMeter, setEditMeter] = useState<MeterData | VirtualMeterData | undefined>(undefined);
@@ -74,6 +76,7 @@ export default function MeterManagementPage() {
     const [phoneNumber, setPhoneNumber] = useState("");
     const [isViewDetailsOpen, setIsViewDetailsOpen] = useState(false);
     const [viewMeter, setViewMeter] = useState<MeterData | null>(null);
+    
 
 
     interface MeterData {
@@ -277,6 +280,44 @@ export default function MeterManagementPage() {
         },
         {
             id: "MT-1009",
+            meterNumber: "64533729273",
+            meterType: "Electricity",
+            oldTariffIndex: "1",
+            newTariffIndex: "2",
+            simNumber: "SIM-895623",
+            oldsgc: "999962",
+            newsgc: "600094",
+            oldkrn: "909878",
+            newkrn: "",
+            meterManufacturer: "MOMAS",
+            class: "MD",
+            category: "Prepaid",
+            accountNumber: "001/654321",
+            tariff: "Residential",
+            approvalStatus: "Pending",
+            status: "Unassigned",
+        },
+         {
+            id: "MT-1018",
+            meterNumber: "64533729273",
+            meterType: "Electricity",
+            oldTariffIndex: "1",
+            newTariffIndex: "2",
+            simNumber: "SIM-895623",
+            oldsgc: "999962",
+            newsgc: "600094",
+            oldkrn: "898790",
+            newkrn: "998866",
+            meterManufacturer: "MOMAS",
+            class: "MD",
+            category: "Prepaid",
+            accountNumber: "001/654321",
+            tariff: "Residential",
+            approvalStatus: "Pending",
+            status: "InStock",
+        },
+        {
+            id: "MT-1019",
             meterNumber: "64533729273",
             meterType: "Electricity",
             oldTariffIndex: "1",
@@ -846,6 +887,20 @@ export default function MeterManagementPage() {
         setIsViewDetailsOpen(true);
     };
 
+    const handleRowsPerPageChange = (value: string) => {
+        setRowsPerPage(Number(value));
+        setCurrentPage(1);
+    };
+
+
+    const handlePrevious = () => {
+        setCurrentPage((prev) => Math.max(prev - 1, 1));
+    };
+
+    const handleNext = () => {
+        setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+    };
+
     return (
         <div className="p-6 h-screen overflow-x-hidden">
             <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
@@ -1196,45 +1251,55 @@ export default function MeterManagementPage() {
                     </TabsContent>
                 </Tabs>
             </Card>
-
-            <div className="flex justify-between items-center py-4 px-6 text-sm text-gray-600">
-                <div className="flex items-center gap-2">
-                    <span>Rows per page</span>
-                    <select
-                        value={rowsPerPage}
-                        onChange={(e) => setRowsPerPage(parseInt(e.target.value))}
-                        className="w-16 border-gray-300 rounded-md text-sm"
+            <Pagination className="mt-4 flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                    <span className="text-sm font-medium">Rows per page</span>
+                    <Select
+                        value={rowsPerPage.toString()}
+                        onValueChange={handleRowsPerPageChange}
                     >
-                        <option value="12">12</option>
-                        <option value="24">24</option>
-                        <option value="48">48</option>
-                    </select>
-                    <span>
-                        {(activeTab === "actual" ? data.length : virtualData.length) > 0
-                            ? `1-${paginatedData.length} of ${activeTab === "actual" ? data.length : virtualData.length}`
-                            : "0-0 of 0"} rows
+                        <SelectTrigger className="h-8 w-[70px]">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent
+                            position="popper"
+                            side="top"
+                            align="center"
+                            className="mb-1 ring-gray-50"
+                        >
+                            <SelectItem value="10">10</SelectItem>
+                            <SelectItem value="24">24</SelectItem>
+                            <SelectItem value="48">48</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <span className="text-sm font-medium">
+                        {(currentPage - 1) * rowsPerPage + 1}-
+                        {Math.min(currentPage * rowsPerPage, processedData.length)} of {processedData.length}
                     </span>
                 </div>
-                <div className="flex items-center gap-2">
-
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                        disabled={currentPage === 1}
-                    >
-                        Previous
-                    </Button>
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                        disabled={currentPage === totalPages || (activeTab === "actual" ? data.length : virtualData.length) === 0}
-                    >
-                        Next
-                    </Button>
-                </div>
-            </div>
+                <PaginationContent>
+                    <PaginationItem>
+                        <PaginationPrevious
+                            href="#"
+                            onClick={e => {
+                                e.preventDefault();
+                                handlePrevious();
+                            }}
+                            aria-disabled={currentPage === 1}
+                        />
+                    </PaginationItem>
+                    <PaginationItem>
+                        <PaginationNext
+                            href="#"
+                            onClick={e => {
+                                e.preventDefault();
+                                handleNext();
+                            }}
+                            aria-disabled={currentPage === totalPages}
+                        />
+                    </PaginationItem>
+                </PaginationContent>
+            </Pagination>
 
             <SelectCustomerDialog
                 isOpen={isAddVirtualMeterOpen}
