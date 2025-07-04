@@ -308,16 +308,7 @@ export function BulkUploadDialog<T>({
 
                     {error && <p className="text-sm text-red-600">{error}</p>}
                 </div>
-                <DialogFooter className="flex justify-end gap-3">
-                    <button
-                        type="button"
-                        className="bg-[#161CCA] text-white px-4 py-2 rounded hover:bg-[#0f128a] transition"
-                        onClick={handleUpload}
-                        disabled={!file}
-                    >
-                        Upload
-                    </button>
-                </DialogFooter>
+              
             </DialogContent>
         </Dialog>
     );

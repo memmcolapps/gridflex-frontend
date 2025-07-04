@@ -3,7 +3,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Progress } from "@/components/ui/progress";
 import type { VirtualMeterData } from "@/types/meter";
 import type { MeterData } from "@/app/(protected)/data-management/meter-management/assign-meter/page";
 
@@ -82,7 +81,7 @@ export function AssignMeterDialog({
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="bg-white text-black h-fit">
-        {selectedCustomer?.category === "Prepaid" && <Progress value={progress} className="w-full" />}
+        {/* {selectedCustomer?.category === "Prepaid" && <Progress value={progress} className="w-full" />} */}
         <DialogHeader>
           <DialogTitle>Assign meter to customer</DialogTitle>
           <p className="text-sm">Fill all compulsory fields</p>
@@ -130,7 +129,6 @@ export function AssignMeterDialog({
               <Input
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                // readOnly
                 placeholder="Enter Phone Number"
                 className="border-gray-200 text-gray-600"
               />
@@ -146,17 +144,22 @@ export function AssignMeterDialog({
                 className="border-gray-200 text-gray-600"
               />
             </div>
-            {selectedCustomer && !isMeterData(selectedCustomer) && (
-              <div className="space-y-2">
-                <Label>CIN</Label>
-                <Input
-                  value={cin}
-                  onChange={(e) => setCin(e.target.value)}
-                  placeholder="Enter CIN"
-                  className="border-gray-200 text-gray-600"
-                />
-              </div>
-            )}
+            {/* {selectedCustomer && !isMeterData(selectedCustomer) && ( */}
+
+            <div className="space-y-2">
+              <Label>
+                CIN<span className="text-red-700">*</span>
+              </Label>
+              <Input
+                value={cin}
+                onChange={(e) => setCin(e.target.value)}
+                placeholder="Enter CIN"
+                className="border-gray-200 text-gray-600"
+              />
+            </div>
+
+
+            {/* )} */}
             <div className="space-y-2">
               <Label>
                 Account Number<span className="text-red-700">*</span>
@@ -184,31 +187,26 @@ export function AssignMeterDialog({
             </div>
             <div className="space-y-2">
               <Label>
-                Feeder<span className="text-red-700">*</span>
+                Feeder Line
+                <span className="text-red-700">*</span>
               </Label>
-              <Select onValueChange={setFeeder} value={feeder}>
-                <SelectTrigger className="border-gray-100 text-gray-600 w-full">
-                  <SelectValue placeholder="Select Feeder" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="feeder1">Feeder 1</SelectItem>
-                  <SelectItem value="feeder2">Feeder 2</SelectItem>
-                </SelectContent>
-              </Select>
+              <Input
+                value={feeder}
+                onChange={(e) => setFeeder(e.target.value)}
+                placeholder="Enter Feeder Line ID"
+                className="border-gray-200 text-gray-600"
+              />
             </div>
             <div className="space-y-2">
               <Label>
                 Distribution Substation (DSS)<span className="text-red-700">*</span>
               </Label>
-              <Select onValueChange={setDss} value={dss}>
-                <SelectTrigger className="border-gray-100 text-gray-600 w-full">
-                  <SelectValue placeholder="Select DSS" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="dss1">DSS 1</SelectItem>
-                  <SelectItem value="dss2">DSS 2</SelectItem>
-                </SelectContent>
-              </Select>
+              <Input
+                value={dss}
+                onChange={(e) => setDss(e.target.value)}
+                placeholder="Enter DSS ID"
+                className="border-gray-200 text-gray-600"
+              />
             </div>
             <div className="space-y-2">
               <Label>
@@ -256,20 +254,6 @@ export function AssignMeterDialog({
                 placeholder="Enter House No"
                 className="border-gray-100 text-gray-600"
               />
-            </div>
-            <div className="space-y-2">
-              <Label>
-                Category<span className="text-red-700">*</span>
-              </Label>
-              <Select onValueChange={setCategory} value={category}>
-                <SelectTrigger className="border-gray-100 text-gray-600 w-full">
-                  <SelectValue placeholder="Select Category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Prepaid">Prepaid</SelectItem>
-                  <SelectItem value="Postpaid">Postpaid</SelectItem>
-                </SelectContent>
-              </Select>
             </div>
           </div>
         </div>

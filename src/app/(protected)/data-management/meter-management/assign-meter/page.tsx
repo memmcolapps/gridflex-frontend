@@ -39,6 +39,8 @@ import { MigrateMeterDialog } from "@/components/meter-management/migrate-meter-
 import { DetachMeterDialog } from "@/components/meter-management/detach-meter-dialog";
 import { DetachConfirmationDialog } from "@/components/meter-management/detach-confirmation-dialog";
 import { BulkUploadDialog } from "@/components/meter-management/bulk-upload";
+import { cn } from "@/lib/utils";
+import { getStatusStyle } from "@/components/status-style";
 
 // Define filter sections
 const filterSections = [
@@ -341,9 +343,9 @@ export default function AssignMeterPage() {
             setIsCustomerIdModalOpen(false);
             setIsAssignModalOpen(true);
             setProgress(50);
-            setMeterNumber(customer.meterNumber ?? "");
-            setCin(customer.cin ?? "");
-            setAccountNumber(customer.accountNumber ?? "");
+            setMeterNumber("");
+            setCin("");
+            setAccountNumber("");
             setTariff("");
             setFeeder("");
             setDss("");
@@ -782,14 +784,9 @@ export default function AssignMeterPage() {
                             <TableCell>{meter.debitPaymentPlan}</TableCell>
                             <TableCell>{meter.creditMop}</TableCell>
                             <TableCell>{meter.creditPaymentPlan}</TableCell>
-                            <TableCell>
-                                <span
-                                    className={`${meter.approvedStatus === "Pending"
-                                        ? "text-[#C86900] bg-[#FFF5EA] rounded-full px-2 py-1"
-                                        : "text-[#1A73E8] bg-[#E9F6FF] rounded-full px-2 py-1"
-                                        }`}
-                                >
-                                    {meter.approvedStatus}
+                            <TableCell className="px-4 py-3">
+                                <span className={cn("inline-block text-sm font-medium", getStatusStyle(meter.approvedStatus))}>
+                                    {meter.approvedStatus ?? "N/A"}
                                 </span>
                             </TableCell>
                             <TableCell>
@@ -828,7 +825,7 @@ export default function AssignMeterPage() {
                     ))}
                 </TableBody>
             </Table>
-            <div className="bg-white  flex items-center justify-between px-4 py-3 mt-20">
+            <div className="sticky bottom-0 bg-white border-t border-gray-200 flex items-center justify-between px-4 py-3 mt-8 z-10">
                 <div className="flex items-center gap-2">
                     <span className="text-sm text-gray-600">Rows per page</span>
                     <select
@@ -845,10 +842,10 @@ export default function AssignMeterPage() {
                             </option>
                         ))}
                     </select>
+                    <span className="text-sm text-gray-600 ml-4">
+                        {startIndex + 1}-{Math.min(endIndex, totalRows)} of {totalRows} rows
+                    </span>
                 </div>
-                <span className="text-sm text-gray-600">
-                    {startIndex + 1}-{Math.min(endIndex, totalRows)} of {totalRows} rows
-                </span>
                 <div className="flex items-center gap-2">
                     <button
                         disabled={currentPage === 1}

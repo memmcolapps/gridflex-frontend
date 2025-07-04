@@ -51,6 +51,8 @@ function AddManufacturerDialog({
     const [contactPerson, setContactPerson] = useState("");
     const [phoneNumber, setPhoneNumber] = useState("");
     const [location, setLocation] = useState("Lagos");
+  
+
 
     const handleAdd = () => {
         if (!manufacturerName || !manufacturerId || !contactPerson || !phoneNumber) {
@@ -485,6 +487,11 @@ export default function ManufacturersPage() {
     const totalPages = Math.ceil(processedData.length / rowsPerPage);
     const paginatedData = processedData.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
 
+    // Define startIndex, endIndex, and totalRows for pagination display
+    const startIndex = (currentPage - 1) * rowsPerPage;
+    const endIndex = startIndex + paginatedData.length;
+    const totalRows = processedData.length;
+
     const onPageChange = (newPage: number) => {
         setCurrentPage(newPage);
     };
@@ -616,17 +623,6 @@ export default function ManufacturersPage() {
                                                     <Pencil size={14} className="text-gray-500" />
                                                     <span className="text-sm text-gray-700">Edit Manufacturer</span>
                                                 </DropdownMenuItem>
-                                                {/* <DropdownMenuItem
-                                                    className="flex items-center gap-2"
-                                                    onClick={() => {
-                                                        setSelectedManufacturer(item);
-                                                        setIsDeactivateDialogOpen(true);
-                                                    }}
-                                                    disabled={item.status === "Deactivated"}
-                                                >
-                                                    <Ban size={16} className="text-gray-500" />
-                                                    <span className="text-sm text-gray-700">Deactivate</span>
-                                                </DropdownMenuItem> */}
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     </TableCell>
@@ -650,6 +646,9 @@ export default function ManufacturersPage() {
                         <option value="20">20</option>
                         <option value="50">50</option>
                     </select>
+                      <span className="text-sm text-gray-600 ml-4">
+                        {startIndex + 1}-{Math.min(endIndex, totalRows)} of {totalRows} rows
+                    </span>
                 </div>
                 <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-start">
                     <Button

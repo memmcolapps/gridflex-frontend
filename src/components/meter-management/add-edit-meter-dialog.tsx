@@ -29,25 +29,25 @@ import { Label } from "@/components/ui/label";
 //     status: string;
 // }
 
-    export interface MeterData {
-        id: string;
-        meterNumber: string;
-        simNumber: string;
-        class: string;
-        category?: string;
-        meterType: string;
-        oldTariffIndex: string;
-        newTariffIndex: string;
-        meterManufacturer: string;
-        accountNumber: string;
-        oldsgc: string;
-        oldkrn: string;
-        newkrn: string;
-        newsgc: string;
-        tariff: string;
-        approvalStatus: string;
-        status: string;
-    }
+export interface MeterData {
+    id: string;
+    meterNumber: string;
+    simNumber: string;
+    class: string;
+    category?: string;
+    meterType: string;
+    oldTariffIndex: string;
+    newTariffIndex: string;
+    meterManufacturer: string;
+    accountNumber: string;
+    oldsgc: string;
+    oldkrn: string;
+    newkrn: string;
+    newsgc: string;
+    tariff: string;
+    approvalStatus: string;
+    status: string;
+}
 
 // add-edit-meter-dialog.tsx
 interface AddMeterDialogProps {
@@ -298,7 +298,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                 <DialogHeader className="flex flex-col">
                     {/* Progress Bar: Hidden when editing and meterClass is NMD */}
                     {(!editMeter || formData.meterClass !== "NMD") && (
-                        <div className="w-full h-2 bg-gray-200 rounded-full mb-4">
+                        <div className="w-full h-2 bg-gray-200 rounded-full mb-4 mt-6">
                             <div
                                 className={`h-full bg-[#161CCA] rounded-full transition-all duration-300 ${step === 1 ? "w-1/2" : "w-full"
                                     }`}
@@ -352,7 +352,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                             </div>
                             <div className="space-y-1">
                                 <Label htmlFor="substation" className="text-sm font-medium text-gray-700">
-                                    Meter Type
+                                    Meter Type <span className="text-red-500">*</span>
                                 </Label>
                                 <Select onValueChange={(value) => handleSelectChange("substation", value)}>
                                     <SelectTrigger
@@ -404,6 +404,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                                     <SelectContent>
                                         <SelectItem value="MD">MD</SelectItem>
                                         <SelectItem value="NMD">Single Phase</SelectItem>
+                                        <SelectItem value="TP">Three Phase</SelectItem>
                                     </SelectContent>
                                 </Select>
                                 {errors.meterClass && (
@@ -786,7 +787,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                                     : "bg-[#161CCA] cursor-pointer"
                                     }`}
                             >
-                                {formData.meterClass === "MD" ? "Next" : "Submit"}
+                                {formData.meterClass === "MD" ? "Next" : "Add"}
                             </Button>
                         </>
                     ) : (

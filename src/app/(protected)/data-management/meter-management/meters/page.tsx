@@ -10,13 +10,14 @@ import {
     MoreVertical,
     Ban,
     Pencil,
+    CheckCircle,
 
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AddMeterDialog } from "@/components/meter-management/add-edit-meter-dialog";
-import { ApproveDialog, AssignDialog, DeactivateDialog } from "@/components/meter-management/meter-dialogs";
+import { DeactivateDialog } from "@/components/meter-management/meter-dialogs";
 import { BulkUploadDialog } from "@/components/meter-management/bulk-upload";
 import { FilterControl, SearchControl, SortControl } from "@/components/search-control";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -27,6 +28,8 @@ import DeactivatePhysicalMeterDialog from "@/components/meter-management/deactiv
 import AddVirtualMeterDetailsDialog from "@/components/meter-management/add-virtual-meter-dialog";
 import SelectCustomerDialog from "@/components/meter-management/select-customer-dialog";
 import type { VirtualMeterData } from "@/types/meter";
+import { getStatusStyle } from "@/components/status-style";
+import { cn } from "@/lib/utils";
 
 export default function MeterManagementPage() {
     const [searchTerm, setSearchTerm] = useState<string>("");
@@ -99,10 +102,11 @@ export default function MeterManagementPage() {
         {
             title: "Status",
             options: [
-                { id: "inStock", label: "In-stock" },
+                { id: "inStock", label: "InStock" },
                 { id: "assigned", label: "Assigned" },
                 { id: "deactivated", label: "Deactivated" },
-            ],
+            ]
+
         },
         {
             title: "Meter Class",
@@ -176,7 +180,7 @@ export default function MeterManagementPage() {
             accountNumber: "001/654321",
             tariff: "Residential",
             approvalStatus: "Approved",
-            status: "In-Stock",
+            status: "InStock",
         },
         {
             id: "MT-1004", meterNumber: "64533729273", meterType: "Electricity",
@@ -269,7 +273,7 @@ export default function MeterManagementPage() {
             accountNumber: "001/654321",
             tariff: "Residential",
             approvalStatus: "Pending",
-            status: "In-Stock",
+            status: "InStock",
         },
         {
             id: "MT-1009",
@@ -450,6 +454,9 @@ export default function MeterManagementPage() {
         "Oyo", "Plateau", "Rivers", "Sokoto", "Taraba", "Yobe", "Zamfara",
     ];
 
+    const customerTypes =
+        ["Non-MD", "MD"]
+
     // NEW: Initialize form fields for Edit Virtual Meter dialog
     useEffect(() => {
         if (editMeter && "customerId" in editMeter && isEditVirtualMeterOpen) {
@@ -582,7 +589,28 @@ export default function MeterManagementPage() {
         handleSaveMeter(meter);
     };
 
-    const handleDeactivate = (reason: string) => {
+
+    const handleActivate = () => {
+        if (selectedMeter) {
+            if (activeTab === "actual" && "meterManufacturer" in selectedMeter) {
+                setData((prev) =>
+                    prev.map((meter) =>
+                        meter.id === selectedMeter.id ? { ...meter, status: "InStock", reason: undefined } : meter
+                    )
+                );
+            } else if (activeTab === "virtual" && "customerId" in selectedMeter) {
+                setVirtualData((prev) =>
+                    prev.map((meter) =>
+                        meter.id === selectedMeter.id ? { ...meter, status: "Assigned", reason: undefined } : meter
+                    )
+                );
+            }
+            setIsDeactivateDialogOpen(false);
+            setSelectedMeter(null);
+        }
+    };
+
+    const handleDeactivate = (reason?: string) => {
         if (selectedMeter) {
             if (activeTab === "actual" && "meterManufacturer" in selectedMeter) {
                 setData((prev) =>
@@ -744,11 +772,23 @@ export default function MeterManagementPage() {
         }
     };
     const handleProceedToDeactivate = () => {
+        setIsAddVirtualMeterOpen(false);
+        setIsDeactivatePhysicalOpen(true)
+        // setIsVirtualConfirmOpen(false)
+    };
+
+    const handleDeactivationComplete = () => {
         if (selectedPhysicalMeter) {
             console.log("Deactivating physical meter:", selectedPhysicalMeter);
+            // Optionally update the physical meter status in data
+            setData((prev) =>
+                prev.map((meter) =>
+                    meter.id === selectedPhysicalMeter ? { ...meter, status: "Deactivated" } : meter
+                )
+            );
         }
-        setIsDeactivatePhysicalOpen(false);
-        setIsVirtualConfirmOpen(true);
+        setIsDeactivatePhysicalOpen(false); // Close DeactivatePhysicalMeterDialog
+        setIsVirtualConfirmOpen(true); // Open VirtualMeterConfirmDialog
     };
 
     const handleConfirmVirtualMeter = () => {
@@ -895,6 +935,7 @@ export default function MeterManagementPage() {
                                             <div className="flex items-center gap-2">
                                                 <Checkbox
                                                     className="h-4 w-4 border-gray-500"
+
                                                     checked={selectedTariffs.length === data.length && data.length > 0}
                                                     onCheckedChange={(checked) => {
                                                         if (checked) {
@@ -955,35 +996,13 @@ export default function MeterManagementPage() {
                                                     <TableCell className="px-4 py-3 text-sm text-gray-900">{item.class}</TableCell>
                                                     <TableCell className="px-4 py-3 text-sm text-gray-900">{item.category}</TableCell>
                                                     <TableCell className="px-4 py-3 text-center">
-                                                        <span className="inline-block px-3 py-1 rounded-2xl text-sm font-medium">
-                                                            {item.status === "Assigned" && (
-                                                                <span className="text-green-600 bg-green-100 p-1 rounded-full">Assigned</span>
-                                                            )}
-                                                            {item.status === "In-Stock" && (
-                                                                <span className="text-blue-600 bg-[#E9F6FF] p-1 rounded-full">In-Stock</span>
-                                                            )}
-                                                            {item.status === "Unassigned" && (
-                                                                <span className="text-yellow-500 bg-[#FFF5EA] p-1 rounded-full">Unassigned</span>
-                                                            )}
-                                                            {item.status !== "Assigned" && item.status !== "In-Stock" && item.status !== "Unassigned" && (
-                                                                <span className="text-gray-900">{item.status}</span>
-                                                            )}
+                                                        <span className={cn("inline-block text-sm font-medium", getStatusStyle(item.status))}>
+                                                            {item.status}
                                                         </span>
                                                     </TableCell>
                                                     <TableCell className="px-4 py-3">
-                                                        <span className="inline-block px-3 py-1 rounded-2xl text-sm font-medium">
-                                                            {item.approvalStatus === "Approved" && (
-                                                                <span className="text-blue-600 bg-[#E9F6FF] p-1 rounded-full">Approved</span>
-                                                            )}
-                                                            {item.approvalStatus === "Rejected" && (
-                                                                <span className="text-red-600 bg-red-100 p-1 rounded-full">Rejected</span>
-                                                            )}
-                                                            {item.approvalStatus === "Pending" && (
-                                                                <span className="text-yellow-500 bg-[#FFF5EA] p-1 rounded-full">Pending</span>
-                                                            )}
-                                                            {item.approvalStatus !== "Approved" && item.approvalStatus !== "Rejected" && item.approvalStatus !== "Pending" && (
-                                                                <span className="text-gray-900">{item.approvalStatus}</span>
-                                                            )}
+                                                        <span className={cn("inline-block text-sm font-medium", getStatusStyle(item.approvalStatus))}>
+                                                            {item.approvalStatus}
                                                         </span>
                                                     </TableCell>
                                                     <TableCell className="px-4 py-3 text-right">
@@ -1008,15 +1027,23 @@ export default function MeterManagementPage() {
                                                                 </DropdownMenuItem>
                                                                 <DropdownMenuItem
                                                                     className="flex items-center gap-2 cursor-pointer"
-                                                                    disabled={item.status === "Deactivated"}
                                                                     onClick={(event) => {
                                                                         event.stopPropagation();
                                                                         setSelectedMeter(item);
                                                                         setIsDeactivateDialogOpen(true);
                                                                     }}
                                                                 >
-                                                                    <Ban size={14} />
-                                                                    <span className="text-sm text-gray-700">Deactivate</span>
+                                                                    {item.status === "Deactivated" ? (
+                                                                        <>
+                                                                            <CheckCircle size={14} />
+                                                                            <span className="text-sm text-gray-700">Activate</span>
+                                                                        </>
+                                                                    ) : (
+                                                                        <>
+                                                                            <Ban size={14} />
+                                                                            <span className="text-sm text-gray-700">Deactivate</span>
+                                                                        </>
+                                                                    )}
                                                                 </DropdownMenuItem>
                                                             </DropdownMenuContent>
                                                         </DropdownMenu>
@@ -1123,16 +1150,8 @@ export default function MeterManagementPage() {
                                                             {item.tariff}
                                                         </TableCell>
                                                         <TableCell className="px-4 py-3 text-center">
-                                                            <span className="inline-block px-3 py-1 rounded-2xl text-sm font-medium">
-                                                                {item.status === "Assigned" && (
-                                                                    <span className="text-green-600 bg-green-100 p-1 rounded-full">Assigned</span>
-                                                                )}
-                                                                {item.status === "Deactivated" && (
-                                                                    <span className="text-red-600 bg-red-100 p-1 rounded-full">Deactivated</span>
-                                                                )}
-                                                                {item.status !== "Assigned" && item.status !== "Deactivated" && (
-                                                                    <span className="text-gray-900">{item.status}</span>
-                                                                )}
+                                                            <span className={cn("inline-block text-sm font-medium", getStatusStyle(item.status))}>
+                                                                {item.status}
                                                             </span>
                                                         </TableCell>
                                                         <TableCell className="px-4 py-3 text-right">
@@ -1145,25 +1164,23 @@ export default function MeterManagementPage() {
                                                                 <DropdownMenuContent align="end" className="w-fit bg-white shadow-lg">
                                                                     <DropdownMenuItem
                                                                         className="flex items-center gap-2 cursor-pointer"
-                                                                        onClick={() => {
-                                                                            setSelectedMeter(item);
-                                                                            setEditMeter(item);
-                                                                            setIsEditVirtualMeterOpen(true);
-                                                                        }}
-                                                                    >
-                                                                        <Pencil size={14} />
-                                                                        <span className="text-sm text-gray-700">Edit Meter</span>
-                                                                    </DropdownMenuItem>
-                                                                    <DropdownMenuItem
-                                                                        className="flex items-center gap-2 cursor-pointer"
-                                                                        disabled={item.status === "Deactivated"}
-                                                                        onClick={() => {
+                                                                        onClick={(event) => {
+                                                                            event.stopPropagation();
                                                                             setSelectedMeter(item);
                                                                             setIsDeactivateDialogOpen(true);
                                                                         }}
                                                                     >
-                                                                        <Ban size={14} />
-                                                                        <span className="text-sm text-gray-700">Deactivate</span>
+                                                                        {item.status === "Deactivated" ? (
+                                                                            <>
+                                                                                <CheckCircle size={14} />
+                                                                                <span className="text-sm text-gray-700">Activate</span>
+                                                                            </>
+                                                                        ) : (
+                                                                            <>
+                                                                                <Ban size={14} />
+                                                                                <span className="text-sm text-gray-700">Deactivate</span>
+                                                                            </>
+                                                                        )}
                                                                     </DropdownMenuItem>
                                                                 </DropdownMenuContent>
                                                             </DropdownMenu>
@@ -1192,13 +1209,14 @@ export default function MeterManagementPage() {
                         <option value="24">24</option>
                         <option value="48">48</option>
                     </select>
-                </div>
-                <div className="flex items-center gap-2">
                     <span>
                         {(activeTab === "actual" ? data.length : virtualData.length) > 0
                             ? `1-${paginatedData.length} of ${activeTab === "actual" ? data.length : virtualData.length}`
                             : "0-0 of 0"} rows
                     </span>
+                </div>
+                <div className="flex items-center gap-2">
+
                     <Button
                         variant="ghost"
                         size="sm"
@@ -1266,16 +1284,23 @@ export default function MeterManagementPage() {
                 onProceed={handleProceedToDeactivate}
                 isFormComplete={!!isFormComplete}
                 nigerianStates={nigerianStates}
+                customerTypes={customerTypes}
             />
 
             <DeactivatePhysicalMeterDialog
                 isOpen={isDeactivatePhysicalOpen}
-                onOpenChange={setIsDeactivatePhysicalOpen}
-                onProceed={handleProceedToDeactivate}
+                onOpenChange={(open) => {
+                    setIsDeactivatePhysicalOpen(open);
+                    if (!open) {
+                        setSelectedPhysicalMeter(""); // Reset selected meter when closing
+                    }
+                }}
+                onProceed={handleDeactivationComplete} // Use new handler
                 onMeterSelect={setSelectedPhysicalMeter}
                 meters={meters}
                 address="5, Glorious Orimerumnu, Obafemi Owode, Ogun State"
             />
+
 
 
             <VirtualMeterConfirmDialog
@@ -1331,21 +1356,22 @@ export default function MeterManagementPage() {
             <DeactivateDialog
                 isOpen={isDeactivateDialogOpen}
                 onClose={() => setIsDeactivateDialogOpen(false)}
-                onDeactivate={handleDeactivate}
+                onDeactivate={selectedMeter?.status === "Deactivated" ? handleActivate : handleDeactivate}
                 meterNumber={selectedMeter?.meterNumber ?? ""}
+                action={selectedMeter?.status === "Deactivated" ? "activate" : "deactivate"}
             />
-            <ApproveDialog
+            {/* <ApproveDialog
                 isOpen={isApproveDialogOpen}
                 onClose={() => setIsApproveDialogOpen(false)}
                 onApprove={handleApprove}
                 meterNumber={selectedMeter?.meterNumber ?? ""}
-            />
-            <AssignDialog
+            /> */}
+            {/* <AssignDialog
                 isOpen={isAssignDialogOpen}
                 onClose={() => setIsAssignDialogOpen(false)}
                 onAssign={handleAssign}
                 meterNumber={selectedMeter?.meterNumber ?? ""}
-            />
+            /> */}
             <BulkUploadDialog<MeterData>
                 isOpen={isBulkUploadDialogOpen}
                 onClose={() => setIsBulkUploadDialogOpen(false)}

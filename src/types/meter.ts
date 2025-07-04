@@ -60,4 +60,5 @@ export interface VirtualMeterData {
   creditPaymentPlan?: string;
   energyType?: string; 
   fixedEnergy?: string; 
+  custoType?: string;
 }
