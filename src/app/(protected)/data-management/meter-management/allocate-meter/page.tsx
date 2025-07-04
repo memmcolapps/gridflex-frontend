@@ -13,7 +13,7 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
-import {  CirclePlus } from "lucide-react";
+import { CirclePlus } from "lucide-react";
 import {
     Select,
     SelectContent,
@@ -33,6 +33,11 @@ import {
 } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { FilterControl } from "@/components/search-control";
+import { BulkUploadDialog } from "@/components/meter-management/bulk-upload";
+import { getStatusStyle } from "@/components/status-style";
+import { cn } from "@/lib/utils";
+import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+
 
 // Define filter sections for FilterControl
 const filterSections = [
@@ -89,10 +94,12 @@ export default function AllocateMetersPage() {
     const [, setIsDialogOpen] = useState(false);
     const [selectedMeter, setSelectedMeter] = useState<MeterData | null>(null);
     const [organizationId, setOrganizationId] = useState<string>("");
-    const [isBulkDialogOpen, setIsBulkDialogOpen] = useState(false);
+    const [meterData, setMeterData] = useState<MeterData[]>(initialMeters);
+    const [isBulkUploadDialogOpen, setIsBulkUploadDialogOpen] = useState(false);
     const [bulkOrganizationId, setBulkOrganizationId] = useState<string>("");
     const [meterNumberInput, setMeterNumberInput] = useState<string>("");
     const [searchTerm, setSearchTerm] = useState<string>("");
+    const totalRows = meterData.length;
 
     // Add state for active filters
     // const [activeFilters, setActiveFilters] = useState<Record<string, boolean>>({});
@@ -114,20 +121,20 @@ export default function AllocateMetersPage() {
     };
 
     const isAllSelected = meters.length > 0 && selectedMeters.length === meters.length;
-
+    const [processedData, setProcessedData] = useState<(MeterData)[]>([]);
     const startIndex = (currentPage - 1) * rowsPerPage;
     const endIndex = startIndex + rowsPerPage;
     const currentMeters = meters.slice(startIndex, endIndex);
     const totalPages = Math.ceil(meters.length / rowsPerPage);
 
-    const onRowsPerPageChange = (value: number) => {
-        setRowsPerPage(value);
-        setCurrentPage(1); // Reset to first page when rows per page changes
-    };
+    // const onRowsPerPageChange = (value: number) => {
+    //     setRowsPerPage(value);
+    //     setCurrentPage(1); // Reset to first page when rows per page changes
+    // };
 
-    const onPageChange = (newPage: number) => {
-        setCurrentPage(newPage);
-    };
+    // const onPageChange = (newPage: number) => {
+    //     setCurrentPage(newPage);
+    // };
 
     const handleMeterNumberChange = (value: string) => {
         setMeterNumberInput(value);
@@ -154,24 +161,8 @@ export default function AllocateMetersPage() {
         setSelectedMeter(null);
     };
 
-    const handleBulkAllocate = () => {
-        if (selectedMeters.length === 0) {
-            alert("Please select at least one meter to allocate.");
-            return;
-        }
-        if (!bulkOrganizationId) {
-            alert("Please select an Organization ID for bulk allocation.");
-            return;
-        }
-        console.log("Bulk Allocated:", { selectedMeters, organizationId: bulkOrganizationId });
-        setMeters(meters.filter((meter) => !selectedMeters.includes(meter.id)));
-        setSelectedMeters([]);
-        setIsBulkDialogOpen(false);
-        setBulkOrganizationId("");
-        const totalPages = Math.ceil((meters.length - selectedMeters.length) / rowsPerPage);
-        if (currentPage > totalPages) {
-            setCurrentPage(totalPages ?? 1);
-        }
+    const handleBulkUpload = (newData: MeterData[]) => {
+        setMeters((prev) => [...prev, ...newData]);
     };
 
     // Add these state variables
@@ -281,18 +272,33 @@ export default function AllocateMetersPage() {
         setMeters(filtered);
     };
 
+    const handleRowsPerPageChange = (value: string) => {
+        setRowsPerPage(Number(value));
+        setCurrentPage(1);
+    };
+
+
+    const handlePrevious = () => {
+        setCurrentPage((prev) => Math.max(prev - 1, 1));
+    };
+
+    const handleNext = () => {
+        setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+    };
+
+
     return (
         <div className="p-6 h-fit">
             <div className="flex items-center justify-between mb-4">
                 <ContentHeader title="Allocate Meters" description="Manage and access meter allocation." />
                 <Button
+                    className="flex items-center gap-2 border font-medium bg-[#161CCA] text-white w-full md:w-auto cursor-pointer"
+                    variant="outline"
                     size="lg"
-                    className="bg-[#161CCA] text-white text-md font-semibold rounded-md shadow-sm hover:translate-0.5 cursor-pointer transition-transform duration-200 ease-in-out active:scale-95"
-                    onClick={() => setIsBulkDialogOpen(true)}
-                    disabled={selectedMeters.length === 0}
+                    onClick={() => setIsBulkUploadDialogOpen(true)}
                 >
-                    <CirclePlus size={14} strokeWidth={2.5} className="mr-2" />
-                    Bulk Allocate Meter
+                    <CirclePlus size={14} strokeWidth={2.3} className="h-4 w-4 text-white" />
+                    <span className="text-sm md:text-base">Bulk Upload</span>
                 </Button>
             </div>
 
@@ -319,7 +325,7 @@ export default function AllocateMetersPage() {
                         />
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="outline" className="gap-2 border-gray-300 w-full sm:w-auto">
+                                <Button variant="outline" className="gap-2 border-gray-300 w-full sm:w-auto cursor-pointer">
                                     <ArrowUpDown className="text-gray-500" size={14} />
                                     <span className="hidden sm:inline text-gray-800">Sort</span>
                                 </Button>
@@ -366,14 +372,15 @@ export default function AllocateMetersPage() {
                             className="w-full border-gray-300 focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
                         />
                     </div>
-                    <div className="flex items-center justify-center">
+                    <div className="flex items-center justify-center w-16 h-16">
                         <ArrowRightLeft
-                            className="text-white bg-green-500 p-1 rounded-full cursor-pointer"
-                            size={18}
+                            className="text-white bg-green-500 px-6 py-3 w-full  rounded-3xl cursor-pointer"
+                            size={28}
                             strokeWidth={2.75}
                             onClick={handleAllocate}
                         />
                     </div>
+
                     <div className="flex-1">
                         <Label htmlFor="organizationId" className="text-sm font-medium mb-2 text-gray-700">
                             Organization ID <span className="text-red-500">*</span>
@@ -442,10 +449,8 @@ export default function AllocateMetersPage() {
                                 <TableCell>{meter.meterType}</TableCell>
                                 <TableCell>{meter.category}</TableCell>
                                 <TableCell>{meter.dateAdded}</TableCell>
-                                <TableCell>
-                                    <span
-                                        className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${meter.status === "Pending" ? "bg-[#FFF5EA] text-[#C86900]" : "bg-[#E9F6FF] text-[#161CCA]"}`}
-                                    >
+                                <TableCell className="px-4 py-3 text-start">
+                                    <span className={cn("inline-block text-sm font-medium", getStatusStyle(meter.status))}>
                                         {meter.status}
                                     </span>
                                 </TableCell>
@@ -462,82 +467,74 @@ export default function AllocateMetersPage() {
                 </Table>
             </Card>
 
-            <div className="flex flex-col sm:flex-row justify-between items-center py-3 px-4 sm:py-4 sm:px-6 text-xs sm:text-sm text-gray-600 gap-3 sm:gap-0">
-                <div className="flex items-center gap-2 justify-between sm:justify-start">
-                    <span className="whitespace-nowrap">Rows per page</span>
-                    <select
-                        value={rowsPerPage}
-                        onChange={(e) => onRowsPerPageChange(parseInt(e.target.value))}
-                        className="w-16 border-gray-300 text-sm rounded-md focus:ring-[#161CCA]/50 focus:border-[#161CCA]/30"
+            <Pagination className="mt-4 flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                    <span className="text-sm font-medium">Rows per page</span>
+                    <Select
+                        value={rowsPerPage.toString()}
+                        onValueChange={handleRowsPerPageChange}
                     >
-                        <option value="10">10</option>
-                        <option value="20">20</option>
-                        <option value="50">50</option>
-                    </select>
+                        <SelectTrigger className="h-8 w-[70px]">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent
+                            position="popper"
+                            side="top"
+                            align="center"
+                            className="mb-1 ring-gray-50"
+                        >
+                            <SelectItem value="10">10</SelectItem>
+                            <SelectItem value="24">24</SelectItem>
+                            <SelectItem value="48">48</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <span className="text-sm font-medium">
+                        {(currentPage - 1) * rowsPerPage + 1}-
+                        {Math.min(currentPage * rowsPerPage, processedData.length)} of {processedData.length}
+                    </span>
                 </div>
-                <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-start">
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onPageChange(Math.max(currentPage - 1, 1))}
-                        disabled={currentPage === 1}
-                        className="cursor-pointer px-2 sm:px-3"
-                    >
-                        Previous
-                    </Button>
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onPageChange(Math.min(currentPage + 1, totalPages))}
-                        disabled={currentPage === totalPages || meters.length === 0}
-                        className="cursor-pointer px-2 sm:px-3 text-gray-400"
-                    >
-                        Next
-                    </Button>
-                </div>
-            </div>
-
-
+                <PaginationContent>
+                    <PaginationItem>
+                        <PaginationPrevious
+                            href="#"
+                            onClick={e => {
+                                e.preventDefault();
+                                handlePrevious();
+                            }}
+                            aria-disabled={currentPage === 1}
+                        />
+                    </PaginationItem>
+                    <PaginationItem>
+                        <PaginationNext
+                            href="#"
+                            onClick={e => {
+                                e.preventDefault();
+                                handleNext();
+                            }}
+                            aria-disabled={currentPage === totalPages}
+                        />
+                    </PaginationItem>
+                </PaginationContent>
+            </Pagination>
             {/* Bulk Allocation Dialog */}
-            <Dialog open={isBulkDialogOpen} onOpenChange={setIsBulkDialogOpen}>
-                <DialogContent className="sm:max-w-[350px] h-fit bg-white rounded-lg shadow-lg">
-                    <DialogHeader>
-                        <DialogTitle className="text-lg font-semibold text-gray-900">Bulk Allocate Meter</DialogTitle>
-                    </DialogHeader>
-                    <div className="gap-4 py-4">
-                        <div className="items-center w-full gap-4">
-                            <Label htmlFor="bulkOrganizationId" className="text-sm mb-3 font-medium text-gray-700">
-                                Organization ID <span className="text-red-500">*</span>
-                            </Label>
-                            <Select value={bulkOrganizationId} onValueChange={setBulkOrganizationId}>
-                                <SelectTrigger className="w-full border-gray-300 focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50">
-                                    <SelectValue placeholder="Select Organization ID" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="Ojoo">Ojoo</SelectItem>
-                                    <SelectItem value="Molete">Molete</SelectItem>
-                                    <SelectItem value="Ibadan">Ibadan</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </div>
-                    <DialogFooter>
-                        <Button
-                            variant="outline"
-                            onClick={() => setIsBulkDialogOpen(false)}
-                            className="mr-2 bg-transparent text-[#161CCA] border-[#161CCA]"
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            onClick={handleBulkAllocate}
-                            className="bg-[#161CCA] text-white hover:bg-[#161CCA]/90"
-                        >
-                            Allocate
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+            <BulkUploadDialog<MeterData>
+                isOpen={isBulkUploadDialogOpen}
+                onClose={() => setIsBulkUploadDialogOpen(false)}
+                onSave={handleBulkUpload}
+                title="Bulk Upload Meters"
+                requiredColumns={[
+                    "id",
+                    "meterNumber",
+                    "manufactureName",
+                    "class",
+                    "meterId",
+                    "meterType",
+                    "category",
+                    "dateAdded",
+                    "status",
+                ]}
+                templateUrl="/templates/meter-template.xlsx"
+            />
         </div>
     );
 }

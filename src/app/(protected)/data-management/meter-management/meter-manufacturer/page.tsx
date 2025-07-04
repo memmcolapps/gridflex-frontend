@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Card } from "@/components/ui/card";
-import {  CirclePlus, MoreVertical, Pencil, AlertTriangle } from "lucide-react";
+import { CirclePlus, MoreVertical, Pencil, AlertTriangle } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ContentHeader } from "@/components/ui/content-header";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { SearchControl, SortControl } from "@/components/search-control";
+import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 
 // Types
 interface Manufacturer {
@@ -51,6 +52,12 @@ function AddManufacturerDialog({
     const [contactPerson, setContactPerson] = useState("");
     const [phoneNumber, setPhoneNumber] = useState("");
     const [location, setLocation] = useState("Lagos");
+    const [currentPage, setCurrentPage] = useState<number>(1);
+    const [rowsPerPage, setRowsPerPage] = useState<number>(10);
+    const [processedData, setProcessedData] = useState<(Manufacturer)[]>([]);
+    const totalRows = Math.ceil(processedData.length / rowsPerPage);
+
+
 
     const handleAdd = () => {
         if (!manufacturerName || !manufacturerId || !contactPerson || !phoneNumber) {
@@ -77,6 +84,21 @@ function AddManufacturerDialog({
         setPhoneNumber("");
         setLocation("Lagos");
     };
+
+    const handleRowsPerPageChange = (value: string) => {
+        setRowsPerPage(Number(value));
+        setCurrentPage(1);
+    };
+
+
+    const handlePrevious = () => {
+        setCurrentPage((prev) => Math.max(prev - 1, 1));
+    };
+
+    const handleNext = () => {
+        setCurrentPage((prev) => Math.min(prev + 1, totalRows));
+    };
+
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
@@ -429,10 +451,10 @@ export default function ManufacturersPage() {
     }>({ key: null, direction: "asc" });
 
     const [processedData, setProcessedData] = useState<Manufacturer[]>(data);
-    
+
     useEffect(() => {
         applyFiltersAndSort(searchTerm, sortConfig.key, sortConfig.direction);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [data]);
 
     // Enhanced search handler
@@ -485,6 +507,11 @@ export default function ManufacturersPage() {
     const totalPages = Math.ceil(processedData.length / rowsPerPage);
     const paginatedData = processedData.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
 
+    // Define startIndex, endIndex, and totalRows for pagination display
+    const startIndex = (currentPage - 1) * rowsPerPage;
+    const endIndex = startIndex + paginatedData.length;
+    const totalRows = processedData.length;
+
     const onPageChange = (newPage: number) => {
         setCurrentPage(newPage);
     };
@@ -513,6 +540,18 @@ export default function ManufacturersPage() {
             );
             setIsDeactivateDialogOpen(false);
         }
+    };
+        const handleRowsPerPageChange = (value: string) => {
+        setRowsPerPage(Number(value));
+        setCurrentPage(1);
+    };
+
+        const handlePrevious = () => {
+        setCurrentPage((prev) => Math.max(prev - 1, 1));
+    };
+
+    const handleNext = () => {
+        setCurrentPage((prev) => Math.min(prev + 1, totalRows));
     };
 
     return (
@@ -616,17 +655,6 @@ export default function ManufacturersPage() {
                                                     <Pencil size={14} className="text-gray-500" />
                                                     <span className="text-sm text-gray-700">Edit Manufacturer</span>
                                                 </DropdownMenuItem>
-                                                {/* <DropdownMenuItem
-                                                    className="flex items-center gap-2"
-                                                    onClick={() => {
-                                                        setSelectedManufacturer(item);
-                                                        setIsDeactivateDialogOpen(true);
-                                                    }}
-                                                    disabled={item.status === "Deactivated"}
-                                                >
-                                                    <Ban size={16} className="text-gray-500" />
-                                                    <span className="text-sm text-gray-700">Deactivate</span>
-                                                </DropdownMenuItem> */}
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     </TableCell>
@@ -638,40 +666,55 @@ export default function ManufacturersPage() {
             </Card>
 
             {/* Pagination */}
-            <div className="flex flex-col sm:flex-row justify-between items-center py-3 px-4 sm:py-4 sm:px-6 text-xs sm:text-sm text-gray-600 gap-3 sm:gap-0">
-                <div className="flex items-center gap-2 justify-between sm:justify-start">
-                    <span className="whitespace-nowrap">Rows per page</span>
-                    <select
-                        value={rowsPerPage}
-                        onChange={(e) => onRowsPerPageChange(parseInt(e.target.value))}
-                        className="w-16 border-gray-300 text-sm rounded-md focus:ring-[#161CCA]/50 focus:border-[#161CCA]/30"
+            <Pagination className="mt-4 flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                    <span className="text-sm font-medium">Rows per page</span>
+                    <Select
+                        value={rowsPerPage.toString()}
+                        onValueChange={handleRowsPerPageChange}
                     >
-                        <option value="10">10</option>
-                        <option value="20">20</option>
-                        <option value="50">50</option>
-                    </select>
+                        <SelectTrigger className="h-8 w-[70px]">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent
+                            position="popper"
+                            side="top"
+                            align="center"
+                            className="mb-1 ring-gray-50"
+                        >
+                            <SelectItem value="10">10</SelectItem>
+                            <SelectItem value="24">24</SelectItem>
+                            <SelectItem value="48">48</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <span className="text-sm font-medium">
+                        {(currentPage - 1) * rowsPerPage + 1}-
+                        {Math.min(currentPage * rowsPerPage, processedData.length)} of {processedData.length}
+                    </span>
                 </div>
-                <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-start">
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onPageChange(Math.max(currentPage - 1, 1))}
-                        disabled={currentPage === 1}
-                        className="cursor-pointer px-2 sm:px-3"
-                    >
-                        Previous
-                    </Button>
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onPageChange(Math.min(currentPage + 1, totalPages))}
-                        disabled={currentPage === totalPages || data.length === 0}
-                        className="cursor-pointer px-2 sm:px-3"
-                    >
-                        Next
-                    </Button>
-                </div>
-            </div>
+                <PaginationContent>
+                    <PaginationItem>
+                        <PaginationPrevious
+                            href="#"
+                            onClick={e => {
+                                e.preventDefault();
+                                handlePrevious();
+                            }}
+                            aria-disabled={currentPage === 1}
+                        />
+                    </PaginationItem>
+                    <PaginationItem>
+                        <PaginationNext
+                            href="#"
+                            onClick={e => {
+                                e.preventDefault();
+                                handleNext();
+                            }}
+                            aria-disabled={currentPage === totalPages}
+                        />
+                    </PaginationItem>
+                </PaginationContent>
+            </Pagination>
 
             {/* Add Manufacturer Dialog */}
             <AddManufacturerDialog

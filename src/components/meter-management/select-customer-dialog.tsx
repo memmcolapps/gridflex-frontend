@@ -36,10 +36,10 @@ const SelectCustomerDialog: FC<SelectCustomerDialogProps> = ({
               value={customerIdInput}
               onChange={(e) => onCustomerIdChange(e.target.value)}
               placeholder="Enter Customer ID"
-              className="border border-gray-300"
+              className="border border-gray-100"
             />
             {filteredCustomerIds.length > 0 && (
-              <ul className="border border-gray-300 rounded-md mt-1 max-h-60 overflow-y-auto">
+              <ul className="border border-gray-100 rounded-md mt-1 max-h-60 overflow-y-auto">
                 {filteredCustomerIds.map((id) => (
                   <li
                     key={id}
