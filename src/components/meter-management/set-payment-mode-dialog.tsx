@@ -44,7 +44,7 @@ export function SetPaymentModeDialog({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="bg-white text-black h-fit">
         <DialogHeader>
-          <Progress value={progress} className="w-full" />
+          {/* <Progress value={progress} className="w-full" /> */}
           <DialogTitle className="mt-2 text-xl">Set Payment Mode</DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4">
@@ -150,7 +150,7 @@ export function SetPaymentModeDialog({
                 : "bg-blue-200 text-white cursor-not-allowed"
             }
           >
-            Proceed
+            Save
           </Button>
         </DialogFooter>
       </DialogContent>

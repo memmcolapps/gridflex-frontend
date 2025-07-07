@@ -41,7 +41,7 @@ export function ViewMeterDetailsDialog({ isOpen, onClose, meter }: ViewMeterDeta
               <span className="text-gray-900 font-bold">{meter.meterNumber}</span>
             </div>
             <div className="grid grid-cols-[150px_1fr] items-center gap-16">
-              <span className="font-medium text-gray-700">SIM Number:</span>
+              <span className="font-medium text-gray-700">SIM No:</span>
               <span className="text-gray-900 font-bold">{meter.simNumber}</span>
             </div>
             <div className="grid grid-cols-[150px_1fr] items-center gap-16">
@@ -57,8 +57,24 @@ export function ViewMeterDetailsDialog({ isOpen, onClose, meter }: ViewMeterDeta
               <span className="text-gray-900 font-bold">{meter.class}</span>
             </div>
             <div className="grid grid-cols-[150px_1fr] items-center gap-16">
-              <span className="font-medium text-gray-700">Category:</span>
+              <span className="font-medium text-gray-700">Meter Category:</span>
               <span className="text-gray-900 font-bold">{meter.category ?? "N/A"}</span>
+            </div>
+                  <div className="grid grid-cols-[150px_1fr] items-center gap-16">
+              <span className="font-medium text-gray-700">Old SGC:</span>
+              <span className="text-gray-900 font-bold">{meter.oldsgc}</span>
+            </div>
+            <div className="grid grid-cols-[150px_1fr] items-center gap-16">
+              <span className="font-medium text-gray-700">New SGC:</span>
+              <span className="text-gray-900 font-bold">{meter.newsgc}</span>
+            </div>
+                   <div className="grid grid-cols-[150px_1fr] items-center gap-16">
+              <span className="font-medium text-gray-700">Old KRN:</span>
+              <span className="text-gray-900 font-bold">{meter.oldkrn}</span>
+            </div>
+            <div className="grid grid-cols-[150px_1fr] items-center gap-16">
+              <span className="font-medium text-gray-700">New KRN:</span>
+              <span className="text-gray-900 font-bold">{meter.newkrn}</span>
             </div>
             <div className="grid grid-cols-[150px_1fr] items-center gap-16">
               <span className="font-medium text-gray-700">Old Tariff Index:</span>
@@ -67,22 +83,6 @@ export function ViewMeterDetailsDialog({ isOpen, onClose, meter }: ViewMeterDeta
             <div className="grid grid-cols-[150px_1fr] items-center gap-16">
               <span className="font-medium text-gray-700">New Tariff Index:</span>
               <span className="text-gray-900 font-bold">{meter.newTariffIndex}</span>
-            </div>
-            <div className="grid grid-cols-[150px_1fr] items-center gap-16">
-              <span className="font-medium text-gray-700">Old SGC:</span>
-              <span className="text-gray-900 font-bold">{meter.oldsgc}</span>
-            </div>
-            <div className="grid grid-cols-[150px_1fr] items-center gap-16">
-              <span className="font-medium text-gray-700">New SGC:</span>
-              <span className="text-gray-900 font-bold">{meter.newsgc}</span>
-            </div>
-            <div className="grid grid-cols-[150px_1fr] items-center gap-16">
-              <span className="font-medium text-gray-700">Tariff:</span>
-              <span className="text-gray-900 font-bold">{meter.tariff}</span>
-            </div>
-            <div className="grid grid-cols-[150px_1fr] items-center gap-16">
-              <span className="font-medium text-gray-700">Approval Status:</span>
-              <span className="text-gray-900 font-bold">{meter.approvalStatus}</span>
             </div>
           </div>
         )}

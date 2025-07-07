@@ -42,8 +42,6 @@ export default function MeterManagementPage() {
     const [isBulkUploadDialogOpen, setIsBulkUploadDialogOpen] = useState(false);
     const [editMeter, setEditMeter] = useState<MeterData | VirtualMeterData | undefined>(undefined);
     const [isDeactivateDialogOpen, setIsDeactivateDialogOpen] = useState(false);
-    const [isApproveDialogOpen, setIsApproveDialogOpen] = useState(false);
-    const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
     const [selectedMeter, setSelectedMeter] = useState<MeterData | VirtualMeterData | null>(null);
     const [, setActiveFilters] = useState({});
     const [activeTab, setActiveTab] = useState<"actual" | "virtual">("actual");
@@ -76,7 +74,7 @@ export default function MeterManagementPage() {
     const [phoneNumber, setPhoneNumber] = useState("");
     const [isViewDetailsOpen, setIsViewDetailsOpen] = useState(false);
     const [viewMeter, setViewMeter] = useState<MeterData | null>(null);
-    
+
 
 
     interface MeterData {
@@ -127,6 +125,7 @@ export default function MeterManagementPage() {
         { id: "PM-0159000000302-2", number: "0159000000303", address: "6, Glorious Orimerumnu, Obafemi Owode, Ogun State" },
         { id: "PM-0159000000302-3", number: "0159000000304", address: "7, Glorious Orimerumnu, Obafemi Owode, Ogun State" },
     ];
+
     const [data, setData] = useState<MeterData[]>([
         {
             id: "MT-1001",
@@ -139,7 +138,7 @@ export default function MeterManagementPage() {
             newsgc: "600094",
             oldkrn: "900009",
             newkrn: "900876",
-            meterManufacturer: "MOMAS",
+            meterManufacturer: "Momas",
             class: "MD",
             category: "Prepaid",
             accountNumber: "001/654321",
@@ -147,6 +146,7 @@ export default function MeterManagementPage() {
             approvalStatus: "Approved",
             status: "Assigned",
         },
+
         {
             id: "MT-1002",
             meterNumber: "64533729273",
@@ -185,8 +185,11 @@ export default function MeterManagementPage() {
             approvalStatus: "Approved",
             status: "InStock",
         },
+
         {
-            id: "MT-1004", meterNumber: "64533729273", meterType: "Electricity",
+            id: "MT-1004",
+            meterNumber: "64533729273",
+            meterType: "Electricity",
             oldTariffIndex: "1",
             newTariffIndex: "2",
             simNumber: "SIM-895623",
@@ -202,6 +205,7 @@ export default function MeterManagementPage() {
             approvalStatus: "Approved",
             status: "Unassigned",
         },
+
         {
             id: "MT-1005",
             meterNumber: "64533729273",
@@ -288,7 +292,7 @@ export default function MeterManagementPage() {
             oldsgc: "999962",
             newsgc: "600094",
             oldkrn: "909878",
-            newkrn: "",
+            newkrn: "998888",
             meterManufacturer: "MOMAS",
             class: "MD",
             category: "Prepaid",
@@ -297,7 +301,7 @@ export default function MeterManagementPage() {
             approvalStatus: "Pending",
             status: "Unassigned",
         },
-         {
+        {
             id: "MT-1018",
             meterNumber: "64533729273",
             meterType: "Electricity",
@@ -326,7 +330,7 @@ export default function MeterManagementPage() {
             oldsgc: "999962",
             newsgc: "600094",
             oldkrn: "909878",
-            newkrn: "",
+            newkrn: "998765",
             meterManufacturer: "MOMAS",
             class: "MD",
             category: "Prepaid",
@@ -336,7 +340,6 @@ export default function MeterManagementPage() {
             status: "Unassigned",
         },
     ]);
-
 
     const [virtualData, setVirtualData] = useState<VirtualMeterData[]>([
         {
@@ -352,10 +355,11 @@ export default function MeterManagementPage() {
             firstName: "John",
             lastName: "Doe",
             phone: "08012345678",
-            state: "",
-            city: "",
-            streetName: "",
-            houseNo: "",
+            state: "Lagos",
+            city: "Lagos",
+            custoType: "Residential",
+            streetName: "olaiya",
+            houseNo: "28",
         },
         {
             id: "VM-002",
@@ -370,10 +374,10 @@ export default function MeterManagementPage() {
             firstName: "Jane",
             lastName: "Smith",
             phone: "08087654321",
-            state: "",
-            city: "",
-            streetName: "",
-            houseNo: "",
+            state: "lagos",
+            city: "Lagos",
+            streetName: "olaiya",
+            houseNo: "28",
         },
         {
             id: "VM-003",
@@ -388,10 +392,10 @@ export default function MeterManagementPage() {
             firstName: "Alice",
             lastName: "Johnson",
             phone: "08055555555",
-            state: "",
-            city: "",
-            streetName: "",
-            houseNo: "",
+            state: "lagos",
+            city: "Lagos",
+            streetName: "olaiya",
+            houseNo: "28",
         },
         {
             id: "VM-004",
@@ -406,10 +410,10 @@ export default function MeterManagementPage() {
             firstName: "John",
             lastName: "Doe",
             phone: "08012345678",
-            state: "",
-            city: "",
-            streetName: "",
-            houseNo: "",
+            state: "Lagos",
+            city: "Lagos",
+            streetName: "olaiya",
+            houseNo: "28",
         },
         {
             id: "VM-005",
@@ -424,10 +428,10 @@ export default function MeterManagementPage() {
             firstName: "Jane",
             lastName: "Smith",
             phone: "08087654321",
-            state: "",
-            city: "",
-            streetName: "",
-            houseNo: "",
+            state: "lagos",
+            city: "Lagos",
+            streetName: "olaiya",
+            houseNo: "28",
         },
         {
             id: "VM-006",
@@ -442,10 +446,10 @@ export default function MeterManagementPage() {
             firstName: "Alice",
             lastName: "Johnson",
             phone: "08055555555",
-            state: "",
-            city: "",
-            streetName: "",
-            houseNo: "",
+            state: "lagos",
+            city: "Lagos",
+            streetName: "olaiya",
+            houseNo: "28",
         },
         {
             id: "VM-007",
@@ -460,10 +464,10 @@ export default function MeterManagementPage() {
             firstName: "John",
             lastName: "Doe",
             phone: "08012345678",
-            state: "",
-            city: "",
-            streetName: "",
-            houseNo: "",
+            state: "Lagos",
+            city: "Lagos",
+            streetName: "olaiya",
+            houseNo: "28",
         },
         {
             id: "VM-008",
@@ -478,13 +482,12 @@ export default function MeterManagementPage() {
             firstName: "Jane",
             lastName: "Smith",
             phone: "08087654321",
-            state: "",
-            city: "",
-            streetName: "",
-            houseNo: "",
+            state: "Lagos",
+            city: "Lagos",
+            streetName: "olaiya",
+            houseNo: "28",
         },
     ]);
-
 
     const nigerianStates = [
         "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa",
@@ -1217,6 +1220,19 @@ export default function MeterManagementPage() {
                                                                     </Button>
                                                                 </DropdownMenuTrigger>
                                                                 <DropdownMenuContent align="end" className="w-fit bg-white shadow-lg">
+                                                                    <DropdownMenuItem
+                                                                        className="flex items-center gap-2 cursor-pointer"
+                                                                        onClick={(event) => {
+                                                                            event.stopPropagation();
+                                                                            setSelectedMeter(item);
+                                                                            setEditMeter(item);
+                                                                            setIsEditVirtualMeterOpen(true);
+                                                                        }}
+                                                                    >
+                                                                        <Pencil size={14} />
+                                                                        <span className="text-sm text-gray-700">Edit Meter</span>
+                                                                    </DropdownMenuItem>
+
                                                                     <DropdownMenuItem
                                                                         className="flex items-center gap-2 cursor-pointer"
                                                                         onClick={(event) => {
