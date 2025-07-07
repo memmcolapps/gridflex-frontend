@@ -130,7 +130,7 @@ export function FilterControl({
             {isOpen && (
                 <div
                     ref={dropdownRef}
-                    className="absolute z-50 mt-2 w-[280px] bg-white rounded-md shadow-lg border border-gray-200 p-4"
+                    className="absolute z-50 mt-2 w-[250px] bg-white rounded-md shadow-lg border border-gray-200 p-4 mr-50"
                 >
                     <div className="flex gap-4">
                         {/* Left Column: Meter Class */}
