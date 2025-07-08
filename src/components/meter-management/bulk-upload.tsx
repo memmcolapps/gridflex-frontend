@@ -152,7 +152,7 @@ export function BulkUploadDialog<T>({
 
                     {error && <p className="text-sm text-red-600">{error}</p>}
                 </div>
-              
+
             </DialogContent>
         </Dialog>
     );
