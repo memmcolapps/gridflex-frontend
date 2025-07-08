@@ -15,14 +15,16 @@ interface FilterSection {
 }
 
 interface FilterControlProps {
-    sections: FilterSection[];
+    sections?: FilterSection[]; // Optional for multi-section filter
+    filterType?: "multi-section" | "status"; // New prop to switch filter types
     onApply?: (filters: Record<string, boolean>) => void;
     onReset?: () => void;
     initialFilters?: Record<string, boolean>;
 }
 
 export function FilterControl({
-    sections,
+    sections = [], // Default to empty array
+    filterType = "multi-section", // Default to multi-section filter
     onApply,
     onReset,
     initialFilters = {}
@@ -31,6 +33,15 @@ export function FilterControl({
     const [filters, setFilters] = useState<Record<string, boolean>>(initialFilters);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const buttonRef = useRef<HTMLButtonElement>(null);
+
+    // Status filter options for the new filter type
+    const statusFilter: FilterSection = {
+        title: "Status",
+        options: [
+            { label: "Assigned", id: "assigned" },
+            { label: "Deactivated", id: "deactivated" }
+        ]
+    };
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -51,20 +62,27 @@ export function FilterControl({
         };
     }, [isOpen]);
 
-    const toggleFilter = (filterId: string, sectionIndex: number) => {
+    const toggleFilter = (filterId: string, sectionIndex?: number) => {
         setFilters(prev => {
-            // Reset all filters in the section first
-            const resetFilters = sections[sectionIndex]?.options?.reduce((acc, option) => {
-                acc[option.id] = false;
-                return acc;
-            }, {} as Record<string, boolean>) ?? {};
+            if (filterType === "status") {
+                // For status filter, allow multiple selections
+                return {
+                    ...prev,
+                    [filterId]: !prev[filterId]
+                };
+            } else {
+                // For multi-section, reset filters in the section first
+                const resetFilters = sections[sectionIndex ?? 0]?.options?.reduce((acc, option) => {
+                    acc[option.id] = false;
+                    return acc;
+                }, {} as Record<string, boolean>) ?? {};
 
-            // Then set the selected filter
-            return {
-                ...prev,
-                ...resetFilters,
-                [filterId]: !prev[filterId]
-            };
+                return {
+                    ...prev,
+                    ...resetFilters,
+                    [filterId]: !prev[filterId]
+                };
+            }
         });
     };
 
@@ -74,20 +92,25 @@ export function FilterControl({
     };
 
     const handleReset = () => {
-        const resetFilters = sections.reduce((acc, section) => {
-            section.options.forEach(option => {
+        const resetFilters = filterType === "status"
+            ? statusFilter.options.reduce((acc, option) => {
                 acc[option.id] = false;
-            });
-            return acc;
-        }, {} as Record<string, boolean>);
+                return acc;
+            }, {} as Record<string, boolean>)
+            : sections.reduce((acc, section) => {
+                section.options.forEach(option => {
+                    acc[option.id] = false;
+                });
+                return acc;
+            }, {} as Record<string, boolean>);
 
         setFilters(resetFilters);
         onReset?.();
         setIsOpen(false);
     };
 
-    // Check if sections[0] and sections[1] exist
-    if (sections.length < 2) {
+    // Validation for multi-section filter
+    if (filterType === "multi-section" && sections.length < 2) {
         return (
             <div className="relative">
                 <div className="flex items-center gap-2">
@@ -130,13 +153,13 @@ export function FilterControl({
             {isOpen && (
                 <div
                     ref={dropdownRef}
-                    className="absolute z-50 mt-2 w-[250px] bg-white rounded-md shadow-lg border border-gray-200 p-4 mr-50"
+                    className="absolute z-50 mt-2 w-[250px] bg-white rounded-md shadow-lg border border-gray-200 p-4 ml-[-45px]"
                 >
-                    <div className="flex gap-4">
-                        {/* Left Column: Meter Class */}
-                        <div className="flex-1 border-r border-gray-200 pr-4">
-                            <div className="text-black-700 text-sm mb-2 font-bold">{sections[0]?.title}</div>
-                            {sections[0]?.options?.map((option) => (
+                    {filterType === "status" ? (
+                        // Status Filter UI
+                        <div>
+                            <div className="font-bold text-black-700 text-sm mb-2">{statusFilter.title}</div>
+                            {statusFilter.options.map((option) => (
                                 <div
                                     key={option.id}
                                     className="flex items-center justify-between py-2"
@@ -147,7 +170,7 @@ export function FilterControl({
                                     <Checkbox
                                         id={option.id}
                                         checked={filters[option.id] ?? false}
-                                        onCheckedChange={() => toggleFilter(option.id, 0)}
+                                        onCheckedChange={() => toggleFilter(option.id)}
                                         className={`h-4 w-4 border-2 rounded cursor-pointer ${filters[option.id]
                                             ? 'bg-[#161CCA] border-[#161CCA]'
                                             : 'bg-white border-gray-300'
@@ -156,30 +179,57 @@ export function FilterControl({
                                 </div>
                             ))}
                         </div>
-                        {/* Right Column: Meter Type (Category) */}
-                        <div className="flex-1">
-                            <div className="font-bold text-black-700 text-sm mb-2">{sections[1]?.title}</div>
-                            {sections[1]?.options?.map((option) => (
-                                <div
-                                    key={option.id}
-                                    className="flex items-center justify-between py-2"
-                                >
-                                    <label htmlFor={option.id} className="text-sm text-gray-700">
-                                        {option.label}
-                                    </label>
-                                    <Checkbox
-                                        id={option.id}
-                                        checked={filters[option.id] ?? false}
-                                        onCheckedChange={() => toggleFilter(option.id, 1)}
-                                        className={`h-4 w-4 border-2 rounded cursor-pointer ${filters[option.id]
-                                            ? 'bg-[#161CCA] border-[#161CCA]'
-                                            : 'bg-white border-gray-300'
-                                        }`}
-                                    />
-                                </div>
-                            ))}
+                    ) : (
+                        // Multi-Section Filter UI
+                        <div className="flex gap-4">
+                            {/* Left Column: Meter Class */}
+                            <div className="flex-1 border-r border-gray-200 pr-4">
+                                <div className="text-black-700 text-sm mb-2 font-bold">{sections[0]?.title}</div>
+                                {sections[0]?.options?.map((option) => (
+                                    <div
+                                        key={option.id}
+                                        className="flex items-center justify-between py-2"
+                                    >
+                                        <label htmlFor={option.id} className="text-sm text-gray-700">
+                                            {option.label}
+                                        </label>
+                                        <Checkbox
+                                            id={option.id}
+                                            checked={filters[option.id] ?? false}
+                                            onCheckedChange={() => toggleFilter(option.id, 0)}
+                                            className={`h-4 w-4 border-2 rounded cursor-pointer ${filters[option.id]
+                                                ? 'bg-[#161CCA] border-[#161CCA]'
+                                                : 'bg-white border-gray-300'
+                                            }`}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                            {/* Right Column: Meter Type (Category) */}
+                            <div className="flex-1">
+                                <div className="font-bold text-black-700 text-sm mb-2">{sections[1]?.title}</div>
+                                {sections[1]?.options?.map((option) => (
+                                    <div
+                                        key={option.id}
+                                        className="flex items-center justify-between py-2"
+                                    >
+                                        <label htmlFor={option.id} className="text-sm text-gray-700">
+                                            {option.label}
+                                        </label>
+                                        <Checkbox
+                                            id={option.id}
+                                            checked={filters[option.id] ?? false}
+                                            onCheckedChange={() => toggleFilter(option.id, 1)}
+                                            className={`h-4 w-4 border-2 rounded cursor-pointer ${filters[option.id]
+                                                ? 'bg-[#161CCA] border-[#161CCA]'
+                                                : 'bg-white border-gray-300'
+                                            }`}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
                         </div>
-                    </div>
+                    )}
 
                     <div className="flex justify-center gap-2 mt-4">
                         <Button

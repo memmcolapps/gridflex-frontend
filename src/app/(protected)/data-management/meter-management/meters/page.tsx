@@ -42,10 +42,8 @@ export default function MeterManagementPage() {
     const [isBulkUploadDialogOpen, setIsBulkUploadDialogOpen] = useState(false);
     const [editMeter, setEditMeter] = useState<MeterData | VirtualMeterData | undefined>(undefined);
     const [isDeactivateDialogOpen, setIsDeactivateDialogOpen] = useState(false);
-    const [isApproveDialogOpen, setIsApproveDialogOpen] = useState(false);
-    const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
     const [selectedMeter, setSelectedMeter] = useState<MeterData | VirtualMeterData | null>(null);
-    const [, setActiveFilters] = useState({});
+    const [activeFilters, setActiveFilters] = useState<Record<string, boolean>>({});
     const [activeTab, setActiveTab] = useState<"actual" | "virtual">("actual");
     const [sortConfig, setSortConfig] = useState<{
         key: keyof MeterData | keyof VirtualMeterData | null;
@@ -76,7 +74,7 @@ export default function MeterManagementPage() {
     const [phoneNumber, setPhoneNumber] = useState("");
     const [isViewDetailsOpen, setIsViewDetailsOpen] = useState(false);
     const [viewMeter, setViewMeter] = useState<MeterData | null>(null);
-    
+
 
 
     interface MeterData {
@@ -101,15 +99,14 @@ export default function MeterManagementPage() {
 
     // Remove local VirtualMeterData interface, use imported one
 
-    const filterSections = [
+    const actualFilterSections = [
         {
             title: "Status",
             options: [
                 { id: "inStock", label: "InStock" },
                 { id: "assigned", label: "Assigned" },
                 { id: "deactivated", label: "Deactivated" },
-            ]
-
+            ],
         },
         {
             title: "Meter Class",
@@ -121,12 +118,23 @@ export default function MeterManagementPage() {
         },
     ];
 
+    const virtualFilterSections = [
+        {
+            title: "Status",
+            options: [
+                { id: "assigned", label: "Assigned" },
+                { id: "deactivated", label: "Deactivated" },
+            ],
+        },
+    ];
+
 
     const meters = [
         { id: "PM-0159000000302-1", number: "0159000000302", address: "5, Glorious Orimerumnu, Obafemi Owode, Ogun State" },
         { id: "PM-0159000000302-2", number: "0159000000303", address: "6, Glorious Orimerumnu, Obafemi Owode, Ogun State" },
         { id: "PM-0159000000302-3", number: "0159000000304", address: "7, Glorious Orimerumnu, Obafemi Owode, Ogun State" },
     ];
+
     const [data, setData] = useState<MeterData[]>([
         {
             id: "MT-1001",
@@ -139,7 +147,7 @@ export default function MeterManagementPage() {
             newsgc: "600094",
             oldkrn: "900009",
             newkrn: "900876",
-            meterManufacturer: "MOMAS",
+            meterManufacturer: "Momas",
             class: "MD",
             category: "Prepaid",
             accountNumber: "001/654321",
@@ -147,6 +155,7 @@ export default function MeterManagementPage() {
             approvalStatus: "Approved",
             status: "Assigned",
         },
+
         {
             id: "MT-1002",
             meterNumber: "64533729273",
@@ -185,8 +194,11 @@ export default function MeterManagementPage() {
             approvalStatus: "Approved",
             status: "InStock",
         },
+
         {
-            id: "MT-1004", meterNumber: "64533729273", meterType: "Electricity",
+            id: "MT-1004",
+            meterNumber: "64533729273",
+            meterType: "Electricity",
             oldTariffIndex: "1",
             newTariffIndex: "2",
             simNumber: "SIM-895623",
@@ -202,6 +214,7 @@ export default function MeterManagementPage() {
             approvalStatus: "Approved",
             status: "Unassigned",
         },
+
         {
             id: "MT-1005",
             meterNumber: "64533729273",
@@ -288,7 +301,7 @@ export default function MeterManagementPage() {
             oldsgc: "999962",
             newsgc: "600094",
             oldkrn: "909878",
-            newkrn: "",
+            newkrn: "998888",
             meterManufacturer: "MOMAS",
             class: "MD",
             category: "Prepaid",
@@ -297,7 +310,7 @@ export default function MeterManagementPage() {
             approvalStatus: "Pending",
             status: "Unassigned",
         },
-         {
+        {
             id: "MT-1018",
             meterNumber: "64533729273",
             meterType: "Electricity",
@@ -326,7 +339,7 @@ export default function MeterManagementPage() {
             oldsgc: "999962",
             newsgc: "600094",
             oldkrn: "909878",
-            newkrn: "",
+            newkrn: "998765",
             meterManufacturer: "MOMAS",
             class: "MD",
             category: "Prepaid",
@@ -336,7 +349,6 @@ export default function MeterManagementPage() {
             status: "Unassigned",
         },
     ]);
-
 
     const [virtualData, setVirtualData] = useState<VirtualMeterData[]>([
         {
@@ -352,10 +364,11 @@ export default function MeterManagementPage() {
             firstName: "John",
             lastName: "Doe",
             phone: "08012345678",
-            state: "",
-            city: "",
-            streetName: "",
-            houseNo: "",
+            state: "Lagos",
+            city: "Lagos",
+            custoType: "Residential",
+            streetName: "olaiya",
+            houseNo: "28",
         },
         {
             id: "VM-002",
@@ -370,10 +383,10 @@ export default function MeterManagementPage() {
             firstName: "Jane",
             lastName: "Smith",
             phone: "08087654321",
-            state: "",
-            city: "",
-            streetName: "",
-            houseNo: "",
+            state: "lagos",
+            city: "Lagos",
+            streetName: "olaiya",
+            houseNo: "28",
         },
         {
             id: "VM-003",
@@ -388,10 +401,10 @@ export default function MeterManagementPage() {
             firstName: "Alice",
             lastName: "Johnson",
             phone: "08055555555",
-            state: "",
-            city: "",
-            streetName: "",
-            houseNo: "",
+            state: "lagos",
+            city: "Lagos",
+            streetName: "olaiya",
+            houseNo: "28",
         },
         {
             id: "VM-004",
@@ -406,10 +419,10 @@ export default function MeterManagementPage() {
             firstName: "John",
             lastName: "Doe",
             phone: "08012345678",
-            state: "",
-            city: "",
-            streetName: "",
-            houseNo: "",
+            state: "Lagos",
+            city: "Lagos",
+            streetName: "olaiya",
+            houseNo: "28",
         },
         {
             id: "VM-005",
@@ -424,10 +437,10 @@ export default function MeterManagementPage() {
             firstName: "Jane",
             lastName: "Smith",
             phone: "08087654321",
-            state: "",
-            city: "",
-            streetName: "",
-            houseNo: "",
+            state: "lagos",
+            city: "Lagos",
+            streetName: "olaiya",
+            houseNo: "28",
         },
         {
             id: "VM-006",
@@ -442,10 +455,10 @@ export default function MeterManagementPage() {
             firstName: "Alice",
             lastName: "Johnson",
             phone: "08055555555",
-            state: "",
-            city: "",
-            streetName: "",
-            houseNo: "",
+            state: "lagos",
+            city: "Lagos",
+            streetName: "olaiya",
+            houseNo: "28",
         },
         {
             id: "VM-007",
@@ -460,10 +473,10 @@ export default function MeterManagementPage() {
             firstName: "John",
             lastName: "Doe",
             phone: "08012345678",
-            state: "",
-            city: "",
-            streetName: "",
-            houseNo: "",
+            state: "Lagos",
+            city: "Lagos",
+            streetName: "olaiya",
+            houseNo: "28",
         },
         {
             id: "VM-008",
@@ -478,13 +491,12 @@ export default function MeterManagementPage() {
             firstName: "Jane",
             lastName: "Smith",
             phone: "08087654321",
-            state: "",
-            city: "",
-            streetName: "",
-            houseNo: "",
+            state: "Lagos",
+            city: "Lagos",
+            streetName: "olaiya",
+            houseNo: "28",
         },
     ]);
-
 
     const nigerianStates = [
         "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa",
@@ -528,66 +540,113 @@ export default function MeterManagementPage() {
         setSortConfig({ key: sortKey, direction: newDirection });
         applyFiltersAndSort(searchTerm, sortKey, newDirection);
     };
+
+    useEffect(() => {
+        applyFiltersAndSort(searchTerm, sortConfig.key, sortConfig.direction);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [data, virtualData, activeTab, activeFilters, searchTerm, sortConfig.key, sortConfig.direction]);
+
     const applyFiltersAndSort = (
         term: string,
         sortBy: keyof MeterData | keyof VirtualMeterData | null,
         direction: "asc" | "desc"
     ) => {
-        if (activeTab === "actual") {
-            let results = data;
-            if (term.trim() !== "") {
-                results = data.filter((item) =>
-                    [
-                        item.meterNumber,
-                        item.approvalStatus,
-                        item.status,
-                        item.class,
-                    ]
-                        .filter((value): value is string => value != null)
-                        .some((value) => value.toLowerCase().includes(term.toLowerCase()))
-                );
-            }
+        let results: (MeterData | VirtualMeterData)[] = activeTab === "actual" ? data : virtualData;
 
-            if (sortBy) {
-                results = [...results].sort((a, b) => {
-                    const aValue = a[sortBy as keyof MeterData] ?? "";
-                    const bValue = b[sortBy as keyof MeterData] ?? "";
-                    if (aValue < bValue) return direction === "asc" ? -1 : 1;
-                    if (aValue > bValue) return direction === "asc" ? 1 : -1;
-                    return 0;
-                });
-            }
+        // Apply filters
+        if (Object.keys(activeFilters).length > 0) {
+            results = results.filter((item) => {
+                if (activeTab === "actual") {
+                    const meter = item as MeterData;
 
-            setProcessedData(results);
-        } else {
-            let results = virtualData;
-            if (term.trim() !== "") {
-                results = virtualData.filter((item) =>
-                    [
-                        item.meterNumber,
-                        item.customerId,
-                        item.accountNumber,
-                        item.tariff,
-                        item.status,
-                    ]
-                        .filter((value): value is string => value != null)
-                        .some((value) => value.toLowerCase().includes(term.toLowerCase()))
-                );
-            }
+                    // Status filter: Check if no status filters are selected or any selected status matches
+                    const statusFilters = [
+                        { id: "inStock", value: activeFilters.inStock ?? false, status: "InStock" },
+                        { id: "assigned", value: activeFilters.assigned ?? false, status: "Assigned" },
+                        { id: "deactivated", value: activeFilters.deactivated ?? false, status: "Deactivated" },
+                    ];
+                    const statusMatch =
+                        statusFilters.every((f) => !f.value) ||
+                        statusFilters.some((filter) => filter.value && meter.status === filter.status);
 
-            if (sortBy) {
-                results = [...results].sort((a, b) => {
-                    const aValue = a[sortBy as keyof VirtualMeterData] ?? "";
-                    const bValue = b[sortBy as keyof VirtualMeterData] ?? "";
-                    if (aValue < bValue) return direction === "asc" ? -1 : 1;
-                    if (aValue > bValue) return direction === "asc" ? 1 : -1;
-                    return 0;
-                });
-            }
+                    // Class filter: Check if no class filters are selected or any selected class matches
+                    const classFilters = [
+                        { id: "singlePhase", value: activeFilters.singlePhase ?? false, class: "Single phase" },
+                        { id: "threePhase", value: activeFilters.threePhase ?? false, class: "Three Phase" },
+                        { id: "mdMeter", value: activeFilters.mdMeter ?? false, class: "MD" },
+                    ];
+                    const classMatch =
+                        classFilters.every((f) => !f.value) ||
+                        classFilters.some((filter) => filter.value && meter.class === filter.class);
 
-            setProcessedData(results);
+                    return statusMatch && classMatch;
+                } else {
+                    const meter = item as VirtualMeterData;
+
+                    // Virtual meter status filter
+                    const statusFilters = [
+                        { id: "assigned", value: activeFilters.assigned ?? false, status: "Assigned" },
+                        { id: "deactivated", value: activeFilters.deactivated ?? false, status: "Deactivated" },
+                    ];
+                    return (
+                        statusFilters.every((f) => !f.value) ||
+                        statusFilters.some((filter) => filter.value && meter.status === filter.status)
+                    );
+                }
+            });
         }
+
+        // Apply search
+        if (term.trim() !== "") {
+            results = results.filter((item) =>
+                activeTab === "actual"
+                    ? [
+                        item.meterNumber,
+                        (item as MeterData).approvalStatus,
+                        item.status,
+                        (item as MeterData).class,
+                    ]
+                        .filter((value): value is string => value != null)
+                        .some((value) => value.toLowerCase().includes(term.toLowerCase()))
+                    : [
+                        item.meterNumber,
+                        (item as VirtualMeterData).customerId,
+                        (item as VirtualMeterData).accountNumber,
+                        (item as VirtualMeterData).tariff,
+                        item.status,
+                    ]
+                        .filter((value): value is string => value != null)
+                        .some((value) => value.toLowerCase().includes(term.toLowerCase()))
+            );
+        }
+
+        // Apply sorting
+        if (sortBy) {
+            results = [...results].sort((a, b) => {
+                let aValue = ""; // Removed : string
+                let bValue = ""; // Removed : string
+
+                if (activeTab === "actual") {
+                    const meterA = a as MeterData;
+                    const meterB = b as MeterData;
+                    aValue = (meterA[sortBy as keyof MeterData] ?? "") as string;
+                    bValue = (meterB[sortBy as keyof MeterData] ?? "") as string;
+                } else {
+                    const meterA = a as VirtualMeterData;
+                    const meterB = b as VirtualMeterData;
+                    aValue = (meterA[sortBy as keyof VirtualMeterData] ?? "") as string;
+                    bValue = (meterB[sortBy as keyof VirtualMeterData] ?? "") as string;
+                }
+
+                if (aValue < bValue) return direction === "asc" ? -1 : 1;
+                if (aValue > bValue) return direction === "asc" ? 1 : -1;
+                return 0;
+            });
+        }
+
+        setProcessedData(results);
     };
+
     const toggleSelection = (id: string) => {
         setSelectedTariffs(
             selectedTariffs.includes(id)
@@ -877,6 +936,7 @@ export default function MeterManagementPage() {
         setActiveTab(tab);
         setSelectedTariffs([]);
         setCurrentPage(1);
+        setActiveFilters({}); // Reset filters when switching tabs
     };
 
     const handleRowClick = (item: MeterData, event: React.MouseEvent<HTMLTableRowElement>) => {
@@ -963,7 +1023,8 @@ export default function MeterManagementPage() {
                                 value={searchTerm}
                             />
                             <FilterControl
-                                sections={filterSections}
+                                sections={activeTab === "actual" ? actualFilterSections : virtualFilterSections}
+                                filterType={activeTab === "actual" ? "multi-section" : "status"}
                                 onApply={(filters) => setActiveFilters(filters)}
                                 onReset={() => setActiveFilters({})}
                             />
@@ -1217,6 +1278,19 @@ export default function MeterManagementPage() {
                                                                     </Button>
                                                                 </DropdownMenuTrigger>
                                                                 <DropdownMenuContent align="end" className="w-fit bg-white shadow-lg">
+                                                                    <DropdownMenuItem
+                                                                        className="flex items-center gap-2 cursor-pointer"
+                                                                        onClick={(event) => {
+                                                                            event.stopPropagation();
+                                                                            setSelectedMeter(item);
+                                                                            setEditMeter(item);
+                                                                            setIsEditVirtualMeterOpen(true);
+                                                                        }}
+                                                                    >
+                                                                        <Pencil size={14} />
+                                                                        <span className="text-sm text-gray-700">Edit Meter</span>
+                                                                    </DropdownMenuItem>
+
                                                                     <DropdownMenuItem
                                                                         className="flex items-center gap-2 cursor-pointer"
                                                                         onClick={(event) => {

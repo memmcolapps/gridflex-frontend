@@ -24,13 +24,6 @@ import {
 import { Card } from "@/components/ui/card";
 import { ContentHeader } from "@/components/ui/content-header";
 import { Label } from "@/components/ui/label";
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogFooter,
-} from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { FilterControl } from "@/components/search-control";
 import { BulkUploadDialog } from "@/components/meter-management/bulk-upload";
@@ -94,12 +87,10 @@ export default function AllocateMetersPage() {
     const [, setIsDialogOpen] = useState(false);
     const [selectedMeter, setSelectedMeter] = useState<MeterData | null>(null);
     const [organizationId, setOrganizationId] = useState<string>("");
-    const [meterData, setMeterData] = useState<MeterData[]>(initialMeters);
+    const [meterData,] = useState<MeterData[]>(initialMeters);
     const [isBulkUploadDialogOpen, setIsBulkUploadDialogOpen] = useState(false);
-    const [bulkOrganizationId, setBulkOrganizationId] = useState<string>("");
     const [meterNumberInput, setMeterNumberInput] = useState<string>("");
     const [searchTerm, setSearchTerm] = useState<string>("");
-    const totalRows = meterData.length;
 
     // Add state for active filters
     // const [activeFilters, setActiveFilters] = useState<Record<string, boolean>>({});
@@ -121,7 +112,7 @@ export default function AllocateMetersPage() {
     };
 
     const isAllSelected = meters.length > 0 && selectedMeters.length === meters.length;
-    const [processedData, setProcessedData] = useState<(MeterData)[]>([]);
+    const [processedData,] = useState<(MeterData)[]>([]);
     const startIndex = (currentPage - 1) * rowsPerPage;
     const endIndex = startIndex + rowsPerPage;
     const currentMeters = meters.slice(startIndex, endIndex);

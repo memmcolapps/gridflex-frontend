@@ -52,9 +52,9 @@ function AddManufacturerDialog({
     const [contactPerson, setContactPerson] = useState("");
     const [phoneNumber, setPhoneNumber] = useState("");
     const [location, setLocation] = useState("Lagos");
-    const [currentPage, setCurrentPage] = useState<number>(1);
+    const [, setCurrentPage] = useState<number>(1);
     const [rowsPerPage, setRowsPerPage] = useState<number>(10);
-    const [processedData, setProcessedData] = useState<(Manufacturer)[]>([]);
+    const [processedData,] = useState<(Manufacturer)[]>([]);
     const totalRows = Math.ceil(processedData.length / rowsPerPage);
 
 
@@ -83,20 +83,6 @@ function AddManufacturerDialog({
         setContactPerson("");
         setPhoneNumber("");
         setLocation("Lagos");
-    };
-
-    const handleRowsPerPageChange = (value: string) => {
-        setRowsPerPage(Number(value));
-        setCurrentPage(1);
-    };
-
-
-    const handlePrevious = () => {
-        setCurrentPage((prev) => Math.max(prev - 1, 1));
-    };
-
-    const handleNext = () => {
-        setCurrentPage((prev) => Math.min(prev + 1, totalRows));
     };
 
 
@@ -508,18 +494,9 @@ export default function ManufacturersPage() {
     const paginatedData = processedData.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
 
     // Define startIndex, endIndex, and totalRows for pagination display
-    const startIndex = (currentPage - 1) * rowsPerPage;
-    const endIndex = startIndex + paginatedData.length;
     const totalRows = processedData.length;
 
-    const onPageChange = (newPage: number) => {
-        setCurrentPage(newPage);
-    };
 
-    const onRowsPerPageChange = (value: number) => {
-        setRowsPerPage(value);
-        setCurrentPage(1); // Reset to first page when rows per page changes
-    };
 
     const handleAddManufacturer = (newManufacturer: Manufacturer) => {
         setData((prevData) => [...prevData, newManufacturer]);

@@ -90,7 +90,7 @@ export function AssignMeterDialog({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>
-                {selectedCustomer && isMeterData(selectedCustomer) ? "Meter ID" : "Customer ID"}
+               Customer ID
                 <span className="text-red-700">*</span>
               </Label>
               <Input
