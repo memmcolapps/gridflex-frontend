@@ -60,7 +60,7 @@ export function ReviewApprovalTabs() {
                         size="lg"
 
                     >
-                        <Check size={14} strokeWidth={2.3} className="h-4 w-4" />
+                        <Check size={18} strokeWidth={2.3} className="h-4 w-4" />
                         <span className="text-sm md:text-base text-white">Bulk Approve</span>
                     </Button>
                     <Button
@@ -85,12 +85,12 @@ export function ReviewApprovalTabs() {
                             >
                                 Percentage Range
                             </TabsTrigger>
-                            {/* <TabsTrigger
-                                value="virtual"
+                            <TabsTrigger
+                                value="liability cause"
                                 className="data-[state=active]:bg-[#161CCA] cursor-pointer data-[state=active]:text-white p-4"
                             >
-                                Virtual Meters
-                            </TabsTrigger> */}
+                                Liability Cause
+                            </TabsTrigger>
                         </TabsList>
 
                         <div className="flex items-center gap-2 w-full lg:w-auto">

@@ -1021,6 +1021,7 @@ export default function MeterManagementPage() {
                             <SearchControl
                                 onSearchChange={handleSearchChange}
                                 value={searchTerm}
+                                placeholder="Search by Meter Number, SIM Number, or Status"
                             />
                             <FilterControl
                                 sections={activeTab === "actual" ? actualFilterSections : virtualFilterSections}
