@@ -6,7 +6,6 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
-    DialogFooter,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { UploadIcon } from "lucide-react";
@@ -153,7 +152,7 @@ export function BulkUploadDialog<T>({
 
                     {error && <p className="text-sm text-red-600">{error}</p>}
                 </div>
-              
+
             </DialogContent>
         </Dialog>
     );
