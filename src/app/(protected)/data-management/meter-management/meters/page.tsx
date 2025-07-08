@@ -43,7 +43,7 @@ export default function MeterManagementPage() {
     const [editMeter, setEditMeter] = useState<MeterData | VirtualMeterData | undefined>(undefined);
     const [isDeactivateDialogOpen, setIsDeactivateDialogOpen] = useState(false);
     const [selectedMeter, setSelectedMeter] = useState<MeterData | VirtualMeterData | null>(null);
-    const [, setActiveFilters] = useState({});
+    const [activeFilters, setActiveFilters] = useState<Record<string, boolean>>({});
     const [activeTab, setActiveTab] = useState<"actual" | "virtual">("actual");
     const [sortConfig, setSortConfig] = useState<{
         key: keyof MeterData | keyof VirtualMeterData | null;
@@ -99,15 +99,14 @@ export default function MeterManagementPage() {
 
     // Remove local VirtualMeterData interface, use imported one
 
-    const filterSections = [
+    const actualFilterSections = [
         {
             title: "Status",
             options: [
                 { id: "inStock", label: "InStock" },
                 { id: "assigned", label: "Assigned" },
                 { id: "deactivated", label: "Deactivated" },
-            ]
-
+            ],
         },
         {
             title: "Meter Class",
@@ -115,6 +114,16 @@ export default function MeterManagementPage() {
                 { id: "singlePhase", label: "Single phase" },
                 { id: "threePhase", label: "Three Phase" },
                 { id: "mdMeter", label: "MD Meter" },
+            ],
+        },
+    ];
+
+    const virtualFilterSections = [
+        {
+            title: "Status",
+            options: [
+                { id: "assigned", label: "Assigned" },
+                { id: "deactivated", label: "Deactivated" },
             ],
         },
     ];
@@ -531,66 +540,93 @@ export default function MeterManagementPage() {
         setSortConfig({ key: sortKey, direction: newDirection });
         applyFiltersAndSort(searchTerm, sortKey, newDirection);
     };
+
+    useEffect(() => {
+        applyFiltersAndSort(searchTerm, sortConfig.key, sortConfig.direction);
+    }, [data, virtualData, activeTab, activeFilters]);
+
+
     const applyFiltersAndSort = (
         term: string,
         sortBy: keyof MeterData | keyof VirtualMeterData | null,
         direction: "asc" | "desc"
     ) => {
-        if (activeTab === "actual") {
-            let results = data;
-            if (term.trim() !== "") {
-                results = data.filter((item) =>
-                    [
-                        item.meterNumber,
-                        item.approvalStatus,
-                        item.status,
-                        item.class,
-                    ]
-                        .filter((value): value is string => value != null)
-                        .some((value) => value.toLowerCase().includes(term.toLowerCase()))
-                );
-            }
+        let results: (MeterData | VirtualMeterData)[] = activeTab === "actual" ? data : virtualData;
 
-            if (sortBy) {
-                results = [...results].sort((a, b) => {
-                    const aValue = a[sortBy as keyof MeterData] ?? "";
-                    const bValue = b[sortBy as keyof MeterData] ?? "";
-                    if (aValue < bValue) return direction === "asc" ? -1 : 1;
-                    if (aValue > bValue) return direction === "asc" ? 1 : -1;
-                    return 0;
-                });
-            }
-
-            setProcessedData(results);
-        } else {
-            let results = virtualData;
-            if (term.trim() !== "") {
-                results = virtualData.filter((item) =>
-                    [
-                        item.meterNumber,
-                        item.customerId,
-                        item.accountNumber,
-                        item.tariff,
-                        item.status,
-                    ]
-                        .filter((value): value is string => value != null)
-                        .some((value) => value.toLowerCase().includes(term.toLowerCase()))
-                );
-            }
-
-            if (sortBy) {
-                results = [...results].sort((a, b) => {
-                    const aValue = a[sortBy as keyof VirtualMeterData] ?? "";
-                    const bValue = b[sortBy as keyof VirtualMeterData] ?? "";
-                    if (aValue < bValue) return direction === "asc" ? -1 : 1;
-                    if (aValue > bValue) return direction === "asc" ? 1 : -1;
-                    return 0;
-                });
-            }
-
-            setProcessedData(results);
+        // Apply filters
+        if (Object.keys(activeFilters).length > 0) {
+            results = results.filter((item) => {
+                if (activeTab === "actual") {
+                    const meter = item as MeterData;
+                    const statusMatch = !activeFilters.inStock && !activeFilters.assigned && !activeFilters.deactivated
+                        || (activeFilters.inStock && meter.status === "InStock")
+                        || (activeFilters.assigned && meter.status === "Assigned")
+                        || (activeFilters.deactivated && meter.status === "Deactivated");
+                    const classMatch = !activeFilters.singlePhase && !activeFilters.threePhase && !activeFilters.mdMeter
+                        || (activeFilters.singlePhase && meter.class === "Single phase")
+                        || (activeFilters.threePhase && meter.class === "Three Phase")
+                        || (activeFilters.mdMeter && meter.class === "MD");
+                    return statusMatch && classMatch;
+                } else {
+                    const meter = item as VirtualMeterData;
+                    return !activeFilters.assigned && !activeFilters.deactivated
+                        || (activeFilters.assigned && meter.status === "Assigned")
+                        || (activeFilters.deactivated && meter.status === "Deactivated");
+                }
+            });
         }
+
+        // Apply search
+        if (term.trim() !== "") {
+            results = results.filter((item) =>
+                activeTab === "actual"
+                    ? [
+                        item.meterNumber,
+                        (item as MeterData).approvalStatus,
+                        item.status,
+                        (item as MeterData).class,
+                    ]
+                        .filter((value): value is string => value != null)
+                        .some((value) => value.toLowerCase().includes(term.toLowerCase()))
+                    : [
+                        item.meterNumber,
+                        (item as VirtualMeterData).customerId,
+                        (item as VirtualMeterData).accountNumber,
+                        (item as VirtualMeterData).tariff,
+                        item.status,
+                    ]
+                        .filter((value): value is string => value != null)
+                        .some((value) => value.toLowerCase().includes(term.toLowerCase()))
+            );
+        }
+
+        // Apply sorting
+        if (sortBy) {
+            results = [...results].sort((a, b) => {
+                let aValue: string = "";
+                let bValue: string = "";
+
+                if (activeTab === "actual") {
+                    const meterA = a as MeterData;
+                    const meterB = b as MeterData;
+                    aValue = (meterA[sortBy as keyof MeterData] ?? "") as string;
+                    bValue = (meterB[sortBy as keyof MeterData] ?? "") as string;
+                } else {
+                    const meterA = a as VirtualMeterData;
+                    const meterB = b as VirtualMeterData;
+                    aValue = (meterA[sortBy as keyof VirtualMeterData] ?? "") as string;
+                    bValue = (meterB[sortBy as keyof VirtualMeterData] ?? "") as string;
+                }
+
+                if (aValue < bValue) return direction === "asc" ? -1 : 1;
+                if (aValue > bValue) return direction === "asc" ? 1 : -1;
+                return 0;
+            });
+        }
+
+        setProcessedData(results);
     };
+
     const toggleSelection = (id: string) => {
         setSelectedTariffs(
             selectedTariffs.includes(id)
@@ -880,6 +916,7 @@ export default function MeterManagementPage() {
         setActiveTab(tab);
         setSelectedTariffs([]);
         setCurrentPage(1);
+        setActiveFilters({}); // Reset filters when switching tabs
     };
 
     const handleRowClick = (item: MeterData, event: React.MouseEvent<HTMLTableRowElement>) => {
@@ -966,7 +1003,8 @@ export default function MeterManagementPage() {
                                 value={searchTerm}
                             />
                             <FilterControl
-                                sections={filterSections}
+                                sections={activeTab === "actual" ? actualFilterSections : virtualFilterSections}
+                                filterType={activeTab === "actual" ? "multi-section" : "status"}
                                 onApply={(filters) => setActiveFilters(filters)}
                                 onReset={() => setActiveFilters({})}
                             />
