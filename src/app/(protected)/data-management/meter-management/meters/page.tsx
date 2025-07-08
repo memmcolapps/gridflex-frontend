@@ -543,8 +543,8 @@ export default function MeterManagementPage() {
 
     useEffect(() => {
         applyFiltersAndSort(searchTerm, sortConfig.key, sortConfig.direction);
-    }, [data, virtualData, activeTab, activeFilters]);
-
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [data, virtualData, activeTab, activeFilters, searchTerm, sortConfig.key, sortConfig.direction]);
 
     const applyFiltersAndSort = (
         term: string,
@@ -558,20 +558,40 @@ export default function MeterManagementPage() {
             results = results.filter((item) => {
                 if (activeTab === "actual") {
                     const meter = item as MeterData;
-                    const statusMatch = !activeFilters.inStock && !activeFilters.assigned && !activeFilters.deactivated
-                        || (activeFilters.inStock && meter.status === "InStock")
-                        || (activeFilters.assigned && meter.status === "Assigned")
-                        || (activeFilters.deactivated && meter.status === "Deactivated");
-                    const classMatch = !activeFilters.singlePhase && !activeFilters.threePhase && !activeFilters.mdMeter
-                        || (activeFilters.singlePhase && meter.class === "Single phase")
-                        || (activeFilters.threePhase && meter.class === "Three Phase")
-                        || (activeFilters.mdMeter && meter.class === "MD");
+
+                    // Status filter: Check if no status filters are selected or any selected status matches
+                    const statusFilters = [
+                        { id: "inStock", value: activeFilters.inStock ?? false, status: "InStock" },
+                        { id: "assigned", value: activeFilters.assigned ?? false, status: "Assigned" },
+                        { id: "deactivated", value: activeFilters.deactivated ?? false, status: "Deactivated" },
+                    ];
+                    const statusMatch =
+                        statusFilters.every((f) => !f.value) ||
+                        statusFilters.some((filter) => filter.value && meter.status === filter.status);
+
+                    // Class filter: Check if no class filters are selected or any selected class matches
+                    const classFilters = [
+                        { id: "singlePhase", value: activeFilters.singlePhase ?? false, class: "Single phase" },
+                        { id: "threePhase", value: activeFilters.threePhase ?? false, class: "Three Phase" },
+                        { id: "mdMeter", value: activeFilters.mdMeter ?? false, class: "MD" },
+                    ];
+                    const classMatch =
+                        classFilters.every((f) => !f.value) ||
+                        classFilters.some((filter) => filter.value && meter.class === filter.class);
+
                     return statusMatch && classMatch;
                 } else {
                     const meter = item as VirtualMeterData;
-                    return !activeFilters.assigned && !activeFilters.deactivated
-                        || (activeFilters.assigned && meter.status === "Assigned")
-                        || (activeFilters.deactivated && meter.status === "Deactivated");
+
+                    // Virtual meter status filter
+                    const statusFilters = [
+                        { id: "assigned", value: activeFilters.assigned ?? false, status: "Assigned" },
+                        { id: "deactivated", value: activeFilters.deactivated ?? false, status: "Deactivated" },
+                    ];
+                    return (
+                        statusFilters.every((f) => !f.value) ||
+                        statusFilters.some((filter) => filter.value && meter.status === filter.status)
+                    );
                 }
             });
         }
@@ -603,8 +623,8 @@ export default function MeterManagementPage() {
         // Apply sorting
         if (sortBy) {
             results = [...results].sort((a, b) => {
-                let aValue: string = "";
-                let bValue: string = "";
+                let aValue = ""; // Removed : string
+                let bValue = ""; // Removed : string
 
                 if (activeTab === "actual") {
                     const meterA = a as MeterData;
