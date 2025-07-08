@@ -72,7 +72,7 @@ export function EditCustomerDetailsDialog({
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="bg-white text-black h-fit">
-        {editCustomer?.category === "Prepaid" && <Progress value={progress} className="w-full" />}
+        {editCustomer?.category === "Prepaid" && <Progress value={progress} className="w-full mt-4" />}
         <DialogHeader>
           <DialogTitle>Edit Customer Details</DialogTitle>
           <p className="text-sm">Fill all compulsory fields</p>

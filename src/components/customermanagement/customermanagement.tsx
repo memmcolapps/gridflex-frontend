@@ -14,6 +14,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "../ui/alert-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose, DialogFooter } from "@/components/ui/dialog";
+import { ContentHeader } from "../ui/content-header";
+import { getStatusStyle } from "../status-style";
+import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "../ui/pagination";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { BulkUploadDialog } from "../meter-management/bulk-upload";
 
 export type Customer = {
     id: string;
@@ -114,6 +119,7 @@ export default function CustomerManagement() {
     const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
     const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
     const [isMeterDialogOpen, setIsMeterDialogOpen] = useState(false);
+    const [isBulkUploadDialogOpen, setIsBulkUploadDialogOpen] = useState(false);
     const [selectedMeterCustomer, setSelectedMeterCustomer] = useState<Customer | null>(null);
 
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -170,12 +176,28 @@ export default function CustomerManagement() {
             customer.accountNumber.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    const [rowsPerPage, setRowsPerPage] = useState(12);
-    const [currentPage, setCurrentPage] = useState(1);
-    const totalRows = filteredCustomers.length;
-    const startIndex = (currentPage - 1) * rowsPerPage;
-    const endIndex = startIndex + rowsPerPage;
-    const paginatedCustomers = filteredCustomers.slice(startIndex, endIndex);
+    const [rowsPerPage, setRowsPerPage] = useState<number>(10);
+    const [currentPage, setCurrentPage] = useState<number>(1);
+
+    const totalPages = Math.ceil(filteredCustomers.length / rowsPerPage);
+
+    const paginatedCustomers = filteredCustomers.slice(
+        (currentPage - 1) * rowsPerPage,
+        currentPage * rowsPerPage
+    );
+
+    const handlePrevious = () => {
+        setCurrentPage((prev) => Math.max(prev - 1, 1));
+    };
+
+    const handleNext = () => {
+        setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+    };
+
+    const handleRowsPerPageChange = (value: string) => {
+        setRowsPerPage(Number(value));
+        setCurrentPage(1);
+    };
 
     const handleBlockCustomer = (customer: Customer) => {
         setCustomerToBlock(customer);
@@ -203,6 +225,12 @@ export default function CustomerManagement() {
         }
     };
 
+    const handleBulkUpload = (_data: unknown) => {
+        // Implement your bulk upload logic here
+        // For now, just close the dialog
+        setIsBulkUploadDialogOpen(false);
+    };
+
     const blockReasons = [
         "Abusive behavior",
         "Spam messages",
@@ -213,14 +241,17 @@ export default function CustomerManagement() {
 
     return (
         <div className="h-full overflow-hidden flex flex-col text-black">
-            <div className="p-6 flex-grow">
-                <h1 className="text-2xl mb-6 font-bold">Customers</h1>
-                <div className="flex justify-between items-center mb-6">
-                    <p className="text-sm text-muted-foreground">
-                        Manage and access customer records.
-                    </p>
+            <div className="flex-grow">
+                <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+                    <ContentHeader
+                        title="Customer Management"
+                        description="Manage And Access Customer Records"
+                    />
                     <div className="flex gap-4">
-                        <Button variant="outline" className="border-[#161CCA] text-[#161CCA] cursor-pointer">
+                        <Button
+                            onClick={() => setIsBulkUploadDialogOpen(true)}
+                            variant="outline"
+                            className="border-[#161CCA] text-[#161CCA] cursor-pointer">
                             <div className="flex items-center justify-center p-0.5">
                                 <PlusCircleIcon className="text-[#161CCA]" size={12} />
                             </div>
@@ -284,7 +315,7 @@ export default function CustomerManagement() {
                         </Label>
                     </Button>
                 </div>
-                <div className="h-4/6 overflow-auto">
+                <div className="h-4/6">
                     <Table>
                         <TableHeader>
                             <TableRow>
@@ -350,7 +381,7 @@ export default function CustomerManagement() {
                                                 }}
                                                 className="border-[rgba(228,231,236,1)]"
                                             />
-                                            <span>{startIndex + index + 1}</span>
+                                            <span>{(currentPage - 1) * rowsPerPage + index + 1}</span>
                                         </div>
                                     </TableCell>
                                     <TableCell className="text-center">{customer.customerId}</TableCell>
@@ -363,13 +394,7 @@ export default function CustomerManagement() {
                                     <TableCell className="text-center">{customer.operator}</TableCell>
                                     <TableCell className="text-center">
                                         <span
-                                            className={
-                                                customer.status === "Active"
-                                                    ? "text-[#059E40] bg-[#E9FBF0] rounded-full px-1.5 py-1.5"
-                                                    : customer.status === "Inactive"
-                                                        ? "text-[#D97706] bg-[#FEF3C7] rounded-full px-1.5 py-1.5"
-                                                        : "text-[#F50202] bg-[#FBE9E9] rounded-full px-1.5 py-1.5"
-                                            }
+                                            className={getStatusStyle(customer.status)}
                                         >
                                             {customer.status}
                                         </span>
@@ -415,45 +440,55 @@ export default function CustomerManagement() {
                     </Table>
                 </div>
 
-                <div className="sticky bottom-0 bg-white border-t border-gray-200 flex items-center justify-between px-4 py-3 mt-4 z-10">
-                    <div className="flex items-center gap-2">
-                        <span className="text-sm text-gray-600">Rows per page</span>
-                        <select
-                            value={rowsPerPage}
-                            onChange={(e) => {
-                                setRowsPerPage(Number(e.target.value));
-                                setCurrentPage(1);
-                            }}
-                            className="text-sm border border-gray-300 rounded-md px-2 py-1 focus:outline-none"
+                <Pagination className="mt-4 flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                        <span className="text-sm font-medium">Rows per page</span>
+                        <Select
+                            value={rowsPerPage.toString()}
+                            onValueChange={handleRowsPerPageChange}
                         >
-                            {[5, 10, 12, 20, 50].map((num) => (
-                                <option key={num} value={num}>
-                                    {num}
-                                </option>
-                            ))}
-                        </select>
+                            <SelectTrigger className="h-8 w-[70px]">
+                                <SelectValue placeholder={rowsPerPage.toString()} />
+                            </SelectTrigger>
+                            <SelectContent
+                                position="popper"
+                                side="top"
+                                align="center"
+                                className="mb-1 ring-gray-50"
+                            >
+                                <SelectItem value="10">10</SelectItem>
+                                <SelectItem value="24">24</SelectItem>
+                                <SelectItem value="48">48</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <span className="text-sm font-medium">
+                            {(currentPage - 1) * rowsPerPage + 1}-
+                            {Math.min(currentPage * rowsPerPage, filteredCustomers.length)} of {filteredCustomers.length}
+                        </span>
                     </div>
-                    <span className="text-sm text-gray-600 ml-4">
-                        {startIndex + 1}-{Math.min(endIndex, totalRows)} of {totalRows} rows
-                    </span>
-
-                    <div className="flex items-center gap-2">
-                        <button
-                            disabled={currentPage === 1}
-                            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                            className="px-3 py-1 border border-gray-300 rounded-md text-sm text-black-600 disabled:opacity-50 cursor-pointer"
-                        >
-                            Previous
-                        </button>
-                        <button
-                            disabled={endIndex >= totalRows}
-                            onClick={() => setCurrentPage((prev) => prev + 1)}
-                            className="px-3 py-1 border border-gray-300 rounded-md text-sm text-black-600 disabled:opacity-50 cursor-pointer"
-                        >
-                            Next
-                        </button>
-                    </div>
-                </div>
+                    <PaginationContent>
+                        <PaginationItem>
+                            <PaginationPrevious
+                                href="#"
+                                onClick={e => {
+                                    e.preventDefault();
+                                    handlePrevious();
+                                }}
+                                aria-disabled={currentPage === 1}
+                            />
+                        </PaginationItem>
+                        <PaginationItem>
+                            <PaginationNext
+                                href="#"
+                                onClick={e => {
+                                    e.preventDefault();
+                                    handleNext();
+                                }}
+                                aria-disabled={currentPage === totalPages}
+                            />
+                        </PaginationItem>
+                    </PaginationContent>
+                </Pagination>
 
                 {editingCustomer && (
                     <CustomerForm
@@ -759,6 +794,24 @@ export default function CustomerManagement() {
                     </Dialog>
                 )}
             </div>
+
+            <BulkUploadDialog
+                isOpen={isBulkUploadDialogOpen}
+                onClose={() => setIsBulkUploadDialogOpen(false)}
+                onSave={handleBulkUpload}
+                title="Bulk Upload readings"
+                requiredColumns={[
+                    "Customer ID",
+                    "First Name",
+                    "Last Name",
+                    "Phone Number",
+                    "Address",
+                    "City",
+                    "State",
+                    "Operator",
+                ]}
+                templateUrl="/templates/readingSheet-template.xlsx"
+            />
         </div>
     );
 }

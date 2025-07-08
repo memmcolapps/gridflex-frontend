@@ -1,6 +1,6 @@
 "use client";
 
-import { changeTariffApprovalStatus, type Tariff } from "@/service/tarriff-service";
+import { type Tariff } from "@/service/tarriff-service";
 import { toast } from "sonner";
 import {
   Table,
@@ -40,6 +40,7 @@ import { useAuth } from "@/context/auth-context";
 import { checkUserPermission } from "@/utils/permissions";
 import { changeTariffStatus } from "@/service/tarriff-service";
 import { TariffDatePicker } from "../tarrif-datepicker";
+import { getStatusStyle } from "../status-style";
 
 interface TariffTableProps {
   tariffs: Tariff[];
@@ -127,48 +128,7 @@ export function TariffTable({
     }
   };
 
-  const handleStatusChange = async (tariffId: string, newStatus: boolean) => {
-    if (!canApprove) {
-      toast.error("You don't have permission to change tariff status");
-      return;
-    }
 
-    setConfirmDialog({
-      isOpen: true,
-      title: `${newStatus ? "Activate" : "Deactivate"} Tariff`,
-      description: `Are you sure you want to ${newStatus ? "activate" : "deactivate"} this tariff?`,
-      action: async () => {
-        const success = await changeTariffStatus(tariffId, newStatus);
-        if (success) {
-          await updateTariff(tariffId, { status: newStatus });
-        }
-        setConfirmDialog((prev) => ({ ...prev, isOpen: false }));
-      },
-    });
-  };
-
-  const handleApprovalChange = async (
-    tariffId: string,
-    newStatus: "Approved" | "Rejected",
-  ) => {
-    if (!canApprove) {
-      toast.error("You don't have permission to change approval status");
-      return;
-    }
-
-    setConfirmDialog({
-      isOpen: true,
-      title: `${newStatus} Tariff`,
-      description: `Are you sure you want to ${newStatus.toLowerCase()} this tariff?`,
-      action: async () => {
-        const success = await changeTariffApprovalStatus(tariffId, newStatus);
-        if (success) {
-          await onRefresh(); // Refresh after successful approval change
-        }
-        setConfirmDialog((prev) => ({ ...prev, isOpen: false }));
-      },
-    });
-  };
 
   const handleStatusToggle = async (
     tariffId: string,
@@ -263,7 +223,7 @@ export function TariffTable({
           <TableRow>
             <TableHead className="w-[50px] flex items-center gap-2 px-4 py-3">
               <Checkbox
-                checked={ 
+                checked={
                   tariffs.length > 0 &&
                   selectedTariffs.length === tariffs.length
                 }
@@ -311,29 +271,14 @@ export function TariffTable({
                 <TableCell>{tariff.tariff_rate}</TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
-                    <span
-                      className={`py-0.6 rounded-xl px-2.5 capitalize ${tariff.status
-                        ? "bg-[#E9F6EE] text-[#4CAF50]"
-                        : "bg-[#FBE9E9] text-[#F75555]"
-                        }`}
-                    >
+                    <span className={getStatusStyle(tariff.status ? "Active" : "Inactive")}>
                       {tariff.status ? "Active" : "Inactive"}
                     </span>
                   </div>
                 </TableCell>
                 <TableCell>{tariff.effective_date}</TableCell>
                 <TableCell>
-                  <span
-                    className={`py-0.6 rounded-xl px-2.5 capitalize ${
-                      tariff.approve_status === "Approved"
-                        ? "bg-[#E9F6FF] text-[#225BFF]"
-                        : tariff.approve_status === "Rejected"
-                          ? "bg-[#FBE9E9] text-[#F75555]"
-                          : "bg-[#FFF5EA] text-[#FACC15]"
-                    }`}
-                  >
-                    {tariff.approve_status}
-                  </span>
+                  <span className={getStatusStyle(tariff.approve_status)}>{tariff.approve_status}</span>
                 </TableCell>
                 <TableCell>
                   <DropdownMenu>

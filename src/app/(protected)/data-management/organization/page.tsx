@@ -17,7 +17,7 @@ export default function OrganizationPage() {
       <NotificationBar
         title2="How to use"
         description={
-          <div className="mt-2 ml-2 flex items-center gap-2">
+          <div className="mt-2 flex items-center gap-2">
             <Edit size={14} />
             <span>Edit/View an existing organization</span>
           </div>
@@ -28,7 +28,7 @@ export default function OrganizationPage() {
         showIcon={true}
         isTopBanner={false}
       />
-      <Card className="mx-auto max-w-screen-2xl space-y-6 rounded-lg border-none bg-white px-4 shadow-sm sm:px-6 lg:px-8">
+      <Card className="p-6 max-w-screen-2xl space-y-6 rounded-lg border-none bg-white px-4 shadow-sm sm:px-6 lg:px-8">
         <div className="flex items-start justify-between pt-6">
           <ContentHeader
             title="Organization Hierarchy"

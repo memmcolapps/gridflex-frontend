@@ -87,7 +87,7 @@ export function SidebarNav() {
             { title: "Meters", href: "/data-management/meter-management/meters" },
             { title: "Meter Manufacturers", href: "/data-management/meter-management/meter-manufacturer" },
             { title: "Allocate Meter", href: "/data-management/meter-management/allocate-meter" },
-             { title: "Assign Meter", href: "/data-management/meter-management/assign-meter" }
+            { title: "Assign Meter", href: "/data-management/meter-management/assign-meter" }
           ]
         },
         { title: "Customer Management", href: "/data-management/customer-management" },
@@ -99,9 +99,8 @@ export function SidebarNav() {
           hasSubmenu: true,
           submenuItems: [
             { title: "Debt Setting", href: "/data-management/debt-management/debt-settings" },
-            { title: "Mode of Payment", href: "/data-management/debt-management/mode-of-payment" },
-            { title: "Debit Adjustment", href: "/data-management/debt-management/debit-adjustment"},
-            { title: "Credit Adjustment", href: "/data-management/debt-management/credit-adjustment"}
+            { title: "Debit Adjustment", href: "/data-management/debt-management/debit-adjustment" },
+            { title: "Credit Adjustment", href: "/data-management/debt-management/credit-adjustment" }
           ]
         },
         { title: "Review & Approval", href: "/data-management/reviewandapproval" },
@@ -112,7 +111,10 @@ export function SidebarNav() {
       href: "/billing",
       icon: CreditCard,
       hasSubmenu: true,
-      submenuItems: [],
+      submenuItems: [
+        { title: "Meter Reading Sheet", href: "/billing/reading-sheet" },
+        { title: "Metered Consumption", href: "/billing/metered-consumption" }
+      ],
     },
     {
       title: "Vending",
@@ -192,7 +194,7 @@ export function SidebarNav() {
                 </SidebarMenuItem>
               );
             }
-            
+
 
             return (
               <Collapsible

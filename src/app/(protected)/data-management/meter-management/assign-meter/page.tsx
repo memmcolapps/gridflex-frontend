@@ -39,6 +39,10 @@ import { MigrateMeterDialog } from "@/components/meter-management/migrate-meter-
 import { DetachMeterDialog } from "@/components/meter-management/detach-meter-dialog";
 import { DetachConfirmationDialog } from "@/components/meter-management/detach-confirmation-dialog";
 import { BulkUploadDialog } from "@/components/meter-management/bulk-upload";
+import { cn } from "@/lib/utils";
+import { getStatusStyle } from "@/components/status-style";
+import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // Define filter sections
 const filterSections = [
@@ -285,10 +289,13 @@ export default function AssignMeterPage() {
 
 
     // Calculate pagination values
-    const totalRows = meterData.length;
+
+     const [processedData,] = useState<MeterData[]>(initialMeterData);
+     const totalRows = Math.ceil(processedData.length / rowsPerPage);
     const startIndex = (currentPage - 1) * rowsPerPage;
     const endIndex = startIndex + rowsPerPage;
     const currentPageData = meterData.slice(startIndex, endIndex);
+    
 
     // Reset payment fields when Set Payment Mode modal closes
     useEffect(() => {
@@ -341,9 +348,9 @@ export default function AssignMeterPage() {
             setIsCustomerIdModalOpen(false);
             setIsAssignModalOpen(true);
             setProgress(50);
-            setMeterNumber(customer.meterNumber ?? "");
-            setCin(customer.cin ?? "");
-            setAccountNumber(customer.accountNumber ?? "");
+            setMeterNumber("");
+            setCin("");
+            setAccountNumber("");
             setTariff("");
             setFeeder("");
             setDss("");
@@ -640,6 +647,18 @@ export default function AssignMeterPage() {
     const handleBulkUploadSave = (data: MeterData[]) => {
         setMeterData((prev) => [...prev, ...data]);
     };
+
+    const handleRowsPerPageChange = (value: string) => {
+        setRowsPerPage(Number(value));
+        setCurrentPage(1);
+    };
+    const handlePrevious = () => {
+        setCurrentPage((prev) => Math.max(prev - 1, 1));
+    };
+
+    const handleNext = () => {
+        setCurrentPage((prev) => Math.min(prev + 1, totalRows));
+    };
     return (
         <div className="p-6 max-h-screen overflow-auto">
             <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
@@ -782,14 +801,9 @@ export default function AssignMeterPage() {
                             <TableCell>{meter.debitPaymentPlan}</TableCell>
                             <TableCell>{meter.creditMop}</TableCell>
                             <TableCell>{meter.creditPaymentPlan}</TableCell>
-                            <TableCell>
-                                <span
-                                    className={`${meter.approvedStatus === "Pending"
-                                        ? "text-[#C86900] bg-[#FFF5EA] rounded-full px-2 py-1"
-                                        : "text-[#1A73E8] bg-[#E9F6FF] rounded-full px-2 py-1"
-                                        }`}
-                                >
-                                    {meter.approvedStatus}
+                            <TableCell className="px-4 py-3">
+                                <span className={cn("inline-block text-sm font-medium", getStatusStyle(meter.approvedStatus))}>
+                                    {meter.approvedStatus ?? "N/A"}
                                 </span>
                             </TableCell>
                             <TableCell>
@@ -828,44 +842,55 @@ export default function AssignMeterPage() {
                     ))}
                 </TableBody>
             </Table>
-            <div className="bg-white  flex items-center justify-between px-4 py-3 mt-20">
-                <div className="flex items-center gap-2">
-                    <span className="text-sm text-gray-600">Rows per page</span>
-                    <select
-                        value={rowsPerPage}
-                        onChange={(e) => {
-                            setRowsPerPage(Number(e.target.value));
-                            setCurrentPage(1);
-                        }}
-                        className="text-sm border border-gray-300 rounded-md px-2 py-1 focus:outline-none"
+            <Pagination className="mt-4 flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                    <span className="text-sm font-medium">Rows per page</span>
+                    <Select
+                        value={rowsPerPage.toString()}
+                        onValueChange={handleRowsPerPageChange}
                     >
-                        {[5, 10, 12, 20, 50].map((num) => (
-                            <option key={num} value={num}>
-                                {num}
-                            </option>
-                        ))}
-                    </select>
+                        <SelectTrigger className="h-8 w-[70px]">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent
+                            position="popper"
+                            side="top"
+                            align="center"
+                            className="mb-1 ring-gray-50"
+                        >
+                            <SelectItem value="10">10</SelectItem>
+                            <SelectItem value="24">24</SelectItem>
+                            <SelectItem value="48">48</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <span className="text-sm font-medium">
+                        {(currentPage - 1) * rowsPerPage + 1}-
+                        {Math.min(currentPage * rowsPerPage, processedData.length)} of {processedData.length}
+                    </span>
                 </div>
-                <span className="text-sm text-gray-600">
-                    {startIndex + 1}-{Math.min(endIndex, totalRows)} of {totalRows} rows
-                </span>
-                <div className="flex items-center gap-2">
-                    <button
-                        disabled={currentPage === 1}
-                        onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                        className="px-3 py-1 border border-gray-300 rounded-md text-sm text-black-600 disabled:opacity-50 cursor-pointer"
-                    >
-                        Previous
-                    </button>
-                    <button
-                        disabled={endIndex >= totalRows}
-                        onClick={() => setCurrentPage((prev) => prev + 1)}
-                        className="px-3 py-1 border border-gray-300 rounded-md text-sm text-black-600 disabled:opacity-50 cursor-pointer"
-                    >
-                        Next
-                    </button>
-                </div>
-            </div>
+                <PaginationContent>
+                    <PaginationItem>
+                        <PaginationPrevious
+                            href="#"
+                            onClick={e => {
+                                e.preventDefault();
+                                handlePrevious();
+                            }}
+                            aria-disabled={currentPage === 1}
+                        />
+                    </PaginationItem>
+                    <PaginationItem>
+                        <PaginationNext
+                            href="#"
+                            onClick={e => {
+                                e.preventDefault();
+                                handleNext();
+                            }}
+                            aria-disabled={currentPage === totalRows}
+                        />
+                    </PaginationItem>
+                </PaginationContent>
+            </Pagination>
             <CustomerIdDialog
                 isOpen={isCustomerIdModalOpen}
                 onOpenChange={setIsCustomerIdModalOpen}

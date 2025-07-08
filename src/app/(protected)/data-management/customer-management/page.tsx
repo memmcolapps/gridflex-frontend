@@ -8,7 +8,7 @@ import CustomerManagement from "@/components/customermanagement/customermanageme
 export default function CustomerMnagementPage() {
 
     return (
-        <div className="overflow-y-hidden h-screen w-full flex flex-col">
+        <div className="p-6 overflow-y-hidden h-screen w-full flex flex-col">
             <CustomerManagement />
         </div>
     )

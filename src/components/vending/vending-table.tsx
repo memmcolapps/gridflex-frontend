@@ -23,6 +23,20 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+import {
+    Pagination,
+    PaginationContent,
+    PaginationItem,
+    PaginationNext,
+    PaginationPrevious,
+} from "@/components/ui/pagination";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 
 const VendingTable = () => {
     const transactions = [
@@ -67,6 +81,31 @@ const VendingTable = () => {
         status: string;
     };
 
+    // State to manage pagination
+    const [rowsPerPage, setRowsPerPage] = useState<number>(10);
+    const [currentPage, setCurrentPage] = useState<number>(1);
+
+    // Calculate total pages and paginated data
+    const totalPages = Math.ceil(transactions.length / rowsPerPage);
+    const paginatedTransactions = transactions.slice(
+        (currentPage - 1) * rowsPerPage,
+        currentPage * rowsPerPage
+    );
+
+    // Handle pagination controls
+    const handlePrevious = () => {
+        setCurrentPage((prev) => Math.max(prev - 1, 1));
+    };
+
+    const handleNext = () => {
+        setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+    };
+
+    const handleRowsPerPageChange = (value: string) => {
+        setRowsPerPage(Number(value));
+        setCurrentPage(1);
+    };
+
     // State to manage the selected transaction for reprint
     const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
     const [showTokenDialog, setShowTokenDialog] = useState(false);
@@ -108,9 +147,9 @@ const VendingTable = () => {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {transactions.map((transaction) => (
+                        {paginatedTransactions.map((transaction) => (
                             <TableRow key={transaction.sn}>
-                                <TableCell>{transaction.sn}</TableCell>
+                                <TableCell>{(currentPage - 1) * rowsPerPage + transactions.indexOf(transaction) + 1}</TableCell>
                                 <TableCell>{transaction.accountNumber}</TableCell>
                                 <TableCell>{transaction.meterNumber}</TableCell>
                                 <TableCell>{transaction.tokenType}</TableCell>
@@ -142,7 +181,7 @@ const VendingTable = () => {
                                                 className="flex items-center gap-2 cursor-pointer"
                                                 onClick={() => handleReprintToken(transaction)}
                                             >
-                                                <Printer size={14} />
+                                                <Printer size= {14} />
                                                 Reprint Token
                                             </DropdownMenuItem>
                                         </DropdownMenuContent>
@@ -153,21 +192,55 @@ const VendingTable = () => {
                     </TableBody>
                 </Table>
             </Card>
-            <div className="flex justify-between items-center mt-2">
-                <span>Rows per page: 12 ~ 1-12 of 40 rows</span>
-                <div>
-                    <Button
-                        className="px-2 py-1 cursor-pointer"
+            <Pagination className="mt-4 flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                    <span className="text-sm font-medium">Rows per page</span>
+                    <Select
+                        value={rowsPerPage.toString()}
+                        onValueChange={handleRowsPerPageChange}
                     >
-                        Previous
-                    </Button>
-                    <Button
-                        className="px-2 py-1 cursor-pointer"
-                    >
-                        Next
-                    </Button>
+                        <SelectTrigger className="h-8 w-[70px]">
+                            <SelectValue placeholder={rowsPerPage.toString()} />
+                        </SelectTrigger>
+                        <SelectContent
+                            position="popper"
+                            side="top"
+                            align="center"
+                            className="mb-1 ring-gray-50"
+                        >
+                            <SelectItem value="10">10</SelectItem>
+                            <SelectItem value="24">24</SelectItem>
+                            <SelectItem value="48">48</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <span className="text-sm font-medium">
+                        {(currentPage - 1) * rowsPerPage + 1}-
+                        {Math.min(currentPage * rowsPerPage, transactions.length)} of {transactions.length}
+                    </span>
                 </div>
-            </div>
+                <PaginationContent>
+                    <PaginationItem>
+                        <PaginationPrevious
+                            href="#"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                handlePrevious();
+                            }}
+                            aria-disabled={currentPage === 1}
+                        />
+                    </PaginationItem>
+                    <PaginationItem>
+                        <PaginationNext
+                            href="#"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                handleNext();
+                            }}
+                            aria-disabled={currentPage === totalPages}
+                        />
+                    </PaginationItem>
+                </PaginationContent>
+            </Pagination>
             {/* Token Details Dialog */}
             <Dialog open={showTokenDialog} onOpenChange={setShowTokenDialog}>
                 <DialogContent className="w-full h-fit bg-white">

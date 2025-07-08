@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, ChevronDown } from "lucide-react";
+import { Bell, ChevronDown, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -33,9 +33,9 @@ export function Navbar() {
 
         {/* Right side with user controls */}
         <div className="flex items-center gap-2 sm:gap-4">
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             className="relative rounded-full hover:bg-gray-100"
           >
             <Bell className="text-gray-600" size={18} />
@@ -47,7 +47,8 @@ export function Navbar() {
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
-                className="flex items-center gap-2 rounded-full hover:bg-gray-100"
+                className="flex items-center gap-2 rounded-full hover:bg-gray-100 p-6 cursor-pointer"
+                disabled={isProfileOpen}
               >
                 <Avatar className="h-8 w-8">
                   <AvatarImage src="/placeholder.svg" alt="User" />
@@ -58,27 +59,25 @@ export function Navbar() {
                 <ChevronDown className="text-gray-500" size={16} />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent 
-              align="end" 
-              className="w-56 bg-white text-gray-700"
+            <DropdownMenuContent
+              align="end"
+              className="w-fit bg-white text-gray-700"
             >
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 className="cursor-pointer hover:bg-gray-100"
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
               >
+                <User size={12} />
                 Profile
-              </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer hover:bg-gray-100">
-                Settings
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
-                className="cursor-pointer hover:bg-gray-100 text-red-600"
+                className="cursor-pointer hover:bg-gray-100 text-red-600 w-fit"
                 onClick={logout}
                 disabled={isLoading}
               >
+                <LogOut size={12} className="text-red-600" />
                 Log out
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -88,7 +87,7 @@ export function Navbar() {
 
       {/* Profile dropdown */}
       {isProfileOpen && (
-        <div className="absolute right-4 top-16 z-40 w-72 rounded-lg border border-gray-200 bg-white shadow-lg sm:right-6">
+        <div className="absolute right-4 top-16 z-40 w-140 rounded-lg border border-gray-200 bg-white shadow-lg sm:right-6">
           <ProfileDropdown
             closeDropdown={closeDropdown}
             openEditProfileModal={() => setIsEditProfileOpen(true)}

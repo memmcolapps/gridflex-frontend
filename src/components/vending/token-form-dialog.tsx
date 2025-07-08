@@ -35,6 +35,9 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
     const [oldTariffIndex, setOldTariffIndex] = useState("");
     const [newTariffIndex, setNewTariffIndex] = useState("");
     const [units, setUnits] = useState("");
+    const [showReceipt, setShowReceipt] = useState(false);
+    const [showTokenDialog, setShowTokenDialog] = useState(false);
+    const [isFormDialogOpen, setIsFormDialogOpen] = useState(false); // Control form dialog
 
     const handleVendByChange = (value: string) => setVendBy(value);
 
@@ -44,14 +47,22 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
     const getDynamicPlaceholder = () =>
         vendBy === "meterNumber" ? "Enter Meter Number" : "Enter Account Number";
 
-    const [showReceipt, setShowReceipt] = useState(false); // Toggle receipt
-    const [showTokenDialog, setShowTokenDialog] = useState(false); // Toggle token dialog
-
     const handleProceed = () => {
         if (tokenType === "creditToken" && vendBy && meterNumber && amountTendered) {
             setShowReceipt(true);
-        } else if ((tokenType === "kct" || tokenType === "clearTamper" || tokenType === "clearCredit" || tokenType === "kctAndClearTamper" || tokenType === "compensation") && vendBy && meterNumber && reason) {
+            setIsFormDialogOpen(false); // Close form dialog
+        } else if (
+            (tokenType === "kct" ||
+                tokenType === "clearTamper" ||
+                tokenType === "clearCredit" ||
+                tokenType === "kctAndClearTamper" ||
+                tokenType === "compensation") &&
+            vendBy &&
+            meterNumber &&
+            reason
+        ) {
             setShowTokenDialog(true);
+            setIsFormDialogOpen(false); // Close form dialog
         }
     };
 
@@ -67,13 +78,15 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
         setOldTariffIndex("");
         setNewTariffIndex("");
         setUnits("");
+        setIsFormDialogOpen(false); // Close form dialog
     };
 
     const handleGetToken = () => {
-        setShowTokenDialog(true); // Show token dialog
+        setShowTokenDialog(true);
+        setShowReceipt(false);
+        setIsFormDialogOpen(false); // Close form dialog
     };
 
-    // Function to convert camelCase to title case with "and" for combined types
     const getTitleCase = (type: string) => {
         const titleMap: Record<string, string> = {
             creditToken: "Credit Token",
@@ -88,12 +101,13 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
 
     return (
         <>
-            <Dialog>
+            <Dialog open={isFormDialogOpen} onOpenChange={setIsFormDialogOpen}>
                 <DialogTrigger asChild>
                     <Button
                         variant="default"
                         size="lg"
                         className="bg-[#161CCA] text-white cursor-pointer"
+                        onClick={() => setIsFormDialogOpen(true)}
                     >
                         Proceed
                     </Button>
@@ -103,7 +117,6 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                         <DialogTitle>{getTitleCase(tokenType)}</DialogTitle>
                     </DialogHeader>
                     <div className="grid gap-6 py-4">
-                        {/* Vend By & Meter/Account Number */}
                         <div className="grid grid-cols-2 gap-4">
                             <div className="flex flex-col gap-2">
                                 <Label htmlFor="vendBy" className="text-right">
@@ -132,7 +145,6 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                                 />
                             </div>
                         </div>
-                        {/* Single Energy Source Field */}
                         <div className="flex flex-col gap-2">
                             <Label htmlFor="energySource" className="text-right">
                                 Energy Source
@@ -147,7 +159,6 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                                 </SelectContent>
                             </Select>
                         </div>
-                        {/* Amount Tendered */}
                         {(tokenType === "creditToken" || tokenType === "arrearsPayment") && (
                             <div className="flex flex-col gap-2">
                                 <Label htmlFor="amountTendered" className="text-right">
@@ -162,27 +173,25 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                                 />
                             </div>
                         )}
-                        {/* Reason for certain token types */}
                         {(tokenType === "kct" ||
                             tokenType === "clearTamper" ||
                             tokenType === "clearCredit" ||
                             tokenType === "kctAndClearTamper" ||
                             tokenType === "clearTamperAndKct" ||
                             tokenType === "compensation") && (
-                                <div className="flex flex-col gap-2">
-                                    <Label htmlFor="reason" className="text-right">
-                                        Reason <span className="text-red-500">*</span>
-                                    </Label>
-                                    <Input
-                                        id="reason"
-                                        className="border border-gray-300"
-                                        placeholder="Enter Reason"
-                                        value={reason}
-                                        onChange={(e) => setReason(e.target.value)}
-                                    />
-                                </div>
-                            )}
-                        {/* Compensation Fields */}
+                            <div className="flex flex-col gap-2">
+                                <Label htmlFor="reason" className="text-right">
+                                    Reason <span className="text-red-500">*</span>
+                                </Label>
+                                <Input
+                                    id="reason"
+                                    className="border border-gray-300"
+                                    placeholder="Enter Reason"
+                                    value={reason}
+                                    onChange={(e) => setReason(e.target.value)}
+                                />
+                            </div>
+                        )}
                         {tokenType === "compensation" && (
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="flex flex-col gap-2">
@@ -211,7 +220,6 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                                 </div>
                             </div>
                         )}
-                        {/* KCT & KCTAndClearTamper Fields */}
                         {(tokenType === "kct" || tokenType === "kctAndClearTamper" || tokenType === "clearTamperAndKct") && (
                             <>
                                 <div className="grid grid-cols-2 gap-4">
@@ -294,7 +302,6 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                                 </div>
                             </>
                         )}
-                        {/* Receipt Display for Credit Token */}
                         {showReceipt && tokenType === "creditToken" && (
                             <div className="mt-6">
                                 <p><strong>VAT Amount:</strong> 488.39</p>
@@ -312,15 +319,14 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                     <div className="flex justify-between gap-4 mt-4">
                         {!showReceipt && !showTokenDialog && (
                             <>
-                                <DialogTrigger asChild>
-                                    <Button
-                                        variant="outline"
-                                        size="lg"
-                                        className="border-[#161CCA] text-[#161CCA] cursor-pointer"
-                                    >
-                                        Back
-                                    </Button>
-                                </DialogTrigger>
+                                <Button
+                                    variant="outline"
+                                    size="lg"
+                                    className="border-[#161CCA] text-[#161CCA] cursor-pointer"
+                                    onClick={() => setIsFormDialogOpen(false)}
+                                >
+                                    Back
+                                </Button>
                                 <Button
                                     variant="default"
                                     size="lg"
@@ -354,7 +360,6 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                     </div>
                 </DialogContent>
             </Dialog>
-            {/* New Dialog for Token Display */}
             <Dialog open={showTokenDialog} onOpenChange={setShowTokenDialog}>
                 <DialogContent className="w-full h-fit bg-white">
                     <DialogHeader>
@@ -448,7 +453,6 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                             size="lg"
                             className="bg-[#161CCA] text-white cursor-pointer"
                             onClick={() => {
-                                // Create printable content
                                 const printWindow = window.open('', '_blank', 'width=800,height=600');
                                 if (printWindow) {
                                     printWindow.document.write(`

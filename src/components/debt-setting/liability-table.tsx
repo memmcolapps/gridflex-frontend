@@ -33,6 +33,7 @@ import { Label } from "@/components/ui/label";
 import { ArrowUpDown, Ban, CircleCheck, CircleX, EllipsisVertical, Pencil, Search, AlertTriangle } from "lucide-react";
 import React, { useState, useEffect, useMemo } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { getStatusStyle } from "../status-style";
 
 type Liability = {
     sNo: number;
@@ -58,11 +59,10 @@ type TableData = (Liability | PercentageRange) & { deactivated?: boolean };
 type LiabilityTableProps = {
     view: "liability" | "percentage";
     onViewChange: (view: "liability" | "percentage") => void;
-    onDataChange?: (data: TableData[]) => void; // Callback to send updated data to parent
+    onDataChange?: (data: TableData[]) => void;
     onAddPercentageRange?: (range: { percentage: string; percentageCode: string; band: string; amountStartRange: string; amountEndRange: string }) => void;
 };
 
-// Sample data for Liability Cause table
 const defaultLiabilityData: Liability[] = [
     { sNo: 1, liabilityName: "Loan Default", liabilityCode: "LD001", approvalStatus: "Pending", deactivated: false },
     { sNo: 2, liabilityName: "Overdraft", liabilityCode: "OD002", approvalStatus: "Approved", deactivated: false },
@@ -70,7 +70,6 @@ const defaultLiabilityData: Liability[] = [
     { sNo: 4, liabilityName: "Mortgage", liabilityCode: "MG004", approvalStatus: "Approved", deactivated: false },
 ];
 
-// Sample data for Percentage Range table
 const defaultPercentageData: PercentageRange[] = [
     { sNo: 1, percentage: "2%", percentageCode: "C90bqt", band: "Band A", amountStartRange: "0", amountEndRange: "9,999", approvalStatus: "Pending", deactivated: true },
     { sNo: 2, percentage: "5%", percentageCode: "C90bqt", band: "Band A", amountStartRange: "10,000", amountEndRange: "99,999", approvalStatus: "Approved", deactivated: false },
@@ -96,7 +95,6 @@ const LiabilityTable = ({ view, onViewChange, onDataChange, onAddPercentageRange
             : defaultPercentageData.map(item => ({ ...item, deactivated: item.deactivated ?? false }));
     });
 
-    // Custom comparison function for deep equality of TableData arrays
     const areDataArraysEqual = (arr1: TableData[], arr2: TableData[]): boolean => {
         if (arr1.length !== arr2.length) return false;
         return arr1.every((item1, index) => {
@@ -117,7 +115,6 @@ const LiabilityTable = ({ view, onViewChange, onDataChange, onAddPercentageRange
         });
     };
 
-    // Update tableData when view changes
     useEffect(() => {
         const newData = view === "liability"
             ? defaultLiabilityData.map(item => ({ ...item, deactivated: item.deactivated ?? false }))
@@ -127,13 +124,11 @@ const LiabilityTable = ({ view, onViewChange, onDataChange, onAddPercentageRange
         }
     }, [view, tableData]);
 
-    // Notify parent of data changes
     useEffect(() => {
         if (onDataChange) {
             onDataChange(tableData);
         }
     }, [tableData, onDataChange]);
-
 
     const handleEditClick = (row: TableData) => {
         setSelectedRow(row);
@@ -259,12 +254,7 @@ const LiabilityTable = ({ view, onViewChange, onDataChange, onAddPercentageRange
                     header: "Approval Status",
                     cell: ({ row }) => {
                         const status = row.getValue("approvalStatus") as string;
-                        const getStatusColor = (status: string) => ({
-                            Pending: "bg-yellow-100 text-yellow-800",
-                            Rejected: "bg-red-100 text-red-800",
-                            Approved: "bg-blue-100 text-blue-800",
-                        }[status] ?? "bg-gray-100 text-gray-800");
-                        return <span className={`px-2 py-1 rounded ${getStatusColor(status)}`}>{status}</span>;
+                        return <span className={getStatusStyle(status)}>{status}</span>;
                     },
                 },
                 {
@@ -346,12 +336,7 @@ const LiabilityTable = ({ view, onViewChange, onDataChange, onAddPercentageRange
                     header: "Approval Status",
                     cell: ({ row }) => {
                         const status = row.getValue("approvalStatus") as string;
-                        const getStatusColor = (status: string) => ({
-                            Pending: "bg-yellow-100 text-yellow-800",
-                            Rejected: "bg-red-100 text-red-800",
-                            Approved: "bg-blue-100 text-blue-800",
-                        }[status] ?? "bg-gray-100 text-gray-800");
-                        return <span className={`px-2 py-1 rounded ${getStatusColor(status)}`}>{status}</span>;
+                        return <span className={getStatusStyle(status)}>{status}</span>;
                     },
                 },
                 {
@@ -360,7 +345,7 @@ const LiabilityTable = ({ view, onViewChange, onDataChange, onAddPercentageRange
                     cell: ({ row }) => {
                         const isActive = !row.original.deactivated;
                         return (
-                            <span className={`px-2 py-1 rounded ${isActive ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
+                            <span className={getStatusStyle(isActive ? "Active" : "Inactive")}>
                                 {isActive ? "Active" : "Inactive"}
                             </span>
                         );
@@ -521,7 +506,7 @@ const LiabilityTable = ({ view, onViewChange, onDataChange, onAddPercentageRange
                                 <TableRow
                                     key={row.id}
                                     data-state={row.getIsSelected() && "selected"}
-                                    className={row.original.deactivated ? "bg-gray-200 opacity-50" : ""}
+                                    className={view === "liability" && row.original.deactivated ? "bg-gray-200 opacity-50" : ""}
                                 >
                                     {row.getVisibleCells().map((cell) => (
                                         <TableCell key={cell.id}>
@@ -541,7 +526,6 @@ const LiabilityTable = ({ view, onViewChange, onDataChange, onAddPercentageRange
                 </Table>
             </Card>
 
-            {/* Edit Dialog */}
             <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
                 <DialogContent className="bg-white border-none w-full h-fit">
                     <DialogHeader>
@@ -672,7 +656,6 @@ const LiabilityTable = ({ view, onViewChange, onDataChange, onAddPercentageRange
                 </DialogContent>
             </Dialog>
 
-            {/* Deactivate Dialog */}
             <Dialog open={isDeactivateDialogOpen} onOpenChange={setIsDeactivateDialogOpen}>
                 <DialogContent className="bg-white border-none w-full h-fit">
                     <DialogHeader>

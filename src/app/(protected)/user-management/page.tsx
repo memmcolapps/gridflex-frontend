@@ -5,7 +5,7 @@ import UserManagement from "@/components/usermanagement/usermanagement"
 
 export default function UserPage(){
     return(
-        <div className="overflow-y-hidden h-screen w-full flex flex-col"> 
+        <div className="p-6 overflow-y-hidden h-screen w-full flex flex-col"> 
             <UserManagement/>
         </div>
     )

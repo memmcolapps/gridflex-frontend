@@ -50,8 +50,6 @@ export default function TariffManagementPage() {
     effectiveDate: null as Date | null,
     bandCode: "",
     tariffRate: "",
-    status: "inactive" as "active" | "inactive",
-    approvalStatus: "pending" as "Approved" | "pending" | "rejected",
   });
 
   useEffect(() => {
@@ -132,8 +130,8 @@ export default function TariffManagementPage() {
         effectiveDate: null,
         bandCode: "",
         tariffRate: "",
-        status: "inactive",
-        approvalStatus: "pending",
+        // status: "inactive",
+        // approvalStatus: "pending",
       });
     }
   };
@@ -173,7 +171,7 @@ export default function TariffManagementPage() {
   }, [refreshTariffs]);
 
   return (
-    <div className="flex min-h-screen flex-col font-sans">
+    <div className="min-h-screen">
       <NotificationBar
         title="Tariff Management"
         bgColor="bg-[rgba(22,28,202,1)]"
@@ -182,7 +180,11 @@ export default function TariffManagementPage() {
       />
       <NotificationBar
         title2="How to use"
-        description="Note: At least one band must be created"
+        description={
+          <div className="mt-2 flex items-center gap-2">
+            <span>At least one band must be created</span>
+          </div>
+        }
         bgColor="bg-[rgba(219,230,254,1)]"
         textColor="text-[rgba(22,28,202,1)]"
         closable={true}
