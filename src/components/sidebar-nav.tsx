@@ -111,8 +111,29 @@ export function SidebarNav() {
       icon: CreditCard,
       hasSubmenu: true,
       submenuItems: [
-        { title: "Meter Reading Sheet", href: "/billing/reading-sheet" },
-        { title: "Metered Consumption", href: "/billing/metered-consumption" }
+        { title: "Dashboard", href: "/billing/reading-sheet" },
+        {
+          title: "MD Prebilling",
+          href: "#",
+          hasSubmenu: true,
+          submenuItems: [
+            { title: "Meter Reading Sheet", href: "/billing/md-prebilling/reading-sheet" },
+            { title: "Metered Consumption", href: "/billing/md-prebilling/metered-consumption" },
+            { title: "Energy-Import", href: "/billing/md-prebilling/energy-import" },
+          ]
+        },
+        {
+          title: "Non-MD Prebilling",
+          href: "#",
+          hasSubmenu: true,
+          submenuItems: [
+            { title: "Meter Reading Sheet", href: "/billing/non-md-prebilling/reading-sheet" },
+            { title: "Metered Consumption", href: "/billing/non-md-prebilling/metered-consumption" },
+            { title: "Energy-Import", href: "/billing/non-md-prebilling/energy-import" },
+          ]
+        },
+        { title: "Billing", href: "/billing/billing" },
+        { title: "Payment History", href: "/billing/payment-history" },
       ],
     },
     {
