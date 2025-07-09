@@ -8,15 +8,16 @@ import { FilterControl, SearchControl, SortControl } from "@/components/search-c
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 
-
-
 export function ReviewApprovalTabs() {
     const [activeTab, setActiveTab] = useState("percentage");
     const [searchTerm, setSearchTerm] = useState("");
     const [sortConfig, setSortConfig] = useState({ key: '', direction: 'asc' });
     const [, setActiveFilters] = useState({});
+  
 
 
+    // TODO: Replace this mock data with your actual data source
+    const data: any[] = []; // Example: [{ id: 1, ... }, ...]
     // Define filterSections for FilterControl
     const filterSections = [
         {
@@ -36,8 +37,8 @@ export function ReviewApprovalTabs() {
 
     const handleSortChange = (sortBy: string) => {
         const [keyRaw, directionRaw] = sortBy.split(' ');
-        const key = keyRaw || '';
-        const direction = directionRaw || 'asc';
+        const key = keyRaw ?? '';
+        const direction = directionRaw ?? 'asc';
         setSortConfig({ key, direction });
     };
 
@@ -120,7 +121,7 @@ export function ReviewApprovalTabs() {
                     </TabsContent> */}
                 </Tabs>
             </Card>
-            
+
         </div>
     );
 }

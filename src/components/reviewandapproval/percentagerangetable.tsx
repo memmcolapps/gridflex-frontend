@@ -1,11 +1,37 @@
 import { SetStateAction, useState } from 'react';
 import { Card } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { MoreVertical } from 'lucide-react';
+import { Ban, Check, CheckCircle, CircleDashed, EyeIcon, MoreVertical } from 'lucide-react';
 import ViewDetailsDialog from './viewpercentagedetailsdialog';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationNext,
+  PaginationPrevious,
+} from '../ui/pagination';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../ui/select';
 
 type PercentageRangeItem = {
   id: number;
@@ -15,72 +41,103 @@ type PercentageRangeItem = {
   amountRange: string;
   changeDescription: string;
   approvalStatus: string;
+  newPercentage?: string;
+  newPercentageCode?: string;
+  newBand?: string;
+  newAmountRange?: string;
 };
 
 const PercentageRangeTable = () => {
   const [selectedRow, setSelectedRow] = useState<PercentageRangeItem | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTariffs, setSelectedTariffs] = useState<number[]>([]);
-  const [currentPage] = useState(1);
-  const rowsPerPage = 10;
+  const [rowsPerPage, setRowsPerPage] = useState<number>(10);
+  const [currentPage, setCurrentPage] = useState<number>(1);
 
-  // Sample data (replace with your actual data source)
+  // Sample data (updated to include new fields for non-"Newly Added" rows)
   const data: PercentageRangeItem[] = [
     {
       id: 1,
       percentage: '2%',
-      percentageCode: 'PC001',
-      band: 'A',
-      amountRange: '$100-$500',
+      percentageCode: 'C90bqt',
+      band: 'Band A',
+      amountRange: '0-9999',
       changeDescription: 'Percentage Range Edited',
       approvalStatus: 'Pending',
+      newPercentage: '3%',
+      newPercentageCode: 'C91bqt',
+      newBand: 'Band B',
+      newAmountRange: '0-19999',
     },
     {
       id: 2,
       percentage: '5%',
-      percentageCode: 'PC002',
-      band: 'B',
-      amountRange: '$501-$1000',
+      percentageCode: 'C90bqt',
+      band: 'Band A',
+      amountRange: '10,000-99,999',
       changeDescription: 'Percentage Range Deactivated',
       approvalStatus: 'Pending',
+      newPercentage: '0%',
+      newPercentageCode: 'C92bqt',
+      newBand: 'Band A',
+      newAmountRange: '10,000-99,999',
     },
     {
       id: 3,
       percentage: '10%',
-      percentageCode: 'PC002',
-      band: 'B',
-      amountRange: '$501-$1000',
+      percentageCode: 'C90bqt',
+      band: 'Band A',
+      amountRange: '100,000-999,999',
       changeDescription: 'Percentage Range Deactivated',
       approvalStatus: 'Pending',
+      newPercentage: '0%',
+      newPercentageCode: 'C93bqt',
+      newBand: 'Band A',
+      newAmountRange: '100,000-999,999',
     },
     {
       id: 4,
       percentage: '15%',
-      percentageCode: 'PC002',
-      band: 'B',
-      amountRange: '$501-$1000',
+      percentageCode: 'C90bqt',
+      band: 'Band A',
+      amountRange: '1,000,000-9,999,999',
       changeDescription: 'Newly Added',
       approvalStatus: 'Pending',
     },
     {
       id: 5,
       percentage: '20%',
-      percentageCode: 'PC002',
-      band: 'B',
-      amountRange: '$501-$1000',
+      percentageCode: 'C90bqt',
+      band: 'Band A',
+      amountRange: '10,000,000-99,999,999',
       changeDescription: 'Newly Added',
       approvalStatus: 'Pending',
     },
     {
       id: 6,
       percentage: '2%',
-      percentageCode: 'PC002',
-      band: 'B',
-      amountRange: '$501-$1000',
+      percentageCode: 'C90bqt',
+      band: 'Band B',
+      amountRange: '0-4,999',
       changeDescription: 'Newly Added',
       approvalStatus: 'Pending',
-    }
+    },
   ];
+
+  const totalPages = Math.ceil(data.length / rowsPerPage);
+
+  const handlePrevious = () => {
+    setCurrentPage((prev) => Math.max(prev - 1, 1));
+  };
+
+  const handleNext = () => {
+    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+  };
+
+  const handleRowsPerPageChange = (value: string) => {
+    setRowsPerPage(Number(value));
+    setCurrentPage(1);
+  };
 
   const paginatedData = data.slice(
     (currentPage - 1) * rowsPerPage,
@@ -98,13 +155,11 @@ const PercentageRangeTable = () => {
     setIsModalOpen(true);
   };
 
-  const handleApprove = (item: { id: number; percentage: string; percentageCode: string; band: string; amountRange: string; changeDescription: string; approvalStatus: string; }) => {
-    // Implement approve logic here
+  const handleApprove = (item: PercentageRangeItem) => {
     console.log('Approve:', item);
   };
 
-  const handleReject = (item: { id: number; percentage: string; percentageCode: string; band: string; amountRange: string; changeDescription: string; approvalStatus: string; }) => {
-    // Implement reject logic here
+  const handleReject = (item: PercentageRangeItem) => {
     console.log('Reject:', item);
   };
 
@@ -186,18 +241,21 @@ const PercentageRangeTable = () => {
                         className="flex items-center gap-2 cursor-pointer"
                         onClick={() => handleViewDetails(item)}
                       >
+                        <EyeIcon size={14}/>
                         <span className="text-sm text-gray-700">View Details</span>
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         className="flex items-center gap-2 cursor-pointer"
                         onClick={() => handleApprove(item)}
                       >
+                        <CheckCircle size={14} />
                         <span className="text-sm text-gray-700">Approve</span>
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         className="flex items-center gap-2 cursor-pointer"
                         onClick={() => handleReject(item)}
                       >
+                        <Ban size={14} />
                         <span className="text-sm text-gray-700">Reject</span>
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -208,6 +266,57 @@ const PercentageRangeTable = () => {
           )}
         </TableBody>
       </Table>
+
+      <Pagination className="mt-4 flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <span className="text-sm font-medium">Rows per page</span>
+          <Select
+            value={rowsPerPage.toString()}
+            onValueChange={handleRowsPerPageChange}
+          >
+            <SelectTrigger className="h-8 w-[70px]">
+              <SelectValue placeholder={rowsPerPage.toString()} />
+            </SelectTrigger>
+            <SelectContent
+              position="popper"
+              side="top"
+              align="center"
+              className="mb-1 ring-gray-50"
+            >
+              <SelectItem value="10">10</SelectItem>
+              <SelectItem value="24">24</SelectItem>
+              <SelectItem value="48">48</SelectItem>
+            </SelectContent>
+          </Select>
+          <span className="text-sm font-medium">
+            {(currentPage - 1) * rowsPerPage + 1}-
+            {Math.min(currentPage * rowsPerPage, data.length)} of {data.length}
+          </span>
+        </div>
+        <PaginationContent>
+          <PaginationItem>
+            <PaginationPrevious
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                handlePrevious();
+              }}
+              aria-disabled={currentPage === 1}
+            />
+          </PaginationItem>
+          <PaginationItem>
+            <PaginationNext
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                handleNext();
+              }}
+              aria-disabled={currentPage === totalPages}
+            />
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
+
       <ViewDetailsDialog
         isOpen={isModalOpen}
         onOpenChange={setIsModalOpen}
@@ -218,5 +327,5 @@ const PercentageRangeTable = () => {
     </Card>
   );
 };
-export default PercentageRangeTable;
 
+export default PercentageRangeTable;

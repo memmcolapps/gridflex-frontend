@@ -52,7 +52,7 @@ export function SortControl({ onSortChange, currentSort = "" }: SortControlProps
 
                 <div
                     ref={dropdownRef}
-                    className="absolute z-10 m-2 bg-white rounded shadow-lg p-2 w-full lg:w-42">
+                    className="absolute z-10 m-2 bg-white rounded shadow-lg p-2 w-full lg:w-42 ml-[-40px]">
                     <div className="flex flex-col gap-2">
                         <button
                             className={`text-sm ${currentSort === "asc" ? "font-bold" : ""} hover:bg-gray-100 p-2 rounded cursor-pointer`}
