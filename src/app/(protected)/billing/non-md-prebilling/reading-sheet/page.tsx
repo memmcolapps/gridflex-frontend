@@ -49,6 +49,7 @@ import { SortControl } from "@/components/search-control/sort";
 import AddReadingDialog from "@/components/billing/add-readings";
 import EditMeterReading from "@/components/billing/edit-reading";
 import GenerateReadingSheet from "@/components/billing/generate-reading";
+import ViewDetails from "@/components/billing/view-details";
 
 // Sample data type for meter readings
 interface MeterReadingData {
@@ -68,7 +69,7 @@ const initialMeterReadings: MeterReadingData[] = [
   {
     id: 1,
     meterNo: "62010121223",
-    feederLine: "Ijeun",
+    feederLine: "Molete",
     tariffType: "R1",
     larDate: "16-06-2025",
     lastActualReading: 500,
@@ -196,6 +197,9 @@ export default function MeterReadingSheetPage() {
     useState(false);
   const [selectedReadingForEdit, setSelectedReadingForEdit] =
     useState<MeterReadingData | null>(null);
+    const [isViewDetailsOpen, setIsViewDetailsOpen] = useState(false);
+    const [selectedReadingForView, setSelectedReadingForView] =
+      useState<MeterReadingData | null>(null);
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
@@ -230,6 +234,45 @@ export default function MeterReadingSheetPage() {
   useEffect(() => {
     setMeterReadings(initialMeterReadings);
   }, []);
+
+  const handleViewDetails = (reading: MeterReadingData) => {
+    setSelectedReadingForView(reading);
+    setIsViewDetailsOpen(true);
+  };
+
+  const handleCloseViewDetails = () => {
+    setIsViewDetailsOpen(false);
+    setSelectedReadingForView(null);
+  };
+
+  // Create fields array for ViewDetails component
+  const getViewDetailsFields = (reading: MeterReadingData) => [
+    { label: "Meter No", value: reading.meterNo, key: "meterNo" },
+    { label: "Feeder Line", value: reading.feederLine, key: "feederLine" },
+    { label: "DSS", value: "Ijeun", key: "dss" },
+    { label: "Tariff Type", value: reading.tariffType, key: "tariffType" },
+    {
+      label: "Last Actual Reading Date",
+      value: reading.larDate,
+      key: "larDate",
+    },
+    {
+      label: "Last Actual Reading",
+      value: reading.lastActualReading,
+      key: "lastActualReading",
+    },
+    { label: "Reading Type", value: reading.readingType, key: "readingType" },
+    {
+      label: "Current Reading Date",
+      value: reading.readingDate,
+      key: "currentReadingDate",
+    },
+    {
+      label: "Current Reading",
+      value: reading.currentReadings,
+      key: "currentReading",
+    },
+  ];
 
   // Search handler
   const handleSearchChange = (term: string) => {
@@ -294,10 +337,6 @@ export default function MeterReadingSheetPage() {
     setIsAddReadingDialogOpen(true);
   };
 
-  const handleViewDetails = (reading: MeterReadingData) => {
-    console.log("View details for:", reading);
-  };
-
   const handleEditCurrentReadings = (reading: MeterReadingData) => {
     setSelectedReadingForEdit(reading);
     setIsEditReadingDialogOpen(true);
@@ -318,7 +357,7 @@ export default function MeterReadingSheetPage() {
 
         <div className="flex items-center gap-2">
           <Button
-            className="flex items-center gap-2 border bg-white font-medium text-gray-700 hover:bg-gray-50"
+            className="flex cursor-pointer items-center gap-2 border bg-white font-medium text-gray-700 hover:bg-gray-50"
             variant="outline"
             size="lg"
             onClick={() => setIsBulkUploadDialogOpen(true)}
@@ -327,7 +366,7 @@ export default function MeterReadingSheetPage() {
             <span className="text-sm">Bulk Upload</span>
           </Button>
           <Button
-            className="flex items-center gap-2 border bg-[#161CCA] font-medium text-white"
+            className="flex cursor-pointer items-center gap-2 border bg-[#161CCA] font-medium text-white"
             variant="outline"
             size="lg"
             onClick={handleAddReadings}
@@ -364,7 +403,7 @@ export default function MeterReadingSheetPage() {
               currentSort={currentSort}
             />
             <Select value={sortMonth} onValueChange={setSortMonth}>
-              <SelectTrigger className="w-[120px] border-gray-300">
+              <SelectTrigger className="w-[120px] border-gray-300 cursor-pointer">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -383,7 +422,7 @@ export default function MeterReadingSheetPage() {
               </SelectContent>
             </Select>
             <Select value={sortYear} onValueChange={setSortYear}>
-              <SelectTrigger className="w-[100px] border-gray-300">
+              <SelectTrigger className="w-[100px] border-gray-300 cursor-pointer">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -398,14 +437,14 @@ export default function MeterReadingSheetPage() {
           {/* Right side buttons */}
           <div className="flex items-center gap-2">
             <Button
-              className="flex h-12 items-center gap-2 rounded border bg-[#22C55E] px-3 py-2 text-white hover:bg-[#22C55E]/90"
+              className="flex h-12 cursor-pointer items-center gap-2 rounded border bg-[#22C55E] px-3 py-2 text-white hover:bg-[#22C55E]/90"
               onClick={handleGenerateReadingSheet}
             >
               <Printer size={14} className="h-4 w-4" />
               Generate Reading Sheet
             </Button>
             <Button
-              className="flex h-12 items-center gap-2 rounded border border-[#161CCA] px-3 py-2 text-[#161CCA] hover:bg-[#161CCA]/10"
+              className="flex h-12 cursor-pointer items-center gap-2 rounded border border-[#161CCA] px-3 py-2 text-[#161CCA] hover:bg-[#161CCA]/10"
               variant="outline"
               onClick={handleExport}
             >
@@ -491,14 +530,14 @@ export default function MeterReadingSheetPage() {
                         onClick={() => handleViewDetails(reading)}
                         className="flex cursor-pointer items-center gap-2"
                       >
-                        <Eye size={14} className="h-4 w-4" />
+                        <Eye size={12} className="h-4 w-4" />
                         View Details
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={() => handleEditCurrentReadings(reading)}
                         className="flex cursor-pointer items-center gap-2"
                       >
-                        <PenLine size={14} className="h-4 w-4" />
+                        <PenLine size={12} className="h-4 w-4" />
                         Edit Current Readings
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -520,7 +559,8 @@ export default function MeterReadingSheetPage() {
         </Table>
       </Card>
 
-      <Pagination className="mt-4 flex items-center justify-between">
+    <Pagination className="mt-4 flex items-center justify-between ">
+      {/* <Pagination className="sticky bottom-0 z-10 mt-4 flex items-center justify-between bg-white"> */}
         <div className="flex items-center space-x-2">
           <span className="text-sm font-medium">Rows per page</span>
           <Select
@@ -610,6 +650,16 @@ export default function MeterReadingSheetPage() {
             readingType: selectedReadingForEdit.readingType,
             currentReadings: selectedReadingForEdit.currentReadings,
           }}
+        />
+      )}
+
+      {/* View Details Dialog */}
+      {selectedReadingForView && (
+        <ViewDetails
+          open={isViewDetailsOpen}
+          onClose={handleCloseViewDetails}
+          title="View Details"
+          fields={getViewDetailsFields(selectedReadingForView)}
         />
       )}
 
