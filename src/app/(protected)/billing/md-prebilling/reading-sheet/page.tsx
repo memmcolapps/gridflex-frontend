@@ -3,41 +3,70 @@ import AddReadingDialog from "@/components/billing/add-readings";
 import GenerateReadingSheet from "@/components/billing/generate-reading";
 import MeterReadings from "@/components/billing/meter-reading";
 import { BulkUploadDialog } from "@/components/meter-management/bulk-upload";
-import { FilterControl, SortControl } from "@/components/search-control";
+import {  SortControl } from "@/components/search-control";
 import { Button } from "@/components/ui/button";
 import { ContentHeader } from "@/components/ui/content-header";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { CirclePlus, Printer, Search, SquareArrowOutUpRight } from "lucide-react";
+import { ChevronDown, CirclePlus, Printer, Search, SquareArrowOutUpRight } from "lucide-react";
 import { useState } from "react";
 
 export default function ReadingSheetPage() {
-    const [isLoading,] = useState(false);
+    const [isLoading, ] = useState(false);
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
     const [inputValue, setInputValue] = useState("");
     const [isBulkUploadDialogOpen, setIsBulkUploadDialogOpen] = useState(false);
+    const [sortConfig, setSortConfig] = useState<string>("");
+    const [selectedMonth, setSelectedMonth] = useState<string>("All");
+    const [selectedYear, setSelectedYear] = useState<string>("All");
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => setInputValue(e.target.value);
 
-    // Define handleBulkUpload function
     const handleBulkUpload = (_data: unknown) => {
-        // Implement your bulk upload logic here
-        // For now, just close the dialog
         setIsBulkUploadDialogOpen(false);
     };
 
-    // Add sortConfig state and handleSortChange function
-    const [sortConfig, setSortConfig] = useState<string>("");
     const handleSortChange = (sortBy: string) => {
         setSortConfig(sortBy);
     };
 
+    // List of months for dropdown
+    const months = [
+        "All",
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December"
+    ];
+
+    // Generate years (current year and past 5 years)
+    const currentYear = new Date().getFullYear();
+    const years = ["All", ...Array.from({ length: 6 }, (_, i) => (currentYear - i).toString())];
+
+    // Handle filter changes
+    const handleMonthChange = (month: string) => {
+        setSelectedMonth(month);
+    };
+
+    const handleYearChange = (year: string) => {
+        setSelectedYear(year);
+    };
 
     return (
         <div className="p-6">
             {/* Content Header */}
             <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
                 <ContentHeader
-                    title="Reading Sheet"
+                    title="Meter Reading Sheet"
                     description="Set and manage meter reading to track electricity usage."
                 />
                 <div className="flex flex-col md:flex-row gap-2">
@@ -65,7 +94,7 @@ export default function ReadingSheetPage() {
             </div>
 
             <div className="mb-8 flex items-center justify-between">
-                <div className="mb-8 flex items-center gap-2">
+                <div className="flex items-center gap-2">
                     <div className="relative w-full lg:w-[300px]">
                         <Search
                             size={14}
@@ -80,31 +109,48 @@ export default function ReadingSheetPage() {
                         />
                     </div>
                     <div className="flex gap-2">
-                        <FilterControl
-                            sections={[
-                                {
-                                    title: "Status",
-                                    options: [
-                                        { label: "All", id: "all" },
-                                        { label: "Pending", id: "pending" },
-                                        { label: "Completed", id: "completed" },
-                                    ],
-                                },
-                                {
-                                    title: "Month",
-                                    options: [
-                                        { label: "January", id: "january" },
-                                        { label: "February", id: "february" },
-                                        { label: "March", id: "march" },
-                                        // Add more months as needed
-                                    ],
-                                },
-                            ]}
-                        />
                         <SortControl
                             onSortChange={handleSortChange}
                             currentSort={sortConfig}
                         />
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="flex items-center gap-1 p-4">
+                                    <ChevronDown size={14} />
+                                    {selectedMonth}
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                {months.map((month) => (
+                                    <DropdownMenuItem
+                                        key={month}
+                                        onClick={() => handleMonthChange(month)}
+                                        className={selectedMonth === month ? "bg-gray-100" : ""}
+                                    >
+                                        {month}
+                                    </DropdownMenuItem>
+                                ))}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="flex items-center gap-1 p-4">
+                                    <ChevronDown size={14} />
+                                    {selectedYear}
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                {years.map((year) => (
+                                    <DropdownMenuItem
+                                        key={year}
+                                        onClick={() => handleYearChange(year)}
+                                        className={selectedYear === year ? "bg-gray-100" : ""}
+                                    >
+                                        {year}
+                                    </DropdownMenuItem>
+                                ))}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </div>
                 </div>
                 <div className="flex gap-5">
@@ -131,7 +177,14 @@ export default function ReadingSheetPage() {
                     <div className="flex items-center justify-center p-8">
                         <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-gray-900"></div>
                     </div>
-                ) : <MeterReadings />}
+                ) : (
+                    <MeterReadings
+                        searchQuery={inputValue}
+                        sortConfig={sortConfig}
+                        selectedMonth={selectedMonth}
+                        selectedYear={selectedYear}
+                    />
+                )}
             </div>
             <AddReadingDialog open={isAddDialogOpen} onClose={() => setIsAddDialogOpen(false)} />
             <GenerateReadingSheet
