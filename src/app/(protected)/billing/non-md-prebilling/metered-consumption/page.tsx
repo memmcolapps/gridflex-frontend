@@ -224,7 +224,7 @@ export default function MeterConsumptionPage() {
   // Sort handler
   const handleSortChange = (sortBy: string) => {
     setCurrentSort(sortBy);
-    let sorted = [...meterConsumption];
+    const sorted = [...meterConsumption];
 
     if (sortBy === "asc") {
       sorted.sort((a, b) => a.averageConsumption - b.averageConsumption);
