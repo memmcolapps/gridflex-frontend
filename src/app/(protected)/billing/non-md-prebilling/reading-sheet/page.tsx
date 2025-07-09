@@ -252,7 +252,7 @@ export default function MeterReadingSheetPage() {
   // Sort handler
   const handleSortChange = (sortBy: string) => {
     setCurrentSort(sortBy);
-    let sorted = [...meterReadings];
+    const sorted = [...meterReadings];
 
     if (sortBy === "asc") {
       sorted.sort(
