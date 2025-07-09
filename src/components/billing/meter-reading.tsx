@@ -32,6 +32,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import ViewMeterReadingDetails from "./view-meter-reading-details";
+import { Checkbox } from "@/components/ui/checkbox"; // Import the Checkbox component
 
 interface MeterReading {
     id: number;
@@ -68,10 +69,11 @@ export default function MeterReadings({ searchQuery, sortConfig, selectedMonth, 
     ];
 
     const [isEditDialogOpen, setEditDialogOpen] = useState(false);
-    const [isViewDialogOpen, setViewDialogOpen] = useState(false); // New state for view dialog
+    const [isViewDialogOpen, setViewDialogOpen] = useState(false);
     const [selectedItem, setSelectedItem] = useState<MeterReading | null>(null);
     const [rowsPerPage, setRowsPerPage] = useState<number>(10);
     const [currentPage, setCurrentPage] = useState<number>(1);
+    const [selectedRowIds, setSelectedRowIds] = useState<Set<number>>(new Set()); // New state for selected row IDs
 
     // Helper function to parse DD-MM-YYYY date format
     const parseDate = (dateStr: string): Date => {
@@ -80,18 +82,16 @@ export default function MeterReadings({ searchQuery, sortConfig, selectedMonth, 
         const month = Number(parts[1]);
         const year = Number(parts[2]);
 
-        // Provide fallback values if parts are NaN (e.g., if dateStr is malformed)
         const safeDay = isNaN(day) ? 1 : day;
         const safeMonth = isNaN(month) ? 1 : month;
-        const safeYear = isNaN(year) ? new Date().getFullYear() : year; // Fallback to current year
+        const safeYear = isNaN(year) ? new Date().getFullYear() : year;
 
-        return new Date(safeYear, safeMonth - 1, safeDay); // Month is 0-based in JavaScript Date
+        return new Date(safeYear, safeMonth - 1, safeDay);
     };
 
     // Filter data based on search query, month, and year using larDate
     const filteredData = data.filter((item) => {
         const larDate = parseDate(item.larDate);
-        // Ensure month is converted to string correctly for comparison
         const monthMatch = selectedMonth === "All" ||
             larDate.toLocaleString('default', { month: 'long' }) === selectedMonth;
         const yearMatch = selectedYear === "All" ||
@@ -127,10 +127,16 @@ export default function MeterReadings({ searchQuery, sortConfig, selectedMonth, 
         currentPage * rowsPerPage
     );
 
+    // Check if all items on the current page are selected
+    const isAllSelected = paginatedData.length > 0 && paginatedData.every(item => selectedRowIds.has(item.id));
+    // Check if some items on the current page are selected (for indeterminate state)
+    const isSomeSelected = paginatedData.some(item => selectedRowIds.has(item.id)) && !isAllSelected;
+
+
     const handleView = (id: number) => {
         const item = data.find((item) => item.id === id);
         setSelectedItem(item ?? null);
-        setViewDialogOpen(true); // Open the view dialog
+        setViewDialogOpen(true);
     };
 
     const handleEdit = (id: number) => {
@@ -144,7 +150,7 @@ export default function MeterReadings({ searchQuery, sortConfig, selectedMonth, 
         setSelectedItem(null);
     };
 
-    const handleViewDialogClose = () => { // New function to close view dialog
+    const handleViewDialogClose = () => {
         setViewDialogOpen(false);
         setSelectedItem(null);
     };
@@ -162,11 +168,47 @@ export default function MeterReadings({ searchQuery, sortConfig, selectedMonth, 
         setCurrentPage((prev) => Math.min(prev + 1, totalPages));
     };
 
+    // Function to handle individual checkbox change
+    const handleCheckboxChange = (id: number, checked: boolean) => {
+        setSelectedRowIds(prev => {
+            const newSelected = new Set(prev);
+            if (checked) {
+                newSelected.add(id);
+            } else {
+                newSelected.delete(id);
+            }
+            return newSelected;
+        });
+    };
+
+    // Function to handle master checkbox change (select/deselect all on current page)
+    const handleSelectAll = (checked: boolean) => {
+        setSelectedRowIds(prev => {
+            const newSelected = new Set(prev);
+            if (checked) {
+                paginatedData.forEach(item => newSelected.add(item.id));
+            } else {
+                paginatedData.forEach(item => newSelected.delete(item.id));
+            }
+            return newSelected;
+        });
+    };
+
     return (
         <Card className="p-4 border-none shadow-sm rounded">
             <Table>
                 <TableHeader>
                     <TableRow>
+                        {/* Checkbox for Select All */}
+                        <TableHead className="w-[50px] text-center">
+                            <Checkbox
+                                checked={isAllSelected}
+                                onCheckedChange={handleSelectAll}
+                                aria-label="Select all"
+                                // Indeterminate state
+                                className={isSomeSelected ? "indeterminate" : "mx-auto border-gray-500 hover:border-gray-500 focus:ring-0 focus:ring-blue-500/50 focus:ring-offset-2 focus:ring-offset-white cursor-pointer"}
+                            />
+                        </TableHead>
                         <TableHead>S/N</TableHead>
                         <TableHead>Meter No.</TableHead>
                         <TableHead>Feeder Line</TableHead>
@@ -182,6 +224,15 @@ export default function MeterReadings({ searchQuery, sortConfig, selectedMonth, 
                 <TableBody>
                     {paginatedData.map((item) => (
                         <TableRow key={item.id}>
+                            {/* Individual Checkbox */}
+                            <TableCell className="text-center">
+                                <Checkbox
+                                    checked={selectedRowIds.has(item.id)}
+                                    onCheckedChange={(checked) => handleCheckboxChange(item.id, Boolean(checked))}
+                                    aria-label={`Select row ${item.id}`}
+                                    className="mx-auto border-gray-500 hover:border-gray-500 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-white cursor-pointer"
+                                />
+                            </TableCell>
                             <TableCell>{item.id}</TableCell>
                             <TableCell>{item.meterNo}</TableCell>
                             <TableCell>{item.feederLine}</TableCell>
@@ -268,7 +319,7 @@ export default function MeterReadings({ searchQuery, sortConfig, selectedMonth, 
             {selectedItem && isEditDialogOpen && (
                 <EditMeterReading
                     id={selectedItem.id}
-                    onClose={handleEditDialogClose} // Use the specific close handler for edit
+                    onClose={handleEditDialogClose}
                     initialData={{
                         ...selectedItem,
                         month: selectedItem.larDate.split("-")[1] ?? "",
@@ -281,8 +332,8 @@ export default function MeterReadings({ searchQuery, sortConfig, selectedMonth, 
             {selectedItem && isViewDialogOpen && (
                 <ViewMeterReadingDetails
                     open={isViewDialogOpen}
-                    onClose={handleViewDialogClose} // Use the specific close handler for view
-                    data={selectedItem} // Pass the entire selected item
+                    onClose={handleViewDialogClose}
+                    data={selectedItem}
                 />
             )}
         </Card>
