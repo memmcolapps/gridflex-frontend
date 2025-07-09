@@ -17,7 +17,7 @@ export function ReviewApprovalTabs() {
 
 
     // TODO: Replace this mock data with your actual data source
-    const data: any[] = []; // Example: [{ id: 1, ... }, ...]
+    // const data: any[] = []; // Example: [{ id: 1, ... }, ...]
     // Define filterSections for FilterControl
     const filterSections = [
         {

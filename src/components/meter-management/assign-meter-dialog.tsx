@@ -65,13 +65,13 @@ export function AssignMeterDialog({
   setStreetName,
   houseNo,
   setHouseNo,
-  category,
-  setCategory,
+  // category,
+  // setCategory,
   phone,
   setPhone,
   onProceed,
   isFormComplete,
-  progress,
+  // progress,
 }: AssignMeterDialogProps) {
   // Type guard to check if selectedCustomer is MeterData
   const isMeterData = (customer: MeterData | VirtualMeterData): customer is MeterData => {

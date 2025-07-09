@@ -16,22 +16,23 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Ban, Check, CheckCircle, CircleDashed, EyeIcon, MoreVertical } from 'lucide-react';
+import { Ban, CheckCircle, EyeIcon, MoreVertical } from 'lucide-react';
 import ViewDetailsDialog from './viewpercentagedetailsdialog';
+import ConfirmDialog from '@/components/reviewandapproval/confirmapprovaldialog';
 import {
   Pagination,
   PaginationContent,
   PaginationItem,
   PaginationNext,
   PaginationPrevious,
-} from '../ui/pagination';
+} from '@/components/ui/pagination';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '../ui/select';
+} from '@/components/ui/select';
 
 type PercentageRangeItem = {
   id: number;
@@ -53,8 +54,11 @@ const PercentageRangeTable = () => {
   const [selectedTariffs, setSelectedTariffs] = useState<number[]>([]);
   const [rowsPerPage, setRowsPerPage] = useState<number>(10);
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<'approve' | 'reject' | null>(null);
+  const [selectedItem, setSelectedItem] = useState<PercentageRangeItem | null>(null);
 
-  // Sample data (updated to include new fields for non-"Newly Added" rows)
+  // Sample data (unchanged)
   const data: PercentageRangeItem[] = [
     {
       id: 1,
@@ -151,20 +155,41 @@ const PercentageRangeTable = () => {
   };
 
   const handleViewDetails = (item: PercentageRangeItem) => {
+    console.log('View details clicked:', item); // Debug log
     setSelectedRow(item);
     setIsModalOpen(true);
   };
 
   const handleApprove = (item: PercentageRangeItem) => {
-    console.log('Approve:', item);
+    console.log('Opening confirm modal for approve:', item); // Debug log
+    setSelectedItem(item);
+    setConfirmAction('approve');
+    setIsConfirmOpen(true);
   };
 
   const handleReject = (item: PercentageRangeItem) => {
-    console.log('Reject:', item);
+    console.log('Opening confirm modal for reject:', item); // Debug log
+    setSelectedItem(item);
+    setConfirmAction('reject');
+    setIsConfirmOpen(true);
   };
+
+  const handleConfirmAction = () => {
+    console.log('Confirm action triggered:', confirmAction, selectedItem); // Debug log
+    if (selectedItem && confirmAction) {
+      console.log(`${confirmAction === 'approve' ? 'Approve' : 'Reject'}:`, selectedItem);
+      // Add your actual approve/reject logic here (e.g., API call)
+    }
+    setIsConfirmOpen(false);
+    setConfirmAction(null);
+    setSelectedItem(null);
+  };
+
+  console.log('Rendering PercentageRangeTable, isConfirmOpen:', isConfirmOpen, 'confirmAction:', confirmAction); // Debug log
 
   return (
     <Card className="border-none shadow-none bg-white overflow-x-auto min-h-[calc(100vh-300px)]">
+      {/* Temporary button to test modal */}
       <Table className="table-auto w-full">
         <TableHeader>
           <TableRow>
@@ -239,21 +264,30 @@ const PercentageRangeTable = () => {
                     <DropdownMenuContent align="end" className="w-fit bg-white shadow-lg">
                       <DropdownMenuItem
                         className="flex items-center gap-2 cursor-pointer"
+                        onSelect={(e) => e.preventDefault()}
                         onClick={() => handleViewDetails(item)}
                       >
-                        <EyeIcon size={14}/>
+                        <EyeIcon size={14} />
                         <span className="text-sm text-gray-700">View Details</span>
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         className="flex items-center gap-2 cursor-pointer"
-                        onClick={() => handleApprove(item)}
+                        onSelect={(e) => e.preventDefault()}
+                        onClick={() => {
+                          console.log('Approve clicked');
+                          handleApprove(item);
+                        }}
                       >
                         <CheckCircle size={14} />
                         <span className="text-sm text-gray-700">Approve</span>
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         className="flex items-center gap-2 cursor-pointer"
-                        onClick={() => handleReject(item)}
+                        onSelect={(e) => e.preventDefault()}
+                        onClick={() => {
+                          console.log('Reject clicked');
+                          handleReject(item);
+                        }}
                       >
                         <Ban size={14} />
                         <span className="text-sm text-gray-700">Reject</span>
@@ -323,6 +357,13 @@ const PercentageRangeTable = () => {
         selectedRow={selectedRow}
         onApprove={handleApprove}
         onReject={handleReject}
+      />
+
+      <ConfirmDialog
+        isOpen={isConfirmOpen}
+        onOpenChange={setIsConfirmOpen}
+        action={confirmAction ?? 'approve'}
+        onConfirm={handleConfirmAction}
       />
     </Card>
   );

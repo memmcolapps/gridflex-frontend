@@ -7,23 +7,26 @@ import {
 import { Button } from '../ui/button';
 import { MoveRight } from 'lucide-react';
 
+interface PercentageRangeItem {
+  id: number;
+  percentage: string;
+  percentageCode: string;
+  band: string;
+  amountRange: string;
+  changeDescription: string;
+  approvalStatus: string;
+  newPercentage?: string;
+  newPercentageCode?: string;
+  newBand?: string;
+  newAmountRange?: string;
+}
+
 interface ViewDetailsDialogProps {
-    isOpen: boolean;
-    onOpenChange: (open: boolean) => void;
-    selectedRow: {
-        changeDescription?: string;
-        percentage?: string | number;
-        percentageCode?: string;
-        band?: string;
-        amountRange?: string;
-        newPercentage?: string | number;
-        newPercentageCode?: string;
-        newBand?: string;
-        newAmountRange?: string;
-        [key: string]: any;
-    } | null;
-    onApprove: (row: any) => void;
-    onReject: (row: any) => void;
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  selectedRow: PercentageRangeItem | null;
+  onApprove: (row: PercentageRangeItem) => void;
+  onReject: (row: PercentageRangeItem) => void;
 }
 
 const ViewDetailsDialog: React.FC<ViewDetailsDialogProps> = ({
@@ -46,7 +49,7 @@ const ViewDetailsDialog: React.FC<ViewDetailsDialogProps> = ({
                         <span className="text-sm font-medium text-gray-700">Percentage:</span>
                         <span className="text-sm text-gray-900 font-bold">{selectedRow?.percentage}</span>
                         {!isNewlyAdded && (
-                            <span className="text-sm text-gray-900 flex items-center justify-end gap-1 w-20 ml-[37px]">
+                            <span className="text-sm text-gray-900 flex items-center justify-end gap-1 w-20 ml-[10px]">
                                 <MoveRight size={14} className="text-black transform scale-x-250" />&nbsp;&nbsp;&nbsp;
                                 <span className='font-bold'>{selectedRow?.newPercentage ?? 'N/A'}</span>
                             </span>
@@ -56,7 +59,7 @@ const ViewDetailsDialog: React.FC<ViewDetailsDialogProps> = ({
                         <span className="text-sm font-medium text-gray-700">Percentage Code:</span>
                         <span className="text-sm text-gray-900 font-bold">{selectedRow?.percentageCode}</span>
                         {!isNewlyAdded && (
-                            <span className="text-sm text-gray-900 flex items-center justify-end gap-1 w-25 ml-[40px]">
+                            <span className="text-sm text-gray-900 flex items-center justify-end gap-1 w-25 ml-[15px]">
                                 <MoveRight size={14} className="text-black transform scale-x-250" />&nbsp;&nbsp;
                                 <span className='font-bold'>{selectedRow?.newPercentageCode ?? 'N/A'}</span>
                             </span>
@@ -66,7 +69,7 @@ const ViewDetailsDialog: React.FC<ViewDetailsDialogProps> = ({
                         <span className="text-sm font-medium text-gray-700">Band Code:</span>
                         <span className="text-sm text-gray-900 font-bold">{selectedRow?.band}</span>
                         {!isNewlyAdded && (
-                            <span className="text-sm text-gray-900 flex items-center justify-end gap-1 w-25 ml-[40px]">
+                            <span className="text-sm text-gray-900 flex items-center justify-end gap-1 w-25 ml-[12px]">
                                 <MoveRight size={14} className="text-black transform scale-x-250" />&nbsp;&nbsp;
                                 <span className='font-bold'>{selectedRow?.newBand ?? 'N/A'}</span>
                             </span>
@@ -76,7 +79,7 @@ const ViewDetailsDialog: React.FC<ViewDetailsDialogProps> = ({
                         <span className="text-sm font-medium text-gray-700">Amount Range:</span>
                         <span className="text-sm text-gray-900 font-bold w-40">{selectedRow?.amountRange}</span>
                         {!isNewlyAdded && (
-                            <span className="text-sm text-gray-900 flex items-center justify-end gap-1 w-38 ml-[25px]">
+                            <span className="text-sm text-gray-900 flex items-center justify-end gap-1 w-48 whitespace-nowrap ml-[-40px]">
                                 <MoveRight size={14} className="text-black transform scale-x-250" />&nbsp;&nbsp;                            
                                 <span className='font-bold w-20'>{selectedRow?.newAmountRange ?? 'N/A'}</span>                           
                             </span>
@@ -85,16 +88,18 @@ const ViewDetailsDialog: React.FC<ViewDetailsDialogProps> = ({
                 </div>
                 <div className="flex justify-between">
                     <Button
-                        onClick={() => onReject(selectedRow)}
+                        onClick={() => selectedRow && onReject(selectedRow)}
                         variant="outline"
                         className="border-red-500 text-red-500 bg-white"
+                        disabled={!selectedRow}
                     >
                         Reject
                     </Button>
                     <Button
                         variant="default"
-                        onClick={() => onApprove(selectedRow)}
+                        onClick={() => selectedRow && onApprove(selectedRow)}
                         className="bg-[#22C55E] text-white"
+                        disabled={!selectedRow}
                     >
                         Approve
                     </Button>

@@ -141,7 +141,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
       setErrors({});
       console.log("formData reset for add:", formData); // Debug: Log formData
     }
-  }, [editMeter, isOpen]);
+  }, [editMeter, isOpen,formData]);
 
   const validateStep1 = () => {
     const newErrors: Record<string, string> = {};
