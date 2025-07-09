@@ -11,7 +11,7 @@ import {
     PaginationItem,
     PaginationNext,
     PaginationPrevious,
-} from "@/components/ui/pagination"
+} from "@/components/ui/pagination";
 import { Button } from "@/components/ui/button";
 import {
     Table,
@@ -30,49 +30,107 @@ import {
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
+import ViewMeterReadingDetails from "./view-meter-reading-details";
 
-export default function MeterReadings() {
-    const data = [
+interface MeterReading {
+    id: number;
+    meterNo: string;
+    feederLine: string;
+    tariffType: string;
+    larDate: string;
+    lastReading: number;
+    readingType: string;
+    readingDate: string;
+    currentReadings: number;
+}
+
+interface MeterReadingsProps {
+    searchQuery: string;
+    sortConfig: string;
+    selectedMonth: string;
+    selectedYear: string;
+}
+
+export default function MeterReadings({ searchQuery, sortConfig, selectedMonth, selectedYear }: MeterReadingsProps) {
+    const data: MeterReading[] = [
         { id: 1, meterNo: "62010223", feederLine: "jeun", tariffType: "R1", larDate: "16-05-2025", lastReading: 500, readingType: "Normal", readingDate: "16-06-2025", currentReadings: 0 },
-        { id: 2, meterNo: "62010223", feederLine: "jeun", tariffType: "R2", larDate: "16-05-2025", lastReading: 300, readingType: "Rollover", readingDate: "16-06-2025", currentReadings: 300 },
+        { id: 2, meterNo: "62010223", feederLine: "jeun", tariffType: "R2", larDate: "16-07-2025", lastReading: 300, readingType: "Rollover", readingDate: "16-06-2025", currentReadings: 300 },
         { id: 3, meterNo: "62010223", feederLine: "jeun", tariffType: "R3", larDate: "16-05-2025", lastReading: 450, readingType: "Normal", readingDate: "16-06-2025", currentReadings: 450 },
         { id: 4, meterNo: "62010223", feederLine: "jeun", tariffType: "C1", larDate: "16-05-2025", lastReading: 400, readingType: "Normal", readingDate: "16-06-2025", currentReadings: 400 },
-        { id: 5, meterNo: "62010223", feederLine: "jeun", tariffType: "C2", larDate: "16-05-2025", lastReading: 480, readingType: "Normal", readingDate: "16-06-2025", currentReadings: 0 },
+        { id: 5, meterNo: "62010223", feederLine: "jeun", tariffType: "C2", larDate: "16-07-2025", lastReading: 480, readingType: "Normal", readingDate: "16-06-2025", currentReadings: 0 },
         { id: 6, meterNo: "62010223", feederLine: "jeun", tariffType: "C3", larDate: "16-05-2025", lastReading: 800, readingType: "Normal", readingDate: "16-06-2025", currentReadings: 800 },
-        { id: 7, meterNo: "62010223", feederLine: "jeun", tariffType: "D1", larDate: "16-05-2025", lastReading: 900, readingType: "Normal", readingDate: "16-06-2025", currentReadings: 900 },
+        { id: 7, meterNo: "62010223", feederLine: "jeun", tariffType: "D1", larDate: "16-06-2025", lastReading: 900, readingType: "Normal", readingDate: "16-06-2025", currentReadings: 900 },
         { id: 8, meterNo: "62010223", feederLine: "jeun", tariffType: "D2", larDate: "16-05-2025", lastReading: 30, readingType: "Normal", readingDate: "16-06-2025", currentReadings: 30 },
         { id: 9, meterNo: "62010223", feederLine: "jeun", tariffType: "D3", larDate: "16-05-2025", lastReading: 99980, readingType: "Normal", readingDate: "16-06-2025", currentReadings: 0 },
         { id: 10, meterNo: "62010223", feederLine: "jeun", tariffType: "R3", larDate: "16-05-2025", lastReading: 99950, readingType: "Normal", readingDate: "16-06-2025", currentReadings: 99950 },
-        { id: 11, meterNo: "62010223", feederLine: "jeun", tariffType: "R3", larDate: "16-05-2025", lastReading: 99950, readingType: "Normal", readingDate: "16-06-2025", currentReadings: 99950 },
+        { id: 11, meterNo: "62010223", feederLine: "jeun", tariffType: "R3", larDate: "16-06-2025", lastReading: 99950, readingType: "Normal", readingDate: "16-06-2025", currentReadings: 99950 },
     ];
 
-    type MeterReading = {
-        id: number;
-        meterNo: string;
-        feederLine: string;
-        tariffType: string;
-        larDate: string;
-        lastReading: number;
-        readingType: string;
-        readingDate: string;
-        currentReadings: number;
-    };
-
-    const [, setEditDialogOpen] = useState(false);
+    const [isEditDialogOpen, setEditDialogOpen] = useState(false);
+    const [isViewDialogOpen, setViewDialogOpen] = useState(false); // New state for view dialog
     const [selectedItem, setSelectedItem] = useState<MeterReading | null>(null);
     const [rowsPerPage, setRowsPerPage] = useState<number>(10);
     const [currentPage, setCurrentPage] = useState<number>(1);
 
-    const totalPages = Math.ceil(data.length / rowsPerPage);
+    // Helper function to parse DD-MM-YYYY date format
+    const parseDate = (dateStr: string): Date => {
+        const parts = dateStr.split('-');
+        const day = Number(parts[0]);
+        const month = Number(parts[1]);
+        const year = Number(parts[2]);
 
-    const paginatedData = data.slice(
+        // Provide fallback values if parts are NaN (e.g., if dateStr is malformed)
+        const safeDay = isNaN(day) ? 1 : day;
+        const safeMonth = isNaN(month) ? 1 : month;
+        const safeYear = isNaN(year) ? new Date().getFullYear() : year; // Fallback to current year
+
+        return new Date(safeYear, safeMonth - 1, safeDay); // Month is 0-based in JavaScript Date
+    };
+
+    // Filter data based on search query, month, and year using larDate
+    const filteredData = data.filter((item) => {
+        const larDate = parseDate(item.larDate);
+        // Ensure month is converted to string correctly for comparison
+        const monthMatch = selectedMonth === "All" ||
+            larDate.toLocaleString('default', { month: 'long' }) === selectedMonth;
+        const yearMatch = selectedYear === "All" ||
+            larDate.getFullYear().toString() === selectedYear;
+        const searchMatch = searchQuery === "" ||
+            item.meterNo.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            item.feederLine.toLowerCase().includes(searchQuery.toLowerCase());
+        return monthMatch && yearMatch && searchMatch;
+    });
+
+    // Sort data based on sortConfig
+    const sortedData = [...filteredData].sort((a, b) => {
+        if (!sortConfig) return 0;
+        const [key, direction] = sortConfig.split(':');
+        const multiplier = direction === 'desc' ? -1 : 1;
+
+        if (key === 'meterNo' || key === 'feederLine' || key === 'tariffType' || key === 'readingType') {
+            return a[key].localeCompare(b[key]) * multiplier;
+        }
+        if (key === 'larDate' || key === 'readingDate') {
+            return (parseDate(a[key]).getTime() - parseDate(b[key]).getTime()) * multiplier;
+        }
+        if (key === 'lastReading' || key === 'currentReadings') {
+            return (a[key] - b[key]) * multiplier;
+        }
+        return 0;
+    });
+
+    const totalPages = Math.ceil(sortedData.length / rowsPerPage);
+
+    const paginatedData = sortedData.slice(
         (currentPage - 1) * rowsPerPage,
         currentPage * rowsPerPage
     );
 
     const handleView = (id: number) => {
-        console.log(`Viewing meter reading ${id}`);
+        const item = data.find((item) => item.id === id);
+        setSelectedItem(item ?? null);
+        setViewDialogOpen(true); // Open the view dialog
     };
 
     const handleEdit = (id: number) => {
@@ -81,8 +139,13 @@ export default function MeterReadings() {
         setEditDialogOpen(true);
     };
 
-    const handleDialogClose = () => {
+    const handleEditDialogClose = () => {
         setEditDialogOpen(false);
+        setSelectedItem(null);
+    };
+
+    const handleViewDialogClose = () => { // New function to close view dialog
+        setViewDialogOpen(false);
         setSelectedItem(null);
     };
 
@@ -174,7 +237,7 @@ export default function MeterReadings() {
                     </Select>
                     <span className="text-sm font-medium">
                         {(currentPage - 1) * rowsPerPage + 1}-
-                        {Math.min(currentPage * rowsPerPage, data.length)} of {data.length}
+                        {Math.min(currentPage * rowsPerPage, sortedData.length)} of {sortedData.length}
                     </span>
                 </div>
                 <PaginationContent>
@@ -200,15 +263,26 @@ export default function MeterReadings() {
                     </PaginationItem>
                 </PaginationContent>
             </Pagination>
-            {selectedItem && (
+
+            {/* Edit Dialog */}
+            {selectedItem && isEditDialogOpen && (
                 <EditMeterReading
                     id={selectedItem.id}
-                    onClose={handleDialogClose}
+                    onClose={handleEditDialogClose} // Use the specific close handler for edit
                     initialData={{
                         ...selectedItem,
-                        month: selectedItem.readingDate.split("-")[1] ?? "",
-                        year: selectedItem.readingDate.split("-")[2] ?? "",
+                        month: selectedItem.larDate.split("-")[1] ?? "",
+                        year: selectedItem.larDate.split("-")[2] ?? "",
                     }}
+                />
+            )}
+
+            {/* View Dialog */}
+            {selectedItem && isViewDialogOpen && (
+                <ViewMeterReadingDetails
+                    open={isViewDialogOpen}
+                    onClose={handleViewDialogClose} // Use the specific close handler for view
+                    data={selectedItem} // Pass the entire selected item
                 />
             )}
         </Card>

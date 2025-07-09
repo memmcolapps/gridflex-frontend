@@ -110,7 +110,7 @@ export default function GenerateReadingSheet({ open, onClose }: GenerateReadingS
                                     disabled={!filterType}
                                     className="bg-[#161CCA] text-white cursor-pointer"
                                     size={"lg"}
-                                    >
+                                >
                                     Proceed
                                 </Button>
                             </DialogFooter>
@@ -200,7 +200,12 @@ export default function GenerateReadingSheet({ open, onClose }: GenerateReadingS
                                             <TableCell>jeun</TableCell>
                                             <TableCell>jeun</TableCell>
                                             <TableCell>5, Glorious Omemuru, Obafemi Owode State</TableCell>
-                                            <TableCell>1,000,000</TableCell>
+                                            <TableCell>
+                                                <Input
+                                                    className="w-fit text-sm border-gray-300"
+                                                    disabled
+                                                />
+                                            </TableCell>
                                         </TableRow>
                                     ))}
                                 </TableBody>
