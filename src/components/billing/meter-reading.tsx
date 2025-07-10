@@ -209,16 +209,16 @@ export default function MeterReadings({ searchQuery, sortConfig, selectedMonth, 
                                 className={isSomeSelected ? "indeterminate" : "mx-auto border-gray-500 hover:border-gray-500 focus:ring-0 focus:ring-blue-500/50 focus:ring-offset-2 focus:ring-offset-white cursor-pointer"}
                             />
                         </TableHead>
-                        <TableHead>S/N</TableHead>
-                        <TableHead>Meter No.</TableHead>
-                        <TableHead>Feeder Line</TableHead>
-                        <TableHead>Tariff Type</TableHead>
-                        <TableHead>LAR Date</TableHead>
-                        <TableHead>Last Actual Reading</TableHead>
-                        <TableHead>Reading Type</TableHead>
-                        <TableHead>Reading Date</TableHead>
-                        <TableHead>Current Readings</TableHead>
-                        <TableHead>Actions</TableHead>
+                        <TableHead className="py-3 font-medium text-gray-700">S/N</TableHead>
+                        <TableHead className="py-3 font-medium text-gray-700">Meter No.</TableHead>
+                        <TableHead className="py-3 font-medium text-gray-700">Feeder Line</TableHead>
+                        <TableHead className="py-3 font-medium text-gray-700">Tariff Type</TableHead>
+                        <TableHead className="py-3 font-medium text-gray-700">LAR Date</TableHead>
+                        <TableHead className="py-3 font-medium text-gray-700">Last Actual Reading</TableHead>
+                        <TableHead className="py-3 font-medium text-gray-700">Reading Type</TableHead>
+                        <TableHead className="py-3 font-medium text-gray-700">Reading Date</TableHead>
+                        <TableHead className="py-3 font-medium text-gray-700">Current Readings</TableHead>
+                        <TableHead className="py-3 font-medium text-gray-700">Actions</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
