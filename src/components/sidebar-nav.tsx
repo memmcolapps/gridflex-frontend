@@ -118,7 +118,7 @@ export function SidebarNav() {
           hasSubmenu: true,
           submenuItems: [
             { title: "Meter Reading Sheet", href: "/billing/md-prebilling/reading-sheet" },
-            { title: "Metered Consumption", href: "/billing/md-prebilling/metered-consumption" },
+            { title: "Meter Consumption", href: "/billing/md-prebilling/meter-consumption" },
             { title: "Energy-Import", href: "/billing/md-prebilling/energy-import" },
           ]
         },
@@ -128,7 +128,7 @@ export function SidebarNav() {
           hasSubmenu: true,
           submenuItems: [
             { title: "Meter Reading Sheet", href: "/billing/non-md-prebilling/reading-sheet" },
-            { title: "Metered Consumption", href: "/billing/non-md-prebilling/metered-consumption" },
+            { title: "Meter Consumption", href: "/billing/non-md-prebilling/meter-consumption" },
             { title: "Energy-Import", href: "/billing/non-md-prebilling/energy-import" },
           ]
         },
