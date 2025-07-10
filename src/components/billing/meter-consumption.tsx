@@ -166,105 +166,146 @@ export default function MeterConsumptions({ searchQuery, sortConfig, selectedMon
     };
 
     return (
-        <Card className="p-4 border-none h-full">
-            <div>
-                <Table className="h-full">
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead className="w-[50px] text-center py-3">
-                                <Checkbox
-                                    checked={isAllSelected}
-                                    onCheckedChange={handleSelectAll}
-                                    aria-label="Select all"
-                                    className="mx-auto border-gray-400 hover:border-gray-600 focus:ring-0 focus:ring-offset-0 cursor-pointer"
-                                />
-                            </TableHead>
-                            <TableHead className="py-3 font-medium text-gray-700">S/N</TableHead>
-                            <TableHead className="py-3 font-medium text-gray-700">Meter No.</TableHead>
-                            <TableHead className="py-3 font-medium text-gray-700">Feeder Line</TableHead>
-                            <TableHead className="py-3 font-medium text-gray-700">Tariff Type</TableHead>
-                            <TableHead className="py-3 font-medium text-gray-700">Avg. Consumption</TableHead>
-                            <TableHead className="py-3 font-medium text-gray-700">Cumulative Reading</TableHead>
-                            <TableHead className="py-3 font-medium text-gray-700">Current Readings</TableHead>
-                            <TableHead className="py-3 font-medium text-gray-700">Consumption Type</TableHead>
-                            <TableHead className="py-3 font-medium text-gray-700">Consumed Energy</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody className="divide-y divide-gray-50">
-                        {paginatedData.map((item) => (
-                            <TableRow key={item.id} >
-                                <TableCell className="text-center py-3">
-                                    <Checkbox
-                                        checked={selectedRowIds.has(item.id)}
-                                        onCheckedChange={(checked) => handleCheckboxChange(item.id, Boolean(checked))}
-                                        aria-label={`Select row ${item.id}`}
-                                        className="mx-auto border-gray-400 hover:border-gray-600 focus:ring-0 focus:ring-offset-0 cursor-pointer"
-                                    />
-                                </TableCell>
-                                <TableCell className="py-3 text-gray-600">{item.id}</TableCell>
-                                <TableCell className="py-3 text-gray-600">{item.meterNo}</TableCell>
-                                <TableCell className="py-3 text-gray-600">{item.feederLine}</TableCell>
-                                <TableCell className="py-3 text-gray-600">{item.tariffType}</TableCell>
-                                <TableCell className="py-3 text-gray-600">{item.averageConsumption}</TableCell>
-                                <TableCell className="py-3 text-gray-600">{item.cumulativeReading}</TableCell>
-                                <TableCell className="py-3 text-gray-600">{item.currentReadings}</TableCell>
-                                <TableCell className="py-3 text-gray-600">{item.consumptionType}</TableCell>
-                                <TableCell className="py-3 text-gray-600">{item.consumedEnergy}</TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
+      <Card className="h-full border-none p-4">
+        <div>
+          <Table className="h-full">
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[50px] py-3 text-center">
+                  <Checkbox
+                    checked={isAllSelected}
+                    onCheckedChange={handleSelectAll}
+                    aria-label="Select all"
+                    className="mx-auto cursor-pointer border-gray-400 hover:border-gray-600 focus:ring-0 focus:ring-offset-0"
+                  />
+                </TableHead>
+                <TableHead className="py-3 font-medium text-gray-700">
+                  S/N
+                </TableHead>
+                <TableHead className="py-3 font-medium text-gray-700">
+                  Meter No.
+                </TableHead>
+                <TableHead className="py-3 font-medium text-gray-700">
+                  Feeder Line
+                </TableHead>
+                <TableHead className="py-3 font-medium text-gray-700">
+                  Tariff Type
+                </TableHead>
+                <TableHead className="py-3 font-medium text-gray-700">
+                  Avg. Consumption
+                </TableHead>
+                <TableHead className="py-3 font-medium text-gray-700">
+                  Cumulative Reading
+                </TableHead>
+                <TableHead className="py-3 font-medium text-gray-700">
+                  Current Readings
+                </TableHead>
+                <TableHead className="py-3 font-medium text-gray-700">
+                  Consumption Type
+                </TableHead>
+                <TableHead className="py-3 font-medium text-gray-700">
+                  Consumed Energy
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody className="divide-y divide-gray-50">
+              {paginatedData.map((item) => (
+                <TableRow key={item.id}>
+                  <TableCell className="py-3 text-center">
+                    <Checkbox
+                      checked={selectedRowIds.has(item.id)}
+                      onCheckedChange={(checked) =>
+                        handleCheckboxChange(item.id, Boolean(checked))
+                      }
+                      aria-label={`Select row ${item.id}`}
+                      className="mx-auto cursor-pointer border-gray-500 hover:border-gray-500 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-white"
+                    />
+                  </TableCell>
+                  <TableCell className="py-3 ">
+                    {item.id}
+                  </TableCell>
+                  <TableCell className="py-3 ">
+                    {item.meterNo}
+                  </TableCell>
+                  <TableCell className="py-3 ">
+                    {item.feederLine}
+                  </TableCell>
+                  <TableCell className="py-3 ">
+                    {item.tariffType}
+                  </TableCell>
+                  <TableCell className="py-3 ">
+                    {item.averageConsumption}
+                  </TableCell>
+                  <TableCell className="py-3 ">
+                    {item.cumulativeReading}
+                  </TableCell>
+                  <TableCell className="py-3 ">
+                    {item.currentReadings}
+                  </TableCell>
+                  <TableCell className="py-3 ">
+                    {item.consumptionType}
+                  </TableCell>
+                  <TableCell className="py-3 ">
+                    {item.consumedEnergy}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+        <div className="mt-4">
+          <Pagination className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <span className="text-sm font-medium text-gray-600">
+                  Rows per page
+                </span>
+                <Select
+                  value={rowsPerPage.toString()}
+                  onValueChange={handleRowsPerPageChange}
+                >
+                  <SelectTrigger className="h-8 w-[70px] border-gray-300 focus:ring-0 focus:ring-offset-0">
+                    <SelectValue placeholder={rowsPerPage.toString()} />
+                  </SelectTrigger>
+                  <SelectContent side="top" className="min-w-[70px]">
+                    <SelectItem value="10">10</SelectItem>
+                    <SelectItem value="24">24</SelectItem>
+                    <SelectItem value="48">48</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <span className="text-sm font-medium text-gray-600">
+                {(currentPage - 1) * rowsPerPage + 1}-
+                {Math.min(currentPage * rowsPerPage, sortedData.length)} of{" "}
+                {sortedData.length}
+              </span>
             </div>
-            <div className="mt-4">
-                <Pagination className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                        <div className="flex items-center space-x-2">
-                            <span className="text-sm font-medium text-gray-600">Rows per page</span>
-                            <Select
-                                value={rowsPerPage.toString()}
-                                onValueChange={handleRowsPerPageChange}
-                            >
-                                <SelectTrigger className="h-8 w-[70px] border-gray-300 focus:ring-0 focus:ring-offset-0">
-                                    <SelectValue placeholder={rowsPerPage.toString()} />
-                                </SelectTrigger>
-                                <SelectContent side="top" className="min-w-[70px]">
-                                    <SelectItem value="10">10</SelectItem>
-                                    <SelectItem value="24">24</SelectItem>
-                                    <SelectItem value="48">48</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <span className="text-sm font-medium text-gray-600">
-                            {(currentPage - 1) * rowsPerPage + 1}-
-                            {Math.min(currentPage * rowsPerPage, sortedData.length)} of {sortedData.length}
-                        </span>
-                    </div>
-                    <PaginationContent>
-                        <PaginationItem>
-                            <PaginationPrevious
-                                href="#"
-                                onClick={e => {
-                                    e.preventDefault();
-                                    handlePrevious();
-                                }}
-                                className="text-gray-600"
-                                aria-disabled={currentPage === 1}
-                            />
-                        </PaginationItem>
-                        <PaginationItem>
-                            <PaginationNext
-                                href="#"
-                                onClick={e => {
-                                    e.preventDefault();
-                                    handleNext();
-                                }}
-                                className="text-gray-600"
-                                aria-disabled={currentPage === totalPages}
-                            />
-                        </PaginationItem>
-                    </PaginationContent>
-                </Pagination>
-            </div>
-        </Card>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handlePrevious();
+                  }}
+                  className=""
+                  aria-disabled={currentPage === 1}
+                />
+              </PaginationItem>
+              <PaginationItem>
+                <PaginationNext
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleNext();
+                  }}
+                  className=""
+                  aria-disabled={currentPage === totalPages}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      </Card>
     );
 }
