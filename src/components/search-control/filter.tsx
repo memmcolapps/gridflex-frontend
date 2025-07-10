@@ -127,7 +127,7 @@ export function FilterControl({
                 {isOpen && (
                     <div
                         ref={dropdownRef}
-                        className="absolute z-50 mt-2 w-[280px] bg-white rounded-md shadow-lg border border-gray-200 p-4"
+                        className="absolute z-50 mt-2 w-[280px] bg-white rounded-md shadow-lg border border-gray-200 p-4 ml-[-45px]"
                     >
                         <div className="text-gray-700 text-sm">Insufficient filter sections provided.</div>
                     </div>

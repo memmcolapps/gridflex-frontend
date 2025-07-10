@@ -87,7 +87,7 @@ export default function AllocateMetersPage() {
     const [, setIsDialogOpen] = useState(false);
     const [selectedMeter, setSelectedMeter] = useState<MeterData | null>(null);
     const [organizationId, setOrganizationId] = useState<string>("");
-    const [meterData,] = useState<MeterData[]>(initialMeters);
+    const [] = useState<MeterData[]>(initialMeters);
     const [isBulkUploadDialogOpen, setIsBulkUploadDialogOpen] = useState(false);
     const [meterNumberInput, setMeterNumberInput] = useState<string>("");
     const [searchTerm, setSearchTerm] = useState<string>("");

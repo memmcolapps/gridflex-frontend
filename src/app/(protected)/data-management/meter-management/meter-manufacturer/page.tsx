@@ -52,12 +52,6 @@ function AddManufacturerDialog({
     const [contactPerson, setContactPerson] = useState("");
     const [phoneNumber, setPhoneNumber] = useState("");
     const [location, setLocation] = useState("Lagos");
-    const [, setCurrentPage] = useState<number>(1);
-    const [rowsPerPage, setRowsPerPage] = useState<number>(10);
-    const [processedData,] = useState<(Manufacturer)[]>([]);
-    const totalRows = Math.ceil(processedData.length / rowsPerPage);
-
-
 
     const handleAdd = () => {
         if (!manufacturerName || !manufacturerId || !contactPerson || !phoneNumber) {

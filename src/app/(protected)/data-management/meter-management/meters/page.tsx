@@ -728,23 +728,6 @@ export default function MeterManagementPage() {
         }
     };
 
-    const handleApprove = () => {
-        if (selectedMeter) {
-            if (activeTab === "actual" && "meterManufacturer" in selectedMeter) {
-                setData((prev) =>
-                    prev.map((meter) =>
-                        meter.id === selectedMeter.id ? { ...meter, approvalStatus: "Approved" } : meter
-                    )
-                );
-            } else if (activeTab === "virtual" && "customerId" in selectedMeter) {
-                setVirtualData((prev) =>
-                    prev.map((meter) =>
-                        meter.id === selectedMeter.id ? { ...meter, status: "Approved" } : meter
-                    )
-                );
-            }
-        }
-    };
 
     const handleAssign = (data: {
         firstName: string;
@@ -1021,6 +1004,7 @@ export default function MeterManagementPage() {
                             <SearchControl
                                 onSearchChange={handleSearchChange}
                                 value={searchTerm}
+                                placeholder="Search by Meter Number, SIM Number, or Status"
                             />
                             <FilterControl
                                 sections={activeTab === "actual" ? actualFilterSections : virtualFilterSections}

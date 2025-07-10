@@ -103,6 +103,7 @@ export function SidebarNav() {
             { title: "Credit Adjustment", href: "/data-management/debt-management/credit-adjustment" }
           ]
         },
+        { title: "Review & Approval", href: "/data-management/reviewandapproval" },
       ],
     },
     {
