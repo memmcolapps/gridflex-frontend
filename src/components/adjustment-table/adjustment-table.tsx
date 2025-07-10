@@ -33,12 +33,12 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import {
-    MoreVertical,
     PlusCircle,
     Eye,
     SquareArrowOutUpRight,
     Printer,
     Wallet,
+    MoreVertical,
 } from 'lucide-react';
 import { SearchControl, SortControl } from '../search-control';
 import { ContentHeader } from '../ui/content-header';
@@ -256,9 +256,17 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
         setCurrentPage(1);
     };
 
+    const handleRowClick = (customer: Customer, event: React.MouseEvent<HTMLTableRowElement>) => {
+        const isCheckboxClicked = (event.target as HTMLElement).closest('input[type="checkbox"]');
+        if (!isCheckboxClicked) {
+            setSelectedCustomer(customer);
+            setIsTransactionsDialogOpen(true);
+        }
+    };
+
     return (
-        <div className="p-6 h-full overflow-hidden flex flex-col text-black">
-            <div className="p-6 flex-grow">
+        <div className="p-6 h-screen flex flex-col text-black">
+            <div className="p-6 flex flex-col flex-grow">
                 <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
                     <ContentHeader
                         title={type === 'credit' ? 'Credit Adjustment' : 'Debit Adjustment'}
@@ -468,11 +476,11 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                         </Button>
                     </div>
                 </div>
-                <div className="h-4/6">
+                <div className="flex-grow min-h-0 overflow-auto">
                     <Table>
                         <TableHeader>
-                            <TableRow>
-                                <TableHead className="w-[30px] pr-0">
+                            <TableRow className="h-16 py-4">
+                                <TableHead className="w-[30px] pr-0 py-4">
                                     <div className="flex items-center gap-2">
                                         <input
                                             type="checkbox"
@@ -486,18 +494,21 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                                         <span>S/N</span>
                                     </div>
                                 </TableHead>
-                                <TableHead>Account No.</TableHead>
-                                <TableHead>Customer ID</TableHead>
-                                <TableHead>Customer Name</TableHead>
-                                <TableHead>Meter No.</TableHead>
-                                <TableHead>{type === 'credit' ? 'Credit Balance' : 'Debit Balance'}</TableHead>
-                                <TableHead>Actions</TableHead>
+                                <TableHead className="py-4">Account No.</TableHead>
+                                <TableHead className="py-4">Customer ID</TableHead>
+                                <TableHead className="py-4">Customer Name</TableHead>
+                                <TableHead className="py-4">Meter No.</TableHead>
+                                <TableHead className="py-4">{type === 'credit' ? 'Credit Balance' : 'Debit Balance'}</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {paginatedCustomers.map((customer, index) => (
-                                <TableRow key={customer.id} className="hover:bg-muted/50">
-                                    <TableCell>
+                                <TableRow 
+                                    key={customer.id} 
+                                    className="hover:bg-muted/50 cursor-pointer h-16 py-4"
+                                    onClick={(event) => handleRowClick(customer, event)}
+                                >
+                                    <TableCell className="py-4 align-middle">
                                         <div className="flex items-center gap-2">
                                             <input
                                                 type="checkbox"
@@ -512,11 +523,11 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                                             <span>{(currentPage - 1) * rowsPerPage + index + 1}</span>
                                         </div>
                                     </TableCell>
-                                    <TableCell>{customer.accountNo}</TableCell>
-                                    <TableCell>{customer.id}</TableCell>
-                                    <TableCell>{customer.name}</TableCell>
-                                    <TableCell>{customer.meterNo}</TableCell>
-                                    <TableCell>
+                                    <TableCell className="py-4 align-middle">{customer.accountNo}</TableCell>
+                                    <TableCell className="py-4 align-middle">{customer.id}</TableCell>
+                                    <TableCell className="py-4 align-middle">{customer.name}</TableCell>
+                                    <TableCell className="py-4 align-middle">{customer.meterNo}</TableCell>
+                                    <TableCell className="py-4 align-middle">
                                         <span
                                             className={
                                                 type === 'credit'
@@ -526,28 +537,6 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                                         >
                                             {customer.balance.toLocaleString()}
                                         </span>
-                                    </TableCell>
-                                    <TableCell>
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button size="sm" variant="ghost" className="h-8 w-8 p-2 cursor-pointer">
-                                                    <MoreVertical size={14} />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="center" className="w-fit cursor-pointer">
-                                                <DropdownMenuItem
-                                                    onSelect={() => {
-                                                        setSelectedCustomer(customer);
-                                                        setIsTransactionsDialogOpen(true);
-                                                    }}
-                                                >
-                                                    <div className="flex items-center w-fit gap-2">
-                                                        <Eye size={14} />
-                                                        <span className="cursor-pointer">View Transactions</span>
-                                                    </div>
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
                                     </TableCell>
                                 </TableRow>
                             ))}
@@ -634,8 +623,8 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                     <div className="overflow-x-hidden">
                         <Table className="w-full">
                             <TableHeader>
-                                <TableRow>
-                                    <TableHead className="w-fit pr-0">
+                                <TableRow className="h-16 py-4">
+                                    <TableHead className="w-fit pr-0 py-4">
                                         <div className="flex items-center gap-2">
                                             <input
                                                 type="checkbox"
@@ -649,16 +638,16 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                                             <span>S/N</span>
                                         </div>
                                     </TableHead>
-                                    <TableHead className="w-fit">Liability Name</TableHead>
-                                    <TableHead className="w-fit">Liability Code</TableHead>
-                                    <TableHead>Credit Balance</TableHead>
-                                    <TableHead>Action</TableHead>
+                                    <TableHead className="w-fit py-4">Liability Name</TableHead>
+                                    <TableHead className="w-fit py-4">Liability Code</TableHead>
+                                    <TableHead className="py-4">{type === 'credit' ? 'Credit Balance' : 'Debit Balance'}</TableHead>
+                                    <TableHead className="py-4">Action</TableHead>
                                 </TableRow>
                             </TableHeader>
-                            <TableBody className="">
+                            <TableBody>
                                 {(type === 'credit' ? creditTransactions : debitTransactions).map((transaction, index) => (
-                                    <TableRow key={index}>
-                                        <TableCell>
+                                    <TableRow key={index} className="h-16 py-4">
+                                        <TableCell className="py-4 align-middle">
                                             <div className="flex items-center gap-2">
                                                 <input
                                                     type="checkbox"
@@ -680,24 +669,24 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                                                 <span>{(currentPage - 1) * rowsPerPage + index + 1}</span>
                                             </div>
                                         </TableCell>
-                                        <TableCell>{transaction.liabilityCause}</TableCell>
-                                        <TableCell>{transaction.liabilityCode}</TableCell>
-                                        <TableCell>
+                                        <TableCell className="py-4 align-middle">{transaction.liabilityCause}</TableCell>
+                                        <TableCell className="py-4 align-middle">{transaction.liabilityCode}</TableCell>
+                                        <TableCell className="py-4 align-middle">
                                             {typeof transaction.credit === 'number' && transaction.credit !== 0 ? (
-                                                <span className="text-[#059E40] bg-[#E9FBF0] rounded-full px-1.5 py-1.5">
+                                                <span className={type === 'credit' ? 'text-[#059E40] bg-[#E9FBF0] rounded-full px-1.5 py-1.5' : 'text-[#F50202] bg-[#FBE9E9] rounded-full px-1.5 py-1.5'}>
                                                     {transaction.credit.toLocaleString()}
                                                 </span>
                                             ) : (
                                                 typeof transaction.debit === 'number' && transaction.debit !== 0 ? (
-                                                    <span className="text-[#F50202] bg-[#FBE9E9] rounded-full px-1.5 py-1.5">
-                                                        -{transaction.debit.toLocaleString()}
+                                                    <span className={type === 'credit' ? 'text-[#059E40] bg-[#E9FBF0] rounded-full px-1.5 py-1.5' : 'text-[#F50202] bg-[#FBE9E9] rounded-full px-1.5 py-1.5'}>
+                                                    {transaction.debit.toLocaleString()}
                                                     </span>
                                                 ) : (
                                                     '0'
                                                 )
                                             )}
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="py-4 align-middle">
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
                                                     <Button size="sm" variant="ghost" className="h-8 w-8 p-2 cursor-pointer">
@@ -772,31 +761,31 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                     <div className="overflow-x-hidden">
                         <Table className="w-full">
                             <TableHeader>
-                                <TableRow>
-                                    <TableHead className="w-[30px] pr-0">
+                                <TableRow className="h-16 py-4">
+                                    <TableHead className="w-[30px] pr-0 py-4">
                                         <input
                                             type="checkbox"
                                             className="border-[rgba(228,231,236,1)]"
                                         />
                                     </TableHead>
-                                    <TableHead>Date</TableHead>
-                                    <TableHead>{type === 'credit' ? 'Credit' : 'Debit'}</TableHead>
-                                    <TableHead>{type === 'debit' ? 'Credit' : 'Debit'}</TableHead>
-                                    <TableHead>Balance</TableHead>
+                                    <TableHead className="py-4">Date</TableHead>
+                                    <TableHead className="py-4">{type === 'credit' ? 'Credit' : 'Debit'}</TableHead>
+                                    <TableHead className="py-4">{type === 'debit' ? 'Credit' : 'Debit'}</TableHead>
+                                    <TableHead className="py-4">{type === 'credit' ? 'Credit Balance' : 'Debit Balance'}</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {(type === 'credit' ? creditTransactions : debitTransactions).map((transaction, index) => (
-                                    <TableRow key={index}>
-                                        <TableCell>
+                                    <TableRow key={index} className="h-16 py-4">
+                                        <TableCell className="py-4 align-middle">
                                             <input
                                                 type="checkbox"
                                                 className="border-[rgba(228,231,236,1)]"
                                             />
                                             <span>{(currentPage - 1) * rowsPerPage + index + 1}</span>
                                         </TableCell>
-                                        <TableCell>{transaction.date}</TableCell>
-                                        <TableCell>
+                                        <TableCell className="py-4 align-middle">{transaction.date}</TableCell>
+                                        <TableCell className="py-4 align-middle">
                                             {typeof transaction[type === 'credit' ? 'credit' : 'debit'] === 'number' && transaction[type === 'credit' ? 'credit' : 'debit'] !== 0 ? (
                                                 <span className={type === 'credit' ? 'text-[#059E40] bg-[#E9FBF0] rounded-full px-2 py-1' : 'text-[#F50202] bg-[#FBE9E9] rounded-full px-2 py-1'}>
                                                     {transaction[type === 'credit' ? 'credit' : 'debit'].toLocaleString()}
@@ -805,16 +794,16 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                                                 '-'
                                             )}
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="py-4 align-middle">
                                             {typeof transaction[type === 'debit' ? 'credit' : 'debit'] === 'number' && transaction[type === 'debit' ? 'credit' : 'debit'] !== 0 ? (
                                                 <span className={type === 'debit' ? 'text-[#059E40] bg-[#E9FBF0] rounded-full px-2 py-1' : 'text-[#F50202] bg-[#FBE9E9] rounded-full px-2 py-1'}>
-                                                    {transaction[type === 'debit' ? 'credit' : 'debit'].toLocaleString()}
+                                                    -{transaction[type === 'debit' ? 'credit' : 'debit'].toLocaleString()}
                                                 </span>
                                             ) : (
                                                 '-'
                                             )}
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="py-4 align-middle">
                                             {typeof transaction.balance === 'number' ? (
                                                 <span className={type === 'credit' ? 'text-[#059E40] bg-[#E9FBF0] rounded-full px-2 py-1' : 'text-[#F50202] bg-[#FBE9E9] rounded-full px-2 py-1'}>
                                                     {transaction.balance.toLocaleString()}
