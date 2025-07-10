@@ -39,7 +39,7 @@ const ViewDetailsDialog: React.FC<ViewDetailsDialogProps> = ({
     const isNewlyAdded = selectedRow?.changeDescription === 'Newly Added';
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-fit h-fit mx-auto bg-white text-black">
+            <DialogContent className="w-fit h-fit mx-auto bg-white text-black">
                 <DialogHeader>
                     <DialogTitle className="text-left">{selectedRow?.changeDescription}</DialogTitle>
                     <span className='text-gray-500'>Operator:<span>Margaret</span></span>
