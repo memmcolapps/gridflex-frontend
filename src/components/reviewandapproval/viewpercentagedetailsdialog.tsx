@@ -39,15 +39,18 @@ const ViewDetailsDialog: React.FC<ViewDetailsDialogProps> = ({
     const isNewlyAdded = selectedRow?.changeDescription === 'Newly Added';
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-[80vw] sm:max-w-[440px] h-fit mx-auto bg-white text-black p-4 sm:p-6">
+            <DialogContent className="max-w-2xl h-fit mx-auto bg-white text-black p-4 sm:p-6">
                 <div className="w-full">
                     <DialogHeader>
-                        <DialogTitle className="text-left text-base sm:text-lg">{selectedRow?.changeDescription}</DialogTitle>
+                        <DialogTitle className="text-left text-base sm:text-lg">
+                            {selectedRow?.changeDescription}
+                        </DialogTitle>
                         <span className="text-gray-500 text-sm sm:text-base">
                             Operator: <span>Margaret</span>
                         </span>
                     </DialogHeader>
-                    <div className="grid gap-4 py-6 sm:py-8">
+
+                    <div className="flex flex-col gap-3 py-4">
                         {[
                             {
                                 label: 'Percentage:',
@@ -70,28 +73,36 @@ const ViewDetailsDialog: React.FC<ViewDetailsDialogProps> = ({
                                 newValue: selectedRow?.newAmountRange,
                             },
                         ].map(({ label, oldValue, newValue }) => (
-                            <div key={label} className="flex items-center gap-2 sm:gap-4 flex-col sm:flex-row">
-                                <div className="w-[100px] sm:w-[120px] text-sm font-medium text-gray-700 shrink-0">{label}</div>
-                                <div className="flex-1 text-sm text-gray-900 font-bold whitespace-nowrap overflow-hidden text-ellipsis">{oldValue}</div>
-                                {!isNewlyAdded && newValue != null ? (
-                                    <div className="w-[120px] sm:w-[140px] flex items-center gap-1 text-sm text-gray-900 ml-2 sm:ml-4">
+                            <div
+                                key={label}
+                                className="flex items-center gap-4 px-1 sm:px-2"
+                            >
+                                <div className="min-w-[130px] text-sm font-medium text-gray-700 whitespace-nowrap">
+                                    {label}
+                                </div>
+
+                                <div className="flex-1 text-sm font-bold text-gray-900 truncate">
+                                    {oldValue}
+                                </div>
+
+                                {!isNewlyAdded && newValue != null && (
+                                    <div className="min-w-[150px] flex items-center gap-6 text-sm text-gray-900 ml-6">
                                         <MoveRight
+                                            className="text-black scale-x-[2] origin-left"
                                             size={14}
-                                            className="text-black scale-x-[2] scale-y-[1] origin-left"
                                         />
-                                        <span className="font-bold ml-4 whitespace-nowrap">{newValue ?? ''}</span>
+                                        <span className="font-bold whitespace-nowrap">{newValue ?? ''}</span>
                                     </div>
-                                ) : (
-                                    ''
                                 )}
                             </div>
                         ))}
                     </div>
-                    <div className="flex justify-between w-[380px]">
+
+                    <div className="flex flex-col sm:flex-row justify-between mt-6 w-[300px]">
                         <Button
                             onClick={() => selectedRow && onReject(selectedRow)}
                             variant="outline"
-                            className="border-red-500 focus:ring-red-500/0 text-red-500 bg-white"
+                            className="border-red-500 focus:ring-red-500/0 text-red-500 bg-white text-sm sm:text-base"
                             disabled={!selectedRow}
                         >
                             Reject
@@ -99,7 +110,7 @@ const ViewDetailsDialog: React.FC<ViewDetailsDialogProps> = ({
                         <Button
                             variant="default"
                             onClick={() => selectedRow && onApprove(selectedRow)}
-                            className="bg-[#22C55E] text-white"
+                            className="bg-[#22C55E] text-white text-sm sm:text-base"
                             disabled={!selectedRow}
                         >
                             Approve
@@ -108,6 +119,7 @@ const ViewDetailsDialog: React.FC<ViewDetailsDialogProps> = ({
                 </div>
             </DialogContent>
         </Dialog>
+
     );
 };
 
