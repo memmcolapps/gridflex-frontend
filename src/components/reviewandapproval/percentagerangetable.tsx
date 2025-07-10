@@ -57,6 +57,7 @@ const PercentageRangeTable = () => {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState<'approve' | 'reject' | null>(null);
   const [selectedItem, setSelectedItem] = useState<PercentageRangeItem | null>(null);
+  const [dropdownOpenId, setDropdownOpenId] = useState<number | null>(null); // New state to track open dropdown
 
   // Sample data (unchanged)
   const data: PercentageRangeItem[] = [
@@ -158,20 +159,25 @@ const PercentageRangeTable = () => {
     console.log('View details clicked:', item); // Debug log
     setSelectedRow(item);
     setIsModalOpen(true);
+    setDropdownOpenId(null); // Close dropdown
   };
 
   const handleApprove = (item: PercentageRangeItem) => {
     console.log('Opening confirm modal for approve:', item); // Debug log
     setSelectedItem(item);
     setConfirmAction('approve');
-    setIsConfirmOpen(true);
+    setIsModalOpen(false); // Close ViewDetailsDialog
+    setIsConfirmOpen(true); // Open ConfirmDialog
+    setDropdownOpenId(null); // Close dropdown
   };
 
   const handleReject = (item: PercentageRangeItem) => {
     console.log('Opening confirm modal for reject:', item); // Debug log
     setSelectedItem(item);
     setConfirmAction('reject');
-    setIsConfirmOpen(true);
+    setIsModalOpen(false); // Close ViewDetailsDialog
+    setIsConfirmOpen(true); // Open ConfirmDialog
+    setDropdownOpenId(null); // Close dropdown
   };
 
   const handleConfirmAction = () => {
@@ -189,7 +195,6 @@ const PercentageRangeTable = () => {
 
   return (
     <Card className="border-none shadow-none bg-white overflow-x-auto min-h-[calc(100vh-300px)]">
-      {/* Temporary button to test modal */}
       <Table className="table-auto w-full">
         <TableHeader>
           <TableRow>
@@ -255,7 +260,10 @@ const PercentageRangeTable = () => {
                   </span>
                 </TableCell>
                 <TableCell className="px-4 py-3 text-right">
-                  <DropdownMenu>
+                  <DropdownMenu
+                    open={dropdownOpenId === item.id}
+                    onOpenChange={(open) => setDropdownOpenId(open ? item.id : null)}
+                  >
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="sm" className="h-8 w-8 p-0 cursor-pointer">
                         <MoreVertical size={14} className="text-gray-500" />
