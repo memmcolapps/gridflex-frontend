@@ -8,6 +8,7 @@ import { FilterControl, SearchControl, SortControl } from "@/components/search-c
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import LiabilityCauseTable from "./liabilitycausetable";
+import BandTable from "./bandtable";
 
 export function ReviewApprovalTabs() {
     const [activeTab, setActiveTab] = useState("percentage");
@@ -93,6 +94,12 @@ export function ReviewApprovalTabs() {
                             >
                                 Liability Cause
                             </TabsTrigger>
+                              <TabsTrigger
+                                value="band"
+                                className="data-[state=active]:bg-[#161CCA] cursor-pointer data-[state=active]:text-white p-4"
+                            >
+                                Band
+                            </TabsTrigger>
                         </TabsList>
 
                         <div className="flex items-center gap-2 w-full lg:w-auto">
@@ -119,6 +126,9 @@ export function ReviewApprovalTabs() {
                     </TabsContent>
                     <TabsContent value="liability cause" className="overflow-x-hidden">
                         <LiabilityCauseTable />
+                    </TabsContent>
+                       <TabsContent value="band" className="overflow-x-hidden">
+                        <BandTable />
                     </TabsContent>
                 </Tabs>
             </Card>

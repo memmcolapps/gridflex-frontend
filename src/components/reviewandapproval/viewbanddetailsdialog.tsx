@@ -7,29 +7,25 @@ import {
 import { Button } from '../ui/button';
 import { MoveRight } from 'lucide-react';
 
-interface PercentageRangeItem {
+interface BandItem {
     id: number;
-    percentage: string;
-    percentageCode: string;
-    band: string;
-    amountRange: string;
+    bandName: string;
+    electricityHr: string;
     changeDescription: string;
     approvalStatus: string;
-    newPercentage?: string;
-    newPercentageCode?: string;
-    newBand?: string;
-    newAmountRange?: string;
+    newBandName?: string;
+    newElectricityHr?: string;
 }
 
-interface ViewDetailsDialogProps {
+interface ViewBandDetailsDialogProps {
     isOpen: boolean;
     onOpenChange: (open: boolean) => void;
-    selectedRow: PercentageRangeItem | null;
-    onApprove: (row: PercentageRangeItem) => void;
-    onReject: (row: PercentageRangeItem) => void;
+    selectedRow: BandItem | null;
+    onApprove: (row: BandItem) => void;
+    onReject: (row: BandItem) => void;
 }
 
-const ViewDetailsDialog: React.FC<ViewDetailsDialogProps> = ({
+const ViewBandDetailsDialog: React.FC<ViewBandDetailsDialogProps> = ({
     isOpen,
     onOpenChange,
     selectedRow,
@@ -39,7 +35,7 @@ const ViewDetailsDialog: React.FC<ViewDetailsDialogProps> = ({
     const isNewlyAdded = selectedRow?.changeDescription === 'Newly Added';
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-[80vw] sm:max-w-[440px] h-fit mx-auto bg-white text-black p-4 sm:p-6">
+            <DialogContent className="max-w-[80vw] sm:max-w-[400px] h-fit mx-auto bg-white text-black p-4 sm:p-6">
                 <div className="w-full">
                     <DialogHeader>
                         <DialogTitle className="text-left text-base sm:text-lg">{selectedRow?.changeDescription}</DialogTitle>
@@ -50,24 +46,14 @@ const ViewDetailsDialog: React.FC<ViewDetailsDialogProps> = ({
                     <div className="grid gap-4 py-6 sm:py-8">
                         {[
                             {
-                                label: 'Percentage:',
-                                oldValue: selectedRow?.percentage,
-                                newValue: selectedRow?.newPercentage,
+                                label: 'Band Name:',
+                                oldValue: selectedRow?.bandName,
+                                newValue: selectedRow?.newBandName,
                             },
                             {
-                                label: 'Percentage Code:',
-                                oldValue: selectedRow?.percentageCode,
-                                newValue: selectedRow?.newPercentageCode,
-                            },
-                            {
-                                label: 'Band Code:',
-                                oldValue: selectedRow?.band,
-                                newValue: selectedRow?.newBand,
-                            },
-                            {
-                                label: 'Amount Range:',
-                                oldValue: selectedRow?.amountRange,
-                                newValue: selectedRow?.newAmountRange,
+                                label: 'Electricity Hr:',
+                                oldValue: selectedRow?.electricityHr,
+                                newValue: selectedRow?.newElectricityHr,
                             },
                         ].map(({ label, oldValue, newValue }) => (
                             <div key={label} className="flex items-center gap-2 sm:gap-4 flex-col sm:flex-row">
@@ -87,23 +73,25 @@ const ViewDetailsDialog: React.FC<ViewDetailsDialogProps> = ({
                             </div>
                         ))}
                     </div>
-                    <div className="flex justify-between w-[380px]">
-                        <Button
-                            onClick={() => selectedRow && onReject(selectedRow)}
-                            variant="outline"
-                            className="border-red-500 focus:ring-red-500/0 text-red-500 bg-white"
-                            disabled={!selectedRow}
-                        >
-                            Reject
-                        </Button>
-                        <Button
-                            variant="default"
-                            onClick={() => selectedRow && onApprove(selectedRow)}
-                            className="bg-[#22C55E] text-white"
-                            disabled={!selectedRow}
-                        >
-                            Approve
-                        </Button>
+                    <div className="flex items-center">
+                        <div className="flex justify-between w-full ml-4 sm:ml-4">
+                            <Button
+                                onClick={() => selectedRow && onReject(selectedRow)}
+                                variant="outline"
+                                className="border-red-500 focus:ring-red-500/20 text-red-500 bg-white text-sm sm:text-base px-4 sm:px-6"
+                                disabled={!selectedRow}
+                            >
+                                Reject
+                            </Button>
+                            <Button
+                                variant="default"
+                                onClick={() => selectedRow && onApprove(selectedRow)}
+                                className="bg-[#22C55E] text-white text-sm sm:text-base px-4 sm:px-6"
+                                disabled={!selectedRow}
+                            >
+                                Approve
+                            </Button>
+                        </div>
                     </div>
                 </div>
             </DialogContent>
@@ -111,4 +99,4 @@ const ViewDetailsDialog: React.FC<ViewDetailsDialogProps> = ({
     );
 };
 
-export default ViewDetailsDialog;
+export default ViewBandDetailsDialog;
