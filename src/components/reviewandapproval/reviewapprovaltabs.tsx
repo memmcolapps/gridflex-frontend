@@ -7,13 +7,14 @@ import PercentageRangeTable from "./percentagerangetable";
 import { FilterControl, SearchControl, SortControl } from "@/components/search-control";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
+import LiabilityCauseTable from "./liabilitycausetable";
 
 export function ReviewApprovalTabs() {
     const [activeTab, setActiveTab] = useState("percentage");
     const [searchTerm, setSearchTerm] = useState("");
     const [sortConfig, setSortConfig] = useState({ key: '', direction: 'asc' });
     const [, setActiveFilters] = useState({});
-  
+
 
 
     // TODO: Replace this mock data with your actual data source
@@ -116,9 +117,9 @@ export function ReviewApprovalTabs() {
                     <TabsContent value="percentage" className="overflow-x-hidden">
                         <PercentageRangeTable />
                     </TabsContent>
-                    {/* <TabsContent>
-
-                    </TabsContent> */}
+                    <TabsContent value="liability cause" className="overflow-x-hidden">
+                        <LiabilityCauseTable />
+                    </TabsContent>
                 </Tabs>
             </Card>
 
