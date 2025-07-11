@@ -47,7 +47,7 @@ const ViewDetailsDialog: React.FC<ViewDetailsDialogProps> = ({
                 <div className="w-full">
                     <DialogHeader>
                         <DialogTitle className="text-left text-base sm:text-lg font-semibold text-gray-900 truncate">
-                            {selectedRow?.changeDescription || 'Details'}
+                            {selectedRow?.changeDescription ?? 'Details'}
                         </DialogTitle>
                         <span className="text-gray-500 text-sm sm:text-base">
                             Operator: <span className="font-medium">Margaret</span>
@@ -88,7 +88,7 @@ const ViewDetailsDialog: React.FC<ViewDetailsDialogProps> = ({
 
                                 {/* Old Value */}
                                 <div className="w-full sm:w-[120px] lg:max-w-[700px] text-sm sm:text-base font-bold text-gray-900  whitespace-nowrap ml-20 ">
-                                    {oldValue || 'N/A'}
+                                    {oldValue ?? 'N/A'}
                                 </div>
 
                                 {/* New Value */}

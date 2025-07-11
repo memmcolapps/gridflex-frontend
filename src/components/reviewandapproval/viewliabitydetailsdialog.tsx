@@ -44,7 +44,7 @@ const ViewLiabilityDetailsDialog: React.FC<ViewLiabilityDetailsDialogProps> = ({
                 <div className="w-full">
                     <DialogHeader>
                         <DialogTitle className="text-left text-base sm:text-lg font-semibold text-gray-900 truncate">
-                            {selectedRow?.changeDescription || 'Details'}
+                            {selectedRow?.changeDescription ?? 'Details'}
                         </DialogTitle>
                         <span className="text-gray-500 text-sm sm:text-base">
                             Operator: <span className="font-medium">Margaret</span>
@@ -75,7 +75,7 @@ const ViewLiabilityDetailsDialog: React.FC<ViewLiabilityDetailsDialogProps> = ({
 
                                 {/* Old Value */}
                                 <div className="w-full sm:w-[150px] text-sm sm:text-base font-bold text-gray-900 whitespace-nowrap ml-10">
-                                    {oldValue || 'N/A'}
+                                    {oldValue ??'N/A'}
                                 </div>
 
                                 {/* New Value */}
