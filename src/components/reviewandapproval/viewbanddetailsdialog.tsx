@@ -77,8 +77,8 @@ const ViewBandDetailsDialog: React.FC<ViewBandDetailsDialogProps> = ({
                             </div>
                         ))}
                     </div>
-                    <div className="flex items-center">
-                        <div className="flex justify-between w-full ml-4 sm:ml-4">
+                    {/* <div className="flex items-center"> */}
+                        <div className="flex justify-between gap-2 mt-4">
                             <Button
                                 onClick={() => selectedRow && onReject(selectedRow)}
                                 variant="outline"
@@ -90,13 +90,13 @@ const ViewBandDetailsDialog: React.FC<ViewBandDetailsDialogProps> = ({
                             <Button
                                 variant="default"
                                 onClick={() => selectedRow && onApprove(selectedRow)}
-                                className="bg-[#22C55E] text-white text-sm sm:text-base px-4 sm:px-6"
+                                className="bg-[#22C55E] text-white text-sm sm:text-base px-4 sm:px-6 mr-4"
                                 disabled={!selectedRow}
                             >
                                 Approve
                             </Button>
                         </div>
-                    </div>
+                    {/* </div> */}
                 </div>
             </DialogContent>
         </Dialog>
