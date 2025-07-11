@@ -35,7 +35,11 @@ const ViewBandDetailsDialog: React.FC<ViewBandDetailsDialogProps> = ({
     const isNewlyAdded = selectedRow?.changeDescription === 'Newly Added';
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-[80vw] sm:max-w-[400px] h-fit mx-auto bg-white text-black p-4 sm:p-6">
+            <DialogContent
+                className="w-full bg-white text-black p-4 sm:p-6 rounded-lg shadow-lg overflow-hidden h-fit 
+
+"
+            >
                 <div className="w-full">
                     <DialogHeader>
                         <DialogTitle className="text-left text-base sm:text-lg">{selectedRow?.changeDescription}</DialogTitle>

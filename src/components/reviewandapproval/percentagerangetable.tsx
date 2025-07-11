@@ -111,15 +111,6 @@ const PercentageRangeTable = () => {
     },
     {
       id: 5,
-      percentage: '20%',
-      percentageCode: 'C90bqt',
-      band: 'Band A',
-      amountRange: '10,000,000-99,999,999',
-      changeDescription: 'Newly Added',
-      approvalStatus: 'Pending',
-    },
-    {
-      id: 6,
       percentage: '2%',
       percentageCode: 'C90bqt',
       band: 'Band B',
