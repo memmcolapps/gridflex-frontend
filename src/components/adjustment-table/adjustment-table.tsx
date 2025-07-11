@@ -626,15 +626,6 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                                 <TableRow className="h-16 py-4">
                                     <TableHead className="w-fit pr-0 py-4">
                                         <div className="flex items-center gap-2">
-                                            <input
-                                                type="checkbox"
-                                                checked={
-                                                    selectedCustomers.length === paginatedCustomers.length &&
-                                                    paginatedCustomers.length > 0
-                                                }
-                                                onChange={toggleSelectAll}
-                                                className="border-[rgba(228,231,236,1)]"
-                                            />
                                             <span>S/N</span>
                                         </div>
                                     </TableHead>
@@ -649,23 +640,6 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                                     <TableRow key={index} className="h-16 py-4">
                                         <TableCell className="py-4 align-middle">
                                             <div className="flex items-center gap-2">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={
-                                                        selectedCustomer !== null &&
-                                                        typeof selectedCustomer.id === 'number' &&
-                                                        selectedCustomers.includes(selectedCustomer.id)
-                                                    }
-                                                    onChange={() => {
-                                                        if (
-                                                            selectedCustomer !== null &&
-                                                            typeof selectedCustomer.id === 'number'
-                                                        ) {
-                                                            toggleCustomerSelection(selectedCustomer.id);
-                                                        }
-                                                    }}
-                                                    className="border-[rgba(228,231,236,1)]"
-                                                />
                                                 <span>{(currentPage - 1) * rowsPerPage + index + 1}</span>
                                             </div>
                                         </TableCell>
@@ -689,7 +663,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                                         <TableCell className="py-4 align-middle">
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
-                                                    <Button size="sm" variant="ghost" className="h-8 w-8 p-2 cursor-pointer">
+                                                    <Button size="sm" variant="ghost" className="h-8 w-8 p-2 cursor-pointer focus:ring-gray-300/2">
                                                         <MoreVertical size={14} />
                                                     </Button>
                                                 </DropdownMenuTrigger>
@@ -759,14 +733,10 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                         <p className="text-sm ml-4 mb-4">{selectedTransaction?.liabilityCause}: {selectedTransaction?.liabilityCode}</p>
                     </DialogHeader>
                     <div className="overflow-x-hidden">
-                        <Table className="w-full">
+                        <Table className="w-full h-fit">
                             <TableHeader>
                                 <TableRow className="h-16 py-4">
                                     <TableHead className="w-[30px] pr-0 py-4">
-                                        <input
-                                            type="checkbox"
-                                            className="border-[rgba(228,231,236,1)]"
-                                        />
                                     </TableHead>
                                     <TableHead className="py-4">Date</TableHead>
                                     <TableHead className="py-4">{type === 'credit' ? 'Credit' : 'Debit'}</TableHead>
@@ -778,10 +748,6 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                                 {(type === 'credit' ? creditTransactions : debitTransactions).map((transaction, index) => (
                                     <TableRow key={index} className="h-16 py-4">
                                         <TableCell className="py-4 align-middle">
-                                            <input
-                                                type="checkbox"
-                                                className="border-[rgba(228,231,236,1)]"
-                                            />
                                             <span>{(currentPage - 1) * rowsPerPage + index + 1}</span>
                                         </TableCell>
                                         <TableCell className="py-4 align-middle">{transaction.date}</TableCell>
