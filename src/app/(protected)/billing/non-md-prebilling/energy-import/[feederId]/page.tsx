@@ -245,7 +245,7 @@ export default function FeederDetailsPage({ params }: FeederDetailsPageProps) {
   const handleApplyClick = () => {
     // Validate that all total consumption fields are filled
     const emptyFields = currentData.filter(
-      (item) => !item.totalConsumption || item.totalConsumption.trim() === "",
+      (item) => !item.totalConsumption && item.totalConsumption.trim() === "",
     );
 
     if (emptyFields.length > 0) {
