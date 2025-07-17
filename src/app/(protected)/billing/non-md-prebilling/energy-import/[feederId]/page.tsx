@@ -532,7 +532,7 @@ export default function FeederDetailsPage({ params }: FeederDetailsPageProps) {
           {/* Efficiency Score */}
           <div className="text-sm text-gray-600">
             <div>Efficiency Score:</div>
-            <div className="text-center text-2xl font-bold">0</div>
+            <div className="text-right text-2xl font-bold">0</div>
           </div>
         </div>
       </div>
