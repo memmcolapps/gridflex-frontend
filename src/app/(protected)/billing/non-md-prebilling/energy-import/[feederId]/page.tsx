@@ -475,7 +475,7 @@ export default function FeederDetailsPage({ params }: FeederDetailsPageProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-10 w-10 cursor-pointer rounded-full bg-green-500 text-white hover:bg-green-600"
+                className="h-10 w-20 cursor-pointer rounded-4xl bg-green-500 text-white hover:bg-green-600"
               >
                 <RefreshCw size={16} className="text-white" />
               </Button>
