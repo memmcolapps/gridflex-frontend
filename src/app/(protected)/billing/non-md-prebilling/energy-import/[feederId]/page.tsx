@@ -58,7 +58,6 @@ export default function FeederDetailsPage({ params }: FeederDetailsPageProps) {
   const [selectedYear, setSelectedYear] = useState<string>("2025");
   const [sortConfig, setSortConfig] = useState<string>("");
   const [currentData, setCurrentData] = useState<FeederDetailsData[]>([]);
-  const [savedData, setSavedData] = useState<FeederDetailsData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [replicationAction, setReplicationAction] = useState<string>("");
@@ -196,10 +195,6 @@ export default function FeederDetailsPage({ params }: FeederDetailsPageProps) {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setInputValue(e.target.value);
 
-  const handleSortChange = (sortBy: string) => {
-    setSortConfig(sortBy);
-  };
-
   // List of months for dropdown - also memoize this
   const months = useMemo(
     () => [
@@ -234,18 +229,15 @@ export default function FeederDetailsPage({ params }: FeederDetailsPageProps) {
   };
 
   // Handle data changes from the table
-  const handleDataChange = useCallback(
-    (data: FeederDetailsData[]) => {
-      setCurrentData(data);
-    },
-    [],
-  );
+  const handleDataChange = useCallback((data: FeederDetailsData[]) => {
+    setCurrentData(data);
+  }, []);
 
   // Show confirmation dialog when Apply button is clicked
   const handleApplyClick = () => {
     // Validate that all total consumption fields are filled
     const emptyFields = currentData.filter(
-      (item) => !item.totalConsumption && item.totalConsumption.trim() === "",
+      (item) => !item.totalConsumption || item.totalConsumption.trim() === "",
     );
 
     if (emptyFields.length > 0) {
@@ -258,7 +250,7 @@ export default function FeederDetailsPage({ params }: FeederDetailsPageProps) {
     // Validate that all values are positive numbers
     const invalidFields = currentData.filter((item) => {
       const value = parseFloat(item.totalConsumption);
-      return isNaN(value) ?? value < 0;
+      return isNaN(value) || value < 0;
     });
 
     if (invalidFields.length > 0) {
@@ -290,7 +282,7 @@ export default function FeederDetailsPage({ params }: FeederDetailsPageProps) {
       toast.success(
         `Applied successfully! Total consumption: ${totalConsumption.toLocaleString()} kwh`,
       );
-    } catch (error) {
+    } catch {
       toast.error("Failed to apply changes. Please try again.");
     } finally {
       setIsLoading(false);
@@ -309,16 +301,14 @@ export default function FeederDetailsPage({ params }: FeederDetailsPageProps) {
     try {
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
-      setSavedData([...currentData]);
-      
       // Navigate to the energy import page
-      router.push('/billing/non-md-prebilling/energy-import');
-      
+      router.push("/billing/non-md-prebilling/energy-import");
+
       // Show success toast after navigation
       setTimeout(() => {
         toast.success("Non-MD Virtual Consumption successfully Added");
       }, 100);
-    } catch (error) {
+    } catch {
       toast.error("Failed to save data. Please try again.");
       setIsLoading(false);
     }
@@ -335,37 +325,42 @@ export default function FeederDetailsPage({ params }: FeederDetailsPageProps) {
     if (replicationAction.includes("10%")) {
       return {
         title: "Confirm Consumption Data",
-        description: "Please confirm that you would like to use the previous month's consumption for the current month, with a 10% increase applied"
+        description:
+          "Please confirm that you would like to use the previous month's consumption for the current month, with a 10% increase applied",
       };
     } else if (replicationAction.includes("15%")) {
       return {
         title: "Confirm Consumption Data",
-        description: "Please confirm that you would like to use the previous month's consumption for the current month, with a 15% increase applied"
+        description:
+          "Please confirm that you would like to use the previous month's consumption for the current month, with a 15% increase applied",
       };
     } else if (replicationAction.includes("-10%")) {
       return {
         title: "Confirm Consumption Data",
-        description: "Please confirm that you would like to use the previous month's consumption for the current month, with a 10% decrease applied"
+        description:
+          "Please confirm that you would like to use the previous month's consumption for the current month, with a 10% decrease applied",
       };
     } else if (replicationAction.includes("-15%")) {
       return {
         title: "Confirm Consumption Data",
-        description: "Please confirm that you would like to use the previous month's consumption for the current month, with a 15% decrease applied"
+        description:
+          "Please confirm that you would like to use the previous month's consumption for the current month, with a 15% decrease applied",
       };
     } else {
       return {
         title: "Confirm Consumption Data",
-        description: "Please confirm you would like to apply the previous month's consumption data to the current month"
+        description:
+          "Please confirm you would like to apply the previous month's consumption data to the current month",
       };
     }
   };
 
   const handleReplicationConfirm = async () => {
     setShowConfirmDialog(false);
-    
+
     // Add your replication logic here based on replicationAction
     toast.info(`${replicationAction} applied`);
-    
+
     setReplicationAction("");
   };
 
@@ -385,6 +380,9 @@ export default function FeederDetailsPage({ params }: FeederDetailsPageProps) {
     );
   }
 
+  // Use sortConfig to pass to table
+  console.log(sortConfig);
+
   return (
     <div className="p-6">
       {/* Content Header - Now dynamically shows the clicked feeder's info */}
@@ -401,11 +399,7 @@ export default function FeederDetailsPage({ params }: FeederDetailsPageProps) {
             onClick={handleApplyClick}
             disabled={isLoading}
           >
-            <Check
-              size={14}
-              strokeWidth={2.3}
-              className="h-4 w-4"
-            />
+            <Check size={14} strokeWidth={2.3} className="h-4 w-4" />
             <span className="text-sm md:text-base">
               {isLoading ? "Applying..." : "Apply"}
             </span>
@@ -446,7 +440,11 @@ export default function FeederDetailsPage({ params }: FeederDetailsPageProps) {
               </SelectTrigger>
               <SelectContent>
                 {months.map((month) => (
-                  <SelectItem key={month} value={month} className="cursor-pointer">
+                  <SelectItem
+                    key={month}
+                    value={month}
+                    className="cursor-pointer"
+                  >
                     {month}
                   </SelectItem>
                 ))}
@@ -458,7 +456,11 @@ export default function FeederDetailsPage({ params }: FeederDetailsPageProps) {
               </SelectTrigger>
               <SelectContent>
                 {years.map((year) => (
-                  <SelectItem key={year} value={year} className="cursor-pointer">
+                  <SelectItem
+                    key={year}
+                    value={year}
+                    className="cursor-pointer"
+                  >
                     {year}
                   </SelectItem>
                 ))}
@@ -473,42 +475,52 @@ export default function FeederDetailsPage({ params }: FeederDetailsPageProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-10 w-20 cursor-pointer rounded-4xl bg-green-500 hover:bg-green-600 text-white"
+                className="h-10 w-10 cursor-pointer rounded-full bg-green-500 text-white hover:bg-green-600"
               >
                 <RefreshCw size={16} className="text-white" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-64">
-              <DropdownMenuItem 
-                onClick={() => handleReplicationClick("Replicate Previous Consumption")}
+              <DropdownMenuItem
+                onClick={() =>
+                  handleReplicationClick("Replicate Previous Consumption")
+                }
                 className="cursor-pointer"
               >
                 <RefreshCw size={16} className="mr-2" />
                 Replicate Previous Consumption
               </DropdownMenuItem>
-              <DropdownMenuItem 
-                onClick={() => handleReplicationClick("Replicate last consumption +10%")}
+              <DropdownMenuItem
+                onClick={() =>
+                  handleReplicationClick("Replicate last consumption +10%")
+                }
                 className="cursor-pointer"
               >
                 <Percent size={16} className="mr-2" />
                 Replicate last consumption +10%
               </DropdownMenuItem>
-              <DropdownMenuItem 
-                onClick={() => handleReplicationClick("Replicate last consumption +15%")}
+              <DropdownMenuItem
+                onClick={() =>
+                  handleReplicationClick("Replicate last consumption +15%")
+                }
                 className="cursor-pointer"
               >
                 <Percent size={16} className="mr-2" />
                 Replicate last consumption +15%
               </DropdownMenuItem>
-              <DropdownMenuItem 
-                onClick={() => handleReplicationClick("Replicate last consumption -10%")}
+              <DropdownMenuItem
+                onClick={() =>
+                  handleReplicationClick("Replicate last consumption -10%")
+                }
                 className="cursor-pointer"
               >
                 <Percent size={16} className="mr-2" />
                 Replicate last consumption -10%
               </DropdownMenuItem>
-              <DropdownMenuItem 
-                onClick={() => handleReplicationClick("Replicate last consumption -15%")}
+              <DropdownMenuItem
+                onClick={() =>
+                  handleReplicationClick("Replicate last consumption -15%")
+                }
                 className="cursor-pointer"
               >
                 <Percent size={16} className="mr-2" />
@@ -516,11 +528,11 @@ export default function FeederDetailsPage({ params }: FeederDetailsPageProps) {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          
+
           {/* Efficiency Score */}
           <div className="text-sm text-gray-600">
             <div>Efficiency Score:</div>
-            <div className="text-2xl font-bold text-center">0</div>
+            <div className="text-center text-2xl font-bold">0</div>
           </div>
         </div>
       </div>
@@ -541,8 +553,12 @@ export default function FeederDetailsPage({ params }: FeederDetailsPageProps) {
       <ConfirmationDialog
         isOpen={showConfirmDialog}
         onOpenChange={setShowConfirmDialog}
-        onConfirm={replicationAction ? handleReplicationConfirm : handleApplyConfirm}
-        onCancel={replicationAction ? handleReplicationCancel : handleApplyCancel}
+        onConfirm={
+          replicationAction ? handleReplicationConfirm : handleApplyConfirm
+        }
+        onCancel={
+          replicationAction ? handleReplicationCancel : handleApplyCancel
+        }
         title={getConfirmationContent().title}
         description={getConfirmationContent().description}
         confirmText="Confirm"
