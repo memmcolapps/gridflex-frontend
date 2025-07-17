@@ -248,9 +248,7 @@ export default function FeederDetailsTable({
             <TableHead className="py-3 font-medium text-gray-700">
               Consumption Meter
             </TableHead>
-            <TableHead className="py-3 font-medium text-gray-700">
-              Actions
-            </TableHead>
+           
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -291,20 +289,6 @@ export default function FeederDetailsTable({
                   />
                 </TableCell>
                 <TableCell>{item.consumptionMeter}</TableCell>
-                <TableCell>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon">
-                        <MoreVertical size={16} />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                      <DropdownMenuItem>View details</DropdownMenuItem>
-                      <DropdownMenuItem>Edit</DropdownMenuItem>
-                      <DropdownMenuItem>Delete</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
               </TableRow>
             );
           })}

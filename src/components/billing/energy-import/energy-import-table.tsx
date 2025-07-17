@@ -1,5 +1,5 @@
 // components/energy-import/energy-import-table.tsx
-import { MoreVertical } from "lucide-react";
+import { MoreVertical, Eye, Zap, Pencil } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
   DropdownMenu,
@@ -23,7 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Card } from "../../ui/card";
 import {
   Select,
@@ -33,6 +33,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import ViewEnergyImportDetails from "./view-energy-import-details";
+import ViewVirtualMetersDialog from "./view-virtual-meters-dialog";
+
 
 interface EnergyImportData {
   id: number;
@@ -50,6 +53,7 @@ interface EnergyImportTableProps {
   sortConfig: string;
   selectedMonth: string;
   selectedYear: string;
+  onSelectionChange?: (selectedIds: Set<number>) => void; 
 }
 
 export default function EnergyImportTable({
@@ -57,8 +61,14 @@ export default function EnergyImportTable({
   sortConfig,
   selectedMonth,
   selectedYear,
+  onSelectionChange,
 }: EnergyImportTableProps) {
   const router = useRouter();
+  const [isViewDetailsOpen, setIsViewDetailsOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<EnergyImportData | null>(
+    null,
+  );
+  const [isViewVirtualMetersOpen, setIsViewVirtualMetersOpen] = useState(false);
 
   // Updated data with unique asset IDs for each feeder
   const data: EnergyImportData[] = useMemo(
@@ -170,6 +180,40 @@ export default function EnergyImportTable({
   const [rowsPerPage, setRowsPerPage] = useState<number>(10);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [selectedRowIds, setSelectedRowIds] = useState<Set<number>>(new Set());
+
+  useEffect(() => {
+    if (onSelectionChange) {
+      onSelectionChange(selectedRowIds);
+    }
+  }, [selectedRowIds, onSelectionChange]);
+
+  // Handle view details
+  const handleViewDetails = (item: EnergyImportData) => {
+    setSelectedItem(item);
+    setIsViewDetailsOpen(true);
+  };
+
+  // Handle view virtual meters
+  const handleViewVirtualMeters = (item: EnergyImportData) => {
+    setSelectedItem(item);
+    setIsViewVirtualMetersOpen(true);
+  };
+
+  // Handle edit feeder consumption
+  const handleEditFeederConsumption = (item: EnergyImportData) => {
+    console.log("Edit feeder consumption for:", item.feederName);
+    router.push(`/billing/non-md-prebilling/energy-import/${item.assetId}`);
+  };
+
+  const handleViewDetailsClose = () => {
+    setIsViewDetailsOpen(false);
+    setSelectedItem(null);
+  };
+
+  const handleViewVirtualMetersClose = () => {
+    setIsViewVirtualMetersOpen(false);
+    setSelectedItem(null);
+  };
 
   // Filter data based on search query
   const filteredData = data.filter((item) => {
@@ -330,7 +374,7 @@ export default function EnergyImportTable({
                 </TableCell>
                 <TableCell className="font-medium">{serialNumber}</TableCell>
                 <TableCell className="font-medium">{item.feederName}</TableCell>
-                <TableCell className="font-medium text-blue">
+                <TableCell className="text-blue font-medium">
                   {item.assetId}
                 </TableCell>
                 <TableCell>{item.feederConsumption}</TableCell>
@@ -354,13 +398,22 @@ export default function EnergyImportTable({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                      <DropdownMenuItem
-                        onClick={() => handleRowDoubleClick(item)}
-                      >
+                      <DropdownMenuItem onClick={() => handleViewDetails(item)}>
+                        <Eye size={16} className="mr-2" />
                         View details
                       </DropdownMenuItem>
-                      <DropdownMenuItem>Edit</DropdownMenuItem>
-                      <DropdownMenuItem>Delete</DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => handleViewVirtualMeters(item)}
+                      >
+                        <Zap size={16} className="mr-2" />
+                        View virtual meters
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => handleEditFeederConsumption(item)}
+                      >
+                        <Pencil size={16} className="mr-2" />
+                        Edit feeder consumption
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
@@ -419,6 +472,23 @@ export default function EnergyImportTable({
           </PaginationItem>
         </PaginationContent>
       </Pagination>
+
+      {/* View Details Dialog */}
+      {selectedItem && (
+        <ViewEnergyImportDetails
+          open={isViewDetailsOpen}
+          onClose={handleViewDetailsClose}
+          data={selectedItem}
+        />
+      )}
+
+      {selectedItem && (
+        <ViewVirtualMetersDialog
+          open={isViewVirtualMetersOpen}
+          onClose={handleViewVirtualMetersClose}
+          data={selectedItem}
+        />
+      )}
     </Card>
   );
 }

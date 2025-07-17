@@ -11,17 +11,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, Upload, Download, CirclePlus, SquareArrowOutUpRight   } from "lucide-react";
+import {
+  Search,
+  Upload,
+  Download,
+  CirclePlus,
+  SquareArrowOutUpRight,
+} from "lucide-react";
 import { useState } from "react";
 import EnergyImportTable from "@/components/billing/energy-import/energy-import-table";
+import ExportEnergyImportDialog from "@/components/billing/energy-import/export-energy-import-dialog";
 
 export default function EnergyImportPage() {
   const [isLoading] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [isBulkUploadDialogOpen, setIsBulkUploadDialogOpen] = useState(false);
+  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [sortConfig, setSortConfig] = useState<string>("");
   const [selectedMonth, setSelectedMonth] = useState<string>("June");
   const [selectedYear, setSelectedYear] = useState<string>("2025");
+  const [selectedRowIds, setSelectedRowIds] = useState<Set<number>>(new Set());
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setInputValue(e.target.value);
@@ -50,6 +59,109 @@ export default function EnergyImportPage() {
     "December",
   ];
 
+  const allData = [
+      {
+        id: 1,
+        feederName: "Molara",
+        assetId: "6201021223",
+        feederConsumption: "250488930.789",
+        prepaidConsumption: "250488930.789",
+        postpaidConsumption: "250488930.789",
+        mdVirtual: "313111.349",
+        nonMdVirtual: "NOT SET",
+      },
+      {
+        id: 2,
+        feederName: "Ijeun",
+        assetId: "6201021224",
+        feederConsumption: "250488930.789",
+        prepaidConsumption: "125244445.395",
+        postpaidConsumption: "9393334.046",
+        mdVirtual: "313111.349",
+        nonMdVirtual: "NOT SET",
+      },
+      {
+        id: 3,
+        feederName: "Sagamu",
+        assetId: "6201021225",
+        feederConsumption: "250488930.789",
+        prepaidConsumption: "125244445.395",
+        postpaidConsumption: "9393334.046",
+        mdVirtual: "313111.349",
+        nonMdVirtual: "NOT SET",
+      },
+      {
+        id: 4,
+        feederName: "Olowotedo",
+        assetId: "6201021226",
+        feederConsumption: "250488930.789",
+        prepaidConsumption: "125244445.395",
+        postpaidConsumption: "9393334.046",
+        mdVirtual: "313111.349",
+        nonMdVirtual: "NOT SET",
+      },
+      {
+        id: 5,
+        feederName: "Isofo",
+        assetId: "6201021227",
+        feederConsumption: "250488930.789",
+        prepaidConsumption: "125244445.395",
+        postpaidConsumption: "9393334.046",
+        mdVirtual: "313111.349",
+        nonMdVirtual: "NOT SET",
+      },
+      {
+        id: 6,
+        feederName: "Mowe",
+        assetId: "6201021228",
+        feederConsumption: "250488930.789",
+        prepaidConsumption: "125244445.395",
+        postpaidConsumption: "9393334.046",
+        mdVirtual: "313111.349",
+        nonMdVirtual: "NOT SET",
+      },
+      {
+        id: 7,
+        feederName: "Asese",
+        assetId: "6201021229",
+        feederConsumption: "250488930.789",
+        prepaidConsumption: "125244445.395",
+        postpaidConsumption: "9393334.046",
+        mdVirtual: "313111.349",
+        nonMdVirtual: "NOT SET",
+      },
+      {
+        id: 8,
+        feederName: "Berger",
+        assetId: "6201021230",
+        feederConsumption: "250488930.789",
+        prepaidConsumption: "125244445.395",
+        postpaidConsumption: "9393334.046",
+        mdVirtual: "313111.349",
+        nonMdVirtual: "NOT SET",
+      },
+      {
+        id: 9,
+        feederName: "Orimuramu",
+        assetId: "6201021231",
+        feederConsumption: "250488930.789",
+        prepaidConsumption: "125244445.395",
+        postpaidConsumption: "9393334.046",
+        mdVirtual: "313111.349",
+        nonMdVirtual: "NOT SET",
+      },
+      {
+        id: 10,
+        feederName: "Abeokuta",
+        assetId: "6201021232",
+        feederConsumption: "250488930.789",
+        prepaidConsumption: "125244445.395",
+        postpaidConsumption: "9393334.046",
+        mdVirtual: "313111.349",
+        nonMdVirtual: "NOT SET",
+      },
+    ]
+
   // Generate years (current year and past 5 years)
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 6 }, (_, i) =>
@@ -66,8 +178,7 @@ export default function EnergyImportPage() {
   };
 
   const handleExport = () => {
-    // Implementation for export functionality
-    console.log("Exporting energy import data...");
+    setIsExportDialogOpen(true); 
   };
 
   return (
@@ -169,6 +280,7 @@ export default function EnergyImportPage() {
             sortConfig={sortConfig}
             selectedMonth={selectedMonth}
             selectedYear={selectedYear}
+            onSelectionChange={setSelectedRowIds}
           />
         )}
       </div>
@@ -188,6 +300,13 @@ export default function EnergyImportPage() {
           "nonMdVirtual",
         ]}
         templateUrl="/templates/energy-import-template.xlsx"
+      />
+
+      <ExportEnergyImportDialog
+        open={isExportDialogOpen}
+        onClose={() => setIsExportDialogOpen(false)}
+        selectedRowIds={selectedRowIds}
+        allData={allData}
       />
     </div>
   );
