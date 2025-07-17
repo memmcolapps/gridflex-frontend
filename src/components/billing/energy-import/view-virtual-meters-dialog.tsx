@@ -90,7 +90,7 @@ export default function ViewVirtualMetersDialog({
         dss: data.feederName.toLowerCase(),
         averageConsumption: Math.floor(Math.random() * 400) + 50,
         cumulativeReading: Math.floor(Math.random() * 2000) + 300,
-        tariffType: tariffTypes[randomTariffIndex] || "R1",
+        tariffType: tariffTypes[randomTariffIndex] ?? "R1",
         energyType: "Estimate",
         consumedEnergy: Math.floor(Math.random() * 700) + 200,
       };
