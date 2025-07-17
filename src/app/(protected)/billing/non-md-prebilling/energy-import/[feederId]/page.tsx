@@ -237,7 +237,7 @@ export default function FeederDetailsPage({ params }: FeederDetailsPageProps) {
   const handleApplyClick = () => {
     // Validate that all total consumption fields are filled
     const emptyFields = currentData.filter(
-      (item) => !item.totalConsumption || item.totalConsumption.trim() === "",
+      (item) => !(item.totalConsumption ?? "").trim(),
     );
 
     if (emptyFields.length > 0) {
@@ -275,7 +275,7 @@ export default function FeederDetailsPage({ params }: FeederDetailsPageProps) {
 
       // Calculate efficiency score or perform other business logic
       const totalConsumption = currentData.reduce(
-        (sum, item) => sum + parseFloat(item.totalConsumption),
+        (sum, item) => sum + parseFloat(item.totalConsumption ?? "0"),
         0,
       );
 
