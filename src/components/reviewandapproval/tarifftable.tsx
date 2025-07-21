@@ -141,8 +141,8 @@ const TariffTable = ({ searchTerm = '', sortConfig = { key: '', direction: 'asc'
   // Apply search and filters
   const filteredData = data.filter((item) => {
     const matchesSearch = searchTerm
-      ? item.tariffName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.tariffId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      ? item.tariffName.toLowerCase().includes(searchTerm.toLowerCase()) ??
+        item.tariffId.toLowerCase().includes(searchTerm.toLowerCase()) ??
         item.changeDescription.toLowerCase().includes(searchTerm.toLowerCase())
       : true;
 
@@ -156,8 +156,8 @@ const TariffTable = ({ searchTerm = '', sortConfig = { key: '', direction: 'asc'
   // Apply sorting
   const sortedData = [...filteredData].sort((a, b) => {
     if (!sortConfig.key) return 0;
-    const aValue = a[sortConfig.key as keyof TariffItem] || '';
-    const bValue = b[sortConfig.key as keyof TariffItem] || '';
+    const aValue = a[sortConfig.key as keyof TariffItem] ?? '';
+    const bValue = b[sortConfig.key as keyof TariffItem] ?? '';
     if (sortConfig.direction === 'asc') {
       return aValue > bValue ? 1 : -1;
     } else {
