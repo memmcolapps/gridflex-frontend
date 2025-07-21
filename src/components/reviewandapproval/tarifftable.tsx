@@ -228,8 +228,8 @@ const TariffTable = ({ searchTerm = '', sortConfig = { key: '', direction: 'asc'
   };
 
   return (
-    <Card className="border-none shadow-none bg-white min-w-[800px]">
-      <Table className="table-fixed w-full">
+    <Card className="border-none shadow-none bg-white overflow-x-auto">
+      <Table className="table-auto w-full">
         <TableHeader>
           <TableRow>
             <TableHead className="px-4 py-3 w-[100px]">
