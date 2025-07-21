@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import LiabilityCauseTable from "./liabilitycausetable";
 import BandTable from "./bandtable";
+import TariffTable from "./tarifftable";
 
 export function ReviewApprovalTabs() {
     const [activeTab, setActiveTab] = useState("percentage");
@@ -16,11 +17,6 @@ export function ReviewApprovalTabs() {
     const [sortConfig, setSortConfig] = useState({ key: '', direction: 'asc' });
     const [, setActiveFilters] = useState({});
 
-
-
-    // TODO: Replace this mock data with your actual data source
-    // const data: any[] = []; // Example: [{ id: 1, ... }, ...]
-    // Define filterSections for FilterControl
     const filterSections = [
         {
             title: "Status",
@@ -81,7 +77,7 @@ export function ReviewApprovalTabs() {
             <Card className="p-4 mb-4 border-none shadow-none bg-white">
                 <Tabs value={activeTab} onValueChange={(v) => changeTab(v)}>
                     <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-                        <TabsList style={{ border: '2px solid #161CCA' }} className="h-12">
+                        <TabsList style={{ border: '2px solid #161CCA' }} className="h-12 w-fit">
                             <TabsTrigger
                                 value="percentage"
                                 className="data-[state=active]:bg-[#161CCA] cursor-pointer data-[state=active]:text-white p-4"
@@ -94,11 +90,17 @@ export function ReviewApprovalTabs() {
                             >
                                 Liability Cause
                             </TabsTrigger>
-                              <TabsTrigger
+                            <TabsTrigger
                                 value="band"
                                 className="data-[state=active]:bg-[#161CCA] cursor-pointer data-[state=active]:text-white p-4"
                             >
                                 Band
+                            </TabsTrigger>
+                            <TabsTrigger
+                                value="tariff"
+                                className="data-[state=active]:bg-[#161CCA] cursor-pointer data-[state=active]:text-white p-4"
+                            >
+                                Tariff
                             </TabsTrigger>
                         </TabsList>
 
@@ -127,8 +129,11 @@ export function ReviewApprovalTabs() {
                     <TabsContent value="liability cause" className="overflow-x-hidden">
                         <LiabilityCauseTable />
                     </TabsContent>
-                       <TabsContent value="band" className="overflow-x-hidden">
+                    <TabsContent value="band" className="overflow-x-hidden">
                         <BandTable />
+                    </TabsContent>
+                    <TabsContent value="tariff" className="overflow-x-hidden">
+                        <TariffTable />
                     </TabsContent>
                 </Tabs>
             </Card>
