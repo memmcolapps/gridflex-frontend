@@ -25,6 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import ViewPaymentDetails from "./view-payment-details";
 
 interface PaymentHistoryData {
@@ -272,11 +273,14 @@ export default function PaymentHistoryTable({
     setCurrentPage(1);
   };
 
-  const handleRowClick = (item: PaymentHistoryData) => {
-    handleViewDetails(item);
-  };
-
-  const handleRowDoubleClick = (item: PaymentHistoryData) => {
+  const handleRowClick = (
+    item: PaymentHistoryData,
+    event: React.MouseEvent<HTMLTableRowElement>,
+  ) => {
+    // Prevent row click when clicking checkbox
+    if ((event.target as HTMLElement).closest('input[type="checkbox"]')) {
+      return;
+    }
     handleViewDetails(item);
   };
 
@@ -318,100 +322,123 @@ export default function PaymentHistoryTable({
   const formatAmount = (amount: number) => {
     return new Intl.NumberFormat("en-NG", {
       style: "decimal",
-      minimumFractionDigits: 3,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
     }).format(amount);
   };
 
   return (
-    <Card className="rounded border-none p-4 shadow-sm">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            {/* Checkbox for Select All */}
-            <TableHead className="w-[50px] text-center">
-              <Checkbox
-                checked={isAllSelected}
-                onCheckedChange={handleSelectAll}
-                aria-label="Select all"
-                className={
-                  isSomeSelected
-                    ? "indeterminate"
-                    : "mx-auto cursor-pointer border-gray-500 hover:border-gray-500 focus:ring-0 focus:ring-blue-500/50 focus:ring-offset-2 focus:ring-offset-white"
-                }
-              />
-            </TableHead>
-            <TableHead className="py-3 font-medium text-gray-700">
-              S/N
-            </TableHead>
-            <TableHead className="py-3 font-medium text-gray-700">
-              Account Number
-            </TableHead>
-            <TableHead className="py-3 font-medium text-gray-700">
-              Meter Number
-            </TableHead>
-            <TableHead className="py-3 font-medium text-gray-700">
-              Feeder
-            </TableHead>
-            <TableHead className="py-3 font-medium text-gray-700">
-              DSS
-            </TableHead>
-            <TableHead className="py-3 font-medium text-gray-700">
-              Payment Type
-            </TableHead>
-            <TableHead className="py-3 font-medium text-gray-700">
-              Transaction ID
-            </TableHead>
-            <TableHead className="py-3 font-medium text-gray-700">
-              Transaction Date
-            </TableHead>
-            <TableHead className="py-3 font-medium text-gray-700">
-              Amount
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {paginatedData.map((item, index) => {
-            return (
-              <TableRow
-                key={item.id}
-                onClick={() => handleRowClick(item)}
-                onDoubleClick={() => handleRowDoubleClick(item)}
-                className="cursor-pointer hover:bg-gray-50"
-              >
-                {/* Individual Checkbox */}
-                <TableCell className="text-center">
+    <Card className="min-h-[calc(100vh-300px)] border-none bg-white shadow-none">
+      <div className="overflow-x-auto">
+        <Table className="w-full table-auto">
+          <TableHeader>
+            <TableRow className="bg-gray-50 hover:bg-gray-50">
+              <TableHead className="w-20 px-4 py-3 text-left text-sm font-semibold text-gray-700">
+                <div className="flex items-center gap-2">
                   <Checkbox
-                    checked={selectedRowIds.has(item.id)}
-                    onCheckedChange={(checked) =>
-                      handleCheckboxChange(item.id, Boolean(checked))
-                    }
-                    onClick={(e) => e.stopPropagation()} // Prevent row click when clicking checkbox
-                    aria-label={`Select row ${item.id}`}
-                    className="mx-auto cursor-pointer border-gray-500 hover:border-gray-500 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-white"
+                    checked={isAllSelected}
+                    onCheckedChange={handleSelectAll}
+                    aria-label="Select all"
+                    className="h-4 w-4 border-gray-500"
                   />
-                </TableCell>
-                <TableCell className="font-medium">{item.sn}</TableCell>
-                <TableCell className="font-medium">
-                  {item.accountNumber}
-                </TableCell>
-                <TableCell className="font-medium">
-                  {item.meterNumber}
-                </TableCell>
-                <TableCell>{item.feeder}</TableCell>
-                <TableCell>{item.dss}</TableCell>
-                <TableCell>{item.paymentType}</TableCell>
-                <TableCell className="font-medium">
-                  {item.transactionId}
-                </TableCell>
-                <TableCell>{item.transactionDate}</TableCell>
-                <TableCell className="font-medium">
-                  {formatAmount(item.amount)}
+                  <Label className="text-sm font-semibold text-gray-700">
+                    S/N
+                  </Label>
+                </div>
+              </TableHead>
+              <TableHead className="px-4 py-3 text-sm font-semibold text-gray-700">
+                Account Number
+              </TableHead>
+              <TableHead className="px-4 py-3 text-sm font-semibold text-gray-700">
+                Meter Number
+              </TableHead>
+              <TableHead className="px-4 py-3 text-sm font-semibold text-gray-700">
+                Feeder
+              </TableHead>
+              <TableHead className="px-4 py-3 text-sm font-semibold text-gray-700">
+                DSS
+              </TableHead>
+              <TableHead className="px-4 py-3 text-sm font-semibold text-gray-700">
+                Payment Type
+              </TableHead>
+              <TableHead className="px-4 py-3 text-sm font-semibold text-gray-700">
+                Transaction ID
+              </TableHead>
+              <TableHead className="px-4 py-3 text-sm font-semibold text-gray-700">
+                Transaction Date
+              </TableHead>
+              <TableHead className="px-4 py-3 text-right text-sm font-semibold text-gray-700">
+                Amount
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {paginatedData.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  colSpan={9}
+                  className="h-24 text-center text-sm text-gray-500"
+                >
+                  No payment history available
                 </TableCell>
               </TableRow>
-            );
-          })}
-        </TableBody>
-      </Table>
+            ) : (
+              paginatedData.map((item, index) => (
+                <TableRow
+                  key={item.id}
+                  onClick={(event) => handleRowClick(item, event)}
+                  className="cursor-pointer hover:bg-gray-50"
+                >
+                  <TableCell className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        checked={selectedRowIds.has(item.id)}
+                        onCheckedChange={(checked) =>
+                          handleCheckboxChange(item.id, Boolean(checked))
+                        }
+                        aria-label={`Select row ${item.id}`}
+                        className="h-4 w-4 border-gray-500"
+                      />
+                      <span className="text-sm text-gray-900">
+                        {index + 1 + (currentPage - 1) * rowsPerPage}
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-sm text-gray-900">
+                    {item.accountNumber}
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-sm text-gray-900">
+                    {item.meterNumber}
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-sm text-gray-900">
+                    {item.feeder}
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-sm text-gray-900">
+                    {item.dss}
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-sm text-gray-900">
+                    <span
+                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium`}
+                    >
+                      {item.paymentType}
+                    </span>
+                  </TableCell>
+                  <TableCell className="px-4 py-3 font-mono text-sm text-gray-900">
+                    {item.transactionId}
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-sm text-gray-900">
+                    {item.transactionDate}
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-right text-sm font-medium text-gray-900">
+                    ₦{formatAmount(item.amount)}
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
+
       <Pagination className="mt-4 flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <span className="text-sm font-medium">Rows per page</span>
@@ -436,7 +463,7 @@ export default function PaymentHistoryTable({
           <span className="text-sm font-medium">
             {(currentPage - 1) * rowsPerPage + 1}-
             {Math.min(currentPage * rowsPerPage, sortedData.length)} of{" "}
-            {sortedData.length} rows
+            {sortedData.length}
           </span>
         </div>
         <PaginationContent>
