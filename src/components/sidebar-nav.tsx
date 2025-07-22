@@ -134,7 +134,7 @@ export function SidebarNav() {
           ]
         },
         { title: "Billing", href: "/billing/billing" },
-        { title: "Payment History", href: "/billing/payment-history" },
+        { title: "Payments", href: "/billing/payments" },
       ],
     },
     {
