@@ -195,7 +195,7 @@ export default function MeterReadings({ searchQuery, sortConfig, selectedMonth, 
     };
 
     return (
-        <Card className="p-4 border-none shadow-sm rounded">
+        <Card className="p-4 border-none">
             <Table>
                 <TableHeader>
                     <TableRow>
