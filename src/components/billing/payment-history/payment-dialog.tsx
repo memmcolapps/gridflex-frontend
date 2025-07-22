@@ -85,14 +85,17 @@ export default function PaymentDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-h-[500px] overflow-y-auto bg-white">
-        <DialogHeader className="pb-1">
+      <DialogContent className="max-h-[310px] gap-2 overflow-y-auto bg-white">
+        <DialogHeader className="gap-1 pb-1">
           <div className="flex items-center justify-between">
             <div>
               <DialogTitle className="text-lg font-semibold text-gray-900">
                 Payment
               </DialogTitle>
             </div>
+            <div></div>
+          </div>
+          <div className="flex justify-end">
             <Button
               type="button"
               variant="outline"
@@ -104,7 +107,7 @@ export default function PaymentDialog({
           </div>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4 pt-1">
+        <form onSubmit={handleSubmit} className="space-y-4">
           {/* First Row: Payment Type and Account No */}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-2">
