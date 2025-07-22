@@ -202,7 +202,7 @@ export default function PaymentDialog({
           </div>
 
           {/* Footer */}
-          <div className="flex justify-between gap-3 pt-2">
+          <div className="flex justify-between gap-3 pt-4">
             <Button
               type="button"
               variant="outline"
