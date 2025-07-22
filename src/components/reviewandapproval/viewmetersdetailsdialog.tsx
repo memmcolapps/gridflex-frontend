@@ -16,7 +16,7 @@ interface MeterItem {
     newSGC: string;
     manufacturer: string;
     class: string;
-    metertype:string;
+    metertype: string;
     category: string;
     changeDescription: string;
     approvalStatus: string;
@@ -142,7 +142,7 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
                                 Operator: <span className="font-medium">Margaret</span>
                             </span>
                         </DialogHeader>
-                        <div className="flex flex-col gap-3 py-4 sm:py-6">
+                        <div className="flex flex-col gap-3 py-4 sm:py-6 w-[405px]">
                             {[
                                 { label: 'Meter Number:', value: selectedRow.meterNo },
                                 { label: 'SIM No.:', value: selectedRow.simNumber },
@@ -158,7 +158,7 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
                                 { label: 'New Tariff Index:', value: selectedRow.newTariffIndex },
                                 { label: 'Reason:', value: selectedRow.reason },
                             ].map(({ label, value }) => (
-                                <div key={label} className="flex items-center gap-4">
+                                <div key={label} className="flex items-center gap-8">
                                     <div className="w-[120px] text-sm sm:text-base font-medium text-gray-700 whitespace-nowrap">
                                         {label}
                                     </div>
@@ -264,11 +264,11 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
                                 Operator: <span className="font-medium">Margaret</span>
                             </span>
                         </DialogHeader>
-                        <div className="flex flex-col gap-3 py-4 sm:py-6">
+                        <div className="flex flex-col gap-3 py-4 sm:py-6 w-[405px]">
                             {[
-                                { label: 'Meter No:', value: selectedRow.meterNo },
-                                { label: 'SIM Number:', value: selectedRow.simNumber },
-                                { label: 'Meter Type:', value: 'Electricity' },
+                                { label: 'Meter Number:', value: selectedRow.meterNo },
+                                { label: 'SIM No:', value: selectedRow.simNumber },
+                                { label: 'Meter Type:', value: selectedRow.metertype },
                                 { label: 'Meter Manufacturer:', value: selectedRow.manufacturer },
                                 { label: 'Meter Class:', value: selectedRow.class },
                                 { label: 'Meter Category:', value: selectedRow.category },
@@ -279,11 +279,11 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
                                 { label: 'Old Tariff Index:', value: selectedRow.oldTariffIndex },
                                 { label: 'New Tariff Index:', value: selectedRow.newTariffIndex },
                             ].map(({ label, value }) => (
-                                <div key={label} className="flex items-center gap-4">
+                                <div key={label} className="flex items-center">
                                     <div className="w-[120px] text-sm sm:text-base font-medium text-gray-700 whitespace-nowrap">
                                         {label}
                                     </div>
-                                    <div className="text-sm sm:text-base font-bold text-gray-900">
+                                    <div className="text-sm sm:text-base font-bold text-gray-900 ml-20">
                                         {value ?? 'N/A'}
                                     </div>
                                 </div>
@@ -307,27 +307,27 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
                             {[
                                 { label: 'Meter No:', oldValue: selectedRow.meterNo, newValue: selectedRow.meterNo === '6201021223' ? '6201021224' : selectedRow.meterNo },
                                 { label: 'SIM Number:', oldValue: selectedRow.simNumber, newValue: selectedRow.simNumber === '890068073404' ? '890068073403' : selectedRow.simNumber },
-                                { label: 'Meter Type:', oldValue: selectedRow.metertype,newValue: 'Water' },
-                                { label: 'Meter Manufacturer:', oldValue: selectedRow.manufacturer,newValue:'Momas' },
-                                { label: 'Meter Class:', oldValue: selectedRow.class,newValue: '3 Phase' },
-                                { label: 'Meter Category:', oldValue: selectedRow.category },
+                                { label: 'Meter Type:', oldValue: selectedRow.metertype, newValue: 'Water' },
+                                { label: 'Meter Manufacturer:', oldValue: selectedRow.manufacturer, newValue: 'Majec' },
+                                { label: 'Meter Class:', oldValue: selectedRow.class, newValue: '3 Phase' },
+                                { label: 'Meter Category:', oldValue: selectedRow.category, newValue: 'Postpaid' },
                                 { label: 'Old SGC:', oldValue: selectedRow.oldSGC, newValue: selectedRow.oldSGC },
                                 { label: 'New SGC:', oldValue: selectedRow.newSGC, newValue: selectedRow.newSGC },
                                 { label: 'Old KRN:', oldValue: selectedRow.oldkrn, newValue: selectedRow.oldkrn },
                                 { label: 'New KRN:', oldValue: selectedRow.newkrn, newValue: selectedRow.newkrn },
-                                { label: 'Old Tariff Index:', oldValue: selectedRow.oldTariffIndex, newValue: selectedRow.oldTariffIndex },
-                                { label: 'New Tariff Index:', oldValue: selectedRow.newTariffIndex, newValue: selectedRow.newTariffIndex },
+                                { label: 'Old Tariff Index:', oldValue: selectedRow.oldTariffIndex, newValue: '3' },
+                                { label: 'New Tariff Index:', oldValue: selectedRow.newTariffIndex, newValue: '4' },
                             ].map(({ label, oldValue, newValue }) => (
-                                <div key={label} className="flex items-center gap-4">
-                                    <div className="w-[120px] text-sm sm:text-base font-medium text-gray-700 whitespace-nowrap">
+                                <div key={label} className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                                    <div className="w-[100px] sm:w-[120px] text-sm sm:text-base font-medium text-gray-700 whitespace-nowrap">
                                         {label}
                                     </div>
-                                    <div className="text-sm sm:text-base font-bold text-gray-900">
+                                    <div className="w-full sm:w-[120px] lg:max-w-[700px] text-sm sm:text-base font-bold text-gray-900 whitespace-nowrap ml-20">
                                         {oldValue ?? 'N/A'}
                                     </div>
                                     {newValue && (
-                                        <div className="flex items-center text-sm sm:text-base text-gray-900">
-                                            <MoveRight className="text-gray-900 mr-2 scale-x-185" size={16} />
+                                        <div className="flex items-start text-sm sm:text-base text-gray-900 whitespace-nowrap ml-10">
+                                            <MoveRight className="text-gray-900 mr-4 scale-x-185" size={16} />
                                             <span className="font-bold truncate">{newValue}</span>
                                         </div>
                                     )}

@@ -51,7 +51,7 @@ export function Navbar() {
                 disabled={isProfileOpen}
               >
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src="/placeholder.svg" alt="User" />
+                  <AvatarImage src="" alt="User"/>
                   <AvatarFallback className="rounded-full bg-blue-600 text-white">
                     MA
                   </AvatarFallback>
