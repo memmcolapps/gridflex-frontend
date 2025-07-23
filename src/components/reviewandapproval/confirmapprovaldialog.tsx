@@ -26,7 +26,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   const message = `Please confirm you would like to ${action} this change`;
   const confirmButtonText = isApprove ? 'Approve' : 'Reject';
   const confirmButtonClass = isApprove
-    ? 'bg-[#22C55E] text-white hover:bg-[#22C55E]/80'
+    ? 'bg-[#161CCA] text-white hover:bg-[#161CCA]/80'
     : 'bg-[#F50202] text-white hover:bg-red-600';
   // Conditionally set styles for reject action
   const alertTriangleClass = isApprove ? 'text-[#161CCA] bg-blue-200/80 rounded-full p-2' : 'text-red-500 bg-red-200/80 rounded-full p-2';
@@ -39,7 +39,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       <DialogContent className="sm:max-w-[380px] h-fit mx-auto bg-white text-black z-[1000]">
         <DialogHeader>
           <div className="mb-2">
-            <AlertTriangle size={22} className={alertTriangleClass} />
+            <AlertTriangle size={22} className={alertTriangleClass}/>
           </div>
           <DialogTitle className="">{title}</DialogTitle>
         </DialogHeader>

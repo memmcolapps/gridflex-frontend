@@ -89,6 +89,7 @@ const MeterTable = ({ searchTerm = '', sortConfig = { key: '', direction: 'asc' 
             oldTariffIndex: '1',
             newTariffIndex: '3',
             metertype: 'Electricity',
+            reason: 'Burnt',
         },
         {
             id: 2,
@@ -106,6 +107,7 @@ const MeterTable = ({ searchTerm = '', sortConfig = { key: '', direction: 'asc' 
             oldTariffIndex: '1',
             newTariffIndex: '3',
             metertype: 'Electricity',
+            reason: 'Burnt',
         },
         {
             id: 3,
@@ -122,7 +124,8 @@ const MeterTable = ({ searchTerm = '', sortConfig = { key: '', direction: 'asc' 
             newkrn: '1234567',
             oldTariffIndex: '1',
             newTariffIndex: '3',
-            metertype: 'Electricity'
+            metertype: 'Electricity',
+            reason: 'Burnt',
         },
         {
             id: 4,
@@ -140,6 +143,7 @@ const MeterTable = ({ searchTerm = '', sortConfig = { key: '', direction: 'asc' 
             oldTariffIndex: '1',
             newTariffIndex: '3',
             metertype: 'Electricity',
+            reason: 'Burnt',
         },
         {
             id: 5,
@@ -157,6 +161,7 @@ const MeterTable = ({ searchTerm = '', sortConfig = { key: '', direction: 'asc' 
             oldTariffIndex: '1',
             newTariffIndex: '3',
             metertype: 'Electricity',
+            reason: 'Burnt',
         },
 
 
@@ -176,6 +181,7 @@ const MeterTable = ({ searchTerm = '', sortConfig = { key: '', direction: 'asc' 
             oldTariffIndex: '1',
             newTariffIndex: '3',
             metertype: 'Electricity',
+            reason: 'Burnt',
         },
         {
             id: 7,
@@ -193,6 +199,7 @@ const MeterTable = ({ searchTerm = '', sortConfig = { key: '', direction: 'asc' 
             oldTariffIndex: '1',
             newTariffIndex: '3',
             metertype: 'Electricity',
+            reason: 'Burnt',
         },
     ];
 

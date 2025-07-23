@@ -5,8 +5,7 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { MoveRight } from 'lucide-react';
-import { AlertTriangle } from 'lucide-react'; // For alert triangle in some views
+import { MoveRight, UnlinkIcon } from 'lucide-react';
 
 interface MeterItem {
     id: number;
@@ -58,26 +57,14 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
                                 Operator: <span className="font-medium">Margaret</span>
                             </span>
                         </DialogHeader>
-                        <div className="flex flex-col gap-3 py-4 sm:py-6">
-                            {[
-                                { label: 'Meter No:', value: selectedRow.meterNo },
-                                // { label: 'Operator:', value: 'Margaret' },
-                            ].map(({ label, value }) => (
-                                <div key={label} className="flex items-center gap-4">
-                                    <div className="w-[120px] text-sm sm:text-base font-medium text-gray-700 whitespace-nowrap">
-                                        {label}
-                                    </div>
-                                    <div className="text-sm sm:text-base font-bold text-gray-900">
-                                        {value ?? 'N/A'}
-                                    </div>
+                        <div className="flex flex-col gap-3 py-4 sm:py-6 w-150">
+                            <div className="flex items-center gap-4 p-2">
+                                <div className="flex-1 text-sm sm:text-base font-bold text-gray-900">
+                                    {selectedRow.meterNo ?? 'N/A'}
                                 </div>
-                            ))}
-                            <div className="flex items-center gap-4">
-                                <div className="w-[120px] text-sm sm:text-base font-medium text-gray-700 whitespace-nowrap">
-                                    →
-                                </div>
-                                <div className="text-sm sm:text-base font-bold text-gray-900">
-                                    Moletje Business Hub
+                                <div className="flex-1 flex items-center gap-2 text-sm sm:text-base font-bold text-gray-900">
+                                    <MoveRight className="text-gray-900 mr-2 scale-x-185" size={16} />
+                                    <span>Molete Business Hub</span>
                                 </div>
                             </div>
                         </div>
@@ -95,33 +82,41 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
                                 Operator: <span className="font-medium">Margaret</span>
                             </span>
                         </DialogHeader>
-                        <div className="flex flex-col gap-3 py-4 sm:py-6">
-                            {[
-                                { label: 'Meter No:', value: selectedRow.meterNo },
-                                { label: 'Operator:', value: 'Margaret' },
-                            ].map(({ label, value }) => (
-                                <div key={label} className="flex items-center gap-4">
-                                    <div className="w-[120px] text-sm sm:text-base font-medium text-gray-700 whitespace-nowrap">
-                                        {label}
+                        <div className="flex flex-col gap-3 py-4 sm:py-6 w-150 h-fit">
+                            {/* Two-column layout */}
+                            <div className="grid grid-cols-2 gap-4">
+                                {/* Left Column */}
+                                <div className="flex flex-col gap-3 space-y-6">
+                                    <div className="flex items-center gap-4">
+                                        <div className="text-sm sm:text-base font-bold text-gray-900">
+                                            {selectedRow.meterNo}
+                                        </div>
                                     </div>
-                                    <div className="text-sm sm:text-base font-bold text-gray-900">
-                                        {value ?? 'N/A'}
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-[120px] text-sm sm:text-base font-bold text-gray-700 whitespace-nowrap">
+                                            Uploaded Image:
+                                        </div>
                                     </div>
                                 </div>
-                            ))}
-                            <div className="flex items-center gap-4">
-                                <div className="w-[120px] text-sm sm:text-base font-medium text-gray-700 whitespace-nowrap">
-                                    → C-1234567890
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-4">
-                                <div className="w-[120px] text-sm sm:text-base font-medium text-gray-700 whitespace-nowrap">
-                                    Uploaded Image:
-                                </div>
-                                <div className="text-sm sm:text-base font-bold text-gray-900">
-                                    {selectedRow.imageUrl ? (
-                                        <img src={selectedRow.imageUrl} alt="Uploaded" className="w-32 h-32 object-cover" />
-                                    ) : 'N/A'}
+                                {/* Right Column */}
+                                <div className="flex flex-col gap-3 space-y-6">
+                                    <div className="flex items-center gap-2">
+                                        <MoveRight className="text-gray-900 mr-2 scale-x-185" size={16} />
+                                        <div className="text-sm sm:text-base font-bold text-gray-700">
+                                            C-1234567890
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-4">
+                                        <div className="text-sm sm:text-base font-bold text-gray-900">
+
+                                            <img
+                                                src="/images/mdj.jpg"
+                                                alt="C-1234567890"
+                                                className=" object-cover w-100 h-50"
+                                            />
+
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -132,9 +127,7 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
                 return (
                     <>
                         <DialogHeader>
-                            <div className="mb-2">
-                                <AlertTriangle size={24} className="text-red-500" />
-                            </div>
+
                             <DialogTitle className="text-left text-base sm:text-lg font-semibold text-gray-900 truncate">
                                 Meter Deactivated
                             </DialogTitle>
@@ -158,12 +151,12 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
                                 { label: 'New Tariff Index:', value: selectedRow.newTariffIndex },
                                 { label: 'Reason:', value: selectedRow.reason },
                             ].map(({ label, value }) => (
-                                <div key={label} className="flex items-center gap-8">
+                                <div key={label} className="flex items-center whitespace-nowrap">
                                     <div className="w-[120px] text-sm sm:text-base font-medium text-gray-700 whitespace-nowrap">
                                         {label}
                                     </div>
-                                    <div className="text-sm sm:text-base font-bold text-gray-900">
-                                        {value ?? 'N/A'}
+                                    <div className="text-sm sm:text-base font-bold text-gray-900 ml-30">
+                                        {value}
                                     </div>
                                 </div>
                             ))}
@@ -171,13 +164,12 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
                     </>
                 );
 
+
+
             case 'Meter Detached':
                 return (
                     <>
                         <DialogHeader>
-                            <div className="mb-2">
-                                <AlertTriangle size={24} className="text-red-500" />
-                            </div>
                             <DialogTitle className="text-left text-base sm:text-lg font-semibold text-gray-900 truncate">
                                 Meter Detached
                             </DialogTitle>
@@ -186,37 +178,32 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
                             </span>
                         </DialogHeader>
                         <div className="flex flex-col gap-3 py-4 sm:py-6">
-                            {[
-                                { label: 'Meter No:', value: selectedRow.meterNo },
-                                { label: 'Operator:', value: 'Margaret' },
-                            ].map(({ label, value }) => (
-                                <div key={label} className="flex items-center gap-4">
-                                    <div className="w-[120px] text-sm sm:text-base font-medium text-gray-700 whitespace-nowrap">
-                                        {label}
+                            <div className="flex items-start gap-4 w-150">
+                                <div className="flex-1 flex flex-col gap-3 p-2">
+                                    <div className="text-sm sm:text-base font-bold text-gray-900">
+                                        {selectedRow.meterNo ?? 'N/A'}
+                                    </div>
+                                    <div className="text-sm sm:text-base font-medium text-gray-700">
+                                        Reason:
+                                    </div>
+                                </div>
+                                <div className="flex-1 flex flex-col gap-3 p-2">
+                                    <div className="flex items-center gap-2 text-sm sm:text-base text-gray-900">
+                                        <UnlinkIcon size={20} className="text-gray-700" />
+                                        <span className='font-bold'>C-122623669</span>
                                     </div>
                                     <div className="text-sm sm:text-base font-bold text-gray-900">
-                                        {value ?? 'N/A'}
+                                        {selectedRow.reason}
                                     </div>
-                                </div>
-                            ))}
-                            <div className="flex items-center gap-4">
-                                <div className="w-[120px] text-sm sm:text-base font-medium text-gray-700 whitespace-nowrap">
-                                    → C-1234567890
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-4">
-                                <div className="w-[120px] text-sm sm:text-base font-medium text-gray-700 whitespace-nowrap">
-                                    Reason:
-                                </div>
-                                <div className="text-sm sm:text-base font-bold text-gray-900">
-                                    {selectedRow.reason ?? 'N/A'}
                                 </div>
                             </div>
                         </div>
                     </>
                 );
 
+
             case 'Meter Migrated':
+                const newCategory = selectedRow.category === 'Postpaid' ? 'Prepaid' : selectedRow.category === 'Prepaid' ? 'Postpaid' : 'N/A';
                 return (
                     <>
                         <DialogHeader>
@@ -227,26 +214,17 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
                                 Operator: <span className="font-medium">Margaret</span>
                             </span>
                         </DialogHeader>
-                        <div className="flex flex-col gap-3 py-4 sm:py-6">
-                            {[
-                                { label: 'Meter No:', value: selectedRow.meterNo },
-                                { label: 'Operator:', value: 'Margaret' },
-                            ].map(({ label, value }) => (
-                                <div key={label} className="flex items-center gap-4">
-                                    <div className="w-[120px] text-sm sm:text-base font-medium text-gray-700 whitespace-nowrap">
-                                        {label}
-                                    </div>
-                                    <div className="text-sm sm:text-base font-bold text-gray-900">
-                                        {value ?? 'N/A'}
-                                    </div>
+                        <div className="flex flex-col gap-6 py-4 sm:py-6 w-150">
+                            <div className="flex items-center gap-4 p-2">
+                                <div className="flex-1 text-sm sm:text-base text-gray-900">
+                                    {selectedRow.meterNo}
                                 </div>
-                            ))}
-                            <div className="flex items-center gap-4">
-                                <div className="w-[120px] text-sm sm:text-base font-medium text-gray-700 whitespace-nowrap">
-                                    →
+                                <div className="flex-1 text-sm sm:text-base font-bold text-gray-900">
+                                    {selectedRow.category ?? 'N/A'}
                                 </div>
-                                <div className="text-sm sm:text-base font-bold text-gray-900">
-                                    Prepaid
+                                <div className="flex-1 flex items-center gap-2 text-sm sm:text-base font-bold text-gray-900">
+                                    <MoveRight className="text-gray-900 mr-2 scale-x-185" size={16} />
+                                    <span>{newCategory}</span>
                                 </div>
                             </div>
                         </div>
