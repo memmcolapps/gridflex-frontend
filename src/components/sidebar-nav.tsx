@@ -112,7 +112,7 @@ export function SidebarNav() {
       icon: CreditCard,
       hasSubmenu: true,
       submenuItems: [
-        { title: "Dashboard", href: "/billing/reading-sheet" },
+        { title: "Dashboard", href: "/billing/dashboard" },
         {
           title: "MD Prebilling",
           href: "#",
