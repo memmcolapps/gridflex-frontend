@@ -266,7 +266,7 @@ export function SidebarNav() {
                                     <CollapsibleTrigger asChild>
                                       <SidebarMenuButton
                                         className={cn(
-                                          "flex items-center justify-between w-full p-2.5 text-xl sm:text-lg",
+                                          "flex items-center justify-between w-full px-2.5 py-6 text-xl sm:text-lg",
                                           isSubActive && "bg-gray-100 font-medium"
                                         )}
                                       >
