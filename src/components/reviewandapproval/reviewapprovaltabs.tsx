@@ -10,6 +10,7 @@ import { Card } from "@/components/ui/card";
 import LiabilityCauseTable from "./liabilitycausetable";
 import BandTable from "./bandtable";
 import TariffTable from "./tarifftable";
+import MeterTable from "./metertable";
 
 export function ReviewApprovalTabs() {
     const [activeTab, setActiveTab] = useState("percentage");
@@ -102,6 +103,12 @@ export function ReviewApprovalTabs() {
                             >
                                 Tariff
                             </TabsTrigger>
+                            <TabsTrigger
+                                value="meter"
+                                className="data-[state=active]:bg-[#161CCA] cursor-pointer data-[state=active]:text-white p-4"
+                            >
+                                Meter
+                            </TabsTrigger>
                         </TabsList>
 
                         <div className="flex items-center gap-2 w-full lg:w-auto">
@@ -109,7 +116,6 @@ export function ReviewApprovalTabs() {
                                 onSearchChange={handleSearchChange}
                                 value={searchTerm}
                                 placeholder="Search by percentage, code, or description..."
-
                             />
                             <FilterControl
                                 sections={filterSections}
@@ -134,6 +140,9 @@ export function ReviewApprovalTabs() {
                     </TabsContent>
                     <TabsContent value="tariff" className="overflow-x-hidden">
                         <TariffTable />
+                    </TabsContent>
+                      <TabsContent value="meter" className="overflow-x-hidden">
+                        <MeterTable />
                     </TabsContent>
                 </Tabs>
             </Card>
