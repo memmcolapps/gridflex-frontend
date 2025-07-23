@@ -7,7 +7,7 @@ import { SearchAndFilters } from "@/components/billing/dashboard/SearchAndFilter
 import { OutstandingChart } from "@/components/billing/dashboard/OutstandingChart";
 import { EnergyConsumedChart } from "@/components/billing/dashboard/EnergyConsumedChart";
 
-export default function BillingPage() {
+export default function BillingDashboardPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedModeOfPayment, setSelectedModeOfPayment] = useState("");
   const [selectedYear, setSelectedYear] = useState("");
