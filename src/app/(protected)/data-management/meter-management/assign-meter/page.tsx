@@ -290,7 +290,7 @@ export default function AssignMeterPage() {
 
     // Calculate pagination values
 
-     const [processedData,] = useState<MeterData[]>(initialMeterData);
+     const [processedData,] = useState<MeterData[]>(initialMeterData); 
      const totalRows = Math.ceil(processedData.length / rowsPerPage);
     const startIndex = (currentPage - 1) * rowsPerPage;
     const endIndex = startIndex + rowsPerPage;
