@@ -19,6 +19,7 @@ export type User = {
     groupPermission?: string;
     lastActive: Date;
     hierarchy?: string;
+    unitName?: string;
     dateAdded?: Date;
     defaultPassword?: string;
 };
@@ -37,11 +38,21 @@ const groupPermissions = [
     { value: 'viewer', label: 'Viewer' },
 ];
 
+
+const unitNames = [
+  { value: "unit1", label: "Unit 1" },
+  { value: "unit2", label: "Unit 2" },
+  { value: "unit3", label: "Unit 3" },
+  { value: "unit4", label: "Unit 4" },
+];
+
 const hierarchies = [
-    { value: 'level1', label: 'Level 1' },
-    { value: 'level2', label: 'Level 2' },
-    { value: 'level3', label: 'Level 3' },
-    { value: 'level4', label: 'Level 4' },
+  { value: "region", label: "Region" },
+  { value: "business-hub", label: "Business Hub" },
+  { value: "service-centre", label: "Service Centre" },
+  { value: "substation", label: "Substation" },
+  { value: "feeder-line", label: "Feeder Line" },
+  { value: "distribution-substation", label: "Distribution Substation (DSS)" },
 ];
 
 export default function EditUserDialog({ user, onSave, isOpen, onClose }: EditUserDialogProps) {
@@ -110,117 +121,133 @@ export default function EditUserDialog({ user, onSave, isOpen, onClose }: EditUs
     }
 
     return (
-        <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-[500px] bg-white text-black h-fit">
-                <DialogHeader>
-                    <DialogTitle>Edit {user.firstName} {user.lastName}</DialogTitle>
-                    <DialogDescription>Edit the user details below.</DialogDescription>
-                </DialogHeader>
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="h-fit bg-white text-black sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>
+              Edit {user.firstName} {user.lastName}
+            </DialogTitle>
+            <DialogDescription>Edit the user details below.</DialogDescription>
+          </DialogHeader>
 
-                <form onSubmit={handleSubmit} className="mt-4">
-                    <div className="grid grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                            <Label htmlFor="firstName">First Name</Label>
-                            <Input
-                                id="firstName"
-                                name="firstName"
-                                value={formData.firstName}
-                                onChange={handleChange}
-                                required
-                                placeholder="Enter first name"
-                                className="border-[rgba(228,231,236,1)]"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="lastName">Last Name</Label>
-                            <Input
-                                id="lastName"
-                                name="lastName"
-                                value={formData.lastName}
-                                onChange={handleChange}
-                                required
-                                placeholder="Enter last name"
-                                className="border-[rgba(228,231,236,1)]"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="email">Email</Label>
-                            <Input
-                                id="email"
-                                name="email"
-                                type="email"
-                                value={formData.email}
-                                onChange={handleChange}
-                                required
-                                placeholder="Enter email"
-                                className="border-[rgba(228,231,236,1)]"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="groupPermission">Group Permission</Label>
-                            <Select
-                                value={formData.groupPermission}
-                                onValueChange={(value) => handleChange(value, 'groupPermission')}
-                                required
-                            >
-                                <SelectTrigger className="border-[rgba(228,231,236,1)] w-56">
-                                    <SelectValue placeholder="Select permission" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {groupPermissions.map((permission) => (
-                                        <SelectItem key={permission.value} value={permission.value}>
-                                            {permission.label}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="col-span-2 space-y-2">
-                            <Label htmlFor="hierarchy">Hierarchy</Label>
-                            <Select
-                                value={formData.hierarchy}
-                                onValueChange={(value) => handleChange(value, 'hierarchy')}
-                            >
-                                <SelectTrigger className="border-[rgba(228,231,236,1)] w-full">
-                                    <SelectValue placeholder="Select hierarchy" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {hierarchies.map((level) => (
-                                        <SelectItem key={level.value} value={level.value}>
-                                            {level.label}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="col-span-2 space-y-2">
-                            <Label htmlFor="defaultPassword">Default Password</Label>
-                            <Input
-                                id="defaultPassword"
-                                name="defaultPassword"
-                                type="password"
-                                value={formData.defaultPassword}
-                                onChange={handleChange}
-                                placeholder="Enter new password (optional)"
-                                className="border-[rgba(228,231,236,1)] w-full"
-                            />
-                        </div>
-                    </div>
-                    <div className="mt-12 flex justify-between gap-3">
-                        <Button
-                            variant="outline"
-                            onClick={onClose}
-                            type="button"
-                            className="border-[#161CCA] text-[#161CCA]"
-                        >
-                            Cancel
-                        </Button>
-                        <Button type="submit" className="bg-[#161CCA] text-white">
-                            Save
-                        </Button>
-                    </div>
-                </form>
-            </DialogContent>
-        </Dialog>
+          <form onSubmit={handleSubmit} className="mt-4">
+            <div className="grid grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="firstName">
+                  First Name <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="firstName"
+                  name="firstName"
+                  value={formData.firstName}
+                  onChange={handleChange}
+                  required
+                  placeholder="Enter first name"
+                  className="border-[rgba(228,231,236,1)]"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="lastName">
+                  Last Name <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="lastName"
+                  name="lastName"
+                  value={formData.lastName}
+                  onChange={handleChange}
+                  required
+                  placeholder="Enter last name"
+                  className="border-[rgba(228,231,236,1)]"
+                />
+              </div>
+              <div className="space-y-2 col-span-2">
+                <Label htmlFor="groupPermission">
+                  Group Permission <span className="text-red-500">*</span>
+                </Label>
+                <Select
+                  value={formData.groupPermission}
+                  onValueChange={(value) =>
+                    handleChange(value, "groupPermission")
+                  }
+                  required
+                >
+                  <SelectTrigger className="w-full border-[rgba(228,231,236,1)]">
+                    <SelectValue placeholder="Select permission" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {groupPermissions.map((permission) => (
+                      <SelectItem
+                        key={permission.value}
+                        value={permission.value}
+                      >
+                        {permission.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="hierarchy">
+                  Organizational Hierarchy{" "}
+                  <span className="text-red-500">*</span>
+                </Label>
+                <Select
+                  value={formData.hierarchy}
+                  onValueChange={(value) => handleChange(value, "hierarchy")}
+                >
+                  <SelectTrigger className="w-full border-[rgba(228,231,236,1)]">
+                    <SelectValue placeholder="Select hierarchy" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {hierarchies.map((level) => (
+                      <SelectItem key={level.value} value={level.value}>
+                        {level.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="unitName">
+                  Unit Name <span className="text-red-500">*</span>
+                </Label>
+                <Select
+                  value={formData.unitName}
+                  onValueChange={(value) => handleChange(value, "unitName")}
+                  required
+                >
+                  <SelectTrigger className="w-full border-[rgba(228,231,236,1)]">
+                    <SelectValue placeholder="Select unit name" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {unitNames.map((unit) => (
+                      <SelectItem key={unit.value} value={unit.value}>
+                        {unit.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="mt-12 flex justify-between gap-3">
+              <Button
+                variant="outline"
+                onClick={onClose}
+                type="button"
+                className="cursor-pointer border-[#161CCA] text-[#161CCA]"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                className="cursor-pointer bg-[#161CCA] text-white"
+              >
+                Save
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     );
 }
