@@ -205,12 +205,17 @@ export function SidebarNav() {
                   key={item.title}
                   className={cn(
                     "p-2.5 text-xl",
-                    isActive ? "rounded-md bg-[#161CCA] text-white" : "hover:bg-gray-100 rounded-md"
+                    isActive
+                      ? "rounded-md bg-[#161CCA] text-white"
+                      : "rounded-md hover:bg-gray-100",
                   )}
                 >
-                  <Link href={item.href} className="flex w-full items-center">
-                    <item.icon size={12} />
-                    <span className="ml-2">{item.title}</span>
+                  <Link
+                    href={item.href}
+                    className="flex items-center gap-8 text-xl"
+                  >
+                    <item.icon size={12} className="h-4 w-4 sm:h-5 sm:w-5" />
+                    <span>{item.title}</span>
                   </Link>
                 </SidebarMenuItem>
               );
