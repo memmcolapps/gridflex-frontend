@@ -35,93 +35,106 @@ export const EnergyConsumedChart = () => {
     const currentData = dataByType[activeChart];
 
     return (
-        <Card className="w-full max-w-[1000px] border-none bg-white shadow-xs border-gray-100">
-            <CardHeader className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
-                <CardTitle>Energy Consumed Over Time (kwh)</CardTitle>
-                <div className="flex gap-2">
-                    <Button
-                        className={`cursor-pointer ${
-                            activeChart ==='monthly'? 'border border-gray-300 bg-gray-100' : 'border border-transparent hover:border-gray-100 hover:bg-gray-100'}`}
-                        variant={activeChart === 'monthly' ? 'secondary' : 'ghost'}
-                        size="sm"
-                        onClick={() => setActiveChart('monthly')}
-                    >
-                        Monthly
-                    </Button>
-                    <Button
-                    className={`cursor-pointer ${
-                        activeChart ==='quarterly'? 'border border-gray-300 bg-gray-100' : 'border border-transparent hover:border-gray-100 hover:bg-gray-100'}`}
-                        variant={activeChart === 'quarterly' ? 'secondary' : 'ghost'}
-                        size="sm"
-                        onClick={() => setActiveChart('quarterly')}
-                    >
-                        Quarterly
-                    </Button>
-                    <Button
-                    className={`cursor-pointer ${
-                        activeChart ==='yearly'? 'border border-gray-300 bg-gray-100' : 'border border-transparent hover:border-gray-100 hover:bg-gray-100'}`}
-                        variant={activeChart === 'yearly' ? 'secondary' : 'ghost'}
-                        size="sm"
-                        onClick={() => setActiveChart('yearly')}
-                    >
-                        Yearly
-                    </Button>
-                </div>
-            </CardHeader>
-            <CardContent className="h-[200px]">
-                <ResponsiveContainer width="100%" height="100%">
-                    <LineChart
-                        
-                        data={currentData}
-                        margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
-                    >
-                        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
-                        <XAxis
-                            dataKey="month"
-                            tick={{ fill: '#6b7280' }}
-                            tickMargin={12}
-                        />
-                        <YAxis
-                            tick={{ fill: '#6b7280' }}
-                            tickFormatter={(value) => `${value}`}
-                        />
-                        <Tooltip
-                            content={({ active, payload }) => {
-                                if (!active || !payload?.length) return null;
-                                return (
-                                  <div className="rounded-md border bg-white p-3 shadow-sm">
-                                    <p className="font-medium">
-                                      {payload?.[0]?.payload?.month ?? "N/A"}
-                                    </p>
-                                    <p className="text-sm">
-                                      {payload[0]?.value ?? "N/A"} kWh installed
-                                    </p>
-                                  </div>
-                                );
-                            }}
-                        />
-                        <Line
-                            type="linear"
-                            dataKey="value"
-                            stroke="#3B82F6"
-                            strokeWidth={2}
-                            dot={{
-                                stroke: '#fff',
-                                strokeWidth: 2,
-                                r: 4,
-                                fill: '#3B82F6',
-                            }}
-                            activeDot={{
-                                r: 6,
-                                stroke: '#fff',
-                                strokeWidth: 2,
-                                fill: '#3B82F6',
-                            }}
-                            className='cursor-pointer'
-                        />
-                    </LineChart>
-                </ResponsiveContainer>
-            </CardContent>
-        </Card>
+      <Card className="w-full max-w-[1000px] border-none border-gray-100 bg-white shadow-xs">
+        <CardHeader className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+          <CardTitle>Energy Consumed Over Time (kwh)</CardTitle>
+          <div className="flex gap-2">
+            <Button
+              className={`cursor-pointer ${
+                activeChart === "monthly"
+                  ? "border border-gray-300 bg-gray-100"
+                  : "border border-transparent hover:border-gray-100 hover:bg-gray-100"
+              }`}
+              variant={activeChart === "monthly" ? "secondary" : "ghost"}
+              size="sm"
+              onClick={() => setActiveChart("monthly")}
+            >
+              Monthly
+            </Button>
+            <Button
+              className={`cursor-pointer ${
+                activeChart === "quarterly"
+                  ? "border border-gray-300 bg-gray-100"
+                  : "border border-transparent hover:border-gray-100 hover:bg-gray-100"
+              }`}
+              variant={activeChart === "quarterly" ? "secondary" : "ghost"}
+              size="sm"
+              onClick={() => setActiveChart("quarterly")}
+            >
+              Quarterly
+            </Button>
+            <Button
+              className={`cursor-pointer ${
+                activeChart === "yearly"
+                  ? "border border-gray-300 bg-gray-100"
+                  : "border border-transparent hover:border-gray-100 hover:bg-gray-100"
+              }`}
+              variant={activeChart === "yearly" ? "secondary" : "ghost"}
+              size="sm"
+              onClick={() => setActiveChart("yearly")}
+            >
+              Yearly
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="h-[200px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart
+              data={currentData}
+              margin={{ top: 5, right: 0, left: 10, bottom: 5 }}
+            >
+              <CartesianGrid
+                strokeDasharray="3 3"
+                stroke="#f0f0f0"
+                vertical={false}
+              />
+              <XAxis
+                dataKey="month"
+                tick={{ fill: "#6b7280" }}
+                tickMargin={12}
+                padding={{ left: 20, right: 5 }}
+              />
+              <YAxis
+                tick={{ fill: "#6b7280" }}
+                tickFormatter={(value) => `${value}`}
+              />
+              <Tooltip
+                content={({ active, payload }) => {
+                  if (!active || !payload?.length) return null;
+                  return (
+                    <div className="rounded-md border bg-white p-3 shadow-sm">
+                      <p className="font-medium">
+                        {payload?.[0]?.payload?.month ?? "N/A"}
+                      </p>
+                      <p className="text-sm">
+                        {payload[0]?.value ?? "N/A"} kWh Consumed
+                      </p>
+                    </div>
+                  );
+                }}
+              />
+              <Line
+                type="linear"
+                dataKey="value"
+                stroke="#3B82F6"
+                strokeWidth={2}
+                dot={{
+                  stroke: "#fff",
+                  strokeWidth: 2,
+                  r: 4,
+                  fill: "#3B82F6",
+                }}
+                activeDot={{
+                  r: 6,
+                  stroke: "#fff",
+                  strokeWidth: 2,
+                  fill: "#3B82F6",
+                }}
+                className="cursor-pointer"
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
     );
 };
