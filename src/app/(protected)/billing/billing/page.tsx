@@ -9,6 +9,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Input } from "@/components/ui/input";
 import {
     ChevronDown,
+    Loader,
     Lock,
     LockOpen,
     PlusCircle,
@@ -196,34 +197,34 @@ export default function BillingPage() {
                     <DropdownMenuTrigger asChild>
                         <Button
                             variant={"default"}
-                            className="text-md cursor-pointer gap-2 text-white px-8 py-5 font-semibold bg-[#161CCA]"
+                            className="text-md cursor-pointer gap-2 text-white px-8 py-6 font-semibold bg-[#161CCA]"
                         >
                             <PlusCircle size={14} />
                             Generate Bill
                             <ChevronDown size={14} />
                         </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-[var(--radix-dropdown-menu-trigger-width)]">
+                    <DropdownMenuContent className="w-[var(--radix-dropdown-menu-trigger-width)] py-2">
                         <DropdownMenuItem
-                            className="cursor-pointer"
+                            className="cursor-pointer py-3 hover:bg-gray-50"
                             onClick={() => handleFilterSelect("Feeder")}
                         >
                             Feeder
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                            className="cursor-pointer"
+                            className="cursor-pointer py-3 hover:bg-gray-50"
                             onClick={() => handleFilterSelect("MD")}
                         >
                             MD
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                            className="cursor-pointer"
+                            className="cursor-pointer py-3 hover:bg-gray-50"
                             onClick={() => handleFilterSelect("Non-MD")}
                         >
                             Non-MD
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                            className="cursor-pointer"
+                            className="cursor-pointer py-3 hover:bg-gray-50"
                             onClick={() => handleFilterSelect("Account No.")}
                         >
                             Account No.
@@ -303,21 +304,21 @@ export default function BillingPage() {
                                 <ChevronDown size={14} />
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent className="cursor-pointer w-[var(--radix-dropdown-menu-trigger-width)]">
+                        <DropdownMenuContent className="cursor-pointer py-2 w-[var(--radix-dropdown-menu-trigger-width)]">
                             <DropdownMenuItem
-                                className="cursor-pointer"
+                                className="cursor-pointer py-3 hover:bg-gray-50"
                                 onClick={() => handleReverseFilterSelect("Feeder")}
                             >
                                 Feeder
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                                className="cursor-pointer"
+                                className="cursor-pointer py-3 hover:bg-gray-50"
                                 onClick={() => handleReverseFilterSelect("MD")}
                             >
                                 MD
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                                className="cursor-pointer"
+                                className="cursor-pointer py-3 hover:bg-gray-50"
                                 onClick={() => handleReverseFilterSelect("Non-MD")}
                             >
                                 Non-MD
@@ -398,7 +399,7 @@ export default function BillingPage() {
 
             {/* Generate Bill Dialog */}
             <Dialog open={generateDialogOpen} onOpenChange={setGenerateDialogOpen}>
-                <DialogContent className="sm:max-w-[425px] bg-white h-fit">
+                <DialogContent className="w-full bg-white h-fit">
                     <DialogHeader>
                         <DialogTitle>Generate Bill</DialogTitle>
                     </DialogHeader>
@@ -416,17 +417,18 @@ export default function BillingPage() {
                             <DropdownMenuTrigger asChild>
                                 <Button
                                     variant="outline"
-                                    className="w-full justify-between"
+                                    className="w-full justify-between py-2 focus:ring-gray-50/20 mb-3 cursor-pointer"
                                 >
                                     {selectedItems.length > 0
                                         ? selectedItems.join(", ")
-                                        : `Select ${selectedFilter}s`} {/* Dynamic Placeholder */}
+                                        : `Select ${selectedFilter}s`}
                                     <ChevronDown size={16} />
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent className="w-[var(--radix-dropdown-menu-trigger-width)]">
+                            <DropdownMenuContent className="w-[var(--radix-dropdown-menu-trigger-width)] py-2">
                                 <DropdownMenuItem
-                                    onSelect={(e) => e.preventDefault()} // Prevent closing on click
+                                    onSelect={(e) => e.preventDefault()}
+                                    className="py-3 hover:bg-gray-50 cursor-pointer"
                                 >
                                     <div className="flex items-center justify-between w-full">
                                         <span>Select All</span>
@@ -436,21 +438,22 @@ export default function BillingPage() {
                                                 selectedItems.every(item => getAllItemsForFilter(selectedFilter).includes(item))
                                             }
                                             onCheckedChange={(checked) => handleSelectAllForCurrentFilter(Boolean(checked))}
-                                            className="data-[state=checked]:bg-[#22C55E] data-[state=checked]:text-white"
+                                            className="data-[state=checked]:bg-[#22C55E] data-[state=checked]:text-white border-gray-500 rounded"
                                         />
                                     </div>
                                 </DropdownMenuItem>
                                 {getAllItemsForFilter(selectedFilter).map((item) => (
                                     <DropdownMenuItem
                                         key={item}
-                                        onSelect={(e) => e.preventDefault()} // Prevent closing on click
+                                        onSelect={(e) => e.preventDefault()}
+                                        className="py-3 hover:bg-gray-50 cursor-pointer"
                                     >
                                         <div className="flex items-center justify-between w-full">
                                             <span>{item}</span>
                                             <Checkbox
                                                 checked={selectedItems.includes(item)}
                                                 onCheckedChange={(checked) => handleItemSelect(item, Boolean(checked))}
-                                                className="data-[state=checked]:bg-[#22C55E] data-[state=checked]:text-white"
+                                                className="data-[state=checked]:bg-[#22C55E] data-[state=checked]:text-white border-gray-500 rounded"
                                             />
                                         </div>
                                     </DropdownMenuItem>
@@ -458,17 +461,19 @@ export default function BillingPage() {
                             </DropdownMenuContent>
                         </DropdownMenu>
 
-                        <div className="flex justify-end">
+                        <div className="flex justify-between">
                             <Button
                                 variant="outline"
-                                className="mr-2 text-[#161CCA] border-[#161CCA] bg-transparent hover:bg-[#161CCA]/10"
+                                className="mr-2 text-[#161CCA] border-[#161CCA] bg-transparent cursor-pointer py-5 px-8 hover:bg-[#161CCA]/10"
                                 onClick={() => setGenerateDialogOpen(false)}
+                                size="lg"
                             >
                                 Cancel
                             </Button>
                             <Button
                                 variant="default"
-                                className="bg-[#161CCA] text-white"
+                                className="bg-[#161CCA] text-white cursor-pointer py-5 px-8"
+                                size="lg"
                                 onClick={handleProceed}
                                 disabled={selectedItems.length === 0}
                             >
@@ -481,13 +486,14 @@ export default function BillingPage() {
 
             {/* Processing Dialog for Generate Bill */}
             <Dialog open={processingDialogOpen} onOpenChange={setProcessingDialogOpen}>
-                <DialogContent className="sm:max-w-[425px] bg-white h-fit text-center">
+                <DialogContent className="w-full bg-white h-fit text-center">
                     <DialogHeader className="text-center">
-                        <DialogTitle className="mt-2 flex justify-center items-center">
-                            {progress < 100 ? `${progress}%` : "Billing completed"}
+                        <DialogTitle className="mt-2 flex justify-center items-center flex-col gap-2">
+                            {reverseProgress < 100 ? `${reverseProgress}%` : "Reversal completed"}
+                            <Loader size={18} className="animate-spin duration-500"/>
                         </DialogTitle>
                         <div className="flex justify-center">
-                            <div className="w-[60%] bg-gray-200 rounded-full h-2.5">
+                            <div className="w-[100%] bg-gray-200 rounded-full h-2.5">
                                 <div
                                     className="bg-[#161CCA] h-2.5 rounded-full transition-all duration-500 ease-in-out"
                                     style={{ width: `${progress}%` }}
@@ -504,7 +510,7 @@ export default function BillingPage() {
 
             {/* Reverse Bill Dialog */}
             <Dialog open={isReverseDialogOpen} onOpenChange={setIsReverseDialogOpen}>
-                <DialogContent className="sm:max-w-[425px] bg-white h-fit">
+                <DialogContent className="w-full bg-white h-fit">
                     <DialogHeader>
                         <DialogTitle>Reverse Bill</DialogTitle>
                     </DialogHeader>
@@ -522,17 +528,18 @@ export default function BillingPage() {
                             <DropdownMenuTrigger asChild>
                                 <Button
                                     variant="outline"
-                                    className="w-full justify-between"
+                                    className="w-full justify-between py-2 focus:ring-gray-50/20 mb-3 cursor-pointer"
                                 >
                                     {selectedReverseItems.length > 0
                                         ? selectedReverseItems.join(", ")
-                                        : `Select ${selectedReverseFilter}s`} {/* Dynamic Placeholder */}
+                                        : `Select ${selectedReverseFilter}s`}
                                     <ChevronDown size={16} />
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent className="w-[var(--radix-dropdown-menu-trigger-width)]">
+                            <DropdownMenuContent className="w-[var(--radix-dropdown-menu-trigger-width)] py-2">
                                 <DropdownMenuItem
-                                    onSelect={(e) => e.preventDefault()} // Prevent closing on click
+                                    onSelect={(e) => e.preventDefault()}
+                                    className="py-3 hover:bg-gray-50 cursor-pointer"
                                 >
                                     <div className="flex items-center justify-between w-full">
                                         <span>Select All</span>
@@ -542,21 +549,22 @@ export default function BillingPage() {
                                                 selectedReverseItems.every(item => getAllItemsForFilter(selectedReverseFilter).includes(item))
                                             }
                                             onCheckedChange={(checked) => handleReverseSelectAllForCurrentFilter(Boolean(checked))}
-                                            className="data-[state=checked]:bg-[#22C55E] data-[state=checked]:text-white"
+                                            className="data-[state=checked]:bg-[#22C55E] data-[state=checked]:text-white border-gray-500 rounded cursor-pointer"
                                         />
                                     </div>
                                 </DropdownMenuItem>
                                 {getAllItemsForFilter(selectedReverseFilter).map((item) => (
                                     <DropdownMenuItem
                                         key={item}
-                                        onSelect={(e) => e.preventDefault()} // Prevent closing on click
+                                        onSelect={(e) => e.preventDefault()}
+                                        className="py-3 hover:bg-gray-50 cursor-pointer"
                                     >
                                         <div className="flex items-center justify-between w-full">
                                             <span>{item}</span>
                                             <Checkbox
                                                 checked={selectedReverseItems.includes(item)}
                                                 onCheckedChange={(checked) => handleReverseItemSelect(item, Boolean(checked))}
-                                                className="data-[state=checked]:bg-[#22C55E] data-[state=checked]:text-white"
+                                                className="data-[state=checked]:bg-[#22C55E] data-[state=checked]:text-white border-gray-500 rounded cursor-pointer"
                                             />
                                         </div>
                                     </DropdownMenuItem>
@@ -564,18 +572,20 @@ export default function BillingPage() {
                             </DropdownMenuContent>
                         </DropdownMenu>
 
-                        <div className="flex justify-end">
+                        <div className="flex justify-between">
                             <Button
                                 variant="outline"
-                                className="mr-2 text-[#161CCA] border-[#161CCA] bg-transparent hover:bg-[#161CCA]/10"
+                                className="mr-2 text-[#161CCA] border-[#161CCA] cursor-pointer py-5 px-8 bg-transparent hover:bg-[#161CCA]/10"
+                                size="lg"
                                 onClick={() => setIsReverseDialogOpen(false)}
                             >
                                 Cancel
                             </Button>
                             <Button
                                 variant="default"
-                                className="bg-[#161CCA] text-white"
+                                className="bg-[#161CCA] cursor-pointer py-5 px-8 text-white"
                                 onClick={handleReverseProceed}
+                                size="lg"
                                 disabled={selectedReverseItems.length === 0}
                             >
                                 {selectedReverseItems.length > 0 ? "Proceed" : "Reverse Bill"} {/* Dynamic Button Text */}
@@ -587,13 +597,14 @@ export default function BillingPage() {
 
             {/* Processing Dialog for Reverse Bill */}
             <Dialog open={isReverseProcessingDialogOpen} onOpenChange={setIsReverseProcessingDialogOpen}>
-                <DialogContent className="sm:max-w-[425px] bg-white h-fit text-center">
+                <DialogContent className="w-full bg-white h-fit text-center">
                     <DialogHeader className="text-center">
-                        <DialogTitle className="mt-2 flex justify-center items-center">
+                        <DialogTitle className="mt-2 flex justify-center items-center flex-col gap-2">
                             {reverseProgress < 100 ? `${reverseProgress}%` : "Reversal completed"}
+                            <Loader size={18} className="animate-spin duration-500"/>
                         </DialogTitle>
                         <div className="flex justify-center">
-                            <div className="w-[60%] bg-gray-200 rounded-full h-2.5">
+                            <div className="w-[100%] bg-gray-200 rounded-full h-2.5">
                                 <div
                                     className="bg-[#161CCA] h-2.5 rounded-full transition-all duration-500 ease-in-out"
                                     style={{ width: `${reverseProgress}%` }}
