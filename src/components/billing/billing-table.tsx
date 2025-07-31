@@ -177,17 +177,17 @@ export default function BillingTable({ searchQuery, sortConfig, selectedMonth, s
                                         className="mx-auto cursor-pointer border-gray-500 hover:border-gray-500 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-white"
                                     />
                                 </TableCell>
-                                <TableCell className="py-3 items-center">{item.id}</TableCell>
-                                <TableCell className="py-3 items-center">{item.accountNo}</TableCell>
-                                <TableCell className="py-3 items-center">{item.outstanding.toLocaleString()}</TableCell>
-                                <TableCell className="py-3 items-center">{item.payment.toLocaleString()}</TableCell>
-                                <TableCell className="py-3 items-center">{item.adjustment.toLocaleString()}</TableCell>
-                                <TableCell className="py-3 items-center">{item.netArrears.toLocaleString()}</TableCell>
-                                <TableCell className="py-3 items-center">{item.tariffRate.toLocaleString()}</TableCell>
-                                <TableCell className="py-3 items-center">{item.energyConsumed.toLocaleString()}</TableCell>
-                                <TableCell className="py-3 items-center">{item.costOfEnergy.toLocaleString()}</TableCell>
-                                <TableCell className="py-3 items-center">{item.vat.toLocaleString()}</TableCell>
-                                <TableCell className="py-3 items-center">{item.newOutstanding.toLocaleString()}</TableCell>
+                                <TableCell className="py-4 items-center">{item.id}</TableCell>
+                                <TableCell className="py-4 items-center">{item.accountNo}</TableCell>
+                                <TableCell className="py-4 items-center">{item.outstanding.toLocaleString()}</TableCell>
+                                <TableCell className="py-4 items-center">{item.payment.toLocaleString()}</TableCell>
+                                <TableCell className="py-4 items-center">{item.adjustment.toLocaleString()}</TableCell>
+                                <TableCell className="py-4 items-center">{item.netArrears.toLocaleString()}</TableCell>
+                                <TableCell className="py-4 items-center">{item.tariffRate.toLocaleString()}</TableCell>
+                                <TableCell className="py-4 items-center">{item.energyConsumed.toLocaleString()}</TableCell>
+                                <TableCell className="py-4 items-center">{item.costOfEnergy.toLocaleString()}</TableCell>
+                                <TableCell className="py-4 items-center">{item.vat.toLocaleString()}</TableCell>
+                                <TableCell className="py-4 items-center">{item.newOutstanding.toLocaleString()}</TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
