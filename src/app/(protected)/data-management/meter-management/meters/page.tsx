@@ -1216,7 +1216,7 @@ export default function MeterManagementPage() {
             } else if (activeTab === "virtual" && "customerId" in selectedMeter) {
                 setVirtualData((prev) =>
                     prev.map((meter) =>
-                        meter.id === selectedMeter.id ? { ...meter, status: "Active", reason: undefined } : meter
+                        meter.id === selectedMeter.id ? { ...meter, status: "Assigned", reason: undefined } : meter
                     )
                 );
             }
