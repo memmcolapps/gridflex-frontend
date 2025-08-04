@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
-import { ArrowRightLeft, ArrowUpDown, Search } from "lucide-react";
+import { ArrowRightLeft, ArrowUpDown, Eye, MoreVertical, Pencil, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
     Table,
@@ -27,9 +27,11 @@ import { Label } from "@/components/ui/label";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { FilterControl } from "@/components/search-control";
 import { BulkUploadDialog } from "@/components/meter-management/bulk-upload";
-import { getStatusStyle } from "@/components/status-style";
-import { cn } from "@/lib/utils";
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import { AddMeterDialog } from "@/components/meter-management/add-edit-meter-dialog";
+import { ViewMeterDetailsDialog } from "@/components/meter-management/view-meters-details-dialog";
+import { ViewMeterInfoDialog } from "@/components/meter-management/view-meter-info-dialog";
+import type { MeterData } from "@/types/meter";
 
 
 // Define filter sections for FilterControl
@@ -51,37 +53,276 @@ const filterSections = [
     },
 ];
 
-// Sample data type
-interface MeterData {
-    id: number;
-    meterNumber: string;
-    manufactureName: string;
-    class: string;
-    meterId: string;
-    meterType: string;
-    category: string;
-    dateAdded: string;
-    status: "Approved" | "Pending";
-}
+// export interface MeterData {
+//     id: string;
+//     meterNumber: string;
+//     manufactureName: string;
+//     class: string;
+//     meterType: string;
+//     category: string;
+//     dateAdded: string;
+//     oldSgc: string;
+//     newSgc: string;
+//     oldKrn: string;
+//     newKrn: string;
+//     oldTariffIndex: string;
+//     newTariffIndex: string;
+//     simNo: string;
+//     smartMeter: string;
+//     ctRatioNumerator: string;
+//     ctRatioDenominator: string;
+//     voltageRatioNumerator: string;
+//     voltageRatioDenominator: string;
+//     multiplier: string;
+//     meterRating: string;
+//     initialReading: string;
+//     dial: string;
+//     longitude: string;
+//     latitude: string;
+//     meterModel: string,
+//     protocol: string
+//     authentication: string
+//     password: string
+// }
 
 // Sample data
 const initialMeters: MeterData[] = [
-    { id: 1, meterNumber: "61245269523", manufactureName: "Momas", class: "MD", meterId: "Ojoo", meterType: "Electricity", category: "Prepaid", dateAdded: "09-04-2025", status: "Approved" },
-    { id: 2, meterNumber: "61245269524", manufactureName: "Momas", class: "Single Phase", meterId: "Ojoo", meterType: "Electricity", category: "Prepaid", dateAdded: "09-04-2025", status: "Pending" },
-    { id: 3, meterNumber: "61245269525", manufactureName: "Momas", class: "Three Phase", meterId: "Ojoo", meterType: "Gas", category: "Prepaid", dateAdded: "09-04-2025", status: "Approved" },
-    { id: 4, meterNumber: "61245269526", manufactureName: "Momas", class: "MD", meterId: "Ojoo", meterType: "Electricity", category: "Postpaid", dateAdded: "09-04-2025", status: "Approved" },
-    { id: 5, meterNumber: "61245269527", manufactureName: "Momas", class: "Single Phase", meterId: "Ojoo", meterType: "Water", category: "Prepaid", dateAdded: "09-04-2025", status: "Pending" },
-    { id: 6, meterNumber: "61245269528", manufactureName: "Momas", class: "Three Phase", meterId: "Ojoo", meterType: "Electricity", category: "Prepaid", dateAdded: "09-04-2025", status: "Approved" },
-    { id: 7, meterNumber: "61245269529", manufactureName: "Mojec", class: "MD", meterId: "Ojoo", meterType: "Electricity", category: "Postpaid", dateAdded: "09-04-2025", status: "Pending" },
-    { id: 8, meterNumber: "61245269530", manufactureName: "Mojec", class: "Single Phase", meterId: "Ojoo", meterType: "Electricity", category: "Postpaid", dateAdded: "09-04-2025", status: "Approved" },
-    { id: 9, meterNumber: "61245269531", manufactureName: "Mojec", class: "Three Phase", meterId: "Ojoo", meterType: "Electricity", category: "Postpaid", dateAdded: "09-04-2025", status: "Pending" },
-    { id: 10, meterNumber: "61245269532", manufactureName: "Heixing", class: "MD", meterId: "Ojoo", meterType: "Electricity", category: "Postpaid", dateAdded: "09-04-2025", status: "Approved" },
-    { id: 11, meterNumber: "61245269533", manufactureName: "Heixing", class: "Single Phase", meterId: "Ojoo", meterType: "Electricity", category: "Postpaid", dateAdded: "09-04-2025", status: "Pending" },
+    {
+        id: "1", meterNumber: "61245269523", manufactureName: "Momas", class: "MD", meterType: "Electricity", category: "Prepaid", dateAdded: "09-04-2025", oldSgc: "999962", newSgc: "600894", simNo: "1234567890", smartMeter: "Smart",
+        oldKrn: "9000876",
+        newKrn: "6000877",
+        oldTariffIndex: "1",
+        newTariffIndex: "2",
+        ctRatioNumerator: "3",
+        ctRatioDenominator: "5",
+        voltageRatioNumerator: "11000",
+        voltageRatioDenominator: "110",
+        multiplier: "1",
+        meterRating: "100A",
+        initialReading: "0",
+        dial: "5",
+        longitude: "3.8964",
+        latitude: "7.3775",
+        meterModel: "C300",
+        protocol: "G-500",
+        authentication: "123456",
+        password: "0000000"
+    },
+    {
+        id: "2", meterNumber: "61245269524", manufactureName: "Momas", class: "Single Phase", meterType: "Electricity", category: "Prepaid", dateAdded: "09-04-2025", oldSgc: "999962", newSgc: "600894", simNo: "1234567890", smartMeter: "Smart",
+        oldKrn: "900888",
+        newKrn: "6002351",
+        oldTariffIndex: "1",
+        newTariffIndex: "2",
+        ctRatioNumerator: "3",
+        ctRatioDenominator: "5",
+        voltageRatioNumerator: "11000",
+        voltageRatioDenominator: "110",
+        multiplier: "1",
+        meterRating: "100A",
+        initialReading: "0",
+        dial: "5",
+        longitude: "3.8964",
+        latitude: "7.3775",
+        meterModel: "C300",
+        protocol: "G-500",
+        authentication: "123456",
+        password: "0000000"
+    },
+    {
+        id: "3", meterNumber: "61245269525", manufactureName: "Momas", class: "Three Phase", meterType: "Gas", category: "Prepaid", dateAdded: "09-04-2025", oldSgc: "999962", newSgc: "600894", simNo: "1234567890", smartMeter: "Smart",
+        oldKrn: "900888",
+        newKrn: "900888",
+        oldTariffIndex: "3",
+        newTariffIndex: "2",
+        ctRatioNumerator: "",
+        ctRatioDenominator: "5",
+        voltageRatioNumerator: "11000",
+        voltageRatioDenominator: "110",
+        multiplier: "1",
+        meterRating: "100A",
+        initialReading: "0",
+        dial: "5",
+        longitude: "3.8964",
+        latitude: "7.3775",
+        meterModel: "C300",
+        protocol: "G-500",
+        authentication: "123456",
+        password: "0000000"
+    },
+    {
+        id: "4", meterNumber: "61245269526", manufactureName: "Momas", class: "MD", meterType: "Electricity", category: "Postpaid", dateAdded: "09-04-2025", oldSgc: "999962", newSgc: "600894", simNo: "1234567890", smartMeter: "Smart",
+        oldKrn: "21",
+        newKrn: "33",
+        oldTariffIndex: "87",
+        newTariffIndex: "31",
+        ctRatioNumerator: "89",
+        ctRatioDenominator: "5",
+        voltageRatioNumerator: "11000",
+        voltageRatioDenominator: "110",
+        multiplier: "1",
+        meterRating: "100A",
+        initialReading: "0",
+        dial: "5",
+        longitude: "3.8964",
+        latitude: "7.3775",
+        meterModel: "C300",
+        protocol: "G-500",
+        authentication: "123456",
+        password: "0000000"
+    },
+    {
+        id: "5", meterNumber: "61245269527", manufactureName: "Momas", class: "Single Phase", meterType: "Water", category: "Prepaid", dateAdded: "09-04-2025", oldSgc: "999962", newSgc: "600894", simNo: "1234567890", smartMeter: "Smart",
+        oldKrn: "65",
+        newKrn: "43",
+        oldTariffIndex: "78",
+        newTariffIndex: "54",
+        ctRatioNumerator: "52",
+        ctRatioDenominator: "5",
+        voltageRatioNumerator: "11000",
+        voltageRatioDenominator: "110",
+        multiplier: "1",
+        meterRating: "100A",
+        initialReading: "0",
+        dial: "5",
+        longitude: "3.8964",
+        latitude: "7.3775",
+        meterModel: "C300",
+        protocol: "G-500",
+        authentication: "123456",
+        password: "0000000"
+    },
+    {
+        id: "6", meterNumber: "61245269528", manufactureName: "Momas", class: "Three Phase", meterType: "Electricity", category: "Prepaid", dateAdded: "09-04-2025", oldSgc: "999962", newSgc: "600894", simNo: "1234567890", smartMeter: "Smart",
+        oldKrn: "43",
+        newKrn: "21",
+        oldTariffIndex: "66",
+        newTariffIndex: "77",
+        ctRatioNumerator: "89",
+        ctRatioDenominator: "5",
+        voltageRatioNumerator: "11000",
+        voltageRatioDenominator: "110",
+        multiplier: "1",
+        meterRating: "100A",
+        initialReading: "0",
+        dial: "5",
+        longitude: "3.8964",
+        latitude: "7.3775",
+        meterModel: "C300",
+        protocol: "G-500",
+        authentication: "123456",
+        password: "0000000"
+    },
+    {
+        id: "7", meterNumber: "61245269529", manufactureName: "Mojec", class: "MD", meterType: "Electricity", category: "Postpaid", dateAdded: "09-04-2025", oldSgc: "999962", newSgc: "600894", simNo: "1234567890", smartMeter: "Smart",
+        oldKrn: "21",
+        newKrn: "43",
+        oldTariffIndex: "56",
+        newTariffIndex: "21",
+        ctRatioNumerator: "9",
+        ctRatioDenominator: "5",
+        voltageRatioNumerator: "11000",
+        voltageRatioDenominator: "110",
+        multiplier: "1",
+        meterRating: "100A",
+        initialReading: "0",
+        dial: "5",
+        longitude: "3.8964",
+        latitude: "7.3775",
+        meterModel: "C300",
+        protocol: "G-500",
+        authentication: "123456",
+        password: "0000000"
+    },
+    {
+        id: "8", meterNumber: "61245269530", manufactureName: "Mojec", class: "Single Phase", meterType: "Electricity", category: "Postpaid", dateAdded: "09-04-2025", oldSgc: "999962", newSgc: "600894", simNo: "1234567890", smartMeter: "Smart",
+        oldKrn: "23",
+        newKrn: "21",
+        oldTariffIndex: "23",
+        newTariffIndex: "21",
+        ctRatioNumerator: "54",
+        ctRatioDenominator: "5",
+        voltageRatioNumerator: "11000",
+        voltageRatioDenominator: "110",
+        multiplier: "1",
+        meterRating: "100A",
+        initialReading: "0",
+        dial: "5",
+        longitude: "3.8964",
+        latitude: "7.3775",
+        meterModel: "C300",
+        protocol: "G-500",
+        authentication: "123456",
+        password: "0000000"
+    },
+    {
+        id: "9", meterNumber: "61245269531", manufactureName: "Mojec", class: "Three Phase", meterType: "Electricity", category: "Postpaid", dateAdded: "09-04-2025", oldSgc: "999962", newSgc: "600894", simNo: "1234567890", smartMeter: "Smart",
+        oldKrn: "11",
+        newKrn: "22",
+        oldTariffIndex: "21",
+        newTariffIndex: "33",
+        ctRatioNumerator: "44",
+        ctRatioDenominator: "5",
+        voltageRatioNumerator: "11000",
+        voltageRatioDenominator: "110",
+        multiplier: "1",
+        meterRating: "100A",
+        initialReading: "0",
+        dial: "5",
+        longitude: "3.8964",
+        latitude: "7.3775",
+        meterModel: "C300",
+        protocol: "G-500",
+        authentication: "123456",
+        password: "0000000"
+    },
+    {
+        id: "10", meterNumber: "61245269532", manufactureName: "Heixing", class: "MD", meterType: "Electricity", category: "Postpaid", dateAdded: "09-04-2025", oldSgc: "999962", newSgc: "600894", simNo: "1234567890", smartMeter: "Smart",
+        oldKrn: "21",
+        newKrn: "66",
+        oldTariffIndex: "55",
+        newTariffIndex: "66",
+        ctRatioNumerator: "66",
+        ctRatioDenominator: "5",
+        voltageRatioNumerator: "11000",
+        voltageRatioDenominator: "110",
+        multiplier: "1",
+        meterRating: "100A",
+        initialReading: "0",
+        dial: "5",
+        longitude: "3.8964",
+        latitude: "7.3775",
+        meterModel: "C300",
+        protocol: "G-500",
+        authentication: "123456",
+        password: "0000000"
+    },
+    {
+        id: "11", meterNumber: "61245269533", manufactureName: "Heixing", class: "Single Phase", meterType: "Electricity", category: "Postpaid", dateAdded: "09-04-2025", oldSgc: "999962", newSgc: "600894", simNo: "1234567890", smartMeter: "Smart",
+        oldKrn: "900878",
+        newKrn: "600987",
+        oldTariffIndex: "2",
+        newTariffIndex: "3",
+        ctRatioNumerator: "56",
+        ctRatioDenominator: "5",
+        voltageRatioNumerator: "11000",
+        voltageRatioDenominator: "110",
+        multiplier: "1",
+        meterRating: "100A",
+        initialReading: "0",
+        dial: "5",
+        longitude: "3.8964",
+        latitude: "7.3775",
+        meterModel: "C300",
+        protocol: "G-500",
+        authentication: "123456",
+        password: "0000000"
+    },
 ];
 
-export default function AllocateMetersPage() {
+export default function MeterInventoryPage() {
     const [meters, setMeters] = useState<MeterData[]>(initialMeters);
-    const [selectedMeters, setSelectedMeters] = useState<number[]>([]);
+    const [selectedMeters, setSelectedMeters] = useState<string[]>([]);
     const [rowsPerPage, setRowsPerPage] = useState<number>(10);
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [, setIsDialogOpen] = useState(false);
@@ -91,19 +332,23 @@ export default function AllocateMetersPage() {
     const [isBulkUploadDialogOpen, setIsBulkUploadDialogOpen] = useState(false);
     const [meterNumberInput, setMeterNumberInput] = useState<string>("");
     const [searchTerm, setSearchTerm] = useState<string>("");
+    const [isAddMeterDialogOpen, setIsAddMeterDialogOpen] = useState(false);
+    const [isOpen, setIsOpen] = useState(false);
+    const [viewInfoDialogOpen, setViewInfoDialogOpen] = useState(false);
+
 
     // Add state for active filters
     // const [activeFilters, setActiveFilters] = useState<Record<string, boolean>>({});
 
     const handleSelectAll = (checked: boolean) => {
         if (checked) {
-            setSelectedMeters(meters.map((meter) => meter.id));
+            setSelectedMeters(meters.map((meter) => meter.id)); // Keep as string
         } else {
             setSelectedMeters([]);
         }
     };
 
-    const handleSelectItem = (checked: boolean, id: number) => {
+    const handleSelectItem = (checked: boolean, id: string) => {
         if (checked) {
             setSelectedMeters([...selectedMeters, id]);
         } else {
@@ -111,6 +356,23 @@ export default function AllocateMetersPage() {
         }
     };
 
+    const handleSaveMeter = (meter: MeterData) => {
+        if (selectedMeter) {
+            setMeters((prev) =>
+                prev.map((m) => (m.id === meter.id ? { ...m, ...meter } : m))
+            );
+        } else {
+            setMeters((prev) => [...prev, { ...meter, id: uuidv4() }]); // Use UUID
+        }
+        setIsAddMeterDialogOpen(false);
+        setSelectedMeter(null);
+    };
+
+
+    const handleSaveBulkAllocate = (data: MeterData[]) => {
+        console.log("Saved data:", data);
+        // Implement save logic here
+    };
     const isAllSelected = meters.length > 0 && selectedMeters.length === meters.length;
     const [processedData,] = useState<(MeterData)[]>([]);
     const startIndex = (currentPage - 1) * rowsPerPage;
@@ -118,14 +380,7 @@ export default function AllocateMetersPage() {
     const currentMeters = meters.slice(startIndex, endIndex);
     const totalPages = Math.ceil(meters.length / rowsPerPage);
 
-    // const onRowsPerPageChange = (value: number) => {
-    //     setRowsPerPage(value);
-    //     setCurrentPage(1); // Reset to first page when rows per page changes
-    // };
 
-    // const onPageChange = (newPage: number) => {
-    //     setCurrentPage(newPage);
-    // };
 
     const handleMeterNumberChange = (value: string) => {
         setMeterNumberInput(value);
@@ -193,7 +448,7 @@ export default function AllocateMetersPage() {
             results = initialMeters.filter(item =>
                 item.meterNumber?.toLowerCase().includes(term.toLowerCase()) ??
                 item.manufactureName?.toLowerCase().includes(term.toLowerCase()) ??
-                item.meterId?.toLowerCase().includes(term.toLowerCase()) ??
+                // item.meterId?.toLowerCase().includes(term.toLowerCase()) ??
                 item.category?.toLowerCase().includes(term.toLowerCase())
             );
         }
@@ -226,7 +481,7 @@ export default function AllocateMetersPage() {
             filtered = filtered.filter(meter =>
                 meter.meterNumber.toLowerCase().includes(term) ??
                 meter.manufactureName.toLowerCase().includes(term) ??
-                meter.meterId.toLowerCase().includes(term) ??
+                // meter.meterId.toLowerCase().includes(term) ??
                 meter.category.toLowerCase().includes(term)
             );
         }
@@ -278,19 +533,46 @@ export default function AllocateMetersPage() {
     };
 
 
+    const handleEditMeter = (meter: MeterData) => {
+        setSelectedMeter(meter);
+        setIsAddMeterDialogOpen(true);
+    };
+
+    // const handleViewDetails = (meter: MeterData) => {
+    //     setSelectedMeter(meter);
+    //     setViewDialogOpen(true);
+    // };
+
+    const handleViewInfo = (meter: MeterData) => {
+        setSelectedMeter(meter);
+        setViewInfoDialogOpen(true);
+    };
+
     return (
         <div className="p-6 h-fit">
             <div className="flex items-center justify-between mb-4">
-                <ContentHeader title="Allocate Meters" description="Manage and access meter allocation." />
-                <Button
-                    className="flex items-center gap-2 border font-medium bg-[#161CCA] text-white w-full md:w-auto cursor-pointer"
-                    variant="outline"
-                    size="lg"
-                    onClick={() => setIsBulkUploadDialogOpen(true)}
-                >
-                    <CirclePlus size={14} strokeWidth={2.3} className="h-4 w-4 text-white" />
-                    <span className="text-sm md:text-base">Bulk Upload</span>
-                </Button>
+                <ContentHeader title="Meter Inventory " description="Add Meters and Allocate meter to respective" />
+                <div className="flex justify-between items-center mb-4">
+                    <div className="flex gap-2">
+                        <Button className="flex items-center gap-2 border font-medium bg-white text-[#161CCA] w-full md:w-auto cursor-pointer"
+                            variant="outline"
+                            size="lg"
+                            onClick={() => setIsBulkUploadDialogOpen(true)}
+                        >
+                            <CirclePlus size={14} strokeWidth={2.3} className="h-4 w-4 text-[161CCA]" />
+                            <span className="text-sm md:text-base">Bulk Upload</span>
+                        </Button>
+                        <Button
+                            size="lg"
+                            onClick={() => setIsAddMeterDialogOpen(true)}
+                            className="bg-[#161CCA] flex items-center text-white hover:bg-[#1e2abf] gap-2 font-medium w-full md:w-auto cursor-pointer"
+                        >
+                            <CirclePlus size={14} strokeWidth={2.3} className="h-4 w-4" />
+                            <span className="text-sm md:text-base">Add Meter</span>
+                        </Button>
+                    </div>
+                </div>
+
             </div>
 
             <Card className="p-4 mb-4 border-none shadow-none bg-white">
@@ -326,25 +608,13 @@ export default function AllocateMetersPage() {
                                     onClick={handleSortChange}
                                     className="text-sm cursor-pointer hover:bg-gray-100"
                                 >
-                                    Z-A
+                                    Ascending - Descending
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                     onClick={handleSortChange}
                                     className="text-sm cursor-pointer hover:bg-gray-100"
                                 >
-                                    A-Z
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                    onClick={handleSortChange}
-                                    className="text-sm cursor-pointer hover:bg-gray-100"
-                                >
-                                    Newest-Oldest
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                    onClick={handleSortChange}
-                                    className="text-sm cursor-pointer hover:bg-gray-100"
-                                >
-                                    Oldest-Newest
+                                    Descending - Ascending
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
@@ -387,6 +657,21 @@ export default function AllocateMetersPage() {
                             </SelectContent>
                         </Select>
                     </div>
+
+                    <Button onClick={() => setIsOpen(true)}
+                        size={"lg"}
+                        className="flex items-center gap-2 bg-green-500 text-white hover:bg-green-600 px-6 py-3 w-full sm:w-auto mt-7 cursor-pointer">
+                        <ArrowRightLeft size={12} strokeWidth={2.75} />
+                        Bulk Allocate
+                    </Button>
+                    <BulkUploadDialog
+                        isOpen={isOpen}
+                        onClose={() => setIsOpen(false)}
+                        onSave={handleSaveBulkAllocate}
+                        title="Upload File" // Pass the custom title here
+                        requiredColumns={["meterNumber", "simNo", "oldSgc", "newSgc", "manufactureName", "class", "meterType", "category"]}
+                    />
+
                 </div>
             </Card>
 
@@ -408,13 +693,18 @@ export default function AllocateMetersPage() {
                                 </div>
                             </TableHead>
                             <TableHead>Meter Number</TableHead>
+                            <TableHead>SIM No</TableHead>
+                            <TableHead>Old SGC</TableHead>
+                            <TableHead>New SGC</TableHead>
                             <TableHead>Manufacture</TableHead>
                             <TableHead>Class</TableHead>
-                            <TableHead>ID</TableHead>
+                            {/* <TableHead>ID</TableHead> */}
                             <TableHead>Meter Type</TableHead>
                             <TableHead>Category</TableHead>
                             <TableHead>Date Added</TableHead>
-                            <TableHead>Approval Status</TableHead>
+                            <TableHead>Actions</TableHead>
+
+                            {/* <TableHead>Approval Status</TableHead> */}
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -434,16 +724,35 @@ export default function AllocateMetersPage() {
                                     </div>
                                 </TableCell>
                                 <TableCell>{meter.meterNumber}</TableCell>
+                                <TableCell>{meter.simNo}</TableCell>
+                                <TableCell>{meter.oldSgc}</TableCell>
+                                <TableCell>{meter.newSgc}</TableCell>
                                 <TableCell>{meter.manufactureName}</TableCell>
                                 <TableCell>{meter.class}</TableCell>
-                                <TableCell>{meter.meterId}</TableCell>
                                 <TableCell>{meter.meterType}</TableCell>
                                 <TableCell>{meter.category}</TableCell>
                                 <TableCell>{meter.dateAdded}</TableCell>
-                                <TableCell className="px-4 py-3 text-start">
-                                    <span className={cn("inline-block text-sm font-medium", getStatusStyle(meter.status))}>
-                                        {meter.status}
-                                    </span>
+                                <TableCell>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" className="h-8 w-8 p-0 cursor-pointer">
+                                                <MoreVertical size={14} className="text-gray-500" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuItem onClick={() => handleViewInfo(meter)}>
+                                                <Eye size={14} />
+                                                View Details
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem
+                                                onClick={() => handleEditMeter(meter)}
+                                                className="text-sm cursor-pointer hover:bg-gray-100"
+                                            >
+                                                <Pencil size={14} />
+                                                Edit Meter
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                 </TableCell>
                             </TableRow>
                         ))}
@@ -526,6 +835,32 @@ export default function AllocateMetersPage() {
                 ]}
                 templateUrl="/templates/meter-template.xlsx"
             />
+
+            <AddMeterDialog
+                isOpen={isAddMeterDialogOpen}
+                onClose={() => {
+                    setIsAddMeterDialogOpen(false);
+                    setSelectedMeter(null);
+                }}
+                onSaveMeter={handleSaveMeter}
+                editMeter={selectedMeter}
+            />
+
+            <ViewMeterInfoDialog
+                isOpen={viewInfoDialogOpen}
+                onClose={() => setViewInfoDialogOpen(false)}
+                meter={selectedMeter}
+            />
+
+            {/* <ViewMeterDetailsDialog
+                isOpen={viewDialogOpen}
+                onClose={() => setViewDialogOpen(false)}
+                meter={selectedMeter}
+            /> */}
         </div>
     );
+}
+
+function uuidv4(): string {
+    throw new Error("Function not implemented.");
 }

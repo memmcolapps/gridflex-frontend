@@ -58,7 +58,63 @@ export interface VirtualMeterData {
   debitPaymentPlan?: string;
   creditMop?: string;
   creditPaymentPlan?: string;
-  energyType?: string; 
-  fixedEnergy?: string; 
+  energyType?: string;
+  fixedEnergy?: string;
   custoType?: string;
+  image?: File | null;
+  consumptionType?: string; // Added for consumption type
+}
+
+// types.ts
+export interface MeterData {
+  id: string;
+  meterNumber: string;
+  manufactureName: string;
+  class: string;
+  meterType?: string;
+  category: string;
+  dateAdded?: string;
+  oldSgc?: string;
+  newSgc?: string;
+  oldKrn?: string;
+  newKrn?: string;
+  oldTariffIndex?: string;
+  newTariffIndex?: string;
+  simNo?: string;
+  smartMeter?: string;
+  ctRatioNumerator?: string;
+  ctRatioDenominator?: string;
+  voltageRatioNumerator?: string;
+  voltageRatioDenominator?: string;
+  multiplier?: string;
+  meterRating?: string;
+  initialReading?: string;
+  dial?: string;
+  longitude?: string;
+  latitude?: string;
+  meterModel?: string;
+  protocol?: string;
+  authentication?: string;
+  password?: string;
+  customerId?: string | null;
+  accountNumber?: string;
+  tariff?: string;
+  assignedStatus?: string;
+  status?: string;
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  debitMop?: string; // Added for payment fields
+  debitPaymentPlan?: string;
+  creditPaymentPlan?: string;
+  creditMop?: string;
+  Image?: File;
+  feeder?: string;
+  dss?: string; // Optional, as not always required
+  cin?: string;
+  state?: string;
+  city?: string;
+  streetName?: string;
+  houseNo?: string;
+  approvedStatus?:string
 }

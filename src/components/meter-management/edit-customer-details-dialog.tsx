@@ -6,8 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
-import type { MeterData } from "@/app/(protected)/data-management/meter-management/assign-meter/page";
-
+import type { MeterData } from "@/types/meter";
 interface EditCustomerDetailsDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
@@ -72,9 +71,9 @@ export function EditCustomerDetailsDialog({
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="bg-white text-black h-fit">
-        {editCustomer?.category === "Prepaid" && <Progress value={progress} className="w-full mt-4" />}
+        {/* {editCustomer?.category === "Prepaid" && <Progress value={progress} className="w-full mt-4" />} */}
         <DialogHeader>
-          <DialogTitle>Edit Customer Details</DialogTitle>
+          <DialogTitle>Edit Details</DialogTitle>
           <p className="text-sm">Fill all compulsory fields</p>
         </DialogHeader>
         <div className="grid gap-4 py-4">
@@ -118,8 +117,8 @@ export function EditCustomerDetailsDialog({
                 Phone Number<span className="text-red-700">*</span>
               </Label>
               <Input
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                value={editCustomer?.phone ?? ""}
+                // onChange={(e) => setPhone(e.target.value)}
                 readOnly
                 placeholder="Enter Phone Number"
                 className="border-gray-200 text-gray-600"
@@ -130,14 +129,14 @@ export function EditCustomerDetailsDialog({
                 Meter Number<span className="text-red-700">*</span>
               </Label>
               <Input
-                value={meterNumber}
+                value={editCustomer?.meterNumber ?? meterNumber}
                 onChange={(e) => setMeterNumber(e.target.value)}
                 placeholder="Enter Meter Number"
                 className="border-gray-200 text-gray-600"
               />
             </div>
             <div className="space-y-2">
-              <Label>CIN</Label>
+              <Label>CIN<span className="text-red-700">*</span></Label>
               <Input
                 value={cin}
                 onChange={(e) => setCin(e.target.value)}
@@ -160,57 +159,47 @@ export function EditCustomerDetailsDialog({
               <Label>
                 Tariff<span className="text-red-700">*</span>
               </Label>
-              <Select onValueChange={setTariff} value={tariff}>
-                <SelectTrigger className="border-gray-200 text-gray-600 w-full">
-                  <SelectValue placeholder="Select Tariff" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="tariff1">Tariff 1</SelectItem>
-                  <SelectItem value="tariff2">Tariff 2</SelectItem>
-                </SelectContent>
-              </Select>
+                <Input
+                value={tariff}
+                onChange={(e) => setTariff(e.target.value)}
+                // placeholder="Enter CIN"
+                className="border-gray-200 text-gray-600"
+              />
             </div>
             <div className="space-y-2">
               <Label>
                 Feeder Line<span className="text-red-700">*</span>
               </Label>
-              <Select onValueChange={setFeeder} value={feeder}>
-                <SelectTrigger className="border-gray-100 text-gray-600 w-full">
-                  <SelectValue placeholder="Select Feeder Line" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="feeder1">Feeder 1</SelectItem>
-                  <SelectItem value="feeder2">Feeder 2</SelectItem>
-                </SelectContent>
-              </Select>
+               <Input
+                value={feeder}
+                onChange={(e) => setFeeder(e.target.value)}
+                // placeholder="Enter CIN"
+                className="border-gray-200 text-gray-600"
+              />
             </div>
             <div className="space-y-2">
               <Label>
                 Distribution Substation (DSS)<span className="text-red-700">*</span>
               </Label>
-              <Select onValueChange={setDss} value={dss}>
-                <SelectTrigger className="border-gray-100 text-gray-600 w-full">
-                  <SelectValue placeholder="Select DSS" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="dss1">DSS 1</SelectItem>
-                  <SelectItem value="dss2">DSS 2</SelectItem>
-                </SelectContent>
-              </Select>
+                <Input
+                value={dss}
+                onChange={(e) => setDss(e.target.value)}
+                // placeholder="Enter CIN"
+                className="border-gray-200 text-gray-600"
+              />
             </div>
             <div className="space-y-2">
               <Label>
                 State<span className="text-red-700">*</span>
               </Label>
-              <Select onValueChange={setState} value={state}>
-                <SelectTrigger className="border-gray-100 text-gray-600 w-full">
-                  <SelectValue placeholder="Select State" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="state1">State 1</SelectItem>
-                  <SelectItem value="state2">State 2</SelectItem>
-                </SelectContent>
-              </Select>
+              <Input
+                value={state}
+                onChange={(e) => setState(e.target.value)}
+                placeholder="Enter State"
+                className="border-gray-100 text-gray-600"
+              />
+            
+               
             </div>
             <div className="space-y-2">
               <Label>
@@ -264,7 +253,7 @@ export function EditCustomerDetailsDialog({
                 : "bg-blue-200 text-white cursor-not-allowed"
             }
           >
-            Proceed
+           Save
           </Button>
         </DialogFooter>
       </DialogContent>

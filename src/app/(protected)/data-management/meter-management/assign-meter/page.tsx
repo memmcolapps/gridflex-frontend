@@ -1,3 +1,6 @@
+
+
+/* eslint-disable @typescript-eslint/non-nullable-type-assertion-style, @typescript-eslint/prefer-optional-chain */
 "use client";
 import { FilterControl } from "@/components/search-control";
 import { Button } from "@/components/ui/button";
@@ -30,7 +33,7 @@ import {
 } from "@/components/ui/table";
 import CustomerIdDialog from "@/components/meter-management/customer-id-dialog";
 import { AssignMeterDialog } from "@/components/meter-management/assign-meter-dialog";
-import type { VirtualMeterData } from "@/types/meter";
+import type { MeterData, VirtualMeterData } from "@/types/meter";
 import { EditCustomerDetailsDialog } from "@/components/meter-management/edit-customer-details-dialog";
 import { SetPaymentModeDialog } from "@/components/meter-management/set-payment-mode-dialog";
 import { DeactivateVirtualMeterDialog } from "@/components/meter-management/deactivate-virtual-meter-dialog";
@@ -64,8 +67,9 @@ const filterSections = [
 ];
 
 // Updated mock data with payment plans set to "3"
-const initialMeterData = [
+const initialMeterData: MeterData[] = [
     {
+        id: "1",
         customerId: "C-0123456790",
         meterNumber: "62010229441",
         accountNumber: "20250129544",
@@ -79,9 +83,43 @@ const initialMeterData = [
         class: "Single Phase",
         firstName: "Shina",
         lastName: "Tiger",
-        phoneNumber: "08098765343",
+        phone: "08098765343",
+        tariff: "A1",
+        feeder: "Ijeun",
+        dss: "Ijeun",
+        city: "Obafemi Owode",
+        streetName: "Glorious",
+        houseNo: "5",
+        state: "Ogun",
+        manufactureName: "Momas", // Required by MeterData, set to undefined if not used
+        meterType: undefined,
+        dateAdded: undefined,
+        oldSgc: undefined,
+        newSgc: undefined,
+        oldKrn: undefined,
+        newKrn: undefined,
+        oldTariffIndex: undefined,
+        newTariffIndex: undefined,
+        simNo: undefined,
+        smartMeter: undefined,
+        ctRatioNumerator: undefined,
+        ctRatioDenominator: undefined,
+        voltageRatioNumerator: undefined,
+        voltageRatioDenominator: undefined,
+        multiplier: undefined,
+        meterRating: undefined,
+        initialReading: undefined,
+        dial: undefined,
+        longitude: undefined,
+        latitude: undefined,
+        meterModel: undefined,
+        protocol: undefined,
+        authentication: undefined,
+        password: undefined,
+        Image: undefined,
     },
     {
+        id: "2",
         customerId: "C-1234567891",
         meterNumber: "62010229442",
         accountNumber: "20250129545",
@@ -95,9 +133,43 @@ const initialMeterData = [
         class: "Three Phase",
         firstName: "Seun",
         lastName: "Tope",
-        phoneNumber: "09043216161",
+        phone: "09043216161",
+        tariff: "A2",
+        feeder: "Ijeun",
+        dss: "Ijeun",
+        city: "Obafemi Owode",
+        streetName: "Glorious",
+        houseNo: "5",
+        state: "Ogun",
+        manufactureName: "Momas",// Required by MeterData, set to undefined if not used
+        meterType: undefined,
+        dateAdded: undefined,
+        oldSgc: undefined,
+        newSgc: undefined,
+        oldKrn: undefined,
+        newKrn: undefined,
+        oldTariffIndex: undefined,
+        newTariffIndex: undefined,
+        simNo: undefined,
+        smartMeter: undefined,
+        ctRatioNumerator: undefined,
+        ctRatioDenominator: undefined,
+        voltageRatioNumerator: undefined,
+        voltageRatioDenominator: undefined,
+        multiplier: undefined,
+        meterRating: undefined,
+        initialReading: undefined,
+        dial: undefined,
+        longitude: undefined,
+        latitude: undefined,
+        meterModel: undefined,
+        protocol: undefined,
+        authentication: undefined,
+        password: undefined,
+        Image: undefined,
     },
     {
+        id: '3',
         customerId: "C-2345678902",
         meterNumber: "62010229443",
         accountNumber: "20250129546",
@@ -111,9 +183,37 @@ const initialMeterData = [
         class: "MD",
         firstName: "",
         lastName: "",
-        phoneNumber: "",
+        phone: "08098765343",
+        tariff: "A1",
+        manufactureName: "Momas", // Required by MeterData, set to undefined if not used
+        meterType: undefined,
+        dateAdded: undefined,
+        oldSgc: undefined,
+        newSgc: undefined,
+        oldKrn: undefined,
+        newKrn: undefined,
+        oldTariffIndex: undefined,
+        newTariffIndex: undefined,
+        simNo: undefined,
+        smartMeter: undefined,
+        ctRatioNumerator: undefined,
+        ctRatioDenominator: undefined,
+        voltageRatioNumerator: undefined,
+        voltageRatioDenominator: undefined,
+        multiplier: undefined,
+        meterRating: undefined,
+        initialReading: undefined,
+        dial: undefined,
+        longitude: undefined,
+        latitude: undefined,
+        meterModel: undefined,
+        protocol: undefined,
+        authentication: undefined,
+        password: undefined,
+        Image: undefined,
     },
     {
+        id: "4",
         customerId: "C-3456789013",
         meterNumber: "62010229444",
         accountNumber: "20250129547",
@@ -127,9 +227,36 @@ const initialMeterData = [
         class: "Single Phase",
         firstName: "",
         lastName: "",
-        phoneNumber: "",
+        phone: "08098765343",
+        manufactureName: "Momas",// Required by MeterData, set to undefined if not used
+        meterType: undefined,
+        dateAdded: undefined,
+        oldSgc: undefined,
+        newSgc: undefined,
+        oldKrn: undefined,
+        newKrn: undefined,
+        oldTariffIndex: undefined,
+        newTariffIndex: undefined,
+        simNo: undefined,
+        smartMeter: undefined,
+        ctRatioNumerator: undefined,
+        ctRatioDenominator: undefined,
+        voltageRatioNumerator: undefined,
+        voltageRatioDenominator: undefined,
+        multiplier: undefined,
+        meterRating: undefined,
+        initialReading: undefined,
+        dial: undefined,
+        longitude: undefined,
+        latitude: undefined,
+        meterModel: undefined,
+        protocol: undefined,
+        authentication: undefined,
+        password: undefined,
+        Image: undefined,
     },
     {
+        id: "5",
         customerId: "C-4567890124",
         meterNumber: "62010229445",
         accountNumber: "20250129548",
@@ -143,9 +270,36 @@ const initialMeterData = [
         class: "Three Phase",
         firstName: "",
         lastName: "",
-        phoneNumber: "",
+        phone: "08098765343",
+        manufactureName: "Momas", // Required by MeterData, set to undefined if not used
+        meterType: undefined,
+        dateAdded: undefined,
+        oldSgc: undefined,
+        newSgc: undefined,
+        oldKrn: undefined,
+        newKrn: undefined,
+        oldTariffIndex: undefined,
+        newTariffIndex: undefined,
+        simNo: undefined,
+        smartMeter: undefined,
+        ctRatioNumerator: undefined,
+        ctRatioDenominator: undefined,
+        voltageRatioNumerator: undefined,
+        voltageRatioDenominator: undefined,
+        multiplier: undefined,
+        meterRating: undefined,
+        initialReading: undefined,
+        dial: undefined,
+        longitude: undefined,
+        latitude: undefined,
+        meterModel: undefined,
+        protocol: undefined,
+        authentication: undefined,
+        password: undefined,
+        Image: undefined,
     },
     {
+        id: "6",
         customerId: "C-5678901235",
         meterNumber: "62010229446",
         accountNumber: "20250129549",
@@ -159,9 +313,36 @@ const initialMeterData = [
         class: "MD",
         firstName: "",
         lastName: "",
-        phoneNumber: "",
+        phone: "08098765343",
+        manufactureName: "Momas",// Required by MeterData, set to undefined if not used
+        meterType: undefined,
+        dateAdded: undefined,
+        oldSgc: undefined,
+        newSgc: undefined,
+        oldKrn: undefined,
+        newKrn: undefined,
+        oldTariffIndex: undefined,
+        newTariffIndex: undefined,
+        simNo: undefined,
+        smartMeter: undefined,
+        ctRatioNumerator: undefined,
+        ctRatioDenominator: undefined,
+        voltageRatioNumerator: undefined,
+        voltageRatioDenominator: undefined,
+        multiplier: undefined,
+        meterRating: undefined,
+        initialReading: undefined,
+        dial: undefined,
+        longitude: undefined,
+        latitude: undefined,
+        meterModel: undefined,
+        protocol: undefined,
+        authentication: undefined,
+        password: undefined,
+        Image: undefined,
     },
     {
+        id: "7",
         customerId: "C-6678901236",
         meterNumber: "62010229446",
         accountNumber: "20250179549",
@@ -175,9 +356,36 @@ const initialMeterData = [
         class: "Single Phase",
         firstName: "",
         lastName: "",
-        phoneNumber: "",
+        phone: "08098765343",
+        manufactureName: "Momas",// Required by MeterData, set to undefined if not used
+        meterType: undefined,
+        dateAdded: undefined,
+        oldSgc: undefined,
+        newSgc: undefined,
+        oldKrn: undefined,
+        newKrn: undefined,
+        oldTariffIndex: undefined,
+        newTariffIndex: undefined,
+        simNo: undefined,
+        smartMeter: undefined,
+        ctRatioNumerator: undefined,
+        ctRatioDenominator: undefined,
+        voltageRatioNumerator: undefined,
+        voltageRatioDenominator: undefined,
+        multiplier: undefined,
+        meterRating: undefined,
+        initialReading: undefined,
+        dial: undefined,
+        longitude: undefined,
+        latitude: undefined,
+        meterModel: undefined,
+        protocol: undefined,
+        authentication: undefined,
+        password: undefined,
+        Image: undefined,
     },
     {
+        id: "8",
         customerId: "C-7678901235",
         meterNumber: "62010229446",
         accountNumber: "20250129559",
@@ -191,9 +399,36 @@ const initialMeterData = [
         class: "Three Phase",
         firstName: "",
         lastName: "",
-        phoneNumber: "",
+        phone: "08098765343",
+        manufactureName: "Momas",// Required by MeterData, set to undefined if not used
+        meterType: undefined,
+        dateAdded: undefined,
+        oldSgc: undefined,
+        newSgc: undefined,
+        oldKrn: undefined,
+        newKrn: undefined,
+        oldTariffIndex: undefined,
+        newTariffIndex: undefined,
+        simNo: undefined,
+        smartMeter: undefined,
+        ctRatioNumerator: undefined,
+        ctRatioDenominator: undefined,
+        voltageRatioNumerator: undefined,
+        voltageRatioDenominator: undefined,
+        multiplier: undefined,
+        meterRating: undefined,
+        initialReading: undefined,
+        dial: undefined,
+        longitude: undefined,
+        latitude: undefined,
+        meterModel: undefined,
+        protocol: undefined,
+        authentication: undefined,
+        password: undefined,
+        Image: undefined,
     },
     {
+        id: "9",
         customerId: "C-8678901235",
         meterNumber: "62010229446",
         accountNumber: "20250129249",
@@ -207,34 +442,60 @@ const initialMeterData = [
         class: "MD",
         firstName: "",
         lastName: "",
-        phoneNumber: "",
+        phone: "08098765343",
+        manufactureName: "Momas", // Required by MeterData, set to undefined if not used
+        meterType: undefined,
+        dateAdded: undefined,
+        oldSgc: undefined,
+        newSgc: undefined,
+        oldKrn: undefined,
+        newKrn: undefined,
+        oldTariffIndex: undefined,
+        newTariffIndex: undefined,
+        simNo: undefined,
+        smartMeter: undefined,
+        ctRatioNumerator: undefined,
+        ctRatioDenominator: undefined,
+        voltageRatioNumerator: undefined,
+        voltageRatioDenominator: undefined,
+        multiplier: undefined,
+        meterRating: undefined,
+        initialReading: undefined,
+        dial: undefined,
+        longitude: undefined,
+        latitude: undefined,
+        meterModel: undefined,
+        protocol: undefined,
+        authentication: undefined,
+        password: undefined,
+        Image: undefined,
     },
 ];
 
-export interface MeterData {
-
-    customerId: string;
-    meterNumber: string;
-    accountNumber: string;
-    cin: string;
-    category: string;
-    debitMop: string;
-    debitPaymentPlan: string;
-    creditMop: string;
-    creditPaymentPlan: string;
-    approvedStatus: string;
-    class: string;
-    firstName?: string;
-    lastName?: string;
-    phone?: string;
-    tariff?: string;
-    feeder?: string;
-    dss?: string;
-    state?: string;
-    city?: string;
-    streetName?: string;
-    houseNo?: string;
-}
+// export interface MeterData {
+//     id: string;
+//     customerId: string;
+//     meterNumber: string;
+//     accountNumber: string;
+//     cin: string;
+//     category: string;
+//     debitMop: string;
+//     debitPaymentPlan: string;
+//     creditMop: string;
+//     creditPaymentPlan: string;
+//     approvedStatus: string;
+//     class: string;
+//     firstName?: string;
+//     lastName?: string;
+//     phone?: string;
+//     tariff?: string;
+//     feeder?: string;
+//     dss?: string;
+//     state?: string;
+//     city?: string;
+//     streetName?: string;
+//     houseNo?: string;
+// }
 
 export default function AssignMeterPage() {
     const [searchTerm, setSearchTerm] = useState<string>("");
@@ -289,13 +550,12 @@ export default function AssignMeterPage() {
 
 
     // Calculate pagination values
-
-     const [processedData,] = useState<MeterData[]>(initialMeterData); 
-     const totalRows = Math.ceil(processedData.length / rowsPerPage);
+    const [processedData,] = useState<MeterData[]>(initialMeterData);
+    const totalRows = Math.ceil(processedData.length / rowsPerPage);
     const startIndex = (currentPage - 1) * rowsPerPage;
     const endIndex = startIndex + rowsPerPage;
     const currentPageData = meterData.slice(startIndex, endIndex);
-    
+
 
     // Reset payment fields when Set Payment Mode modal closes
     useEffect(() => {
@@ -332,9 +592,10 @@ export default function AssignMeterPage() {
         } else {
             const filtered = meterData
                 .filter((customer) =>
+                    customer.customerId != null && // Checks for both null and undefined
                     customer.customerId.toLowerCase().includes(value.toLowerCase())
                 )
-                .map((customer) => customer.customerId);
+                .map((customer) => customer.customerId!); // Safe because filter ensures customerId is a string
             setFilteredCustomerIds(filtered);
         }
     };
@@ -473,23 +734,25 @@ export default function AssignMeterPage() {
     };
 
     const handleConfirmEditFromSetPayment = () => {
-        if (editCustomer) {
-            setMeterData((prev) =>
-                prev.map((item) =>
-                    item.customerId === editCustomer.customerId
-                        ? {
-                            ...item,
-                            debitMop: debitMop ?? item.debitMop,
-                            creditMop: creditMop ?? item.creditMop,
-                            debitPaymentPlan: debitMop === "one-off" ? "" : (debitPaymentPlan ?? item.debitPaymentPlan),
-                            creditPaymentPlan: creditMop === "one-off" ? "" : (creditPaymentPlan ?? item.creditPaymentPlan),
-                        }
-                        : item
-                )
-            );
-            setIsSetPaymentModalOpen(false);
-            alert(`Details and payment mode updated successfully for prepaid customer ${editCustomer.customerId}!`);
+        if (!editCustomer?.customerId) {
+            alert("No valid customer selected for editing payment mode.");
+            return;
         }
+        setMeterData((prev) =>
+            prev.map((item) =>
+                item.customerId === editCustomer.customerId
+                    ? {
+                        ...item,
+                        debitMop: debitMop ?? item.debitMop,
+                        creditMop: creditMop ?? item.creditMop,
+                        debitPaymentPlan: debitMop === "one-off" ? "" : (debitPaymentPlan ?? item.debitPaymentPlan),
+                        creditPaymentPlan: creditMop === "one-off" ? "" : (creditPaymentPlan ?? item.creditPaymentPlan),
+                    }
+                    : item
+            )
+        );
+        setIsSetPaymentModalOpen(false);
+        alert(`Details and payment mode updated successfully for prepaid customer ${editCustomer.customerId}!`);
     };
 
     const handleDetachMeter = (customer: MeterData) => {
@@ -530,32 +793,34 @@ export default function AssignMeterPage() {
     };
 
     const handleConfirmMigrate = () => {
-        if (migrateCustomer) {
-            setMeterData((prev) =>
-                prev.map((item) =>
-                    item.customerId === migrateCustomer.customerId
-                        ? {
-                            ...item,
-                            category: migrateToCategory ?? item.category,
-                            ...(migrateToCategory === "Prepaid" && {
-                                debitMop: migrateDebitMop,
-                                debitPaymentPlan: migrateDebitMop === "monthly" ? migrateDebitPaymentPlan : "",
-                                creditMop: migrateCreditMop,
-                                creditPaymentPlan: migrateCreditMop === "monthly" ? migrateCreditPaymentPlan : "",
-                            }),
-                            ...(migrateToCategory === "Postpaid" && {
-                                debitMop: "",
-                                debitPaymentPlan: "",
-                                creditMop: "",
-                                creditPaymentPlan: "",
-                            }),
-                        }
-                        : item
-                )
-            );
-            setIsMigrateModalOpen(false);
-            alert(`Meter migrated successfully for customer ${migrateCustomer.customerId} to ${migrateToCategory}!`);
+        if (!migrateCustomer?.customerId) {
+            alert("No valid customer selected for migration.");
+            return;
         }
+        setMeterData((prev) =>
+            prev.map((item) =>
+                item.customerId === migrateCustomer.customerId
+                    ? {
+                        ...item,
+                        category: migrateToCategory ?? item.category,
+                        ...(migrateToCategory === "Prepaid" && {
+                            debitMop: migrateDebitMop,
+                            debitPaymentPlan: migrateDebitMop === "monthly" ? migrateDebitPaymentPlan : "",
+                            creditMop: migrateCreditMop,
+                            creditPaymentPlan: migrateCreditMop === "monthly" ? migrateCreditPaymentPlan : "",
+                        }),
+                        ...(migrateToCategory === "Postpaid" && {
+                            debitMop: "",
+                            debitPaymentPlan: "",
+                            creditMop: "",
+                            creditPaymentPlan: "",
+                        }),
+                    }
+                    : item
+            )
+        );
+        setIsMigrateModalOpen(false);
+        alert(`Meter migrated successfully for customer ${migrateCustomer.customerId} to ${migrateToCategory}!`);
     };
 
     const handleSearchChange = (term: string) => {
@@ -578,25 +843,41 @@ export default function AssignMeterPage() {
         // Apply search term filter
         if (term.trim() !== "") {
             results = results.filter(item =>
-                item.customerId.toLowerCase().includes(term.toLowerCase()) ??
-                item.meterNumber.toLowerCase().includes(term.toLowerCase()) ??
-                item.accountNumber.toLowerCase().includes(term.toLowerCase()) ??
-                item.cin.toLowerCase().includes(term.toLowerCase())
+                [
+                    item.customerId?.toLowerCase().includes(term.toLowerCase()),
+                    item.meterNumber?.toLowerCase().includes(term.toLowerCase()),
+                    item.accountNumber?.toLowerCase().includes(term.toLowerCase()),
+                    item.cin?.toLowerCase().includes(term.toLowerCase()),
+                ].some(result => result === true) ?? false
             );
         }
 
         // Apply class and type filters
         results = results.filter((meter) => {
+            // Handle class filter
+            const classOptions = [
+                { active: activeFilters.singlePhase, value: "single phase" },
+                { active: activeFilters.threePhase, value: "three phase" },
+                { active: activeFilters.md, value: "md" },
+            ];
             const classMatch =
-                (!activeFilters.singlePhase && !activeFilters.threePhase && !activeFilters.md) ??
-                (activeFilters.singlePhase && meter.class.toLowerCase().includes("single phase")) ??
-                (activeFilters.threePhase && meter.class.toLowerCase().includes("three phase")) ??
-                (activeFilters.md && meter.class.toLowerCase().includes("md"));
+                !activeFilters.singlePhase && !activeFilters.threePhase && !activeFilters.md
+                    ? true
+                    : classOptions.some(
+                        ({ active, value }) => active && meter.class?.toLowerCase().includes(value)
+                    );
 
+            // Handle type filter
+            const typeOptions = [
+                { active: activeFilters.prepaid, value: "prepaid" },
+                { active: activeFilters.postPaid, value: "postpaid" },
+            ];
             const typeMatch =
-                (!activeFilters.prepaid && !activeFilters.postPaid) ??
-                (activeFilters.prepaid && meter.category.toLowerCase() === "prepaid") ??
-                (activeFilters.postPaid && meter.category.toLowerCase() === "postpaid");
+                !activeFilters.prepaid && !activeFilters.postPaid
+                    ? true
+                    : typeOptions.some(
+                        ({ active, value }) => active && meter.category?.toLowerCase() === value
+                    );
 
             return classMatch && typeMatch;
         });
@@ -614,9 +895,8 @@ export default function AssignMeterPage() {
 
         // Update state and reset to first page
         setMeterData(results);
-        setCurrentPage(1); // Reset pagination to first page when filters/sorting changes
+        setCurrentPage(1);
     };
-
     const handleSetActiveFilters = (filters: Record<string, boolean>) => {
         setActiveFilters(filters);
         applyFiltersAndSort(searchTerm, sortConfig.key, sortConfig.direction);
@@ -630,19 +910,21 @@ export default function AssignMeterPage() {
         city.trim() !== "" &&
         streetName.trim() !== "" &&
         houseNo.trim() !== "" &&
-        Boolean(selectedCustomer?.customerId ?? editCustomer?.customerId) &&
+        (selectedCustomer?.customerId ?? editCustomer?.customerId) !== undefined &&
         meterNumber.trim() !== "" &&
         accountNumber.trim() !== "";
 
     const isPaymentFormComplete = debitMop !== "" && creditMop !== "";
 
+    // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
     const isMigrateFormComplete =
-        migrateToCategory !== "" &&
-        (migrateToCategory !== "Prepaid" ||
-            (migrateDebitMop !== "" &&
-                migrateCreditMop !== "" &&
-                (migrateDebitMop !== "monthly" || migrateDebitPaymentPlan !== "") &&
-                (migrateCreditMop !== "monthly" || migrateCreditPaymentPlan !== "")));
+        ((migrateToCategory ?? "") !== "Prepaid" ||
+            ((migrateDebitMop ?? "") !== "" &&
+                (migrateCreditMop ?? "") !== "" &&
+                ((migrateDebitMop ?? "") !== "monthly" || (migrateDebitPaymentPlan ?? "") !== "") &&
+                ((migrateCreditMop ?? "") !== "monthly" || (migrateCreditPaymentPlan ?? "") !== "")));
+
+
 
     const handleBulkUploadSave = (data: MeterData[]) => {
         setMeterData((prev) => [...prev, ...data]);
@@ -663,10 +945,10 @@ export default function AssignMeterPage() {
         <div className="p-6 max-h-screen overflow-auto">
             <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
                 <ContentHeader
-                    title="Assign Meter"
-                    description="Easily assign meters to customers and switch between postpaid and prepaid accounts."
+                    title="Assigned Meter"
+                    description="View assigned meters and migrate between postpaid and prepaid accounts"
                 />
-                <div className="flex flex-col md:flex-row gap-2">
+                {/* <div className="flex flex-col md:flex-row gap-2">
                     <Button
                         className="flex items-center gap-2 border font-medium border-[#161CCA] text-[#161CCA] w-full md:w-auto cursor-pointer"
                         variant="outline"
@@ -685,7 +967,7 @@ export default function AssignMeterPage() {
                         <CirclePlus size={14} strokeWidth={2.3} className="h-4 w-4" />
                         <span className="text-sm md:text-base">Assign Meter</span>
                     </Button>
-                </div>
+                </div> */}
             </div>
             <div className="flex justify-between">
                 <div className="flex items-center gap-2 w-full md:w-auto mb-4">
@@ -709,7 +991,7 @@ export default function AssignMeterPage() {
                     />
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className="gap-2 border-gray-300 w-full sm:w-auto">
+                            <Button variant="outline" className="gap-2 border-gray-300 w-full sm:w-auto cursor-pointer">
                                 <ArrowUpDown className="text-gray-500" size={14} />
                                 <span className="hidden sm:inline text-gray-800">Sort</span>
                             </Button>
@@ -719,13 +1001,13 @@ export default function AssignMeterPage() {
                                 onClick={() => handleSortChange("customerId")}
                                 className="text-sm cursor-pointer hover:bg-gray-100"
                             >
-                                Oldest - Newest
+                                Ascending - Descending
                             </DropdownMenuItem>
                             <DropdownMenuItem
                                 onClick={() => handleSortChange("customerId")}
                                 className="text-sm cursor-pointer hover:bg-gray-100"
                             >
-                                Newest - Oldest
+                                Descending - Ascending
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
@@ -769,7 +1051,7 @@ export default function AssignMeterPage() {
                         <TableHead>Payment Plan</TableHead>
                         <TableHead>Credit MOP</TableHead>
                         <TableHead>Payment Plan</TableHead>
-                        <TableHead>Approval Status</TableHead>
+                        {/* <TableHead>Approval Status</TableHead> */}
                         <TableHead>Actions</TableHead>
                     </TableRow>
                 </TableHeader>
@@ -801,11 +1083,11 @@ export default function AssignMeterPage() {
                             <TableCell>{meter.debitPaymentPlan}</TableCell>
                             <TableCell>{meter.creditMop}</TableCell>
                             <TableCell>{meter.creditPaymentPlan}</TableCell>
-                            <TableCell className="px-4 py-3">
+                            {/* <TableCell className="px-4 py-3">
                                 <span className={cn("inline-block text-sm font-medium", getStatusStyle(meter.approvedStatus))}>
                                     {meter.approvedStatus ?? "N/A"}
                                 </span>
-                            </TableCell>
+                            </TableCell> */}
                             <TableCell>
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
@@ -931,6 +1213,7 @@ export default function AssignMeterPage() {
                 phone={phone}
                 setPhone={setPhone}
             />
+
             <EditCustomerDetailsDialog
                 isOpen={isEditModalOpen}
                 onOpenChange={setIsEditModalOpen}
