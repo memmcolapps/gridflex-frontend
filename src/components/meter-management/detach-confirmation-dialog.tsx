@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertTriangle } from "lucide-react";
-import type { MeterData } from "@/app/(protected)/data-management/meter-management/assign-meter/page";
+import type { MeterData } from "@/types/meter";
 
 interface DetachConfirmationDialogProps {
     isOpen: boolean;

@@ -7,28 +7,29 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useState, useEffect } from "react";
+import type { VirtualMeterData } from "@/types/meter";
 
-interface VirtualMeterData {
-  id: string;
-  customerId: string;
-  meterNumber: string;
-  accountNumber: string;
-  feeder: string;
-  dss: string;
-  cin: string;
-  tariff: string;
-  status: string;
-  firstName?: string;
-  lastName?: string;
-  phone?: string;
-  state?: string;
-  city?: string;
-  streetName?: string;
-  houseNo?: string;
-  custoType?: string;
-  energyType?: string;
-  fixedEnergy?: string;
-}
+// interface VirtualMeterData {
+//   id: string;
+//   customerId: string;
+//   meterNumber: string;
+//   accountNumber: string;
+//   feeder: string;
+//   dss: string;
+//   cin: string;
+//   tariff: string;
+//   status: string;
+//   firstName?: string;
+//   lastName?: string;
+//   phone?: string;
+//   state?: string;
+//   city?: string;
+//   streetName?: string;
+//   houseNo?: string;
+//   custoType?: string;
+//   energyType?: string;
+//   fixedEnergy?: string;
+// }
 
 interface EditVirtualMeterDialogProps {
   isOpen: boolean;

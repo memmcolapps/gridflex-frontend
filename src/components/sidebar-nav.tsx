@@ -84,10 +84,10 @@ export function SidebarNav() {
           href: "/data-management/meter-management",
           hasSubmenu: true,
           submenuItems: [
-            { title: "Meters", href: "/data-management/meter-management/meters" },
             { title: "Meter Manufacturers", href: "/data-management/meter-management/meter-manufacturer" },
-            { title: "Allocate Meter", href: "/data-management/meter-management/allocate-meter" },
-            { title: "Assign Meter", href: "/data-management/meter-management/assign-meter" }
+            { title: "Meter Inventory", href: "/data-management/meter-management/meter-inventory" },
+            { title: "Meters", href: "/data-management/meter-management/meters" },
+            { title: "Assigned Meter", href: "/data-management/meter-management/assign-meter" }
           ]
         },
         { title: "Customer Management", href: "/data-management/customer-management" },

@@ -61,7 +61,7 @@ export function SortControl({ onSortChange, currentSort = "" }: SortControlProps
                                 setIsOpen(false);
                             }}
                         >
-                            Newest - Oldest
+                           Ascending - Descending
                         </button>
                         <button
                             className={`text-sm ${currentSort === "desc" ? "font-bold" : ""} hover:bg-gray-100 p-2 rounded cursor-pointer`}
@@ -70,7 +70,7 @@ export function SortControl({ onSortChange, currentSort = "" }: SortControlProps
                                 setIsOpen(false);
                             }}
                         >
-                            Oldest - Newest
+                           Descending - Ascending
                         </button>
                     </div>
                 </div>

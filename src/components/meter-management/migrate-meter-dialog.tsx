@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import type { MeterData } from "@/app/(protected)/data-management/meter-management/assign-meter/page"
+import type { MeterData } from "@/types/meter"
 
 interface MigrateMeterDialogProps {
   isOpen: boolean;
@@ -111,7 +111,7 @@ export function MigrateMeterDialog({
                 </Label>
                 <Select onValueChange={setMigrateToCategory} value={migrateToCategory}>
                   <SelectTrigger className="w-full h-10 border-gray-200 focus:ring-[#161CCA]/50">
-                    <SelectValue placeholder="Select category" />
+                    <SelectValue placeholder="Select meter category" />
                   </SelectTrigger>
                   <SelectContent>
                     {migrateCustomer?.category === "Postpaid" && <SelectItem value="Prepaid">Prepaid</SelectItem>}

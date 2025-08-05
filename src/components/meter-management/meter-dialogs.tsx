@@ -1,7 +1,11 @@
-"use client";
-
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogFooter,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AlertTriangle } from "lucide-react";
@@ -15,122 +19,151 @@ interface DeactivateDialogProps {
     action: "deactivate" | "activate";
 }
 
-export function DeactivateDialog({ isOpen, onClose, onDeactivate, action, meterNumber }: DeactivateDialogProps) {
+export function DeactivateDialog({
+    isOpen,
+    onClose,
+    onDeactivate,
+    action,
+    meterNumber,
+}: DeactivateDialogProps) {
     const [reason, setReason] = useState<string>("");
     const [isFinalConfirmOpen, setIsFinalConfirmOpen] = useState(false);
 
-    // Open confirmation dialog directly for activate action when dialog is opened
-    useEffect(() => {
-        if (isOpen && action === "activate") {
-            setIsFinalConfirmOpen(true);
-            onClose(); // Close the initial dialog
-        }
-    }, [isOpen, action, onClose]);
-
     const handleProceed = () => {
-        if (action === "deactivate") {
-            if (!reason.trim()) return; // Require reason for deactivation
-            setIsFinalConfirmOpen(true); // Open confirmation dialog for deactivate
-        }
+        if (action === "deactivate" && !reason.trim()) return;
+        setIsFinalConfirmOpen(true);
     };
 
     const handleFinalConfirm = () => {
-        if (action === "deactivate") {
-            onDeactivate(reason); // Pass reason for deactivation
-            setReason(""); // Reset reason after deactivation
-        } else {
-            onDeactivate(undefined); // No reason needed for activation
-        }
+        onDeactivate(action === "deactivate" ? reason : undefined);
+        setReason("");
         setIsFinalConfirmOpen(false);
         onClose();
     };
 
+    const handleClose = () => {
+        setReason("");
+        setIsFinalConfirmOpen(false);
+        onClose();
+    };
+
+    const getColorScheme = (type: "border" | "text" | "bg") => {
+        if (action === "activate") {
+            return type === "border"
+                ? "border-[#161CCA]"
+                : type === "text"
+                    ? "text-[#161CCA]"
+                    : "bg-[#161CCA]";
+        } else {
+            return type === "border"
+                ? "border-[#F50202]"
+                : type === "text"
+                    ? "text-[#F50202]"
+                    : "bg-[#F50202]";
+        }
+    };
+
+    const getHoverBg = () => {
+        return action === "activate" ? "hover:bg-blue-700" : "hover:bg-red-700";
+    };
+
+    const getAlertClass = () => {
+        return action === "activate"
+            ? "text-blue-600 bg-blue-100 p-3 rounded-full mt-4"
+            : "text-[#F50202] bg-red-100 p-3 rounded-full mt-4";
+    };
+
+    // Auto-open confirm dialog if action is activate
+    useEffect(() => {
+        if (isOpen && action === "activate") {
+            setIsFinalConfirmOpen(true);
+        }
+    }, [isOpen, action]);
+
     return (
         <>
-            <Dialog open={isOpen && action === "deactivate"} onOpenChange={(open) => {
-                if (!open) {
-                    setReason("");
-                    setIsFinalConfirmOpen(false); // Ensure confirmation dialog closes if initial dialog is closed
-                }
-                onClose();
-            }}>
-                <DialogContent className="sm:max-w-[350px] h-fit bg-white rounded-lg p-6">
-                    <DialogHeader className="flex flex-row items-center justify-between">
-                        <div className="flex-col items-center gap-2">
+            {/* Show input dialog only for deactivation */}
+            {isOpen && !isFinalConfirmOpen && action === "deactivate" && (
+                <Dialog open onOpenChange={(open) => !open && handleClose()}>
+                    <DialogContent className="sm:max-w-[350px] h-fit bg-white rounded-lg p-6">
+                        <DialogHeader>
                             <DialogTitle className="text-lg font-semibold text-gray-900">
                                 Deactivate Meter
                             </DialogTitle>
+                        </DialogHeader>
+                        <div>
+                            <Label className="text-sm text-gray-700">
+                                Reason <span className="text-red-500">*</span>
+                            </Label>
+                            <Input
+                                value={reason}
+                                onChange={(e) => setReason(e.target.value)}
+                                className="w-full mt-2 border-gray-300"
+                                placeholder="Enter reason to deactivate"
+                            />
                         </div>
-                    </DialogHeader>
-                    <div className="">
-                        <Label className="text-sm text-gray-700">
-                            Reason <span className="text-red-500">*</span>
-                        </Label>
-                        <Input
-                            value={reason}
-                            onChange={(e) => setReason(e.target.value)}
-                            className="w-full mt-2 border-gray-300"
-                            placeholder="Enter reason to deactivate"
-                        />
-                    </div>
-                    <DialogFooter className="flex justify-end gap-3 mt-4">
-                        <Button
-                            variant="outline"
-                            className="border-[#F50202] text-[#F50202] hover:bg-red-50"
-                            onClick={() => {
-                                setReason("");
-                                onClose();
-                            }}
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            className={
-                                !reason.trim()
-                                    ? "bg-red-200 text-white cursor-not-allowed"
-                                    : "bg-[#F50202] text-white hover:bg-red-700 cursor-pointer"
-                            }
-                            onClick={handleProceed}
-                            disabled={!reason.trim()}
-                        >
-                            Deactivate
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+                        <DialogFooter className="flex justify-end gap-3 mt-4">
+                            <Button
+                                variant="outline"
+                                className={`${getColorScheme("border")} ${getColorScheme(
+                                    "text"
+                                )} hover:bg-opacity-10`}
+                                onClick={handleClose}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                className={`${!reason.trim()
+                                        ? "bg-opacity-30 cursor-not-allowed"
+                                        : `${getColorScheme("bg")} text-white ${getHoverBg()}`
+                                    }`}
+                                onClick={handleProceed}
+                                disabled={!reason.trim()}
+                            >
+                                Deactivate
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+            )}
 
-            <Dialog open={isFinalConfirmOpen} onOpenChange={setIsFinalConfirmOpen}>
-                <DialogContent className="sm:max-w-[350px] h-fit bg-white rounded-lg p-6">
-                    <DialogHeader className="flex flex-row items-center justify-between pb-3">
-                        <div className="flex-col gap-2">
-                            <AlertTriangle size={20} className="text-[#F50202] bg-red-100 p-3 rounded-full mt-4" />
-                            <DialogTitle className="text-lg font-semibold text-gray-900 mt-2">
-                                {action === "deactivate" ? "Deactivate Meter" : "Activate Meter"}
-                            </DialogTitle>
-                        </div>
-                    </DialogHeader>
-                    <div className="">
+            {/* Confirmation Dialog (both activate & deactivate) */}
+            {isFinalConfirmOpen && (
+                <Dialog open onOpenChange={(open) => setIsFinalConfirmOpen(open)}>
+                    <DialogContent className="sm:max-w-[350px] h-fit bg-white rounded-lg p-6">
+                        <DialogHeader className="pb-3">
+                            <div className="flex flex-col gap-2">
+                                <AlertTriangle size={20} className={getAlertClass()} />
+                                <DialogTitle className="text-lg font-semibold text-gray-900 mt-2">
+                                    {action === "deactivate" ? "Deactivate Meter" : "Activate Meter"}
+                                </DialogTitle>
+                            </div>
+                        </DialogHeader>
                         <p className="text-sm text-gray-700">
-                            Are you sure you want to {action === "deactivate" ? "deactivate" : "activate"} meter ?
+                            Are you sure you want to{" "}
+                            <span className="font-medium">{action}</span> meter{" "}
+                            <b>{meterNumber}</b>?
                         </p>
-                    </div>
-                    <DialogFooter className="flex justify-end gap-3">
-                        <Button
-                            variant="outline"
-                            className="border-red-500 text-red-500 hover:bg-red-50"
-                            onClick={() => setIsFinalConfirmOpen(false)}
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            className="bg-red-600 text-white hover:bg-red-700"
-                            onClick={handleFinalConfirm}
-                        >
-                            {action === "deactivate" ? "Deactivate" : "Activate"}
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+                        <DialogFooter className="flex justify-end gap-3 mt-4">
+                            <Button
+                                variant="outline"
+                                className={`${getColorScheme("border")} ${getColorScheme(
+                                    "text"
+                                )} hover:bg-opacity-10`}
+                                onClick={() => setIsFinalConfirmOpen(false)}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                className={`${getColorScheme("bg")} text-white ${getHoverBg()}`}
+                                onClick={handleFinalConfirm}
+                            >
+                                {action === "deactivate" ? "Deactivate" : "Activate"}
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+            )}
         </>
     );
 }

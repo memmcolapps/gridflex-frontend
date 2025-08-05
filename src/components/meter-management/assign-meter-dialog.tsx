@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { VirtualMeterData } from "@/types/meter";
-import type { MeterData } from "@/app/(protected)/data-management/meter-management/assign-meter/page";
+import type{ MeterData } from "@/types/meter";
 
 interface AssignMeterDialogProps {
   isOpen: boolean;
@@ -90,11 +90,12 @@ export function AssignMeterDialog({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>
-               Customer ID
+                Customer ID
                 <span className="text-red-700">*</span>
               </Label>
               <Input
-                value={selectedCustomer ? selectedCustomer.customerId : ""}
+                value={selectedCustomer?.customerId ?? ""}
+
                 readOnly
                 placeholder={selectedCustomer && isMeterData(selectedCustomer) ? "Enter Meter ID" : "Enter Customer ID"}
                 className="border-gray-200 text-gray-600"
@@ -127,8 +128,8 @@ export function AssignMeterDialog({
                 Phone Number<span className="text-red-700">*</span>
               </Label>
               <Input
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                value={selectedCustomer?.phone ?? ""}
+                readOnly
                 placeholder="Enter Phone Number"
                 className="border-gray-200 text-gray-600"
               />

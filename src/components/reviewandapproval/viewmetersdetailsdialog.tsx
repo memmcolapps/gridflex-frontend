@@ -6,6 +6,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { MoveRight, UnlinkIcon } from 'lucide-react';
+import Image from 'next/image';
 
 interface MeterItem {
     id: number;
@@ -109,7 +110,7 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
                                     <div className="flex items-center gap-4">
                                         <div className="text-sm sm:text-base font-bold text-gray-900">
 
-                                            <img
+                                            <Image
                                                 src="/images/mdj.jpg"
                                                 alt="C-1234567890"
                                                 className=" object-cover w-100 h-50"

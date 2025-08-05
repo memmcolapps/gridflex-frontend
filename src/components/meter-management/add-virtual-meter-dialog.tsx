@@ -16,8 +16,8 @@ interface AddVirtualMeterDetailsDialogProps {
   setAccountNumber: (value: string) => void;
   cin: string;
   setCin: (value: string) => void;
-  feederLine: string;
-  setFeederLine: (value: string) => void;
+  feeder: string;
+  setFeeder: (value: string) => void;
   dss: string;
   setDss: (value: string) => void;
   tariff: string;
@@ -32,14 +32,14 @@ interface AddVirtualMeterDetailsDialogProps {
   setHouseNo: (value: string) => void;
   energyType: string;
   setEnergyType: (value: string) => void;
-  custoType?: string; 
-  setCustomerType?: (value: string) => void; 
+  custoType?: string;
+  setCustomerType?: (value: string) => void;
   fixedEnergy: string;
   setFixedEnergy: (value: string) => void;
   onProceed: () => void;
   isFormComplete: boolean;
   nigerianStates: string[];
-  customerTypes:string[];
+  customerTypes: string[];
 }
 
 const AddVirtualMeterDetailsDialog: FC<AddVirtualMeterDetailsDialogProps> = ({
@@ -51,8 +51,8 @@ const AddVirtualMeterDetailsDialog: FC<AddVirtualMeterDetailsDialogProps> = ({
   setAccountNumber,
   cin,
   setCin,
-  feederLine,
-  setFeederLine,
+  feeder,
+  setFeeder,
   dss,
   setDss,
   // tariff,
@@ -164,8 +164,8 @@ const AddVirtualMeterDetailsDialog: FC<AddVirtualMeterDetailsDialogProps> = ({
                 Feeder Line <span className="text-red-500">*</span>
               </Label>
               <Input
-                value={feederLine}
-                onChange={(e) => setFeederLine(e.target.value)}
+                value={feeder}
+                onChange={(e) => setFeeder(e.target.value)}
                 placeholder="Enter Feeder Line"
                 className="border border-gray-300"
               />
@@ -181,7 +181,7 @@ const AddVirtualMeterDetailsDialog: FC<AddVirtualMeterDetailsDialogProps> = ({
                 className="border border-gray-300"
               />
             </div>
-                   <div className="space-y-2">
+            <div className="space-y-2">
               <Label>
                 Customer Type <span className="text-red-500">*</span>
               </Label>
@@ -274,14 +274,14 @@ const AddVirtualMeterDetailsDialog: FC<AddVirtualMeterDetailsDialogProps> = ({
                 <Label htmlFor="fixed-energy-type" className="text-sm text-gray-700">
                   Fixed
                 </Label>
-                <Checkbox            
+                <Checkbox
                   id="fixed-energy-type"
                   checked={isFixedChecked}
                   onCheckedChange={(checked) => {
                     setEnergyType(checked ? "Fixed" : "");
                     if (!checked) setFixedEnergy(""); // Clear fixedEnergy if unchecked
                   }}
-                  className="h-4 w-4 border-gray-500 data-[state=checked]:bg-green-500 data-[state=checked]:text-white rounded-full"           
+                  className="h-4 w-4 border-gray-500 data-[state=checked]:bg-green-500 data-[state=checked]:text-white rounded-full"
                 />
               </div>
             </div>
