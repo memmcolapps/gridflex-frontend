@@ -52,6 +52,13 @@ const ViewLiabilityDetailsDialog: React.FC<ViewLiabilityDetailsDialogProps> = ({
                     </DialogHeader>
 
                     <div className="flex flex-col gap-3 py-4 sm:py-6">
+                        {selectedRow?.changeDescription === 'Liability Cause Edited' && (
+                            <div className="hidden sm:flex items-center gap-4 ml-[120px] sm:ml-[140px] mb-1">
+                                <div className="w-[150px] text-sm ml-6 font-semibold text-gray-500">From</div>
+                                <div className="w-[150px] text-sm ml-24 font-semibold text-gray-500">To</div>
+                            </div>
+                        )}
+
                         {[
                             {
                                 label: 'Liability Name:',
@@ -75,7 +82,7 @@ const ViewLiabilityDetailsDialog: React.FC<ViewLiabilityDetailsDialogProps> = ({
 
                                 {/* Old Value */}
                                 <div className="w-full sm:w-[150px] text-sm sm:text-base font-bold text-gray-900 whitespace-nowrap ml-10">
-                                    {oldValue ??'N/A'}
+                                    {oldValue ?? 'N/A'}
                                 </div>
 
                                 {/* New Value */}
@@ -91,6 +98,7 @@ const ViewLiabilityDetailsDialog: React.FC<ViewLiabilityDetailsDialogProps> = ({
                             </div>
                         ))}
                     </div>
+
 
                     {/* Action Buttons */}
                     <div className="flex justify-between gap-2 mt-4">
