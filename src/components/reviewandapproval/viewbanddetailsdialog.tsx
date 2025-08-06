@@ -50,6 +50,13 @@ const ViewBandDetailsDialog: React.FC<ViewBandDetailsDialogProps> = ({
                     </DialogHeader>
 
                     <div className="flex flex-col gap-3 py-4 sm:py-6">
+                        {selectedRow?.changeDescription === 'Band Edited' && (
+                            <div className="hidden sm:flex items-center gap-4 ml-[120px] sm:ml-[140px] mb-1">
+                                <div className="w-[120px] text-center font-semibold text-gray-500">From</div>
+                                <div className="w-[120px] text-center font-semibold text-gray-500 ml-18">To</div>
+                            </div>
+                        )}
+
                         {[
                             {
                                 label: 'Band Name:',
@@ -66,17 +73,14 @@ const ViewBandDetailsDialog: React.FC<ViewBandDetailsDialogProps> = ({
                                 key={label}
                                 className="flex flex-col sm:flex-row items-start sm:items-center gap-4"
                             >
-                                {/* Label */}
                                 <div className="w-[100px] sm:w-[120px] text-sm sm:text-base font-medium text-gray-700 whitespace-nowrap">
                                     {label}
                                 </div>
 
-                                {/* Old Value */}
                                 <div className="w-full sm:w-[120px] lg:max-w-[700px] text-sm sm:text-base font-bold text-gray-900 whitespace-nowrap ml-20">
                                     {oldValue ?? 'N/A'}
                                 </div>
 
-                                {/* New Value */}
                                 {!isNewlyAdded && newValue != null && (
                                     <div className="flex items-start text-sm sm:text-base text-gray-900 whitespace-nowrap ml-10">
                                         <MoveRight
@@ -89,6 +93,7 @@ const ViewBandDetailsDialog: React.FC<ViewBandDetailsDialogProps> = ({
                             </div>
                         ))}
                     </div>
+
 
                     {/* Action Buttons */}
                     <div className="flex justify-between gap-2 mt-4">
