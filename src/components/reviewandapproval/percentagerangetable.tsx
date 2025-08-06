@@ -82,10 +82,6 @@ const PercentageRangeTable = () => {
       amountRange: '10,000-99,999',
       changeDescription: 'Percentage Range Deactivated',
       approvalStatus: 'Pending',
-      newPercentage: '0%',
-      newPercentageCode: 'C92bqt',
-      newBand: 'Band A',
-      newAmountRange: '10,000-99,999',
     },
     {
       id: 3,
@@ -93,12 +89,9 @@ const PercentageRangeTable = () => {
       percentageCode: 'C90bqt',
       band: 'Band A',
       amountRange: '100,000-999,999',
-      changeDescription: 'Percentage Range Deactivated',
+      changeDescription: 'Percentage Range Activated',
       approvalStatus: 'Pending',
-      newPercentage: '0%',
-      newPercentageCode: 'C93bqt',
-      newBand: 'Band A',
-      newAmountRange: '100,000-999,999',
+
     },
     {
       id: 4,
