@@ -37,6 +37,8 @@ import {
 type MeterItem = {
     id: number;
     meterNo: string;
+    customerId: string;
+    customerName: string;
     simNumber: string;
     oldSGC: string;
     newSGC: string;
@@ -76,6 +78,8 @@ const MeterTable = ({ searchTerm = '', sortConfig = { key: '', direction: 'asc' 
         {
             id: 1,
             meterNo: '620102123',
+            customerId: 'C-12344123',
+            customerName: 'John Doe',
             simNumber: '890060873404',
             oldSGC: '999962',
             newSGC: '600894',
@@ -94,6 +98,8 @@ const MeterTable = ({ searchTerm = '', sortConfig = { key: '', direction: 'asc' 
         {
             id: 2,
             meterNo: '620102123',
+            customerId: 'C-12344123',
+            customerName: 'John Doe',
             simNumber: '890060873404',
             oldSGC: '999962',
             newSGC: '600894',
@@ -112,6 +118,8 @@ const MeterTable = ({ searchTerm = '', sortConfig = { key: '', direction: 'asc' 
         {
             id: 3,
             meterNo: '620102123',
+            customerId: '',
+            customerName: '',
             simNumber: '890060873404',
             oldSGC: '999962',
             newSGC: '600894',
@@ -130,6 +138,8 @@ const MeterTable = ({ searchTerm = '', sortConfig = { key: '', direction: 'asc' 
         {
             id: 4,
             meterNo: '620102123',
+            customerId: 'CUST123',
+            customerName: 'John Doe',
             simNumber: '890060873404',
             oldSGC: '999962',
             newSGC: '600894',
@@ -148,6 +158,8 @@ const MeterTable = ({ searchTerm = '', sortConfig = { key: '', direction: 'asc' 
         {
             id: 5,
             meterNo: '620102123',
+            customerId: 'C-12344123',
+            customerName: 'John Doe',
             simNumber: '890060873404',
             oldSGC: '999962',
             newSGC: '600894',
@@ -163,11 +175,31 @@ const MeterTable = ({ searchTerm = '', sortConfig = { key: '', direction: 'asc' 
             metertype: 'Electricity',
             reason: 'Burnt',
         },
-
-
         {
             id: 6,
             meterNo: '620102123',
+            customerId: 'C-12344123',
+            customerName: 'John Doe',
+            simNumber: '890060873404',
+            oldSGC: '999962',
+            newSGC: '600894',
+            manufacturer: 'Momas',
+            class: 'Three Phase',
+            category: 'Prepaid',
+            changeDescription: 'Meter Activated',
+            approvalStatus: 'Pending',
+            oldkrn: '1234567',
+            newkrn: '1234567',
+            oldTariffIndex: '1',
+            newTariffIndex: '3',
+            metertype: 'Electricity',
+            reason: 'Burnt',
+        },
+        {
+            id: 7,
+            meterNo: '620102123',
+            customerId: 'C-12344123',
+            customerName: 'John Doe',
             simNumber: '890060873404',
             oldSGC: '999962',
             newSGC: '600894',
@@ -184,8 +216,10 @@ const MeterTable = ({ searchTerm = '', sortConfig = { key: '', direction: 'asc' 
             reason: 'Burnt',
         },
         {
-            id: 7,
+            id: 8,
             meterNo: '620102123',
+            customerId: 'C-12344123',
+            customerName: 'John Doe',
             simNumber: '890060873404',
             oldSGC: '999962',
             newSGC: '600894',
