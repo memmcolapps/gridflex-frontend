@@ -133,8 +133,12 @@ const TariffTable = ({ searchTerm = '', sortConfig = { key: '', direction: 'asc'
             effectiveDate: '2025-01-01',
             changeDescription: 'Tariff Edited',
             approvalStatus: 'Pending',
-            newTariffRate: '$0.17/kWh',
+            newTariffRate: '200',
             newEffectiveDate: '2025-02-01',
+            newTariffName: 'Residential Standard',
+            newTariffId: 'T002',
+            newTariffType: 'Residential',
+            newBandCode: 'Band B',
         },
     ];
 
