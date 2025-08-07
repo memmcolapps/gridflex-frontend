@@ -58,6 +58,12 @@ const ViewTariffDetailsDialog: React.FC<ViewTariffDetailsDialogProps> = ({
           </DialogHeader>
 
           <div className="flex flex-col gap-3 py-4 sm:py-6">
+            {isTariffEdited && (
+              <div className="hidden sm:flex items-center gap-4 mb-1 ml-[120px]">
+                <div className="w-[120px] text-sm font-medium text-gray-500 ml-24">From</div>
+                <div className="w-[200px] text-sm font-medium text-gray-500 ml-20">To</div>
+              </div>
+            )}
             {[
               {
                 label: 'Tariff Name:',
