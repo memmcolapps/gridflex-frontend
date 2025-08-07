@@ -27,7 +27,7 @@ export function Navbar() {
     <header className="sticky top-0 z-30 h-16 border-b border-gray-200 md:-ml-8 bg-white ">
       <div className="flex h-full w-full items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Left side - empty for now but can be used for breadcrumbs or other elements */}
-        <div className="flex flex-col items-start gap-1 md:flex-none"> {/* Changed flex to flex-col */}
+        <div className="flex flex-col items-start md:flex-none p-14"> {/* Changed flex to flex-col */}
          <span className="text-2xl font-bold">IBEDC</span> 
           <div className="relative flex-1 md:w-80 md:flex-none">Hello Margaret</div>
         </div>
