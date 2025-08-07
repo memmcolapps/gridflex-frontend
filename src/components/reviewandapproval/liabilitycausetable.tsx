@@ -84,7 +84,7 @@ const LiabilityCauseTable = () => {
             id: 4,
             liabilityName: 'Capme',
             liabilityCode: 'C90bqt',
-            changeDescription: 'Newly Added',
+            changeDescription: 'Liability Cause Activated',
             approvalStatus: 'Pending',
         },
 
