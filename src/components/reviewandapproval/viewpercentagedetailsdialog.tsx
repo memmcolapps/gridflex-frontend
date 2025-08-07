@@ -54,7 +54,13 @@ const ViewDetailsDialog: React.FC<ViewDetailsDialogProps> = ({
                         </span>
                     </DialogHeader>
 
-                    <div className="flex flex-col gap-3 py-4 sm:py-6">
+                    <div className="flex flex-col gap-3 py-4 sm:py-6 p-4">
+                        {selectedRow?.changeDescription === 'Percentage Range Edited' && (
+                            <div className="hidden sm:flex items-center gap-4 ml-[120px] sm:ml-[140px] mb-1">
+                                <div className="w-[150px] text-sm font-semibold text-gray-500 ml-18">From</div>
+                                <div className="w-[150px] text-sm font-semibold text-gray-500 ml-10">To</div>
+                            </div>
+                        )}
                         {[
                             {
                                 label: 'Percentage:',
