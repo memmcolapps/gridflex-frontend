@@ -302,9 +302,9 @@ export default function EnergyImportTable({
   };
 
   return (
-    <Card className="rounded border-none p-4 shadow-sm">
-      <Table>
-        <TableHeader>
+    <Card className="rounded border-none p-4 shadow-sm bg-transparent">
+      <Table className="bg-transparent">
+        <TableHeader className="bg-transparent">
           <TableRow>
             {/* Checkbox for Select All */}
             <TableHead className="w-[50px] text-center">

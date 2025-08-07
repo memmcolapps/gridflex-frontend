@@ -435,7 +435,7 @@ const LiabilityTable = ({ view, onViewChange, onDataChange, onAddPercentageRange
     });
 
     return (
-        <div className="w-full">
+        <div className="w-full bg-transparent">
             <div className="flex justify-between mb-4 items-center">
                 <div className="space-x-2 border-[rgba(22,28,202,1)] border rounded-lg p-1 cursor-pointer">
                     <Button
@@ -485,9 +485,9 @@ const LiabilityTable = ({ view, onViewChange, onDataChange, onAddPercentageRange
                     </DropdownMenu>
                 </div>
             </div>
-            <Card className="overflow-auto rounded-lg border-gray-100 mt-10">
-                <Table className="w-full h-4/6">
-                    <TableHeader>
+            <Card className="overflow-auto rounded-lg border-gray-100 mt-10 bg-transparent">
+                <Table className="w-full h-4/6 bg-transparent">
+                    <TableHeader className="bg-transparent">
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id}>
                                 {headerGroup.headers.map((header) => (

@@ -546,7 +546,7 @@ export default function ManufacturersPage() {
 
 
             {/* Search and Filter Section */}
-            <Card className="p-3 sm:p-4 mb-4 sm:mb-6 border-none shadow-none bg-white">
+            <Card className="p-3 sm:p-4 mb-4 sm:mb-6 border-none shadow-none bg-transparent">
                 <div className="flex flex-col gap-3 sm:flex-row justify-between items-start sm:items-center w-full">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto">
                         <SearchControl
@@ -564,10 +564,10 @@ export default function ManufacturersPage() {
             </Card>
 
             {/* Table */}
-            <Card className="border-none h-4/6 shadow-none bg-white overflow-x-hidden">
+            <Card className="border-none h-4/6 shadow-none bg-transparent overflow-x-hidden">
                 <Table>
-                    <TableHeader>
-                        <TableRow className="bg-gray-50 hover:bg-gray-50">
+                    <TableHeader className="bg-transparent">
+                        <TableRow className="bg-transparent hover:bg-gray-50">
                             <TableHead className=" px-2 sm:px-4 py-2 sm:py-3 text-left">
                                 <Checkbox className="h-4 w-4 border-gray-500" />
                             </TableHead>

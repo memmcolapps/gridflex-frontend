@@ -575,7 +575,7 @@ export default function MeterInventoryPage() {
 
             </div>
 
-            <Card className="p-4 mb-4 border-none shadow-none bg-white">
+            <Card className="p-4 mb-4 border-none shadow-none bg-transparent">
                 <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                     <div className="flex items-center gap-2 w-full md:w-auto">
                         <div className="relative w-full md:w-[300px]">
@@ -677,7 +677,7 @@ export default function MeterInventoryPage() {
 
             <Card className="rounded-md h-4/6 border-none">
                 <Table>
-                    <TableHeader>
+                    <TableHeader className="bg-transparent">
                         <TableRow>
                             <TableHead className="w-[80px] px-4 py-3 text-left">
                                 <div className="flex items-center gap-2">

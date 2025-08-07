@@ -46,9 +46,9 @@ export default function DebtSettingsPage() {
     };
 
     return (
-        <div className="p-6 min-h-screen">
-            <div className="mx-auto max-w-screen-2xl space-y-6 border-none bg-white">
-                <div className="flex justify-between items-start pt-6">
+        <div className="p-6 min-h-screen bg-transparent">
+            <div className="mx-auto max-w-screen-2xl space-y-6 border-none bg-transparent">
+                <div className="flex justify-between items-start pt-6 bg-transparent">
                     <ContentHeader
                         title="Debt Setting"
                         description="Set and Manage reasons for liability and percentage range here"
@@ -61,7 +61,7 @@ export default function DebtSettingsPage() {
                         )}
                     </div>
                 </div>
-                <section>
+                <section className="bg-transparent">
                     <LiabilityTable
                         view={view}
                         onViewChange={setView}

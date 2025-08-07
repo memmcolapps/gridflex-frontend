@@ -56,7 +56,15 @@ export default function ProtectedLayout({
           {/* Main content area */}
           <div className="flex-1 flex flex-col">
             <Navbar />
-            <main className="flex-1 py-4 px-8">
+            <main className="flex-1 py-4 px-8"
+              style={{
+                backgroundImage: `url('/images/blurredbg.jpg')`, // Replace with your logo path
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+                backgroundSize: '500px', // Adjust size as needed (e.g., '50%' or '200px')
+                backgroundAttachment: 'fixed', // Keeps logo in place while scrolling
+              }}
+            >
               {children}
             </main>
           </div>

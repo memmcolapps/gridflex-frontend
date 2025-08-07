@@ -218,7 +218,7 @@ export default function UserManagement() {
                 </div>
                 <div className='h-4/6'>
                     <Table>
-                        <TableHeader>
+                        <TableHeader className='bg-transparent'>
                             <TableRow>
                                 <TableHead className="w-[70px]">
                                     <div className='flex items-center gap-2'>

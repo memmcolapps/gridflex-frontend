@@ -13,7 +13,7 @@ export default function BillingDashboardPage() {
   const [selectedYear, setSelectedYear] = useState("");
 
   return (
-    <div className="min-h-screen p-6">
+    <div className="min-h-screen p-6 bg-transparent">
       <div className="max-w-screen-2xl space-y-6">
         <div className="flex items-start justify-between pt-6">
           <ContentHeader
@@ -37,11 +37,11 @@ export default function BillingDashboardPage() {
           <SummaryCards />
         </section>
 
-        <section className="mt-10 rounded-lg bg-white pt-6 shadow-sm">
+        <section className="mt-10 rounded-lg bg-transparent pt-6 shadow-sm">
           <EnergyConsumedChart />
         </section>
 
-        <section>
+        <section className="bg-transparent">
           <OutstandingChart />
         </section>
       </div>

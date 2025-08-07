@@ -317,7 +317,7 @@ export default function CustomerManagement() {
                 </div>
                 <div className="h-4/6">
                     <Table>
-                        <TableHeader>
+                        <TableHeader className="bg-transparent">
                             <TableRow>
                                 <TableHead className="w-[30px] pr-0">
                                     <div className="flex items-center gap-2 text-center">

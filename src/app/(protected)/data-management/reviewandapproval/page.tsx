@@ -2,7 +2,7 @@ import { ReviewApprovalTabs } from "@/components/reviewandapproval/reviewapprova
 
 export default function ReviewApprovalPage() {
     return (
-        <div>
+        <div className="bg-transparent">
             <ReviewApprovalTabs />
         </div>
     )

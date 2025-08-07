@@ -23,6 +23,8 @@ import {
   Cylinder,
   Users,
   Zap,
+  Info,
+  MessageSquareMore,
   type LucideIcon,
 } from "lucide-react";
 import Image from "next/image";
@@ -176,6 +178,19 @@ export function SidebarNav() {
       icon: ClipboardList,
       hasSubmenu: false,
     },
+
+    {
+      title: "Change Log",
+      href: "/change-log",
+      icon: MessageSquareMore,
+      hasSubmenu: false,
+    },
+    {
+      title: "About Us",
+      href: "/about-us",
+      icon: Info,
+      hasSubmenu: false,
+    },
   ];
 
   return (
@@ -193,150 +208,172 @@ export function SidebarNav() {
           </div>
         </Link>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="flex flex-col h-full">
         <SidebarMenu className="px-6 py-5">
-          {navItems.map((item) => {
-            const isActive = isItemActive(item.href, item.submenuItems);
-            const isExpanded = expandedItems[item.title] ?? isActive;
-
-            if (!item.hasSubmenu) {
+          {navItems
+            .filter((item) => !["Change Log", "About Us"].includes(item.title)) // [!code highlight]
+            .map((item) => {
+              const isActive = isItemActive(item.href, item.submenuItems);
+              const isExpanded = expandedItems[item.title] ?? isActive;
+              if (!item.hasSubmenu) {
+                return (
+                  <SidebarMenuItem
+                    key={item.title}
+                    className={cn(
+                      "p-2.5 text-xl",
+                      isActive
+                        ? "rounded-md bg-[#161CCA] text-white"
+                        : "rounded-md hover:bg-gray-100",
+                    )}
+                  >
+                    <Link
+                      href={item.href}
+                      className="flex items-center gap-8 text-xl"
+                    >
+                      <item.icon size={12} className="h-4 w-4 sm:h-5 sm:w-5" />
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuItem>
+                );
+              }
               return (
+                <Collapsible
+                  key={item.title}
+                  open={isExpanded}
+                  onOpenChange={() => toggleExpanded(item.title)}
+                  className="group/collapsible"
+                >
+                  <SidebarMenuItem>
+                    <CollapsibleTrigger asChild>
+                      <SidebarMenuButton
+                        className={cn(
+                          "flex items-center justify-between py-6 w-full text-base sm:text-lg",
+                          isActive && "bg-gray-100"
+                        )}
+                      >
+                        <div className="flex items-center gap-8 text-xl">
+                          <item.icon size={14} className="w-4 h-4 sm:w-5 sm:h-5" />
+                          <span>{item.title}</span>
+                        </div>
+                        {item.hasSubmenu && (
+                          <ChevronDown
+                            className={cn(
+                              "h-4 w-4 transition-transform duration-200",
+                              isExpanded ? "rotate-0" : "-rotate-90"
+                            )}
+                            size={12}
+                          />
+                        )}
+                      </SidebarMenuButton>
+                    </CollapsibleTrigger>
+
+                    {item.hasSubmenu && (
+                      <CollapsibleContent>
+                        <SidebarMenuSub className="mt-1 space-y-1 whitespace-nowrap">
+                          {item.submenuItems?.map((subItem) => {
+                            const isSubActive = isItemActive(subItem.href, subItem.submenuItems);
+                            const isSubExpanded = expandedItems[subItem.title] ?? isSubActive;
+
+                            return (
+                              <div key={subItem.title} className="pl-4 sm:pl-6">
+                                {subItem.hasSubmenu ? (
+                                  <Collapsible
+                                    open={isSubExpanded}
+                                    onOpenChange={() => toggleExpanded(subItem.title)}
+                                  >
+                                    <SidebarMenuItem>
+                                      <CollapsibleTrigger asChild>
+                                        <SidebarMenuButton
+                                          className={cn(
+                                            "flex items-center justify-between w-full px-2.5 py-6 text-xl sm:text-lg",
+                                            isSubActive && "bg-gray-100 font-medium"
+                                          )}
+                                        >
+                                          <span>{subItem.title}</span>
+                                          <ChevronDown
+                                            className={cn(
+                                              "h-4 w-4 transition-transform duration-200",
+                                              isSubExpanded ? "rotate-0" : "-rotate-90"
+                                            )}
+                                            size={12}
+                                          />
+                                        </SidebarMenuButton>
+                                      </CollapsibleTrigger>
+                                      <CollapsibleContent>
+                                        <SidebarMenuSub className="mt-1 px-1">
+                                          {subItem.submenuItems?.map((nestedItem) => (
+                                            <SidebarMenuItem
+                                              key={nestedItem.title}
+                                              className={cn(
+                                                "p-2.5 text-xl sm:text-lg",
+                                                pathname === nestedItem.href
+                                                  ? "rounded-md bg-[#161CCA] text-white"
+                                                  : "hover:bg-gray-100 rounded-md"
+                                              )}
+                                            >
+                                              <Link
+                                                href={nestedItem.href}
+                                                className="flex w-full items-center"
+                                              >
+                                                <span>{nestedItem.title}</span>
+                                              </Link>
+                                            </SidebarMenuItem>
+                                          ))}
+                                        </SidebarMenuSub>
+                                      </CollapsibleContent>
+                                    </SidebarMenuItem>
+                                  </Collapsible>
+                                ) : (
+                                  <SidebarMenuItem
+                                    className={cn(
+                                      "p-2.5 text-xl sm:text-lg",
+                                      pathname === subItem.href
+                                        ? "rounded-md bg-[#161CCA] text-white"
+                                        : "hover:bg-gray-100 rounded-md"
+                                    )}
+                                  >
+                                    <Link
+                                      href={subItem.href}
+                                      className="flex w-full items-center"
+                                    >
+                                      <span>{subItem.title}</span>
+                                    </Link>
+                                  </SidebarMenuItem>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </SidebarMenuSub>
+                      </CollapsibleContent>
+                    )}
+                  </SidebarMenuItem>
+                </Collapsible>
+              );
+            })}
+        </SidebarMenu>
+
+         <div className="mt-auto px-6 py-5">
+          <SidebarMenu>
+            {navItems
+              .filter((item) => ["Change Log", "About Us"].includes(item.title))
+              .map((item) => (
                 <SidebarMenuItem
                   key={item.title}
                   className={cn(
                     "p-2.5 text-xl",
-                    isActive
+                    pathname === item.href
                       ? "rounded-md bg-[#161CCA] text-white"
-                      : "rounded-md hover:bg-gray-100",
+                      : "rounded-md hover:bg-gray-100"
                   )}
                 >
-                  <Link
-                    href={item.href}
-                    className="flex items-center gap-8 text-xl"
-                  >
+                  <Link href={item.href} className="flex items-center gap-8 text-xl">
                     <item.icon size={12} className="h-4 w-4 sm:h-5 sm:w-5" />
                     <span>{item.title}</span>
                   </Link>
                 </SidebarMenuItem>
-              );
-            }
-
-
-            return (
-              <Collapsible
-                key={item.title}
-                open={isExpanded}
-                onOpenChange={() => toggleExpanded(item.title)}
-                className="group/collapsible"
-              >
-                <SidebarMenuItem>
-                  <CollapsibleTrigger asChild>
-                    <SidebarMenuButton
-                      className={cn(
-                        "flex items-center justify-between py-6 w-full text-base sm:text-lg",
-                        isActive && "bg-gray-100"
-                      )}
-                    >
-                      <div className="flex items-center gap-8 text-xl">
-                        <item.icon size={14} className="w-4 h-4 sm:w-5 sm:h-5" />
-                        <span>{item.title}</span>
-                      </div>
-                      {item.hasSubmenu && (
-                        <ChevronDown
-                          className={cn(
-                            "h-4 w-4 transition-transform duration-200",
-                            isExpanded ? "rotate-0" : "-rotate-90"
-                          )}
-                          size={12}
-                        />
-                      )}
-                    </SidebarMenuButton>
-                  </CollapsibleTrigger>
-
-                  {item.hasSubmenu && (
-                    <CollapsibleContent>
-                      <SidebarMenuSub className="mt-1 space-y-1 whitespace-nowrap">
-                        {item.submenuItems?.map((subItem) => {
-                          const isSubActive = isItemActive(subItem.href, subItem.submenuItems);
-                          const isSubExpanded = expandedItems[subItem.title] ?? isSubActive;
-
-                          return (
-                            <div key={subItem.title} className="pl-4 sm:pl-6">
-                              {subItem.hasSubmenu ? (
-                                <Collapsible
-                                  open={isSubExpanded}
-                                  onOpenChange={() => toggleExpanded(subItem.title)}
-                                >
-                                  <SidebarMenuItem>
-                                    <CollapsibleTrigger asChild>
-                                      <SidebarMenuButton
-                                        className={cn(
-                                          "flex items-center justify-between w-full px-2.5 py-6 text-xl sm:text-lg",
-                                          isSubActive && "bg-gray-100 font-medium"
-                                        )}
-                                      >
-                                        <span>{subItem.title}</span>
-                                        <ChevronDown
-                                          className={cn(
-                                            "h-4 w-4 transition-transform duration-200",
-                                            isSubExpanded ? "rotate-0" : "-rotate-90"
-                                          )}
-                                          size={12}
-                                        />
-                                      </SidebarMenuButton>
-                                    </CollapsibleTrigger>
-                                    <CollapsibleContent>
-                                      <SidebarMenuSub className="mt-1 px-1">
-                                        {subItem.submenuItems?.map((nestedItem) => (
-                                          <SidebarMenuItem
-                                            key={nestedItem.title}
-                                            className={cn(
-                                              "p-2.5 text-xl sm:text-lg",
-                                              pathname === nestedItem.href
-                                                ? "rounded-md bg-[#161CCA] text-white"
-                                                : "hover:bg-gray-100 rounded-md"
-                                            )}
-                                          >
-                                            <Link
-                                              href={nestedItem.href}
-                                              className="flex w-full items-center"
-                                            >
-                                              <span>{nestedItem.title}</span>
-                                            </Link>
-                                          </SidebarMenuItem>
-                                        ))}
-                                      </SidebarMenuSub>
-                                    </CollapsibleContent>
-                                  </SidebarMenuItem>
-                                </Collapsible>
-                              ) : (
-                                <SidebarMenuItem
-                                  className={cn(
-                                    "p-2.5 text-xl sm:text-lg",
-                                    pathname === subItem.href
-                                      ? "rounded-md bg-[#161CCA] text-white"
-                                      : "hover:bg-gray-100 rounded-md"
-                                  )}
-                                >
-                                  <Link
-                                    href={subItem.href}
-                                    className="flex w-full items-center"
-                                  >
-                                    <span>{subItem.title}</span>
-                                  </Link>
-                                </SidebarMenuItem>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </SidebarMenuSub>
-                    </CollapsibleContent>
-                  )}
-                </SidebarMenuItem>
-              </Collapsible>
-            );
-          })}
-        </SidebarMenu>
+              ))}
+          </SidebarMenu>
+        </div>
       </SidebarContent>
     </Sidebar>
   );

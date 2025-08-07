@@ -164,9 +164,9 @@ const LiabilityCauseTable = () => {
     console.log('Rendering LiabilityCauseTable, isConfirmOpen:', isConfirmOpen, 'confirmAction:', confirmAction);
 
     return (
-        <Card className="border-none shadow-none bg-white overflow-x-auto min-h-[calc(100vh-300px)]">
+        <Card className="border-none shadow-none bg-transparent overflow-x-auto min-h-[calc(100vh-300px)]">
             <Table className="table-auto w-full">
-                <TableHeader>
+                <TableHeader className='bg-transparent'>
                     <TableRow>
                         <TableHead className="px-4 py-3 w-[100px]">
                             <div className="flex items-center gap-2">

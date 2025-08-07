@@ -22,7 +22,7 @@ export const ManufacturerDistribution = () => {
     const barColor = '#769FCD';
 
     return (
-        <Card className="w-full border-none bg-white shadow-sm rounded-lg border-gray-100">
+        <Card className="w-full border-none bg-transparent shadow-sm rounded-lg border-gray-100">
             <CardHeader>
                 <CardTitle className='text-md'>Manufacturer Distribution</CardTitle>
             </CardHeader>

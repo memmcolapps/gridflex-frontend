@@ -1024,9 +1024,9 @@ export default function AssignMeterPage() {
                 </div>
             </div>
             <Table>
-                <TableHeader>
+                <TableHeader className="bg-transparent">
                     <TableRow>
-                        <TableHead>
+                        <TableHead className="bg-transparent">
                             <div className="flex items-center gap-2">
                                 <input
                                     type="checkbox"

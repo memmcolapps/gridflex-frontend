@@ -217,9 +217,10 @@ export function TariffTable({
   }, [tariffs]);
 
   return (
-    <>
-      <Table>
-        <TableHeader>
+    <div className="bg-transparent">
+
+      <Table className="bg-transparent">
+        <TableHeader className="bg-transparent">
           <TableRow>
             <TableHead className="w-[50px] flex items-center gap-2 px-4 py-3">
               <Checkbox
@@ -241,7 +242,7 @@ export function TariffTable({
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
-        <TableBody>
+        <TableBody className="bg-transparent">
           {validTariffs.length === 0 ? (
             <TableRow>
               <TableCell colSpan={9} className="py-4 text-center">
@@ -496,6 +497,6 @@ export function TariffTable({
           </form>
         </DialogContent>
       </Dialog>
-    </>
+    </div>
   );
 }

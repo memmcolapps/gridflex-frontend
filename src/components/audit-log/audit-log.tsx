@@ -73,9 +73,9 @@ export function AuditLog() {
                     <SortControl />
                 </div>
                 <div>
-                    <div className="w-full overflow-x-auto">
+                    <div className="w-full overflow-x-auto bg-transparent">
                         <Table>
-                            <TableHeader>
+                            <TableHeader className="bg-transparent">
                                 <TableRow>
                                     <TableHead>Username</TableHead>
                                     <TableHead>Group Permission</TableHead>
@@ -111,7 +111,7 @@ export function AuditLog() {
                         entry={selectedEntry}
                     />
                 </div>
-                <div className="sticky bottom-0 bg-white border-t border-gray-200 flex items-center justify-between px-4 py-3 mt-4 z-10">
+                <div className="sticky bottom-0 bg-transparent border-t border-gray-200 flex items-center justify-between px-4 py-3 mt-4 z-10">
                     <div className="flex items-center gap-2">
                         <span className="text-sm text-gray-600">Rows per page</span>
                         <select
