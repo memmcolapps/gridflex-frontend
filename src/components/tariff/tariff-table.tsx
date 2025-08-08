@@ -44,17 +44,15 @@ import { getStatusStyle } from "../status-style";
 
 interface TariffTableProps {
   tariffs: Tariff[];
-  onUpdateTariff: (id: string, updates: Partial<Tariff>) => void;
+  // onUpdateTariff: (id: string, updates: Partial<Tariff>) => void;
   selectedTariffs: string[];
   setSelectedTariffs: (ids: string[]) => void;
-  onRefresh: () => Promise<void>;
 }
 
 export function TariffTable({
   tariffs,
   selectedTariffs,
   setSelectedTariffs,
-  onRefresh,
 }: TariffTableProps) {
   const { user } = useAuth();
   const canApprove = checkUserPermission(user, "approve");
@@ -128,7 +126,45 @@ export function TariffTable({
     }
   };
 
+  const handleStatusChange = async (tariffId: string, newStatus: boolean) => {
+    if (!canApprove) {
+      toast.error("You don't have permission to change tariff status");
+      return;
+    }
 
+    setConfirmDialog({
+      isOpen: true,
+      title: `${newStatus ? "Activate" : "Deactivate"} Tariff`,
+      description: `Are you sure you want to ${newStatus ? "activate" : "deactivate"} this tariff?`,
+      action: async () => {
+        const success = await changeTariffStatus(tariffId, newStatus);
+        if (success) {
+          // onUpdateTariff(tariffId, { status: newStatus });
+        }
+        setConfirmDialog((prev) => ({ ...prev, isOpen: false }));
+      },
+    });
+  };
+
+  const handleApprovalChange = async (
+    tariffId: string,
+    newStatus: "Approved" | "Rejected",
+  ) => {
+    if (!canApprove) {
+      toast.error("You don't have permission to change approval status");
+      return;
+    }
+
+    setConfirmDialog({
+      isOpen: true,
+      title: `${newStatus} Tariff`,
+      description: `Are you sure you want to ${newStatus.toLowerCase()} this tariff?`,
+      action: async () => {
+        // await changeTariffApprovalStatus(tariffId, newStatus);
+        setConfirmDialog((prev) => ({ ...prev, isOpen: false }));
+      },
+    });
+  };
 
   const handleStatusToggle = async (
     tariffId: string,
@@ -142,13 +178,16 @@ export function TariffTable({
     setConfirmDialog({
       isOpen: true,
       title: `${currentStatus ? "Deactivate" : "Activate"} Tariff`,
-      description: `Are you sure you want to ${currentStatus ? "deactivate" : "activate"
-        } this tariff?`,
+      description: `Are you sure you want to ${
+        currentStatus ? "deactivate" : "activate"
+      } this tariff?`,
       action: async () => {
         try {
           const success = await changeTariffStatus(tariffId, !currentStatus);
           if (success) {
-            await onRefresh();
+            console.log("Status change successful, refreshing..."); // Debug log
+          } else {
+            console.error("Status change failed"); // Debug log
           }
         } catch (error) {
           console.error("Error in status toggle:", error);
@@ -175,7 +214,7 @@ export function TariffTable({
 
   const handleInputChange = (
     field: keyof typeof formData,
-    value: string | Date | null
+    value: string | Date | null,
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
@@ -192,12 +231,14 @@ export function TariffTable({
         band: formData.bandCode,
         tariff_rate: formData.tariffRate,
       };
-      const success = await updateTariff(editDialog.tariff.id.toString(), updates);
+      const success = await updateTariff(
+        editDialog.tariff.id.toString(),
+        updates,
+      );
       if (success) {
         updateTariff(editDialog.tariff.id.toString(), updates);
         toast.success("Tariff updated successfully");
         setEditDialog({ isOpen: false, tariff: null });
-        await onRefresh();
       }
     } catch (error) {
       console.error("Error updating tariff:", error);
@@ -218,11 +259,10 @@ export function TariffTable({
 
   return (
     <div className="bg-transparent">
-
       <Table className="bg-transparent">
         <TableHeader className="bg-transparent">
           <TableRow>
-            <TableHead className="w-[50px] flex items-center gap-2 px-4 py-3">
+            <TableHead className="flex w-[50px] items-center gap-2 px-4 py-3">
               <Checkbox
                 checked={
                   tariffs.length > 0 &&
@@ -261,9 +301,11 @@ export function TariffTable({
                       toggleSelection(tariff.id?.toString() ?? "")
                     }
                   />
-                  <span className="text-sm lg:text-base text-gray-900">
+                  <span className="text-sm text-gray-900 lg:text-base">
                     {/* Replace index and pagination logic as needed */}
-                    {String(validTariffs.findIndex(t => t.id === tariff.id) + 1).padStart(2, "0")}
+                    {String(
+                      validTariffs.findIndex((t) => t.id === tariff.id) + 1,
+                    ).padStart(2, "0")}
                   </span>
                 </TableCell>
                 <TableCell>{tariff.name}</TableCell>
@@ -272,14 +314,20 @@ export function TariffTable({
                 <TableCell>{tariff.tariff_rate}</TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
-                    <span className={getStatusStyle(tariff.status ? "Active" : "Inactive")}>
+                    <span
+                      className={getStatusStyle(
+                        tariff.status ? "Active" : "Inactive",
+                      )}
+                    >
                       {tariff.status ? "Active" : "Inactive"}
                     </span>
                   </div>
                 </TableCell>
                 <TableCell>{tariff.effective_date}</TableCell>
                 <TableCell>
-                  <span className={getStatusStyle(tariff.approve_status)}>{tariff.approve_status}</span>
+                  <span className={getStatusStyle(tariff.approve_status)}>
+                    {tariff.approve_status}
+                  </span>
                 </TableCell>
                 <TableCell>
                   <DropdownMenu>
@@ -474,14 +522,18 @@ export function TariffTable({
                 placeholder="Enter tariff rate"
                 className="border-gray-300 focus:border-[rgba(22,28,202,1)] focus:ring-[rgba(22,28,202,1)]"
                 value={formData.tariffRate}
-                onChange={(e) => handleInputChange("tariffRate", e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("tariffRate", e.target.value)
+                }
               />
             </div>
             <div className="flex justify-end gap-3">
               <Button
                 variant="secondary"
                 type="button"
-                onClick={() => setEditDialog((prev) => ({ ...prev, isOpen: false }))}
+                onClick={() =>
+                  setEditDialog((prev) => ({ ...prev, isOpen: false }))
+                }
                 className="border-gray-300 text-gray-700"
               >
                 Cancel

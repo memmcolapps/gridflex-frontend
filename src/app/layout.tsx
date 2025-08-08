@@ -1,9 +1,7 @@
 import "../styles/globals.css";
-
 import { type Metadata } from "next";
 import { Manrope } from "next/font/google";
-import { Toaster } from "sonner";
-import { AuthProvider } from "../context/auth-context";
+import { Providers } from "./Providers";
 
 export const metadata: Metadata = {
   title: "Gridflex",
@@ -19,11 +17,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={manrope.className}>
       <body>
-        <AuthProvider>
-          <Toaster />
-
-          {children}
-        </AuthProvider>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

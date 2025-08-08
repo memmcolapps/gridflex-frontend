@@ -31,15 +31,11 @@ import type { FormData } from "./hooks/useNodeFormValidation";
 interface OrganizationNodeProps {
   node: Node;
   level?: number;
-  onNodeUpdated: () => void;
-  onNodeAdded: () => void;
 }
 
 export const OrganizationNode = ({
   node,
   level = 0,
-  onNodeUpdated,
-  onNodeAdded,
 }: OrganizationNodeProps) => {
   const [children, setChildren] = useState<Node[]>(node.nodesTree ?? []);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -62,13 +58,11 @@ export const OrganizationNode = ({
   }) => {
     setIsExpanded(true);
     toast.success(`Successfully added "${data.name}" as a ${data.nodeType}`);
-    onNodeAdded();
   };
 
   const handleEditNode = (data: FormData) => {
     setNodeDataForEdit(data);
     toast.success(`Successfully updated "${data.name}"`);
-    onNodeUpdated();
   };
 
   const openAddDialog = (type: string) => {
@@ -146,8 +140,6 @@ export const OrganizationNode = ({
               key={childNode.id}
               node={childNode}
               level={level + 1}
-              onNodeUpdated={onNodeUpdated}
-              onNodeAdded={onNodeAdded}
             />
           ))}
         <AddNodeDialog

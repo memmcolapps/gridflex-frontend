@@ -1,12 +1,12 @@
 import axios from "axios";
 import { toast } from "sonner";
-import { handleApiError } from "@/utils/error-handler";
 import { env } from "@/env";
+import { handleApiError } from "error";
 
 export interface Band {
   id?: string | number;
   name: string;
-  electricityHour: number;
+  hour: number;
   status?: boolean;
   createdat?: string;
   updatedat?: string;
@@ -21,114 +21,123 @@ interface BandResponse {
 interface BandListResponse {
   responsecode: string;
   responsedesc: string;
-  responsedata: Array<{
-    id: number;
-    name: string;
-    hour: string;
-    status: boolean;
-    created_at: string;
-    updated_at: string;
-  }>;
+  responsedata: Band[];
 }
+
+type BandResult = { success: true } | { success: false; error: string };
 
 const API_URL = env.NEXT_PUBLIC_BASE_URL;
 const CUSTOM_HEADER = env.NEXT_PUBLIC_CUSTOM_HEADER;
 
-export async function createBand(band: Omit<Band, 'id'>): Promise<boolean> {
+export async function createBand(band: Omit<Band, "id">): Promise<BandResult> {
   try {
-    const token = localStorage.getItem('auth_token');
-    
+    const token = localStorage.getItem("auth_token");
+
     const response = await axios.post<BandResponse>(
       `${API_URL}/band/service/create`,
       {
         name: band.name,
-        hour: band.electricityHour.toString()
+        hour: band.hour.toString(),
       },
       {
         headers: {
-          'Content-Type': 'application/json',
-          'custom': CUSTOM_HEADER,
-          'Authorization': `Bearer ${token}`
-        }
-      }
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
     );
 
-    if (response.data.responsecode === "000") {
-      toast.success(response.data.responsedesc);
-      return true;
-    } else {
-      throw new Error(response.data.responsedesc ?? "Failed to create band");
+    if (response.data.responsecode !== "000") {
+      return {
+        success: false,
+        error: response.data.responsedesc || "Failed to fetch audit logs",
+      };
     }
-  } catch (error) {
-    const apiError = handleApiError(error);
-    toast.error(apiError.message);
-    return false;
+
+    return {
+      success: true,
+    };
+  } catch (error: unknown) {
+    return {
+      success: false,
+      error: handleApiError(error),
+    };
   }
 }
 
-export async function fetchBands(): Promise<Band[]> {
+export async function fetchBands(): Promise<
+  { success: true; data: Band[] } | { success: false; error: string }
+> {
   try {
-    const token = localStorage.getItem('auth_token');
-    
+    const token = localStorage.getItem("auth_token");
+
     const response = await axios.get<BandListResponse>(
-      `${API_URL}/band/service/all-band`,
+      `${API_URL}/band/service/all`,
       {
         headers: {
-          'Content-Type': 'application/json',
-          'custom': CUSTOM_HEADER,
-          'Authorization': `Bearer ${token}`
-        }
-      }
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
     );
 
-    if (response.data.responsecode === "000") {
-      return response.data.responsedata.map(band => ({
-        id: band.id,
-        name: band.name,
-        electricityHour: parseInt(band.hour, 10),
-        status: band.status,
-        createdat: band.created_at,
-        updatedat: band.updated_at
-      }));
-    } else {
-      throw new Error(response.data.responsedesc ?? "Failed to fetch bands");
+    if (response.data.responsecode !== "000") {
+      return {
+        success: false,
+        error: response.data.responsedesc || "Failed to fetch audit logs",
+      };
     }
+
+    return {
+      success: true,
+      data: response.data.responsedata,
+    };
   } catch (error) {
-    const apiError = handleApiError(error);
-    toast.error(apiError.message);
-    return [];
+    return {
+      success: false,
+      error: handleApiError(error),
+    };
   }
 }
 
-export async function updateBand(band: Band): Promise<boolean> {
+export async function updateBand(
+  band: Band,
+): Promise<{ success: true } | { success: false; error: string }> {
   try {
-    const token = localStorage.getItem('auth_token');
-    
+    const token = localStorage.getItem("auth_token");
+
     const response = await axios.put<BandResponse>(
       `${API_URL}/band/service/update`,
       {
         id: band.id,
         name: band.name,
-        hour: band.electricityHour.toString()
+        hour: band.hour.toString(),
       },
       {
         headers: {
-          'Content-Type': 'application/json',
-          'custom': CUSTOM_HEADER,
-          'Authorization': `Bearer ${token}`
-        }
-      }
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
     );
 
-    if (response.data.responsecode === "000") {
-      toast.success(response.data.responsedesc);
-      return true;
-    } else {
-      throw new Error(response.data.responsedesc ?? "Failed to update band");
+    if (response.data.responsecode !== "000") {
+      return {
+        success: false,
+        error: response.data.responsedesc || "Failed to update band",
+      };
     }
+
+    return {
+      success: true,
+    };
   } catch (error) {
-    const apiError = handleApiError(error);
-    toast.error(apiError.message);
-    return false;
+    return {
+      success: false,
+      error: handleApiError(error),
+    };
   }
 }

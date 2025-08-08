@@ -28,20 +28,14 @@ import {
   SquareArrowOutUpRight,
 } from "lucide-react";
 import React, { useState, useEffect, useCallback } from "react";
-import {
-  createTariff,
-  fetchTariffs,
-  type Tariff,
-} from "@/service/tarriff-service";
-import { fetchBands, type Band } from "@/service/band-service";
+
 import { toast } from "react-toastify";
+import { useBand } from "@/hooks/use-band";
+import { useCreateTariff, useTariff } from "@/hooks/use-tarrif";
 
 export default function TariffManagementPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [tariffs, setTariffs] = useState<Tariff[]>([]);
   const [selectedTariffs, setSelectedTariffs] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [bands, setBands] = useState<Band[]>([]);
   const [isBandsLoading, setIsBandsLoading] = useState(false);
   const [bandsError, setBandsError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
@@ -50,59 +44,31 @@ export default function TariffManagementPage() {
     effectiveDate: null as Date | null,
     bandCode: "",
     tariffRate: "",
+    status: "inactive" as "active" | "inactive",
+    approvalStatus: "pending" as "Approved" | "pending" | "rejected",
   });
-
-  useEffect(() => {
-    const loadTariffs = async () => {
-      try {
-        setIsLoading(true);
-        const data = await fetchTariffs();
-        setTariffs(Array.isArray(data) ? data : []); // Ensure we always set an array
-      } catch (error) {
-        console.error("Error loading tariffs:", error);
-        setTariffs([]); // Set empty array on error
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadTariffs();
-  }, []);
-
-  useEffect(() => {
-    const loadBands = async () => {
-      setIsBandsLoading(true);
-      setBandsError(null);
-      try {
-        const fetchedBands = await fetchBands();
-        setBands(fetchedBands);
-      } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : "Failed to fetch bands";
-        setBandsError(errorMessage);
-        console.error("Failed to fetch bands:", error);
-      } finally {
-        setIsBandsLoading(false);
-      }
-    };
-
-    loadBands();
-  }, []);
+  const { bands, error } = useBand();
+  const { tariffs, isLoading, error: tariffError } = useTariff();
+  const { mutate: createTariff } = useCreateTariff();
 
   const handleInputChange = (field: string, value: string | Date | null) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleUpdateTariff = useCallback(
-    (id: string, updates: Partial<Tariff>) => {
-      setTariffs((prev) =>
-        prev.map((tariff) =>
-          tariff.id.toString() === id ? { ...tariff, ...updates } : tariff,
-        ),
-      );
-    },
-    [],
-  );
+  // const handleUpdateTariff = useCallback();
+
+  const handleBulkApprove = async () => {
+    try {
+      const success = true; // Replace with actual API call
+      if (success) {
+        setSelectedTariffs([]); // Clear selection after approval
+        toast.success("Bulk approve successful");
+      }
+    } catch (error) {
+      console.error("Bulk approve error:", error);
+      toast.error("Failed to bulk approve tariffs");
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -116,24 +82,26 @@ export default function TariffManagementPage() {
       band: formData.bandCode,
       tariff_rate: formData.tariffRate,
     };
-
-    const success = await createTariff(newTariff);
-
-    if (success) {
-      const fetchedTariffs = await fetchTariffs();
-      setTariffs(fetchedTariffs);
-      setIsDialogOpen(false);
-
-      setFormData({
-        name: "",
-        type: "",
-        effectiveDate: null,
-        bandCode: "",
-        tariffRate: "",
-        // status: "inactive",
-        // approvalStatus: "pending",
-      });
-    }
+    createTariff(newTariff, {
+      onSuccess: () => {
+        setFormData({
+          name: "",
+          type: "",
+          effectiveDate: null,
+          bandCode: "",
+          tariffRate: "",
+          status: "inactive",
+          approvalStatus: "pending",
+        });
+        toast.success("Tariff created successfully");
+      },
+      onError: (error) => {
+        console.error("Failed to create tariff:", error);
+      },
+      onSettled: () => {
+        setIsDialogOpen(false);
+      },
+    });
   };
 
   const isFormValid =
@@ -142,33 +110,6 @@ export default function TariffManagementPage() {
     formData.effectiveDate &&
     formData.bandCode &&
     formData.tariffRate;
-
-  const refreshTariffs = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      console.log("Starting tariff refresh..."); // Debug log
-      const fetchedTariffs = await fetchTariffs();
-      console.log("Fetched tariffs:", fetchedTariffs); // Debug log
-
-      if (!Array.isArray(fetchedTariffs)) {
-        console.error("Invalid tariffs data received");
-        toast.error("Failed to load tariffs: Invalid data format");
-        return;
-      }
-
-      setTariffs(fetchedTariffs);
-    } catch (error) {
-      console.error("Error refreshing tariffs:", error);
-      toast.error("Failed to refresh tariffs");
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  // Use useEffect for initial load
-  useEffect(() => {
-    refreshTariffs();
-  }, [refreshTariffs]);
 
   return (
     <div className="min-h-screen">
@@ -259,10 +200,7 @@ export default function TariffManagementPage() {
                   </Select>
                 </div>
                 <div className="flex flex-col gap-2">
-                  <label className="text-sm font-medium超过了最大字符数限制。以下是继续的代码部分：
-
-```typescript
-text-gray-700">
+                  <label className="font-medium超过了最大字符数限制。以下是继续的代码部分： ```typescript text-sm text-gray-700">
                     Tariff Effective Date
                   </label>
                   <TariffDatePicker
@@ -418,10 +356,8 @@ text-gray-700">
           ) : (
             <TariffTable
               tariffs={tariffs}
-              onUpdateTariff={handleUpdateTariff}
               selectedTariffs={selectedTariffs}
               setSelectedTariffs={setSelectedTariffs}
-              onRefresh={refreshTariffs}
             />
           )}
         </div>

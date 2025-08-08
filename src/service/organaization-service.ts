@@ -1,24 +1,6 @@
 import axios from "axios";
-import { toast } from "sonner";
-import { handleApiError } from "@/utils/error-handler";
 import { env } from "@/env";
-
-export interface FormData {
-  nodeType: string;
-  id: string;
-  name: string;
-  phoneNumber: string;
-  email: string;
-  contactPerson: string;
-  address: string;
-  serialNo?: string;
-  assetId?: string;
-  status?: string;
-  voltage?: string;
-  description?: string;
-  latitude?: string;
-  longitude?: string;
-}
+import { handleApiError } from "error";
 
 export interface NodeInfo {
   id: string;
@@ -60,68 +42,14 @@ interface OrganizationResponse {
 const API_URL = env.NEXT_PUBLIC_BASE_URL;
 const CUSTOM_HEADER = env.NEXT_PUBLIC_CUSTOM_HEADER;
 
-export async function fetchOrganizationNodes(): Promise<Node[]> {
+export async function fetchOrganizationNodes(): Promise<
+  { success: true; data: Node[] } | { success: false; error: string }
+> {
   try {
     const token = localStorage.getItem("auth_token");
 
     const response = await axios.get<OrganizationResponse>(
-      `${API_URL}/node/service/all-nodes`,
-      {
-        headers: {
-          "Content-Type": "application/json",
-          custom: CUSTOM_HEADER,
-          Authorization: `Bearer ${token}`,
-        },
-      },
-    );
-
-    if (response.data.responsecode === "000") {
-      // Map response to ensure id is populated correctly based on node type
-      return response.data.responsedata.map((node) => ({
-        ...node,
-        nodeInfo: node.nodeInfo
-          ? {
-              ...node.nodeInfo,
-              id: node.nodeInfo.type === "Region"
-                ? node.nodeInfo.regionId ?? node.nodeInfo.nodeId ?? node.id
-                : node.nodeInfo.nodeId ?? node.id,
-            }
-          : undefined,
-      }));
-    } else {
-      throw new Error(
-        response.data.responsedesc ?? "Failed to fetch organization nodes",
-      );
-    }
-  } catch (error) {
-    const apiError = handleApiError(error);
-    toast.error(apiError.message);
-    return [];
-  }
-}
-
-export async function updateNode(nodeId: string, data: FormData): Promise<void> {
-  try {
-    const token = localStorage.getItem("auth_token");
-    const payload = {
-      name: data.name,
-      [data.nodeType === "Region" ? "regionId" : "nodeId"]: data.id,
-      phoneNo: data.phoneNumber,
-      email: data.email,
-      contactPerson: data.contactPerson,
-      address: data.address,
-      serialNo: data.serialNo ?? undefined,
-      assetId: data.assetId ?? undefined,
-      status: data.status ? data.status === "Active" : undefined,
-      voltage: data.voltage ?? undefined,
-      description: data.description ?? undefined,
-      latitude: data.latitude ?? undefined,
-      longitude: data.longitude ?? undefined,
-    };
-
-    const response = await axios.put(
-      `${API_URL}/node/service/${nodeId}`,
-      payload,
+      `${API_URL}/node/service/all`,
       {
         headers: {
           "Content-Type": "application/json",
@@ -132,57 +60,20 @@ export async function updateNode(nodeId: string, data: FormData): Promise<void> 
     );
 
     if (response.data.responsecode !== "000") {
-      throw new Error(
-        response.data.responsedesc ?? "Failed to update node",
-      );
+      return {
+        success: false,
+        error:
+          response.data.responsedesc || "Failed to fetch organization nodes",
+      };
     }
-  } catch (error) {
-    const apiError = handleApiError(error);
-    toast.error(apiError.message);
-    throw apiError;
-  }
-}
-
-export async function addNode(data: { name: string; nodeType: string; data: FormData }): Promise<void> {
-  try {
-    const token = localStorage.getItem("auth_token");
-    const payload = {
-      name: data.name,
-      type: data.nodeType,
-      [data.nodeType === "Region" ? "regionId" : "nodeId"]: data.data.id,
-      phoneNo: data.data.phoneNumber,
-      email: data.data.email,
-      contactPerson: data.data.contactPerson,
-      address: data.data.address,
-      serialNo: data.data.serialNo ?? undefined,
-      assetId: data.data.assetId ?? undefined,
-      status: data.data.status ? data.data.status === "Active" : undefined,
-      voltage: data.data.voltage ?? undefined,
-      description: data.data.description ?? undefined,
-      latitude: data.data.latitude ?? undefined,
-      longitude: data.data.longitude ?? undefined,
+    return {
+      success: true,
+      data: response.data.responsedata,
     };
-
-    const response = await axios.post(
-      `${API_URL}/node/service`,
-      payload,
-      {
-        headers: {
-          "Content-Type": "application/json",
-          custom: CUSTOM_HEADER,
-          Authorization: `Bearer ${token}`,
-        },
-      },
-    );
-
-    if (response.data.responsecode !== "000") {
-      throw new Error(
-        response.data.responsedesc ?? "Failed to add node",
-      );
-    }
   } catch (error) {
-    const apiError = handleApiError(error);
-    toast.error(apiError.message);
-    throw apiError;
+    return {
+      success: false,
+      error: handleApiError(error),
+    };
   }
 }

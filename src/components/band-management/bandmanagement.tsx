@@ -17,35 +17,20 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { PlusCircleIcon, SearchIcon } from "lucide-react";
-import { fetchBands, createBand, updateBand, type Band } from "@/service/band-service";
+import { type Band } from "@/service/band-service";
+import { useBand, useCreateBand, useUpdateBand } from "@/hooks/use-band";
+import { toast } from "sonner";
 import { ContentHeader } from "../ui/content-header";
 
 export default function BandManagement() {
-
-
-  const [bands, setBands] = useState<Band[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState<{
     key: keyof Band;
     direction: "ascending" | "descending";
   } | null>(null);
-
-  useEffect(() => {
-    const loadBands = async () => {
-      setIsLoading(true);
-      try {
-        const fetchedBands = await fetchBands();
-        setBands(fetchedBands);
-      } catch (error) {
-        console.error("Failed to fetch bands:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadBands();
-  }, []);
+  const { bands, isLoading, error } = useBand();
+  const { mutate: createBand } = useCreateBand();
+  const { mutate: updateBand } = useUpdateBand();
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -88,36 +73,49 @@ export default function BandManagement() {
   );
 
   const handleAddBand = async (newBand: Omit<Band, "id">) => {
-    const success = await createBand(newBand);
-    if (success) {
-      // Refresh the bands list to get the new band with the correct ID from backend
-      const fetchedBands = await fetchBands();
-      setBands(fetchedBands);
-    }
+    createBand(newBand, {
+      onSuccess: () => {
+        toast.success("Band created successfully");
+      },
+      onError: (error) => {
+        console.error("Failed to create band:", error);
+      },
+      onSettled: () => {
+        setSearchTerm("");
+      },
+    });
   };
 
-  const handleUpdateBand = async (bandId: string | number, updatedBand: Omit<Band, "id">) => {
+  const handleUpdateBand = async (
+    bandId: string | number,
+    updatedBand: Omit<Band, "id">,
+  ) => {
     // Create a complete band object with the original ID and updated fields
     const bandToUpdate: Band = {
       id: bandId,
       ...updatedBand,
       // Preserve other fields from the original band
-      status: bands.find(b => b.id === bandId)?.status,
-      createdat: bands.find(b => b.id === bandId)?.createdat,
-      updatedat: bands.find(b => b.id === bandId)?.updatedat
+      status: bands.find((b) => b.id === bandId)?.status,
+      createdat: bands.find((b) => b.id === bandId)?.createdat,
+      updatedat: bands.find((b) => b.id === bandId)?.updatedat,
     };
 
-    const success = await updateBand(bandToUpdate);
-    if (success) {
-      // Refresh the bands list to get the updated data from backend
-      const fetchedBands = await fetchBands();
-      setBands(fetchedBands);
-    }
+    updateBand(bandToUpdate, {
+      onSuccess: () => {
+        toast.success("Band updated successfully");
+      },
+      onError: (error) => {
+        console.error("Failed to update band:", error);
+      },
+      onSettled: () => {
+        setSearchTerm("");
+      },
+    });
   };
 
   return (
     <div className="p-6 text-black">
-      <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+      <div className="mb-8 flex flex-col items-center justify-between gap-4 md:flex-row">
         <ContentHeader
           title="Band Management"
           description="Add and manage electricity distribution bands"
@@ -126,7 +124,7 @@ export default function BandManagement() {
           mode="add"
           onSave={handleAddBand}
           triggerButton={
-            <Button className="flex items-center gap-2 bg-[#161CCA] hover:bg-[#121eb3] cursor-pointer">
+            <Button className="flex cursor-pointer items-center gap-2 bg-[#161CCA] hover:bg-[#121eb3]">
               <div className="flex items-center justify-center p-0.5">
                 <PlusCircleIcon className="text-[#FEFEFE]" size={12} />
               </div>
@@ -175,11 +173,11 @@ export default function BandManagement() {
               </TableHead>
               <TableHead
                 className="hover:bg-muted/50 cursor-pointer"
-                onClick={() => requestSort("electricityHour")}
+                onClick={() => requestSort("hour")}
               >
                 <div className="flex items-center justify-between">
                   <span>Electricity Hour</span>
-                  {sortConfig?.key === "electricityHour" && (
+                  {sortConfig?.key === "hour" && (
                     <span>
                       {sortConfig.direction === "ascending" ? (
                         <ArrowUpIcon className="h-4 w-4" />
@@ -213,7 +211,7 @@ export default function BandManagement() {
               filteredBands.map((band) => (
                 <TableRow key={band.id} className="hover:bg-muted/50">
                   <TableCell>{band.name}</TableCell>
-                  <TableCell>{band.electricityHour}</TableCell>
+                  <TableCell>{band.hour}</TableCell>
                   <TableCell>{band.status ? "Active" : "Inactive"}</TableCell>
                   <TableCell>
                     {new Date(band.createdat!).toLocaleDateString()}
@@ -225,7 +223,9 @@ export default function BandManagement() {
                     <BandForm
                       mode="edit"
                       band={band}
-                      onSave={(updatedBand) => handleUpdateBand(band.id!, updatedBand)}
+                      onSave={(updatedBand) =>
+                        handleUpdateBand(band.id!, updatedBand)
+                      }
                       triggerButton={
                         <Button
                           variant="outline"

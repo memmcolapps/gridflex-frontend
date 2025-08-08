@@ -10,6 +10,7 @@ import { loginApi } from "../service/auth-service";
 import { type UserInfo } from "../types/user-info";
 import { useRouter } from "next/navigation";
 
+
 interface AuthContextType {
   isAuthenticated: boolean;
   user: UserInfo | null;

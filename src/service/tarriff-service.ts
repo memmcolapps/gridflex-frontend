@@ -1,7 +1,7 @@
 import axios from "axios";
 import { toast } from "sonner";
-import { handleApiError } from "@/utils/error-handler";
 import { env } from "@/env";
+import { handleApiError } from "error";
 
 export interface Tariff {
   id: number;
@@ -15,6 +15,15 @@ export interface Tariff {
   approve_status: "Pending" | "Approved" | "Rejected";
   created_at: string;
   updated_at: string;
+}
+
+export interface TariffPayload {
+  name: string;
+  tariff_index: number;
+  tariff_type: string;
+  effective_date: string;
+  band: string;
+  tariff_rate: string;
 }
 
 interface TariffResponse {
@@ -46,14 +55,14 @@ interface ApprovalStatusResponse {
 const API_URL = env.NEXT_PUBLIC_BASE_URL;
 const CUSTOM_HEADER = env.NEXT_PUBLIC_CUSTOM_HEADER;
 
-export async function fetchTariffs(): Promise<Tariff[]> {
+export async function fetchTariffs(): Promise<
+  { success: true; data: Tariff[] } | { success: false; error: string }
+> {
   try {
     const token = localStorage.getItem("auth_token");
 
-    console.log("Fetching tariffs..."); // Debug log
-
     const response = await axios.get<TariffListResponse>(
-      `${API_URL}/tariff/service/all-tariff`,
+      `${API_URL}/tariff/service/all`,
       {
         headers: {
           "Content-Type": "application/json",
@@ -63,41 +72,27 @@ export async function fetchTariffs(): Promise<Tariff[]> {
       },
     );
 
-    console.log("API Response:", response.data); // Debug log
-
-    if (response.data.responsecode === "000") {
-      // if (!Array.isArray(response.data.responsedata)) {
-      //   console.warn(
-      //     "Response data is not an array:",
-      //     response.data.responsedata,
-      //   );
-      //   return [];
-      // }
-      return response.data.responsedata.data;
+    if (response.data.responsecode !== "000") {
+      return {
+        success: false,
+        error: response.data.responsedesc || "Failed to fetch tariffs",
+      };
     }
-
-    console.warn(
-      "Unexpected response code:",
-      response.data.responsecode,
-      response.data.responsedesc,
-    );
-    return [];
+    return {
+      success: true,
+      data: response.data.responsedata.data,
+    };
   } catch (error) {
-    console.error("Error fetching tariffs:", error);
-    const apiError = handleApiError(error);
-    toast.error(apiError.message);
-    return [];
+    return {
+      success: false,
+      error: handleApiError(error),
+    };
   }
 }
 
-export async function createTariff(tariff: {
-  name: string;
-  tariff_index: number;
-  tariff_type: string;
-  effective_date: string;
-  band: string;
-  tariff_rate: string;
-}): Promise<boolean> {
+export async function createTariff(
+  tariff: TariffPayload,
+): Promise<{ success: true } | { success: false; error: string }> {
   try {
     const token = localStorage.getItem("auth_token");
 
@@ -113,26 +108,30 @@ export async function createTariff(tariff: {
       },
     );
 
-    if (response.data.responsecode === "000") {
-      toast.success(response.data.responsedesc);
-      return true;
-    } else {
-      throw new Error(response.data.responsedesc ?? "Failed to create tariff");
+    if (response.data.responsecode !== "000") {
+      return {
+        success: false,
+        error: response.data.responsedesc || "Failed to create tariff",
+      };
     }
+
+    return {
+      success: true,
+    };
   } catch (error) {
-    const apiError = handleApiError(error);
-    toast.error(apiError.message);
-    return false;
+    return {
+      success: false,
+      error: handleApiError(error),
+    };
   }
 }
 
 export async function changeTariffStatus(
   tariffId: string | number,
   status: boolean,
-): Promise<boolean> {
+): Promise<{ success: true } | { success: false; error: string }> {
   try {
     const token = localStorage.getItem("auth_token");
-    console.log(`Changing tariff status for ID ${tariffId} to ${status}`); // Debug log
 
     const response = await axios.patch<StatusChangeResponse>(
       `${API_URL}/tariff/service/change-state`,
@@ -150,29 +149,27 @@ export async function changeTariffStatus(
       },
     );
 
-    console.log("Status change response:", response.data); // Debug log
-
-    if (response.data.responsecode === "000") {
-      toast.success(response.data.responsedesc);
-      return true;
+    if (response.data.responsecode !== "000") {
+      return {
+        success: false,
+        error: response.data.responsedesc || "Failed to update tariff status",
+      };
     }
-
-    console.warn("Unexpected response:", response.data);
-    throw new Error(
-      response.data.responsedesc ?? "Failed to update tariff status",
-    );
+    return {
+      success: true,
+    };
   } catch (error) {
-    console.error("Error changing tariff status:", error);
-    const apiError = handleApiError(error);
-    toast.error(apiError.message);
-    return false;
+    return {
+      success: false,
+      error: handleApiError(error),
+    };
   }
 }
 
 export async function changeTariffApprovalStatus(
   tariffId: string | number,
   approvalStatus: "Approved" | "Rejected",
-): Promise<boolean> {
+): Promise<{ success: true } | { success: false; error: string }> {
   try {
     const token = localStorage.getItem("auth_token");
 
@@ -196,17 +193,19 @@ export async function changeTariffApprovalStatus(
       },
     );
 
-    if (response.data.responsecode === "000") {
-      toast.success(response.data.responsedesc);
-      return true;
-    } else {
-      throw new Error(
-        response.data.responsedesc ?? "Failed to update approval status",
-      );
+    if (response.data.responsecode !== "000") {
+      return {
+        success: false,
+        error: response.data.responsedesc || "Failed to update approval status",
+      };
     }
+    return {
+      success: true,
+    };
   } catch (error) {
-    const apiError = handleApiError(error);
-    toast.error(apiError.message);
-    return false;
+    return {
+      success: false,
+      error: handleApiError(error),
+    };
   }
 }
