@@ -47,8 +47,8 @@ export function ReviewApprovalTabs() {
 
 
     return (
-        <div className="p-6 max-h-screen overflow-auto">
-            <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
+        <div className="p-6 max-h-screen overflow-auto bg-transparent">
+            <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4 bg-transparent">
                 <ContentHeader
                     title="Review & Approval"
                     description="Check submissions and approve or reject meters"
@@ -75,7 +75,7 @@ export function ReviewApprovalTabs() {
             </div>
 
 
-            <Card className="p-4 mb-4 border-none shadow-none bg-white">
+            <Card className="p-4 mb-4 border-none shadow-none bg-transparent">
                 <Tabs value={activeTab} onValueChange={(v) => changeTab(v)}>
                     <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
                         <TabsList style={{ border: '2px solid #161CCA' }} className="h-12 w-fit">
@@ -141,7 +141,7 @@ export function ReviewApprovalTabs() {
                     <TabsContent value="tariff" className="overflow-x-hidden">
                         <TariffTable />
                     </TabsContent>
-                      <TabsContent value="meter" className="overflow-x-hidden">
+                    <TabsContent value="meter" className="overflow-x-hidden">
                         <MeterTable />
                     </TabsContent>
                 </Tabs>

@@ -265,8 +265,8 @@ export default function GroupPermissionManagement() {
       </div>
 
       <div className='h-4/6'>
-        <Table>
-          <TableHeader>
+        <Table className="bg-transparent">
+          <TableHeader className="bg-transparent">
             <TableRow>
               <TableHead
                 className="cursor-pointer"
@@ -306,7 +306,7 @@ export default function GroupPermissionManagement() {
               </TableRow>
             ) : (
               paginatedGroups.map((group) => (
-                <TableRow key={group.id} className="hover:bg-muted/50 bg-gray-50">
+                <TableRow key={group.id} className="hover:bg-muted/50 bg-transparent">
                   <TableCell>{group.groupTitle || "N/A"}</TableCell>
                   <TableCell>
                     <Checkbox

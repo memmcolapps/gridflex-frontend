@@ -1062,7 +1062,7 @@ export default function MeterManagementPage() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [data, virtualData, activeTab, activeFilters, searchTerm, sortConfig.key, sortConfig.direction]);
 
-     // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
+    // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
     const applyFiltersAndSort = (
         term: string,
         sortBy: keyof MeterData | keyof VirtualMeterData | null,
@@ -1608,13 +1608,13 @@ export default function MeterManagementPage() {
     };
 
     return (
-        <div className="p-6 h-screen overflow-x-hidden">
-            <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
+        <div className="p-6 h-screen overflow-x-hidden bg-transparent">
+            <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4 bg-transparent">
                 <ContentHeader
                     title="Meters"
                     description="Manage and Access All Meter Records."
                 />
-                <div className="flex flex-col md:flex-row gap-2">
+                <div className="flex flex-col md:flex-row gap-2 bg-transparent">
                     <Button
                         className="flex items-center gap-2 border font-medium border-[#161CCA] text-[#161CCA] w-full md:w-auto cursor-pointer"
                         variant="outline"
@@ -1649,7 +1649,7 @@ export default function MeterManagementPage() {
                 </div>
             </div>
 
-            <Card className="p-4 mb-4 border-none shadow-none bg-white">
+            <Card className="p-4 mb-4 border-none shadow-none bg-transparent">
                 <Tabs value={activeTab} onValueChange={(v) => changeTab(v as "actual" | "virtual")}>
                     <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
                         <TabsList style={{ border: "2px solid #161CCA" }} className="h-12">
@@ -1694,9 +1694,9 @@ export default function MeterManagementPage() {
                         </div>
                     </div>
                     <TabsContent value="actual" className="overflow-x-hidden">
-                        <Card className="border-none shadow-none bg-white overflow-x-auto min-h-[calc(100vh-300px)]">
-                            <Table className="table-auto w-full">
-                                <TableHeader>
+                        <Card className="border-none shadow-none bg-transparent overflow-x-auto min-h-[calc(100vh-300px)]">
+                            <Table className="table-auto w-full bg-transparent">
+                                <TableHeader className="bg-transparent">
                                     <TableRow>
                                         <TableHead className="px-4 py-3 w-[100px]">
                                             <div className="flex items-center gap-2">
@@ -1836,11 +1836,11 @@ export default function MeterManagementPage() {
                         </Card>
                     </TabsContent>
                     <TabsContent value="virtual">
-                        <Card className="border-none shadow-none bg-white min-h-[calc(100vh-300px)]">
+                        <Card className="border-none shadow-none bg-transparent min-h-[calc(100vh-300px)]">
                             <div className="overflow-x-auto">
                                 <Table className="w-full table-auto">
-                                    <TableHeader>
-                                        <TableRow className="bg-gray-50 hover:bg-gray-50">
+                                    <TableHeader className="bg-transparent">
+                                        <TableRow className="bg-transparent hover:bg-gray-50">
                                             <TableHead className="w-20 px-4 py-3 text-left text-sm font-semibold text-gray-700">
                                                 <div className="flex items-center gap-2">
                                                     <Checkbox

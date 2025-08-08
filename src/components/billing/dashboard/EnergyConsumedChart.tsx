@@ -35,8 +35,8 @@ export const EnergyConsumedChart = () => {
     const currentData = dataByType[activeChart];
 
     return (
-      <Card className="w-full max-w-[1000px] border-none border-gray-100 bg-white shadow-xs">
-        <CardHeader className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+      <Card className="w-full max-w-[1000px] border-none border-gray-100 bg-transparent shadow-xs">
+        <CardHeader className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 bg-transparent">
           <CardTitle>Energy Consumed Over Time (kwh)</CardTitle>
           <div className="flex gap-2">
             <Button
@@ -77,7 +77,7 @@ export const EnergyConsumedChart = () => {
             </Button>
           </div>
         </CardHeader>
-        <CardContent className="h-[200px]">
+        <CardContent className="h-[200px] bg-transparent">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               data={currentData}

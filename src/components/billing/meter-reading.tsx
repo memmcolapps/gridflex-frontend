@@ -197,7 +197,7 @@ export default function MeterReadings({ searchQuery, sortConfig, selectedMonth, 
     return (
         <Card className="p-4 border-none">
             <Table>
-                <TableHeader>
+                <TableHeader className="bg-transparent">
                     <TableRow>
                         {/* Checkbox for Select All */}
                         <TableHead className="w-[50px] text-center">

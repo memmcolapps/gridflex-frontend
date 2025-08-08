@@ -154,7 +154,7 @@ export default function BandManagement() {
 
       <div>
         <Table>
-          <TableHeader>
+          <TableHeader className="bg-transparent">
             <TableRow>
               <TableHead
                 className="cursor-pointer"

@@ -270,7 +270,7 @@ export default function EnergyImportPage() {
     };
 
     return (
-        <div className="p-6">
+        <div className="p-6 bg-transparent">
             <div className="mb-8 flex flex-col items-center justify-between gap-4 md:flex-row">
                 <ContentHeader
                     title="Energy Import"
@@ -356,7 +356,7 @@ export default function EnergyImportPage() {
                 </div>
             </div>
 
-            <div className="flex-1 bg-white">
+            <div className="flex-1 bg-transparent">
                 {isLoading ? (
                     <div className="flex items-center justify-center p-8">
                         <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-gray-900"></div>

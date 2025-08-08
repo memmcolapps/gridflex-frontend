@@ -182,7 +182,7 @@ export default function EnergyImportPage() {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-6 bg-transparent">
       {/* Content Header */}
       <div className="mb-8 flex flex-col items-center justify-between gap-4 md:flex-row">
         <ContentHeader
@@ -211,7 +211,7 @@ export default function EnergyImportPage() {
         </div>
       </div>
 
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-8 flex items-center justify-between bg-transparent">
         <div className="flex items-center gap-2">
           <div className="relative w-full lg:w-[300px]">
             <Search
@@ -269,7 +269,7 @@ export default function EnergyImportPage() {
         </div>
       </div>
 
-      <div className="flex-1 rounded-lg border border-gray-200 bg-white">
+      <div className="flex-1 rounded-lg border border-gray-200 bg-transparent">
         {isLoading ? (
           <div className="flex items-center justify-center p-8">
             <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-gray-900"></div>

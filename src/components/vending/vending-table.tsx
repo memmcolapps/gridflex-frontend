@@ -131,7 +131,7 @@ const VendingTable = () => {
         <div className="w-full">
             <Card className="mb-4 p-4 border-gray-100 rounded-lg shadow-sm">
                 <Table>
-                    <TableHeader>
+                    <TableHeader className="bg-transparent">
                         <TableRow>
                             <TableHead>SN</TableHead>
                             <TableHead>Account Number</TableHead>

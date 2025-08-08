@@ -169,7 +169,7 @@ export default function MeterConsumptions({ searchQuery, sortConfig, selectedMon
       <Card className="h-full border-none p-4">
         <div>
           <Table className="h-full">
-            <TableHeader>
+            <TableHeader className="bg-transparent">
               <TableRow>
                 <TableHead className="w-[50px] py-3 text-center">
                   <Checkbox

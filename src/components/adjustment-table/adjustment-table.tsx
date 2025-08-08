@@ -478,7 +478,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                 </div>
                 <div className="flex-grow min-h-0 overflow-auto">
                     <Table>
-                        <TableHeader>
+                        <TableHeader className='bg-transparent'>
                             <TableRow className="h-16 py-4">
                                 <TableHead className="w-[30px] pr-0 py-4">
                                     <div className="flex items-center gap-2">

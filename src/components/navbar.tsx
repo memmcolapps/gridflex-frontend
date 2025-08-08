@@ -27,8 +27,9 @@ export function Navbar() {
     <header className="sticky top-0 z-30 h-16 border-b border-gray-200 md:-ml-8 bg-white ">
       <div className="flex h-full w-full items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Left side - empty for now but can be used for breadcrumbs or other elements */}
-        <div className="flex items-center gap-2 md:gap-4">
-          <div className="relative flex-1 md:w-80 md:flex-none"></div>
+        <div className="flex flex-col items-start md:flex-none p-14"> {/* Changed flex to flex-col */}
+         <span className="text-2xl font-bold">IBEDC</span> 
+          <div className="relative flex-1 md:w-80 md:flex-none">Hello Margaret</div>
         </div>
 
         {/* Right side with user controls */}
@@ -51,7 +52,7 @@ export function Navbar() {
                 disabled={isProfileOpen}
               >
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src="" alt="User"/>
+                  <AvatarImage src="" alt="User" />
                   <AvatarFallback className="rounded-full bg-blue-600 text-white">
                     MA
                   </AvatarFallback>

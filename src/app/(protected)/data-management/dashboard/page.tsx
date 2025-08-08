@@ -63,9 +63,9 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="p-6 min-h-screen">
-      <div className="max-w-screen-2xl space-y-6">
-        <div className="flex justify-between items-start pt-6">
+    <div className="p-6 min-h-screen bg-transparent">
+      <div className="max-w-screen-2xl space-y-6 bg-transparent">
+        <div className="flex justify-between items-start pt-6 bg-transparent">
           <ContentHeader
             title="Overview"
             description="General overview of Data Management Dashboard"
@@ -86,19 +86,19 @@ export default function DashboardPage() {
         </section>
 
         <section>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 w-full h-40">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 w-full h-40 bg-transparent">
             {statusCards.map((card, index) => (
               <StatusCard key={index} {...card} />
             ))}
           </div>
         </section>
 
-        <section className="mt-10 pt-6 rounded-lg bg-white shadow-sm">
+        <section className="mt-10 pt-6 rounded-lg shadow-sm bg-transparent">
           <MetersInstalledChart />
         </section>
 
         <section>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 bg-transparent">
             <ManufacturerDistribution />
             <MeterStatus />
           </div>

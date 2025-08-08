@@ -141,7 +141,7 @@ export default function BillingTable({ searchQuery, sortConfig, selectedMonth, s
         <>
             <div>
                 <Table className="h-full">
-                    <TableHeader>
+                    <TableHeader className="bg-transparent">
                         <TableRow>
                             <TableHead className="w-[50px] py-3 text-center">
                                 <Checkbox

@@ -328,11 +328,11 @@ export default function PaymentHistoryTable({
   };
 
   return (
-    <Card className="min-h-[calc(100vh-300px)] border-none bg-white shadow-none">
+    <Card className="min-h-[calc(100vh-300px)] border-none bg-transparent shadow-none">
       <div className="overflow-x-auto">
         <Table className="w-full table-auto">
-          <TableHeader>
-            <TableRow className="bg-gray-50 hover:bg-gray-50">
+          <TableHeader className="bg-transparent">
+            <TableRow className="bg-transparent hover:bg-gray-50">
               <TableHead className="w-20 px-4 py-3 text-left text-sm font-semibold text-gray-700">
                 <div className="flex items-center gap-2">
                   <Checkbox
