@@ -35,34 +35,39 @@ export default function ProtectedLayout({
 
   return (
     <SidebarProvider>
-      <div className="flex w-full min-h-screen">
+      <div className="flex min-h-screen w-full">
         {/* Mobile message - only shows on small screens */}
-        <div className="md:hidden fixed inset-0 bg-background z-50 flex items-center justify-center p-4">
-          <div className="text-center max-w-md">
-            <h2 className="text-3xl font-black mb-4">Screen Too Small</h2>
+        <div className="bg-background fixed inset-0 z-50 flex items-center justify-center p-4 md:hidden">
+          <div className="max-w-md text-center">
+            <h2 className="mb-4 text-3xl font-black">Screen Too Small</h2>
             <p className="mb-4 text-2xl font-semibold">
-              This application is designed for larger screens. Please use a tablet or desktop computer for the best experience.
+              This application is designed for larger screens. Please use a
+              tablet or desktop computer for the best experience.
             </p>
-            <p>Current screen size: {typeof window !== 'undefined' && `${window.innerWidth}px`}</p>
+            <p>
+              Current screen size:{" "}
+              {typeof window !== "undefined" && `${window.innerWidth}px`}
+            </p>
           </div>
         </div>
 
         {/* Desktop layout */}
-        <div className="hidden md:flex w-full">
+        <div className="hidden w-full md:flex">
           {/* Sidebar with fixed width */}
           <div className="w-[21rem] flex-shrink-0">
             <SidebarNav />
           </div>
           {/* Main content area */}
-          <div className="flex-1 flex flex-col">
+          <div className="flex flex-1 flex-col">
             <Navbar />
-            <main className="flex-1 py-4 px-8"
+            <main
+              className="flex-1 px-8 py-4"
               style={{
-                backgroundImage: `url('/images/blurredbg.jpg')`, // Replace with your logo path
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat',
-                backgroundSize: '500px', // Adjust size as needed (e.g., '50%' or '200px')
-                backgroundAttachment: 'fixed', // Keeps logo in place while scrolling
+                backgroundImage: `url('/images/blurredbg.jpg')`,
+                backgroundPosition: "center",
+                backgroundRepeat: "no-repeat",
+                backgroundSize: "500px",
+                backgroundAttachment: "fixed",
               }}
             >
               {children}
