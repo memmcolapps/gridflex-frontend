@@ -26,15 +26,13 @@ export default function BandForm({
 }: BandFormProps) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState(band?.name ?? "");
-  const [electricityHour, setElectricityHour] = useState(
-    band?.electricityHour?.toString() ?? "",
-  );
+  const [hour, sethour] = useState(band?.hour?.toString() ?? "");
 
   // Reset form when band prop changes
   useEffect(() => {
     if (band) {
       setName(band.name);
-      setElectricityHour(band.electricityHour.toString());
+      sethour(band.hour.toString());
     }
   }, [band]);
 
@@ -43,7 +41,7 @@ export default function BandForm({
 
     const updatedBand = {
       name,
-      electricityHour: parseInt(electricityHour, 10),
+      hour: parseInt(hour, 10),
     };
 
     onSave(updatedBand);
@@ -53,7 +51,7 @@ export default function BandForm({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{triggerButton}</DialogTrigger>
-      <DialogContent className="bg-white sm:max-w-[425px] h-70">
+      <DialogContent className="h-70 bg-white sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>
             {mode === "add" ? "Add New Band" : "Edit Band"}
@@ -73,12 +71,12 @@ export default function BandForm({
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="electricityHour">Electricity Hours</Label>
+              <Label htmlFor="hour">Electricity Hours</Label>
               <Input
-                id="electricityHour"
+                id="hour"
                 type="number"
-                value={electricityHour}
-                onChange={(e) => setElectricityHour(e.target.value)}
+                value={hour}
+                onChange={(e) => sethour(e.target.value)}
                 placeholder="Enter electricity hours"
                 required
                 min="0"
@@ -87,7 +85,7 @@ export default function BandForm({
               />
             </div>
           </div>
-          <div className="flex justify-between gap-4 mt-4">
+          <div className="mt-4 flex justify-between gap-4">
             <Button
               type="button"
               variant="outline"
@@ -96,7 +94,9 @@ export default function BandForm({
             >
               Cancel
             </Button>
-            <Button type="submit" className="bg-[#161CCA] text-white">Save</Button>
+            <Button type="submit" className="bg-[#161CCA] text-white">
+              Save
+            </Button>
           </div>
         </form>
       </DialogContent>
