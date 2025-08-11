@@ -83,8 +83,6 @@ export async function fetchBands(): Promise<
       },
     );
 
-    console.log(response);
-
     if (response.data.responsecode !== "000") {
       return {
         success: false,

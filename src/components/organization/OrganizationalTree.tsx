@@ -8,11 +8,10 @@ import { OrganizationNode } from "./OrganizationNode";
 import { useOrg } from "@/hooks/use-org";
 
 const OrganizationalTree = () => {
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { nodes, isLoading, error: orgError } = useOrg();
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex min-h-[200px] items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-[rgba(22,28,202,1)]" />
