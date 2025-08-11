@@ -63,7 +63,7 @@ export default function ProtectedLayout({
             <main
               className="flex-1 px-8 py-4"
               style={{
-                backgroundImage: `url('/images/blurredbg.jpg')`,
+                backgroundImage: `url('/images/bgframe.jpg')`,
                 backgroundPosition: "center",
                 backgroundRepeat: "no-repeat",
                 backgroundSize: "500px",
