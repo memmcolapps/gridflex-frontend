@@ -19,7 +19,13 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Calendar as CalendarIcon, ChevronDown, Check } from "lucide-react";
+import {
+  Calendar as CalendarIcon,
+  ChevronDown,
+  SquareArrowOutUpRight,
+  Check,
+  Square,
+} from "lucide-react";
 import { format, setHours, setMinutes } from "date-fns";
 import { cn } from "@/lib/utils";
 import {
@@ -488,9 +494,15 @@ export function Profile() {
                 className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-50"
               >
                 <span className="text-sm">Select All</span>
-                {selectedProfileTypes.length === profileTypes.length && (
-                  <Check size={14} className="text-green-600" />
-                )}
+                <div className="flex h-4 w-4 items-center justify-center">
+                  {selectedProfileTypes.length === profileTypes.length ? (
+                    <div className="flex h-4 w-4 items-center justify-center rounded-sm bg-green-100">
+                      <Check size={12} className="text-green-600" />
+                    </div>
+                  ) : (
+                    <Square size={14} className="text-gray-400" />
+                  )}
+                </div>
               </DropdownMenuItem>
 
               {/* Dotted separator */}
@@ -504,9 +516,15 @@ export function Profile() {
                     className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-50"
                   >
                     <span className="text-sm">{type}</span>
-                    {selectedProfileTypes.includes(type) && (
-                      <Check size={14} className="text-green-600" />
-                    )}
+                    <div className="flex h-4 w-4 items-center justify-center">
+                      {selectedProfileTypes.includes(type) ? (
+                        <div className="flex h-4 w-4 items-center justify-center rounded-sm bg-green-100">
+                          <Check size={12} className="text-green-600" />
+                        </div>
+                      ) : (
+                        <Square size={14} className="text-gray-400" />
+                      )}
+                    </div>
                   </DropdownMenuItem>
                   <div className="mx-2 border-t border-dotted border-[#4ECDC4]" />
                 </div>
@@ -545,10 +563,16 @@ export function Profile() {
                 className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-50"
               >
                 <span className="text-sm">Select All</span>
-                {selectedProfiles.length === availableProfileOptions.length &&
-                  availableProfileOptions.length > 0 && (
-                    <Check size={14} className="text-green-600" />
+                <div className="flex h-4 w-4 items-center justify-center">
+                  {selectedProfiles.length === availableProfileOptions.length &&
+                  availableProfileOptions.length > 0 ? (
+                    <div className="flex h-4 w-4 items-center justify-center rounded-sm bg-green-100">
+                      <Check size={12} className="text-green-600" />
+                    </div>
+                  ) : (
+                    <Square size={14} className="text-gray-400" />
                   )}
+                </div>
               </DropdownMenuItem>
 
               {/* Dotted separator */}
@@ -562,9 +586,15 @@ export function Profile() {
                     className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-50"
                   >
                     <span className="text-sm">{profile}</span>
-                    {selectedProfiles.includes(profile) && (
-                      <Check size={14} className="text-green-600" />
-                    )}
+                    <div className="flex h-4 w-4 items-center justify-center">
+                      {selectedProfiles.includes(profile) ? (
+                        <div className="flex h-4 w-4 items-center justify-center rounded-sm bg-green-100">
+                          <Check size={12} className="text-green-600" />
+                        </div>
+                      ) : (
+                        <Square size={14} className="text-gray-400" />
+                      )}
+                    </div>
                   </DropdownMenuItem>
                   <div className="mx-2 border-t border-dotted border-[#4ECDC4]" />
                 </div>
@@ -576,7 +606,7 @@ export function Profile() {
         {/* Run Button */}
         <div className="flex items-end">
           <Button
-            className="bg-[#161CCA] px-8 cursor-pointer font-medium text-white hover:bg-[#161CCA]/90"
+            className="cursor-pointer bg-[#161CCA] px-8 font-medium text-white hover:bg-[#161CCA]/90"
             onClick={handleRun}
           >
             Run
