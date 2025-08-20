@@ -247,7 +247,24 @@ export function Profile() {
       setStartTimeValue(time);
       return;
     }
-    const [hours, minutes] = time.split(":").map((str) => parseInt(str, 10));
+    const timeParts = time.split(":");
+    const hoursStr = timeParts[0];
+    const minutesStr = timeParts[1];
+
+    if (!hoursStr || !minutesStr) {
+      setStartTimeValue(time);
+      return;
+    }
+
+    const hours = parseInt(hoursStr, 10);
+    const minutes = parseInt(minutesStr, 10);
+
+    // Check if parsing was successful
+    if (isNaN(hours) || isNaN(minutes)) {
+      setStartTimeValue(time);
+      return;
+    }
+
     const newSelectedDate = setHours(setMinutes(startDate, minutes), hours);
     setStartDate(newSelectedDate);
     setStartTimeValue(time);
@@ -260,7 +277,24 @@ export function Profile() {
       setEndTimeValue(time);
       return;
     }
-    const [hours, minutes] = time.split(":").map((str) => parseInt(str, 10));
+    const timeParts = time.split(":");
+    const hoursStr = timeParts[0];
+    const minutesStr = timeParts[1];
+
+    if (!hoursStr || !minutesStr) {
+      setEndTimeValue(time);
+      return;
+    }
+
+    const hours = parseInt(hoursStr, 10);
+    const minutes = parseInt(minutesStr, 10);
+
+    // Check if parsing was successful
+    if (isNaN(hours) || isNaN(minutes)) {
+      setEndTimeValue(time);
+      return;
+    }
+
     const newSelectedDate = setHours(setMinutes(endDate, minutes), hours);
     setEndDate(newSelectedDate);
     setEndTimeValue(time);
@@ -272,9 +306,24 @@ export function Profile() {
       setStartDate(date);
       return;
     }
-    const [hours, minutes] = startTimeValue
-      .split(":")
-      .map((str) => parseInt(str, 10));
+    const timeParts = startTimeValue.split(":");
+    const hoursStr = timeParts[0];
+    const minutesStr = timeParts[1];
+
+    if (!hoursStr || !minutesStr) {
+      setStartDate(date);
+      return;
+    }
+
+    const hours = parseInt(hoursStr, 10);
+    const minutes = parseInt(minutesStr, 10);
+
+    // Check if parsing was successful
+    if (isNaN(hours) || isNaN(minutes)) {
+      setStartDate(date);
+      return;
+    }
+
     const newDate = new Date(
       date.getFullYear(),
       date.getMonth(),
@@ -291,9 +340,24 @@ export function Profile() {
       setEndDate(date);
       return;
     }
-    const [hours, minutes] = endTimeValue
-      .split(":")
-      .map((str) => parseInt(str, 10));
+    const timeParts = endTimeValue.split(":");
+    const hoursStr = timeParts[0];
+    const minutesStr = timeParts[1];
+
+    if (!hoursStr || !minutesStr) {
+      setEndDate(date);
+      return;
+    }
+
+    const hours = parseInt(hoursStr, 10);
+    const minutes = parseInt(minutesStr, 10);
+
+    // Check if parsing was successful
+    if (isNaN(hours) || isNaN(minutes)) {
+      setEndDate(date);
+      return;
+    }
+
     const newDate = new Date(
       date.getFullYear(),
       date.getMonth(),
