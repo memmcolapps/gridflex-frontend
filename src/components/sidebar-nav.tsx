@@ -86,13 +86,28 @@ export function SidebarNav() {
           href: "/data-management/meter-management",
           hasSubmenu: true,
           submenuItems: [
-            { title: "Meter Manufacturers", href: "/data-management/meter-management/meter-manufacturer" },
-            { title: "Meter Inventory", href: "/data-management/meter-management/meter-inventory" },
-            { title: "Meters", href: "/data-management/meter-management/meters" },
-            { title: "Assigned Meter", href: "/data-management/meter-management/assign-meter" }
-          ]
+            {
+              title: "Meter Manufacturers",
+              href: "/data-management/meter-management/meter-manufacturer",
+            },
+            {
+              title: "Meter Inventory",
+              href: "/data-management/meter-management/meter-inventory",
+            },
+            {
+              title: "Meters",
+              href: "/data-management/meter-management/meters",
+            },
+            {
+              title: "Assigned Meter",
+              href: "/data-management/meter-management/assign-meter",
+            },
+          ],
         },
-        { title: "Customer Management", href: "/data-management/customer-management" },
+        {
+          title: "Customer Management",
+          href: "/data-management/customer-management",
+        },
         { title: "Tariff", href: "/data-management/tarrif" },
         { title: "Band Management", href: "/data-management/band-management" },
         {
@@ -100,12 +115,24 @@ export function SidebarNav() {
           href: "/data-management/debt-management",
           hasSubmenu: true,
           submenuItems: [
-            { title: "Debt Setting", href: "/data-management/debt-management/debt-settings" },
-            { title: "Debit Adjustment", href: "/data-management/debt-management/debit-adjustment" },
-            { title: "Credit Adjustment", href: "/data-management/debt-management/credit-adjustment" }
-          ]
+            {
+              title: "Debt Setting",
+              href: "/data-management/debt-management/debt-settings",
+            },
+            {
+              title: "Debit Adjustment",
+              href: "/data-management/debt-management/debit-adjustment",
+            },
+            {
+              title: "Credit Adjustment",
+              href: "/data-management/debt-management/credit-adjustment",
+            },
+          ],
         },
-        { title: "Review & Approval", href: "/data-management/reviewandapproval" },
+        {
+          title: "Review & Approval",
+          href: "/data-management/reviewandapproval",
+        },
       ],
     },
     {
@@ -120,20 +147,38 @@ export function SidebarNav() {
           href: "#",
           hasSubmenu: true,
           submenuItems: [
-            { title: "Meter Reading Sheet", href: "/billing/md-prebilling/reading-sheet" },
-            { title: "Meter Consumption", href: "/billing/md-prebilling/meter-consumption" },
-            { title: "Energy-Import", href: "/billing/md-prebilling/energy-import" },
-          ]
+            {
+              title: "Meter Reading Sheet",
+              href: "/billing/md-prebilling/reading-sheet",
+            },
+            {
+              title: "Meter Consumption",
+              href: "/billing/md-prebilling/meter-consumption",
+            },
+            {
+              title: "Energy-Import",
+              href: "/billing/md-prebilling/energy-import",
+            },
+          ],
         },
         {
           title: "Non-MD Prebilling",
           href: "#",
           hasSubmenu: true,
           submenuItems: [
-            { title: "Meter Reading Sheet", href: "/billing/non-md-prebilling/reading-sheet" },
-            { title: "Meter Consumption", href: "/billing/non-md-prebilling/meter-consumption" },
-            { title: "Energy-Import", href: "/billing/non-md-prebilling/energy-import" },
-          ]
+            {
+              title: "Meter Reading Sheet",
+              href: "/billing/non-md-prebilling/reading-sheet",
+            },
+            {
+              title: "Meter Consumption",
+              href: "/billing/non-md-prebilling/meter-consumption",
+            },
+            {
+              title: "Energy-Import",
+              href: "/billing/non-md-prebilling/energy-import",
+            },
+          ],
         },
         { title: "Billing", href: "/billing/billing" },
         { title: "Payments", href: "/billing/payments" },
@@ -146,7 +191,7 @@ export function SidebarNav() {
       hasSubmenu: true,
       submenuItems: [
         { title: "Dashboard", href: "/vending/vending-dashboard" },
-        { title: "Vending", href: "/vending/vending" }
+        { title: "Vending", href: "/vending/vending" },
       ],
     },
     {
@@ -154,7 +199,27 @@ export function SidebarNav() {
       href: "/hes",
       icon: Building2,
       hasSubmenu: true,
-      submenuItems: [],
+      submenuItems: [
+        { title: "Dashboard", href: "/hes/hes-dashboard" },
+        {
+          title: "Communication Report",
+          href: "/hes/hes-communication-report",
+        },
+        { title: "Realtime Data", href: "/hes/hes-realtime-data" },
+        { title: "Profile and Events", href: "/hes/profile-and-events" },
+
+        {
+          title: "Controls and Confirguration",
+          href: "#",
+          hasSubmenu: true,
+          submenuItems: [
+            {
+              title: "Control 1",
+              href: "/hes/hes-controls/control-1",
+            },
+          ],
+        },
+      ],
     },
     {
       title: "User Management",
@@ -163,7 +228,10 @@ export function SidebarNav() {
       hasSubmenu: true,
       submenuItems: [
         { title: "Users", href: "/user-management" },
-        { title: "Group Permission", href: "/user-management/group-permission" }
+        {
+          title: "Group Permission",
+          href: "/user-management/group-permission",
+        },
       ],
     },
     {
@@ -209,7 +277,7 @@ export function SidebarNav() {
         </Link>
       </SidebarHeader>
       <SidebarContent className="flex flex-col h-full">
-        <SidebarMenu className="px-6 py-5">
+        <SidebarMenu className="px-4 py-5">
           {navItems
             .filter((item) => !["Change Log", "About Us"].includes(item.title)) // [!code highlight]
             .map((item) => {
