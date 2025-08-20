@@ -1,6 +1,5 @@
+import React from "react";
 
-
-// src/lib/dashboardData.ts
 export const chartData = [
   { month: "Jan", value: 70 },
   { month: "Feb", value: 60 },
@@ -69,7 +68,6 @@ export const statusCards = [
     iconBgColor: "bg-[rgba(182,186,195,1)]",
     iconColor: "text-[rgb(37,39,44)]",
   },
-  
 ];
 
 export const manufacturerData = {
@@ -105,6 +103,70 @@ export const manufacturerData = {
     "#DDBDD5",
   ],
 };
+
+interface HesStatusCard {
+  title: string;
+  value: string;
+  status: string;
+  url: string;
+  bgColor: string;
+  borderColor: string;
+  textColor: string;
+  icon: string; // Use string to reference icon names
+  iconBgColor: string;
+  iconColor: string;
+}
+
+export const hesStatusCards: HesStatusCard[] = [
+  {
+    title: "Total Smart Meters",
+    value: "4,200",
+    status: "",
+    url: "",
+    bgColor: "bg-[#DBE6FE]",
+    borderColor: "border-[#DBE6FE]",
+    textColor: "text-black",
+    icon: "CircleCheckBig", // Icon name as string
+    iconBgColor: "bg-[#BFD3FE] rounded-full",
+    iconColor: "text-blue-500",
+  },
+  {
+    title: "Online",
+    value: "1,200",
+    status: "",
+    url: "",
+    bgColor: "bg-[#DCFCE8]",
+    borderColor: "border-[#DCFCE8]",
+    textColor: "text-black",
+    icon: "CircleCheck", // Icon name as string
+    iconBgColor: "bg-[rgba(134,239,172,0.5)]",
+    iconColor: "text-green-500",
+  },
+  {
+    title: "Offline",
+    value: "400",
+    status: "",
+    url: "",
+    bgColor: "bg-[#FEF2C3]",
+    borderColor: "border-[#FEF2C3]",
+    textColor: "text-black",
+    icon: "Ban", // Icon name as string
+    iconBgColor: "bg-[#FEE78A]",
+    iconColor: "text-yellow-500",
+  },
+  {
+    title: "Failed Commands",
+    value: "20",
+    status: "",
+    url: "",
+    bgColor: "bg-[#D8DBDF]",
+    borderColor: "border-[#D8DBDF]",
+    textColor: "text-black",
+    icon: "CircleXIcon", // Icon name as string
+    iconBgColor: "bg-[#B6BAC3]",
+    iconColor: "text-gray-500",
+  },
+];
 
 export const meterStatusData = {
   series: [25, 50, 10, 15],
