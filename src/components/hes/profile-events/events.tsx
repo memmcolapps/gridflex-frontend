@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, ChangeEventHandler } from "react";
+import { useState, useEffect } from "react";
+import type { ChangeEventHandler } from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -22,7 +23,6 @@ import { Label } from "@/components/ui/label";
 import {
   Calendar as CalendarIcon,
   ChevronDown,
-  SquareArrowOutUpRight,
   Check,
   Square,
 } from "lucide-react";
@@ -247,7 +247,7 @@ export function Events() {
 
     // Get all unique event options from selected event types
     const allOptions = selectedEventTypes.flatMap(
-      (type) => eventOptionsByType[type] || [],
+      (type) => eventOptionsByType[type] ?? [],
     );
     const uniqueOptions = [...new Set(allOptions)];
     setAvailableEventOptions(uniqueOptions);
@@ -462,11 +462,6 @@ export function Events() {
 
     // For now, just set mock data
     setTableData(mockEventData);
-  };
-
-  const handleExport = () => {
-    // Handle export functionality
-    console.log("Exporting data...");
   };
 
   const totalRows = tableData.length;
@@ -825,7 +820,7 @@ export function Events() {
                   colSpan={6}
                   className="py-8 text-center text-sm text-gray-500"
                 >
-                  No data available. Click "Run" to fetch events.
+                  No data available. Click &ldquo;Run&rdquo; to fetch events.
                 </TableCell>
               </TableRow>
             )}

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, ChangeEventHandler } from "react";
+import { useState, useEffect } from "react";
+import type { ChangeEventHandler } from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -22,7 +23,6 @@ import { Label } from "@/components/ui/label";
 import {
   Calendar as CalendarIcon,
   ChevronDown,
-  SquareArrowOutUpRight,
   Check,
   Square,
 } from "lucide-react";
@@ -165,7 +165,7 @@ export function Profile() {
 
     // Get all unique profile options from selected profile types
     const allOptions = selectedProfileTypes.flatMap(
-      (type) => profileOptionsByType[type] || [],
+      (type) => profileOptionsByType[type] ?? [],
     );
     const uniqueOptions = [...new Set(allOptions)];
     setAvailableProfileOptions(uniqueOptions);
@@ -744,7 +744,7 @@ export function Profile() {
                   colSpan={7}
                   className="py-8 text-center text-sm text-gray-500"
                 >
-                  No data available. Click "Run" to fetch profiles.
+                  No data available. Click &ldquo;Run&rdquo; to fetch profiles.
                 </TableCell>
               </TableRow>
             )}
