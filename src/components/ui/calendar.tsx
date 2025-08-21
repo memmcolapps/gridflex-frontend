@@ -1,8 +1,9 @@
+import * as React from "react";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { differenceInCalendarDays } from "date-fns";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import * as React from "react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import {
   DayPicker,
   labelNext,
@@ -10,6 +11,29 @@ import {
   useDayPicker,
   type DayPickerProps,
 } from "react-day-picker";
+import {
+  format,
+  startOfMonth,
+  endOfMonth,
+  startOfWeek,
+  endOfWeek,
+  addDays,
+  isSameMonth,
+  isSameDay,
+  addMonths,
+  subMonths,
+  setHours,
+  setMinutes,
+} from "date-fns";
+
+interface SimplifiedCalendarProps {
+  selected?: Date;
+  timeValue?: string;
+  onSelect?: (date: Date | undefined) => void;
+  onTimeChange?: (time: string) => void;
+  onClose?: () => void;
+  className?: string;
+}
 
 export type CalendarProps = DayPickerProps & {
   /**
@@ -319,7 +343,15 @@ function Nav({
     }
     goToMonth(previousMonth);
     onPrevClick?.(previousMonth);
-  }, [previousMonth, goToMonth, displayYears.from, displayYears.to, navView, onPrevClick, setDisplayYears]);
+  }, [
+    previousMonth,
+    goToMonth,
+    displayYears.from,
+    displayYears.to,
+    navView,
+    onPrevClick,
+    setDisplayYears,
+  ]);
 
   const handleNextClick = React.useCallback(() => {
     if (!nextMonth) return;
@@ -339,7 +371,15 @@ function Nav({
     }
     goToMonth(nextMonth);
     onNextClick?.(nextMonth);
-  }, [goToMonth, nextMonth, displayYears.from, displayYears.to, navView, onNextClick, setDisplayYears]);
+  }, [
+    goToMonth,
+    nextMonth,
+    displayYears.from,
+    displayYears.to,
+    navView,
+    onNextClick,
+    setDisplayYears,
+  ]);
   return (
     <nav className={cn("flex items-center", className)}>
       <Button
@@ -511,3 +551,320 @@ function YearGrid({
 }
 
 export { Calendar };
+
+
+
+export function SimplifiedCalendar({
+  selected,
+  timeValue: externalTimeValue,
+  onSelect,
+  onTimeChange,
+  onClose,
+  className,
+}: SimplifiedCalendarProps) {
+  const [currentMonth, setCurrentMonth] = React.useState(
+    selected || new Date(),
+  );
+
+  // Use external time value or default
+  const timeValue = externalTimeValue || "00:00";
+
+  const [dateValue, setDateValue] = React.useState(
+    selected
+      ? format(selected, "dd/MM/yyyy")
+      : format(new Date(), "dd/MM/yyyy"),
+  );
+
+  // Update internal state when selected prop changes
+  React.useEffect(() => {
+    if (selected) {
+      setCurrentMonth(selected);
+      setDateValue(format(selected, "dd/MM/yyyy"));
+    }
+  }, [selected]);
+
+  const monthStart = startOfMonth(currentMonth);
+  const monthEnd = endOfMonth(monthStart);
+  const startDate = startOfWeek(monthStart);
+  const endDate = endOfWeek(monthEnd);
+
+  const dateFormat = "d";
+  const rows = [];
+  let days = [];
+  let day = startDate;
+
+  // Create calendar grid
+  while (day <= endDate) {
+    for (let i = 0; i < 7; i++) {
+      const cloneDay = day;
+      days.push(
+        <button
+          key={day.toString()}
+          className={cn(
+            "h-8 w-8 rounded p-0 font-normal hover:bg-gray-100",
+            !isSameMonth(day, monthStart) && "text-gray-400",
+            isSameDay(day, selected || new Date()) &&
+              "bg-blue-600 text-white hover:bg-blue-700",
+            isSameDay(day, new Date()) &&
+              !isSameDay(day, selected || new Date()) &&
+              "bg-gray-100",
+          )}
+          onClick={() => handleDayClick(cloneDay)}
+          type="button"
+        >
+          <span className="text-sm">{format(day, dateFormat)}</span>
+        </button>,
+      );
+      day = addDays(day, 1);
+    }
+    rows.push(
+      <div className="flex w-full justify-between" key={day.toString()}>
+        {days}
+      </div>,
+    );
+    days = [];
+  }
+
+  const handleDayClick = (day: Date) => {
+    // Parse time and apply to selected date
+    const timeParts = timeValue.split(":");
+    const hoursStr = timeParts[0];
+    const minutesStr = timeParts[1];
+
+    let newDate = new Date(day);
+    if (hoursStr && minutesStr) {
+      const hours = parseInt(hoursStr, 10);
+      const minutes = parseInt(minutesStr, 10);
+
+      if (!isNaN(hours) && !isNaN(minutes)) {
+        newDate = setHours(setMinutes(day, minutes), hours);
+      }
+    }
+
+    setDateValue(format(day, "dd/MM/yyyy"));
+    onSelect?.(newDate);
+  };
+
+  const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const time = e.target.value;
+    onTimeChange?.(time);
+
+    // Apply time to the currently selected date or current date
+    const baseDate = selected || new Date();
+    const timeParts = time.split(":");
+    const hoursStr = timeParts[0];
+    const minutesStr = timeParts[1];
+
+    if (hoursStr && minutesStr) {
+      const hours = parseInt(hoursStr, 10);
+      const minutes = parseInt(minutesStr, 10);
+
+      if (!isNaN(hours) && !isNaN(minutes)) {
+        const newDate = setHours(setMinutes(baseDate, minutes), hours);
+        onSelect?.(newDate);
+      }
+    }
+  };
+
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newDateValue = e.target.value;
+    const oldDateValue = dateValue;
+
+    // Allow the user to delete characters without triggering auto-formatting
+    if (newDateValue.length < oldDateValue.length) {
+      setDateValue(newDateValue);
+      return;
+    }
+
+    let dateStr = newDateValue.replace(/[^\d/]/g, "");
+
+    // Add slashes automatically after two digits for day and month
+    if (dateStr.length === 2 && !dateStr.includes("/")) {
+      dateStr = dateStr + "/";
+    } else if (dateStr.length === 5 && dateStr.split("/").length === 2) {
+      dateStr = dateStr + "/";
+    }
+
+    // Limit to DD/MM/YYYY format
+    if (dateStr.length > 10) {
+      dateStr = dateStr.substring(0, 10);
+    }
+
+    setDateValue(dateStr);
+
+    // Only process valid date format (DD/MM/YYYY)
+    if (dateStr.length === 10) {
+      const dateParts = dateStr.split("/");
+      if (dateParts.length === 3) {
+        const dayStr = dateParts[0];
+        const monthStr = dateParts[1];
+        const yearStr = dateParts[2];
+
+        if (dayStr && monthStr && yearStr) {
+          const day = parseInt(dayStr, 10);
+          const month = parseInt(monthStr, 10) - 1; // Month is 0-indexed
+          const year = parseInt(yearStr, 10);
+
+          if (
+            !isNaN(day) &&
+            !isNaN(month) &&
+            !isNaN(year) &&
+            day >= 1 &&
+            day <= 31 &&
+            month >= 0 &&
+            month <= 11 &&
+            year >= 1900
+          ) {
+            const newDate = new Date(year, month, day);
+
+            // Check if the date is valid
+            if (
+              newDate.getDate() === day &&
+              newDate.getMonth() === month &&
+              newDate.getFullYear() === year
+            ) {
+              setCurrentMonth(newDate);
+
+              // Apply current time
+              const timeParts = timeValue.split(":");
+              const hoursStr = timeParts[0];
+              const minutesStr = timeParts[1];
+
+              if (hoursStr && minutesStr) {
+                const hours = parseInt(hoursStr, 10);
+                const minutes = parseInt(minutesStr, 10);
+
+                if (!isNaN(hours) && !isNaN(minutes)) {
+                  const finalDate = setHours(
+                    setMinutes(newDate, minutes),
+                    hours,
+                  );
+                  onSelect?.(finalDate);
+                } else {
+                  onSelect?.(newDate);
+                }
+              } else {
+                onSelect?.(newDate);
+              }
+            }
+          }
+        }
+      }
+    }
+  };
+
+  const handlePreviousMonth = () => {
+    setCurrentMonth(subMonths(currentMonth, 1));
+  };
+
+  const handleNextMonth = () => {
+    setCurrentMonth(addMonths(currentMonth, 1));
+  };
+
+  const handleDone = () => {
+    // Apply the final time to the selected date before closing
+    if (selected && timeValue) {
+      const timeParts = timeValue.split(":");
+      const hoursStr = timeParts[0];
+      const minutesStr = timeParts[1];
+
+      if (hoursStr && minutesStr) {
+        const hours = parseInt(hoursStr, 10);
+        const minutes = parseInt(minutesStr, 10);
+
+        if (!isNaN(hours) && !isNaN(minutes)) {
+          const finalDate = setHours(setMinutes(selected, minutes), hours);
+          onSelect?.(finalDate);
+        }
+      }
+    }
+    onClose?.();
+  };
+
+  return (
+    <div
+      className={cn(
+        "w-[320px] rounded-lg border bg-white p-4 shadow-lg",
+        className,
+      )}
+    >
+      {/* Header with close button */}
+      <div className="mb-3 flex justify-end">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onClose}
+          className="h-6 w-6 p-0 hover:bg-gray-100"
+        >
+          <X size={14} />
+        </Button>
+      </div>
+
+      {/* Date and Time inputs */}
+      <div className="mb-4 flex gap-2 rounded border border-gray-200 bg-gray-50 p-2">
+        <Input
+          type="text"
+          value={dateValue}
+          onChange={handleDateChange}
+          placeholder="01/04/2025"
+          maxLength={10}
+          className="h-7 min-w-0 flex-1 px-2 py-1 text-center text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+        />
+        <Input
+          type="time"
+          value={timeValue}
+          onChange={handleTimeChange}
+          className="h-7 w-20 min-w-0 px-2 py-1 text-center text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+        />
+      </div>
+
+      {/* Month navigation */}
+      <div className="mb-4 flex items-center justify-between">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handlePreviousMonth}
+          className="h-8 w-8 p-0"
+        >
+          <ChevronLeft size={16} />
+        </Button>
+
+        <h2 className="text-base font-semibold">
+          {format(currentMonth, "MMMM yyyy")}
+        </h2>
+
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleNextMonth}
+          className="h-8 w-8 p-0"
+        >
+          <ChevronRight size={16} />
+        </Button>
+      </div>
+
+      {/* Weekday headers */}
+      <div className="mb-2 flex justify-between">
+        {["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"].map((day) => (
+          <div
+            key={day}
+            className="w-8 text-center text-xs font-medium text-gray-500"
+          >
+            {day}
+          </div>
+        ))}
+      </div>
+
+      {/* Calendar grid */}
+      <div className="mb-4 space-y-1">{rows}</div>
+
+      {/* Done button */}
+      <Button
+        onClick={handleDone}
+        className="w-full bg-blue-600 text-white hover:bg-blue-700"
+      >
+        Done
+      </Button>
+    </div>
+  );
+}
