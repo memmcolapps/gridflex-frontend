@@ -563,11 +563,11 @@ export function SimplifiedCalendar({
   className,
 }: SimplifiedCalendarProps) {
   const [currentMonth, setCurrentMonth] = React.useState(
-    selected || new Date(),
+    selected ?? new Date(),
   );
 
   // Use external time value or default
-  const timeValue = externalTimeValue || "00:00";
+  const timeValue = externalTimeValue ?? "00:00";
 
   const [dateValue, setDateValue] = React.useState(
     selected
@@ -603,10 +603,10 @@ export function SimplifiedCalendar({
           className={cn(
             "h-8 w-8 rounded p-0 font-normal hover:bg-gray-100",
             !isSameMonth(day, monthStart) && "text-gray-400",
-            isSameDay(day, selected || new Date()) &&
+            isSameDay(day, selected ?? new Date()) &&
               "bg-blue-600 text-white hover:bg-blue-700",
             isSameDay(day, new Date()) &&
-              !isSameDay(day, selected || new Date()) &&
+              !isSameDay(day, selected ?? new Date()) &&
               "bg-gray-100",
           )}
           onClick={() => handleDayClick(cloneDay)}
@@ -650,7 +650,7 @@ export function SimplifiedCalendar({
     onTimeChange?.(time);
 
     // Apply time to the currently selected date or current date
-    const baseDate = selected || new Date();
+    const baseDate = selected ?? new Date();
     const timeParts = time.split(":");
     const hoursStr = timeParts[0];
     const minutesStr = timeParts[1];
