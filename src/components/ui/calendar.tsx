@@ -814,7 +814,7 @@ export function SimplifiedCalendar({
           type="time"
           value={timeValue}
           onChange={handleTimeChange}
-          className="h-7 w-20 min-w-0 px-2 py-1 text-center text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+          className="h-7 w-30 min-w-0 px-2 py-1 text-center text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
         />
       </div>
 
