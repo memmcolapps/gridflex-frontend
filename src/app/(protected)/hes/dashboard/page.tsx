@@ -36,12 +36,13 @@ const pieData: PieData[] = [
 ];
 
 export default function HESDashboardPage() {
-    const iconMap: { [key: string]: React.ReactNode } = {
+    const iconMap: Record<string, React.ReactNode> = {
         CircleCheckBig: <CircleCheckBig size={24} className="text-[#161CCA]" />,
         CircleCheck: <CircleCheck size={24} className="text-[#22C55E]" />,
         Ban: <Ban size={24} className="text-[#EBA13E]" />,
         CircleXIcon: <CircleXIcon size={24} className="text-[#25272C]" />,
     };
+
 
     const [selectedBand, setSelectedBand] = useState("Band");
     const [selectedYear, setSelectedYear] = useState("Year");
@@ -80,7 +81,7 @@ export default function HESDashboardPage() {
                 ))}
             </div>
             <div className="flex flex-col md:flex-row gap-4 mt-6 h-fit w-full">
-                <ChartCard title="Real-time Communication Logs" chartType="line" data={lineData}/>
+                <ChartCard title="Real-time Communication Logs" chartType="line" data={lineData} />
                 <ChartCard title="Data Collection Scheduler Rate" chartType="pie" data={pieData} />
             </div>
             <CommunicationReportTable />

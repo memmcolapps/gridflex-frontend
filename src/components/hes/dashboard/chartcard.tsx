@@ -14,9 +14,9 @@ import {
   PieChart,
   Pie,
   Cell,
-  TooltipProps,
 } from "recharts";
-import { Props as DefaultLegendContentProps } from "recharts/types/component/DefaultLegendContent";
+import type { TooltipProps } from "recharts";
+import type { Props as DefaultLegendContentProps } from "recharts/types/component/DefaultLegendContent";
 
 // Define types for the data structures
 interface LineData {
