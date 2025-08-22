@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import type { ChangeEventHandler } from "react";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
+import { Calendar, SimplifiedCalendar } from "@/components/ui/calendar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -137,6 +137,8 @@ const profileOptionsByType: Record<string, string[]> = {
 };
 
 export function Profile() {
+  const [startDateOpen, setStartDateOpen] = useState(false);
+  const [endDateOpen, setEndDateOpen] = useState(false);
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
   const [startTimeValue, setStartTimeValue] = useState<string>("00:00");
@@ -409,7 +411,7 @@ export function Profile() {
           <Label htmlFor="start-date" className="text-sm font-medium">
             Start Date <span className="text-red-500">*</span>
           </Label>
-          <Popover>
+          <Popover open={startDateOpen} onOpenChange={setStartDateOpen}>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
@@ -420,39 +422,20 @@ export function Profile() {
               >
                 <CalendarIcon className="mr-2" size={16} />
                 {startDate
-                  ? format(startDate, "dd-MM-yyyy HH:mm:ss")
+                  ? format(startDate, "dd-MM-yyyy HH:mm")
                   : "Select Date"}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto bg-white p-0" align="start">
-              <div className="space-y-3 p-3">
-                <div>
-                  <Label
-                    htmlFor="start-time"
-                    className="text-xs font-medium text-gray-600"
-                  >
-                    Time
-                  </Label>
-                  <Input
-                    id="start-time"
-                    type="time"
-                    value={startTimeValue}
-                    onChange={handleStartTimeChange}
-                    className="mt-1 h-8 border-gray-300 text-sm"
-                  />
-                </div>
-                <Calendar
-                  mode="single"
-                  selected={startDate}
-                  onSelect={handleStartDaySelect}
-                  className="bg-white"
-                />
-                {startDate && (
-                  <div className="rounded bg-gray-50 px-2 py-1 text-xs text-gray-600">
-                    {startDate.toLocaleString()}
-                  </div>
-                )}
-              </div>
+              <SimplifiedCalendar
+                selected={startDate}
+                timeValue={startTimeValue}
+                onSelect={setStartDate}
+                onTimeChange={setStartTimeValue}
+                onClose={() => {
+                  setStartDateOpen(false);
+                }}
+              />
             </PopoverContent>
           </Popover>
         </div>
@@ -467,7 +450,7 @@ export function Profile() {
           <Label htmlFor="end-date" className="text-sm font-medium">
             End Date <span className="text-red-500">*</span>
           </Label>
-          <Popover>
+          <Popover open={endDateOpen} onOpenChange={setEndDateOpen}>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
@@ -477,40 +460,19 @@ export function Profile() {
                 )}
               >
                 <CalendarIcon className="mr-2" size={16} />
-                {endDate
-                  ? format(endDate, "dd-MM-yyyy HH:mm:ss")
-                  : "Select Date"}
+                {endDate ? format(endDate, "dd-MM-yyyy HH:mm") : "Select Date"}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto bg-white p-0" align="start">
-              <div className="space-y-3 p-3">
-                <div>
-                  <Label
-                    htmlFor="end-time"
-                    className="text-xs font-medium text-gray-600"
-                  >
-                    Time
-                  </Label>
-                  <Input
-                    id="end-time"
-                    type="time"
-                    value={endTimeValue}
-                    onChange={handleEndTimeChange}
-                    className="mt-1 h-8 border-gray-300 text-sm"
-                  />
-                </div>
-                <Calendar
-                  mode="single"
-                  selected={endDate}
-                  onSelect={handleEndDaySelect}
-                  className="bg-white"
-                />
-                {endDate && (
-                  <div className="rounded bg-gray-50 px-2 py-1 text-xs text-gray-600">
-                    {endDate.toLocaleString()}
-                  </div>
-                )}
-              </div>
+              <SimplifiedCalendar
+                selected={endDate}
+                timeValue={endTimeValue}
+                onSelect={setEndDate}
+                onTimeChange={setEndTimeValue}
+                onClose={() => {
+                  setEndDateOpen(false);
+                }}
+              />
             </PopoverContent>
           </Popover>
         </div>
