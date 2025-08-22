@@ -14,7 +14,9 @@ import {
   PieChart,
   Pie,
   Cell,
+  TooltipProps,
 } from "recharts";
+import { Props as DefaultLegendContentProps } from "recharts/types/component/DefaultLegendContent";
 
 // Define types for the data structures
 interface LineData {
@@ -25,6 +27,7 @@ interface LineData {
 interface PieData {
   name: string;
   value: number;
+  fill?: string; // Optional for pie segment color
 }
 
 // Sample data
@@ -38,8 +41,8 @@ const lineData: LineData[] = [
 ];
 
 const pieData: PieData[] = [
-  { name: "Active Schedule", value: 95 },
-  { name: "Paused Schedule", value: 5 },
+  { name: "Active Schedule", value: 95, fill: "#10B981" },
+  { name: "Paused Schedule", value: 5, fill: "#C86900" },
 ];
 
 const PIE_COLORS = ["#10B981", "#C86900"]; // Emerald green, darker orange
@@ -50,30 +53,41 @@ interface ChartCardProps {
   data?: LineData[] | PieData[];
 }
 
+// Define type for legend payload entries
+interface LegendPayload {
+  value: string;
+  type?: string;
+  id?: string;
+  color?: string;
+}
+
 // Custom tooltip renderer
-const renderTooltip = ({ active, payload }: any) => {
-  if (active && payload && payload.length) {
-    const data = payload[0].payload;
-    return (
-      <div
-        style={{
-          backgroundColor: data.fill, // Match the pie segment color
-          color: "#FFFFFF", // White text
-          padding: "8px",
-          borderRadius: "4px",
-          fontSize: 12,
-          boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-        }}
-      >
-        <p>{`${data.name}: ${data.value}%`}</p>
-      </div>
-    );
+const renderTooltip = ({ active, payload }: TooltipProps<number, string>) => {
+  if (!active || !payload?.length || !payload[0]?.payload) {
+    return null;
   }
-  return null;
+  const data = payload[0].payload as PieData | LineData;
+  const label = "name" in data ? data.name : ("hour" in data ? data.hour : "Unknown");
+  const backgroundColor = "fill" in data ? data.fill : "#3b82f6";
+
+  return (
+    <div
+      style={{
+        backgroundColor, // Use fill for pie, fallback for line
+        color: "#FFFFFF",
+        padding: "8px",
+        borderRadius: "4px",
+        fontSize: 12,
+        boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+      }}
+    >
+      <p>{`${label}: ${data.value}%`}</p>
+    </div>
+  );
 };
 
 // Custom legend renderer
-const renderCustomLegend = ({ payload }: any) => {
+const renderCustomLegend = ({ payload }: DefaultLegendContentProps): React.ReactNode => {
   return (
     <ul
       style={{
@@ -82,10 +96,10 @@ const renderCustomLegend = ({ payload }: any) => {
         margin: 0,
         display: "flex",
         flexDirection: "column",
-        alignItems: "flex-start", // Align dots to the left for vertical alignment
+        alignItems: "flex-start",
       }}
     >
-      {payload?.map((entry: any, index: number) => (
+      {payload?.map((entry: LegendPayload, index: number) => (
         <li
           key={`item-${index}`}
           style={{
@@ -102,9 +116,9 @@ const renderCustomLegend = ({ payload }: any) => {
               width: 8,
               height: 8,
               borderRadius: "50%",
-              backgroundColor: PIE_COLORS[index % PIE_COLORS.length], // Match pie colors
-              marginRight: 8, // Consistent gap between dot and text
-              flexShrink: 0, // Prevent dot from resizing
+              backgroundColor: PIE_COLORS[index % PIE_COLORS.length],
+              marginRight: 8,
+              flexShrink: 0,
             }}
           />
           <span>{entry.value}</span>
@@ -113,6 +127,7 @@ const renderCustomLegend = ({ payload }: any) => {
     </ul>
   );
 };
+
 const ChartCard = ({ title, chartType, data }: ChartCardProps) => {
   const chartData = data ?? (chartType === "line" ? lineData : pieData);
   console.log("Chart Type:", chartType, "Data:", chartData); // Debug
@@ -120,60 +135,67 @@ const ChartCard = ({ title, chartType, data }: ChartCardProps) => {
   return (
     <Card className="w-full p-4 bg-white shadow-sm rounded-lg mt-4 overflow-visible border border-gray-500">
       <CardHeader>
-        <CardTitle className="text-black font-light" style={{ fontSize: "14px" }}>
+        <CardTitle className="text-gray-400 font-light" style={{ fontSize: "14px" }}>
           {title}
         </CardTitle>
       </CardHeader>
       <CardContent className="h-60">
-
-        <ResponsiveContainer width="100%" height="100%" style={{ position: "relative" }}>
-          {chartType === "line" ? (
-            <LineChart
-              data={chartData as LineData[]}
-              margin={{ top: 5, right: 5, left: -20, bottom: 5 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" vertical={false} />
-              <XAxis dataKey="hour" stroke="#888" tick={{ fontSize: 12 }} />
-              <YAxis
-                domain={[0, 100]}
-                ticks={[0, 20, 40, 60, 80, 100]}
-                stroke="#888"
-                tick={{ fontSize: 12 }}
-              />
-              <Tooltip />
-              <Line
-                type="monotone"
-                dataKey="value"
-                stroke="#3b82f6"
-                strokeWidth={2}
-                dot={{ r: 2, fill: "#FF0000" }} // Smaller red dots
-                activeDot={{ r: 4, fill: "#FF0000" }} // Smaller active red dots
-              />
-            </LineChart>
-          ) : chartType === "pie" ? (
-            <PieChart>
-              <Pie
-                data={chartData as PieData[]}
-                cx="50%"
-                cy="50%"
-                innerRadius={50}
-                outerRadius={90}
-                paddingAngle={0}
-                dataKey="value"
-
-                strokeWidth={2}
+        <div className="border border-gray-200 rounded-lg h-full">
+          <ResponsiveContainer width="100%" height="100%" style={{ position: "relative" }}>
+            {chartType === "line" ? (
+              <LineChart
+                data={chartData as LineData[]}
+                margin={{ top: 5, right: 5, left: -20, bottom: 5 }}
               >
-                {(chartData as PieData[]).map((_, index: number) => (
-                  <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip content={renderTooltip} />
-              <Legend content={renderCustomLegend} layout="vertical" align="right" verticalAlign="top" />
-            </PieChart>
-          ) : (
-            <div>Invalid chart type</div>
-          )}
-        </ResponsiveContainer>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" vertical={false} />
+                <XAxis dataKey="hour" stroke="#888" tick={{ fontSize: 12 }} />
+                <YAxis
+                  domain={[0, 100]}
+                  ticks={[0, 20, 40, 60, 80, 100]}
+                  stroke="#888"
+                  tick={{ fontSize: 12 }}
+                />
+                <Tooltip content={renderTooltip} />
+                <Line
+                  type="monotone"
+                  dataKey="value"
+                  stroke="#3b82f6"
+                  strokeWidth={2}
+                  dot={{ r: 2, fill: "#FF0000" }}
+                  activeDot={{ r: 4, fill: "#FF0000" }}
+                />
+              </LineChart>
+            ) : chartType === "pie" ? (
+              <PieChart>
+                <Pie
+                  data={chartData as PieData[]}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={50}
+                  outerRadius={90}
+                  paddingAngle={0}
+                  dataKey="value"
+                  stroke="#FF0000"
+                  strokeWidth={2}
+                >
+                  {(chartData as PieData[]).map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill ?? PIE_COLORS[index % PIE_COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip content={renderTooltip} />
+                <Legend
+                  content={renderCustomLegend}
+                  layout="vertical"
+                  align="right"
+                  verticalAlign="top"
+                  wrapperStyle={{ paddingLeft: 20 }}
+                />
+              </PieChart>
+            ) : (
+              <div>Invalid chart type</div>
+            )}
+          </ResponsiveContainer>
+        </div>
       </CardContent>
     </Card>
   );
