@@ -72,7 +72,7 @@ export default function HESDashboardPage() {
                         title={card.title}
                         value={card.value}
                         status={card.status}
-                        icon={iconMap[card.icon] || null}
+                        icon={iconMap[card.icon] ?? null}
                         bgColor={card.bgColor}
                         borderColor={card.borderColor}
                         iconBgColor={card.iconBgColor}

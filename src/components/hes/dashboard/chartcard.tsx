@@ -114,7 +114,7 @@ const renderCustomLegend = ({ payload }: any) => {
   );
 };
 const ChartCard = ({ title, chartType, data }: ChartCardProps) => {
-  const chartData = data || (chartType === "line" ? lineData : pieData);
+  const chartData = data ?? (chartType === "line" ? lineData : pieData);
   console.log("Chart Type:", chartType, "Data:", chartData); // Debug
 
   return (
