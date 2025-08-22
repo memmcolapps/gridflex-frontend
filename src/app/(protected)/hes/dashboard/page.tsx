@@ -79,8 +79,8 @@ export default function HESDashboardPage() {
                     />
                 ))}
             </div>
-            <div className="flex flex-col md:flex-row gap-4 mt-6 h-fit w-full border-gray-500">
-                <ChartCard title="Real-time Communication Logs" chartType="line" data={lineData} />
+            <div className="flex flex-col md:flex-row gap-4 mt-6 h-fit w-full">
+                <ChartCard title="Real-time Communication Logs" chartType="line" data={lineData}/>
                 <ChartCard title="Data Collection Scheduler Rate" chartType="pie" data={pieData} />
             </div>
             <CommunicationReportTable />

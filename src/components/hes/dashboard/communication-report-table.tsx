@@ -9,6 +9,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { getStatusStyle } from "@/components/status-style";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { CircleCheck, MoreVertical, Pencil, Send } from "lucide-react";
 
 const CommunicationReportTable = () => {
   const data = [
@@ -19,18 +22,18 @@ const CommunicationReportTable = () => {
   ];
 
   return (
-    <Card className="w-full p-4 bg-white shadow-sm rounded-lg mt-4">
+    <Card className="w-full p-4 bg-white shadow-sm rounded-lg mt-4 border border-gray-200">
       <CardHeader>
         <CardTitle className="text-sm font-medium text-gray-600">Communication Report</CardTitle>
       </CardHeader>
       <CardContent>
-        <Table>
+        <Table className="table-fixed w-full" >
           <TableHeader>
             <TableRow>
               <TableHead className="text-left">S/N</TableHead>
               <TableHead className="text-left">Meter No.</TableHead>
               <TableHead className="text-left">Meter Model</TableHead>
-              <TableHead className="text-left">Status</TableHead>
+              <TableHead className="text-left w-[120px]">Status</TableHead> {/* same width across rows */}
               <TableHead className="text-left">Last Sync</TableHead>
               <TableHead className="text-left">Tamper State</TableHead>
               <TableHead className="text-left">Tamper Sync</TableHead>
@@ -39,24 +42,54 @@ const CommunicationReportTable = () => {
               <TableHead className="text-left">Actions</TableHead>
             </TableRow>
           </TableHeader>
+
           <TableBody>
             {data.map((row) => (
               <TableRow key={row.sNo}>
                 <TableCell>{row.sNo}</TableCell>
                 <TableCell>{row.meterNo}</TableCell>
                 <TableCell>{row.model}</TableCell>
-                <TableCell className={row.status === "Online" ? "text-green-600" : "text-red-600"}>{row.status}</TableCell>
+                <TableCell  className="text-left w-[120px]">
+                  <div className="flex items-center">
+                    <span className={getStatusStyle(row.status)}>
+                      {row.status}
+                    </span>
+                  </div>
+                </TableCell>
                 <TableCell>{row.lastSync}</TableCell>
                 <TableCell>{row.tamperState}</TableCell>
                 <TableCell>{row.tamperSync}</TableCell>
-                <TableCell className={row.relayControl === "Connected" ? "text-green-600" : "text-orange-600"}>{row.relayControl}</TableCell>
+                <TableCell className="w-[120px]"> {/* match width with header */}
+                  <div className="flex items-center">
+                    <span className={getStatusStyle(row.relayControl)}>
+                      {row.relayControl}
+                    </span>
+                  </div>
+                </TableCell>
                 <TableCell>{row.relaySync}</TableCell>
                 <TableCell>
-                  <Button variant="ghost" size="sm" className="text-blue-500">...</Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="default" size="sm" className="border-gray-500 focus:ring-gray-500/0 cursor-pointer" >
+                        <MoreVertical size={16} className="text-gray-500 border-gray-500" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="center" className="w-48 bg-white shadow-lg">
+                      <DropdownMenuItem className="flex items-center gap-2">
+                        <CircleCheck size={14} className="text-black" />
+                        <span className="text-sm lg:text-base text-black">Connect Relay</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="flex items-center gap-2">
+                        <Send size={14} className="text-black" />
+                        <span className="text-sm lg:text-base text-black">Send Token</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
+
         </Table>
       </CardContent>
     </Card>
