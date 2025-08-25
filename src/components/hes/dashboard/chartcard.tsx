@@ -135,7 +135,7 @@ const ChartCard = ({ title, chartType, data }: ChartCardProps) => {
   return (
     <Card className="w-full p-4 bg-white shadow-sm rounded-lg mt-4 overflow-visible border border-gray-200">
       <CardHeader>
-        <CardTitle className="text-gray-400 font-light" style={{ fontSize: "14px" }}>
+        <CardTitle className="text-gray-800 font-semibold" style={{ fontSize: "14px" }}>
           {title}
         </CardTitle>
       </CardHeader>

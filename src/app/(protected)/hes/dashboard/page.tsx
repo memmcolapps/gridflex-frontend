@@ -4,7 +4,7 @@ import OverviewCard from "@/components/hes/dashboard/overviewcard";
 import ChartCard from "@/components/hes/dashboard/chartcard";
 import CommunicationReportTable from "@/components/hes/dashboard/communication-report-table";
 import { hesStatusCards } from "@/lib/dashboardData";
-import { ArrowUpDown, Ban, CircleAlert, CircleCheck, CircleCheckBig, CircleX, CircleXIcon } from "lucide-react";
+import { Ban, CircleCheck, CircleCheckBig,CircleXIcon } from "lucide-react";
 import React, { useState } from "react";
 import { ContentHeader } from "@/components/ui/content-header";
 import { FiltersOnly } from "@/components/hes/dashboard/filtersonly";
@@ -49,7 +49,7 @@ export default function HESDashboardPage() {
     const [selectedMeterType, setSelectedMeterType] = useState("Meter Type");
 
     return (
-        <div className="p-10 bg-transparent">
+        <div className="p-12 bg-transparent mt-0">
             <div className="flex items-start justify-between bg-transparent">
                 <ContentHeader
                     title="Overview"
