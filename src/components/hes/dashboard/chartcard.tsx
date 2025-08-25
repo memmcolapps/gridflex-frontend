@@ -169,7 +169,7 @@ const ChartCard = ({ title, chartType, data }: ChartCardProps) => {
                   cx="50%"
                   cy="50%"
                   innerRadius="30%"
-                  outerRadius="70%"
+                  outerRadius="80%"
                   paddingAngle={0}
                   dataKey="value"
                 >
@@ -183,7 +183,7 @@ const ChartCard = ({ title, chartType, data }: ChartCardProps) => {
                   layout="vertical"
                   align="right"
                   verticalAlign="middle"
-                  wrapperStyle={{ paddingLeft: 20, maxHeight: "150px", overflowY: "auto" }}
+                  wrapperStyle={{ paddingLeft: 20, maxHeight: "120px", overflowY: "auto", overflowX: "hidden" }}
                 />
               </PieChart>
             ) : (
