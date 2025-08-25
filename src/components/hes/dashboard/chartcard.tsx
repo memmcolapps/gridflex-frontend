@@ -133,14 +133,14 @@ const ChartCard = ({ title, chartType, data }: ChartCardProps) => {
   console.log("Chart Type:", chartType, "Data:", chartData); // Debug
 
   return (
-    <Card className="w-full p-4 bg-white shadow-sm rounded-lg mt-4 overflow-visible border border-gray-500">
+    <Card className="w-full p-4 bg-white shadow-sm rounded-lg mt-4 overflow-visible border border-gray-200">
       <CardHeader>
         <CardTitle className="text-gray-400 font-light" style={{ fontSize: "14px" }}>
           {title}
         </CardTitle>
       </CardHeader>
       <CardContent className="h-60">
-        <div className="border border-gray-200 rounded-lg h-full">
+        <div className="rounded-lg h-full">
           <ResponsiveContainer width="100%" height="100%" style={{ position: "relative" }}>
             {chartType === "line" ? (
               <LineChart
@@ -175,8 +175,8 @@ const ChartCard = ({ title, chartType, data }: ChartCardProps) => {
                   outerRadius={90}
                   paddingAngle={0}
                   dataKey="value"
-                  stroke="#FF0000"
-                  strokeWidth={2}
+                  // stroke="#FF0000"
+                  // strokeWidth={2}
                 >
                   {(chartData as PieData[]).map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.fill ?? PIE_COLORS[index % PIE_COLORS.length]} />
