@@ -89,7 +89,6 @@ const CommunicationReportTable = () => {
               </TableRow>
             ))}
           </TableBody>
-
         </Table>
       </CardContent>
     </Card>
