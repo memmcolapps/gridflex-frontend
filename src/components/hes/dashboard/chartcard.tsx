@@ -27,7 +27,7 @@ interface LineData {
 interface PieData {
   name: string;
   value: number;
-  fill?: string; // Optional for pie segment color
+  fill?: string;
 }
 
 // Sample data
@@ -45,7 +45,7 @@ const pieData: PieData[] = [
   { name: "Paused Schedule", value: 5, fill: "#C86900" },
 ];
 
-const PIE_COLORS = ["#10B981", "#C86900"]; // Emerald green, darker orange
+const PIE_COLORS = ["#10B981", "#C86900"];
 
 interface ChartCardProps {
   title: string;
@@ -63,17 +63,15 @@ interface LegendPayload {
 
 // Custom tooltip renderer
 const renderTooltip = ({ active, payload }: TooltipProps<number, string>) => {
-  if (!active || !payload?.length || !payload[0]?.payload) {
-    return null;
-  }
+  if (!active || !payload?.length || !payload[0]?.payload) return null;
   const data = payload[0].payload as PieData | LineData;
-  const label = "name" in data ? data.name : ("hour" in data ? data.hour : "Unknown");
+  const label = "name" in data ? data.name : "hour" in data ? data.hour : "Unknown";
   const backgroundColor = "fill" in data ? data.fill : "#3b82f6";
 
   return (
     <div
       style={{
-        backgroundColor, // Use fill for pie, fallback for line
+        backgroundColor,
         color: "#FFFFFF",
         padding: "8px",
         borderRadius: "4px",
@@ -81,7 +79,7 @@ const renderTooltip = ({ active, payload }: TooltipProps<number, string>) => {
         boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
       }}
     >
-      <p>{`${label}: ${data.value}%`}</p>
+      <p>{`${label}: ${data.value}${"name" in data ? "%" : ""}`}</p>
     </div>
   );
 };
@@ -130,25 +128,24 @@ const renderCustomLegend = ({ payload }: DefaultLegendContentProps): React.React
 
 const ChartCard = ({ title, chartType, data }: ChartCardProps) => {
   const chartData = data ?? (chartType === "line" ? lineData : pieData);
-  console.log("Chart Type:", chartType, "Data:", chartData); // Debug
 
   return (
-    <Card className="w-full p-4 bg-white shadow-sm rounded-lg mt-4 overflow-visible border border-gray-200">
+    <Card className="w-full p-4 bg-white shadow-sm rounded-lg mt-4 border border-gray-200">
       <CardHeader>
-        <CardTitle className="text-gray-800 font-semibold" style={{ fontSize: "14px" }}>
+        <CardTitle className="text-gray-800 font-semibold text-sm md:text-base lg:text-lg">
           {title}
         </CardTitle>
       </CardHeader>
-      
-        <div className="rounded-lg h-fit">
-          <ResponsiveContainer width="100%" height="100%" style={{ position: "relative" }}>
+      <CardContent className="h-auto min-h-[150px] md:min-h-[180px] lg:min-h-[200px]">
+        <div className="rounded-lg h-full">
+          <ResponsiveContainer width="100%" height="100%">
             {chartType === "line" ? (
               <LineChart
                 data={chartData as LineData[]}
-                margin={{ top: 5, right: 5, left: -20, bottom: 5}}
+                margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" vertical={false} />
-                <XAxis dataKey="hour" stroke="#888" tick={{ fontSize: 12 }} />
+                <XAxis dataKey="hour" stroke="#888" tick={{ fontSize: 12 }} interval="preserveStartEnd" />
                 <YAxis
                   domain={[0, 100]}
                   ticks={[0, 20, 40, 60, 80, 100]}
@@ -171,10 +168,10 @@ const ChartCard = ({ title, chartType, data }: ChartCardProps) => {
                   data={chartData as PieData[]}
                   cx="50%"
                   cy="50%"
-                  innerRadius={50}
-                  outerRadius={90}
+                  innerRadius="30%"
+                  outerRadius="70%"
                   paddingAngle={0}
-                  dataKey="value"              
+                  dataKey="value"
                 >
                   {(chartData as PieData[]).map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.fill ?? PIE_COLORS[index % PIE_COLORS.length]} />
@@ -185,8 +182,8 @@ const ChartCard = ({ title, chartType, data }: ChartCardProps) => {
                   content={renderCustomLegend}
                   layout="vertical"
                   align="right"
-                  verticalAlign="top"
-                  wrapperStyle={{ paddingLeft: 20 }}
+                  verticalAlign="middle"
+                  wrapperStyle={{ paddingLeft: 20, maxHeight: "150px", overflowY: "auto" }}
                 />
               </PieChart>
             ) : (
@@ -194,6 +191,7 @@ const ChartCard = ({ title, chartType, data }: ChartCardProps) => {
             )}
           </ResponsiveContainer>
         </div>
+      </CardContent>
     </Card>
   );
 };
