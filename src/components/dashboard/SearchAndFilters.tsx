@@ -12,8 +12,8 @@ import type { Band } from "@/service/band-service";
 import { useBand } from "@/hooks/use-band";
 
 interface SearchAndFiltersProps {
-  searchTerm: string;
-  setSearchTerm: (term: string) => void;
+  searchTerm?: string;
+  setSearchTerm?: (term: string) => void;
   selectedBand: string;
   setSelectedBand: (band: string) => void;
   selectedYear: string;
@@ -65,7 +65,7 @@ export const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({
         <Input
           type="text"
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={(e) => setSearchTerm && setSearchTerm(e.target.value)}
           placeholder="Search by meter no., account no., ..."
           className="rounded-md border-gray-300 pl-10 focus:border-blue-500 focus:ring-blue-500 md:w-[300px]"
         />

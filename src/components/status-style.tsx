@@ -1,3 +1,5 @@
+import { Disc } from "lucide-react";
+
 export const statusStyles: Record<string, string> = {
     Pending: "bg-[#FFF5EA] text-[#C86900] py-2 px-3 rounded-full",
     Unassigned: "bg-[#FFF5EA] text-[#C86900] py-2 px-3 rounded-full",
@@ -12,6 +14,10 @@ export const statusStyles: Record<string, string> = {
     Blocked: "bg-[#FBE9E9] text-[#F50202] py-2 px-3 rounded-full",
     Failed: "bg-[#FBE9E9] text-[#F50202] py-2 px-3 rounded-full",
     Default: "bg-gray-100 text-gray-800 py-2 px-3 rounded-full",
+    Offline:"text-[#F50202] bg-[#FBE9E9] py-2 px-2 rounded-full",
+    Online:"text-[#059E40] bg-[#E9FBF0] py-2 px-2 rounded-full",
+    Disconnected:"text-[#C86900] bg-[#FFF5EA] py-2 px-2 rounded-full",
+    Connected:"text-[#161CCA] bg-[#E9F6FF] py-2 px-2 rounded-full",
 };
 
 export const getStatusStyle = (status: string | undefined): string => {
