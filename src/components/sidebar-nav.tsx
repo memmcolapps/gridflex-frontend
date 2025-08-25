@@ -200,7 +200,7 @@ export function SidebarNav() {
       icon: Building2,
       hasSubmenu: true,
       submenuItems: [
-        { title: "Dashboard", href: "/hes/hes-dashboard" },
+        { title: "Dashboard", href: "/hes/dashboard" },
         {
           title: "Communication Report",
           href: "/hes/hes-communication-report",
