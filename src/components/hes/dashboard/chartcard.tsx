@@ -139,13 +139,13 @@ const ChartCard = ({ title, chartType, data }: ChartCardProps) => {
           {title}
         </CardTitle>
       </CardHeader>
-      <CardContent className="h-60">
-        <div className="rounded-lg h-full">
+      
+        <div className="rounded-lg h-fit">
           <ResponsiveContainer width="100%" height="100%" style={{ position: "relative" }}>
             {chartType === "line" ? (
               <LineChart
                 data={chartData as LineData[]}
-                margin={{ top: 5, right: 5, left: -20, bottom: 5 }}
+                margin={{ top: 5, right: 5, left: -20, bottom: 5}}
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" vertical={false} />
                 <XAxis dataKey="hour" stroke="#888" tick={{ fontSize: 12 }} />
@@ -174,9 +174,7 @@ const ChartCard = ({ title, chartType, data }: ChartCardProps) => {
                   innerRadius={50}
                   outerRadius={90}
                   paddingAngle={0}
-                  dataKey="value"
-                  // stroke="#FF0000"
-                  // strokeWidth={2}
+                  dataKey="value"              
                 >
                   {(chartData as PieData[]).map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.fill ?? PIE_COLORS[index % PIE_COLORS.length]} />
@@ -196,7 +194,6 @@ const ChartCard = ({ title, chartType, data }: ChartCardProps) => {
             )}
           </ResponsiveContainer>
         </div>
-      </CardContent>
     </Card>
   );
 };
