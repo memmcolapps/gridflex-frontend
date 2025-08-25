@@ -136,7 +136,7 @@ const ChartCard = ({ title, chartType, data }: ChartCardProps) => {
           {title}
         </CardTitle>
       </CardHeader>
-      <CardContent className="h-auto min-h-[150px] md:min-h-[180px] lg:min-h-[200px]">
+      <CardContent className="h-auto min-h-[150px] md:min-h-[200px] lg:min-h-[200px]">
         <div className="rounded-lg h-full">
           <ResponsiveContainer width="100%" height="100%">
             {chartType === "line" ? (
@@ -168,8 +168,8 @@ const ChartCard = ({ title, chartType, data }: ChartCardProps) => {
                   data={chartData as PieData[]}
                   cx="50%"
                   cy="50%"
-                  innerRadius="30%"
-                  outerRadius="80%"
+                  innerRadius="40%"
+                  outerRadius="90%"
                   paddingAngle={0}
                   dataKey="value"
                 >
@@ -183,7 +183,7 @@ const ChartCard = ({ title, chartType, data }: ChartCardProps) => {
                   layout="vertical"
                   align="right"
                   verticalAlign="middle"
-                  wrapperStyle={{ paddingLeft: 20, maxHeight: "120px", overflowY: "auto", overflowX: "hidden" }}
+                  wrapperStyle={{ paddingLeft: 20, maxHeight: "180px", overflowY: "auto", overflowX: "hidden" }}
                 />
               </PieChart>
             ) : (
