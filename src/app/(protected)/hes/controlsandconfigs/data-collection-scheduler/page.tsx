@@ -12,7 +12,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { ArrowUpDown, CircleCheck, CirclePause, CirclePlus, Edit, MoreVertical, Pencil, RefreshCcw, Search, Send, Trash2 } from "lucide-react";
+import { ArrowUpDown, CircleCheck, CirclePause, CirclePlus, Edit, MoreVertical, Pencil, RefreshCcw, Search, Send, Trash2, Play } from "lucide-react";
 import {
     Table,
     TableBody,
@@ -36,6 +36,15 @@ interface SyncScheduleData {
     activeDays: string;
 }
 
+// Define the shape of the table data
+interface TableData {
+    sNo: string;
+    eventType: string;
+    timeInterval: string;
+    activeDays: string;
+    status: "Active" | "Paused";
+}
+
 const filterSections = [
     {
         title: "Meter Class",
@@ -57,6 +66,18 @@ const filterSections = [
 export default function DataCollScheduler() {
     const [searchTerm, setSearchTerm] = useState<string>("");
     const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+    const [data, setData] = useState<TableData[]>([
+        { sNo: "01", eventType: "Standard Event Log", timeInterval: "30 mins", activeDays: "Repeat Daily", status: "Active" },
+        { sNo: "02", eventType: "Relay Control Log", timeInterval: "30 mins", activeDays: "Repeat (Mon-Fri)", status: "Paused" },
+        { sNo: "03", eventType: "Power Quality Log", timeInterval: "2 mins", activeDays: "Repeat Daily", status: "Active" },
+        { sNo: "04", eventType: "Communication Log", timeInterval: "30 mins", activeDays: "Repeat (Mon-Fri)", status: "Active" },
+        { sNo: "05", eventType: "Power Quality Log", timeInterval: "30 mins", activeDays: "Repeat Daily", status: "Active" },
+        { sNo: "06", eventType: "Token Event Profile", timeInterval: "30 mins", activeDays: "Repeat (Mon-Fri)", status: "Active" },
+        { sNo: "07", eventType: "Energy Profile", timeInterval: "10 mins", activeDays: "Repeat Daily", status: "Active" },
+        { sNo: "08", eventType: "Instant Data Profile", timeInterval: "12 mins", activeDays: "Repeat (Mon-Fri)", status: "Paused" },
+        { sNo: "09", eventType: "Billing Data", timeInterval: "30 mins", activeDays: "Repeat Only", status: "Paused" },
+        { sNo: "10", eventType: "Fraud Event Log", timeInterval: "30 mins", activeDays: "Repeat Daily", status: "Paused" },
+    ]);
 
     const handleSetActiveFilters = (filters: FilterType) => {
         console.log("Filters applied:", filters);
@@ -71,18 +92,15 @@ export default function DataCollScheduler() {
         // Add your logic to handle the submitted data (e.g., API call)
     };
 
-    const data = [
-        { sNo: "01", eventType: "Standard Event Log", timeInterval: "30 mins", activeDays: "Repeat Daily", status: "Active" },
-        { sNo: "02", eventType: "Relay Control Log", timeInterval: "30 mins", activeDays: "Repeat (Mon-Fri)", status: "Paused" },
-        { sNo: "03", eventType: "Power Quality Log", timeInterval: "2 mins", activeDays: "Repeat Daily", status: "Active" },
-        { sNo: "04", eventType: "Communication Log", timeInterval: "30 mins", activeDays: "Repeat (Mon-Fri)", status: "Active" },
-        { sNo: "05", eventType: "Power Quality Log", timeInterval: "30 mins", activeDays: "Repeat Daily", status: "Active" },
-        { sNo: "06", eventType: "Token Event Profile", timeInterval: "30 mins", activeDays: "Repeat (Mon-Fri)", status: "Active" },
-        { sNo: "07", eventType: "Energy Profile", timeInterval: "10 mins", activeDays: "Repeat Daily", status: "Active" },
-        { sNo: "08", eventType: "Instant Data Profile", timeInterval: "12 mins", activeDays: "Repeat (Mon-Fri)", status: "Paused" },
-        { sNo: "09", eventType: "Billing Data", timeInterval: "30 mins", activeDays: "Repeat Only", status: "Paused" },
-        { sNo: "10", eventType: "Fraud Event Log", timeInterval: "30 mins", activeDays: "Repeat Daily", status: "Paused" },
-    ];
+    const handleToggleStatus = (sNo: string) => {
+        setData((prevData) =>
+            prevData.map((item) =>
+                item.sNo === sNo
+                    ? { ...item, status: item.status === "Active" ? "Paused" : "Active" }
+                    : item
+            )
+        );
+    };
 
     return (
         <div className="p-16 overflow-y-auto h-screen w-full flex flex-col">
@@ -180,21 +198,29 @@ export default function DataCollScheduler() {
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="center" className="w-48 bg-white shadow-lg">
-                                            <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
-                                                <CirclePause size={14} className="text-gray-500" />
-                                                <span className="text-sm  text-black">Pause Schedule</span>
-                                            </DropdownMenuItem>
                                             <DropdownMenuItem
                                                 className="flex items-center gap-2 cursor-pointer"
+                                                onClick={() => handleToggleStatus(item.sNo)}
                                             >
+                                                {item.status === "Paused" ? (
+                                                    <>
+                                                        <Play size={14} className="text-gray-500" />
+                                                        <span className="text-sm text-black">Continue Schedule</span>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <CirclePause size={14} className="text-gray-500" />
+                                                        <span className="text-sm text-black">Pause Schedule</span>
+                                                    </>
+                                                )}
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
                                                 <Pencil size={14} className="text-gray-500" />
                                                 <span className="text-sm text-black">Edit Sync Schedule</span>
                                             </DropdownMenuItem>
-                                                      <DropdownMenuItem
-                                                className="flex items-center gap-2 cursor-pointer"
-                                            >
+                                            <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
                                                 <Trash2 size={14} className="text-gray-500" />
-                                                <span className="text-sm text-black">Delete Sync Schedule</span>
+                                                <span className="text-sm text-black whitespace-nowrap">Delete Sync Schedule</span>
                                             </DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
