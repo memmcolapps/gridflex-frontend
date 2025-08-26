@@ -210,12 +210,16 @@ export function SidebarNav() {
 
         {
           title: "Controls and Confirguration",
-          href: "#",
+          href: "/hes/controlsandconfigs",
           hasSubmenu: true,
           submenuItems: [
             {
-              title: "Control 1",
-              href: "/hes/hes-controls/control-1",
+              title: "Data Collection Scheduler",
+              href: "/hes/controlsandconfigs/data-collection-scheduler",
+            },
+            {
+              title: "Meter Remote Configuration",
+              href: "/hes/controlsandconfigs/meter-remote-config",
             },
           ],
         },
@@ -420,7 +424,7 @@ export function SidebarNav() {
             })}
         </SidebarMenu>
 
-         <div className="mt-auto px-6 py-5">
+        <div className="mt-auto px-6 py-5">
           <SidebarMenu>
             {navItems
               .filter((item) => ["Change Log", "About Us"].includes(item.title))
