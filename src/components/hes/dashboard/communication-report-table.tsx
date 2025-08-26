@@ -102,8 +102,8 @@ const CommunicationReportTable = () => {
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="default" size="sm" className="border-gray-500 focus:ring-gray-500/0 cursor-pointer">
-                        <MoreVertical size={16} className="text-gray-500 border-gray-500" />
+                      <Button variant="default" size="sm" className="border-gray-200 focus:ring-gray-500/0 cursor-pointer">
+                        <MoreVertical size={16} className="text-gray-500 border-gray-200"/>
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="center" className="w-48 bg-white shadow-lg">
