@@ -1,4 +1,5 @@
-// CommunicationReport.jsx
+// CommunicationReportTable.jsx
+import { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import {
   Table,
@@ -10,16 +11,48 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { getStatusStyle } from "@/components/status-style";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { CircleCheck, MoreVertical, Pencil, Send } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { CircleCheck, MoreVertical, Send } from "lucide-react";
+import SendTokenDialog from "@/components/hes/dashboard/send-token-dialog";
+
+interface MeterData {
+  sNo: string;
+  meterNo: string;
+  model: string;
+  status: string;
+  lastSync: string;
+  tamperState: string;
+  tamperSync: string;
+  relayControl: string;
+  relaySync: string;
+  actions: string[];
+}
 
 const CommunicationReportTable = () => {
-  const data = [
+  const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+  const [selectedMeter, setSelectedMeter] = useState<string | null>(null);
+
+  const data: MeterData[] = [
     { sNo: "01", meterNo: "6212465987", model: "MMX 310-NG", status: "Offline", lastSync: "1 min ago", tamperState: "No Tamper", tamperSync: "2 hours ago", relayControl: "Disconnected", relaySync: "2 hours ago", actions: ["Connect Relay", "Send Token"] },
     { sNo: "02", meterNo: "6212465987", model: "MMX 110-NG", status: "Online", lastSync: "2 hours ago", tamperState: "Tamper Detected", tamperSync: "3 hours ago", relayControl: "Disconnected", relaySync: "3 hours ago", actions: ["Connect Relay", "Send Token"] },
     { sNo: "03", meterNo: "6212465987", model: "MMX 110-NG", status: "Offline", lastSync: "2 hours ago", tamperState: "No Tamper", tamperSync: "3 hours ago", relayControl: "Disconnected", relaySync: "3 hours ago", actions: ["Connect Relay", "Send Token"] },
     { sNo: "04", meterNo: "6212465987", model: "MMX 110-NG", status: "Online", lastSync: "2 hours ago", tamperState: "No Tamper", tamperSync: "3 hours ago", relayControl: "Connected", relaySync: "3 hours ago", actions: ["Connect Relay", "Send Token"] },
   ];
+
+  const handleSendToken = (meterNo: string) => {
+    setSelectedMeter(meterNo);
+    setIsDialogOpen(true);
+  };
+
+  const handleDialogSubmit = (token: string) => {
+    console.log(`Sending token ${token} to meter ${selectedMeter}`);
+    // Add your token sending logic here
+  };
 
   return (
     <Card className="w-full p-4 bg-white shadow-sm rounded-lg mt-4 border border-gray-200">
@@ -27,13 +60,13 @@ const CommunicationReportTable = () => {
         <CardTitle className="text-sm font-medium text-gray-600">Communication Report</CardTitle>
       </CardHeader>
       <CardContent>
-        <Table className="table-fixed w-full" >
+        <Table className="table-fixed w-full">
           <TableHeader>
             <TableRow>
               <TableHead className="text-left">S/N</TableHead>
               <TableHead className="text-left">Meter No.</TableHead>
               <TableHead className="text-left">Meter Model</TableHead>
-              <TableHead className="text-left w-[120px]">Status</TableHead> {/* same width across rows */}
+              <TableHead className="text-left w-[120px]">Status</TableHead>
               <TableHead className="text-left">Last Sync</TableHead>
               <TableHead className="text-left">Tamper State</TableHead>
               <TableHead className="text-left">Tamper Sync</TableHead>
@@ -42,14 +75,13 @@ const CommunicationReportTable = () => {
               <TableHead className="text-left">Actions</TableHead>
             </TableRow>
           </TableHeader>
-
           <TableBody>
             {data.map((row) => (
               <TableRow key={row.sNo}>
                 <TableCell>{row.sNo}</TableCell>
                 <TableCell>{row.meterNo}</TableCell>
                 <TableCell>{row.model}</TableCell>
-                <TableCell  className="text-left w-[120px]">
+                <TableCell className="text-left w-[120px]">
                   <div className="flex items-center">
                     <span className={getStatusStyle(row.status)}>
                       {row.status}
@@ -59,7 +91,7 @@ const CommunicationReportTable = () => {
                 <TableCell>{row.lastSync}</TableCell>
                 <TableCell>{row.tamperState}</TableCell>
                 <TableCell>{row.tamperSync}</TableCell>
-                <TableCell className="w-[120px]"> {/* match width with header */}
+                <TableCell className="w-[120px]">
                   <div className="flex items-center">
                     <span className={getStatusStyle(row.relayControl)}>
                       {row.relayControl}
@@ -70,8 +102,8 @@ const CommunicationReportTable = () => {
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="default" size="sm" className="border-gray-500 focus:ring-gray-500/0 cursor-pointer" >
-                        <MoreVertical size={16} className="text-gray-500 border-gray-500" />
+                      <Button variant="default" size="sm" className="border-gray-200 focus:ring-gray-500/0 cursor-pointer">
+                        <MoreVertical size={16} className="text-gray-500 border-gray-200"/>
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="center" className="w-48 bg-white shadow-lg">
@@ -79,7 +111,10 @@ const CommunicationReportTable = () => {
                         <CircleCheck size={14} className="text-black" />
                         <span className="text-sm lg:text-base text-black">Connect Relay</span>
                       </DropdownMenuItem>
-                      <DropdownMenuItem className="flex items-center gap-2">
+                      <DropdownMenuItem
+                        className="flex items-center gap-2 cursor-pointer"
+                        onClick={() => handleSendToken(row.meterNo)}
+                      >
                         <Send size={14} className="text-black" />
                         <span className="text-sm lg:text-base text-black">Send Token</span>
                       </DropdownMenuItem>
@@ -91,6 +126,11 @@ const CommunicationReportTable = () => {
           </TableBody>
         </Table>
       </CardContent>
+      <SendTokenDialog
+        isOpen={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        onSubmit={handleDialogSubmit}
+      />
     </Card>
   );
 };
