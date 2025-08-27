@@ -114,17 +114,94 @@ export default function DataCollScheduler() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState<boolean>(false);
   const [editData, setEditData] = useState<TableData | null>(null);
   const [data, setData] = useState<TableData[]>([
-    { sNo: "01", eventType: "standardEventLog", timeInterval: "30 mins", unit: "min", activeDays: "repeatDaily", status: "Active" },
-    { sNo: "02", eventType: "relayControlLog", timeInterval: "30 mins", unit: "min", activeDays: "repeatMonFri", status: "Paused" },
-    { sNo: "03", eventType: "powerQualityLog", timeInterval: "2 mins", unit: "min", activeDays: "repeatDaily", status: "Active" },
-    { sNo: "04", eventType: "communicationLog", timeInterval: "30 mins", unit: "min", activeDays: "repeatMonFri", status: "Active" },
-    { sNo: "05", eventType: "powerQualityLog", timeInterval: "30 mins", unit: "min", activeDays: "repeatDaily", status: "Active" },
-    { sNo: "06", eventType: "tokenEventProfile", timeInterval: "30 mins", unit: "min", activeDays: "repeatMonFri", status: "Active" },
-    { sNo: "07", eventType: "energyProfile", timeInterval: "10 mins", unit: "min", activeDays: "repeatDaily", status: "Active" },
-    { sNo: "08", eventType: "instantDataProfile", timeInterval: "12 mins", unit: "min", activeDays: "repeatMonFri", status: "Paused" },
-    { sNo: "09", eventType: "billingData", timeInterval: "30 mins", unit: "min", activeDays: "repeatOnly", status: "Paused" },
-    { sNo: "10", eventType: "fraudEventLog", timeInterval: "30 mins", unit: "min", activeDays: "repeatDaily", status: "Paused" },
-    { sNo: "11", eventType: "fraudEventLog", timeInterval: "30 mins", unit: "min", activeDays: "repeatDaily", status: "Paused" },
+    {
+      sNo: "01",
+      eventType: "standardEventLog",
+      timeInterval: "30 mins",
+      unit: "min",
+      activeDays: "repeatDaily",
+      status: "Active",
+    },
+    {
+      sNo: "02",
+      eventType: "relayControlLog",
+      timeInterval: "30 mins",
+      unit: "min",
+      activeDays: "repeatMonFri",
+      status: "Paused",
+    },
+    {
+      sNo: "03",
+      eventType: "powerQualityLog",
+      timeInterval: "2 mins",
+      unit: "min",
+      activeDays: "repeatDaily",
+      status: "Active",
+    },
+    {
+      sNo: "04",
+      eventType: "communicationLog",
+      timeInterval: "30 mins",
+      unit: "min",
+      activeDays: "repeatMonFri",
+      status: "Active",
+    },
+    {
+      sNo: "05",
+      eventType: "powerQualityLog",
+      timeInterval: "30 mins",
+      unit: "min",
+      activeDays: "repeatDaily",
+      status: "Active",
+    },
+    {
+      sNo: "06",
+      eventType: "tokenEventProfile",
+      timeInterval: "30 mins",
+      unit: "min",
+      activeDays: "repeatMonFri",
+      status: "Active",
+    },
+    {
+      sNo: "07",
+      eventType: "energyProfile",
+      timeInterval: "10 mins",
+      unit: "min",
+      activeDays: "repeatDaily",
+      status: "Active",
+    },
+    {
+      sNo: "08",
+      eventType: "instantDataProfile",
+      timeInterval: "12 mins",
+      unit: "min",
+      activeDays: "repeatMonFri",
+      status: "Paused",
+    },
+    {
+      sNo: "09",
+      eventType: "billingData",
+      timeInterval: "30 mins",
+      unit: "min",
+      activeDays: "repeatOnly",
+      status: "Paused",
+    },
+    {
+      sNo: "10",
+      eventType: "fraudEventLog",
+      timeInterval: "30 mins",
+      unit: "min",
+      activeDays: "repeatDaily",
+      status: "Paused",
+    },
+    {
+      sNo: "11",
+      eventType: "fraudEventLog",
+      timeInterval: "30 mins",
+      unit: "min",
+      activeDays: "repeatDaily",
+      status: "Paused",
+    },
   ]);
   const [confirmDialog, setConfirmDialog] = useState<{
     isOpen: boolean;
@@ -133,16 +210,23 @@ export default function DataCollScheduler() {
   }>({ isOpen: false, type: null, sNo: null });
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [rowsPerPage, setRowsPerPage] = useState<number>(10);
-  const [sortConfig, setSortConfig] = useState<{ key: string; direction: string }>({ key: "", direction: "asc" });
+  const [sortConfig, setSortConfig] = useState<{
+    key: string;
+    direction: string;
+  }>({ key: "", direction: "asc" });
 
   // Apply search and filters
   const filteredData = data.filter((item) => {
     const matchesSearch = searchTerm
-      ? item.sNo.toLowerCase().includes(searchTerm.toLowerCase()) ??
-        eventTypeLabels[item.eventType]?.toLowerCase().includes(searchTerm.toLowerCase()) ??
+      ? (item.sNo.toLowerCase().includes(searchTerm.toLowerCase()) ??
+        eventTypeLabels[item.eventType]
+          ?.toLowerCase()
+          .includes(searchTerm.toLowerCase()) ??
         item.timeInterval.toLowerCase().includes(searchTerm.toLowerCase()) ??
-        activeDaysLabels[item.activeDays]?.toLowerCase().includes(searchTerm.toLowerCase()) ??
-        item.status.toLowerCase().includes(searchTerm.toLowerCase())
+        activeDaysLabels[item.activeDays]
+          ?.toLowerCase()
+          .includes(searchTerm.toLowerCase()) ??
+        item.status.toLowerCase().includes(searchTerm.toLowerCase()))
       : true;
     return matchesSearch;
   });
@@ -153,7 +237,9 @@ export default function DataCollScheduler() {
     const aValue = a[sortConfig.key as keyof TableData] ?? "";
     const bValue = b[sortConfig.key as keyof TableData] ?? "";
     if (typeof aValue === "string" && typeof bValue === "string") {
-      return sortConfig.direction === "asc" ? aValue.localeCompare(bValue) : bValue.localeCompare(bValue);
+      return sortConfig.direction === "asc"
+        ? aValue.localeCompare(bValue)
+        : bValue.localeCompare(bValue);
     }
     return 0;
   });
@@ -162,7 +248,7 @@ export default function DataCollScheduler() {
   const totalPages = Math.ceil(sortedData.length / rowsPerPage);
   const paginatedData = sortedData.slice(
     (currentPage - 1) * rowsPerPage,
-    currentPage * rowsPerPage
+    currentPage * rowsPerPage,
   );
 
   const handlePrevious = () => {
@@ -217,8 +303,8 @@ export default function DataCollScheduler() {
                 unit: formData.unit,
                 activeDays: formData.activeDays,
               }
-            : item
-        )
+            : item,
+        ),
       );
       setIsEditDialogOpen(false);
       setEditData(null);
@@ -230,8 +316,8 @@ export default function DataCollScheduler() {
       prevData.map((item) =>
         item.sNo === sNo
           ? { ...item, status: item.status === "Active" ? "Paused" : "Active" }
-          : item
-      )
+          : item,
+      ),
     );
   };
 
@@ -242,7 +328,10 @@ export default function DataCollScheduler() {
     }
   };
 
-  const openConfirmDialog = (type: "pause" | "continue" | "delete", sNo: string) => {
+  const openConfirmDialog = (
+    type: "pause" | "continue" | "delete",
+    sNo: string,
+  ) => {
     setConfirmDialog({ isOpen: true, type, sNo });
   };
 
@@ -279,7 +368,8 @@ export default function DataCollScheduler() {
           backgroundColor: "bg-white",
           alertTriangleColor: "text-[#C86900] bg-[#FFF5EA] rounded-full p-2",
           confirmButtonColor: "bg-[#C86900] text-white",
-          cancelButtonColor: "bg-white hover:bg-yellow-200 text-[#C86900] border-[#C86900]",
+          cancelButtonColor:
+            "bg-white hover:bg-yellow-200 text-[#C86900] border-[#C86900]",
         };
       case "continue":
         return {
@@ -289,7 +379,8 @@ export default function DataCollScheduler() {
           backgroundColor: "bg-white",
           alertTriangleColor: "text-[#161CCA] bg-blue-100 rounded-full p-2",
           confirmButtonColor: "bg-[#161CCA] text-white",
-          cancelButtonColor: "bg-white hover:bg-green-200 text-[#161CCA] border-[#161CCA]",
+          cancelButtonColor:
+            "bg-white hover:bg-green-200 text-[#161CCA] border-[#161CCA]",
         };
       case "delete":
         return {
@@ -315,33 +406,37 @@ export default function DataCollScheduler() {
   };
 
   return (
-    <div className="p-16 overflow-y-auto h-screen w-full flex flex-col">
+    <div className="flex h-screen w-full flex-col overflow-y-auto p-6">
       <div className="mb-8 flex flex-col items-center justify-between gap-4 md:flex-row">
         <ContentHeader
           title="Data Collection Scheduler"
           description="Set meter sync intervals and configure communication settings for efficient data transmission"
         />
         <Button
-          className="flex items-center gap-2 border font-medium bg-[#161CCA] text-white w-full md:w-auto cursor-pointer"
+          className="flex w-full cursor-pointer items-center gap-2 border bg-[#161CCA] font-medium text-white md:w-auto"
           variant="outline"
           size="lg"
           onClick={() => setIsDialogOpen(true)}
         >
-          <RefreshCcw size={14} strokeWidth={2.3} className="h-4 w-4 text-white" />
+          <RefreshCcw
+            size={14}
+            strokeWidth={2.3}
+            className="h-4 w-4 text-white"
+          />
           <span className="text-sm md:text-base">Set Sync Schedule</span>
         </Button>
       </div>
 
-      <div className="flex flex-col md:flex-row items-center gap-4 w-full mb-4">
+      <div className="mb-4 flex w-full flex-col items-center gap-4 md:flex-row">
         <div className="relative w-full md:w-[300px]">
           <Search
             size={14}
-            className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400"
+            className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400"
           />
           <Input
             type="text"
             placeholder="Search by meter no., account no..."
-            className="pl-10 w-full border-gray-300 focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
+            className="w-full border-gray-300 pl-10 focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -353,21 +448,24 @@ export default function DataCollScheduler() {
         />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="gap-2 border-gray-300 w-full sm:w-auto cursor-pointer">
+            <Button
+              variant="outline"
+              className="w-full cursor-pointer gap-2 border-gray-300 sm:w-auto"
+            >
               <ArrowUpDown className="text-gray-500" size={14} />
-              <span className="hidden sm:inline text-gray-800">Sort</span>
+              <span className="hidden text-gray-800 sm:inline">Sort</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="center" className="w-48">
             <DropdownMenuItem
               onClick={() => handleSortChange("asc")}
-              className="text-sm cursor-pointer hover:bg-gray-100"
+              className="cursor-pointer text-sm hover:bg-gray-100"
             >
               Ascending
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => handleSortChange("desc")}
-              className="text-sm cursor-pointer hover:bg-gray-100"
+              className="cursor-pointer text-sm hover:bg-gray-100"
             >
               Descending
             </DropdownMenuItem>
@@ -375,38 +473,64 @@ export default function DataCollScheduler() {
         </DropdownMenu>
       </div>
 
-      <Card className="border-none shadow-none bg-transparent overflow-x-auto">
-        <Table className="table-auto w-full">
+      <Card className="overflow-x-auto border-none bg-transparent shadow-none">
+        <Table className="w-full table-auto">
           <TableHeader>
             <TableRow className="bg-gray-100">
-              <TableHead className="p-2 text-left text-sm font-medium text-gray-600">S/N</TableHead>
-              <TableHead className="p-2 text-left text-sm font-medium text-gray-600">Event/Profile Type</TableHead>
-              <TableHead className="p-2 text-left text-sm font-medium text-gray-600">Time Interval</TableHead>
-              <TableHead className="p-2 text-left text-sm font-medium text-gray-600">Active Days</TableHead>
-              <TableHead className="p-2 text-left text-sm font-medium text-gray-600">Status</TableHead>
-              <TableHead className="p-2 text-left text-sm font-medium text-gray-600">Actions</TableHead>
+              <TableHead className="p-2 text-left text-sm font-medium text-gray-600">
+                S/N
+              </TableHead>
+              <TableHead className="p-2 text-left text-sm font-medium text-gray-600">
+                Event/Profile Type
+              </TableHead>
+              <TableHead className="p-2 text-left text-sm font-medium text-gray-600">
+                Time Interval
+              </TableHead>
+              <TableHead className="p-2 text-left text-sm font-medium text-gray-600">
+                Active Days
+              </TableHead>
+              <TableHead className="p-2 text-left text-sm font-medium text-gray-600">
+                Status
+              </TableHead>
+              <TableHead className="p-2 text-left text-sm font-medium text-gray-600">
+                Actions
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {paginatedData.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center text-sm text-gray-500">
+                <TableCell
+                  colSpan={6}
+                  className="h-24 text-center text-sm text-gray-500"
+                >
                   No data available
                 </TableCell>
               </TableRow>
             ) : (
               paginatedData.map((item, index) => (
-                <TableRow key={item.sNo} className="hover:bg-gray-50 cursor-pointer">
+                <TableRow
+                  key={item.sNo}
+                  className="cursor-pointer hover:bg-gray-50"
+                >
                   <TableCell className="p-2 text-sm text-gray-800">
                     {index + 1 + (currentPage - 1) * rowsPerPage}
                   </TableCell>
-                  <TableCell className="p-2 text-sm text-gray-800">{eventTypeLabels[item.eventType] ?? item.eventType}</TableCell>
-                  <TableCell className="p-2 text-sm text-gray-800">{item.timeInterval}</TableCell>
-                  <TableCell className="p-2 text-sm text-[#161CCA]">{activeDaysLabels[item.activeDays] ?? item.activeDays}</TableCell>
+                  <TableCell className="p-2 text-sm text-gray-800">
+                    {eventTypeLabels[item.eventType] ?? item.eventType}
+                  </TableCell>
+                  <TableCell className="p-2 text-sm text-gray-800">
+                    {item.timeInterval}
+                  </TableCell>
+                  <TableCell className="p-2 text-sm text-[#161CCA]">
+                    {activeDaysLabels[item.activeDays] ?? item.activeDays}
+                  </TableCell>
                   <TableCell className="p-2 text-sm">
                     <span
-                      className={`px-2 py-1 rounded-full ${
-                        item.status === "Active" ? "bg-[#E9FBF0] text-[#059E40]" : "bg-[#FFF5EA] text-[#C86900]"
+                      className={`rounded-full px-2 py-1 ${
+                        item.status === "Active"
+                          ? "bg-[#E9FBF0] text-[#059E40]"
+                          : "bg-[#FFF5EA] text-[#C86900]"
                       }`}
                     >
                       {item.status}
@@ -415,46 +539,72 @@ export default function DataCollScheduler() {
                   <TableCell className="p-2 text-sm text-gray-800">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="default" size="sm" className="border-gray-200 focus:ring-gray-500/0 cursor-pointer">
-                          <MoreVertical size={16} className="text-gray-500 border-gray-200" />
+                        <Button
+                          variant="default"
+                          size="sm"
+                          className="cursor-pointer border-gray-200 focus:ring-gray-500/0"
+                        >
+                          <MoreVertical
+                            size={16}
+                            className="border-gray-200 text-gray-500"
+                          />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="center" className="w-48 bg-white shadow-lg">
+                      <DropdownMenuContent
+                        align="center"
+                        className="w-48 bg-white shadow-lg"
+                      >
                         <DropdownMenuItem
-                          className="flex items-center gap-2 cursor-pointer"
-                          onClick={() => openConfirmDialog(item.status === "Paused" ? "continue" : "pause", item.sNo)}
+                          className="flex cursor-pointer items-center gap-2"
+                          onClick={() =>
+                            openConfirmDialog(
+                              item.status === "Paused" ? "continue" : "pause",
+                              item.sNo,
+                            )
+                          }
                         >
                           {item.status === "Paused" ? (
                             <>
                               <Play size={14} className="text-gray-500" />
-                              <span className="text-sm text-black">Continue Schedule</span>
+                              <span className="text-sm text-black">
+                                Continue Schedule
+                              </span>
                             </>
                           ) : (
                             <>
-                              <CirclePause size={14} className="text-gray-500" />
-                              <span className="text-sm text-black">Pause Schedule</span>
+                              <CirclePause
+                                size={14}
+                                className="text-gray-500"
+                              />
+                              <span className="text-sm text-black">
+                                Pause Schedule
+                              </span>
                             </>
                           )}
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                          className="flex items-center gap-2 cursor-pointer"
+                          className="flex cursor-pointer items-center gap-2"
                           onClick={() => openEditDialog(item.sNo)}
                         >
                           <Pencil size={14} className="text-gray-500" />
-                          <span className="text-sm text-black">Edit Sync Schedule</span>
+                          <span className="text-sm text-black">
+                            Edit Sync Schedule
+                          </span>
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                          className="flex items-center gap-2 cursor-pointer"
+                          className="flex cursor-pointer items-center gap-2"
                           onClick={() => openConfirmDialog("delete", item.sNo)}
                         >
                           <Trash2 size={14} className="text-gray-500" />
-                          <span className="text-sm text-black whitespace-nowrap">Delete Sync Schedule</span>
+                          <span className="text-sm whitespace-nowrap text-black">
+                            Delete Sync Schedule
+                          </span>
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
                 </TableRow>
-              )) 
+              ))
             )}
           </TableBody>
         </Table>
@@ -482,7 +632,8 @@ export default function DataCollScheduler() {
             </Select>
             <span className="text-sm font-medium">
               {(currentPage - 1) * rowsPerPage + 1}-
-              {Math.min(currentPage * rowsPerPage, sortedData.length)} of {sortedData.length}
+              {Math.min(currentPage * rowsPerPage, sortedData.length)} of{" "}
+              {sortedData.length}
             </span>
           </div>
           <PaginationContent>
@@ -494,7 +645,11 @@ export default function DataCollScheduler() {
                   handlePrevious();
                 }}
                 aria-disabled={currentPage === 1}
-                className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                className={
+                  currentPage === 1
+                    ? "pointer-events-none opacity-50"
+                    : "cursor-pointer"
+                }
               />
             </PaginationItem>
             <PaginationItem>
@@ -505,7 +660,11 @@ export default function DataCollScheduler() {
                   handleNext();
                 }}
                 aria-disabled={currentPage === totalPages}
-                className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                className={
+                  currentPage === totalPages
+                    ? "pointer-events-none opacity-50"
+                    : "cursor-pointer"
+                }
               />
             </PaginationItem>
           </PaginationContent>
@@ -533,7 +692,13 @@ export default function DataCollScheduler() {
         }}
         onSubmit={handleEditDialogSubmit}
         initialData={
-          editData ?? { sNo: "", eventType: "", timeInterval: "", unit: "min", activeDays: "" }
+          editData ?? {
+            sNo: "",
+            eventType: "",
+            timeInterval: "",
+            unit: "min",
+            activeDays: "",
+          }
         }
       />
     </div>
