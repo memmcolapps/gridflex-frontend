@@ -13,9 +13,9 @@ export default function BillingDashboardPage() {
   const [selectedYear, setSelectedYear] = useState("");
 
   return (
-    <div className="min-h-screen p-6 bg-transparent">
+    <div className="min-h-screen bg-transparent p-6">
       <div className="max-w-screen-2xl space-y-6">
-        <div className="flex items-start justify-between pt-6">
+        <div className="flex items-start justify-between">
           <ContentHeader
             title="Overview"
             description="General overview of billing management dashboard"
