@@ -52,7 +52,7 @@ export default function ProtectedLayout({
         </div>
 
         <div className="hidden w-full md:flex">
-          <div className="w-[21rem] flex-shrink-0">
+          <div className="w-80 flex-shrink-0">
             <SidebarNav />
           </div>
           <div className="flex flex-1 flex-col">

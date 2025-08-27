@@ -50,16 +50,19 @@ interface SubMenuItemProps {
 
 export function SidebarNav() {
   const pathname = usePathname();
-  const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
+  const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>(
+    {},
+  );
 
   const isItemActive = (href: string, subItems?: SubMenuItemProps[]) => {
     if (pathname === href) return true;
     if (subItems) {
       return subItems.some(
-        (subItem) => pathname === subItem.href ||
+        (subItem) =>
+          pathname === subItem.href ||
           subItem.submenuItems?.some(
-            (nestedItem) => pathname === nestedItem.href
-          )
+            (nestedItem) => pathname === nestedItem.href,
+          ),
       );
     }
     return false;
@@ -266,7 +269,7 @@ export function SidebarNav() {
   ];
 
   return (
-    <Sidebar className="fixed left-0 top-0 h-screen z-40 border-r border-gray-200 w-fit hidden md:block overflow-y-auto">
+    <Sidebar className="fixed top-0 left-0 z-40 hidden h-screen w-80 overflow-y-auto border-r border-gray-200 md:block">
       <SidebarHeader className="flex items-center justify-center py-4">
         <Link href="/" className="flex items-center gap-2">
           <div className="flex items-center justify-center">
@@ -275,12 +278,12 @@ export function SidebarNav() {
               alt="GridFlex Logo"
               width={42}
               height={54}
-              className="w-10 h-auto"
+              className="h-auto w-10"
             />
           </div>
         </Link>
       </SidebarHeader>
-      <SidebarContent className="flex flex-col h-full">
+      <SidebarContent className="flex h-full flex-col">
         <SidebarMenu className="px-4 py-5">
           {navItems
             .filter((item) => !["Change Log", "About Us"].includes(item.title)) // [!code highlight]
@@ -300,10 +303,13 @@ export function SidebarNav() {
                   >
                     <Link
                       href={item.href}
-                      className="flex items-center gap-8 text-xl"
+                      className="flex items-center gap-3 text-lg leading-tight"
                     >
-                      <item.icon size={12} className="h-4 w-4 sm:h-5 sm:w-5" />
-                      <span>{item.title}</span>
+                      <item.icon
+                        size={12}
+                        className="h-4 w-4 flex-shrink-0 sm:h-5 sm:w-5"
+                      />
+                      <span className="break-words">{item.title}</span>
                     </Link>
                   </SidebarMenuItem>
                 );
@@ -319,19 +325,22 @@ export function SidebarNav() {
                     <CollapsibleTrigger asChild>
                       <SidebarMenuButton
                         className={cn(
-                          "flex items-center justify-between py-6 w-full text-base sm:text-lg",
-                          isActive && "bg-gray-100"
+                          "flex min-h-fit w-full items-center justify-between py-6 text-base leading-tight sm:text-lg",
+                          isActive && "bg-gray-100",
                         )}
                       >
-                        <div className="flex items-center gap-8 text-xl">
-                          <item.icon size={14} className="w-4 h-4 sm:w-5 sm:h-5" />
-                          <span>{item.title}</span>
+                        <div className="flex items-center gap-3 text-lg leading-tight">
+                          <item.icon
+                            size={14}
+                            className="h-4 w-4 flex-shrink-0 sm:h-5 sm:w-5"
+                          />
+                          <span className="break-words">{item.title}</span>
                         </div>
                         {item.hasSubmenu && (
                           <ChevronDown
                             className={cn(
                               "h-4 w-4 transition-transform duration-200",
-                              isExpanded ? "rotate-0" : "-rotate-90"
+                              isExpanded ? "rotate-0" : "-rotate-90",
                             )}
                             size={12}
                           />
@@ -341,31 +350,42 @@ export function SidebarNav() {
 
                     {item.hasSubmenu && (
                       <CollapsibleContent>
-                        <SidebarMenuSub className="mt-1 space-y-1 whitespace-nowrap">
+                        <SidebarMenuSub className="mt-1 space-y-1">
                           {item.submenuItems?.map((subItem) => {
-                            const isSubActive = isItemActive(subItem.href, subItem.submenuItems);
-                            const isSubExpanded = expandedItems[subItem.title] ?? isSubActive;
+                            const isSubActive = isItemActive(
+                              subItem.href,
+                              subItem.submenuItems,
+                            );
+                            const isSubExpanded =
+                              expandedItems[subItem.title] ?? isSubActive;
 
                             return (
                               <div key={subItem.title} className="pl-4 sm:pl-6">
                                 {subItem.hasSubmenu ? (
                                   <Collapsible
                                     open={isSubExpanded}
-                                    onOpenChange={() => toggleExpanded(subItem.title)}
+                                    onOpenChange={() =>
+                                      toggleExpanded(subItem.title)
+                                    }
                                   >
                                     <SidebarMenuItem>
                                       <CollapsibleTrigger asChild>
                                         <SidebarMenuButton
                                           className={cn(
-                                            "flex items-center justify-between w-full px-2.5 py-6 text-xl sm:text-lg",
-                                            isSubActive && "bg-gray-100 font-medium"
+                                            "flex min-h-fit w-full items-center justify-between px-2.5 py-6 text-lg leading-tight sm:text-base",
+                                            isSubActive &&
+                                              "bg-gray-100 font-medium",
                                           )}
                                         >
-                                          <span>{subItem.title}</span>
+                                          <span className="break-words">
+                                            {subItem.title}
+                                          </span>
                                           <ChevronDown
                                             className={cn(
                                               "h-4 w-4 transition-transform duration-200",
-                                              isSubExpanded ? "rotate-0" : "-rotate-90"
+                                              isSubExpanded
+                                                ? "rotate-0"
+                                                : "-rotate-90",
                                             )}
                                             size={12}
                                           />
@@ -373,24 +393,28 @@ export function SidebarNav() {
                                       </CollapsibleTrigger>
                                       <CollapsibleContent>
                                         <SidebarMenuSub className="mt-1 px-1">
-                                          {subItem.submenuItems?.map((nestedItem) => (
-                                            <SidebarMenuItem
-                                              key={nestedItem.title}
-                                              className={cn(
-                                                "p-2.5 text-xl sm:text-lg",
-                                                pathname === nestedItem.href
-                                                  ? "rounded-md bg-[#161CCA] text-white"
-                                                  : "hover:bg-gray-100 rounded-md"
-                                              )}
-                                            >
-                                              <Link
-                                                href={nestedItem.href}
-                                                className="flex w-full items-center"
+                                          {subItem.submenuItems?.map(
+                                            (nestedItem) => (
+                                              <SidebarMenuItem
+                                                key={nestedItem.title}
+                                                className={cn(
+                                                  "p-2.5 text-lg leading-tight sm:text-base",
+                                                  pathname === nestedItem.href
+                                                    ? "rounded-md bg-[#161CCA] text-white"
+                                                    : "rounded-md hover:bg-gray-100",
+                                                )}
                                               >
-                                                <span>{nestedItem.title}</span>
-                                              </Link>
-                                            </SidebarMenuItem>
-                                          ))}
+                                                <Link
+                                                  href={nestedItem.href}
+                                                  className="flex w-full items-center"
+                                                >
+                                                  <span className="break-words">
+                                                    {nestedItem.title}
+                                                  </span>
+                                                </Link>
+                                              </SidebarMenuItem>
+                                            ),
+                                          )}
                                         </SidebarMenuSub>
                                       </CollapsibleContent>
                                     </SidebarMenuItem>
@@ -398,17 +422,19 @@ export function SidebarNav() {
                                 ) : (
                                   <SidebarMenuItem
                                     className={cn(
-                                      "p-2.5 text-xl sm:text-lg",
+                                      "p-2.5 text-lg leading-tight sm:text-base",
                                       pathname === subItem.href
                                         ? "rounded-md bg-[#161CCA] text-white"
-                                        : "hover:bg-gray-100 rounded-md"
+                                        : "rounded-md hover:bg-gray-100",
                                     )}
                                   >
                                     <Link
                                       href={subItem.href}
                                       className="flex w-full items-center"
                                     >
-                                      <span>{subItem.title}</span>
+                                      <span className="break-words">
+                                        {subItem.title}
+                                      </span>
                                     </Link>
                                   </SidebarMenuItem>
                                 )}
@@ -432,15 +458,21 @@ export function SidebarNav() {
                 <SidebarMenuItem
                   key={item.title}
                   className={cn(
-                    "p-2.5 text-xl",
+                    "p-2.5 text-lg leading-tight",
                     pathname === item.href
                       ? "rounded-md bg-[#161CCA] text-white"
-                      : "rounded-md hover:bg-gray-100"
+                      : "rounded-md hover:bg-gray-100",
                   )}
                 >
-                  <Link href={item.href} className="flex items-center gap-8 text-xl">
-                    <item.icon size={12} className="h-4 w-4 sm:h-5 sm:w-5" />
-                    <span>{item.title}</span>
+                  <Link
+                    href={item.href}
+                    className="flex items-center gap-3 text-lg leading-tight"
+                  >
+                    <item.icon
+                      size={12}
+                      className="h-4 w-4 flex-shrink-0 sm:h-5 sm:w-5"
+                    />
+                    <span className="break-words">{item.title}</span>
                   </Link>
                 </SidebarMenuItem>
               ))}
