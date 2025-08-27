@@ -51,17 +51,14 @@ export default function ProtectedLayout({
           </div>
         </div>
 
-        {/* Desktop layout */}
         <div className="hidden w-full md:flex">
-          {/* Sidebar with fixed width */}
           <div className="w-[21rem] flex-shrink-0">
             <SidebarNav />
           </div>
-          {/* Main content area */}
           <div className="flex flex-1 flex-col">
             <Navbar />
             <main
-              className="flex-1 px-8 py-4"
+              className="flex-1 px-8"
               style={{
                 backgroundImage: `url('/images/bgframe.jpg')`,
                 backgroundPosition: "center",

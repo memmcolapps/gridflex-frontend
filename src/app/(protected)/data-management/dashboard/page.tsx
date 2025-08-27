@@ -64,7 +64,7 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-transparent p-6">
       <div className="max-w-screen-2xl space-y-6 bg-transparent">
-        <div className="flex items-start justify-between bg-transparent pt-6">
+        <div className="flex items-start justify-between bg-transparent">
           <ContentHeader
             title="Overview"
             description="General overview of Data Management Dashboard"
@@ -113,7 +113,7 @@ export default function DashboardPage() {
           setShowEditCompleteProfileModal(true);
         }}
       />
- 
+
       {/* Edit Complete Profile Modal */}
       <EditCompleteProfileModal
         open={showEditCompleteProfileModal}

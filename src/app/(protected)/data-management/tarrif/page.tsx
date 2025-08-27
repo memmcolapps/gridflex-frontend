@@ -112,7 +112,7 @@ export default function TariffManagementPage() {
     formData.tariffRate;
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen p-6">
       <NotificationBar
         title="Tariff Management"
         bgColor="bg-[rgba(22,28,202,1)]"

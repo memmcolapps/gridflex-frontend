@@ -24,8 +24,8 @@ export function Navbar() {
   const closeDropdown = () => setIsProfileOpen(false);
 
   return (
-    <header className="sticky top-0 z-30 border-b border-gray-200 bg-white ">
-      <div className="flex h-full w-full items-center justify-between px-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-30 border-b border-gray-200 bg-white py-6">
+      <div className="flex h-16 w-full items-center justify-between px-4 sm:h-18 sm:px-6 lg:h-20 lg:px-8">
         <UserInfo />
 
         <div className="flex items-center gap-2 sm:gap-4">
@@ -40,7 +40,7 @@ export function Navbar() {
 
       {/* Profile dropdown */}
       {isProfileOpen && (
-        <div className="absolute top-16 right-4 z-40 w-140 rounded-lg border border-gray-200 bg-white shadow-lg sm:right-6">
+        <div className="absolute top-16 right-4 z-40 w-140 rounded-lg border border-gray-200 bg-white shadow-lg sm:top-18 sm:right-6 lg:top-20">
           <ProfileDropdown
             closeDropdown={closeDropdown}
             openEditProfileModal={() => setIsEditProfileOpen(true)}
@@ -61,9 +61,9 @@ export const UserAvatar = () => {
   const { user } = useAuth();
 
   return (
-    <Avatar className="h-8 w-8">
+    <Avatar className="h-7 w-7 sm:h-8 sm:w-8">
       <AvatarImage src="" alt="User" />
-      <AvatarFallback className="rounded-full bg-blue-600 text-white">
+      <AvatarFallback className="rounded-full bg-blue-600 text-xs text-white sm:text-sm">
         {`${user?.firstname?.charAt(0) ?? ""}${user?.lastname?.charAt(0) ?? ""}`}
       </AvatarFallback>
     </Avatar>
@@ -86,12 +86,14 @@ export const UserInfo = () => {
   const { user } = useAuth();
 
   return (
-    <div className="flex flex-col items-start p-14 md:flex-none">
-      <span className="text-2xl font-bold">
+    <div className="flex flex-col items-start justify-center px-1 py-3 sm:py-4 md:flex-none lg:py-5">
+      <span className="text-lg leading-tight font-bold sm:text-xl lg:text-2xl">
         {user?.business?.businessName?.toUpperCase() ?? "BUSINESS NAME"}
       </span>
       <div className="relative flex-1 md:w-80 md:flex-none">
-        Hello {user?.firstname?.toUpperCase() ?? "USER"}
+        <span className="text-sm text-gray-600 sm:text-base">
+          Hello {user?.firstname?.toUpperCase() ?? "USER"}
+        </span>
       </div>
     </div>
   );
@@ -111,7 +113,7 @@ export const UserDropdown = ({
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          className="flex cursor-pointer items-center gap-2 rounded-full p-6 hover:bg-gray-100"
+          className="flex cursor-pointer items-center gap-2 rounded-full p-2 hover:bg-gray-100 sm:p-3 lg:p-4"
         >
           <UserAvatar />
           <ChevronDown className="text-gray-500" size={16} />

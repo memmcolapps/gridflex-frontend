@@ -7,7 +7,7 @@ import { Edit } from "lucide-react";
 
 export default function OrganizationPage() {
   return (
-    <div className="min-h-screen bg-transparent">
+    <div className="min-h-screen bg-transparent p-6">
       <NotificationBar
         title="Organization Structure"
         bgColor="bg-[rgba(22,28,202,1)]"
@@ -28,8 +28,8 @@ export default function OrganizationPage() {
         showIcon={true}
         isTopBanner={false}
       />
-      <Card className="p-6 max-w-screen-2xl space-y-6 rounded-lg border-none bg-transparent px-4 shadow-sm sm:px-6 lg:px-8">
-        <div className="flex items-start justify-between pt-6 bg-transparent">
+      <Card className="max-w-screen-2xl space-y-6 rounded-lg border-none bg-transparent p-6 px-4 shadow-sm sm:px-6 lg:px-8">
+        <div className="flex items-start justify-between bg-transparent pt-6">
           <ContentHeader
             title="Organization Hierarchy"
             description="Build your organisation structure"
