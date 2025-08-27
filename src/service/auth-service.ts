@@ -37,17 +37,14 @@ export async function loginApi(
       },
     );
 
-    // Check if the response indicates success
     if (response.data.responsecode === "000") {
       toast.success(response.data.responsedesc);
       return response.data.responsedata;
     } else {
-      // If response code is not "000", treat it as an error
       throw new Error(response.data.responsedesc ?? "Login failed");
     }
   } catch (error: unknown) {
     const apiError = handleAuthError(error);
-    // Show error notification to user
     toast.error(apiError.message);
     throw new Error(apiError.message);
   }

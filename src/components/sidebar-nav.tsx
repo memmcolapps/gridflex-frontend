@@ -30,7 +30,8 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { useAuth } from "@/context/auth-context";
 
 interface NavItemProps {
   title: string;
@@ -48,11 +49,210 @@ interface SubMenuItemProps {
   submenuItems?: { title: string; href: string }[];
 }
 
+const navItems: NavItemProps[] = [
+  {
+    title: "Data Management",
+    href: "/data-management",
+    icon: Cylinder,
+    hasSubmenu: true,
+    submenuItems: [
+      { title: "Dashboard", href: "/data-management/dashboard" },
+      { title: "Organization", href: "/data-management/organization" },
+      {
+        title: "Meter Management",
+        href: "/data-management/meter-management",
+        hasSubmenu: true,
+        submenuItems: [
+          {
+            title: "Meter Manufacturers",
+            href: "/data-management/meter-management/meter-manufacturer",
+          },
+          {
+            title: "Meter Inventory",
+            href: "/data-management/meter-management/meter-inventory",
+          },
+          {
+            title: "Meters",
+            href: "/data-management/meter-management/meters",
+          },
+          {
+            title: "Assigned Meter",
+            href: "/data-management/meter-management/assign-meter",
+          },
+        ],
+      },
+      {
+        title: "Customer Management",
+        href: "/data-management/customer-management",
+      },
+      { title: "Tariff", href: "/data-management/tarrif" },
+      { title: "Band Management", href: "/data-management/band-management" },
+      {
+        title: "Debt Management",
+        href: "/data-management/debt-management",
+        hasSubmenu: true,
+        submenuItems: [
+          {
+            title: "Debt Setting",
+            href: "/data-management/debt-management/debt-settings",
+          },
+          {
+            title: "Debit Adjustment",
+            href: "/data-management/debt-management/debit-adjustment",
+          },
+          {
+            title: "Credit Adjustment",
+            href: "/data-management/debt-management/credit-adjustment",
+          },
+        ],
+      },
+      {
+        title: "Review & Approval",
+        href: "/data-management/reviewandapproval",
+      },
+    ],
+  },
+  {
+    title: "Billing",
+    href: "/billing",
+    icon: CreditCard,
+    hasSubmenu: true,
+    submenuItems: [
+      { title: "Dashboard", href: "/billing/dashboard" },
+      {
+        title: "MD Prebilling",
+        href: "#",
+        hasSubmenu: true,
+        submenuItems: [
+          {
+            title: "Meter Reading Sheet",
+            href: "/billing/md-prebilling/reading-sheet",
+          },
+          {
+            title: "Meter Consumption",
+            href: "/billing/md-prebilling/meter-consumption",
+          },
+          {
+            title: "Energy-Import",
+            href: "/billing/md-prebilling/energy-import",
+          },
+        ],
+      },
+      {
+        title: "Non-MD Prebilling",
+        href: "#",
+        hasSubmenu: true,
+        submenuItems: [
+          {
+            title: "Meter Reading Sheet",
+            href: "/billing/non-md-prebilling/reading-sheet",
+          },
+          {
+            title: "Meter Consumption",
+            href: "/billing/non-md-prebilling/meter-consumption",
+          },
+          {
+            title: "Energy-Import",
+            href: "/billing/non-md-prebilling/energy-import",
+          },
+        ],
+      },
+      { title: "Billing", href: "/billing/billing" },
+      { title: "Payments", href: "/billing/payments" },
+    ],
+  },
+  {
+    title: "Vending",
+    href: "/vending",
+    icon: Zap,
+    hasSubmenu: true,
+    submenuItems: [
+      { title: "Dashboard", href: "/vending/vending-dashboard" },
+      { title: "Vending", href: "/vending/vending" },
+    ],
+  },
+  {
+    title: "HES",
+    href: "/hes",
+    icon: Building2,
+    hasSubmenu: true,
+    submenuItems: [
+      { title: "Dashboard", href: "/hes/dashboard" },
+      {
+        title: "Communication Report",
+        href: "/hes/hes-communication-report",
+      },
+      { title: "Realtime Data", href: "/hes/hes-realtime-data" },
+      { title: "Profile and Events", href: "/hes/profile-and-events" },
+
+      {
+        title: "Controls and Confirguration",
+        href: "/hes/controlsandconfigs",
+        hasSubmenu: true,
+        submenuItems: [
+          {
+            title: "Data Collection Scheduler",
+            href: "/hes/controlsandconfigs/data-collection-scheduler",
+          },
+          {
+            title: "Meter Remote Configuration",
+            href: "/hes/controlsandconfigs/meter-remote-config",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    title: "User Management",
+    href: "/user-management",
+    icon: Users,
+    hasSubmenu: true,
+    submenuItems: [
+      { title: "Users", href: "/user-management" },
+      {
+        title: "Group Permission",
+        href: "/user-management/group-permission",
+      },
+    ],
+  },
+  {
+    title: "Audit Log",
+    href: "/audit-log",
+    icon: Activity,
+    hasSubmenu: false,
+  },
+  {
+    title: "Customized Report",
+    href: "/customized-report",
+    icon: ClipboardList,
+    hasSubmenu: false,
+  },
+
+  {
+    title: "Change Log",
+    href: "/change-log",
+    icon: MessageSquareMore,
+    hasSubmenu: false,
+  },
+  {
+    title: "About Us",
+    href: "/about-us",
+    icon: Info,
+    hasSubmenu: false,
+  },
+];
+
 export function SidebarNav() {
   const pathname = usePathname();
+  const { user } = useAuth();
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>(
     {},
   );
+
+  // Function to normalize module name for comparison
+  const normalizeModuleName = (name: string): string => {
+    return name.toLowerCase().replace(/\s+/g, "");
+  };
 
   const isItemActive = (href: string, subItems?: SubMenuItemProps[]) => {
     if (pathname === href) return true;
@@ -75,198 +275,39 @@ export function SidebarNav() {
     }));
   };
 
-  const navItems: NavItemProps[] = [
-    {
-      title: "Data Management",
-      href: "/data-management",
-      icon: Cylinder,
-      hasSubmenu: true,
-      submenuItems: [
-        { title: "Dashboard", href: "/data-management/dashboard" },
-        { title: "Organization", href: "/data-management/organization" },
-        {
-          title: "Meter Management",
-          href: "/data-management/meter-management",
-          hasSubmenu: true,
-          submenuItems: [
-            {
-              title: "Meter Manufacturers",
-              href: "/data-management/meter-management/meter-manufacturer",
-            },
-            {
-              title: "Meter Inventory",
-              href: "/data-management/meter-management/meter-inventory",
-            },
-            {
-              title: "Meters",
-              href: "/data-management/meter-management/meters",
-            },
-            {
-              title: "Assigned Meter",
-              href: "/data-management/meter-management/assign-meter",
-            },
-          ],
-        },
-        {
-          title: "Customer Management",
-          href: "/data-management/customer-management",
-        },
-        { title: "Tariff", href: "/data-management/tarrif" },
-        { title: "Band Management", href: "/data-management/band-management" },
-        {
-          title: "Debt Management",
-          href: "/data-management/debt-management",
-          hasSubmenu: true,
-          submenuItems: [
-            {
-              title: "Debt Setting",
-              href: "/data-management/debt-management/debt-settings",
-            },
-            {
-              title: "Debit Adjustment",
-              href: "/data-management/debt-management/debit-adjustment",
-            },
-            {
-              title: "Credit Adjustment",
-              href: "/data-management/debt-management/credit-adjustment",
-            },
-          ],
-        },
-        {
-          title: "Review & Approval",
-          href: "/data-management/reviewandapproval",
-        },
-      ],
-    },
-    {
-      title: "Billing",
-      href: "/billing",
-      icon: CreditCard,
-      hasSubmenu: true,
-      submenuItems: [
-        { title: "Dashboard", href: "/billing/dashboard" },
-        {
-          title: "MD Prebilling",
-          href: "#",
-          hasSubmenu: true,
-          submenuItems: [
-            {
-              title: "Meter Reading Sheet",
-              href: "/billing/md-prebilling/reading-sheet",
-            },
-            {
-              title: "Meter Consumption",
-              href: "/billing/md-prebilling/meter-consumption",
-            },
-            {
-              title: "Energy-Import",
-              href: "/billing/md-prebilling/energy-import",
-            },
-          ],
-        },
-        {
-          title: "Non-MD Prebilling",
-          href: "#",
-          hasSubmenu: true,
-          submenuItems: [
-            {
-              title: "Meter Reading Sheet",
-              href: "/billing/non-md-prebilling/reading-sheet",
-            },
-            {
-              title: "Meter Consumption",
-              href: "/billing/non-md-prebilling/meter-consumption",
-            },
-            {
-              title: "Energy-Import",
-              href: "/billing/non-md-prebilling/energy-import",
-            },
-          ],
-        },
-        { title: "Billing", href: "/billing/billing" },
-        { title: "Payments", href: "/billing/payments" },
-      ],
-    },
-    {
-      title: "Vending",
-      href: "/vending",
-      icon: Zap,
-      hasSubmenu: true,
-      submenuItems: [
-        { title: "Dashboard", href: "/vending/vending-dashboard" },
-        { title: "Vending", href: "/vending/vending" },
-      ],
-    },
-    {
-      title: "HES",
-      href: "/hes",
-      icon: Building2,
-      hasSubmenu: true,
-      submenuItems: [
-        { title: "Dashboard", href: "/hes/dashboard" },
-        {
-          title: "Communication Report",
-          href: "/hes/hes-communication-report",
-        },
-        { title: "Realtime Data", href: "/hes/hes-realtime-data" },
-        { title: "Profile and Events", href: "/hes/profile-and-events" },
+  // Filter navigation items based on user permissions
+  const filteredNavItems = useMemo(() => {
+    if (!user) return [];
 
-        {
-          title: "Controls and Confirguration",
-          href: "/hes/controlsandconfigs",
-          hasSubmenu: true,
-          submenuItems: [
-            {
-              title: "Data Collection Scheduler",
-              href: "/hes/controlsandconfigs/data-collection-scheduler",
-            },
-            {
-              title: "Meter Remote Configuration",
-              href: "/hes/controlsandconfigs/meter-remote-config",
-            },
-          ],
-        },
-      ],
-    },
-    {
-      title: "User Management",
-      href: "/user-management",
-      icon: Users,
-      hasSubmenu: true,
-      submenuItems: [
-        { title: "Users", href: "/user-management" },
-        {
-          title: "Group Permission",
-          href: "/user-management/group-permission",
-        },
-      ],
-    },
-    {
-      title: "Audit Log",
-      href: "/audit-log",
-      icon: Activity,
-      hasSubmenu: false,
-    },
-    {
-      title: "Customized Report",
-      href: "/customized-report",
-      icon: ClipboardList,
-      hasSubmenu: false,
-    },
+    // SuperAdmin can see everything
+    if (user.groups?.groupTitle?.toLowerCase() === "super admin") {
+      return navItems;
+    }
+    // Function to check if user has access to a module
+    const hasModuleAccess = (moduleName: string): boolean => {
+      if (!user?.groups?.modules) return false;
 
-    {
-      title: "Change Log",
-      href: "/change-log",
-      icon: MessageSquareMore,
-      hasSubmenu: false,
-    },
-    {
-      title: "About Us",
-      href: "/about-us",
-      icon: Info,
-      hasSubmenu: false,
-    },
-  ];
+      const normalizedModuleName = normalizeModuleName(moduleName);
+
+      // Everyone should see Audit log
+      if (normalizedModuleName === "auditlog") return true;
+
+      return user.groups.modules.some((module) => {
+        const normalizedApiModuleName = normalizeModuleName(module.name);
+        return (
+          normalizedApiModuleName === normalizedModuleName && module.access
+        );
+      });
+    };
+
+    return navItems.filter((item) => {
+      // Always show Audit Log
+      if (item.title === "Audit Log") return true;
+
+      // Check if user has access to this module
+      return hasModuleAccess(item.title);
+    });
+  }, [user]);
 
   return (
     <Sidebar className="fixed top-0 left-0 z-40 hidden h-screen w-80 overflow-y-auto border-r border-gray-200 md:block">
@@ -285,8 +326,8 @@ export function SidebarNav() {
       </SidebarHeader>
       <SidebarContent className="flex h-full flex-col">
         <SidebarMenu className="px-4 py-5">
-          {navItems
-            .filter((item) => !["Change Log", "About Us"].includes(item.title)) // [!code highlight]
+          {filteredNavItems
+            .filter((item) => !["Change Log", "About Us"].includes(item.title))
             .map((item) => {
               const isActive = isItemActive(item.href, item.submenuItems);
               const isExpanded = expandedItems[item.title] ?? isActive;
@@ -452,7 +493,7 @@ export function SidebarNav() {
 
         <div className="mt-auto px-6 py-5">
           <SidebarMenu>
-            {navItems
+            {filteredNavItems
               .filter((item) => ["Change Log", "About Us"].includes(item.title))
               .map((item) => (
                 <SidebarMenuItem
