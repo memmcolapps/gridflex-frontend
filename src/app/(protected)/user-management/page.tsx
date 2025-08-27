@@ -1,12 +1,11 @@
-"use client"
+"use client";
 
+import UserManagement from "@/components/usermanagement/usermanagement";
 
-import UserManagement from "@/components/usermanagement/usermanagement"
-
-export default function UserPage(){
-    return(
-        <div className="p-6 overflow-y-hidden h-screen w-full flex flex-col"> 
-            <UserManagement/>
-        </div>
-    )
+export default function UserPage() {
+  return (
+    <div className="flex h-screen w-full flex-col overflow-y-hidden p-6">
+      <UserManagement />
+    </div>
+  );
 }
