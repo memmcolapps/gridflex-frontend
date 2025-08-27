@@ -249,7 +249,6 @@ export function SidebarNav() {
     {},
   );
 
-  // Function to normalize module name for comparison
   const normalizeModuleName = (name: string): string => {
     return name.toLowerCase().replace(/\s+/g, "");
   };
@@ -275,7 +274,6 @@ export function SidebarNav() {
     }));
   };
 
-  // Filter navigation items based on user permissions
   const filteredNavItems = useMemo(() => {
     if (!user) return [];
 
@@ -283,13 +281,11 @@ export function SidebarNav() {
     if (user.groups?.groupTitle?.toLowerCase() === "super admin") {
       return navItems;
     }
-    // Function to check if user has access to a module
     const hasModuleAccess = (moduleName: string): boolean => {
       if (!user?.groups?.modules) return false;
 
       const normalizedModuleName = normalizeModuleName(moduleName);
 
-      // Everyone should see Audit log
       if (normalizedModuleName === "auditlog") return true;
 
       return user.groups.modules.some((module) => {
@@ -301,10 +297,8 @@ export function SidebarNav() {
     };
 
     return navItems.filter((item) => {
-      // Always show Audit Log
       if (item.title === "Audit Log") return true;
 
-      // Check if user has access to this module
       return hasModuleAccess(item.title);
     });
   }, [user]);
