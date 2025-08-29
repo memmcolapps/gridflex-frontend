@@ -1,13 +1,10 @@
-"use client";
-
 import { useState } from "react";
 import { useAuth } from "@/context/auth-context";
 import ProfileDropdown from "./profile/profiledropdown";
 import EditProfileModal from "./profile/editprofilemodal";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Bell } from "lucide-react";
+import { Bell, ChevronDown, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, LogOut, User } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,6 +17,7 @@ export function Navbar() {
   const { isLoading } = useAuth();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // Add state for DropdownMenu
 
   const closeDropdown = () => setIsProfileOpen(false);
 
@@ -30,15 +28,18 @@ export function Navbar() {
 
         <div className="flex items-center gap-2 sm:gap-4">
           <NotificationButton />
-
           <UserDropdown
-            onProfileClick={() => setIsProfileOpen(!isProfileOpen)}
+            onProfileClick={() => {
+              setIsProfileOpen(!isProfileOpen);
+              setIsDropdownOpen(false); // Close the dropdown when profile is clicked
+            }}
             isLoading={isLoading}
+            isOpen={isDropdownOpen}
+            setIsOpen={setIsDropdownOpen}
           />
         </div>
       </div>
 
-      {/* Profile dropdown */}
       {isProfileOpen && (
         <div className="absolute top-16 right-4 z-40 w-140 rounded-lg border border-gray-200 bg-white shadow-lg sm:top-18 sm:right-6 lg:top-20">
           <ProfileDropdown
@@ -48,7 +49,6 @@ export function Navbar() {
         </div>
       )}
 
-      {/* Edit profile modal */}
       <EditProfileModal
         isOpen={isEditProfileOpen}
         onClose={() => setIsEditProfileOpen(false)}
@@ -102,14 +102,18 @@ export const UserInfo = () => {
 export const UserDropdown = ({
   onProfileClick,
   isLoading,
+  isOpen,
+  setIsOpen,
 }: {
   onProfileClick: () => void;
   isLoading: boolean;
+  isOpen: boolean;
+  setIsOpen: (open: boolean) => void;
 }) => {
   const { logout } = useAuth();
 
   return (
-    <DropdownMenu>
+    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
