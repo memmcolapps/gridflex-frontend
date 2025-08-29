@@ -55,7 +55,7 @@ const SetSyncScheduleDialog: React.FC<SetSyncScheduleDialogProps> = ({ isOpen, o
                                 Event/Profile Type <span className="text-red-600">*</span>
                             </Label>
                             <Select onValueChange={setEventType} value={eventType}>
-                                <SelectTrigger className="w-full">
+                                <SelectTrigger className="w-full text-gray-400">
                                     <SelectValue placeholder="Select Event/Profile Type" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -94,7 +94,7 @@ const SetSyncScheduleDialog: React.FC<SetSyncScheduleDialogProps> = ({ isOpen, o
                                     Unit <span className="text-red-600">*</span>
                                 </Label>
                                 <Select onValueChange={setUnit} value={unit}>
-                                    <SelectTrigger className="placeholder:text-gray-400 text-gray-800">
+                                    <SelectTrigger className="placeholder:text-gray-400 text-gray-400">
                                         <SelectValue className="text-gray-400" placeholder="Select Unit" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -110,7 +110,7 @@ const SetSyncScheduleDialog: React.FC<SetSyncScheduleDialogProps> = ({ isOpen, o
                                 Active Days <span className="text-red-600">*</span>
                             </Label>
                             <Select onValueChange={setActiveDays} value={activeDays}>
-                                <SelectTrigger className="w-full text-gray-800 [&_[data-placeholder]]:text-gray-400">
+                                <SelectTrigger className="w-full text-gray-400 [&_[data-placeholder]]:text-gray-400">
                                     <SelectValue placeholder="Select Active Days" />
                                 </SelectTrigger>
                                 <SelectContent>
