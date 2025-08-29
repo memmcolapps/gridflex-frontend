@@ -47,7 +47,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { BulkUploadDialog } from "@/components/meter-management/bulk-upload"; // Import BulkUploadDialog
+import { BulkUploadDialog } from "@/components/meter-management/bulk-upload";
 
 // Define the possible dialog types
 type DialogType = "apn" | "ctvt" | "relay" | "datetime" | "ip" | "viewDetails";
@@ -256,23 +256,28 @@ export default function MeterRemoteConfigPage() {
     const [showOfflineDialog, setShowOfflineDialog] = useState(false);
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [rowsPerPage, setRowsPerPage] = useState<number>(10);
-    const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false); // State for BulkUploadDialog
-    const [meterData, setMeterData] = useState<Meter[]>(initialMeterData); // Manage meterData as state
+    const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
+    const [meterData, setMeterData] = useState<Meter[]>(initialMeterData);
 
     const handleConfigureAction = (type: DialogType) => {
-        const areAnyMetersOffline = selectedMeters.some((sN) => {
-            const meter = meterData.find((m) => m.sN === sN);
-            return meter && meter.status === "Offline";
-        });
+        if (selectedMeters.length === 0) {
+            return;
+        }
 
-        if (areAnyMetersOffline) {
+        const offlineMeters = meterData.filter(m => selectedMeters.includes(m.sN) && m.status === "Offline");
+        if (offlineMeters.length > 0) {
             setShowOfflineDialog(true);
             setIsDialogOpen(false);
         } else {
-            setDialogType(type);
-            setIsDialogOpen(true);
-            setSelectedConfigOption(type);
-            setShowOfflineDialog(false);
+            // For now, we'll configure the first selected meter.
+            // A more complex implementation would handle bulk configurations.
+            const meterToConfigure = meterData.find(m => m.sN === selectedMeters[0]);
+            if (meterToConfigure) {
+                setSelectedMeter(meterToConfigure);
+                setDialogType(type);
+                setIsDialogOpen(true);
+                setSelectedConfigOption(type);
+            }
         }
     };
 
@@ -288,6 +293,7 @@ export default function MeterRemoteConfigPage() {
         setSelectedMeter(undefined);
         setDialogType(null);
         setShowOfflineDialog(false);
+        setSelectedConfigOption(null);
     };
 
     // Handle bulk upload save
@@ -296,11 +302,11 @@ export default function MeterRemoteConfigPage() {
             ...prevData,
             ...data.map((item, index) => ({
                 ...item,
-                sN: (prevData.length + index + 1).toString().padStart(2, "0"), // Generate unique sN
+                sN: (prevData.length + index + 1).toString().padStart(2, "0"),
             })),
         ]);
-        setCurrentPage(1); // Reset to first page on new data addition
-        setIsBulkUploadOpen(false); // Close the dialog
+        setCurrentPage(1);
+        setIsBulkUploadOpen(false);
     };
 
     // Apply search filter
@@ -353,12 +359,12 @@ export default function MeterRemoteConfigPage() {
 
     const handleRowsPerPageChange = (value: string) => {
         setRowsPerPage(Number(value));
-        setCurrentPage(1); // Reset to first page on rows per page change
+        setCurrentPage(1);
     };
 
     const handleSortChange = (key: keyof Meter, direction: "asc" | "desc") => {
         setSortConfig({ key, direction });
-        setCurrentPage(1); // Reset to first page on sort change
+        setCurrentPage(1);
     };
 
     const toggleMeterSelection = (sN: string) => {
@@ -377,8 +383,10 @@ export default function MeterRemoteConfigPage() {
 
     const handleSetActiveFilters = (filters: Record<string, string | boolean>) => {
         console.log("Filters applied:", filters);
-        setCurrentPage(1); // Reset to first page on filter change
+        setCurrentPage(1);
     };
+
+    const isConfigureButtonDisabled = selectedMeters.length === 0;
 
     return (
         <div className="p-6 overflow-y-auto h-screen w-full flex flex-col">
@@ -392,7 +400,7 @@ export default function MeterRemoteConfigPage() {
                         className="flex w-full cursor-pointer items-center gap-2 border bg-white font-medium text-[#161CCA] md:w-auto"
                         variant="outline"
                         size="lg"
-                        onClick={() => setIsBulkUploadOpen(true)} // Open BulkUploadDialog
+                        onClick={() => setIsBulkUploadOpen(true)}
                     >
                         <Settings2 size={14} strokeWidth={2.3} className="h-4 w-4 text-[#161CCA]" />
                         <span className="text-sm md:text-base">Bulk Upload</span>
@@ -403,6 +411,7 @@ export default function MeterRemoteConfigPage() {
                                 className="flex w-full cursor-pointer items-center gap-2 border bg-[#161CCA] font-medium text-white md:w-auto"
                                 variant="outline"
                                 size="lg"
+                                disabled={isConfigureButtonDisabled}
                             >
                                 <Settings2 size={14} strokeWidth={2.3} className="h-4 w-4 text-white" />
                                 <span className="text-sm md:text-base">Configure Meter</span>
@@ -736,14 +745,17 @@ export default function MeterRemoteConfigPage() {
                     meter={selectedMeter}
                 />
             )}
-            {showOfflineDialog && (
-                <OfflineDialog isOpen={true} onClose={closeDialog} />
-            )}
             {isDialogOpen && dialogType === "viewDetails" && selectedMeter && (
                 <ViewDetailsDialog
                     isOpen={true}
                     onClose={closeDialog}
                     meter={selectedMeter}
+                />
+            )}
+            {showOfflineDialog && (
+                <OfflineDialog
+                    isOpen={true}
+                    onClose={closeDialog}
                 />
             )}
         </div>
