@@ -18,6 +18,7 @@ import {
 import { SelectPortal } from "@radix-ui/react-select";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
+import type { Meter } from "@/types/meter";
 
 const relayModes = [
     {
@@ -58,10 +59,16 @@ const relayModes = [
     },
 ];
 
+// interface Meter {
+//     id: string;
+//     name?: string;
+//     // Add other properties as needed
+// }
+
 interface ChangeRelayModeDialogProps {
     isOpen: boolean;
     onClose: () => void;
-    meter: any;
+    meter: Meter | undefined; // Replaced 'any' with 'Meter'
 }
 
 export default function ChangeRelayModeDialog({
@@ -99,18 +106,15 @@ export default function ChangeRelayModeDialog({
                             id="relay-mode"
                             className="w-full border border-gray-200 text-gray-400"
                         >
-                            {/* Show only title after selection */}
                             <SelectValue placeholder="Select Mode">
                                 {relayMode
                                     ? relayModes.find(
-                                          (mode) =>
-                                              mode.value === relayMode
+                                          (mode) => mode.value === relayMode
                                       )?.title
                                     : ""}
                             </SelectValue>
                         </SelectTrigger>
 
-                        {/* Override default Portal */}
                         <SelectPortal
                             container={
                                 document?.getElementById("dialog-container") ??

@@ -11,11 +11,18 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
+import type { Meter } from "@/types/meter";
+
+// interface Meter {
+//     id: string;
+//     name?: string;
+//     // Add other properties as needed
+// }
 
 interface ConfigureCTVTRatioDialogProps {
     isOpen: boolean;
     onClose: () => void;
-    meter: any; // Replace 'any' with a more specific type if available
+    meter: Meter | undefined; // Replaced 'any' with 'Meter'
 }
 
 export default function ConfigureCTVTRatioDialog({ isOpen, onClose, meter }: ConfigureCTVTRatioDialogProps) {
@@ -112,7 +119,9 @@ export default function ConfigureCTVTRatioDialog({ isOpen, onClose, meter }: Con
                     <Button
                         onClick={handleConfigure}
                         disabled={!isFormValid} // Disable when form is invalid
-                        className={`bg-[#161CCA] text-white ${!isFormValid ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+                        className={`bg-[#161CCA] text-white ${
+                            !isFormValid ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+                        }`}
                     >
                         Configure
                     </Button>

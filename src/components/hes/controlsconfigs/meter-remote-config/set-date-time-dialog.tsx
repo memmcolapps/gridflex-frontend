@@ -17,12 +17,19 @@ import {
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "@/components/ui/select"; // Import Select components
+} from "@/components/ui/select";
+import type { Meter } from "@/types/meter";
+
+// interface Meter {
+//     id: string;
+//     name?: string;
+//     // Add other properties as needed
+// }
 
 interface SetDateTimeDialogProps {
     isOpen: boolean;
     onClose: () => void;
-    meter?: any; // Replace 'any' with the actual meter type if known
+    meter?: Meter; // Replaced 'any' with 'Meter'
 }
 
 export default function SetDateTimeDialog({ isOpen, onClose, meter }: SetDateTimeDialogProps) {
@@ -33,15 +40,24 @@ export default function SetDateTimeDialog({ isOpen, onClose, meter }: SetDateTim
     const [year, setYear] = useState("");
 
     // Check if all fields are filled
-    const isFormComplete = hour.trim() !== "" && minute.trim() !== "" && date.trim() !== "" && month.trim() !== "" && year.trim() !== "";
+    const isFormComplete =
+        hour.trim() !== "" &&
+        minute.trim() !== "" &&
+        date.trim() !== "" &&
+        month.trim() !== "" &&
+        year.trim() !== "";
 
     const handleSet = () => {
         // Handle date and time set logic
+        console.log("Setting Date and Time:", { hour, minute, date, month, year, meter });
         onClose();
     };
 
     // Date options (1-31)
-    const dateOptions = Array.from({ length: 31 }, (_, i) => ({ value: (i + 1).toString(), label: (i + 1).toString() }));
+    const dateOptions = Array.from({ length: 31 }, (_, i) => ({
+        value: (i + 1).toString(),
+        label: (i + 1).toString(),
+    }));
     // Month options
     const monthOptions = [
         { value: "1", label: "January" },
@@ -144,12 +160,18 @@ export default function SetDateTimeDialog({ isOpen, onClose, meter }: SetDateTim
                     </div>
                 </div>
                 <DialogFooter>
-                    <Button variant="outline" onClick={onClose} className="border-[#161CCA] text-[#161CCA] cursor-pointer">
+                    <Button
+                        variant="outline"
+                        onClick={onClose}
+                        className="border-[#161CCA] text-[#161CCA] cursor-pointer"
+                    >
                         Cancel
                     </Button>
                     <Button
                         onClick={handleSet}
-                        className={`bg-[#161CCA] text-white cursor-pointer ${!isFormComplete ? "opacity-50 cursor-not-allowed" : ""}`}
+                        className={`bg-[#161CCA] text-white ${
+                            !isFormComplete ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+                        }`}
                         disabled={!isFormComplete}
                     >
                         Set

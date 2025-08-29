@@ -118,3 +118,20 @@ export interface MeterData {
   houseNo?: string;
   approvedStatus?:string
 }
+// types/meter.ts
+export interface Meter {
+    sN: string;
+    meterNumber: string;
+    simNo: string;
+    businessHub: string;
+    class: string;
+    category: string;
+    manufacturer: string;
+    model: string;
+    status: string;
+    region: string;
+    serviceCenter: string;
+    feeder: string;
+    transformer: string;
+    lastSync: string;
+}

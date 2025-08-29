@@ -33,7 +33,7 @@ interface MeterData {
 interface ViewDetailsDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  meter: MeterData | null;
+  meter: MeterData | undefined;
 }
 
 export default function ViewDetailsDialog({
