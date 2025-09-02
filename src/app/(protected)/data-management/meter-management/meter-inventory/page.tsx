@@ -50,6 +50,7 @@ import { AddMeterDialog } from "@/components/meter-management/add-edit-meter-dia
 import { ViewMeterDetailsDialog } from "@/components/meter-management/view-meters-details-dialog";
 import { ViewMeterInfoDialog } from "@/components/meter-management/view-meter-info-dialog";
 import type { MeterData } from "@/types/meter";
+import { getStatusStyle } from "@/components/status-style";
 
 // Define filter sections for FilterControl
 const filterSections = [
@@ -134,6 +135,7 @@ const initialMeters: MeterData[] = [
     protocol: "G-500",
     authentication: "123456",
     password: "0000000",
+    meterStage: "Pending-allocated"
   },
   {
     id: "2",
@@ -165,6 +167,7 @@ const initialMeters: MeterData[] = [
     protocol: "G-500",
     authentication: "123456",
     password: "0000000",
+    meterStage: "Pending-allocated"
   },
   {
     id: "3",
@@ -196,6 +199,7 @@ const initialMeters: MeterData[] = [
     protocol: "G-500",
     authentication: "123456",
     password: "0000000",
+    meterStage: "Pending-created"
   },
   {
     id: "4",
@@ -227,6 +231,7 @@ const initialMeters: MeterData[] = [
     protocol: "G-500",
     authentication: "123456",
     password: "0000000",
+    meterStage: "Pending-created"
   },
   {
     id: "5",
@@ -258,6 +263,7 @@ const initialMeters: MeterData[] = [
     protocol: "G-500",
     authentication: "123456",
     password: "0000000",
+    meterStage: "Pending-created"
   },
   {
     id: "6",
@@ -289,6 +295,7 @@ const initialMeters: MeterData[] = [
     protocol: "G-500",
     authentication: "123456",
     password: "0000000",
+    meterStage: "Rejected-created"
   },
   {
     id: "7",
@@ -320,6 +327,7 @@ const initialMeters: MeterData[] = [
     protocol: "G-500",
     authentication: "123456",
     password: "0000000",
+    meterStage: "Rejected-created"
   },
   {
     id: "8",
@@ -351,6 +359,7 @@ const initialMeters: MeterData[] = [
     protocol: "G-500",
     authentication: "123456",
     password: "0000000",
+    meterStage: "Created"
   },
   {
     id: "9",
@@ -382,6 +391,7 @@ const initialMeters: MeterData[] = [
     protocol: "G-500",
     authentication: "123456",
     password: "0000000",
+    meterStage: "Created"
   },
   {
     id: "10",
@@ -413,6 +423,7 @@ const initialMeters: MeterData[] = [
     protocol: "G-500",
     authentication: "123456",
     password: "0000000",
+    meterStage: "Created"
   },
   {
     id: "11",
@@ -444,6 +455,7 @@ const initialMeters: MeterData[] = [
     protocol: "G-500",
     authentication: "123456",
     password: "0000000",
+    meterStage: "Created"
   },
 ];
 
@@ -826,7 +838,7 @@ export default function MeterInventoryPage() {
               "newSgc",
               "manufactureName",
               "class",
-              "meterType",
+              "meterStage",
               "category",
             ]}
           />
@@ -859,10 +871,10 @@ export default function MeterInventoryPage() {
               <TableHead>New SGC</TableHead>
               <TableHead>Manufacture</TableHead>
               <TableHead>Class</TableHead>
-              {/* <TableHead>ID</TableHead> */}
-              <TableHead>Meter Type</TableHead>
+              {/* <TableHead>Meter Type</TableHead> */}
               <TableHead>Category</TableHead>
               <TableHead>Date Added</TableHead>
+              <TableHead>Meter Stage</TableHead>
               <TableHead>Actions</TableHead>
 
               {/* <TableHead>Approval Status</TableHead> */}
@@ -892,9 +904,15 @@ export default function MeterInventoryPage() {
                 <TableCell>{meter.newSgc}</TableCell>
                 <TableCell>{meter.manufactureName}</TableCell>
                 <TableCell>{meter.class}</TableCell>
-                <TableCell>{meter.meterType}</TableCell>
+                {/* <TableCell>{meter.meterType}</TableCell> */}
                 <TableCell>{meter.category}</TableCell>
                 <TableCell>{meter.dateAdded}</TableCell>
+                <TableCell>
+                  <span className={getStatusStyle(meter.meterStage)}>
+                    {meter.meterStage}
+                  </span>
+                </TableCell>
+
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -1021,12 +1039,6 @@ export default function MeterInventoryPage() {
         onClose={() => setViewInfoDialogOpen(false)}
         meter={selectedMeter}
       />
-
-      {/* <ViewMeterDetailsDialog
-                isOpen={viewDialogOpen}
-                onClose={() => setViewDialogOpen(false)}
-                meter={selectedMeter}
-            /> */}
     </div>
   );
 }

@@ -628,7 +628,8 @@ export default function MeterManagementPage() {
             assignedStatus: "Deactivated",
             status: "Assigned",
             customerId: undefined,
-            smartMeter: 'Smart'
+            smartMeter: 'Smart',
+            meterStage: "Pending-assigned"
         },
 
         {
@@ -650,7 +651,8 @@ export default function MeterManagementPage() {
             assignedStatus: "Deactivated",
             status: "Assigned",
             customerId: undefined,
-            smartMeter: 'Smart'
+            smartMeter: 'Smart',
+            meterStage: "Pending-assigned"
         },
         {
             id: "MT-1003",
@@ -670,7 +672,8 @@ export default function MeterManagementPage() {
             tariff: "Residential",
             assignedStatus: "Active",
             status: "Unassigned",
-            customerId: undefined
+            customerId: undefined,
+            meterStage: "Unassigned"
         },
 
         {
@@ -691,7 +694,8 @@ export default function MeterManagementPage() {
             tariff: "Residential",
             assignedStatus: "Active",
             status: "Unassigned",
-            customerId: undefined
+            customerId: undefined,
+            meterStage: "Unassigned"
         },
 
         {
@@ -712,7 +716,8 @@ export default function MeterManagementPage() {
             tariff: "Residential",
             assignedStatus: "Active",
             status: "Assigned",
-            customerId: undefined
+            customerId: undefined,
+            meterStage: "Unassigned"
         },
         {
             id: "MT-1006",
@@ -732,7 +737,8 @@ export default function MeterManagementPage() {
             tariff: "Residential",
             assignedStatus: "Deactivated",
             status: "Assigned",
-            customerId: undefined
+            customerId: undefined,
+            meterStage: "Unassigned"
         },
         {
             id: "MT-1007",
@@ -752,7 +758,8 @@ export default function MeterManagementPage() {
             tariff: "Residential",
             assignedStatus: "Active",
             status: "Assigned",
-            customerId: undefined
+            customerId: undefined,
+            meterStage: "Unassigned"
         },
         {
             id: "MT-1008",
@@ -772,7 +779,8 @@ export default function MeterManagementPage() {
             tariff: "Residential",
             assignedStatus: "Active",
             status: "Unassigned",
-            customerId: undefined
+            customerId: undefined,
+             meterStage:"Assigned"
         },
         {
             id: "MT-1009",
@@ -790,9 +798,11 @@ export default function MeterManagementPage() {
             category: "Prepaid",
             accountNumber: "001/654321",
             tariff: "Residential",
-            assignedStatus: "Deactivated",
+            assignedStatus: "Pending",
             status: "Unassigned",
-            customerId: undefined
+            customerId: undefined,
+            meterStage: "Assigned",
+
         },
         {
             id: "MT-1018",
@@ -810,9 +820,10 @@ export default function MeterManagementPage() {
             category: "Prepaid",
             accountNumber: "001/654321",
             tariff: "Residential",
-            assignedStatus: "Deactivated",
+            assignedStatus: "Pending",
             status: "Unassigned",
-            customerId: undefined
+            customerId: undefined,
+            meterStage: "Assigned"
         },
         {
             id: "MT-1019",
@@ -832,7 +843,8 @@ export default function MeterManagementPage() {
             tariff: "Residential",
             assignedStatus: "Pending",
             status: "Unassigned",
-            customerId: undefined
+            customerId: undefined,
+            meterStage: "Assigned"
         },
     ]);
 
@@ -1722,8 +1734,8 @@ export default function MeterManagementPage() {
                                         <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">Manufacturer</TableHead>
                                         <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">Class</TableHead>
                                         <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">Category</TableHead>
-                                        <TableHead className="px-4 py-3 text-sm font-medium text-gray-900 text-center">Assigned Status</TableHead>
-                                        <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">Activation Status</TableHead>
+                                        <TableHead className="px-4 py-3 text-sm font-medium text-gray-900 text-center">Meter Stage</TableHead>
+                                        <TableHead className="px-4 py-3 text-sm font-medium text-gray-900 text-left">Activation Status</TableHead>
                                         <TableHead className="px-4 py-3 text-sm font-medium text-gray-900 text-right">Actions</TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -1763,10 +1775,20 @@ export default function MeterManagementPage() {
                                                     <TableCell className="px-4 py-3 text-sm text-gray-900">{item.class}</TableCell>
                                                     <TableCell className="px-4 py-3 text-sm text-gray-900">{item.category}</TableCell>
                                                     <TableCell className="px-4 py-3 text-center">
+                                                        <span className={cn("inline-block text-sm font-medium", getStatusStyle(item.meterStage))}>
+                                                            {item.meterStage}
+                                                        </span>
+                                                    </TableCell>
+                                                    {/* <TableCell className="px-4 py-3 text-center">
                                                         <span className={cn("inline-block text-sm font-medium", getStatusStyle(item.status))}>
                                                             {item.status}
                                                         </span>
-                                                    </TableCell>
+                                                    </TableCell> */}
+                                                    {/* <TableCell className="px-4 py-3 text-center">
+                                                        <span className={cn("inline-block text-sm font-medium", getStatusStyle(item.status))}>
+                                                            {item.status}
+                                                        </span>
+                                                    </TableCell> */}
                                                     <TableCell className="px-4 py-3">
                                                         <span className={cn("inline-block text-sm font-medium", getStatusStyle(item.assignedStatus))}>
                                                             {item.assignedStatus}

@@ -117,6 +117,7 @@ const initialMeterData: MeterData[] = [
         authentication: undefined,
         password: undefined,
         Image: undefined,
+        meterStage: "Pending-detached"
     },
     {
         id: "2",
@@ -167,6 +168,7 @@ const initialMeterData: MeterData[] = [
         authentication: undefined,
         password: undefined,
         Image: undefined,
+        meterStage: "Pending-detached"
     },
     {
         id: '3',
@@ -211,6 +213,7 @@ const initialMeterData: MeterData[] = [
         authentication: undefined,
         password: undefined,
         Image: undefined,
+        meterStage: "Active"
     },
     {
         id: "4",
@@ -254,6 +257,7 @@ const initialMeterData: MeterData[] = [
         authentication: undefined,
         password: undefined,
         Image: undefined,
+        meterStage: "Pending-migrated"
     },
     {
         id: "5",
@@ -297,6 +301,7 @@ const initialMeterData: MeterData[] = [
         authentication: undefined,
         password: undefined,
         Image: undefined,
+        meterStage: "Pending-detached"
     },
     {
         id: "6",
@@ -340,6 +345,8 @@ const initialMeterData: MeterData[] = [
         authentication: undefined,
         password: undefined,
         Image: undefined,
+        meterStage: "Pending-migrated"
+
     },
     {
         id: "7",
@@ -383,6 +390,7 @@ const initialMeterData: MeterData[] = [
         authentication: undefined,
         password: undefined,
         Image: undefined,
+        meterStage: "Pending-migrated"
     },
     {
         id: "8",
@@ -426,6 +434,7 @@ const initialMeterData: MeterData[] = [
         authentication: undefined,
         password: undefined,
         Image: undefined,
+        meterStage: "Active"
     },
     {
         id: "9",
@@ -469,6 +478,7 @@ const initialMeterData: MeterData[] = [
         authentication: undefined,
         password: undefined,
         Image: undefined,
+        meterStage: "Active"
     },
 ];
 
@@ -754,33 +764,42 @@ export default function AssignMeterPage() {
         setIsSetPaymentModalOpen(false);
         alert(`Details and payment mode updated successfully for prepaid customer ${editCustomer.customerId}!`);
     };
-
     const handleDetachMeter = (customer: MeterData) => {
         setCustomerToDetach(customer);
         setIsDetachModalOpen(true);
     };
 
     const handleProceedFromDetach = () => {
+        if (customerToDetach) {
+            // Update meterStage to "Pending-detached" only on "Confirm" in DetachMeterDialog
+            setMeterData((prev) =>
+                prev.map((item) =>
+                    item.customerId === customerToDetach.customerId
+                        ? { ...item, meterStage: "Pending-detached" }
+                        : item
+                )
+            );
+        }
         setIsDetachModalOpen(false);
         setIsDetachConfirmModalOpen(true);
     };
 
-    const handleConfirmDetach = () => {
-        if (customerToDetach) {
-            // Here you would typically make an API call to actually detach the meter
-            alert(`Meter detached successfully for customer ${customerToDetach.customerId}! Reason: ${detachReason}`);
-            setIsDetachConfirmModalOpen(false);
-            setDetachReason(""); // Reset the reason
-            setCustomerToDetach(null); // Reset the customer
-        }
-    };
+const handleConfirmDetach = () => {
+    if (customerToDetach) {
+        // Keep meterStage as "Pending-detached" upon final confirmation
+        // No further update to "Detached" is needed
+        alert(`Meter detachment process confirmed for customer ${customerToDetach.customerId}! Reason: ${detachReason}`);
+        setIsDetachConfirmModalOpen(false);
+        setDetachReason("");
+        setCustomerToDetach(null);
+    }
+};
 
     const handleCancelDetach = () => {
         setIsDetachModalOpen(false);
         setDetachReason("");
         setCustomerToDetach(null);
     };
-
 
     const handleMigrateMeter = (customer: MeterData) => {
         setMigrateCustomer(customer);
@@ -797,11 +816,21 @@ export default function AssignMeterPage() {
             alert("No valid customer selected for migration.");
             return;
         }
+        // Update meterStage to "Pending-migrated" on "Confirm" in MigrateMeterDialog
+        setMeterData((prev) =>
+            prev.map((item) =>
+                item.customerId === migrateCustomer.customerId
+                    ? { ...item, meterStage: "Pending-migrated" }
+                    : item
+            )
+        );
+        // Immediately apply migration changes and update to "Migrated"
         setMeterData((prev) =>
             prev.map((item) =>
                 item.customerId === migrateCustomer.customerId
                     ? {
                         ...item,
+                        meterStage: "Pending-migrated",
                         category: migrateToCategory ?? item.category,
                         ...(migrateToCategory === "Prepaid" && {
                             debitMop: migrateDebitMop,
@@ -1048,10 +1077,10 @@ export default function AssignMeterPage() {
                         <TableHead>CIN</TableHead>
                         <TableHead>Category</TableHead>
                         <TableHead>Debit MOP</TableHead>
-                        <TableHead>Payment Plan</TableHead>
+                        <TableHead className="px-4 py-3 text-center">Payment Plan</TableHead>
                         <TableHead>Credit MOP</TableHead>
-                        <TableHead>Payment Plan</TableHead>
-                        {/* <TableHead>Approval Status</TableHead> */}
+                        <TableHead className="px-4 py-3 text-center">Payment Plan</TableHead>
+                        <TableHead className=" text-center">Meter Stage</TableHead>
                         <TableHead>Actions</TableHead>
                     </TableRow>
                 </TableHeader>
@@ -1080,9 +1109,15 @@ export default function AssignMeterPage() {
                             <TableCell>{meter.cin}</TableCell>
                             <TableCell>{meter.category}</TableCell>
                             <TableCell>{meter.debitMop}</TableCell>
-                            <TableCell>{meter.debitPaymentPlan}</TableCell>
+                            <TableCell className="px-4 py-3 text-center">{meter.debitPaymentPlan}</TableCell>
                             <TableCell>{meter.creditMop}</TableCell>
-                            <TableCell>{meter.creditPaymentPlan}</TableCell>
+                            <TableCell className="px-4 py-3 text-center">{meter.creditPaymentPlan}</TableCell>
+                            <TableCell className="px-4 py-3 text-center">
+                                <span className={cn("inline-block text-sm font-medium", getStatusStyle(meter.meterStage))}>
+                                    {meter.meterStage ?? "N/A"}
+                                </span>
+                            </TableCell>
+
                             {/* <TableCell className="px-4 py-3">
                                 <span className={cn("inline-block text-sm font-medium", getStatusStyle(meter.approvedStatus))}>
                                     {meter.approvedStatus ?? "N/A"}
