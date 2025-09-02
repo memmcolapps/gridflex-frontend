@@ -116,7 +116,8 @@ export interface MeterData {
   city?: string;
   streetName?: string;
   houseNo?: string;
-  approvedStatus?:string
+  approvedStatus?:string;
+  meterStage?:string;
 }
 // types/meter.ts
 export interface Meter {
