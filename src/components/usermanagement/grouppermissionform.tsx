@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ChevronDown, ChevronRight } from "lucide-react";
+import { group } from "console";
 
 // Define the form data type
 interface GroupPermissionForm {
@@ -32,12 +33,20 @@ interface GroupPermissionFormProps {
   triggerButton: React.ReactNode;
 }
 
-// Define specific types for module access and access level keys
-type ModuleAccessKeys = "all-access" | "organization" | "meter-management" | 
-  "customer-management" | "billing" | "vending" | "hes";
-type AccessLevelKeys = "view-only" | "edit-only" | "approve-only" | "disable-only";
+type ModuleAccessKeys =
+  | "all-access"
+  | "organization"
+  | "meter-management"
+  | "customer-management"
+  | "billing"
+  | "vending"
+  | "hes";
+type AccessLevelKeys =
+  | "view-only"
+  | "edit-only"
+  | "approve-only"
+  | "disable-only";
 
-// Use Record types instead of index signatures
 type ModuleAccessState = Record<ModuleAccessKeys, boolean>;
 type AccessLevelState = Record<AccessLevelKeys, boolean>;
 
@@ -73,7 +82,6 @@ export default function GroupPermissionForm({
     accessLevel?: string;
   }>({});
 
-  // Reset form when dialog closes
   const resetForm = () => {
     setGroupTitle("");
     setModuleAccess("");
@@ -136,6 +144,7 @@ export default function GroupPermissionForm({
 
   const moduleAccessOptions = [
     { value: "all-access", label: "All Access", group: null },
+    { value: "dashboard", label: "Dashboard", group: "Data-Management" },
     {
       value: "organization",
       label: "Organization",
@@ -151,9 +160,30 @@ export default function GroupPermissionForm({
       label: "Customer Management",
       group: "Data Management",
     },
+    {
+      value: "tarrif",
+      label: "Tarrif",
+      group: "Data Management",
+    },
+    {
+      value: "band-management",
+      label: "Band Management",
+      group: "Data Management",
+    },
+    {
+      value: "reviewandapproval",
+      label: "Review and Approval",
+      group: "Data Management",
+    },
+    {
+      value: "debt-management",
+      label: "Debt Management",
+      group: "Data Management",
+    },
     { value: "billing", label: "Billing", group: null },
     { value: "vending", label: "Vending", group: null },
     { value: "hes", label: "HES", group: null },
+    { value: "user-management", label: "User Mangement", group: null },
   ];
 
   const accessLevelOptions = [
@@ -172,7 +202,7 @@ export default function GroupPermissionForm({
       }}
     >
       <DialogTrigger asChild>{triggerButton}</DialogTrigger>
-      <DialogContent className="bg-white sm:max-w-[425px] h-fit">
+      <DialogContent className="h-fit bg-white sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Add Group Permission</DialogTitle>
         </DialogHeader>
@@ -187,7 +217,9 @@ export default function GroupPermissionForm({
                 onChange={(e) => setGroupTitle(e.target.value)}
                 placeholder="Enter group title"
                 className={`w-[390px] border-gray-300 ${errors.groupTitle ? "border-red-500" : ""}`}
-                style={{ borderColor: errors.groupTitle ? undefined : '#d1d5db' }}
+                style={{
+                  borderColor: errors.groupTitle ? undefined : "#d1d5db",
+                }}
               />
               {errors.groupTitle && (
                 <p className="text-sm text-red-500">{errors.groupTitle}</p>
@@ -206,7 +238,10 @@ export default function GroupPermissionForm({
                     id="moduleAccess"
                     className={`w-[390px] ${errors.moduleAccess ? "border-red-500" : ""}`}
                   >
-                    <SelectValue placeholder="Select module access" className="text-gray-500"/>
+                    <SelectValue
+                      placeholder="Select module access"
+                      className="text-gray-500"
+                    />
                   </SelectTrigger>
                   <SelectContent className="min-w-[300px]">
                     <SelectGroup>
@@ -216,12 +251,16 @@ export default function GroupPermissionForm({
                         .map((option) => (
                           <div
                             key={option.value}
-                            className="flex items-center justify-between px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                            className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-100"
                             onClick={() => setModuleAccess(option.value)}
                           >
                             <span>{option.label}</span>
                             <Checkbox
-                              checked={moduleAccessConfirmed[option.value as ModuleAccessKeys]}
+                              checked={
+                                moduleAccessConfirmed[
+                                  option.value as ModuleAccessKeys
+                                ]
+                              }
                               onCheckedChange={(checked) =>
                                 setModuleAccessConfirmed((prev) => ({
                                   ...prev,
@@ -236,7 +275,7 @@ export default function GroupPermissionForm({
 
                       {/* Data Management */}
                       <div
-                        className="flex items-center justify-between px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                        className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-100"
                         onClick={() => setIsDataManagementOpen((prev) => !prev)}
                       >
                         <span>Data Management</span>
@@ -252,12 +291,16 @@ export default function GroupPermissionForm({
                           .map((option) => (
                             <div
                               key={option.value}
-                              className="flex items-center justify-between px-3 py-2 pl-6 hover:bg-gray-100 cursor-pointer"
+                              className="flex cursor-pointer items-center justify-between px-3 py-2 pl-6 hover:bg-gray-100"
                               onClick={() => setModuleAccess(option.value)}
                             >
                               <span>{option.label}</span>
                               <Checkbox
-                                checked={moduleAccessConfirmed[option.value as ModuleAccessKeys]}
+                                checked={
+                                  moduleAccessConfirmed[
+                                    option.value as ModuleAccessKeys
+                                  ]
+                                }
                                 onCheckedChange={(checked) =>
                                   setModuleAccessConfirmed((prev) => ({
                                     ...prev,
@@ -272,16 +315,22 @@ export default function GroupPermissionForm({
 
                       {/* Remaining Non-Grouped Options */}
                       {moduleAccessOptions
-                        .filter((opt) => !opt.group && opt.value !== "all-access")
+                        .filter(
+                          (opt) => !opt.group && opt.value !== "all-access",
+                        )
                         .map((option) => (
                           <div
                             key={option.value}
-                            className="flex items-center justify-between px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                            className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-100"
                             onClick={() => setModuleAccess(option.value)}
                           >
                             <span>{option.label}</span>
                             <Checkbox
-                              checked={moduleAccessConfirmed[option.value as ModuleAccessKeys]}
+                              checked={
+                                moduleAccessConfirmed[
+                                  option.value as ModuleAccessKeys
+                                ]
+                              }
                               onCheckedChange={(checked) =>
                                 setModuleAccessConfirmed((prev) => ({
                                   ...prev,
@@ -320,12 +369,16 @@ export default function GroupPermissionForm({
                     {accessLevelOptions.map((option) => (
                       <div
                         key={option.value}
-                        className="flex items-center justify-between px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                        className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-100"
                         onClick={() => setAccessLevel(option.value)}
                       >
                         <span>{option.label}</span>
                         <Checkbox
-                          checked={accessLevelConfirmed[option.value as AccessLevelKeys]}
+                          checked={
+                            accessLevelConfirmed[
+                              option.value as AccessLevelKeys
+                            ]
+                          }
                           onCheckedChange={(checked) =>
                             setAccessLevelConfirmed((prev) => ({
                               ...prev,
@@ -347,18 +400,18 @@ export default function GroupPermissionForm({
           </div>
 
           {/* Form Actions */}
-          <div className="flex justify-between mt-8">
+          <div className="mt-8 flex justify-between">
             <Button
               type="button"
               variant="outline"
               onClick={() => setOpen(false)}
-              className="border-[#161CCA] text-[#161CCA] cursor-pointer"
+              className="cursor-pointer border-[#161CCA] text-[#161CCA]"
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              className="bg-[#161CCA] text-white cursor-pointer"
+              className="cursor-pointer bg-[#161CCA] text-white"
             >
               Save
             </Button>

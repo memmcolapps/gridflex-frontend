@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ChevronUpIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
 import GroupPermissionForm from "./grouppermissionform";
 import { Button } from "@/components/ui/button";
@@ -19,19 +19,12 @@ import {
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { useGroupPermissions } from "@/hooks/use-groups";
-
-// Define the GroupPermission type
-interface GroupPermission {
-  id: string;
-  groupTitle: string;
-  permissions: {
-    view: boolean;
-    edit: boolean;
-    approve: boolean;
-    disable: boolean;
-  };
-}
+import {
+  useCreateGroupPermission,
+  useGroupPermissions,
+} from "@/hooks/use-groups";
+import type { OrganizationAccessPayload } from "@/types/group-permission-user";
+import { useAuth } from "@/context/auth-context";
 
 // Define the type for the form data submitted by GroupPermissionForm
 interface GroupPermissionFormData {
@@ -40,22 +33,71 @@ interface GroupPermissionFormData {
   accessLevel: string;
 }
 
-const createGroupPermission = async (newGroup: Omit<GroupPermission, "id">) => {
-  console.log("Creating group permission:", newGroup);
-};
+const transformModuleAccessToModules = (moduleAccess: string) => {
+  const dataManagementModules = [
+    "organization",
+    "meter-management",
+    "customer-management",
+  ];
 
-const updateGroupPermission = async (
-  updatedGroup: GroupPermission,
-): Promise<boolean> => {
-  console.log("Updating group permission:", updatedGroup);
-  return true;
+  if (moduleAccess === "all-access") {
+    return [
+      {
+        name: "Data Management",
+        access: true,
+        subModules: [
+          { name: "Organization", access: true },
+          { name: "Meter Management", access: true },
+          { name: "Customer Management", access: true },
+        ],
+      },
+      { name: "Billing", access: true, subModules: [] },
+      { name: "Vending", access: true, subModules: [] },
+      { name: "HES", access: true, subModules: [] },
+    ];
+  } else if (dataManagementModules.includes(moduleAccess)) {
+    const moduleNames: Record<string, string> = {
+      organization: "Organization",
+      "meter-management": "Meter Management",
+      "customer-management": "Customer Management",
+    };
+
+    return [
+      {
+        name: "Data Management",
+        access: true,
+        subModules: [
+          {
+            name: moduleNames[moduleAccess] ?? "Unknown Module",
+            access: true,
+          },
+        ],
+      },
+    ];
+  } else {
+    const moduleNames: Record<string, string> = {
+      billing: "Billing",
+      vending: "Vending",
+      hes: "HES",
+    };
+
+    return [
+      {
+        name: moduleNames[moduleAccess] ?? moduleAccess,
+        access: true,
+        subModules: [],
+      },
+    ];
+  }
 };
 
 export default function GroupPermissionManagement() {
-  const { data: groupPermissions, error, isLoading } = useGroupPermissions();
+  const { user } = useAuth();
+  const { data: groupPermissions, isLoading } = useGroupPermissions();
+  const { mutate: createGroup } = useCreateGroupPermission();
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState<{
-    key: keyof GroupPermission;
+    key: keyof OrganizationAccessPayload;
     direction: "ascending" | "descending";
   } | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -66,7 +108,7 @@ export default function GroupPermissionManagement() {
     setCurrentPage(1);
   };
 
-  const requestSort = (key: keyof GroupPermission) => {
+  const requestSort = (key: keyof OrganizationAccessPayload) => {
     let direction: "ascending" | "descending" = "ascending";
     if (
       sortConfig &&
@@ -80,20 +122,7 @@ export default function GroupPermissionManagement() {
 
   const sortedGroupPermissions = () => {
     const sortableGroups = [...groupPermissions];
-    if (sortConfig !== null) {
-      sortableGroups.sort((a, b) => {
-        const aValue = a[sortConfig.key];
-        const bValue = b[sortConfig.key];
 
-        if (aValue === undefined || bValue === undefined) return 0;
-        if (typeof aValue === "string" && typeof bValue === "string") {
-          return sortConfig.direction === "ascending"
-            ? aValue.localeCompare(bValue)
-            : bValue.localeCompare(aValue);
-        }
-        return 0;
-      });
-    }
     return sortableGroups;
   };
 
@@ -106,14 +135,6 @@ export default function GroupPermissionManagement() {
   const endIndex = startIndex + rowsPerPage;
   const paginatedGroups = filteredGroupPermissions.slice(startIndex, endIndex);
 
-  console.log("Rendering table with:", {
-    groupPermissions,
-    filteredGroupPermissions,
-    paginatedGroups,
-    currentPage,
-    rowsPerPage,
-  });
-
   const handleAddGroupPermission = async (
     newGroup: GroupPermissionFormData,
   ) => {
@@ -124,15 +145,21 @@ export default function GroupPermissionManagement() {
       disable: newGroup.accessLevel === "disable-only",
     };
 
-    const success = await createGroupPermission({
+    const modules = transformModuleAccessToModules(newGroup.moduleAccess);
+
+    const payload: OrganizationAccessPayload = {
       groupTitle: newGroup.groupTitle,
-      permissions,
-    });
+      permission: permissions,
+      orgId: user?.orgId ?? "",
+      modules,
+    };
+
+    createGroup(payload);
   };
 
   const handleUpdatePermission = async (
     groupId: string,
-    permissionType: keyof GroupPermission["permissions"],
+    permissionType: keyof OrganizationAccessPayload["permission"],
     value: boolean,
   ) => {
     const updatedGroups = groupPermissions.map((group) => {
@@ -147,10 +174,8 @@ export default function GroupPermissionManagement() {
       }
       return group;
     });
-    const updatedGroup = updatedGroups.find((g) => g.id === groupId);
-    if (updatedGroup) {
-      const success = await updateGroupPermission(updatedGroup);
-    }
+    // TODO: Implement API call to update the permission
+    console.log("Updated groups:", updatedGroups);
   };
 
   return (

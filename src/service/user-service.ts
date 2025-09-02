@@ -2,6 +2,7 @@ import axios from "axios";
 import { env } from "@/env";
 import { handleApiError } from "error";
 import { Group } from "next/dist/shared/lib/router/utils/route-regex";
+import { OrganizationAccessPayload } from "@/types/group-permission-user";
 
 const API_URL = env.NEXT_PUBLIC_BASE_URL;
 const CUSTOM_HEADER = env.NEXT_PUBLIC_CUSTOM_HEADER;
@@ -50,6 +51,40 @@ export async function getGroupPermission(): Promise<
     return {
       success: true,
       data: response.data.responsedata,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: handleApiError(error),
+    };
+  }
+}
+
+export async function createGroupPermission(
+  payload: OrganizationAccessPayload,
+): Promise<{ success: true } | { success: false; error: string }> {
+  try {
+    const token = localStorage.getItem("auth_token");
+    const response = await axios.post<GroupPermissionResponse>(
+      `${API_URL}/user/service/groups`,
+      payload,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+    if (response.data.responsecode !== "000") {
+      return {
+        success: false,
+        error:
+          response.data.responsedesc ?? "Failed to create group permission",
+      };
+    }
+    return {
+      success: true,
     };
   } catch (error) {
     return {
