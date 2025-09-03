@@ -18,8 +18,8 @@ export default function ReadingSheetPage() {
     const [inputValue, setInputValue] = useState("");
     const [isBulkUploadDialogOpen, setIsBulkUploadDialogOpen] = useState(false);
     const [sortConfig, setSortConfig] = useState<string>("");
-    const [selectedMonth, setSelectedMonth] = useState<string>("All");
-    const [selectedYear, setSelectedYear] = useState<string>("All");
+    const [selectedMonth, setSelectedMonth] = useState<string>("Select Month");
+    const [selectedYear, setSelectedYear] = useState<string>("Select Year");
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => setInputValue(e.target.value);
 
@@ -33,7 +33,6 @@ export default function ReadingSheetPage() {
 
     // List of months for dropdown
     const months = [
-        "All",
         "January",
         "February",
         "March",
@@ -50,7 +49,7 @@ export default function ReadingSheetPage() {
 
     // Generate years (current year and past 5 years)
     const currentYear = new Date().getFullYear();
-    const years = ["All", ...Array.from({ length: 6 }, (_, i) => (currentYear - i).toString())];
+    const years = [ ...Array.from({ length: 6 }, (_, i) => (currentYear - i).toString())];
 
     // Handle filter changes
     const handleMonthChange = (month: string) => {
