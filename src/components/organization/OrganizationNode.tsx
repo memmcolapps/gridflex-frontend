@@ -115,14 +115,17 @@ export const OrganizationNode = ({
                   Centre
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => openAddDialog("Substation")}>
-                  <Database size={14} className="mr-2 text-gray-700" /> 
+                  <Database size={14} className="mr-2 text-gray-700" />
                   Substation
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => openAddDialog("Feeder Line")}>
                   <Zap size={14} className="mr-2 text-gray-700" /> Feeder Line
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => openAddDialog("Distribution Substation (DSS)")}>
-                  <Lightbulb size={14} className="mr-2 text-gray-700" /> Distribution Substation (DSS)
+                <DropdownMenuItem
+                  onClick={() => openAddDialog("Distribution Substation (DSS)")}
+                >
+                  <Lightbulb size={14} className="mr-2 text-gray-700" />{" "}
+                  Distribution Substation (DSS)
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

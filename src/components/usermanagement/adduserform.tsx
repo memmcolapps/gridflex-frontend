@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useGroupPermissions } from "@/hooks/use-groups";
 
 export type User = {
   id?: string;
@@ -36,13 +37,6 @@ type AddUserFormProps = {
   onSave: (user: User) => void;
   triggerButton?: React.ReactNode;
 };
-
-const groupPermissions = [
-  { value: "admin", label: "Administrator" },
-  { value: "manager", label: "Manager" },
-  { value: "editor", label: "Editor" },
-  { value: "viewer", label: "Viewer" },
-];
 
 const hierarchies = [
   { value: "region", label: "Region" },
@@ -64,6 +58,8 @@ export default function AddUserForm({
   onSave,
   triggerButton,
 }: AddUserFormProps) {
+  const { data: groupPermissions, isLoading: isLoadingGroupPermissions } =
+    useGroupPermissions();
   const [isOpen, setIsOpen] = useState(false);
   const [formData, setFormData] = useState<User>({
     firstName: "",
@@ -224,11 +220,17 @@ export default function AddUserForm({
                   />
                 </SelectTrigger>
                 <SelectContent>
-                  {groupPermissions.map((permission) => (
-                    <SelectItem key={permission.value} value={permission.value}>
-                      {permission.label}
+                  {isLoadingGroupPermissions ? (
+                    <SelectItem value="loading" disabled>
+                      Loading group permissions...
                     </SelectItem>
-                  ))}
+                  ) : (
+                    groupPermissions.map((permission) => (
+                      <SelectItem key={permission.id} value={permission.id}>
+                        {permission.groupTitle}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -294,11 +296,14 @@ export default function AddUserForm({
               variant="outline"
               onClick={() => setIsOpen(false)}
               type="button"
-              className="border-[#161CCA] cursor-pointer text-[#161CCA]"
+              className="cursor-pointer border-[#161CCA] text-[#161CCA]"
             >
               Cancel
             </Button>
-            <Button type="submit" className="bg-[#161CCA] cursor-pointer text-white">
+            <Button
+              type="submit"
+              className="cursor-pointer bg-[#161CCA] text-white"
+            >
               Add User
             </Button>
           </div>

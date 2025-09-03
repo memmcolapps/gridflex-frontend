@@ -118,10 +118,8 @@ export default function GroupPermissionForm({
 
   const handleModuleSelection = (value: string) => {
     if (value === "all-access") {
-      // If "All Access" is selected, clear all other selections and only select "All Access"
       setSelectedModules(["all-access"]);
     } else {
-      // Remove "All Access" if any specific module is selected
       const newSelection = selectedModules.filter(
         (item) => item !== "all-access",
       );
@@ -148,7 +146,6 @@ export default function GroupPermissionForm({
       setSelectedAccessLevels([...selectedAccessLevels, value]);
     }
 
-    // Clear access level error when selection is made
     if (errors.accessLevel) {
       setErrors((prev) => ({ ...prev, accessLevel: undefined }));
     }

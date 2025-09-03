@@ -27,7 +27,6 @@ import {
 import { queryClient } from "@/lib/queryClient";
 import { toast } from "sonner";
 
-// Define the type for the form data submitted by GroupPermissionForm
 interface GroupPermissionFormData {
   groupTitle: string;
   moduleAccess: string[];
@@ -92,7 +91,6 @@ const transformModuleAccessToModules = (moduleAccessArray: string[]) => {
     dashboard: "Dashboard",
   };
 
-  // Handle "All Access" selection
   if (moduleAccessArray.includes("all-access")) {
     return [
       {

@@ -126,6 +126,10 @@ export default function UserManagement() {
   const endIndex = startIndex + rowsPerPage;
   const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
 
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <div className="flex h-full flex-col overflow-hidden text-black">
       <div className="flex-grow">
