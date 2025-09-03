@@ -1,5 +1,11 @@
 import { useState, useMemo } from "react";
-import { ChevronUp, ChevronDown } from "lucide-react";
+import {
+  ChevronUp,
+  ChevronDown,
+  MoreVertical,
+  Pencil,
+  Ban,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -26,6 +32,12 @@ import {
 } from "@/hooks/use-groups";
 import { queryClient } from "@/lib/queryClient";
 import { toast } from "sonner";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+} from "@radix-ui/react-dropdown-menu";
+import { DropdownMenuContent, DropdownMenuItem } from "../ui/dropdown-menu";
+import DeactivateUserDropdownItem from "./deactivateuserdropdownitem";
 
 interface GroupPermissionFormData {
   groupTitle: string;
@@ -229,13 +241,6 @@ export default function GroupPermissionManagement() {
         newGroup.accessLevel,
       );
       const modules = transformModuleAccessToModules(newGroup.moduleAccess);
-
-      const payload: OrganizationAccessPayload = {
-        groupTitle: newGroup.groupTitle,
-        permission: permissions,
-        orgId: user?.orgId ?? "",
-        modules,
-      };
 
       createPermissionGroup(
         {
@@ -472,14 +477,42 @@ export default function GroupPermissionManagement() {
                     />
                   </TableCell>
                   <TableCell>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDeleteGroup(group.id)}
-                      className="text-red-600 hover:bg-red-50 hover:text-red-700"
-                    >
-                      Delete
-                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 w-8 cursor-pointer p-2"
+                        >
+                          <MoreVertical size={14} />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        align="center"
+                        className="cursor-pointer"
+                      >
+                        <DropdownMenuItem
+                          onSelect={() => {
+                            console.log("Edit User");
+                          }}
+                        >
+                          <div className="flex w-full items-center gap-2 p-2">
+                            <Pencil size={14} />
+                            <span className="cursor-pointer">
+                              Edit Group Permission
+                            </span>
+                          </div>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                          <div className="flex w-full items-center gap-2 p-2">
+                            <Ban size={14} />
+                            <span className="cursor-pointer">
+                              Deactivate Group Permission
+                            </span>
+                          </div>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </TableCell>
                 </TableRow>
               ))

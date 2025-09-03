@@ -12,7 +12,6 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ChevronDown, ChevronRight } from "lucide-react";
 
-// Define the form data type
 interface GroupPermissionForm {
   groupTitle: string;
   moduleAccess: string[];
