@@ -249,7 +249,6 @@ export default function GroupPermissionForm({
               )}
             </div>
 
-            {/* Module Access */}
             <div className="grid gap-2">
               <Label htmlFor="moduleAccess">Module Access</Label>
               <div className="relative">
@@ -272,13 +271,12 @@ export default function GroupPermissionForm({
 
                 {isModuleDropdownOpen && (
                   <div className="absolute top-full right-0 left-0 z-50 mt-1 max-h-64 overflow-y-auto rounded-md border border-gray-300 bg-white shadow-lg">
-                    {/* All Access */}
                     {moduleAccessOptions
                       .filter((opt) => opt.value === "all-access")
                       .map((option) => (
                         <div
                           key={option.value}
-                          className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-100"
+                          className="flex cursor-pointer items-center justify-between border-0 px-3 py-2 hover:bg-gray-100"
                           onClick={() => handleModuleSelection(option.value)}
                         >
                           <span>{option.label}</span>
@@ -291,7 +289,7 @@ export default function GroupPermissionForm({
 
                     {/* Data Management */}
                     <div
-                      className="flex cursor-pointer items-center justify-between border-t px-3 py-2 hover:bg-gray-100"
+                      className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-100"
                       onClick={() =>
                         setIsDataManagementOpen(!isDataManagementOpen)
                       }
@@ -310,7 +308,7 @@ export default function GroupPermissionForm({
                         .map((option) => (
                           <div
                             key={option.value}
-                            className="flex cursor-pointer items-center justify-between px-3 py-2 pl-6 hover:bg-gray-100"
+                            className="flex cursor-pointer items-center justify-between border-0 px-3 py-2 pl-6 hover:bg-gray-100"
                             onClick={() => handleModuleSelection(option.value)}
                           >
                             <span>{option.label}</span>
@@ -321,13 +319,12 @@ export default function GroupPermissionForm({
                           </div>
                         ))}
 
-                    {/* Other Options */}
                     {moduleAccessOptions
                       .filter((opt) => !opt.group && opt.value !== "all-access")
                       .map((option) => (
                         <div
                           key={option.value}
-                          className="flex cursor-pointer items-center justify-between border-t px-3 py-2 hover:bg-gray-100"
+                          className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-100"
                           onClick={() => handleModuleSelection(option.value)}
                         >
                           <span>{option.label}</span>
