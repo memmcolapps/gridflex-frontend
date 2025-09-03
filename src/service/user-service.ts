@@ -1,11 +1,10 @@
 import axios from "axios";
 import { env } from "@/env";
 import { handleApiError } from "error";
-import { Group } from "next/dist/shared/lib/router/utils/route-regex";
-import { OrganizationAccessPayload } from "@/types/group-permission-user";
+import { type OrganizationAccessPayload } from "@/types/group-permission-user";
 import {
-  GetUsersApiResponse,
-  GetUsersResponseData,
+  type GetUsersApiResponse,
+  type GetUsersResponseData,
 } from "@/types/users-groups";
 
 const API_URL = env.NEXT_PUBLIC_BASE_URL;

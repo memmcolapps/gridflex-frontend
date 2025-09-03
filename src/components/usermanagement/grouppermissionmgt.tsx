@@ -37,28 +37,11 @@ import {
   DropdownMenuTrigger,
 } from "@radix-ui/react-dropdown-menu";
 import { DropdownMenuContent, DropdownMenuItem } from "../ui/dropdown-menu";
-import DeactivateUserDropdownItem from "./deactivateuserdropdownitem";
 
 interface GroupPermissionFormData {
   groupTitle: string;
   moduleAccess: string[];
   accessLevel: string[];
-}
-
-interface OrganizationAccessPayload {
-  groupTitle: string;
-  permission: {
-    view: boolean;
-    edit: boolean;
-    approve: boolean;
-    disable: boolean;
-  };
-  orgId: string;
-  modules: Array<{
-    name: string;
-    access: boolean;
-    subModules: Array<{ name: string; access: boolean }>;
-  }>;
 }
 
 interface GroupPermission {
@@ -285,16 +268,16 @@ export default function GroupPermissionManagement() {
     }
   };
 
-  const handleDeleteGroup = async (groupId: string) => {
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 500));
+  // const handleDeleteGroup = async (groupId: string) => {
+  //   try {
+  //     // Simulate API call
+  //     await new Promise((resolve) => setTimeout(resolve, 500));
 
-      console.log(`Deleted group ${groupId}`);
-    } catch (err) {
-      console.error("Error deleting group:", err);
-    }
-  };
+  //     console.log(`Deleted group ${groupId}`);
+  //   } catch (err) {
+  //     console.error("Error deleting group:", err);
+  //   }
+  // };
 
   return (
     <div className="h-screen overflow-y-hidden text-black">

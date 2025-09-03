@@ -1,15 +1,11 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
 import { Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { type Node } from "../../service/organaization-service";
 import { OrganizationNode } from "./OrganizationNode";
 import { useOrg } from "@/hooks/use-org";
 
 const OrganizationalTree = () => {
-  const [error, setError] = useState<string | null>(null);
-  const { nodes, isLoading, error: orgError } = useOrg();
+  const { nodes, isLoading, error } = useOrg();
 
   if (isLoading) {
     return (
@@ -23,7 +19,7 @@ const OrganizationalTree = () => {
   if (error) {
     return (
       <div className="text-center text-red-500">
-        <p>{error}</p>
+        <p>{error.message}</p>
       </div>
     );
   }

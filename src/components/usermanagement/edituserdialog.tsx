@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { GetUsersUser } from "@/types/users-groups";
+import { type GetUsersUser } from "@/types/users-groups";
 
 type EditUserDialogProps = {
   user: GetUsersUser;

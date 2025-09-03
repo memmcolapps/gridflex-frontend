@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ChevronUpIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
 import AddUserForm from "./adduserform";
 import EditUserDialog from "./edituserdialog";
@@ -54,7 +54,7 @@ const formatDateAdded = (date: Date) => {
 };
 
 export default function UserManagement() {
-  const { data: users, isLoading, error } = useGetUsers();
+  const { data: users, isLoading } = useGetUsers();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState<{

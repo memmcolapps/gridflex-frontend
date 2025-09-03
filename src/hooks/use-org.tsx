@@ -1,8 +1,5 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
-import {
-  fetchOrganizationNodes,
-  type Node,
-} from "../service/organaization-service";
+import { useQuery } from "@tanstack/react-query";
+import { fetchOrganizationNodes } from "../service/organaization-service";
 import { useAuth } from "../context/auth-context";
 
 export const useOrg = () => {
