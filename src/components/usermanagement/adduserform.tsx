@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useGroupPermissions } from "@/hooks/use-groups";
+import { useOrg } from "@/hooks/use-org";
 
 export type User = {
   id?: string;
@@ -38,28 +39,14 @@ type AddUserFormProps = {
   triggerButton?: React.ReactNode;
 };
 
-const hierarchies = [
-  { value: "region", label: "Region" },
-  { value: "business-hub", label: "Business Hub" },
-  { value: "service-centre", label: "Service Centre" },
-  { value: "substation", label: "Substation" },
-  { value: "feeder-line", label: "Feeder Line" },
-  { value: "distribution-substation", label: "Distribution Substation (DSS)" },
-];
-
-const unitNames = [
-  { value: "unit1", label: "Unit 1" },
-  { value: "unit2", label: "Unit 2" },
-  { value: "unit3", label: "Unit 3" },
-  { value: "unit4", label: "Unit 4" },
-];
-
 export default function AddUserForm({
   onSave,
   triggerButton,
 }: AddUserFormProps) {
   const { data: groupPermissions, isLoading: isLoadingGroupPermissions } =
     useGroupPermissions();
+  const { nodes: orgData, isLoading: isLoadingOrg } = useOrg();
+
   const [isOpen, setIsOpen] = useState(false);
   const [formData, setFormData] = useState<User>({
     firstName: "",
@@ -71,6 +58,58 @@ export default function AddUserForm({
     unitName: "",
     defaultPassword: "",
   });
+
+  const getAllNodesWithChildren = (
+    nodes: typeof orgData,
+  ): Array<{ value: string; label: string }> => {
+    const result: Array<{ value: string; label: string }> = [];
+
+    const processNode = (node: (typeof orgData)[0]) => {
+      if (node.nodesTree && node.nodesTree.length > 0) {
+        result.push({
+          value: node.id,
+          label: node.name,
+        });
+
+        node.nodesTree.forEach((childNode) => processNode(childNode));
+      }
+    };
+
+    nodes.forEach((node) => processNode(node));
+    return result;
+  };
+
+  const findNodeById = (
+    nodes: typeof orgData,
+    nodeId: string,
+  ): (typeof orgData)[0] | null => {
+    for (const node of nodes) {
+      if (node.id === nodeId) {
+        return node;
+      }
+      if (node.nodesTree) {
+        const found = findNodeById(node.nodesTree, nodeId);
+        if (found) return found;
+      }
+    }
+    return null;
+  };
+
+  const hierarchies = getAllNodesWithChildren(orgData);
+
+  const getUnitsForHierarchy = (hierarchyId: string) => {
+    const selectedHierarchy = findNodeById(orgData, hierarchyId);
+    if (!selectedHierarchy?.nodesTree) return [];
+
+    return selectedHierarchy.nodesTree.map((subNode) => ({
+      value: subNode.id,
+      label: subNode.name,
+    }));
+  };
+
+  const availableUnits = formData.hierarchy
+    ? getUnitsForHierarchy(formData.hierarchy)
+    : [];
 
   const cleanUpOverlay = useCallback(() => {
     console.log("Attempting overlay cleanup in AddUserForm");
@@ -109,10 +148,19 @@ export default function AddUserForm({
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement> | string, field?: string) => {
       if (typeof e === "string" && field) {
-        setFormData((prev) => ({
-          ...prev,
-          [field]: e,
-        }));
+        setFormData((prev) => {
+          const newData = {
+            ...prev,
+            [field]: e,
+          };
+
+          // Reset unitName when hierarchy changes
+          if (field === "hierarchy") {
+            newData.unitName = "";
+          }
+
+          return newData;
+        });
       } else if (typeof e !== "string") {
         const { name, value } = e.target;
         setFormData((prev) => ({
@@ -246,11 +294,17 @@ export default function AddUserForm({
                   <SelectValue placeholder="Select hierarchy" />
                 </SelectTrigger>
                 <SelectContent>
-                  {hierarchies.map((level) => (
-                    <SelectItem key={level.value} value={level.value}>
-                      {level.label}
+                  {isLoadingOrg ? (
+                    <SelectItem value="loading" disabled>
+                      Loading hierarchies...
                     </SelectItem>
-                  ))}
+                  ) : (
+                    hierarchies.map((level) => (
+                      <SelectItem key={level.value} value={level.value}>
+                        {level.label}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -262,16 +316,33 @@ export default function AddUserForm({
                 value={formData.unitName}
                 onValueChange={(value) => handleChange(value, "unitName")}
                 required
+                disabled={!formData.hierarchy || isLoadingOrg}
               >
                 <SelectTrigger className="w-full border-[rgba(228,231,236,1)]">
-                  <SelectValue placeholder="Select unit name" />
+                  <SelectValue
+                    placeholder={
+                      !formData.hierarchy
+                        ? "Select hierarchy first"
+                        : "Select unit name"
+                    }
+                  />
                 </SelectTrigger>
                 <SelectContent>
-                  {unitNames.map((unit) => (
-                    <SelectItem key={unit.value} value={unit.value}>
-                      {unit.label}
+                  {isLoadingOrg ? (
+                    <SelectItem value="loading" disabled>
+                      Loading units...
                     </SelectItem>
-                  ))}
+                  ) : availableUnits.length === 0 ? (
+                    <SelectItem value="no-units" disabled>
+                      No units available
+                    </SelectItem>
+                  ) : (
+                    availableUnits.map((unit) => (
+                      <SelectItem key={unit.value} value={unit.value}>
+                        {unit.label}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </div>
