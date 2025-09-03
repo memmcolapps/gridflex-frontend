@@ -3,6 +3,7 @@ import { env } from "@/env";
 import { handleApiError } from "error";
 import { type OrganizationAccessPayload } from "@/types/group-permission-user";
 import {
+  CreateUserPayload,
   type GetUsersApiResponse,
   type GetUsersResponseData,
 } from "@/types/users-groups";
@@ -127,6 +128,35 @@ export async function getUsers(): Promise<
     return {
       success: true,
       data: response.data.responsedata,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: handleApiError(error),
+    };
+  }
+}
+
+export async function createUser(
+  user: CreateUserPayload,
+): Promise<{ success: true } | { success: false; error: string }> {
+  try {
+    const token = localStorage.getItem("auth_token");
+    const response = await axios.post(`${API_URL}/user/service/create`, user, {
+      headers: {
+        "Content-Type": "application/json",
+        custom: CUSTOM_HEADER,
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (response.data.responsecode !== "000") {
+      return {
+        success: false,
+        error: response.data.responsedesc ?? "Failed to create user",
+      };
+    }
+    return {
+      success: true,
     };
   } catch (error) {
     return {

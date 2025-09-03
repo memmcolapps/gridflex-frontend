@@ -5,6 +5,7 @@ import {
 } from "@/service/user-service";
 import { type OrganizationAccessPayload } from "@/types/group-permission-user";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { queryClient } from "@/lib/queryClient";
 
 export const useGroupPermissions = () => {
   const { data, error, isLoading } = useQuery({
@@ -22,6 +23,11 @@ export const useCreateGroupPermission = () => {
         throw new Error(response.error);
       }
       return response;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["groupPermissions"],
+      });
     },
   });
 };

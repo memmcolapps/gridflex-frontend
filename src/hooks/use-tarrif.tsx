@@ -7,6 +7,7 @@ import {
   type TariffPayload,
 } from "../service/tarriff-service";
 import { useAuth } from "../context/auth-context";
+import { queryClient } from "@/lib/queryClient";
 
 export const useTariff = () => {
   const { isAuthenticated } = useAuth();
@@ -33,6 +34,11 @@ export const useCreateTariff = () => {
       }
       return response;
     },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["tariffs"],
+      });
+    },
   });
 };
 
@@ -49,6 +55,11 @@ export const useChangeTariffStatus = () => {
         throw new Error(response.error);
       }
       return response;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["tariffs"],
+      });
     },
   });
 };
@@ -72,6 +83,11 @@ export const useChangeTariffApprovalStatus = () => {
         throw new Error(response.error);
       }
       return response;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["tariffs"],
+      });
     },
   });
 };

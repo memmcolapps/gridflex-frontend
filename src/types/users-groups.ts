@@ -91,3 +91,14 @@ interface GetUsersNodeInfo {
   latitude?: string; // Optional field
   longitude?: string; // Optional field
 }
+
+export interface CreateUserPayload {
+  user: {
+    firstname: string;
+    lastname: string;
+    email: string;
+    nodeId: string;
+    password: string;
+  };
+  groupId: string;
+}

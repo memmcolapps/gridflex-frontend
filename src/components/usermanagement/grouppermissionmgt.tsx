@@ -30,7 +30,6 @@ import {
   useCreateGroupPermission,
   useGroupPermissions,
 } from "@/hooks/use-groups";
-import { queryClient } from "@/lib/queryClient";
 import { toast } from "sonner";
 import {
   DropdownMenu,
@@ -234,10 +233,6 @@ export default function GroupPermissionManagement() {
         },
         {
           onSuccess: () => {
-            queryClient.invalidateQueries({
-              queryKey: ["permissions", user?.orgId],
-            });
-            queryClient.invalidateQueries({ queryKey: ["org", user?.orgId] });
             console.log("Permission Group created successfully");
             toast.success("Permission Group created successfully");
           },
@@ -249,7 +244,6 @@ export default function GroupPermissionManagement() {
       );
     } catch (err) {
       console.error("Error creating group permission:", err);
-    } finally {
     }
   };
 

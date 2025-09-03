@@ -6,6 +6,7 @@ import {
   updateBand,
 } from "../service/band-service";
 import { useAuth } from "../context/auth-context";
+import { queryClient } from "@/lib/queryClient";
 
 export const useBand = () => {
   const { isAuthenticated } = useAuth();
@@ -32,6 +33,11 @@ export const useCreateBand = () => {
       }
       return response;
     },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["bands"],
+      });
+    },
   });
 };
 
@@ -43,6 +49,11 @@ export const useUpdateBand = () => {
         throw new Error(response.error);
       }
       return response;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["bands"],
+      });
     },
   });
 };
