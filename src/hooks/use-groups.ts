@@ -1,6 +1,7 @@
 import {
   createGroupPermission,
   getGroupPermission,
+  getUsers,
 } from "@/service/user-service";
 import { type OrganizationAccessPayload } from "@/types/group-permission-user";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -23,4 +24,18 @@ export const useCreateGroupPermission = () => {
       return response;
     },
   });
+};
+
+export const useGetUsers = () => {
+  const { data, error, isLoading } = useQuery({
+    queryKey: ["users"],
+    queryFn: () => getUsers(),
+  });
+  return {
+    data: data?.success
+      ? data.data
+      : { data: [], totalData: 1, size: 0, totalPages: 1, page: 1 },
+    error,
+    isLoading,
+  };
 };

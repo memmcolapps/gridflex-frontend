@@ -3,6 +3,10 @@ import { env } from "@/env";
 import { handleApiError } from "error";
 import { Group } from "next/dist/shared/lib/router/utils/route-regex";
 import { OrganizationAccessPayload } from "@/types/group-permission-user";
+import {
+  GetUsersApiResponse,
+  GetUsersResponseData,
+} from "@/types/users-groups";
 
 const API_URL = env.NEXT_PUBLIC_BASE_URL;
 const CUSTOM_HEADER = env.NEXT_PUBLIC_CUSTOM_HEADER;
@@ -25,6 +29,11 @@ export interface GroupPermission {
     id: string;
     orgId: string;
   };
+  modules: Array<{
+    name: string;
+    access: boolean;
+    subModules: Array<{ name: string; access: boolean }>;
+  }>;
 }
 
 export async function getGroupPermission(): Promise<
@@ -66,7 +75,7 @@ export async function createGroupPermission(
   try {
     const token = localStorage.getItem("auth_token");
     const response = await axios.post<GroupPermissionResponse>(
-      `${API_URL}/user/service/groups`,
+      `${API_URL}/user/service/create/group-permission`,
       payload,
       {
         headers: {
@@ -85,6 +94,40 @@ export async function createGroupPermission(
     }
     return {
       success: true,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: handleApiError(error),
+    };
+  }
+}
+
+export async function getUsers(): Promise<
+  | { success: true; data: GetUsersResponseData }
+  | { success: false; error: string }
+> {
+  try {
+    const token = localStorage.getItem("auth_token");
+    const response = await axios.get<GetUsersApiResponse>(
+      `${API_URL}/user/service/all`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+    if (response.data.responsecode !== "000") {
+      return {
+        success: false,
+        error: response.data.responsedesc ?? "Failed to fetch users",
+      };
+    }
+    return {
+      success: true,
+      data: response.data.responsedata,
     };
   } catch (error) {
     return {

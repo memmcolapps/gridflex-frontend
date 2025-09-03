@@ -1,6 +1,5 @@
-import { useState } from "react";
-import { ChevronUpIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
-import GroupPermissionForm from "./grouppermissionform";
+import { useState, useMemo } from "react";
+import { ChevronUp, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -19,28 +18,82 @@ import {
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import GroupPermissionForm from "./grouppermissionform";
+import { useAuth } from "@/context/auth-context";
 import {
   useCreateGroupPermission,
   useGroupPermissions,
 } from "@/hooks/use-groups";
-import type { OrganizationAccessPayload } from "@/types/group-permission-user";
-import { useAuth } from "@/context/auth-context";
+import { queryClient } from "@/lib/queryClient";
+import { toast } from "sonner";
 
 // Define the type for the form data submitted by GroupPermissionForm
 interface GroupPermissionFormData {
   groupTitle: string;
-  moduleAccess: string;
-  accessLevel: string;
+  moduleAccess: string[];
+  accessLevel: string[];
 }
 
-const transformModuleAccessToModules = (moduleAccess: string) => {
+interface OrganizationAccessPayload {
+  groupTitle: string;
+  permission: {
+    view: boolean;
+    edit: boolean;
+    approve: boolean;
+    disable: boolean;
+  };
+  orgId: string;
+  modules: Array<{
+    name: string;
+    access: boolean;
+    subModules: Array<{ name: string; access: boolean }>;
+  }>;
+}
+
+interface GroupPermission {
+  id: string;
+  groupTitle: string;
+  permissions: {
+    view: boolean;
+    edit: boolean;
+    approve: boolean;
+    disable: boolean;
+  };
+  modules: Array<{
+    name: string;
+    access: boolean;
+    subModules: Array<{ name: string; access: boolean }>;
+  }>;
+}
+
+const transformModuleAccessToModules = (moduleAccessArray: string[]) => {
   const dataManagementModules = [
     "organization",
     "meter-management",
     "customer-management",
+    "tarrif",
+    "band-management",
+    "reviewandapproval",
+    "debt-management",
   ];
 
-  if (moduleAccess === "all-access") {
+  const moduleNames: Record<string, string> = {
+    organization: "Organization",
+    "meter-management": "Meter Management",
+    "customer-management": "Customer Management",
+    tarrif: "Tariff",
+    "band-management": "Band Management",
+    reviewandapproval: "Review and Approval",
+    "debt-management": "Debt Management",
+    billing: "Billing",
+    vending: "Vending",
+    hes: "HES",
+    "user-management": "User Management",
+    dashboard: "Dashboard",
+  };
+
+  // Handle "All Access" selection
+  if (moduleAccessArray.includes("all-access")) {
     return [
       {
         name: "Data Management",
@@ -49,55 +102,70 @@ const transformModuleAccessToModules = (moduleAccess: string) => {
           { name: "Organization", access: true },
           { name: "Meter Management", access: true },
           { name: "Customer Management", access: true },
+          { name: "Tariff", access: true },
+          { name: "Band Management", access: true },
+          { name: "Review and Approval", access: true },
+          { name: "Debt Management", access: true },
         ],
       },
       { name: "Billing", access: true, subModules: [] },
       { name: "Vending", access: true, subModules: [] },
       { name: "HES", access: true, subModules: [] },
+      { name: "User Management", access: true, subModules: [] },
+      { name: "Dashboard", access: true, subModules: [] },
     ];
-  } else if (dataManagementModules.includes(moduleAccess)) {
-    const moduleNames: Record<string, string> = {
-      organization: "Organization",
-      "meter-management": "Meter Management",
-      "customer-management": "Customer Management",
-    };
+  }
 
-    return [
-      {
-        name: "Data Management",
+  const modules: Array<{
+    name: string;
+    access: boolean;
+    subModules: Array<{ name: string; access: boolean }>;
+  }> = [];
+  const dataManagementSubModules: Array<{ name: string; access: boolean }> = [];
+
+  moduleAccessArray.forEach((moduleAccess) => {
+    if (dataManagementModules.includes(moduleAccess)) {
+      dataManagementSubModules.push({
+        name: moduleNames[moduleAccess] ?? "Unknown Module",
         access: true,
-        subModules: [
-          {
-            name: moduleNames[moduleAccess] ?? "Unknown Module",
-            access: true,
-          },
-        ],
-      },
-    ];
-  } else {
-    const moduleNames: Record<string, string> = {
-      billing: "Billing",
-      vending: "Vending",
-      hes: "HES",
-    };
-
-    return [
-      {
+      });
+    } else {
+      modules.push({
         name: moduleNames[moduleAccess] ?? moduleAccess,
         access: true,
         subModules: [],
-      },
-    ];
+      });
+    }
+  });
+
+  if (dataManagementSubModules.length > 0) {
+    modules.unshift({
+      name: "Data Management",
+      access: true,
+      subModules: dataManagementSubModules,
+    });
   }
+
+  return modules;
+};
+
+const transformAccessLevelsToPermissions = (accessLevels: string[]) => {
+  return {
+    view: accessLevels.includes("view-only"),
+    edit: accessLevels.includes("edit-only"),
+    approve: accessLevels.includes("approve-only"),
+    disable: accessLevels.includes("disable-only"),
+  };
 };
 
 export default function GroupPermissionManagement() {
   const { user } = useAuth();
-  const { data: groupPermissions, isLoading } = useGroupPermissions();
-  const { mutate: createGroup } = useCreateGroupPermission();
+  const { data: groupPermissions, isLoading, error } = useGroupPermissions();
+  const { mutate: createPermissionGroup } = useCreateGroupPermission();
+
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState<{
-    key: keyof OrganizationAccessPayload;
+    key: keyof GroupPermission;
     direction: "ascending" | "descending";
   } | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -108,7 +176,7 @@ export default function GroupPermissionManagement() {
     setCurrentPage(1);
   };
 
-  const requestSort = (key: keyof OrganizationAccessPayload) => {
+  const requestSort = (key: keyof GroupPermission) => {
     let direction: "ascending" | "descending" = "ascending";
     if (
       sortConfig &&
@@ -120,67 +188,121 @@ export default function GroupPermissionManagement() {
     setSortConfig({ key, direction });
   };
 
-  const sortedGroupPermissions = () => {
-    const sortableGroups = [...groupPermissions];
+  const processedGroupPermissions = useMemo(() => {
+    let sortableGroups = [...groupPermissions];
+
+    if (sortConfig !== null) {
+      sortableGroups.sort((a, b) => {
+        const aValue = a[sortConfig.key];
+        const bValue = b[sortConfig.key];
+
+        if (typeof aValue === "string" && typeof bValue === "string") {
+          if (aValue < bValue) {
+            return sortConfig.direction === "ascending" ? -1 : 1;
+          }
+          if (aValue > bValue) {
+            return sortConfig.direction === "ascending" ? 1 : -1;
+          }
+        }
+        return 0;
+      });
+    }
+
+    // Apply filtering
+    if (searchTerm) {
+      sortableGroups = sortableGroups.filter((group) =>
+        group.groupTitle.toLowerCase().includes(searchTerm.toLowerCase()),
+      );
+    }
 
     return sortableGroups;
-  };
+  }, [groupPermissions, sortConfig, searchTerm]);
 
-  const filteredGroupPermissions = sortedGroupPermissions().filter((group) =>
-    group.groupTitle.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
-
-  const totalRows = filteredGroupPermissions.length;
+  const totalRows = processedGroupPermissions.length;
   const startIndex = (currentPage - 1) * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
-  const paginatedGroups = filteredGroupPermissions.slice(startIndex, endIndex);
+  const paginatedGroups = processedGroupPermissions.slice(startIndex, endIndex);
 
   const handleAddGroupPermission = async (
     newGroup: GroupPermissionFormData,
   ) => {
-    const permissions = {
-      view: newGroup.accessLevel === "view-only",
-      edit: newGroup.accessLevel === "edit-only",
-      approve: newGroup.accessLevel === "approve-only",
-      disable: newGroup.accessLevel === "disable-only",
-    };
+    try {
+      const permissions = transformAccessLevelsToPermissions(
+        newGroup.accessLevel,
+      );
+      const modules = transformModuleAccessToModules(newGroup.moduleAccess);
 
-    const modules = transformModuleAccessToModules(newGroup.moduleAccess);
+      const payload: OrganizationAccessPayload = {
+        groupTitle: newGroup.groupTitle,
+        permission: permissions,
+        orgId: user?.orgId ?? "",
+        modules,
+      };
 
-    const payload: OrganizationAccessPayload = {
-      groupTitle: newGroup.groupTitle,
-      permission: permissions,
-      orgId: user?.orgId ?? "",
-      modules,
-    };
-
-    createGroup(payload);
+      createPermissionGroup(
+        {
+          groupTitle: newGroup.groupTitle,
+          permission: permissions,
+          orgId: user?.orgId ?? "",
+          modules,
+        },
+        {
+          onSuccess: () => {
+            queryClient.invalidateQueries({
+              queryKey: ["permissions", user?.orgId],
+            });
+            queryClient.invalidateQueries({ queryKey: ["org", user?.orgId] });
+            console.log("Permission Group created successfully");
+            toast.success("Permission Group created successfully");
+          },
+          onError: (error) => {
+            console.error("Error creating permission group:", error);
+            toast.error("Error creating permission group");
+          },
+        },
+      );
+    } catch (err) {
+      console.error("Error creating group permission:", err);
+    } finally {
+    }
   };
 
   const handleUpdatePermission = async (
     groupId: string,
-    permissionType: keyof OrganizationAccessPayload["permission"],
+    permissionType: keyof GroupPermission["permissions"],
     value: boolean,
   ) => {
-    const updatedGroups = groupPermissions.map((group) => {
-      if (group.id === groupId) {
-        return {
-          ...group,
-          permissions: {
-            ...group.permissions,
-            [permissionType]: value,
-          },
-        };
-      }
-      return group;
-    });
-    // TODO: Implement API call to update the permission
-    console.log("Updated groups:", updatedGroups);
+    try {
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      console.log(`Updated group ${groupId}: ${permissionType} = ${value}`);
+    } catch (err) {
+      console.error("Error updating permission:", err);
+    }
+  };
+
+  const handleDeleteGroup = async (groupId: string) => {
+    try {
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      console.log(`Deleted group ${groupId}`);
+    } catch (err) {
+      console.error("Error deleting group:", err);
+    }
   };
 
   return (
     <div className="h-screen overflow-y-hidden text-black">
       <h1 className="mb-10 text-2xl font-bold">Group Permission</h1>
+
+      {error && (
+        <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-4 text-red-800">
+          {error.message}
+        </div>
+      )}
+
       <div className="flex justify-between">
         <p className="text-muted-foreground text-sm">
           Configure group permission, and system accessibility here.
@@ -189,12 +311,15 @@ export default function GroupPermissionManagement() {
           mode="add"
           onSave={handleAddGroupPermission}
           triggerButton={
-            <Button className="mb-2 flex items-center gap-2 bg-[#161CCA] hover:bg-[#121eb3]">
+            <Button
+              className="mb-2 flex items-center gap-2 bg-[#161CCA] hover:bg-[#121eb3]"
+              disabled={isLoading}
+            >
               <div className="flex items-center justify-center p-0.5">
                 <PlusCircleIcon className="text-[#FEFEFE]" size={12} />
               </div>
               <span className="cursor-pointer text-white">
-                Add Group Permission
+                {isLoading ? "Adding..." : "Add Group Permission"}
               </span>
             </Button>
           }
@@ -210,7 +335,7 @@ export default function GroupPermissionManagement() {
             />
             <Input
               type="text"
-              placeholder="Search by name, ID, cont..."
+              placeholder="Search by group name..."
               className="border-[rgba(228,231,236,1)] pl-10"
               value={searchTerm}
               onChange={handleSearch}
@@ -228,10 +353,11 @@ export default function GroupPermissionManagement() {
           <Button
             variant="outline"
             className="gap-1 border-[rgba(228,231,236,1)]"
+            onClick={() => setSortConfig(null)}
           >
             <ArrowUpDown className="" strokeWidth={2.5} size={12} />
-            <Label htmlFor="sortCheckbox" className="cursor-pointer">
-              Sort
+            <Label className="cursor-pointer">
+              {sortConfig ? "Clear Sort" : "Sort"}
             </Label>
           </Button>
         </div>
@@ -242,7 +368,7 @@ export default function GroupPermissionManagement() {
           <TableHeader className="bg-transparent">
             <TableRow>
               <TableHead
-                className="cursor-pointer"
+                className="cursor-pointer hover:bg-gray-50"
                 onClick={() => requestSort("groupTitle")}
               >
                 <div className="flex items-center justify-between">
@@ -250,9 +376,9 @@ export default function GroupPermissionManagement() {
                   {sortConfig?.key === "groupTitle" && (
                     <span>
                       {sortConfig.direction === "ascending" ? (
-                        <ChevronUpIcon className="h-4 w-4" />
+                        <ChevronUp className="h-4 w-4" />
                       ) : (
-                        <ChevronDownIcon className="h-4 w-4" />
+                        <ChevronDown className="h-4 w-4" />
                       )}
                     </span>
                   )}
@@ -262,19 +388,39 @@ export default function GroupPermissionManagement() {
               <TableHead>Edit</TableHead>
               <TableHead>Approve</TableHead>
               <TableHead>Disable</TableHead>
+              <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center">
-                  Loading group permissions...
+                <TableCell colSpan={6} className="py-8 text-center">
+                  <div className="flex items-center justify-center">
+                    <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-blue-600"></div>
+                    <span className="ml-2">Loading group permissions...</span>
+                  </div>
                 </TableCell>
               </TableRow>
             ) : paginatedGroups.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center">
-                  No group permissions found
+                <TableCell colSpan={6} className="py-8 text-center">
+                  {searchTerm ? (
+                    <div>
+                      <p>
+                        No group permissions found matching &quot;{searchTerm}
+                        &quot;
+                      </p>
+                      <Button
+                        variant="outline"
+                        onClick={() => setSearchTerm("")}
+                        className="mt-2"
+                      >
+                        Clear search
+                      </Button>
+                    </div>
+                  ) : (
+                    "No group permissions found"
+                  )}
                 </TableCell>
               </TableRow>
             ) : (
@@ -283,7 +429,14 @@ export default function GroupPermissionManagement() {
                   key={group.id}
                   className="hover:bg-muted/50 bg-transparent"
                 >
-                  <TableCell>{group.groupTitle || "N/A"}</TableCell>
+                  <TableCell>
+                    <div>
+                      <div className="font-medium">{group.groupTitle}</div>
+                      <div className="text-sm text-gray-500">
+                        {group.modules?.map((m) => m.name).join(", ")}
+                      </div>
+                    </div>
+                  </TableCell>
                   <TableCell>
                     <Checkbox
                       checked={group.permissions.view}
@@ -320,13 +473,24 @@ export default function GroupPermissionManagement() {
                       className="border-gray-300 data-[state=checked]:bg-green-500 data-[state=checked]:text-white"
                     />
                   </TableCell>
+                  <TableCell>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDeleteGroup(group.id)}
+                      className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                    >
+                      Delete
+                    </Button>
+                  </TableCell>
                 </TableRow>
               ))
             )}
           </TableBody>
         </Table>
       </div>
-      {/* Sticky Pagination Bar */}
+
+      {/* Pagination */}
       <div className="text-black-500 sticky bottom-0 z-10 mt-4 flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3">
         <div className="flex items-center gap-2">
           <span className="text-sm text-gray-600">Rows per page</span>
@@ -334,9 +498,9 @@ export default function GroupPermissionManagement() {
             value={rowsPerPage}
             onChange={(e) => {
               setRowsPerPage(Number(e.target.value));
-              setCurrentPage(1); // Reset to page 1 when page size changes
+              setCurrentPage(1);
             }}
-            className="rounded-md border border-gray-300 px-2 py-1 text-sm focus:outline-none"
+            className="rounded-md border border-gray-300 px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
           >
             {[5, 10, 12, 20, 50].map((num) => (
               <option key={num} value={num}>
@@ -346,20 +510,26 @@ export default function GroupPermissionManagement() {
           </select>
         </div>
         <span className="text-black-500 text-sm">
-          {startIndex + 1}-{Math.min(endIndex, totalRows)} of {totalRows} rows
+          {totalRows === 0
+            ? "0-0"
+            : `${startIndex + 1}-${Math.min(endIndex, totalRows)}`}{" "}
+          of {totalRows} rows
         </span>
         <div className="flex items-center gap-2">
           <button
             disabled={currentPage === 1}
             onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-            className="text-black-500 cursor-pointer rounded-md border border-gray-300 px-3 py-1 text-sm disabled:opacity-50"
+            className="text-black-500 cursor-pointer rounded-md border border-gray-300 px-3 py-1 text-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Previous
           </button>
+          <span className="text-sm text-gray-600">
+            Page {currentPage} of {Math.ceil(totalRows / rowsPerPage) || 1}
+          </span>
           <button
             disabled={endIndex >= totalRows}
             onClick={() => setCurrentPage((prev) => prev + 1)}
-            className="text-black-500 cursor-pointer rounded-md border border-gray-300 px-3 py-1 text-sm disabled:opacity-50"
+            className="text-black-500 cursor-pointer rounded-md border border-gray-300 px-3 py-1 text-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Next
           </button>
