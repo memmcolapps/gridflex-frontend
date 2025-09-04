@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 
 interface ProfileDropdownProps {
@@ -8,8 +9,26 @@ interface ProfileDropdownProps {
 }
 
 export default function ProfileDropdown({ closeDropdown, openEditProfileModal }: ProfileDropdownProps) {
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        closeDropdown();
+      }
+    };
+
+    // Add event listener for clicks
+    document.addEventListener("mousedown", handleClickOutside);
+
+    // Cleanup event listener on component unmount
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [closeDropdown]);
+
   return (
-    <div className="w-full p-6 bg-white rounded-lg shadow-lg">
+    <div ref={dropdownRef} className="w-full p-6 bg-white rounded-lg shadow-lg">
       <div className="flex items-center gap-4 w-full">
         <div className="h-12 w-12 rounded-full bg-[#225BFF] flex items-center justify-center text-white">
           AO

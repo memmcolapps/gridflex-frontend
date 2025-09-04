@@ -15,25 +15,28 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { Calendar } from '@/components/ui/calendar';
+import { Calendar, SimplifiedCalendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { DailyReportTable } from '@/components/hes/daily-report-table';
-import { Yellowtail } from 'next/font/google';
 
 interface DailyReportDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    reportType: 'daily' | 'monthly'; // Added reportType prop
+    reportType: 'daily' | 'monthly';
 }
 
 export function DailyReportDialog({ open, onOpenChange, reportType }: DailyReportDialogProps) {
     const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+    const [startTimeValue, setStartTimeValue] = useState<string>("00:00");
     const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+    const [endTimeValue, setEndTimeValue] = useState<string>("00:00");
     const [meterNumber, setMeterNumber] = useState('');
     const [showTable, setShowTable] = useState(false);
+    const [startDateOpen, setStartDateOpen] = useState(false);
+    const [endDateOpen, setEndDateOpen] = useState(false);
 
     const handleProceed = () => {
         setShowTable(true);
@@ -41,15 +44,12 @@ export function DailyReportDialog({ open, onOpenChange, reportType }: DailyRepor
 
     const handleCancel = () => {
         if (showTable) {
-            // If on the table view, go back to the form
             setShowTable(false);
         } else {
-            // If on the form view, close the dialog
             onOpenChange(false);
         }
     };
 
-    // Dynamically set the className for the DialogContent based on the showTable state
     const dialogClassNames = showTable
         ? 'bg-white w-full max-w-[1000px] h-fit p-6 overflow-auto'
         : 'bg-white h-fit w-full max-w-lg';
@@ -64,11 +64,11 @@ export function DailyReportDialog({ open, onOpenChange, reportType }: DailyRepor
                     <>
                         <div className="grid gap-4 py-4">
                             <div className="flex flex-col md:flex-row items-center gap-4">
-                                <div className="flex-1 w-full">
+                                <div className="flex-1 w-full space-y-4">
                                     <Label htmlFor="start-date" className="text-left">
                                         Start Date
                                     </Label>
-                                    <Popover>
+                                    <Popover open={startDateOpen} onOpenChange={setStartDateOpen}>
                                         <PopoverTrigger asChild>
                                             <Button
                                                 variant='outline'
@@ -78,24 +78,25 @@ export function DailyReportDialog({ open, onOpenChange, reportType }: DailyRepor
                                                 )}
                                             >
                                                 <CalendarIcon size={14} className="mr-2 h-4 w-4" />
-                                                {startDate ? format(startDate, 'PPP') : <span>Select Date</span>}
+                                                {startDate ? format(startDate, "yyyy-MM-dd HH:mm") : <span>Select Date</span>}
                                             </Button>
                                         </PopoverTrigger>
                                         <PopoverContent className="w-auto p-0 bg-white border-none" align="start">
-                                            <Calendar
-                                                mode="single"
+                                            <SimplifiedCalendar
                                                 selected={startDate}
+                                                timeValue={startTimeValue}
                                                 onSelect={setStartDate}
-                                                initialFocus
+                                                onTimeChange={setStartTimeValue}
+                                                onClose={() => setStartDateOpen(false)}
                                             />
                                         </PopoverContent>
                                     </Popover>
                                 </div>
-                                <div className="flex-1 w-full">
+                                <div className="flex-1 w-full space-y-4">
                                     <Label htmlFor="end-date" className="text-left">
                                         End Date
                                     </Label>
-                                    <Popover>
+                                    <Popover open={endDateOpen} onOpenChange={setEndDateOpen}>
                                         <PopoverTrigger asChild>
                                             <Button
                                                 variant='outline'
@@ -105,15 +106,16 @@ export function DailyReportDialog({ open, onOpenChange, reportType }: DailyRepor
                                                 )}
                                             >
                                                 <CalendarIcon size={14} className="mr-2 h-4 w-4" />
-                                                {endDate ? format(endDate, 'PPP') : <span>Select Date</span>}
+                                                {endDate ? format(endDate, "yyyy-MM-dd HH:mm") : <span>Select Date</span>}
                                             </Button>
                                         </PopoverTrigger>
                                         <PopoverContent className="w-auto p-0 bg-white border-none" align="start">
-                                            <Calendar
-                                                mode="single"
+                                            <SimplifiedCalendar
                                                 selected={endDate}
+                                                timeValue={endTimeValue}
                                                 onSelect={setEndDate}
-                                                initialFocus
+                                                onTimeChange={setEndTimeValue}
+                                                onClose={() => setEndDateOpen(false)}
                                             />
                                         </PopoverContent>
                                     </Popover>
@@ -153,7 +155,7 @@ export function DailyReportDialog({ open, onOpenChange, reportType }: DailyRepor
                     </>
                 ) : (
                     <>
-                        <DialogContent style={{maxWidth: "60vw", background: "white", overflow: "auto", padding: "1.5rem"}}>
+                        <DialogContent style={{ maxWidth: "60vw", background: "white", overflow: "auto", padding: "1.5rem" }}>
                             <DailyReportTable />
                             <div className="flex justify-between space-x-2 mt-4">
                                 <Button
