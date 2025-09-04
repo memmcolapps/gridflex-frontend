@@ -29,8 +29,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Checkbox } from "@/components/ui/checkbox";
 import DeactivateUserDropdownItem from "./deactivateuserdropdownitem";
-import { useGetUsers } from "@/hooks/use-groups";
-import { type GetUsersUser } from "@/types/users-groups";
+import { useCreateUser, useGetUsers } from "@/hooks/use-groups";
+import {
+  type CreateUserPayload,
+  type GetUsersUser,
+} from "@/types/users-groups";
+import { toast } from "sonner";
 
 const formatLastActive = (date: Date) => {
   const now = new Date();
@@ -55,6 +59,7 @@ const formatDateAdded = (date: Date) => {
 
 export default function UserManagement() {
   const { data: users, isLoading } = useGetUsers();
+  const { mutate: createUser } = useCreateUser();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState<{
@@ -67,6 +72,19 @@ export default function UserManagement() {
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
+  };
+
+  const handleCreateUser = (newUser: CreateUserPayload) => {
+    createUser(newUser, {
+      onSuccess: () => {
+        console.log("User created successfully");
+        toast.success("User created successfully");
+      },
+      onError: (error) => {
+        console.error("Error creating user:", error);
+        toast.error("Error creating user");
+      },
+    });
   };
 
   const toggleUserSelection = (userId: string) => {
@@ -140,7 +158,7 @@ export default function UserManagement() {
           </p>
           <AddUserForm
             onSave={(newUser) => {
-              console.log("Adding New User:", newUser);
+              handleCreateUser(newUser);
             }}
             triggerButton={
               <Button className="flex cursor-pointer items-center gap-2 bg-[#161CCA] hover:bg-[#121eb3]">

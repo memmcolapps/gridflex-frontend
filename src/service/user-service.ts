@@ -3,7 +3,7 @@ import { env } from "@/env";
 import { handleApiError } from "error";
 import { type OrganizationAccessPayload } from "@/types/group-permission-user";
 import {
-  CreateUserPayload,
+  type CreateUserPayload,
   type GetUsersApiResponse,
   type GetUsersResponseData,
 } from "@/types/users-groups";
@@ -145,7 +145,6 @@ export async function createUser(
     const response = await axios.post(`${API_URL}/user/service/create`, user, {
       headers: {
         "Content-Type": "application/json",
-        custom: CUSTOM_HEADER,
         Authorization: `Bearer ${token}`,
       },
     });

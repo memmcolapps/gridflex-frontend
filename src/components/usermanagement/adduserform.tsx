@@ -1,5 +1,5 @@
 import { Plus } from "lucide-react";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -20,22 +20,23 @@ import {
 } from "@/components/ui/select";
 import { useGroupPermissions } from "@/hooks/use-groups";
 import { useOrg } from "@/hooks/use-org";
+import { type CreateUserPayload } from "@/types/users-groups";
 
 export type User = {
   id?: string;
   firstName: string;
   lastName: string;
   email: string;
-  groupPermission?: string;
+  groupPermission: string;
   lastActive: Date;
-  hierarchy?: string;
-  unitName?: string;
+  hierarchy: string;
+  unitName: string;
   dateAdded?: Date;
-  defaultPassword?: string;
+  defaultPassword: string;
 };
 
 type AddUserFormProps = {
-  onSave: (user: User) => void;
+  onSave: (user: CreateUserPayload) => void;
   triggerButton?: React.ReactNode;
 };
 
@@ -111,40 +112,6 @@ export default function AddUserForm({
     ? getUnitsForHierarchy(formData.hierarchy)
     : [];
 
-  const cleanUpOverlay = useCallback(() => {
-    console.log("Attempting overlay cleanup in AddUserForm");
-    const overlays = document.querySelectorAll("[data-radix-dialog-overlay]");
-    if (overlays.length > 0) {
-      overlays.forEach((overlay) => {
-        console.warn("Removing overlay:", overlay);
-        overlay.remove();
-      });
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!isOpen) {
-      setTimeout(cleanUpOverlay, 100);
-      setFormData({
-        firstName: "",
-        lastName: "",
-        email: "",
-        groupPermission: "",
-        lastActive: new Date(),
-        hierarchy: "",
-        unitName: "",
-        defaultPassword: "",
-      });
-    }
-  }, [isOpen, cleanUpOverlay]);
-
-  useEffect(() => {
-    return () => {
-      console.log("AddUserForm unmounting, cleaning up overlay");
-      cleanUpOverlay();
-    };
-  }, [cleanUpOverlay]);
-
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement> | string, field?: string) => {
       if (typeof e === "string" && field) {
@@ -154,7 +121,6 @@ export default function AddUserForm({
             [field]: e,
           };
 
-          // Reset unitName when hierarchy changes
           if (field === "hierarchy") {
             newData.unitName = "";
           }
@@ -172,16 +138,18 @@ export default function AddUserForm({
     [],
   );
 
-  const handleSubmit = useCallback(
-    (e: React.FormEvent) => {
-      e.preventDefault();
-      console.log("Submitting AddUserForm with data:", formData);
-      onSave(formData);
-      setIsOpen(false);
-      cleanUpOverlay();
-    },
-    [formData, onSave, cleanUpOverlay],
-  );
+  const handleSubmit = async () => {
+    onSave({
+      user: {
+        firstname: formData.firstName,
+        lastname: formData.lastName,
+        email: formData.email,
+        password: formData.defaultPassword,
+        nodeId: formData.unitName,
+      },
+      groupId: formData.groupPermission,
+    });
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
