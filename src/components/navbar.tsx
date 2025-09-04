@@ -22,38 +22,38 @@ export function Navbar() {
   const closeDropdown = () => setIsProfileOpen(false);
 
   return (
-<header className="sticky top-0 z-30 border-b border-gray-200 py-6 h-18">
-  <div className="flex h-full w-full items-center justify-between px-4 sm:px-6 lg:px-8">
-    <UserInfo />
+    <header className="sticky top-0 z-30 border-b border-gray-200 py-6 h-18 bg-white">
+      <div className="flex h-full w-full items-center justify-between px-4 sm:px-6 lg:px-8">
+        <UserInfo />
 
-    <div className="flex items-center gap-2 sm:gap-4">
-      <NotificationButton />
-      <UserDropdown
-        onProfileClick={() => {
-          setIsProfileOpen(!isProfileOpen);
-          setIsDropdownOpen(false); // Close the dropdown when profile is clicked
-        }}
-        isLoading={isLoading}
-        isOpen={isDropdownOpen}
-        setIsOpen={setIsDropdownOpen}
+        <div className="flex items-center gap-2 sm:gap-4">
+          <NotificationButton />
+          <UserDropdown
+            onProfileClick={() => {
+              setIsProfileOpen(!isProfileOpen);
+              setIsDropdownOpen(false); // Close the dropdown when profile is clicked
+            }}
+            isLoading={isLoading}
+            isOpen={isDropdownOpen}
+            setIsOpen={setIsDropdownOpen}
+          />
+        </div>
+      </div>
+
+      {isProfileOpen && (
+        <div className="absolute top-16 right-4 z-40 w-140 rounded-lg border border-gray-200 bg-white shadow-lg sm:top-18 sm:right-6 lg:top-20">
+          <ProfileDropdown
+            closeDropdown={closeDropdown}
+            openEditProfileModal={() => setIsEditProfileOpen(true)}
+          />
+        </div>
+      )}
+
+      <EditProfileModal
+        isOpen={isEditProfileOpen}
+        onClose={() => setIsEditProfileOpen(false)}
       />
-    </div>
-  </div>
-
-  {isProfileOpen && (
-    <div className="absolute top-16 right-4 z-40 w-140 rounded-lg border border-gray-200 bg-white shadow-lg sm:top-18 sm:right-6 lg:top-20">
-      <ProfileDropdown
-        closeDropdown={closeDropdown}
-        openEditProfileModal={() => setIsEditProfileOpen(true)}
-      />
-    </div>
-  )}
-
-  <EditProfileModal
-    isOpen={isEditProfileOpen}
-    onClose={() => setIsEditProfileOpen(false)}
-  />
-</header>
+    </header>
   );
 }
 
