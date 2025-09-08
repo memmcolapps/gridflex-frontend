@@ -1,8 +1,3 @@
-/**
- * Utility functions for handling hierarchy types and matching
- */
-
-// Define the finite set of hierarchy types
 export const HIERARCHY_TYPES = {
   REGION: "region",
   BUSINESS_HUB: "businesshub",
@@ -15,10 +10,6 @@ export const HIERARCHY_TYPES = {
 export type HierarchyType =
   (typeof HIERARCHY_TYPES)[keyof typeof HIERARCHY_TYPES];
 
-/**
- * Normalize a string to match hierarchy types
- * Removes spaces, hyphens, makes lowercase for consistent matching
- */
 export function normalizeHierarchyType(input: string): string {
   return input
     .toLowerCase()
@@ -28,9 +19,6 @@ export function normalizeHierarchyType(input: string): string {
     .trim();
 }
 
-/**
- * Check if a normalized string matches any of our defined hierarchy types
- */
 export function isValidHierarchyType(
   normalizedType: string,
 ): normalizedType is HierarchyType {
@@ -39,9 +27,6 @@ export function isValidHierarchyType(
   );
 }
 
-/**
- * Get display label for hierarchy type
- */
 export function getHierarchyDisplayLabel(hierarchyType: HierarchyType): string {
   switch (hierarchyType) {
     case HIERARCHY_TYPES.REGION:
@@ -61,9 +46,6 @@ export function getHierarchyDisplayLabel(hierarchyType: HierarchyType): string {
   }
 }
 
-/**
- * Get all hierarchy options for dropdowns
- */
 export function getHierarchyOptions(): Array<{
   value: HierarchyType;
   label: string;
@@ -74,10 +56,6 @@ export function getHierarchyOptions(): Array<{
   }));
 }
 
-/**
- * Match a node's type to our hierarchy types
- * Returns the matched hierarchy type or null if no match
- */
 export function matchNodeTypeToHierarchy(
   nodeType?: string,
 ): HierarchyType | null {
@@ -92,9 +70,6 @@ export function matchNodeTypeToHierarchy(
   return null;
 }
 
-/**
- * Filter nodes by hierarchy type from nodeInfo.type
- */
 export function filterNodesByHierarchyType<
   T extends { nodeInfo?: { type?: string } },
 >(nodes: T[], hierarchyType: HierarchyType): T[] {
@@ -104,9 +79,6 @@ export function filterNodesByHierarchyType<
   });
 }
 
-/**
- * Get units for a specific hierarchy type from organization nodes
- */
 export function getUnitsForHierarchy<
   T extends {
     nodeInfo?: { type?: string; name?: string };
@@ -121,13 +93,10 @@ export function getUnitsForHierarchy<
 
   return filteredNodes.map((node) => ({
     value: node.id,
-    label: node.nodeInfo?.name || node.name,
+    label: node.nodeInfo?.name ?? node.name,
   }));
 }
 
-/**
- * Recursively get all nodes with their children flattened
- */
 export function flattenOrganizationNodes<T extends { nodesTree?: T[] }>(
   nodes: T[],
 ): T[] {

@@ -83,6 +83,7 @@ interface GetUsersNodeInfo {
   address: string;
   createdAt: string;
   updatedAt: string;
+  type: string;
   bhubId?: string; // Optional field
   serialNo?: string; // Optional field
   status?: boolean; // Optional field
