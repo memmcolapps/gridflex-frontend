@@ -47,7 +47,11 @@ const formatLastActive = (date: Date) => {
     return `${diffInMinutes} min${diffInMinutes !== 1 ? "s" : ""} ago`;
 
   const diffInHours = Math.floor(diffInMinutes / 60);
-  return `${diffInHours} hr${diffInHours !== 1 ? "s" : ""} ago`;
+  if (diffInHours < 24)
+    return `${diffInHours} hr${diffInHours !== 1 ? "s" : ""} ago`;
+
+  const diffInDays = Math.floor(diffInHours / 24);
+  return `${diffInDays} day${diffInDays !== 1 ? "s" : ""} ago`;
 };
 
 const formatDateAdded = (date: Date) => {

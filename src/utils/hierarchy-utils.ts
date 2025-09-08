@@ -13,9 +13,9 @@ export type HierarchyType =
 export function normalizeHierarchyType(input: string): string {
   return input
     .toLowerCase()
-    .replace(/\s+/g, "") // Remove all spaces
-    .replace(/-/g, "") // Remove hyphens
-    .replace(/\(.*?\)/g, "") // Remove parentheses and content within
+    .replace(/\s+/g, "")
+    .replace(/-/g, "")
+    .replace(/\(.*?\)/g, "")
     .trim();
 }
 
