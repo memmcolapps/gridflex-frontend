@@ -145,6 +145,7 @@ export async function createUser(
     const response = await axios.post(`${API_URL}/user/service/create`, user, {
       headers: {
         "Content-Type": "application/json",
+        custom: CUSTOM_HEADER,
         Authorization: `Bearer ${token}`,
       },
     });

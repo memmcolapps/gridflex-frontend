@@ -138,17 +138,36 @@ export default function AddUserForm({
     [],
   );
 
-  const handleSubmit = async () => {
-    onSave({
-      user: {
-        firstname: formData.firstName,
-        lastname: formData.lastName,
-        email: formData.email,
-        password: formData.defaultPassword,
-        nodeId: formData.unitName,
-      },
-      groupId: formData.groupPermission,
-    });
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (
+      !formData.firstName ||
+      !formData.lastName ||
+      !formData.email ||
+      !formData.groupPermission ||
+      !formData.unitName ||
+      !formData.defaultPassword
+    ) {
+      console.error("All required fields must be filled");
+      return;
+    }
+
+    try {
+      onSave({
+        user: {
+          firstname: formData.firstName,
+          lastname: formData.lastName,
+          email: formData.email,
+          password: formData.defaultPassword,
+          nodeId: formData.unitName,
+        },
+        groupId: formData.groupPermission,
+      });
+      setIsOpen(false);
+    } catch (error) {
+      console.error("Error submitting form:", error);
+    }
   };
 
   return (
