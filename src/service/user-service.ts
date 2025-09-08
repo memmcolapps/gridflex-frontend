@@ -165,3 +165,37 @@ export async function createUser(
     };
   }
 }
+
+export async function editUser(
+  userId: string,
+  user: Partial<CreateUserPayload>,
+): Promise<{ success: true } | { success: false; error: string }> {
+  try {
+    const token = localStorage.getItem("auth_token");
+    const response = await axios.put(
+      `${API_URL}/user/service/edit/${userId}`,
+      user,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+    if (response.data.responsecode !== "000") {
+      return {
+        success: false,
+        error: response.data.responsedesc ?? "Failed to edit user",
+      };
+    }
+    return {
+      success: true,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: handleApiError(error),
+    };
+  }
+}

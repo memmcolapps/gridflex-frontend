@@ -23,7 +23,6 @@ import {
   getHierarchyOptions,
   getUnitsForHierarchy,
   flattenOrganizationNodes,
-  type HierarchyType,
   matchNodeTypeToHierarchy,
 } from "@/utils/hierarchy-utils";
 
@@ -46,18 +45,14 @@ export default function EditUserDialog({
 
   const [formData, setFormData] = useState<GetUsersUser>(user);
 
-  // Get hierarchy options using the utility
   const hierarchyOptions = getHierarchyOptions();
 
-  // Flatten all organization nodes for unit lookup
   const flattenedNodes = flattenOrganizationNodes(orgData);
 
-  // Get current hierarchy type from user's node info
   const currentHierarchyType = user.nodes?.nodeInfo?.type
     ? matchNodeTypeToHierarchy(user.nodes.nodeInfo.type)
     : null;
 
-  // Get units for selected hierarchy type
   const availableUnits = currentHierarchyType
     ? getUnitsForHierarchy(flattenedNodes, currentHierarchyType)
     : [];
