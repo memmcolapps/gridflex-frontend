@@ -17,6 +17,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { type GetUsersUser } from "@/types/users-groups";
+import { useGroupPermissions } from "@/hooks/use-groups";
+import { useOrg } from "@/hooks/use-org";
+import {
+  getHierarchyOptions,
+  getUnitsForHierarchy,
+  flattenOrganizationNodes,
+  type HierarchyType,
+  matchNodeTypeToHierarchy,
+} from "@/utils/hierarchy-utils";
 
 type EditUserDialogProps = {
   user: GetUsersUser;
@@ -25,36 +34,33 @@ type EditUserDialogProps = {
   onClose: () => void;
 };
 
-const groupPermissions = [
-  { value: "admin", label: "Administrator" },
-  { value: "manager", label: "Manager" },
-  { value: "editor", label: "Editor" },
-  { value: "viewer", label: "Viewer" },
-];
-
-const unitNames = [
-  { value: "unit1", label: "Unit 1" },
-  { value: "unit2", label: "Unit 2" },
-  { value: "unit3", label: "Unit 3" },
-  { value: "unit4", label: "Unit 4" },
-];
-
-const hierarchies = [
-  { value: "region", label: "Region" },
-  { value: "business-hub", label: "Business Hub" },
-  { value: "service-centre", label: "Service Centre" },
-  { value: "substation", label: "Substation" },
-  { value: "feeder-line", label: "Feeder Line" },
-  { value: "distribution-substation", label: "Distribution Substation (DSS)" },
-];
-
 export default function EditUserDialog({
   user,
   onSave,
   isOpen,
   onClose,
 }: EditUserDialogProps) {
+  const { data: groupPermissions, isLoading: isLoadingGroupPermissions } =
+    useGroupPermissions();
+  const { nodes: orgData, isLoading: isLoadingOrg } = useOrg();
+
   const [formData, setFormData] = useState<GetUsersUser>(user);
+
+  // Get hierarchy options using the utility
+  const hierarchyOptions = getHierarchyOptions();
+
+  // Flatten all organization nodes for unit lookup
+  const flattenedNodes = flattenOrganizationNodes(orgData);
+
+  // Get current hierarchy type from user's node info
+  const currentHierarchyType = user.nodes?.nodeInfo?.type
+    ? matchNodeTypeToHierarchy(user.nodes.nodeInfo.type)
+    : null;
+
+  // Get units for selected hierarchy type
+  const availableUnits = currentHierarchyType
+    ? getUnitsForHierarchy(flattenedNodes, currentHierarchyType)
+    : [];
 
   const cleanUpOverlay = useCallback(() => {
     console.log("Attempting overlay cleanup in EditUserDialog");
@@ -173,11 +179,17 @@ export default function EditUserDialog({
                   <SelectValue placeholder="Select permission" />
                 </SelectTrigger>
                 <SelectContent>
-                  {groupPermissions.map((permission) => (
-                    <SelectItem key={permission.value} value={permission.value}>
-                      {permission.label}
+                  {isLoadingGroupPermissions ? (
+                    <SelectItem value="loading" disabled>
+                      Loading group permissions...
                     </SelectItem>
-                  ))}
+                  ) : (
+                    groupPermissions.map((permission) => (
+                      <SelectItem key={permission.id} value={permission.id}>
+                        {permission.groupTitle}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -187,14 +199,14 @@ export default function EditUserDialog({
                 Organizational Hierarchy <span className="text-red-500">*</span>
               </Label>
               <Select
-                value={formData.nodes.name}
+                value={currentHierarchyType ?? ""}
                 onValueChange={(value) => handleChange(value, "hierarchy")}
               >
                 <SelectTrigger className="w-full border-[rgba(228,231,236,1)]">
                   <SelectValue placeholder="Select hierarchy" />
                 </SelectTrigger>
                 <SelectContent>
-                  {hierarchies.map((level) => (
+                  {hierarchyOptions.map((level) => (
                     <SelectItem key={level.value} value={level.value}>
                       {level.label}
                     </SelectItem>
@@ -207,7 +219,7 @@ export default function EditUserDialog({
                 Unit Name <span className="text-red-500">*</span>
               </Label>
               <Select
-                value={formData.groups.groupTitle}
+                value={formData.nodes.name}
                 onValueChange={(value) => handleChange(value, "unitName")}
                 required
               >
@@ -215,11 +227,21 @@ export default function EditUserDialog({
                   <SelectValue placeholder="Select unit name" />
                 </SelectTrigger>
                 <SelectContent>
-                  {unitNames.map((unit) => (
-                    <SelectItem key={unit.value} value={unit.value}>
-                      {unit.label}
+                  {isLoadingOrg ? (
+                    <SelectItem value="loading" disabled>
+                      Loading units...
                     </SelectItem>
-                  ))}
+                  ) : availableUnits.length === 0 ? (
+                    <SelectItem value="no-units" disabled>
+                      No units available for this hierarchy
+                    </SelectItem>
+                  ) : (
+                    availableUnits.map((unit) => (
+                      <SelectItem key={unit.value} value={unit.value}>
+                        {unit.label}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </div>

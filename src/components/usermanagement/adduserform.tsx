@@ -21,6 +21,12 @@ import {
 import { useGroupPermissions } from "@/hooks/use-groups";
 import { useOrg } from "@/hooks/use-org";
 import { type CreateUserPayload } from "@/types/users-groups";
+import {
+  getHierarchyOptions,
+  getUnitsForHierarchy,
+  flattenOrganizationNodes,
+  type HierarchyType,
+} from "@/utils/hierarchy-utils";
 
 export type User = {
   id?: string;
@@ -60,56 +66,15 @@ export default function AddUserForm({
     defaultPassword: "",
   });
 
-  const getAllNodesWithChildren = (
-    nodes: typeof orgData,
-  ): Array<{ value: string; label: string }> => {
-    const result: Array<{ value: string; label: string }> = [];
+  // Get hierarchy options using the utility
+  const hierarchyOptions = getHierarchyOptions();
 
-    const processNode = (node: (typeof orgData)[0]) => {
-      if (node.nodesTree && node.nodesTree.length > 0) {
-        result.push({
-          value: node.id,
-          label: node.name,
-        });
+  // Flatten all organization nodes for unit lookup
+  const flattenedNodes = flattenOrganizationNodes(orgData);
 
-        node.nodesTree.forEach((childNode) => processNode(childNode));
-      }
-    };
-
-    nodes.forEach((node) => processNode(node));
-    return result;
-  };
-
-  const findNodeById = (
-    nodes: typeof orgData,
-    nodeId: string,
-  ): (typeof orgData)[0] | null => {
-    for (const node of nodes) {
-      if (node.id === nodeId) {
-        return node;
-      }
-      if (node.nodesTree) {
-        const found = findNodeById(node.nodesTree, nodeId);
-        if (found) return found;
-      }
-    }
-    return null;
-  };
-
-  const hierarchies = getAllNodesWithChildren(orgData);
-
-  const getUnitsForHierarchy = (hierarchyId: string) => {
-    const selectedHierarchy = findNodeById(orgData, hierarchyId);
-    if (!selectedHierarchy?.nodesTree) return [];
-
-    return selectedHierarchy.nodesTree.map((subNode) => ({
-      value: subNode.id,
-      label: subNode.name,
-    }));
-  };
-
+  // Get units for selected hierarchy type
   const availableUnits = formData.hierarchy
-    ? getUnitsForHierarchy(formData.hierarchy)
+    ? getUnitsForHierarchy(flattenedNodes, formData.hierarchy as HierarchyType)
     : [];
 
   const handleChange = useCallback(
@@ -281,17 +246,11 @@ export default function AddUserForm({
                   <SelectValue placeholder="Select hierarchy" />
                 </SelectTrigger>
                 <SelectContent>
-                  {isLoadingOrg ? (
-                    <SelectItem value="loading" disabled>
-                      Loading hierarchies...
+                  {hierarchyOptions.map((level) => (
+                    <SelectItem key={level.value} value={level.value}>
+                      {level.label}
                     </SelectItem>
-                  ) : (
-                    hierarchies.map((level) => (
-                      <SelectItem key={level.value} value={level.value}>
-                        {level.label}
-                      </SelectItem>
-                    ))
-                  )}
+                  ))}
                 </SelectContent>
               </Select>
             </div>
