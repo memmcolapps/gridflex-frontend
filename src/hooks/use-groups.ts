@@ -1,9 +1,13 @@
 import {
   createGroupPermission,
   createUser,
+  deactivateGroupPermission,
+  editUser,
+  EditUserPayload,
   getGroupPermission,
   getUsers,
   updateGroupPermission,
+  updateGroupPermissionField,
 } from "@/service/user-service";
 import { type OrganizationAccessPayload } from "@/types/group-permission-user";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -58,6 +62,52 @@ export const useUpdateGroupPermission = () => {
   });
 };
 
+export const useUpdateGroupPermissionField = () => {
+  return useMutation({
+    mutationFn: async ({
+      groupId,
+      permissionType,
+      value,
+    }: {
+      groupId: string;
+      permissionType: "view" | "edit" | "approve" | "disable";
+      value: boolean;
+    }) => {
+      const response = await updateGroupPermissionField(
+        groupId,
+        permissionType,
+        value,
+      );
+      if ("success" in response && !response.success) {
+        throw new Error(response.error);
+      }
+      return response;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["groupPermissions"],
+      });
+    },
+  });
+};
+
+export const useDeactivateGroupPermission = () => {
+  return useMutation({
+    mutationFn: async (groupId: string) => {
+      const response = await deactivateGroupPermission(groupId);
+      if ("success" in response && !response.success) {
+        throw new Error(response.error);
+      }
+      return response;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["groupPermissions"],
+      });
+    },
+  });
+};
+
 export const useGetUsers = () => {
   const { data, error, isLoading } = useQuery({
     queryKey: ["users"],
@@ -76,6 +126,23 @@ export const useCreateUser = () => {
   return useMutation({
     mutationFn: async (user: CreateUserPayload) => {
       const response = await createUser(user);
+      if ("success" in response && !response.success) {
+        throw new Error(response.error);
+      }
+      return response;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["users"],
+      });
+    },
+  });
+};
+
+export const useEditUser = () => {
+  return useMutation({
+    mutationFn: async (user: EditUserPayload) => {
+      const response = await editUser(user);
       if ("success" in response && !response.success) {
         throw new Error(response.error);
       }

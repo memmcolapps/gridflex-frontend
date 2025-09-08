@@ -99,7 +99,7 @@ export interface CreateUserPayload {
     lastname: string;
     email: string;
     nodeId: string;
-    password: string;
+    password?: string;
   };
   groupId: string;
 }

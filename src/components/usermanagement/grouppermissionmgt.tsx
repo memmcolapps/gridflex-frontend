@@ -29,8 +29,10 @@ import EditGroupPermissionForm from "./editgrouppermissionform";
 import { useAuth } from "@/context/auth-context";
 import {
   useCreateGroupPermission,
+  useDeactivateGroupPermission,
   useGroupPermissions,
   useUpdateGroupPermission,
+  useUpdateGroupPermissionField,
 } from "@/hooks/use-groups";
 import { toast } from "sonner";
 import {
@@ -157,6 +159,8 @@ export default function GroupPermissionManagement() {
   const { data: groupPermissions, isLoading, error } = useGroupPermissions();
   const { mutate: createPermissionGroup } = useCreateGroupPermission();
   const { mutate: updatePermissionGroup } = useUpdateGroupPermission();
+  const { mutate: updatePermissionField } = useUpdateGroupPermissionField();
+  const { mutate: deactivatePermissionGroup } = useDeactivateGroupPermission();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState<{
@@ -258,16 +262,18 @@ export default function GroupPermissionManagement() {
     permissionType: keyof GroupPermission["permissions"],
     value: boolean,
   ) => {
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      console.log(`Updated group ${groupId}: ${permissionType} = ${value}`);
-      toast.success("Permission updated successfully");
-    } catch (err) {
-      console.error("Error updating permission:", err);
-      toast.error("Error updating permission");
-    }
+    updatePermissionField(
+      { groupId, permissionType, value },
+      {
+        onSuccess: () => {
+          toast.success("Permission updated successfully");
+        },
+        onError: (error) => {
+          console.error("Error updating permission:", error);
+          toast.error("Error updating permission");
+        },
+      },
+    );
   };
 
   const handleEditGroup = (group: GroupPermission) => {
@@ -310,6 +316,18 @@ export default function GroupPermissionManagement() {
       console.error("Error updating group permission:", err);
       toast.error("Error updating group permission");
     }
+  };
+
+  const handleDeactivateGroup = (groupId: string) => {
+    deactivatePermissionGroup(groupId, {
+      onSuccess: () => {
+        toast.success("Group permission deactivated successfully");
+      },
+      onError: (error) => {
+        console.error("Error deactivating group permission:", error);
+        toast.error("Error deactivating group permission");
+      },
+    });
   };
 
   // const handleDeleteGroup = async (groupId: string) => {
@@ -530,7 +548,11 @@ export default function GroupPermissionManagement() {
                             </span>
                           </div>
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
+                        <DropdownMenuItem
+                          onSelect={() => {
+                            handleDeactivateGroup(group.id);
+                          }}
+                        >
                           <div className="flex w-full items-center gap-2 p-2">
                             <Ban size={14} />
                             <span className="cursor-pointer">

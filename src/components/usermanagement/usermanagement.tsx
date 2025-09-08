@@ -29,12 +29,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Checkbox } from "@/components/ui/checkbox";
 import DeactivateUserDropdownItem from "./deactivateuserdropdownitem";
-import { useCreateUser, useGetUsers } from "@/hooks/use-groups";
+import { useCreateUser, useEditUser, useGetUsers } from "@/hooks/use-groups";
 import {
   type CreateUserPayload,
   type GetUsersUser,
 } from "@/types/users-groups";
 import { toast } from "sonner";
+import { EditUserPayload } from "@/service/user-service";
 
 const formatLastActive = (date: Date) => {
   const now = new Date();
@@ -64,6 +65,7 @@ const formatDateAdded = (date: Date) => {
 export default function UserManagement() {
   const { data: users, isLoading } = useGetUsers();
   const { mutate: createUser } = useCreateUser();
+  const { mutate: editUser } = useEditUser();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState<{
@@ -87,6 +89,35 @@ export default function UserManagement() {
       onError: (error) => {
         console.error("Error creating user:", error);
         toast.error("Error creating user");
+      },
+    });
+  };
+
+  const handleEditUser = (user: GetUsersUser) => {
+    setEditingUser(user);
+    setIsEditDialogOpen(true);
+
+    const editPayload: EditUserPayload = {
+      user: {
+        id: user.id,
+        firstname: user.firstname,
+        lastname: user.lastname,
+        email: user.email,
+        nodeId: user.nodes.nodeInfo.nodeId,
+      },
+      groupId: user.groups.id,
+    };
+
+    editUser(editPayload, {
+      onSuccess: () => {
+        console.log("User updated successfully");
+        toast.success("User updated successfully");
+        setIsEditDialogOpen(false);
+        setEditingUser(null);
+      },
+      onError: (error) => {
+        console.error("Error updating user:", error);
+        toast.error("Error updating user");
       },
     });
   };
@@ -381,7 +412,6 @@ export default function UserManagement() {
             </TableBody>
           </Table>
         </div>
-        {/* Sticky Pagination Bar */}
         <div className="sticky bottom-0 z-10 mt-4 flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3">
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-600">Rows per page</span>
@@ -427,9 +457,7 @@ export default function UserManagement() {
             user={editingUser}
             isOpen={isEditDialogOpen}
             onSave={(updatedUser) => {
-              console.log("Updating:", updatedUser);
-              setIsEditDialogOpen(false);
-              setEditingUser(null);
+              handleEditUser(updatedUser);
             }}
             onClose={() => {
               console.log("Edit dialog closed");

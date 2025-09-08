@@ -138,6 +138,78 @@ export async function updateGroupPermission(
   }
 }
 
+export async function updateGroupPermissionField(
+  groupId: string,
+  permissionType: "view" | "edit" | "approve" | "disable",
+  value: boolean,
+): Promise<{ success: true } | { success: false; error: string }> {
+  try {
+    const token = localStorage.getItem("auth_token");
+    const response = await axios.patch<GroupPermissionResponse>(
+      `${API_URL}/user/service/update/group-permission/${groupId}/permission`,
+      {
+        permissionType,
+        value,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+    if (response.data.responsecode !== "000") {
+      return {
+        success: false,
+        error: response.data.responsedesc ?? "Failed to update permission",
+      };
+    }
+    return {
+      success: true,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: handleApiError(error),
+    };
+  }
+}
+
+export async function deactivateGroupPermission(
+  groupId: string,
+): Promise<{ success: true } | { success: false; error: string }> {
+  try {
+    const token = localStorage.getItem("auth_token");
+    const response = await axios.patch<GroupPermissionResponse>(
+      `${API_URL}/user/service/deactivate/group-permission/${groupId}`,
+      {},
+      {
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+    if (response.data.responsecode !== "000") {
+      return {
+        success: false,
+        error:
+          response.data.responsedesc ?? "Failed to deactivate group permission",
+      };
+    }
+    return {
+      success: true,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: handleApiError(error),
+    };
+  }
+}
+
 export async function getUsers(): Promise<
   | { success: true; data: GetUsersResponseData }
   | { success: false; error: string }
@@ -201,23 +273,29 @@ export async function createUser(
   }
 }
 
+export interface EditUserPayload {
+  user: {
+    id: string;
+    firstname: string;
+    lastname: string;
+    email: string;
+    nodeId: string;
+  };
+  groupId: string;
+}
+
 export async function editUser(
-  userId: string,
-  user: Partial<CreateUserPayload>,
+  user: Partial<EditUserPayload>,
 ): Promise<{ success: true } | { success: false; error: string }> {
   try {
     const token = localStorage.getItem("auth_token");
-    const response = await axios.put(
-      `${API_URL}/user/service/edit/${userId}`,
-      user,
-      {
-        headers: {
-          "Content-Type": "application/json",
-          custom: CUSTOM_HEADER,
-          Authorization: `Bearer ${token}`,
-        },
+    const response = await axios.put(`${API_URL}/user/service/update`, user, {
+      headers: {
+        "Content-Type": "application/json",
+        custom: CUSTOM_HEADER,
+        Authorization: `Bearer ${token}`,
       },
-    );
+    });
     if (response.data.responsecode !== "000") {
       return {
         success: false,

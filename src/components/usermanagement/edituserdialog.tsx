@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -45,6 +45,10 @@ export default function EditUserDialog({
 
   const [formData, setFormData] = useState<GetUsersUser>(user);
 
+  useEffect(() => {
+    setFormData(user);
+  }, [user]);
+
   const hierarchyOptions = getHierarchyOptions();
 
   const flattenedNodes = flattenOrganizationNodes(orgData);
@@ -57,41 +61,36 @@ export default function EditUserDialog({
     ? getUnitsForHierarchy(flattenedNodes, currentHierarchyType)
     : [];
 
-  const cleanUpOverlay = useCallback(() => {
-    console.log("Attempting overlay cleanup in EditUserDialog");
-    const overlays = document.querySelectorAll("[data-radix-dialog-overlay]");
-    if (overlays.length > 0) {
-      overlays.forEach((overlay) => {
-        console.warn("Removing overlay:", overlay);
-        overlay.remove();
-      });
-    }
-  }, []);
-
-  useEffect(() => {
-    if (isOpen) {
-      console.log("Setting formData with user:", user);
-      setFormData(user);
-    }
-    if (!isOpen) {
-      setTimeout(cleanUpOverlay, 100);
-    }
-  }, [isOpen, user, cleanUpOverlay]);
-
-  useEffect(() => {
-    return () => {
-      console.log("EditUserDialog unmounting, cleaning up overlay");
-      cleanUpOverlay();
-    };
-  }, [cleanUpOverlay]);
-
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement> | string, field?: string) => {
       if (typeof e === "string" && field) {
-        setFormData((prev) => ({
-          ...prev,
-          [field]: e,
-        }));
+        if (field === "groupPermission") {
+          const selectedGroup = groupPermissions.find((g) => g.id === e);
+          if (selectedGroup) {
+            setFormData((prev) => ({
+              ...prev,
+              groups: {
+                ...prev.groups,
+                id: selectedGroup.id,
+                groupTitle: selectedGroup.groupTitle,
+              },
+            }));
+          }
+        } else if (field === "unitName") {
+          // Update the unit name
+          setFormData((prev) => ({
+            ...prev,
+            nodes: {
+              ...prev.nodes,
+              name: e,
+            },
+          }));
+        } else {
+          setFormData((prev) => ({
+            ...prev,
+            [field]: e,
+          }));
+        }
       } else if (typeof e !== "string") {
         const { name, value } = e.target;
         setFormData((prev) => ({
@@ -100,7 +99,7 @@ export default function EditUserDialog({
         }));
       }
     },
-    [],
+    [groupPermissions],
   );
 
   const handleSubmit = useCallback(
@@ -108,10 +107,9 @@ export default function EditUserDialog({
       e.preventDefault();
       console.log("Submitting EditUserDialog with data:", formData);
       onSave(formData);
-      cleanUpOverlay();
       onClose();
     },
-    [formData, onSave, onClose, cleanUpOverlay],
+    [formData, onSave, onClose],
   );
 
   if (!user) {
@@ -137,7 +135,7 @@ export default function EditUserDialog({
               </Label>
               <Input
                 id="firstName"
-                name="firstName"
+                name="firstname"
                 value={formData.firstname}
                 onChange={handleChange}
                 required
@@ -151,7 +149,7 @@ export default function EditUserDialog({
               </Label>
               <Input
                 id="lastName"
-                name="lastName"
+                name="lastname"
                 value={formData.lastname}
                 onChange={handleChange}
                 required
@@ -160,11 +158,26 @@ export default function EditUserDialog({
               />
             </div>
             <div className="col-span-2 space-y-2">
+              <Label htmlFor="email">
+                Email <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                value={formData.email}
+                onChange={handleChange}
+                required
+                placeholder="Enter email address"
+                className="border-[rgba(228,231,236,1)]"
+              />
+            </div>
+            <div className="col-span-2 space-y-2">
               <Label htmlFor="groupPermission">
                 Group Permission <span className="text-red-500">*</span>
               </Label>
               <Select
-                value={formData.groups.groupTitle}
+                value={formData.groups?.id || ""}
                 onValueChange={(value) =>
                   handleChange(value, "groupPermission")
                 }
@@ -214,7 +227,7 @@ export default function EditUserDialog({
                 Unit Name <span className="text-red-500">*</span>
               </Label>
               <Select
-                value={formData.nodes.name}
+                value={formData.nodes?.name || ""}
                 onValueChange={(value) => handleChange(value, "unitName")}
                 required
               >
