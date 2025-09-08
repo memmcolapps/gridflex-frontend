@@ -3,6 +3,7 @@ import {
   createUser,
   getGroupPermission,
   getUsers,
+  updateGroupPermission,
 } from "@/service/user-service";
 import { type OrganizationAccessPayload } from "@/types/group-permission-user";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -21,6 +22,29 @@ export const useCreateGroupPermission = () => {
   return useMutation({
     mutationFn: async (payload: OrganizationAccessPayload) => {
       const response = await createGroupPermission(payload);
+      if ("success" in response && !response.success) {
+        throw new Error(response.error);
+      }
+      return response;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["groupPermissions"],
+      });
+    },
+  });
+};
+
+export const useUpdateGroupPermission = () => {
+  return useMutation({
+    mutationFn: async ({
+      groupId,
+      payload,
+    }: {
+      groupId: string;
+      payload: OrganizationAccessPayload;
+    }) => {
+      const response = await updateGroupPermission(groupId, payload);
       if ("success" in response && !response.success) {
         throw new Error(response.error);
       }

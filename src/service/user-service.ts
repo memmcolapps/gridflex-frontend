@@ -103,6 +103,41 @@ export async function createGroupPermission(
   }
 }
 
+export async function updateGroupPermission(
+  groupId: string,
+  payload: OrganizationAccessPayload,
+): Promise<{ success: true } | { success: false; error: string }> {
+  try {
+    const token = localStorage.getItem("auth_token");
+    const response = await axios.put<GroupPermissionResponse>(
+      `${API_URL}/user/service/update/group-permission/${groupId}`,
+      payload,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+    if (response.data.responsecode !== "000") {
+      return {
+        success: false,
+        error:
+          response.data.responsedesc ?? "Failed to update group permission",
+      };
+    }
+    return {
+      success: true,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: handleApiError(error),
+    };
+  }
+}
+
 export async function getUsers(): Promise<
   | { success: true; data: GetUsersResponseData }
   | { success: false; error: string }

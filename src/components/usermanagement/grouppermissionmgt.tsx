@@ -25,10 +25,12 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import GroupPermissionForm from "./grouppermissionform";
+import EditGroupPermissionForm from "./editgrouppermissionform";
 import { useAuth } from "@/context/auth-context";
 import {
   useCreateGroupPermission,
   useGroupPermissions,
+  useUpdateGroupPermission,
 } from "@/hooks/use-groups";
 import { toast } from "sonner";
 import {
@@ -154,6 +156,7 @@ export default function GroupPermissionManagement() {
   const { user } = useAuth();
   const { data: groupPermissions, isLoading, error } = useGroupPermissions();
   const { mutate: createPermissionGroup } = useCreateGroupPermission();
+  const { mutate: updatePermissionGroup } = useUpdateGroupPermission();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState<{
@@ -162,6 +165,9 @@ export default function GroupPermissionManagement() {
   } | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(12);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [selectedGroupForEdit, setSelectedGroupForEdit] =
+    useState<GroupPermission | null>(null);
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -257,8 +263,52 @@ export default function GroupPermissionManagement() {
       await new Promise((resolve) => setTimeout(resolve, 500));
 
       console.log(`Updated group ${groupId}: ${permissionType} = ${value}`);
+      toast.success("Permission updated successfully");
     } catch (err) {
       console.error("Error updating permission:", err);
+      toast.error("Error updating permission");
+    }
+  };
+
+  const handleEditGroup = (group: GroupPermission) => {
+    setSelectedGroupForEdit(group);
+    setEditDialogOpen(true);
+  };
+
+  const handleUpdateGroupPermission = async (data: {
+    id: string;
+    groupTitle: string;
+    moduleAccess: string[];
+    accessLevel: string[];
+  }) => {
+    try {
+      // Convert the form data back to the API format
+      const permissions = transformAccessLevelsToPermissions(data.accessLevel);
+      const modules = transformModuleAccessToModules(data.moduleAccess);
+
+      const payload = {
+        groupTitle: data.groupTitle,
+        permission: permissions,
+        orgId: user?.orgId ?? "",
+        modules,
+      };
+
+      updatePermissionGroup(
+        { groupId: data.id, payload },
+        {
+          onSuccess: () => {
+            console.log("Group permission updated successfully");
+            toast.success("Group permission updated successfully");
+          },
+          onError: (error) => {
+            console.error("Error updating group permission:", error);
+            toast.error("Error updating group permission");
+          },
+        },
+      );
+    } catch (err) {
+      console.error("Error updating group permission:", err);
+      toast.error("Error updating group permission");
     }
   };
 
@@ -470,7 +520,7 @@ export default function GroupPermissionManagement() {
                       >
                         <DropdownMenuItem
                           onSelect={() => {
-                            console.log("Edit User");
+                            handleEditGroup(group);
                           }}
                         >
                           <div className="flex w-full items-center gap-2 p-2">
@@ -543,6 +593,14 @@ export default function GroupPermissionManagement() {
           </button>
         </div>
       </div>
+
+      {/* Edit Group Permission Modal */}
+      <EditGroupPermissionForm
+        isOpen={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        groupPermission={selectedGroupForEdit}
+        onSave={handleUpdateGroupPermission}
+      />
     </div>
   );
 }
