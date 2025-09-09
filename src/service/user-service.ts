@@ -285,7 +285,7 @@ export interface EditUserPayload {
 }
 
 export async function editUser(
-  user: Partial<EditUserPayload>,
+  user: EditUserPayload,
 ): Promise<{ success: true } | { success: false; error: string }> {
   try {
     const token = localStorage.getItem("auth_token");
@@ -300,6 +300,43 @@ export async function editUser(
       return {
         success: false,
         error: response.data.responsedesc ?? "Failed to edit user",
+      };
+    }
+    return {
+      success: true,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: handleApiError(error),
+    };
+  }
+}
+
+export async function activateOrDeactivateUser(
+  status: boolean,
+  userId: string,
+): Promise<{ success: true } | { success: false; error: string }> {
+  try {
+    const token = localStorage.getItem("auth_token");
+    const formData = new FormData();
+    formData.append("status", status.toString());
+    formData.append("userId", userId);
+    const response = await axios.patch(
+      `${API_URL}/user/service/change-state`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+    if (response.data.responsecode !== "000") {
+      return {
+        success: false,
+        error: response.data.responsedesc ?? "Failed to update permission",
       };
     }
     return {

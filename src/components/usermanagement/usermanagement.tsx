@@ -28,7 +28,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Checkbox } from "@/components/ui/checkbox";
-import DeactivateUserDropdownItem from "./deactivateuserdropdownitem";
+import UserStatusToggleDropdownItem from "./deactivateuserdropdownitem";
 import { useCreateUser, useEditUser, useGetUsers } from "@/hooks/use-groups";
 import {
   type CreateUserPayload,
@@ -403,7 +403,7 @@ export default function UserManagement() {
                             <span className="cursor-pointer">Edit User</span>
                           </div>
                         </DropdownMenuItem>
-                        <DeactivateUserDropdownItem user={user} />
+                        <UserStatusToggleDropdownItem user={user} />
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>

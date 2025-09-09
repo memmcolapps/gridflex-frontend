@@ -1,9 +1,10 @@
 import {
+  activateOrDeactivateUser,
   createGroupPermission,
   createUser,
   deactivateGroupPermission,
   editUser,
-  EditUserPayload,
+  type EditUserPayload,
   getGroupPermission,
   getUsers,
   updateGroupPermission,
@@ -143,6 +144,24 @@ export const useEditUser = () => {
   return useMutation({
     mutationFn: async (user: EditUserPayload) => {
       const response = await editUser(user);
+      if ("success" in response && !response.success) {
+        throw new Error(response.error);
+      }
+      return response;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["users"],
+      });
+    },
+  });
+};
+
+export const useActivateOrDeactivateUser = () => {
+  return useMutation({
+    mutationFn: async (payload: { status: boolean; userId: string }) => {
+      const { status, userId } = payload;
+      const response = await activateOrDeactivateUser(status, userId);
       if ("success" in response && !response.success) {
         throw new Error(response.error);
       }
