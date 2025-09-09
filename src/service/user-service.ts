@@ -319,12 +319,10 @@ export async function activateOrDeactivateUser(
 ): Promise<{ success: true } | { success: false; error: string }> {
   try {
     const token = localStorage.getItem("auth_token");
-    const formData = new FormData();
-    formData.append("userId", userId);
-    formData.append("status", status.toString());
+
     const response = await axios.patch(
       `${API_URL}/user/service/change-state`,
-      formData,
+      { status, id: userId },
       {
         headers: {
           "Content-Type": "application/json",

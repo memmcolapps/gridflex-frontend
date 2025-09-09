@@ -310,6 +310,23 @@ export default function UserManagement() {
                 </TableHead>
                 <TableHead
                   className="cursor-pointer"
+                  onClick={() => requestSort("lastActive")}
+                >
+                  <div className="flex items-center justify-between">
+                    <span>Status</span>
+                    {sortConfig?.key === "lastActive" && (
+                      <span>
+                        {sortConfig.direction === "ascending" ? (
+                          <ChevronUpIcon className="h-4 w-4" />
+                        ) : (
+                          <ChevronDownIcon className="h-4 w-4" />
+                        )}
+                      </span>
+                    )}
+                  </div>
+                </TableHead>
+                <TableHead
+                  className="cursor-pointer"
                   onClick={() => requestSort("createdAt")}
                 >
                   <div className="flex items-center justify-between">
@@ -373,6 +390,17 @@ export default function UserManagement() {
                         )}
                       </span>
                     </div>
+                  </TableCell>
+                  <TableCell>
+                    <span
+                      className={`inline-block rounded-full px-2 py-1 text-xs font-semibold ${
+                        user.status
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      {user.status ? "Active" : "Inactive"}
+                    </span>
                   </TableCell>
                   <TableCell>
                     {formatDateAdded(new Date(user.createdAt))}

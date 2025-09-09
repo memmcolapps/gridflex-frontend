@@ -24,7 +24,7 @@ export default function UserStatusToggleDropdownItem({
   const { mutate: activateOrDeactivateUser, isPending } =
     useActivateOrDeactivateUser();
 
-  const isActive = user.active || user.status;
+  const isActive = user.status;
   const actionText = isActive ? "Deactivate" : "Activate";
   const actionDescription = isActive
     ? "Are you sure you want to deactivate this user? They will no longer be able to access their account."
