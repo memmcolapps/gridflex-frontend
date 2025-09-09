@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { useAuth } from "@/context/auth-context";
 import ProfileDropdown from "./profile/profiledropdown";
@@ -17,7 +19,7 @@ export function Navbar() {
   const { isLoading } = useAuth();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // Add state for DropdownMenu
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const closeDropdown = () => setIsProfileOpen(false);
 
@@ -31,7 +33,7 @@ export function Navbar() {
           <UserDropdown
             onProfileClick={() => {
               setIsProfileOpen(!isProfileOpen);
-              setIsDropdownOpen(false); // Close the dropdown when profile is clicked
+              setIsDropdownOpen(false);
             }}
             isLoading={isLoading}
             isOpen={isDropdownOpen}
@@ -60,11 +62,14 @@ export function Navbar() {
 export const UserAvatar = () => {
   const { user } = useAuth();
 
+  // Safely get the initials and convert them to uppercase
+  const initials = `${user?.firstname?.charAt(0) ?? ""}${user?.lastname?.charAt(0) ?? ""}`.toUpperCase();
+
   return (
     <Avatar className="h-7 w-7 sm:h-8 sm:w-8">
       <AvatarImage src="" alt="User" />
       <AvatarFallback className="rounded-full bg-blue-600 text-xs text-white sm:text-sm">
-        {`${user?.firstname?.charAt(0) ?? ""}${user?.lastname?.charAt(0) ?? ""}`}
+        {initials}
       </AvatarFallback>
     </Avatar>
   );

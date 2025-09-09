@@ -2,6 +2,8 @@ import "../styles/globals.css";
 import { type Metadata } from "next";
 import { Manrope } from "next/font/google";
 import { Providers } from "./Providers";
+import { getServerSession } from "next-auth";
+import { SessionWrapper } from "./SessionWrapper";
 
 export const metadata: Metadata = {
   title: "Gridflex",
@@ -11,13 +13,18 @@ export const metadata: Metadata = {
 
 const manrope = Manrope({ subsets: ["latin"] });
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const session = await getServerSession(); 
   return (
     <html lang="en" className={manrope.className}>
       <body>
-        <Providers>{children}</Providers>
+        <SessionWrapper session={session}>
+          <Providers>
+            {children}
+          </Providers>
+        </SessionWrapper>
       </body>
     </html>
   );

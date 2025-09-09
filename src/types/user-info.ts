@@ -15,6 +15,7 @@ export interface UserInfo {
   nodeId: string;
   firstname: string;
   lastname: string;
+  phoneNumber: string;
   email: string;
   status: boolean;
   active: boolean;
@@ -52,6 +53,7 @@ export interface UserInfo {
     businessName: string;
     businessType: string;
     businessContact: string;
+    phoneNumber: string;
     registrationNumber: string;
     country: string;
     state: string;
