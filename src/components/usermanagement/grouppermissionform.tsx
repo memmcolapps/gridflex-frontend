@@ -24,27 +24,6 @@ interface GroupPermissionFormProps {
   triggerButton: React.ReactNode;
 }
 
-// type ModuleAccessKeys =
-//   | "all-access"
-//   | "dashboard"
-//   | "organization"
-//   | "meter-management"
-//   | "customer-management"
-//   | "tarrif"
-//   | "band-management"
-//   | "reviewandapproval"
-//   | "debt-management"
-//   | "billing"
-//   | "vending"
-//   | "hes"
-//   | "user-management";
-
-// type AccessLevelKeys =
-//   | "view-only"
-//   | "edit-only"
-//   | "approve-only"
-//   | "disable-only";
-
 export default function GroupPermissionForm({
   onSave,
   triggerButton,

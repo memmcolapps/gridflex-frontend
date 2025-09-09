@@ -9,15 +9,14 @@ export default function HomePage() {
   const [isTimeout, setIsTimeout] = useState(false);
 
   useEffect(() => {
-    // Add timeout safeguard
     const timeoutId = setTimeout(() => {
       setIsTimeout(true);
       router.push("/login");
-    }, 5000); // 5 second timeout
+    }, 5000);
 
     if (!isLoading) {
       if (user) {
-        router.push("/data-management/dashboard"); // Fixed typo in route
+        router.push("/data-management/dashboard");
       } else {
         router.push("/login");
       }
