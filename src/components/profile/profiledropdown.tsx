@@ -1,8 +1,11 @@
+// src/components/tariff/profile-dropdown.tsx
 "use client";
 
 import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { useAuth, type Module } from "@/context/auth-context";
+import { useAuth } from "@/context/auth-context";
+// Fix: Import the Module type from the centralized types file.
+import { type Module } from "@/types/user-info";
 
 interface ProfileDropdownProps {
   closeDropdown: () => void;

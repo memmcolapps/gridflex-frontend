@@ -1,9 +1,10 @@
-import "../styles/globals.css";
+// src/app/layout.tsx
 import { type Metadata } from "next";
 import { Manrope } from "next/font/google";
 import { Providers } from "./Providers";
 import { getServerSession } from "next-auth";
 import { SessionWrapper } from "./SessionWrapper";
+import "@/styles/globals.css";
 
 export const metadata: Metadata = {
   title: "Gridflex",
