@@ -135,7 +135,7 @@ const initialMeters: MeterData[] = [
     protocol: "G-500",
     authentication: "123456",
     password: "0000000",
-    meterStage: "Pending-allocated"
+    meterStage: "Pending-allocated",
   },
   {
     id: "2",
@@ -167,7 +167,7 @@ const initialMeters: MeterData[] = [
     protocol: "G-500",
     authentication: "123456",
     password: "0000000",
-    meterStage: "Pending-allocated"
+    meterStage: "Pending-allocated",
   },
   {
     id: "3",
@@ -199,7 +199,7 @@ const initialMeters: MeterData[] = [
     protocol: "G-500",
     authentication: "123456",
     password: "0000000",
-    meterStage: "Pending-created"
+    meterStage: "Pending-created",
   },
   {
     id: "4",
@@ -231,7 +231,7 @@ const initialMeters: MeterData[] = [
     protocol: "G-500",
     authentication: "123456",
     password: "0000000",
-    meterStage: "Pending-created"
+    meterStage: "Pending-created",
   },
   {
     id: "5",
@@ -263,7 +263,7 @@ const initialMeters: MeterData[] = [
     protocol: "G-500",
     authentication: "123456",
     password: "0000000",
-    meterStage: "Pending-created"
+    meterStage: "Pending-created",
   },
   {
     id: "6",
@@ -295,7 +295,7 @@ const initialMeters: MeterData[] = [
     protocol: "G-500",
     authentication: "123456",
     password: "0000000",
-    meterStage: "Rejected-created"
+    meterStage: "Rejected-created",
   },
   {
     id: "7",
@@ -327,7 +327,7 @@ const initialMeters: MeterData[] = [
     protocol: "G-500",
     authentication: "123456",
     password: "0000000",
-    meterStage: "Rejected-created"
+    meterStage: "Rejected-created",
   },
   {
     id: "8",
@@ -359,7 +359,7 @@ const initialMeters: MeterData[] = [
     protocol: "G-500",
     authentication: "123456",
     password: "0000000",
-    meterStage: "Created"
+    meterStage: "Created",
   },
   {
     id: "9",
@@ -391,7 +391,7 @@ const initialMeters: MeterData[] = [
     protocol: "G-500",
     authentication: "123456",
     password: "0000000",
-    meterStage: "Created"
+    meterStage: "Created",
   },
   {
     id: "10",
@@ -423,7 +423,7 @@ const initialMeters: MeterData[] = [
     protocol: "G-500",
     authentication: "123456",
     password: "0000000",
-    meterStage: "Created"
+    meterStage: "Created",
   },
   {
     id: "11",
@@ -455,7 +455,7 @@ const initialMeters: MeterData[] = [
     protocol: "G-500",
     authentication: "123456",
     password: "0000000",
-    meterStage: "Created"
+    meterStage: "Created",
   },
 ];
 

@@ -3,12 +3,12 @@ import { env } from "@/env";
 import { handleApiError } from "error";
 
 export interface Band {
-  id?: string | number;
+  id?: string;
   name: string;
   hour: number;
-  status?: boolean;
-  createdat?: string;
-  updatedat?: string;
+  approveStatus?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 interface BandResponse {

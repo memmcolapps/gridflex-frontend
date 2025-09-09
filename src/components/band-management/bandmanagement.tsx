@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   ChevronUpIcon,
   ChevronDownIcon,
@@ -21,6 +21,7 @@ import { type Band } from "@/service/band-service";
 import { useBand, useCreateBand, useUpdateBand } from "@/hooks/use-band";
 import { toast } from "sonner";
 import { ContentHeader } from "../ui/content-header";
+import { getStatusStyle } from "../status-style";
 
 export default function BandManagement() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -28,7 +29,7 @@ export default function BandManagement() {
     key: keyof Band;
     direction: "ascending" | "descending";
   } | null>(null);
-  const { bands, isLoading, error } = useBand();
+  const { bands, isLoading } = useBand();
   const { mutate: createBand } = useCreateBand();
   const { mutate: updateBand } = useUpdateBand();
 
@@ -87,17 +88,15 @@ export default function BandManagement() {
   };
 
   const handleUpdateBand = async (
-    bandId: string | number,
+    bandId: string,
     updatedBand: Omit<Band, "id">,
   ) => {
-    // Create a complete band object with the original ID and updated fields
     const bandToUpdate: Band = {
       id: bandId,
       ...updatedBand,
-      // Preserve other fields from the original band
-      status: bands.find((b) => b.id === bandId)?.status,
-      createdat: bands.find((b) => b.id === bandId)?.createdat,
-      updatedat: bands.find((b) => b.id === bandId)?.updatedat,
+      approveStatus: bands.find((b) => b.id === bandId)?.approveStatus,
+      createdAt: bands.find((b) => b.id === bandId)?.createdAt,
+      updatedAt: bands.find((b) => b.id === bandId)?.updatedAt,
     };
 
     updateBand(bandToUpdate, {
@@ -212,12 +211,16 @@ export default function BandManagement() {
                 <TableRow key={band.id} className="hover:bg-muted/50">
                   <TableCell>{band.name}</TableCell>
                   <TableCell>{band.hour}</TableCell>
-                  <TableCell>{band.status ? "Active" : "Inactive"}</TableCell>
                   <TableCell>
-                    {new Date(band.createdat!).toLocaleDateString()}
+                    <span className={getStatusStyle(band.approveStatus)}>
+                      {band.approveStatus}
+                    </span>
                   </TableCell>
                   <TableCell>
-                    {new Date(band.updatedat!).toLocaleDateString()}
+                    {new Date(band.createdAt!).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>
+                    {new Date(band.updatedAt!).toLocaleDateString()}
                   </TableCell>
                   <TableCell>
                     <BandForm
