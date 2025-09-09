@@ -35,7 +35,7 @@ import {
   type GetUsersUser,
 } from "@/types/users-groups";
 import { toast } from "sonner";
-import { EditUserPayload } from "@/service/user-service";
+import { type EditUserPayload } from "@/service/user-service";
 
 const formatLastActive = (date: Date) => {
   const now = new Date();
