@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import { useState } from "react";
@@ -17,11 +18,8 @@ import {
 
 export function Navbar() {
   const { isLoading } = useAuth();
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-
-  const closeDropdown = () => setIsProfileOpen(false);
 
   return (
     <header className="sticky top-0 z-30 border-b border-gray-200 py-6 h-18 bg-white">
@@ -32,8 +30,8 @@ export function Navbar() {
           <NotificationButton />
           <UserDropdown
             onProfileClick={() => {
-              setIsProfileOpen(!isProfileOpen);
-              setIsDropdownOpen(false);
+              setIsEditProfileOpen(true); // Open the EditProfileModal
+              setIsDropdownOpen(false); // Close the UserDropdown
             }}
             isLoading={isLoading}
             isOpen={isDropdownOpen}
@@ -41,15 +39,10 @@ export function Navbar() {
           />
         </div>
       </div>
-
-      {isProfileOpen && (
-        <div className="absolute top-16 right-4 z-40 w-140 rounded-lg border border-gray-200 bg-white shadow-lg sm:top-18 sm:right-6 lg:top-20">
-          <ProfileDropdown
-            closeDropdown={closeDropdown}
-            openEditProfileModal={() => setIsEditProfileOpen(true)}
-          />
-        </div>
-      )}
+      
+      {/* The ProfileDropdown component is no longer needed in the Navbar.
+        The UserDropdown component now directly handles the "Profile" click.
+      */}
 
       <EditProfileModal
         isOpen={isEditProfileOpen}
