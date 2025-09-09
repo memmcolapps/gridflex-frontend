@@ -39,7 +39,7 @@ import {
   Loader2,
 } from "lucide-react";
 import React, { useState } from "react";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { useBand } from "@/hooks/use-band";
 import { useCreateTariff, useTariff } from "@/hooks/use-tarrif";
 
@@ -167,7 +167,7 @@ export default function TariffManagementPage() {
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button
-                className="flex h-fit cursor-pointer items-center gap-2 bg-[rgba(22,28,202,0.4)] px-6 py-2 text-sm text-white hover:bg-[rgb(22,28,202)]"
+                className="flex h-fit cursor-pointer items-center gap-2 bg-[rgb(22,28,202)] px-6 py-2 text-sm text-white"
                 size={"sm"}
                 disabled={addTarriffDisabled}
               >
