@@ -75,9 +75,6 @@ input[type="number"] {
   -moz-appearance: textfield;
 }
 
-
-
-
 ::-webkit-scrollbar {
   height: 0.5rem;
   width: 0.6rem;

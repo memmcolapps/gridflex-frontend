@@ -18,7 +18,6 @@ export interface Tariff {
 
 export interface TariffPayload {
   name: string;
-  tariff_index: number;
   tariff_type: string;
   effective_date: string;
   band: string;

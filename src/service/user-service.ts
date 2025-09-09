@@ -320,8 +320,8 @@ export async function activateOrDeactivateUser(
   try {
     const token = localStorage.getItem("auth_token");
     const formData = new FormData();
-    formData.append("status", status.toString());
     formData.append("userId", userId);
+    formData.append("status", status.toString());
     const response = await axios.patch(
       `${API_URL}/user/service/change-state`,
       formData,

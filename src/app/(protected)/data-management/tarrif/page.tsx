@@ -7,11 +7,14 @@ import { ContentHeader } from "@/components/ui/content-header";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -19,16 +22,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { TariffDatePicker } from "@/components/tarrif-datepicker";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
 import {
   ArrowUpDown,
   CirclePlusIcon,
   ListFilter,
   Search,
   SquareArrowOutUpRight,
+  CalendarIcon,
+  Loader2,
 } from "lucide-react";
-import React, { useState, useEffect, useCallback } from "react";
-
+import React, { useState } from "react";
 import { toast } from "react-toastify";
 import { useBand } from "@/hooks/use-band";
 import { useCreateTariff, useTariff } from "@/hooks/use-tarrif";
@@ -36,8 +46,9 @@ import { useCreateTariff, useTariff } from "@/hooks/use-tarrif";
 export default function TariffManagementPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedTariffs, setSelectedTariffs] = useState<string[]>([]);
-  const [isBandsLoading, setIsBandsLoading] = useState(false);
-  const [bandsError, setBandsError] = useState<string | null>(null);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [formData, setFormData] = useState({
     name: "",
     type: "",
@@ -47,7 +58,8 @@ export default function TariffManagementPage() {
     status: "inactive" as "active" | "inactive",
     approvalStatus: "pending" as "Approved" | "pending" | "rejected",
   });
-  const { bands, error } = useBand();
+
+  const { bands, isLoading: bandsLoading, error: bandsError } = useBand();
   const { tariffs, isLoading, error: tariffError } = useTariff();
   const { mutate: createTariff } = useCreateTariff();
 
@@ -55,13 +67,28 @@ export default function TariffManagementPage() {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  // const handleUpdateTariff = useCallback();
+  const handleDateSelect = (date: Date | undefined) => {
+    handleInputChange("effectiveDate", date ?? null);
+    setIsCalendarOpen(false);
+  };
+
+  const resetForm = () => {
+    setFormData({
+      name: "",
+      type: "",
+      effectiveDate: null,
+      bandCode: "",
+      tariffRate: "",
+      status: "inactive",
+      approvalStatus: "pending",
+    });
+  };
 
   const handleBulkApprove = async () => {
     try {
-      const success = true; // Replace with actual API call
+      const success = true;
       if (success) {
-        setSelectedTariffs([]); // Clear selection after approval
+        setSelectedTariffs([]);
         toast.success("Bulk approve successful");
       }
     } catch (error) {
@@ -72,44 +99,42 @@ export default function TariffManagementPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isFormValid) return;
+    if (!isFormValid || isSubmitting) return;
+
+    setIsSubmitting(true);
 
     const newTariff = {
       name: formData.name,
-      tariff_index: 0, // Set this to the appropriate index value as needed
       tariff_type: formData.type,
       effective_date: formData.effectiveDate?.toISOString().split("T")[0] ?? "",
       band: formData.bandCode,
       tariff_rate: formData.tariffRate,
     };
+
     createTariff(newTariff, {
       onSuccess: () => {
-        setFormData({
-          name: "",
-          type: "",
-          effectiveDate: null,
-          bandCode: "",
-          tariffRate: "",
-          status: "inactive",
-          approvalStatus: "pending",
-        });
+        resetForm();
         toast.success("Tariff created successfully");
+        setIsDialogOpen(false);
       },
       onError: (error) => {
         console.error("Failed to create tariff:", error);
+        toast.error("Failed to create tariff");
       },
       onSettled: () => {
-        setIsDialogOpen(false);
+        setIsSubmitting(false);
       },
     });
   };
 
   const isFormValid =
-    formData.name &&
+    formData.name.trim() &&
     formData.type &&
     formData.effectiveDate &&
     formData.bandCode &&
-    formData.tariffRate;
+    formData.tariffRate.trim();
+
+  const addTarriffDisabled = bands && bands.length === 0;
 
   return (
     <div className="min-h-screen p-6">
@@ -144,108 +169,132 @@ export default function TariffManagementPage() {
               <Button
                 className="flex h-fit cursor-pointer items-center gap-2 bg-[rgba(22,28,202,0.4)] px-6 py-2 text-sm text-white hover:bg-[rgb(22,28,202)]"
                 size={"sm"}
+                disabled={addTarriffDisabled}
               >
                 <CirclePlusIcon strokeWidth={2.75} size={15} />
                 Add tariff
               </Button>
             </DialogTrigger>
-            <DialogContent className="h-fit bg-white sm:max-w-[400px]">
-              <DialogHeader>
-                <DialogTitle className="text-lg font-semibold">
-                  Add Tariff
+            <DialogContent className="max-w-md bg-white">
+              <DialogHeader className="space-y-3">
+                <DialogTitle className="text-xl font-semibold text-gray-900">
+                  Add New Tariff
                 </DialogTitle>
+                <DialogDescription className="text-sm text-gray-600">
+                  Create a new tariff plan with the required information below.
+                </DialogDescription>
               </DialogHeader>
-              <form
-                onSubmit={handleSubmit}
-                className="flex flex-col gap-6 py-4"
-              >
-                <div className="flex flex-col gap-2">
-                  <label
+
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="space-y-2">
+                  <Label
                     htmlFor="name"
                     className="text-sm font-medium text-gray-700"
                   >
-                    Tariff Name
-                  </label>
+                    Tariff Name *
+                  </Label>
                   <Input
                     id="name"
-                    placeholder="Enter tariff name"
-                    className="border-gray-300 focus:border-[rgba(22,28,202,1)] focus:ring-[rgba(22,28,202,1)]"
+                    placeholder="e.g. Residential Basic Plan"
+                    className="w-full border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                     value={formData.name}
                     onChange={(e) => handleInputChange("name", e.target.value)}
+                    disabled={isSubmitting}
                   />
                 </div>
-                <div className="flex flex-col gap-2">
-                  <label
+
+                <div className="space-y-2">
+                  <Label
                     htmlFor="type"
                     className="text-sm font-medium text-gray-700"
                   >
-                    Tariff Type
-                  </label>
+                    Tariff Type *
+                  </Label>
                   <Select
                     value={formData.type}
                     onValueChange={(value: string) =>
                       handleInputChange("type", value)
                     }
+                    disabled={isSubmitting}
                   >
-                    <SelectTrigger className="w-full border-gray-300 focus:border-[rgba(22,28,202,1)] focus:ring-[rgba(22,28,202,1)]">
+                    <SelectTrigger className="w-full border-gray-300 focus:border-blue-500 focus:ring-blue-500">
                       <SelectValue placeholder="Select tariff type" />
                     </SelectTrigger>
                     <SelectContent>
                       {["R1", "R2", "R3", "C1", "C2"].map((type) => (
                         <SelectItem key={type} value={type}>
-                          {type}
+                          {type} -{" "}
+                          {type.startsWith("R") ? "Residential" : "Commercial"}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="flex flex-col gap-2">
-                  <label className="font-medium超过了最大字符数限制。以下是继续的代码部分： ```typescript text-sm text-gray-700">
-                    Tariff Effective Date
-                  </label>
-                  <TariffDatePicker
-                    value={
-                      formData.effectiveDate instanceof Date
-                        ? formData.effectiveDate.toISOString()
-                        : undefined
-                    }
-                    onChange={(date) => {
-                      const currentDate =
-                        formData.effectiveDate instanceof Date
-                          ? formData.effectiveDate.toISOString()
-                          : null;
-                      if (currentDate !== date) {
-                        handleInputChange(
-                          "effectiveDate",
-                          date ? new Date(date) : null,
-                        );
-                      }
-                    }}
-                  />
+
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-700">
+                    Effective Date *
+                  </Label>
+                  <Popover
+                    open={isCalendarOpen}
+                    onOpenChange={setIsCalendarOpen}
+                  >
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start border-gray-300 text-left font-normal hover:bg-gray-50",
+                          !formData.effectiveDate && "text-muted-foreground",
+                        )}
+                        disabled={isSubmitting}
+                      >
+                        <CalendarIcon className="mr-2" size={12} />
+                        {formData.effectiveDate ? (
+                          format(formData.effectiveDate, "PPP")
+                        ) : (
+                          <span>Pick a date</span>
+                        )}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      className="w-auto bg-white p-0"
+                      align="start"
+                    >
+                      <Calendar
+                        mode="single"
+                        selected={formData.effectiveDate ?? undefined}
+                        onSelect={handleDateSelect}
+                        disabled={(date) =>
+                          date < new Date(new Date().setHours(0, 0, 0, 0))
+                        }
+                      />
+                    </PopoverContent>
+                  </Popover>
                 </div>
-                <div className="flex flex-col gap-2">
-                  <label
+
+                <div className="space-y-2">
+                  <Label
                     htmlFor="band-code"
                     className="text-sm font-medium text-gray-700"
                   >
-                    Band Code
-                  </label>
+                    Band Code *
+                  </Label>
                   <Select
                     value={formData.bandCode}
                     onValueChange={(value: string) =>
                       handleInputChange("bandCode", value)
                     }
-                    disabled={isBandsLoading}
+                    disabled={bandsLoading ?? isSubmitting}
                   >
                     <SelectTrigger
                       className={cn(
-                        "w-full border-gray-300 focus:border-[rgba(22,28,202,1)] focus:ring-[rgba(22,28,202,1)]",
+                        "w-full border-gray-300 focus:border-blue-500 focus:ring-blue-500",
                         bandsError && "border-red-500",
                       )}
                     >
                       <SelectValue
                         placeholder={
-                          isBandsLoading
+                          bandsLoading
                             ? "Loading bands..."
                             : bandsError
                               ? "Failed to load bands"
@@ -254,7 +303,7 @@ export default function TariffManagementPage() {
                       />
                     </SelectTrigger>
                     <SelectContent>
-                      {bands.length > 0 ? (
+                      {bands && bands.length > 0 ? (
                         bands.map((band) => (
                           <SelectItem key={band.id} value={band.name}>
                             {band.name}
@@ -270,77 +319,111 @@ export default function TariffManagementPage() {
                     </SelectContent>
                   </Select>
                   {bandsError && (
-                    <span className="text-sm text-red-500">{bandsError}</span>
+                    <p className="text-sm text-red-600">{bandsError.message}</p>
                   )}
                 </div>
-                <div className="flex flex-col gap-2">
-                  <label
+
+                <div className="space-y-2">
+                  <Label
                     htmlFor="tariff-rate"
                     className="text-sm font-medium text-gray-700"
                   >
-                    Tariff Rate
-                  </label>
+                    Tariff Rate *
+                  </Label>
                   <Input
                     id="tariff-rate"
-                    placeholder="Enter tariff rate"
-                    className="border-gray-300 focus:border-[rgba(22,28,202,1)] focus:ring-[rgba(22,28,202,1)]"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="0.00"
+                    className="w-full border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                     value={formData.tariffRate}
                     onChange={(e) =>
                       handleInputChange("tariffRate", e.target.value)
                     }
+                    disabled={isSubmitting}
                   />
+                  <p className="text-xs text-gray-500">
+                    Enter rate in local currency per unit
+                  </p>
                 </div>
-                <div className="flex justify-end gap-3">
+
+                <DialogFooter className="gap-3 pt-4">
                   <Button
-                    variant="secondary"
                     type="button"
-                    onClick={() => setIsDialogOpen(false)}
-                    className="border-gray-300 text-gray-700"
+                    variant="outline"
+                    onClick={() => {
+                      setIsDialogOpen(false);
+                      resetForm();
+                    }}
+                    disabled={isSubmitting}
+                    className="border-gray-300 text-gray-700 hover:bg-gray-50"
                   >
                     Cancel
                   </Button>
                   <Button
                     type="submit"
-                    className={`bg-[rgba(22,28,202,1)] text-white hover:bg-[rgba(22,28,202,0.9)] ${isFormValid ? "" : "cursor-not-allowed opacity-40"}`}
-                    disabled={!isFormValid}
+                    disabled={!isFormValid || isSubmitting}
+                    className="bg-blue-600 text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    Submit
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Creating...
+                      </>
+                    ) : (
+                      "Create Tariff"
+                    )}
                   </Button>
-                </div>
+                </DialogFooter>
               </form>
             </DialogContent>
           </Dialog>
         </div>
 
         <div className="mb-8 flex items-center justify-between">
-          <div className="mb-8 flex items-center gap-10">
-            <div className="flex w-[219px] gap-2 rounded-md border border-[rgba(228,231,236,1)] px-3 py-2">
+          <div className="flex items-center gap-4">
+            <div className="relative">
               <Search
-                size={14}
-                strokeWidth={2.75}
-                className="ml-2 text-gray-500"
+                size={16}
+                className="absolute top-1/2 left-3 -translate-y-1/2 transform text-gray-400"
               />
-              <input
+              <Input
                 type="text"
-                placeholder="Search by name, cont..."
-                className="w-full flex-grow border-none text-sm text-[rgba(95,95,95,1)] placeholder-[rgba(95,95,95,1)] outline-none"
+                placeholder="Search by name, type..."
+                className="w-64 border-gray-300 pl-10 focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
             <div className="flex gap-2">
-              <Button className="flex cursor-pointer items-center gap-2 rounded-md border border-[rgba(228,231,236,1)] px-4 py-2 text-sm text-gray-700 focus:outline-none">
+              <Button
+                variant="outline"
+                className="flex items-center gap-2 border-gray-300 text-gray-700 hover:bg-gray-50"
+              >
                 <ListFilter size={14} />
                 Filter
               </Button>
-              <Button className="flex cursor-pointer items-center gap-2 rounded-md border border-[rgba(228,231,236,1)] px-4 py-2 text-sm text-gray-700 focus:outline-none">
+              <Button
+                variant="outline"
+                className="flex items-center gap-2 border-gray-300 text-gray-700 hover:bg-gray-50"
+              >
                 <ArrowUpDown size={14} />
                 Sort
               </Button>
             </div>
           </div>
-          <div className="flex gap-5">
+
+          <div className="flex gap-3">
+            {selectedTariffs.length > 0 && (
+              <Button
+                onClick={handleBulkApprove}
+                className="bg-green-600 text-white hover:bg-green-700"
+              >
+                Approve Selected ({selectedTariffs.length})
+              </Button>
+            )}
             <Button
-              variant={"default"}
-              className="text-md cursor-pointer gap-2 border px-8 py-5 font-semibold text-[rgba(22,28,202,1)]"
+              variant="outline"
+              className="flex items-center gap-2 border-gray-300 text-gray-700 hover:bg-gray-50"
             >
               <SquareArrowOutUpRight size={14} />
               Export
@@ -348,14 +431,32 @@ export default function TariffManagementPage() {
           </div>
         </div>
 
-        <div className="flex-1 rounded-lg border border-gray-200 bg-transparent">
+        <div className="flex-1 rounded-lg border border-gray-200 bg-white shadow-sm">
           {isLoading ? (
-            <div className="flex items-center justify-center p-8">
-              <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-gray-900"></div>
+            <div className="flex items-center justify-center p-12">
+              <div className="flex flex-col items-center gap-3">
+                <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                <p className="text-sm text-gray-600">Loading tariffs...</p>
+              </div>
+            </div>
+          ) : tariffError ? (
+            <div className="flex items-center justify-center p-12">
+              <div className="text-center">
+                <p className="mb-2 text-sm text-red-600">
+                  Failed to load tariffs
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => window.location.reload()}
+                >
+                  Retry
+                </Button>
+              </div>
             </div>
           ) : (
             <TariffTable
-              tariffs={tariffs}
+              tariffs={tariffs ?? []}
               selectedTariffs={selectedTariffs}
               setSelectedTariffs={setSelectedTariffs}
             />
