@@ -12,7 +12,7 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { Card } from "@/components/ui/card";
-import { CirclePlus, MoreVertical, Pencil, AlertTriangle } from "lucide-react";
+import { CirclePlus, MoreVertical, Pencil } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ContentHeader } from "@/components/ui/content-header";
 import {
@@ -44,25 +44,36 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { type Manufacturer } from "@/types/meters-manufacturers";
-import { useGetMeterManufactures } from "@/hooks/use-meter";
+import {
+  useCreateManufacturer,
+  useGetMeterManufactures,
+  useUpdateManufacturer,
+} from "@/hooks/use-meter";
+import { toast } from "sonner";
 
 function AddManufacturerDialog({
   isOpen,
   onClose,
   onAdd,
-  data,
 }: {
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (manufacturer: Manufacturer) => void;
+  onAdd: (
+    manufacturer: Omit<
+      Manufacturer,
+      "id" | "orgId" | "createdAt" | "updatedAt"
+    >,
+  ) => void;
   data: Manufacturer[];
 }) {
   const [manufacturerName, setManufacturerName] = useState("");
   const [manufacturerId, setManufacturerId] = useState("");
   const [sgc, setSgc] = useState("");
   const [contactPerson, setContactPerson] = useState("");
+  const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [location, setLocation] = useState("Lagos");
+  const [address, setAddress] = useState("");
+  const [state, setState] = useState("");
 
   const handleAdd = () => {
     if (
@@ -74,6 +85,22 @@ function AddManufacturerDialog({
       alert("Please fill all required fields.");
       return;
     }
+
+    const newManufacturer: Omit<
+      Manufacturer,
+      "id" | "orgId" | "createdAt" | "updatedAt"
+    > = {
+      name: manufacturerName,
+      manufacturerId: manufacturerId,
+      contactPerson: contactPerson,
+      email: email,
+      phoneNo: phoneNumber,
+      address: address,
+      state: state,
+      sgc: sgc,
+    };
+
+    onAdd(newManufacturer);
   };
 
   return (
@@ -85,7 +112,6 @@ function AddManufacturerDialog({
           </DialogTitle>
         </DialogHeader>
         <div className="grid grid-cols-1 gap-x-6 gap-y-4 py-4 sm:grid-cols-2">
-          {/* Column 1: Manufacturer Name */}
           <div className="space-y-4">
             <div>
               <label
@@ -103,7 +129,6 @@ function AddManufacturerDialog({
               />
             </div>
           </div>
-          {/* Column 2: Manufacturer ID */}
           <div className="space-y-4">
             <div>
               <label
@@ -124,7 +149,7 @@ function AddManufacturerDialog({
             </div>
           </div>
           {/* Full-width Contact Person */}
-          <div className="space-y-4 sm:col-span-2">
+          <div className="space-y-4">
             <div>
               <label
                 htmlFor="contactPerson"
@@ -138,6 +163,57 @@ function AddManufacturerDialog({
                 value={contactPerson}
                 onChange={(e) => setContactPerson(e.target.value)}
                 className="mt-1 h-9 w-full border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
+              />
+            </div>
+          </div>
+          <div className="space-y-4">
+            <div>
+              <label
+                htmlFor="email"
+                className="block text-xs font-medium text-gray-700"
+              >
+                Contact Person Email <span className="text-red-500">*</span>
+              </label>
+              <Input
+                id="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="mt-1 h-9 w-full border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
+              />
+            </div>
+          </div>
+          <div className="space-y-4">
+            <div>
+              <label
+                htmlFor="address"
+                className="block text-xs font-medium text-gray-700"
+              >
+                Address <span className="text-red-500">*</span>
+              </label>
+              <Input
+                id="address"
+                required
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                className="mt-1 h-9 w-full border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
+              />
+            </div>
+          </div>
+          <div className="space-y-4">
+            <div>
+              <label
+                htmlFor="sgc"
+                className="block text-xs font-medium text-gray-700"
+              >
+                SGC <span className="text-red-500">*</span>
+              </label>
+              <Input
+                id="sgc"
+                required
+                value={sgc}
+                onChange={(e) => setSgc(e.target.value)}
+                className="mt-1 h-9 w-full [appearance:textfield] border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
               />
             </div>
           </div>
@@ -169,12 +245,12 @@ function AddManufacturerDialog({
           <div className="space-y-4">
             <div>
               <label
-                htmlFor="location"
+                htmlFor="state"
                 className="block text-xs font-medium text-gray-700"
               >
                 State
               </label>
-              <Select value={location} onValueChange={setLocation}>
+              <Select value={state} onValueChange={setState}>
                 <SelectTrigger className="mt-1 h-9 w-full border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50">
                   <SelectValue placeholder="Select State" />
                 </SelectTrigger>
@@ -226,15 +302,22 @@ function EditManufacturerDialog({
 }: {
   isOpen: boolean;
   onClose: () => void;
-  onEdit: (updatedManufacturer: Manufacturer) => void;
+  onEdit: (
+    updatedManufacturer: Omit<
+      Manufacturer,
+      "orgId" | "createdAt" | "updatedAt"
+    >,
+  ) => void;
   manufacturer: Manufacturer | null;
 }) {
   const [manufacturerName, setManufacturerName] = useState("");
   const [manufacturerId, setManufacturerId] = useState("");
   const [sgc, setSgc] = useState("");
   const [contactPerson, setContactPerson] = useState("");
+  const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [location, setLocation] = useState("Lagos");
+  const [address, setAddress] = useState("");
+  const [state, setState] = useState("");
 
   const handleEdit = () => {
     if (
@@ -246,6 +329,27 @@ function EditManufacturerDialog({
       alert("Please fill all required fields.");
       return;
     }
+
+    if (!manufacturer?.id) {
+      return;
+    }
+
+    const newManufacturer: Omit<
+      Manufacturer,
+      "orgId" | "createdAt" | "updatedAt"
+    > = {
+      id: manufacturer.id,
+      name: manufacturerName,
+      manufacturerId: manufacturerId,
+      contactPerson: contactPerson,
+      email: email,
+      phoneNo: phoneNumber,
+      address: address,
+      state: state,
+      sgc: sgc,
+    };
+
+    onEdit(newManufacturer);
   };
 
   return (
@@ -257,7 +361,6 @@ function EditManufacturerDialog({
           </DialogTitle>
         </DialogHeader>
         <div className="grid grid-cols-1 gap-x-6 gap-y-4 py-4 sm:grid-cols-2">
-          {/* Column 1: Manufacturer Name */}
           <div className="space-y-4">
             <div>
               <label
@@ -275,7 +378,6 @@ function EditManufacturerDialog({
               />
             </div>
           </div>
-          {/* Column 2: Manufacturer ID */}
           <div className="space-y-4">
             <div>
               <label
@@ -296,7 +398,7 @@ function EditManufacturerDialog({
             </div>
           </div>
           {/* Full-width Contact Person */}
-          <div className="space-y-4 sm:col-span-2">
+          <div className="space-y-4">
             <div>
               <label
                 htmlFor="contactPerson"
@@ -310,6 +412,57 @@ function EditManufacturerDialog({
                 value={contactPerson}
                 onChange={(e) => setContactPerson(e.target.value)}
                 className="mt-1 h-9 w-full border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
+              />
+            </div>
+          </div>
+          <div className="space-y-4">
+            <div>
+              <label
+                htmlFor="email"
+                className="block text-xs font-medium text-gray-700"
+              >
+                Contact Person Email <span className="text-red-500">*</span>
+              </label>
+              <Input
+                id="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="mt-1 h-9 w-full border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
+              />
+            </div>
+          </div>
+          <div className="space-y-4">
+            <div>
+              <label
+                htmlFor="address"
+                className="block text-xs font-medium text-gray-700"
+              >
+                Address <span className="text-red-500">*</span>
+              </label>
+              <Input
+                id="address"
+                required
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                className="mt-1 h-9 w-full border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
+              />
+            </div>
+          </div>
+          <div className="space-y-4">
+            <div>
+              <label
+                htmlFor="sgc"
+                className="block text-xs font-medium text-gray-700"
+              >
+                SGC <span className="text-red-500">*</span>
+              </label>
+              <Input
+                id="sgc"
+                required
+                value={sgc}
+                onChange={(e) => setSgc(e.target.value)}
+                className="mt-1 h-9 w-full [appearance:textfield] border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
               />
             </div>
           </div>
@@ -341,12 +494,12 @@ function EditManufacturerDialog({
           <div className="space-y-4">
             <div>
               <label
-                htmlFor="location"
+                htmlFor="state"
                 className="block text-xs font-medium text-gray-700"
               >
                 State
               </label>
-              <Select value={location} onValueChange={setLocation}>
+              <Select value={state} onValueChange={setState}>
                 <SelectTrigger className="mt-1 h-9 w-full border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50">
                   <SelectValue placeholder="Select State" />
                 </SelectTrigger>
@@ -397,9 +550,11 @@ export default function ManufacturersPage() {
   const [rowsPerPage, setRowsPerPage] = useState<number>(data.size || 10);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isDeactivateDialogOpen, setIsDeactivateDialogOpen] = useState(false);
   const [selectedManufacturer, setSelectedManufacturer] =
     useState<Manufacturer | null>(null);
+
+  const { mutate: createManufacturer } = useCreateManufacturer();
+  const { mutate: updateManufacturer } = useUpdateManufacturer();
 
   const [sortConfig, setSortConfig] = useState<{
     key: keyof Manufacturer | null;
@@ -457,17 +612,48 @@ export default function ManufacturersPage() {
 
   const totalRows = processedData.length;
 
-  const handleAddManufacturer = (newManufacturer: Manufacturer) => {
-    console.log(newManufacturer);
+  const handleAddManufacturer = (
+    newManufacturer: Omit<
+      Manufacturer,
+      "id" | "orgId" | "createdAt" | "updatedAt"
+    >,
+  ) => {
+    createManufacturer(newManufacturer, {
+      onSuccess: () => {
+        toast.success("Manufacturer created successfully");
+      },
+      onError: (error) => {
+        console.error("Failed to create manufacturer:", error);
+        toast.error("Failed to create manufacturer");
+      },
+      onSettled: () => {
+        setSearchTerm("");
+        setIsAddDialogOpen(false);
+      },
+    });
   };
 
-  const handleEditManufacturer = (updatedManufacturer: Manufacturer) => {
-    console.log(updatedManufacturer);
+  const handleEditManufacturer = (
+    updatedManufacturer: Omit<
+      Manufacturer,
+      "orgId" | "createdAt" | "updatedAt"
+    >,
+  ) => {
+    updateManufacturer(updatedManufacturer, {
+      onSuccess: () => {
+        toast.success("Manufacturer updated successfully");
+      },
+      onError: (error) => {
+        console.error("Failed to update manufacturer:", error);
+        toast.error("Failed to update manufacturer");
+      },
+      onSettled: () => {
+        setSearchTerm("");
+        setIsEditDialogOpen(false);
+      },
+    });
   };
 
-  const handleDeactivateManufacturer = () => {
-    console.log("Deactivated");
-  };
   const handleRowsPerPageChange = (value: string) => {
     setRowsPerPage(Number(value));
     setCurrentPage(1);
