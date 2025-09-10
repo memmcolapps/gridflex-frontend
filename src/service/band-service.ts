@@ -7,6 +7,7 @@ export interface Band {
   name: string;
   hour: number;
   approveStatus?: string;
+  status?: boolean; // true for active, false for inactive
   createdAt?: string;
   updatedAt?: string;
 }
@@ -110,7 +111,7 @@ export async function updateBand(
     const response = await axios.put<BandResponse>(
       `${API_URL}/band/service/update`,
       {
-        id: band.id,
+        bandId: band.id,
         name: band.name,
         hour: band.hour.toString(),
       },
@@ -127,6 +128,82 @@ export async function updateBand(
       return {
         success: false,
         error: response.data.responsedesc || "Failed to update band",
+      };
+    }
+
+    return {
+      success: true,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: handleApiError(error),
+    };
+  }
+}
+
+export async function deactivateBand(
+  bandId: string,
+): Promise<{ success: true } | { success: false; error: string }> {
+  try {
+    const token = localStorage.getItem("auth_token");
+
+    const response = await axios.put<BandResponse>(
+      `${API_URL}/band/service/deactivate`,
+      {
+        bandId: bandId,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    if (response.data.responsecode !== "000") {
+      return {
+        success: false,
+        error: response.data.responsedesc || "Failed to deactivate band",
+      };
+    }
+
+    return {
+      success: true,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: handleApiError(error),
+    };
+  }
+}
+
+export async function activateBand(
+  bandId: string,
+): Promise<{ success: true } | { success: false; error: string }> {
+  try {
+    const token = localStorage.getItem("auth_token");
+
+    const response = await axios.put<BandResponse>(
+      `${API_URL}/band/service/activate`,
+      {
+        bandId: bandId,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    if (response.data.responsecode !== "000") {
+      return {
+        success: false,
+        error: response.data.responsedesc || "Failed to activate band",
       };
     }
 

@@ -4,6 +4,8 @@ import {
   createBand,
   type Band,
   updateBand,
+  deactivateBand,
+  activateBand,
 } from "../service/band-service";
 import { useAuth } from "../context/auth-context";
 import { queryClient } from "@/lib/queryClient";
@@ -45,6 +47,40 @@ export const useUpdateBand = () => {
   return useMutation({
     mutationFn: async (band: Band) => {
       const response = await updateBand(band);
+      if ("success" in response && !response.success) {
+        throw new Error(response.error);
+      }
+      return response;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["bands"],
+      });
+    },
+  });
+};
+
+export const useDeactivateBand = () => {
+  return useMutation({
+    mutationFn: async (bandId: string) => {
+      const response = await deactivateBand(bandId);
+      if ("success" in response && !response.success) {
+        throw new Error(response.error);
+      }
+      return response;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["bands"],
+      });
+    },
+  });
+};
+
+export const useActivateBand = () => {
+  return useMutation({
+    mutationFn: async (bandId: string) => {
+      const response = await activateBand(bandId);
       if ("success" in response && !response.success) {
         throw new Error(response.error);
       }

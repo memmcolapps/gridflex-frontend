@@ -47,7 +47,6 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { AddMeterDialog } from "@/components/meter-management/add-edit-meter-dialog";
-import { ViewMeterDetailsDialog } from "@/components/meter-management/view-meters-details-dialog";
 import { ViewMeterInfoDialog } from "@/components/meter-management/view-meter-info-dialog";
 import type { MeterData } from "@/types/meter";
 import { getStatusStyle } from "@/components/status-style";

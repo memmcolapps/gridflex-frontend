@@ -288,7 +288,6 @@ export default function GroupPermissionManagement() {
     accessLevel: string[];
   }) => {
     try {
-      // Convert the form data back to the API format
       const permissions = transformAccessLevelsToPermissions(data.accessLevel);
       const modules = transformModuleAccessToModules(data.moduleAccess);
 
