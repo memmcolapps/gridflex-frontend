@@ -1,10 +1,8 @@
 // src/components/tariff/profile-dropdown.tsx
 "use client";
 
-import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/auth-context";
-// Fix: Import the Module type from the centralized types file.
 import { type Module } from "@/types/user-info";
 
 interface ProfileDropdownProps {
@@ -13,38 +11,16 @@ interface ProfileDropdownProps {
 }
 
 export default function ProfileDropdown({ closeDropdown, openEditProfileModal }: ProfileDropdownProps) {
-  const dropdownRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        closeDropdown();
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [closeDropdown]);
-
-  // Safely get user data with fallbacks
   const fullName = `${user?.firstname ?? ""} ${user?.lastname ?? ""}`.trim() || "User Name";
   const userEmail = user?.email ?? "user@example.com";
-  
-  // Access the modules array from the single groups object
   const userRoles = user?.groups?.modules?.map((module: Module) => module.name).join(", ") ?? "User";
-
-  // Use the first letter of the first and last name for the avatar
   const avatarInitials = (user?.firstname?.charAt(0) ?? "") + (user?.lastname?.charAt(0) ?? "");
-  
-  // Use the businessContact from the user's business object
   const phoneNumber = user?.phoneNumber ?? "N/A";
 
   return (
-    <div ref={dropdownRef} className="w-full p-6 bg-white rounded-lg shadow-lg">
+    <div className="min-w-[400px] p-6 bg-white rounded-lg shadow-lg">
       <div className="flex items-center gap-4 w-full">
         <div className="h-12 w-12 rounded-full bg-[#225BFF] flex items-center justify-center text-white">
           {avatarInitials.toUpperCase() || "UN"}
@@ -82,10 +58,7 @@ export default function ProfileDropdown({ closeDropdown, openEditProfileModal }:
           Cancel
         </Button>
         <Button
-          onClick={() => {
-            openEditProfileModal();
-            closeDropdown();
-          }}
+          onClick={openEditProfileModal}
           className="cursor-pointer bg-[#161CCA] text-white"
         >
           Edit Profile

@@ -1,3 +1,4 @@
+// @/hooks/use-profile.ts
 import { useMutation, QueryClient } from "@tanstack/react-query";
 import { updateProfile, type UpdateProfilePayload } from "../service/profile-service";
 import { toast } from "sonner";

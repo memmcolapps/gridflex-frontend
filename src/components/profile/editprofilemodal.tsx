@@ -1,15 +1,16 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+// @/components/EditProfileModal.tsx
 "use client";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Eye, EyeOff } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import ChangePasswordModal from "./changepasswordmodal";
 import { useAuth } from "@/context/auth-context";
 import { useUpdateProfile } from "@/hooks/use-profile";
 import { toast } from "sonner";
+import { type UpdateProfilePayload } from "@/service/profile-service";
 
 interface EditProfileModalProps {
     isOpen: boolean;
@@ -18,27 +19,16 @@ interface EditProfileModalProps {
 
 export default function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
     const { user } = useAuth();
-    const { mutate, isPending, isSuccess, isError, error } = useUpdateProfile();
-
+    const { mutate, isPending } = useUpdateProfile();
     const [showPassword, setShowPassword] = useState(false);
     const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
-    const [formData, setFormData] = useState({
-        firstname: "",
-        lastname: "",
-        email: "",
-        phoneNumber: "",
+    const [formData, setFormData] = useState<UpdateProfilePayload>({
+        id: user?.id ?? "",
+        firstname: user?.firstname ?? "",
+        lastname: user?.lastname ?? "",
+        email: user?.email ?? "",
+        phoneNumber: user?.phoneNumber ?? "N/A",
     });
-
-    useEffect(() => {
-        if (user) {
-            setFormData({
-                firstname: user.firstname || "",
-                lastname: user.lastname || "",
-                email: user.email || "",
-                phoneNumber: user.phoneNumber ?? "N/A",
-            });
-        }
-    }, [user]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { id, value } = e.target;
@@ -47,19 +37,13 @@ export default function EditProfileModal({ isOpen, onClose }: EditProfileModalPr
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-
         if (!user?.id) {
             toast.error("User ID not found. Please log in again.");
             return;
         }
-
-        const payload = {
-            id: user.id,
+        const payload: UpdateProfilePayload = {
             ...formData,
         };
-
-        console.log("Payload being sent to backend:", payload);
-
         mutate(payload, {
             onSuccess: () => {
                 onClose();

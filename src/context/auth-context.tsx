@@ -1,12 +1,8 @@
+// context/auth-context.tsx
+
 "use client";
 
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useCallback,
-  useEffect,
-} from "react";
+import React, { createContext, useContext, useState, useCallback } from "react";
 import { loginApi } from "../service/auth-service";
 import { useRouter } from "next/navigation";
 
@@ -26,6 +22,8 @@ interface AuthContextType {
   login: (username: string, password: string) => Promise<void>;
   logout: () => void;
   isLoading: boolean;
+  // This is the missing part, you need to add updateUser to the type definition
+  updateUser: (userInfo: UserInfo) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -33,36 +31,26 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [user, setUser] = useState<UserInfo | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const router = useRouter();
-
-  const checkAuthStatus = useCallback(() => {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     try {
-      const authToken = localStorage.getItem("auth_token");
-      const userInfo = localStorage.getItem("user_info");
-
-      if (authToken && userInfo) {
-        setIsAuthenticated(true);
-        setUser(JSON.parse(userInfo) as UserInfo);
-      } else {
-        setIsAuthenticated(false);
-        setUser(null);
-      }
-    } catch (err) {
-      console.error("Error checking auth status:", err);
-      setIsAuthenticated(false);
-      setUser(null);
-    } finally {
-      setIsLoading(false);
+      return !!localStorage.getItem("auth_token");
+    } catch {
+      return false;
     }
-  }, []);
+  });
+  
+  const [user, setUser] = useState<UserInfo | null>(() => {
+    try {
+      const userInfo = localStorage.getItem("user_info");
+      return userInfo ? (JSON.parse(userInfo) as UserInfo) : null;
+    } catch {
+      return null;
+    }
+  });
 
-  useEffect(() => {
-    checkAuthStatus();
-  }, [checkAuthStatus]);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const router = useRouter();
 
   const login = useCallback(
     async (username: string, password: string) => {
@@ -85,12 +73,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         setIsAuthenticated(true);
         router.push("/data-management/dashboard");
       } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : "Failed to login";
+        const errorMessage = err instanceof Error ? err.message : "Failed to login";
         setError(errorMessage);
         setIsAuthenticated(false);
         setUser(null);
-
         localStorage.removeItem("auth_token");
         localStorage.removeItem("user_info");
       } finally {
@@ -110,14 +96,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setError(null);
       router.push("/login");
     } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to logout";
+      const errorMessage = err instanceof Error ? err.message : "Failed to logout";
       setError(errorMessage);
       console.error("Logout error:", err);
     } finally {
       setIsLoading(false);
     }
   }, [router]);
+  
+  // This is the new function to allow other components to update the user data
+  const updateUser = useCallback((userInfo: UserInfo) => {
+    setUser(userInfo);
+    localStorage.setItem("user_info", JSON.stringify(userInfo));
+  }, []);
 
   const value = {
     isAuthenticated,
@@ -126,6 +117,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     login,
     logout,
     isLoading,
+    updateUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

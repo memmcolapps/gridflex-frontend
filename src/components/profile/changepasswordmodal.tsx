@@ -1,14 +1,16 @@
+// components/profile/changepasswordmodal.tsx
+
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
-import { useGenerateOtp, useChangePassword } from "@/hooks/use-changePassword";
 import { useAuth } from "@/context/auth-context";
+import { useGenerateOtp, useChangePassword, useCountdown } from "@/hooks/use-changePassword";
 
 interface ChangePasswordModalProps {
     isOpen: boolean;
@@ -18,60 +20,56 @@ interface ChangePasswordModalProps {
 export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordModalProps) {
     const { user } = useAuth();
     const { mutate: generateOtpMutate, isPending: isOtpPending } = useGenerateOtp();
-    const { mutate: changePasswordMutate, isPending: isPasswordChangePending, isSuccess: isPasswordChangeSuccess } = useChangePassword();
+    const { mutate: changePasswordMutate, isPending: isPasswordChangePending } = useChangePassword();
+
     const [showNewPassword, setShowNewPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    const [otpSent, setOtpSent] = useState(false);
-    const [otpTimer, setOtpTimer] = useState(60);
     const [formData, setFormData] = useState({
         newPassword: "",
         confirmPassword: "",
         otp: "",
     });
+
+    const { timeLeft, startCountdown, isRunning, resetCountdown } = useCountdown(60);
+
     const [errors, setErrors] = useState({
         newPassword: "",
         confirmPassword: "",
         otp: "",
     });
-    useEffect(() => {
-        if (otpSent && otpTimer > 0) {
-            const timer = setInterval(() => {
-                setOtpTimer((prev) => prev - 1);
-            }, 1000);
-            return () => clearInterval(timer);
-        }
-    }, [otpSent, otpTimer]);
-    useEffect(() => {
-        if (isPasswordChangeSuccess) {
-            onClose();
-        }
-    }, [isPasswordChangeSuccess, onClose]);
 
     const validateField = (id: string, value: string) => {
         let error = "";
         if (id === "newPassword") {
             if (!value) error = "New password is required";
             else if (value.length < 6) error = "Password must be at least 6 characters";
-            if (formData.confirmPassword && value !== formData.confirmPassword) {
-                setErrors((prev) => ({ ...prev, confirmPassword: "Passwords don’t match" }));
-            } else {
-                setErrors((prev) => ({ ...prev, confirmPassword: "" }));
-            }
         } else if (id === "confirmPassword") {
             if (!value) error = "Confirm password is required";
             else if (formData.newPassword && value !== formData.newPassword) error = "Passwords don’t match";
         } else if (id === "otp") {
             if (!value) error = "OTP is required";
-            else if (!/^\d+$/.test(value) || value.length !== 4) error = "OTP must be 6 digits";
+            else if (!/^\d+$/.test(value) || value.length !== 6) error = "OTP must be 6 digits";
         }
         return error;
     };
+
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { id, value } = e.target;
-        setFormData((prev) => ({ ...prev, [id]: value }));
-        const error = validateField(id, value);
-        setErrors((prev) => ({ ...prev, [id]: error }));
+        setFormData((prev) => {
+            const updatedFormData = { ...prev, [id]: value };
+            const error = validateField(id, value);
+            setErrors((prevErrors) => ({ ...prevErrors, [id]: error }));
+            if (id === "newPassword") {
+                if (updatedFormData.confirmPassword && value !== updatedFormData.confirmPassword) {
+                    setErrors((prevErrors) => ({ ...prevErrors, confirmPassword: "Passwords don’t match" }));
+                } else {
+                    setErrors((prevErrors) => ({ ...prevErrors, confirmPassword: "" }));
+                }
+            }
+            return updatedFormData;
+        });
     };
+
     const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
         const { id, value } = e.target;
         const error = validateField(id, value);
@@ -84,21 +82,15 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
             return;
         }
 
-        // ------------------------------------------
-        // CONSOLE LOG FOR VERIFICATION
-        console.log("Email being passed to the backend for OTP:", user.email);
-        // ------------------------------------------
-
         const payload = { username: user.email };
         generateOtpMutate(payload, {
             onSuccess: () => {
-                setOtpSent(true);
-                setOtpTimer(60);
+                startCountdown();
                 toast.info(`OTP sent to ${user.email}`);
-            }
+            },
         });
     };
-    
+
     const handleSave = () => {
         if (!user?.email) {
             toast.error("User email not found. Please log in again.");
@@ -109,27 +101,31 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
         const confirmPasswordError = validateField("confirmPassword", confirmPassword);
         const otpError = validateField("otp", otp);
 
+        setErrors({
+            newPassword: newPasswordError,
+            confirmPassword: confirmPasswordError,
+            otp: otpError,
+        });
+
         if (newPasswordError || confirmPasswordError || otpError) {
-            setErrors((prev) => ({
-                ...prev,
-                newPassword: newPasswordError,
-                confirmPassword: confirmPasswordError,
-                otp: otpError,
-            }));
             return;
         }
-
-        // ------------------------------------------
-        // CONSOLE LOG FOR VERIFICATION
-        console.log("Email being passed to the backend for password change:", user.email);
-        // ------------------------------------------
 
         const payload = {
             usernam: user.email,
             otp: otp,
             password: newPassword,
         };
-        changePasswordMutate(payload);
+
+        changePasswordMutate(payload, {
+            onSuccess: () => {
+                onClose();
+                resetCountdown();
+            },
+            onError: () => {
+                resetCountdown();
+            },
+        });
     };
 
     return (
@@ -152,7 +148,7 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
                                 onChange={handleInputChange}
                                 onBlur={handleBlur}
                                 className={`border-[rgba(228,231,236,1)] ${errors.newPassword ? "border-red-500" : ""}`}
-                                disabled={!otpSent}
+                                disabled={!isRunning}
                             />
                             <button
                                 type="button"
@@ -177,7 +173,7 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
                                 onChange={handleInputChange}
                                 onBlur={handleBlur}
                                 className={`border-[rgba(228,231,236,1)] ${errors.confirmPassword ? "border-red-500" : ""}`}
-                                disabled={!otpSent}
+                                disabled={!isRunning}
                             />
                             <button
                                 type="button"
@@ -201,33 +197,37 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
                                 onBlur={handleBlur}
                                 className={`border-[rgba(228,231,236,1)] ${errors.otp ? "border-red-500" : ""}`}
                                 placeholder="Enter OTP"
+                                disabled={!isRunning && timeLeft > 0}
                             />
                             {errors.otp && <p className="text-red-500 text-sm">{errors.otp}</p>}
-                            {otpSent && otpTimer > 0 && (
+                            {isRunning && (
                                 <p className="text-sm text-gray-500 flex justify-end">
                                     Remaining time &nbsp;&nbsp; <span className="text-[#161CCA]">
-                                        {Math.floor(otpTimer / 60)}:
-                                        {otpTimer % 60 < 10 ? `0${otpTimer % 60}` : otpTimer % 60}s
+                                        {Math.floor(timeLeft / 60)}:
+                                        {timeLeft % 60 < 10 ? `0${timeLeft % 60}` : timeLeft % 60}s
                                     </span>
                                 </p>
                             )}
-                            {!otpSent ? (
+                            {timeLeft <= 0 ? (
                                 <Button
                                     type="button"
                                     variant="ghost"
                                     onClick={handleGetOtp}
-                                    disabled={!user?.email || isOtpPending}
+                                    disabled={isOtpPending}
+                                    className="text-[#161CCA] p-0 h-auto cursor-pointer"
+                                >
+                                    {isOtpPending ? "Resending..." : "Resend OTP"}
+                                </Button>
+                            ) : (
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    onClick={handleGetOtp}
+                                    disabled={isOtpPending || isRunning}
                                     className="text-[#161CCA] p-0 h-auto cursor-pointer"
                                 >
                                     {isOtpPending ? "Sending OTP..." : "Get OTP"}
                                 </Button>
-                            ) : (
-                                <p
-                                    className={`text-sm text-black cursor-pointer ${otpTimer > 0 ? "opacity-50 cursor-not-allowed" : ""}`}
-                                    onClick={otpTimer === 0 ? handleGetOtp : undefined}
-                                >
-                                    Didn’t get an OTP? <span className="text-[#161CCA]">Resend</span>
-                                </p>
                             )}
                         </div>
                     </div>
@@ -239,7 +239,16 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
                     <Button
                         onClick={handleSave}
                         className="bg-[#161CCA] text-white"
-                        disabled={isPasswordChangePending || !otpSent}
+                        disabled={
+                            isPasswordChangePending ||
+                            !isRunning ||
+                            !formData.newPassword ||
+                            !formData.confirmPassword ||
+                            !formData.otp ||
+                            !!errors.newPassword ||
+                            !!errors.confirmPassword ||
+                            !!errors.otp
+                        }
                     >
                         {isPasswordChangePending ? "Saving..." : "Save"}
                     </Button>

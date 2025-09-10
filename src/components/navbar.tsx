@@ -1,10 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+// @/components/Navbar.tsx
 "use client";
 
 import { useState } from "react";
 import { useAuth } from "@/context/auth-context";
-import ProfileDropdown from "./profile/profiledropdown";
-import EditProfileModal from "./profile/editprofilemodal";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Bell, ChevronDown, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,49 +13,36 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import ProfileDropdown from "./profile/profiledropdown"; 
+import EditProfileModal from "@/components/profile/editprofilemodal";
 
 export function Navbar() {
   const { isLoading } = useAuth();
-  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false);
+  const handleCloseEditProfileModal = () => setIsEditProfileModalOpen(false);
 
   return (
     <header className="sticky top-0 z-30 border-b border-gray-200 py-6 h-18 bg-white">
       <div className="flex h-full w-full items-center justify-between px-4 sm:px-6 lg:px-8">
         <UserInfo />
-
         <div className="flex items-center gap-2 sm:gap-4">
           <NotificationButton />
           <UserDropdown
-            onProfileClick={() => {
-              setIsEditProfileOpen(true); // Open the EditProfileModal
-              setIsDropdownOpen(false); // Close the UserDropdown
-            }}
             isLoading={isLoading}
-            isOpen={isDropdownOpen}
-            setIsOpen={setIsDropdownOpen}
+            openEditProfileModal={() => setIsEditProfileModalOpen(true)}
           />
         </div>
       </div>
-      
-      {/* The ProfileDropdown component is no longer needed in the Navbar.
-        The UserDropdown component now directly handles the "Profile" click.
-      */}
-
-      <EditProfileModal
-        isOpen={isEditProfileOpen}
-        onClose={() => setIsEditProfileOpen(false)}
-      />
+      {isEditProfileModalOpen && (
+        <EditProfileModal isOpen={isEditProfileModalOpen} onClose={handleCloseEditProfileModal} />
+      )}
     </header>
   );
 }
 
 export const UserAvatar = () => {
   const { user } = useAuth();
-
-  // Safely get the initials and convert them to uppercase
   const initials = `${user?.firstname?.charAt(0) ?? ""}${user?.lastname?.charAt(0) ?? ""}`.toUpperCase();
-
   return (
     <Avatar className="h-7 w-7 sm:h-8 sm:w-8">
       <AvatarImage src="" alt="User" />
@@ -82,7 +67,6 @@ export const NotificationButton = () => (
 
 export const UserInfo = () => {
   const { user } = useAuth();
-
   return (
     <div className="flex flex-col items-start justify-center px-1 py-3 sm:py-4 md:flex-none lg:py-5">
       <span className="text-lg leading-tight font-bold sm:text-xl lg:text-2xl">
@@ -97,25 +81,25 @@ export const UserInfo = () => {
   );
 };
 
-export const UserDropdown = ({
-  onProfileClick,
-  isLoading,
-  isOpen,
-  setIsOpen,
-}: {
-  onProfileClick: () => void;
+interface UserDropdownProps {
   isLoading: boolean;
-  isOpen: boolean;
-  setIsOpen: (open: boolean) => void;
-}) => {
+  openEditProfileModal: () => void;
+}
+
+export const UserDropdown = ({ isLoading, openEditProfileModal }: UserDropdownProps) => {
   const { logout } = useAuth();
+  const [isProfileViewActive, setIsProfileViewActive] = useState(false);
 
   return (
-    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+    <DropdownMenu onOpenChange={(open) => {
+      if (!open) {
+        setIsProfileViewActive(false);
+      }
+    }}>
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          className="flex cursor-pointer items-center gap-2 rounded-full p-2 hover:bg-gray-100 sm:p-3 lg:p-4"
+          className="flex cursor-pointer items-center gap-2 rounded-full px-4 py-5 hover:bg-gray-100 focus:outline-none focus:ring-gray-100/10"
         >
           <UserAvatar />
           <ChevronDown className="text-gray-500" size={16} />
@@ -123,33 +107,46 @@ export const UserDropdown = ({
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="end"
-        className="w-fit bg-white text-gray-700"
+        side="bottom"
+        className="w-fit bg-white mt-4 text-gray-700 p-0"
         collisionPadding={10}
         avoidCollisions
       >
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          className="cursor-pointer hover:bg-gray-100"
-          onSelect={(e) => {
-            e.preventDefault();
-            onProfileClick();
-          }}
-        >
-          <User size={12} className="mr-2" />
-          Profile
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          className="w-fit cursor-pointer text-red-600 hover:bg-gray-100"
-          onSelect={(e) => {
-            e.preventDefault();
-            logout();
-          }}
-          disabled={isLoading}
-        >
-          <LogOut size={12} className="mr-2 text-red-600" />
-          Log out
-        </DropdownMenuItem>
+        {isProfileViewActive ? (
+          <ProfileDropdown
+            closeDropdown={() => setIsProfileViewActive(false)}
+            openEditProfileModal={() => {
+              setIsProfileViewActive(false);
+              openEditProfileModal();
+            }}
+          />
+        ) : (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="cursor-pointer hover:bg-gray-100"
+              onSelect={(e) => {
+                e.preventDefault();
+                setIsProfileViewActive(true);
+              }}
+            >
+              <User size={12} className="mr-2" />
+              Profile
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="w-fit cursor-pointer text-red-600 hover:bg-gray-100"
+              onSelect={(e) => {
+                e.preventDefault();
+                logout();
+              }}
+              disabled={isLoading}
+            >
+              <LogOut size={12} className="mr-2 text-red-600" />
+              Log out
+            </DropdownMenuItem>
+          </>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );
