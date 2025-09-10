@@ -10,35 +10,18 @@ import {
 const API_URL = env.NEXT_PUBLIC_BASE_URL;
 const CUSTOM_HEADER = env.NEXT_PUBLIC_CUSTOM_HEADER;
 
-export async function fetchManufacturers(
-  page?: number,
-  size?: number,
-  name?: string,
-  manufacturerId?: string,
-  sgc?: string,
-  state?: string,
-  createdAt?: string,
-): Promise<
+export async function fetchManufacturers(): Promise<
   | {
       success: true;
-      data: {
-        totalData: number;
-        data: Manufacturer[];
-        size: number;
-        totalPages: number;
-        page: number;
-      };
+      data: Manufacturer[];
     }
   | { success: false; error: string }
 > {
   try {
     const token = localStorage.getItem("auth_token");
 
-    page ??= 1;
-    size ??= 10;
-
     const response = await axios.get<GetManufacturersResponse>(
-      `${API_URL}/manufacturer/service/all-manufacturers?page=${page}&size=${size}&name=${name}&manufacturerId=${manufacturerId}&sgc=${sgc}&state=${state}&createdAt=${createdAt}`,
+      `${API_URL}/manufacturer/service/all`,
       {
         headers: {
           "Content-Type": "application/json",

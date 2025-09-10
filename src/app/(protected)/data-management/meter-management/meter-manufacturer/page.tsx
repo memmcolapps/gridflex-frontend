@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -68,21 +68,64 @@ function AddManufacturerDialog({
 }) {
   const [manufacturerName, setManufacturerName] = useState("");
   const [manufacturerId, setManufacturerId] = useState("");
-  const [sgc, setSgc] = useState("");
   const [contactPerson, setContactPerson] = useState("");
-  const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [address, setAddress] = useState("");
   const [state, setState] = useState("");
+  const [city, setCity] = useState("");
+  const [street, setStreet] = useState("");
+  const [houseNo, setHouseNo] = useState("");
+
+  const clearForm = () => {
+    setManufacturerName("");
+    setManufacturerId("");
+    setContactPerson("");
+    setPhoneNumber("");
+    setState("");
+    setCity("");
+    setStreet("");
+    setHouseNo("");
+  };
 
   const handleAdd = () => {
+    const trimmedValues = {
+      manufacturerName: manufacturerName.trim(),
+      manufacturerId: manufacturerId.trim(),
+      contactPerson: contactPerson.trim(),
+      phoneNumber: phoneNumber.trim(),
+      city: city.trim(),
+      street: street.trim(),
+      houseNo: houseNo.trim(),
+    };
+
     if (
-      !manufacturerName ||
-      !manufacturerId ||
-      !contactPerson ||
-      !phoneNumber
+      !trimmedValues.manufacturerName ||
+      !trimmedValues.manufacturerId ||
+      !trimmedValues.contactPerson ||
+      !trimmedValues.phoneNumber ||
+      !trimmedValues.city ||
+      !trimmedValues.street ||
+      !trimmedValues.houseNo
     ) {
-      alert("Please fill all required fields.");
+      const missingFields = [];
+      if (!trimmedValues.manufacturerName)
+        missingFields.push("Manufacturer Name");
+      if (!trimmedValues.manufacturerId) missingFields.push("Manufacturer ID");
+      if (!trimmedValues.contactPerson) missingFields.push("Contact Person");
+      if (!trimmedValues.phoneNumber) missingFields.push("Phone Number");
+      if (!trimmedValues.city) missingFields.push("City");
+      if (!trimmedValues.street) missingFields.push("Street Name");
+      if (!trimmedValues.houseNo) missingFields.push("House Number");
+
+      console.log("Missing fields:", missingFields);
+      toast.error(
+        `Please fill the following required fields: ${missingFields.join(", ")}`,
+      );
+      return;
+    }
+
+    if (trimmedValues.phoneNumber.length !== 11) {
+      console.log("Validation failed - phone number length");
+      toast.error("Phone number must be 11 digits long.");
       return;
     }
 
@@ -90,21 +133,27 @@ function AddManufacturerDialog({
       Manufacturer,
       "id" | "orgId" | "createdAt" | "updatedAt"
     > = {
-      name: manufacturerName,
-      manufacturerId: manufacturerId,
-      contactPerson: contactPerson,
-      email: email,
-      phoneNo: phoneNumber,
-      address: address,
+      name: trimmedValues.manufacturerName,
+      manufacturerId: trimmedValues.manufacturerId,
+      contactPerson: trimmedValues.contactPerson,
+      phoneNo: trimmedValues.phoneNumber,
       state: state,
-      sgc: sgc,
+      city: trimmedValues.city,
+      street: trimmedValues.street,
+      houseNo: trimmedValues.houseNo,
     };
 
     onAdd(newManufacturer);
+    clearForm();
+  };
+
+  const handleClose = () => {
+    clearForm();
+    onClose();
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="h-auto rounded-lg bg-white shadow-lg sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="text-lg font-semibold text-gray-900">
@@ -140,15 +189,14 @@ function AddManufacturerDialog({
               <Input
                 id="manufacturerId"
                 required
-                type="number"
+                type="text"
                 placeholder="e.g. 123456"
                 value={manufacturerId}
                 onChange={(e) => setManufacturerId(e.target.value)}
-                className="mt-1 h-9 w-full [appearance:textfield] border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                className="mt-1 h-9 w-full border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
               />
             </div>
           </div>
-          {/* Full-width Contact Person */}
           <div className="space-y-4">
             <div>
               <label
@@ -166,58 +214,6 @@ function AddManufacturerDialog({
               />
             </div>
           </div>
-          <div className="space-y-4">
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-xs font-medium text-gray-700"
-              >
-                Contact Person Email <span className="text-red-500">*</span>
-              </label>
-              <Input
-                id="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 h-9 w-full border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
-              />
-            </div>
-          </div>
-          <div className="space-y-4">
-            <div>
-              <label
-                htmlFor="address"
-                className="block text-xs font-medium text-gray-700"
-              >
-                Address <span className="text-red-500">*</span>
-              </label>
-              <Input
-                id="address"
-                required
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                className="mt-1 h-9 w-full border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
-              />
-            </div>
-          </div>
-          <div className="space-y-4">
-            <div>
-              <label
-                htmlFor="sgc"
-                className="block text-xs font-medium text-gray-700"
-              >
-                SGC <span className="text-red-500">*</span>
-              </label>
-              <Input
-                id="sgc"
-                required
-                value={sgc}
-                onChange={(e) => setSgc(e.target.value)}
-                className="mt-1 h-9 w-full [appearance:textfield] border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-              />
-            </div>
-          </div>
-          {/* Column 1: Phone Number */}
           <div className="space-y-4">
             <div>
               <label
@@ -241,7 +237,6 @@ function AddManufacturerDialog({
               />
             </div>
           </div>
-          {/* Column 2: State */}
           <div className="space-y-4">
             <div>
               <label
@@ -265,11 +260,63 @@ function AddManufacturerDialog({
               </Select>
             </div>
           </div>
+          <div className="space-y-4">
+            <div>
+              <label
+                htmlFor="city"
+                className="block text-xs font-medium text-gray-700"
+              >
+                City <span className="text-red-500">*</span>
+              </label>
+              <Input
+                id="city"
+                required
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                className="mt-1 h-9 w-full border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label
+                htmlFor="street"
+                className="block text-xs font-medium text-gray-700"
+              >
+                Street Name <span className="text-red-500">*</span>
+              </label>
+              <Input
+                id="street"
+                required
+                value={street}
+                onChange={(e) => setStreet(e.target.value)}
+                className="mt-1 h-9 w-full border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
+              />
+            </div>
+          </div>
+          <div className="space-y-4">
+            <div>
+              <label
+                htmlFor="houseNo"
+                className="block text-xs font-medium text-gray-700"
+              >
+                House number <span className="text-red-500">*</span>
+              </label>
+              <Input
+                id="houseNo"
+                required
+                value={houseNo}
+                onChange={(e) => setHouseNo(e.target.value)}
+                className="mt-1 h-9 w-full [appearance:textfield] border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+              />
+            </div>
+          </div>
         </div>
         <DialogFooter className="pt-4">
           <Button
             variant="outline"
-            onClick={onClose}
+            onClick={handleClose}
             size="lg"
             className="mr-2 h-8 border-[#161CCA] bg-transparent text-xs text-[#161CCA]"
           >
@@ -279,12 +326,6 @@ function AddManufacturerDialog({
             onClick={handleAdd}
             size="lg"
             className="h-8 bg-[#161CCA] text-xs text-white hover:bg-[#161CCA]/90"
-            disabled={
-              !manufacturerName ||
-              !manufacturerId ||
-              !contactPerson ||
-              !phoneNumber
-            }
           >
             Add
           </Button>
@@ -312,21 +353,64 @@ function EditManufacturerDialog({
 }) {
   const [manufacturerName, setManufacturerName] = useState("");
   const [manufacturerId, setManufacturerId] = useState("");
-  const [sgc, setSgc] = useState("");
   const [contactPerson, setContactPerson] = useState("");
-  const [email, setEmail] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [address, setAddress] = useState("");
   const [state, setState] = useState("");
+  const [city, setCity] = useState("");
+  const [street, setStreet] = useState("");
+  const [houseNo, setHouseNo] = useState("");
+
+  useEffect(() => {
+    if (manufacturer) {
+      setManufacturerName(manufacturer.name || "");
+      setManufacturerId(manufacturer.manufacturerId || "");
+      setContactPerson(manufacturer.contactPerson || "");
+      setPhoneNumber(manufacturer.phoneNo || "");
+      setState(manufacturer.state || "");
+      setCity(manufacturer.city || "");
+      setStreet(manufacturer.street || "");
+      setHouseNo(manufacturer.houseNo || "");
+    }
+  }, [manufacturer]);
+
+  const clearForm = () => {
+    setManufacturerName("");
+    setManufacturerId("");
+    setContactPerson("");
+    setPhoneNumber("");
+    setState("");
+    setCity("");
+    setStreet("");
+    setHouseNo("");
+  };
 
   const handleEdit = () => {
+    // Trim all values and check all required fields
+    const trimmedValues = {
+      manufacturerName: manufacturerName.trim(),
+      manufacturerId: manufacturerId.trim(),
+      contactPerson: contactPerson.trim(),
+      phoneNumber: phoneNumber.trim(),
+      city: city.trim(),
+      street: street.trim(),
+      houseNo: houseNo.trim(),
+    };
+
     if (
-      !manufacturerName ||
-      !manufacturerId ||
-      !contactPerson ||
-      !phoneNumber
+      !trimmedValues.manufacturerName ||
+      !trimmedValues.manufacturerId ||
+      !trimmedValues.contactPerson ||
+      !trimmedValues.phoneNumber ||
+      !trimmedValues.city ||
+      !trimmedValues.street ||
+      !trimmedValues.houseNo
     ) {
-      alert("Please fill all required fields.");
+      toast.error("Please fill all required fields.");
+      return;
+    }
+
+    if (trimmedValues.phoneNumber.length !== 11) {
+      toast.error("Phone number must be 11 digits long.");
       return;
     }
 
@@ -339,21 +423,27 @@ function EditManufacturerDialog({
       "orgId" | "createdAt" | "updatedAt"
     > = {
       id: manufacturer.id,
-      name: manufacturerName,
-      manufacturerId: manufacturerId,
-      contactPerson: contactPerson,
-      email: email,
-      phoneNo: phoneNumber,
-      address: address,
+      name: trimmedValues.manufacturerName,
+      manufacturerId: trimmedValues.manufacturerId,
+      contactPerson: trimmedValues.contactPerson,
+      phoneNo: trimmedValues.phoneNumber,
       state: state,
-      sgc: sgc,
+      city: trimmedValues.city,
+      street: trimmedValues.street,
+      houseNo: trimmedValues.houseNo,
     };
 
     onEdit(newManufacturer);
+    clearForm();
+  };
+
+  const handleClose = () => {
+    clearForm();
+    onClose();
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="h-auto rounded-lg bg-white shadow-lg sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="text-lg font-semibold text-gray-900">
@@ -389,15 +479,14 @@ function EditManufacturerDialog({
               <Input
                 id="manufacturerId"
                 required
-                type="number"
+                type="text"
                 placeholder="e.g. 123456"
                 value={manufacturerId}
                 onChange={(e) => setManufacturerId(e.target.value)}
-                className="mt-1 h-9 w-full [appearance:textfield] border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                className="mt-1 h-9 w-full border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
               />
             </div>
           </div>
-          {/* Full-width Contact Person */}
           <div className="space-y-4">
             <div>
               <label
@@ -415,58 +504,6 @@ function EditManufacturerDialog({
               />
             </div>
           </div>
-          <div className="space-y-4">
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-xs font-medium text-gray-700"
-              >
-                Contact Person Email <span className="text-red-500">*</span>
-              </label>
-              <Input
-                id="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 h-9 w-full border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
-              />
-            </div>
-          </div>
-          <div className="space-y-4">
-            <div>
-              <label
-                htmlFor="address"
-                className="block text-xs font-medium text-gray-700"
-              >
-                Address <span className="text-red-500">*</span>
-              </label>
-              <Input
-                id="address"
-                required
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                className="mt-1 h-9 w-full border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
-              />
-            </div>
-          </div>
-          <div className="space-y-4">
-            <div>
-              <label
-                htmlFor="sgc"
-                className="block text-xs font-medium text-gray-700"
-              >
-                SGC <span className="text-red-500">*</span>
-              </label>
-              <Input
-                id="sgc"
-                required
-                value={sgc}
-                onChange={(e) => setSgc(e.target.value)}
-                className="mt-1 h-9 w-full [appearance:textfield] border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-              />
-            </div>
-          </div>
-          {/* Column 1: Phone Number */}
           <div className="space-y-4">
             <div>
               <label
@@ -490,7 +527,6 @@ function EditManufacturerDialog({
               />
             </div>
           </div>
-          {/* Column 2: State */}
           <div className="space-y-4">
             <div>
               <label
@@ -514,11 +550,63 @@ function EditManufacturerDialog({
               </Select>
             </div>
           </div>
+          <div className="space-y-4">
+            <div>
+              <label
+                htmlFor="city"
+                className="block text-xs font-medium text-gray-700"
+              >
+                City <span className="text-red-500">*</span>
+              </label>
+              <Input
+                id="city"
+                required
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                className="mt-1 h-9 w-full border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label
+                htmlFor="street"
+                className="block text-xs font-medium text-gray-700"
+              >
+                Street Name <span className="text-red-500">*</span>
+              </label>
+              <Input
+                id="street"
+                required
+                value={street}
+                onChange={(e) => setStreet(e.target.value)}
+                className="mt-1 h-9 w-full border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
+              />
+            </div>
+          </div>
+          <div className="space-y-4">
+            <div>
+              <label
+                htmlFor="houseNo"
+                className="block text-xs font-medium text-gray-700"
+              >
+                House number <span className="text-red-500">*</span>
+              </label>
+              <Input
+                id="houseNo"
+                required
+                value={houseNo}
+                onChange={(e) => setHouseNo(e.target.value)}
+                className="mt-1 h-9 w-full [appearance:textfield] border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+              />
+            </div>
+          </div>
         </div>
         <DialogFooter className="pt-4">
           <Button
             variant="outline"
-            onClick={onClose}
+            onClick={handleClose}
             size="lg"
             className="mr-2 h-8 border-[#161CCA] bg-transparent text-xs text-[#161CCA]"
           >
@@ -529,10 +617,13 @@ function EditManufacturerDialog({
             size="lg"
             className="h-8 bg-[#161CCA] text-xs text-white hover:bg-[#161CCA]/90"
             disabled={
-              !manufacturerName ||
-              !manufacturerId ||
-              !contactPerson ||
-              !phoneNumber
+              !manufacturerName.trim() ||
+              !manufacturerId.trim() ||
+              !contactPerson.trim() ||
+              !phoneNumber.trim() ||
+              !city.trim() ||
+              !street.trim() ||
+              !houseNo.trim()
             }
           >
             Save
@@ -546,8 +637,8 @@ function EditManufacturerDialog({
 export default function ManufacturersPage() {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const { data } = useGetMeterManufactures();
-  const [currentPage, setCurrentPage] = useState<number>(data.page || 1);
-  const [rowsPerPage, setRowsPerPage] = useState<number>(data.size || 10);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [rowsPerPage, setRowsPerPage] = useState<number>(10);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedManufacturer, setSelectedManufacturer] =
@@ -560,8 +651,6 @@ export default function ManufacturersPage() {
     key: keyof Manufacturer | null;
     direction: "asc" | "desc";
   }>({ key: null, direction: "asc" });
-
-  const [processedData, setProcessedData] = useState<Manufacturer[]>(data.data);
 
   const handleSearchChange = (term: string) => {
     setSearchTerm(term);
@@ -581,9 +670,9 @@ export default function ManufacturersPage() {
     sortBy: keyof Manufacturer | null,
     direction: "asc" | "desc",
   ) => {
-    let results = data.data;
+    let results = data || [];
     if (term.trim() !== "") {
-      results = data.data.filter(
+      results = results.filter(
         (item) =>
           item.name?.toLowerCase().includes(term.toLowerCase()) ||
           item.manufacturerId?.toLowerCase().includes(term.toLowerCase()),
@@ -591,9 +680,9 @@ export default function ManufacturersPage() {
     }
 
     if (sortBy) {
-      results = [...results].sort((a, b) => {
-        const aValue = a[sortBy] || "";
-        const bValue = b[sortBy] || "";
+      results.sort((a, b) => {
+        const aValue = a[sortBy] ?? "";
+        const bValue = b[sortBy] ?? "";
 
         if (aValue < bValue) return direction === "asc" ? -1 : 1;
         if (aValue > bValue) return direction === "asc" ? 1 : -1;
@@ -601,16 +690,16 @@ export default function ManufacturersPage() {
       });
     }
 
-    setProcessedData(results);
+    return results;
   };
 
-  const totalPages = Math.ceil(processedData.length / rowsPerPage);
-  const paginatedData = processedData.slice(
+  const totalPages = Math.ceil(data.length / rowsPerPage);
+  const paginatedData = data.slice(
     (currentPage - 1) * rowsPerPage,
     currentPage * rowsPerPage,
   );
 
-  const totalRows = processedData.length;
+  const totalRows = data.length;
 
   const handleAddManufacturer = (
     newManufacturer: Omit<
@@ -748,13 +837,13 @@ export default function ManufacturersPage() {
                 </TableCell>
               </TableRow>
             ) : (
-              paginatedData.map((item) => (
+              paginatedData.map((item, index) => (
                 <TableRow key={item.id}>
                   <TableCell className="px-2 py-2 sm:px-4 sm:py-3">
                     <Checkbox className="h-4 w-4 border-gray-500" />
                   </TableCell>
                   <TableCell className="px-2 py-2 text-xs sm:px-4 sm:py-3 sm:text-sm">
-                    {item.id}
+                    {index + 1}
                   </TableCell>
                   <TableCell className="px-2 py-2 text-xs sm:px-4 sm:py-3 sm:text-sm">
                     {item.name}
@@ -762,14 +851,14 @@ export default function ManufacturersPage() {
                   <TableCell className="px-2 py-2 text-xs sm:px-4 sm:py-3 sm:text-sm">
                     {item.manufacturerId}
                   </TableCell>
-                  <TableCell className="hidden px-2 py-2 text-xs sm:px-4 sm:py-3 sm:text-sm md:table-cell">
+                  <TableCell className="px-2 py-2 text-xs sm:px-4 sm:py-3 sm:text-sm md:table-cell">
                     {item.contactPerson}
                   </TableCell>
-                  <TableCell className="hidden px-2 py-2 text-xs sm:px-4 sm:py-3 sm:text-sm lg:table-cell">
+                  <TableCell className="px-2 py-2 text-xs sm:px-4 sm:py-3 sm:text-sm lg:table-cell">
                     {item.state}
                   </TableCell>
-                  <TableCell className="hidden px-2 py-2 text-xs sm:px-4 sm:py-3 sm:text-sm xl:table-cell">
-                    {item.address}
+                  <TableCell className="px-2 py-2 text-xs sm:px-4 sm:py-3 sm:text-sm xl:table-cell">
+                    {item.houseNo + " " + item.street + ", " + item.city}
                   </TableCell>
                   <TableCell className="px-4 py-3 text-right">
                     <DropdownMenu>
@@ -832,8 +921,7 @@ export default function ManufacturersPage() {
           </Select>
           <span className="text-sm font-medium">
             {(currentPage - 1) * rowsPerPage + 1}-
-            {Math.min(currentPage * rowsPerPage, processedData.length)} of{" "}
-            {processedData.length}
+            {Math.min(currentPage * rowsPerPage, data.length)} of {data.length}
           </span>
         </div>
         <PaginationContent>
@@ -865,7 +953,7 @@ export default function ManufacturersPage() {
         isOpen={isAddDialogOpen}
         onClose={() => setIsAddDialogOpen(false)}
         onAdd={handleAddManufacturer}
-        data={data.data}
+        data={data}
       />
 
       {/* Edit Manufacturer Dialog */}

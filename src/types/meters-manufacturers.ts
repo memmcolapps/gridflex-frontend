@@ -24,11 +24,12 @@ export interface Manufacturer {
   orgId: string;
   manufacturerId: string;
   name: string;
-  sgc: string;
+  sgc?: string;
   contactPerson: string;
   state: string;
-  address: string;
-  email: string;
+  city: string;
+  street: string;
+  houseNo: string;
   phoneNo: string;
   createdAt: string;
   updatedAt: string;
@@ -43,11 +44,5 @@ export interface ApiResponse {
 export interface GetManufacturersResponse {
   responsecode: string;
   responsedesc: string;
-  responsedata: {
-    totalData: number;
-    data: Manufacturer[];
-    size: number;
-    totalPages: number;
-    page: number;
-  };
+  responsedata: Manufacturer[];
 }
