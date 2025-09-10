@@ -25,9 +25,9 @@ export interface Manufacturer {
   manufacturerId: string;
   name: string;
   sgc: string;
-  status: boolean;
   contactPerson: string;
   state: string;
+  address: string;
   email: string;
   phoneNo: string;
   createdAt: string;

@@ -18,7 +18,17 @@ export async function fetchManufacturers(
   state?: string,
   createdAt?: string,
 ): Promise<
-  { success: true; data: Manufacturer[] } | { success: false; error: string }
+  | {
+      success: true;
+      data: {
+        totalData: number;
+        data: Manufacturer[];
+        size: number;
+        totalPages: number;
+        page: number;
+      };
+    }
+  | { success: false; error: string }
 > {
   try {
     const token = localStorage.getItem("auth_token");
@@ -45,7 +55,7 @@ export async function fetchManufacturers(
     }
     return {
       success: true,
-      data: response.data.responsedata.data,
+      data: response.data.responsedata,
     };
   } catch (error) {
     return {

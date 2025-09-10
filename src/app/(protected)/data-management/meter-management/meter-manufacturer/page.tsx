@@ -1,7 +1,6 @@
-// app/manufacturers/page.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -44,21 +43,9 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { type Manufacturer } from "@/types/meters-manufacturers";
+import { useGetMeterManufactures } from "@/hooks/use-meter";
 
-// Types
-interface Manufacturer {
-  id: string;
-  sin: string;
-  manufacturerId: string;
-  sgc: string;
-  contactPerson: string;
-  location: string;
-  address: string;
-  phoneNumber: string; // Added to match the dialog usage
-  status: "Active" | "Deactivated";
-}
-
-// Component 1: AddManufacturerDialog
 function AddManufacturerDialog({
   isOpen,
   onClose,
@@ -87,25 +74,6 @@ function AddManufacturerDialog({
       alert("Please fill all required fields.");
       return;
     }
-    const newManufacturer: Manufacturer = {
-      id: (data.length + 1).toString().padStart(2, "0"),
-      sin: manufacturerName,
-      manufacturerId,
-      sgc,
-      contactPerson,
-      location,
-      address: "",
-      phoneNumber,
-      status: "Active",
-    };
-    onAdd(newManufacturer);
-    onClose();
-    setManufacturerName("");
-    setManufacturerId("");
-    setSgc("");
-    setContactPerson("");
-    setPhoneNumber("");
-    setLocation("Lagos");
   };
 
   return (
@@ -250,7 +218,6 @@ function AddManufacturerDialog({
   );
 }
 
-// Component 2: EditManufacturerDialog
 function EditManufacturerDialog({
   isOpen,
   onClose,
@@ -269,18 +236,6 @@ function EditManufacturerDialog({
   const [phoneNumber, setPhoneNumber] = useState("");
   const [location, setLocation] = useState("Lagos");
 
-  // Populate fields when the dialog opens with the selected manufacturer
-  useEffect(() => {
-    if (manufacturer) {
-      setManufacturerName(manufacturer.sin);
-      setManufacturerId(manufacturer.manufacturerId);
-      setSgc(manufacturer.sgc);
-      setContactPerson(manufacturer.contactPerson);
-      setPhoneNumber(manufacturer.phoneNumber);
-      setLocation(manufacturer.location);
-    }
-  }, [manufacturer]);
-
   const handleEdit = () => {
     if (
       !manufacturerName ||
@@ -290,21 +245,6 @@ function EditManufacturerDialog({
     ) {
       alert("Please fill all required fields.");
       return;
-    }
-    if (manufacturer) {
-      const updatedManufacturer: Manufacturer = {
-        ...manufacturer,
-        sin: manufacturerName,
-        manufacturerId,
-        sgc,
-        contactPerson,
-        location,
-        address: manufacturer.address,
-        phoneNumber,
-        status: manufacturer.status,
-      };
-      onEdit(updatedManufacturer);
-      onClose();
     }
   };
 
@@ -450,147 +390,51 @@ function EditManufacturerDialog({
   );
 }
 
-// Component 3: DeactivateManufacturerDialog
-function DeactivateManufacturerDialog({
-  isOpen,
-  onClose,
-  onDeactivate,
-  manufacturer,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  onDeactivate: () => void;
-  manufacturer: Manufacturer | null;
-}) {
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="h-auto rounded-lg bg-white shadow-lg sm:max-w-[350px]">
-        <DialogHeader>
-          <AlertTriangle
-            size={16}
-            className="rounded-full bg-red-200 p-2 text-red-600"
-          />
-          <DialogTitle className="text-lg font-semibold text-gray-900">
-            Deactivate Manufacturer
-          </DialogTitle>
-        </DialogHeader>
-        <div className="py-2">
-          <p className="text-sm text-gray-700">
-            Are you sure you want to deactivate the manufacturer{" "}
-            <strong>{manufacturer?.sin}</strong>?
-          </p>
-        </div>
-        <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={onClose}
-            className="mr-2 border-[#ca1616] bg-transparent text-[#ca1616]"
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={onDeactivate}
-            className="bg-red-600 text-white hover:bg-red-700"
-          >
-            Deactivate
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-// Component 4: ManufacturersPage
 export default function ManufacturersPage() {
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [data, setData] = useState<Manufacturer[]>([
-    {
-      id: "01",
-      sin: "Mommas",
-      manufacturerId: "62",
-      sgc: "999962",
-      contactPerson: "Engr Mudashiru",
-      location: "Ogun",
-      address: "KM 40, Lagos/Ibadan Exp. way, Ogun",
-      phoneNumber: "08012345678",
-      status: "Active",
-    },
-    {
-      id: "02",
-      sin: "Mojec",
-      manufacturerId: "62",
-      sgc: "999962",
-      contactPerson: "Richard",
-      location: "Lagos",
-      address: "KM 40, Lagos/Ibadan Exp. way, Ogun",
-      phoneNumber: "08087654321",
-      status: "Active",
-    },
-    {
-      id: "03",
-      sin: "Heixing",
-      manufacturerId: "62",
-      sgc: "999962",
-      contactPerson: "Oluyemi",
-      location: "Ogun",
-      address: "KM 40, Lagos/Ibadan Exp. way, Ogun",
-      phoneNumber: "08011223344",
-      status: "Active",
-    },
-  ]);
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [rowsPerPage, setRowsPerPage] = useState<number>(10);
+  const { data } = useGetMeterManufactures();
+  const [currentPage, setCurrentPage] = useState<number>(data.page || 1);
+  const [rowsPerPage, setRowsPerPage] = useState<number>(data.size || 10);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeactivateDialogOpen, setIsDeactivateDialogOpen] = useState(false);
   const [selectedManufacturer, setSelectedManufacturer] =
     useState<Manufacturer | null>(null);
 
-  // Add these state variables
   const [sortConfig, setSortConfig] = useState<{
     key: keyof Manufacturer | null;
     direction: "asc" | "desc";
   }>({ key: null, direction: "asc" });
 
-  const [processedData, setProcessedData] = useState<Manufacturer[]>(data);
+  const [processedData, setProcessedData] = useState<Manufacturer[]>(data.data);
 
-  useEffect(() => {
-    applyFiltersAndSort(searchTerm, sortConfig.key, sortConfig.direction);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data]);
-
-  // Enhanced search handler
   const handleSearchChange = (term: string) => {
     setSearchTerm(term);
     applyFiltersAndSort(term, sortConfig.key, sortConfig.direction);
   };
 
-  // Sort handler
   const handleSortChange = () => {
-    const sortKey: keyof Manufacturer = sortConfig.key ?? "sin";
+    const sortKey: keyof Manufacturer = sortConfig.key ?? "name";
     const newDirection = sortConfig.direction === "asc" ? "desc" : "asc";
 
     setSortConfig({ key: sortKey, direction: newDirection });
     applyFiltersAndSort(searchTerm, sortKey, newDirection);
   };
 
-  // Combined filter and sort function
   const applyFiltersAndSort = (
     term: string,
     sortBy: keyof Manufacturer | null,
     direction: "asc" | "desc",
   ) => {
-    // 1. Filter first
-    let results = data;
+    let results = data.data;
     if (term.trim() !== "") {
-      results = data.filter(
+      results = data.data.filter(
         (item) =>
-          item.sin?.toLowerCase().includes(term.toLowerCase()) ||
+          item.name?.toLowerCase().includes(term.toLowerCase()) ||
           item.manufacturerId?.toLowerCase().includes(term.toLowerCase()),
       );
     }
 
-    // 2. Then sort if a sort field is selected
     if (sortBy) {
       results = [...results].sort((a, b) => {
         const aValue = a[sortBy] || "";
@@ -611,32 +455,18 @@ export default function ManufacturersPage() {
     currentPage * rowsPerPage,
   );
 
-  // Define startIndex, endIndex, and totalRows for pagination display
   const totalRows = processedData.length;
 
   const handleAddManufacturer = (newManufacturer: Manufacturer) => {
-    setData((prevData) => [...prevData, newManufacturer]);
+    console.log(newManufacturer);
   };
 
   const handleEditManufacturer = (updatedManufacturer: Manufacturer) => {
-    setData((prevData) =>
-      prevData.map((item) =>
-        item.id === updatedManufacturer.id ? updatedManufacturer : item,
-      ),
-    );
+    console.log(updatedManufacturer);
   };
 
   const handleDeactivateManufacturer = () => {
-    if (selectedManufacturer) {
-      setData((prevData) =>
-        prevData.map((item) =>
-          item.id === selectedManufacturer.id
-            ? { ...item, status: "Deactivated" }
-            : item,
-        ),
-      );
-      setIsDeactivateDialogOpen(false);
-    }
+    console.log("Deactivated");
   };
   const handleRowsPerPageChange = (value: string) => {
     setRowsPerPage(Number(value));
@@ -653,7 +483,6 @@ export default function ManufacturersPage() {
 
   return (
     <main className="h-screen overflow-auto p-6">
-      {/* Header */}
       <div className="mb-4 flex flex-col items-center justify-between gap-4 md:flex-row">
         <ContentHeader
           title="Manufacturer"
@@ -708,13 +537,13 @@ export default function ManufacturersPage() {
               <TableHead className="px-2 py-2 text-left text-xs font-semibold text-gray-700 sm:px-4 sm:py-3 sm:text-sm">
                 Manufacturer ID
               </TableHead>
-              <TableHead className="hidden px-2 py-2 text-left text-xs font-semibold text-gray-700 sm:px-4 sm:py-3 sm:text-sm md:table-cell">
+              <TableHead className="px-2 py-2 text-left text-xs font-semibold text-gray-700 sm:px-4 sm:py-3 sm:text-sm md:table-cell">
                 Contact Person
               </TableHead>
-              <TableHead className="hidden px-2 py-2 text-left text-xs font-semibold text-gray-700 sm:px-4 sm:py-3 sm:text-sm lg:table-cell">
+              <TableHead className="px-2 py-2 text-left text-xs font-semibold text-gray-700 sm:px-4 sm:py-3 sm:text-sm lg:table-cell">
                 State
               </TableHead>
-              <TableHead className="hidden px-2 py-2 text-left text-xs font-semibold text-gray-700 sm:px-4 sm:py-3 sm:text-sm xl:table-cell">
+              <TableHead className="px-2 py-2 text-left text-xs font-semibold text-gray-700 sm:px-4 sm:py-3 sm:text-sm xl:table-cell">
                 Address
               </TableHead>
               <TableHead className="px-2 py-2 text-right text-xs font-semibold text-gray-700 sm:px-4 sm:py-3 sm:text-sm">
@@ -734,21 +563,15 @@ export default function ManufacturersPage() {
               </TableRow>
             ) : (
               paginatedData.map((item) => (
-                <TableRow
-                  key={item.id}
-                  className={`hover:bg-gray-50 ${item.status === "Deactivated" ? "bg-gray-100 text-gray-400" : ""}`}
-                >
+                <TableRow key={item.id}>
                   <TableCell className="px-2 py-2 sm:px-4 sm:py-3">
-                    <Checkbox
-                      className="h-4 w-4 border-gray-500"
-                      disabled={item.status === "Deactivated"}
-                    />
+                    <Checkbox className="h-4 w-4 border-gray-500" />
                   </TableCell>
                   <TableCell className="px-2 py-2 text-xs sm:px-4 sm:py-3 sm:text-sm">
                     {item.id}
                   </TableCell>
                   <TableCell className="px-2 py-2 text-xs sm:px-4 sm:py-3 sm:text-sm">
-                    {item.sin}
+                    {item.name}
                   </TableCell>
                   <TableCell className="px-2 py-2 text-xs sm:px-4 sm:py-3 sm:text-sm">
                     {item.manufacturerId}
@@ -757,7 +580,7 @@ export default function ManufacturersPage() {
                     {item.contactPerson}
                   </TableCell>
                   <TableCell className="hidden px-2 py-2 text-xs sm:px-4 sm:py-3 sm:text-sm lg:table-cell">
-                    {item.location}
+                    {item.state}
                   </TableCell>
                   <TableCell className="hidden px-2 py-2 text-xs sm:px-4 sm:py-3 sm:text-sm xl:table-cell">
                     {item.address}
@@ -769,7 +592,6 @@ export default function ManufacturersPage() {
                           className="cursor-pointer border-gray-200 outline-none focus:ring-gray-500 focus:outline-none"
                           variant="ghost"
                           size="sm"
-                          disabled={item.status === "Deactivated"}
                         >
                           <MoreVertical size={16} className="text-gray-500" />
                         </Button>
@@ -784,7 +606,6 @@ export default function ManufacturersPage() {
                             setSelectedManufacturer(item);
                             setIsEditDialogOpen(true);
                           }}
-                          disabled={item.status === "Deactivated"}
                         >
                           <Pencil size={14} className="text-gray-500" />
                           <span className="text-sm text-gray-700">
@@ -858,7 +679,7 @@ export default function ManufacturersPage() {
         isOpen={isAddDialogOpen}
         onClose={() => setIsAddDialogOpen(false)}
         onAdd={handleAddManufacturer}
-        data={data}
+        data={data.data}
       />
 
       {/* Edit Manufacturer Dialog */}
@@ -869,17 +690,6 @@ export default function ManufacturersPage() {
           setSelectedManufacturer(null);
         }}
         onEdit={handleEditManufacturer}
-        manufacturer={selectedManufacturer}
-      />
-
-      {/* Deactivate Manufacturer Dialog */}
-      <DeactivateManufacturerDialog
-        isOpen={isDeactivateDialogOpen}
-        onClose={() => {
-          setIsDeactivateDialogOpen(false);
-          setSelectedManufacturer(null);
-        }}
-        onDeactivate={handleDeactivateManufacturer}
         manufacturer={selectedManufacturer}
       />
     </main>
