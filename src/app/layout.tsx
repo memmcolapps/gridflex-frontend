@@ -1,7 +1,8 @@
-import "../styles/globals.css";
+// src/app/layout.tsx
 import { type Metadata } from "next";
 import { Manrope } from "next/font/google";
 import { Providers } from "./Providers";
+import "@/styles/globals.css";
 
 export const metadata: Metadata = {
   title: "Gridflex",
@@ -11,13 +12,15 @@ export const metadata: Metadata = {
 
 const manrope = Manrope({ subsets: ["latin"] });
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={manrope.className}>
       <body>
-        <Providers>{children}</Providers>
+          <Providers>
+            {children}
+          </Providers>
       </body>
     </html>
   );
