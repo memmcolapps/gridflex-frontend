@@ -2,7 +2,7 @@ import {
   activateOrDeactivateUser,
   createGroupPermission,
   createUser,
-  deactivateGroupPermission,
+  deactivateOrActivateGroupPermission,
   editUser,
   type EditUserPayload,
   getGroupPermission,
@@ -92,10 +92,14 @@ export const useUpdateGroupPermissionField = () => {
   });
 };
 
-export const useDeactivateGroupPermission = () => {
+export const useDeactivateOrActivateGroupPermission = () => {
   return useMutation({
-    mutationFn: async (groupId: string) => {
-      const response = await deactivateGroupPermission(groupId);
+    mutationFn: async (payload: { groupId: string; status: boolean }) => {
+      const { groupId, status } = payload;
+      const response = await deactivateOrActivateGroupPermission(
+        groupId,
+        status,
+      );
       if ("success" in response && !response.success) {
         throw new Error(response.error);
       }

@@ -1,11 +1,5 @@
 import { useState, useMemo } from "react";
-import {
-  ChevronUp,
-  ChevronDown,
-  MoreVertical,
-  Pencil,
-  Ban,
-} from "lucide-react";
+import { ChevronUp, ChevronDown, MoreVertical, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -29,7 +23,6 @@ import EditGroupPermissionForm from "./editgrouppermissionform";
 import { useAuth } from "@/context/auth-context";
 import {
   useCreateGroupPermission,
-  useDeactivateGroupPermission,
   useGroupPermissions,
   useUpdateGroupPermission,
   useUpdateGroupPermissionField,
@@ -40,6 +33,7 @@ import {
   DropdownMenuTrigger,
 } from "@radix-ui/react-dropdown-menu";
 import { DropdownMenuContent, DropdownMenuItem } from "../ui/dropdown-menu";
+import GroupStatusToggleDropdownItem from "./groupstatustoggledropdownitem";
 
 interface GroupPermissionFormData {
   groupTitle: string;
@@ -160,7 +154,6 @@ export default function GroupPermissionManagement() {
   const { mutate: createPermissionGroup } = useCreateGroupPermission();
   const { mutate: updatePermissionGroup } = useUpdateGroupPermission();
   const { mutate: updatePermissionField } = useUpdateGroupPermissionField();
-  const { mutate: deactivatePermissionGroup } = useDeactivateGroupPermission();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState<{
@@ -315,18 +308,6 @@ export default function GroupPermissionManagement() {
       console.error("Error updating group permission:", err);
       toast.error("Error updating group permission");
     }
-  };
-
-  const handleDeactivateGroup = (groupId: string) => {
-    deactivatePermissionGroup(groupId, {
-      onSuccess: () => {
-        toast.success("Group permission deactivated successfully");
-      },
-      onError: (error) => {
-        console.error("Error deactivating group permission:", error);
-        toast.error("Error deactivating group permission");
-      },
-    });
   };
 
   // const handleDeleteGroup = async (groupId: string) => {
@@ -540,25 +521,14 @@ export default function GroupPermissionManagement() {
                             handleEditGroup(group);
                           }}
                         >
-                          <div className="flex w-full items-center gap-2 p-2">
+                          <div className="flex w-full items-center gap-2">
                             <Pencil size={14} />
                             <span className="cursor-pointer">
                               Edit Group Permission
                             </span>
                           </div>
                         </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onSelect={() => {
-                            handleDeactivateGroup(group.id);
-                          }}
-                        >
-                          <div className="flex w-full items-center gap-2 p-2">
-                            <Ban size={14} />
-                            <span className="cursor-pointer">
-                              Deactivate Group Permission
-                            </span>
-                          </div>
-                        </DropdownMenuItem>
+                        <GroupStatusToggleDropdownItem group={group} />
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>

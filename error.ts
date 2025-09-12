@@ -5,6 +5,7 @@ type ErrorResponse = {
   error?: string;
   errors?: Record<string, string[]>;
   statusCode?: number;
+  responsedesc?: string;
 };
 
 /**
@@ -36,12 +37,14 @@ const extractErrorMessage = (error: unknown): string => {
  * Handles Axios specific errors
  */
 const handleAxiosError = (error: AxiosError<ErrorResponse>): string => {
+  console.error("Axios error:", error); // Log the full error for debugging
   if (error.response) {
     // Server responded with a status code outside 2xx range
     const { data, status } = error.response;
 
     if (data) {
       // Try to get message from common error response formats
+      if (data.responsedesc) return data.responsedesc;
       if (data.message) return data.message;
       if (data.error) return data.error;
       if (data.errors) {
@@ -69,6 +72,7 @@ export const handleApiError = (
   error: unknown,
   defaultMessage = "An unexpected error occurred",
 ): string => {
+  console.error("API error:", error); // Log the full error for debugging
   if (axios.isAxiosError(error)) {
     return handleAxiosError(error);
   }

@@ -176,13 +176,14 @@ export async function updateGroupPermissionField(
   }
 }
 
-export async function deactivateGroupPermission(
+export async function deactivateOrActivateGroupPermission(
   groupId: string,
+  status: boolean,
 ): Promise<{ success: true } | { success: false; error: string }> {
   try {
     const token = localStorage.getItem("auth_token");
     const response = await axios.patch<GroupPermissionResponse>(
-      `${API_URL}/user/service/deactivate/group-permission/${groupId}`,
+      `${API_URL}/user/service/group/change-state?groupId=${groupId}&status=${status}`,
       {},
       {
         headers: {
@@ -190,8 +191,16 @@ export async function deactivateGroupPermission(
           custom: CUSTOM_HEADER,
           Authorization: `Bearer ${token}`,
         },
+        validateStatus: (status) => status < 500,
       },
     );
+
+    if (response.data.responsecode === "060") {
+      return {
+        success: false,
+        error: "Cannot deactivate a group permission with users assigned",
+      };
+    }
     if (response.data.responsecode !== "000") {
       return {
         success: false,
@@ -199,6 +208,7 @@ export async function deactivateGroupPermission(
           response.data.responsedesc ?? "Failed to deactivate group permission",
       };
     }
+
     return {
       success: true,
     };
