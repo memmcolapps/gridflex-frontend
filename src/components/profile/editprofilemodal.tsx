@@ -1,4 +1,3 @@
-// @/components/EditProfileModal.tsx
 "use client";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -6,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
-import ChangePasswordModal from "./changepasswordmodal";
 import { useAuth } from "@/context/auth-context";
 import { useUpdateProfile } from "@/hooks/use-profile";
 import { toast } from "sonner";
@@ -15,13 +13,13 @@ import { type UpdateProfilePayload } from "@/service/profile-service";
 interface EditProfileModalProps {
     isOpen: boolean;
     onClose: () => void;
+    onOpenChangePassword: () => void;
 }
 
-export default function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
+export default function EditProfileModal({ isOpen, onClose, onOpenChangePassword }: EditProfileModalProps) {
     const { user } = useAuth();
     const { mutate, isPending } = useUpdateProfile();
     const [showPassword, setShowPassword] = useState(false);
-    const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
     const [formData, setFormData] = useState<UpdateProfilePayload>({
         id: user?.id ?? "",
         firstname: user?.firstname ?? "",
@@ -137,17 +135,14 @@ export default function EditProfileModal({ isOpen, onClose }: EditProfileModalPr
                                 </button>
                             </div>
                             <div className="mt-2">
-                                <a
-                                    href="#"
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        setIsChangePasswordOpen(true);
-                                        onClose();
-                                    }}
-                                    className="text-sm text-[#161CCA] cursor-pointer"
+                                <Button
+                                    variant="ghost"
+                                    onClick={onOpenChangePassword}
+                                    className="text-sm text-[#161CCA] p-0 h-auto cursor-pointer"
+                                    type="button"
                                 >
                                     Change Password
-                                </a>
+                                </Button>
                             </div>
                         </div>
                     </div>
@@ -166,12 +161,6 @@ export default function EditProfileModal({ isOpen, onClose }: EditProfileModalPr
                     </div>
                 </form>
             </DialogContent>
-            {isChangePasswordOpen && (
-                <ChangePasswordModal
-                    isOpen={isChangePasswordOpen}
-                    onClose={() => setIsChangePasswordOpen(false)}
-                />
-            )}
         </Dialog>
     );
 }
