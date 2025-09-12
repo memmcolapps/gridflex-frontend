@@ -1,4 +1,3 @@
-// @/components/Navbar.tsx
 "use client";
 
 import { useState } from "react";
@@ -13,13 +12,23 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import ProfileDropdown from "./profile/profiledropdown"; 
-import EditProfileModal from "@/components/profile/editprofilemodal";
+import ProfileDropdown from "./profile/profiledropdown";
+import EditProfileModal from "./profile/editprofilemodal";
+import ChangePasswordModal from "./profile/changepasswordmodal";
 
 export function Navbar() {
   const { isLoading } = useAuth();
   const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false);
-  const handleCloseEditProfileModal = () => setIsEditProfileModalOpen(false);
+  const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
+
+  const handleOpenEditProfileModal = () => {
+    setIsEditProfileModalOpen(true);
+  };
+  
+  const handleOpenChangePasswordModal = () => {
+    setIsEditProfileModalOpen(false);
+    setIsChangePasswordModalOpen(true);
+  };
 
   return (
     <header className="sticky top-0 z-30 border-b border-gray-200 py-6 h-18 bg-white">
@@ -29,12 +38,23 @@ export function Navbar() {
           <NotificationButton />
           <UserDropdown
             isLoading={isLoading}
-            openEditProfileModal={() => setIsEditProfileModalOpen(true)}
+            openEditProfileModal={handleOpenEditProfileModal}
+            openChangePasswordModal={handleOpenChangePasswordModal}
           />
         </div>
       </div>
       {isEditProfileModalOpen && (
-        <EditProfileModal isOpen={isEditProfileModalOpen} onClose={handleCloseEditProfileModal} />
+        <EditProfileModal
+          isOpen={isEditProfileModalOpen}
+          onClose={() => setIsEditProfileModalOpen(false)}
+          onOpenChangePassword={handleOpenChangePasswordModal}
+        />
+      )}
+      {isChangePasswordModalOpen && (
+        <ChangePasswordModal
+          isOpen={isChangePasswordModalOpen}
+          onClose={() => setIsChangePasswordModalOpen(false)}
+        />
       )}
     </header>
   );
@@ -84,9 +104,10 @@ export const UserInfo = () => {
 interface UserDropdownProps {
   isLoading: boolean;
   openEditProfileModal: () => void;
+  openChangePasswordModal: () => void;
 }
 
-export const UserDropdown = ({ isLoading, openEditProfileModal }: UserDropdownProps) => {
+export const UserDropdown = ({ isLoading, openEditProfileModal, openChangePasswordModal }: UserDropdownProps) => {
   const { logout } = useAuth();
   const [isProfileViewActive, setIsProfileViewActive] = useState(false);
 
@@ -118,6 +139,10 @@ export const UserDropdown = ({ isLoading, openEditProfileModal }: UserDropdownPr
             openEditProfileModal={() => {
               setIsProfileViewActive(false);
               openEditProfileModal();
+            }}
+            openChangePasswordModal={() => {
+              setIsProfileViewActive(false);
+              openChangePasswordModal();
             }}
           />
         ) : (

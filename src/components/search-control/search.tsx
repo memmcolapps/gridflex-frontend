@@ -3,13 +3,14 @@
 
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
-import { useState } from "react";
+import { type ChangeEvent, useState } from "react";
 
 
 interface SearchControlProps {
     onSearchChange?: (searchTerm: string) => void;
     value?: string;
     placeholder?: string;
+    onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
 }
 
 export function SearchControl({ onSearchChange, value = "",placeholder="" }: SearchControlProps) {

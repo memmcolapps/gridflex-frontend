@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
+"use client";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -10,73 +11,73 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
-export type Customer = {
-    id: string;
-    customerId: string;
-    firstName: string;
-    lastName: string;
-    accountNumber: string;
-    nin: string;
-    phoneNumber: string;
-    email: string;
-    state: string;
-    city: string;
-    houseNo: string;
-    streetName: string;
-    meterNumber?: string;
-    location?: string;
-    address?: string;
-    status?: "Active" | "Blocked" | "Inactive";
-    virtual?: number;
-    actual?: number;
-    valueAddedTax?: "Paying" | "Not Paying";
-};
+import { toast } from "sonner";
+import { useAddCustomer, useUpdateCustomer } from "@/hooks/use-customer";
+import { type Customer, type AddCustomerPayload, type UpdateCustomerPayload } from "@/types/customer-types";
+import { useNigerianCities, useNigerianStates } from "@/hooks/use-location";
 
 type CustomerFormModalProps = {
     mode: "add" | "edit";
     customer?: Customer;
-    onSave: (customer: Customer) => void;
+    onSave: () => void;
     triggerButton?: React.ReactNode;
     isOpen?: boolean;
     onClose?: () => void;
 };
 
-const states = [
-    { value: "Lagos", label: "Lagos" },
-    // Add more states as needed
-];
-
-const cities = [
-    { value: "Lagos", label: "Lagos" },
-    // Add more cities as needed
-];
-
 export default function CustomerForm({ mode, customer, onSave, triggerButton, isOpen: controlledIsOpen, onClose }: CustomerFormModalProps) {
     const [internalIsOpen, setInternalIsOpen] = useState(false);
     const isOpen = mode === "add" ? internalIsOpen : controlledIsOpen ?? false;
 
-    const [formData, setFormData] = useState<Customer>({
-        id: "",
-        customerId: "", // Changed to required string with empty default
-        firstName: "",
-        lastName: "",
-        accountNumber: "",
-        nin: "",
-        phoneNumber: "",
-        email: "",
-        state: "",
-        city: "",
-        houseNo: "",
-        streetName: "",
-        meterNumber: "",
-        location: "",
-        address: "",
-        status: "Active",
-        virtual: undefined,
-        actual: undefined,
-        valueAddedTax: "Not Paying",
-    });
+    const { data: states, isLoading: isLoadingStates, isError: isErrorStates } = useNigerianStates();
+    const {
+        data: cities,
+        isLoading: isLoadingCities,
+        isError: isErrorCities,
+    } = useNigerianCities(
+        states?.find(s => s.name === customer?.state)?.id ?? ""
+    );
+
+    const initialFormData = useMemo(() => {
+        return mode === "edit" && customer
+            ? {
+                id: customer.id,
+                firstName: customer.firstname,
+                lastName: customer.lastname,
+                nin: customer.nin,
+                phoneNumber: customer.phoneNumber,
+                email: customer.email,
+                state: states?.find(s => s.name === customer.state)?.id ?? "",
+                city: cities?.find(c => c.name === customer.city)?.id ?? "",
+                houseNo: customer.houseNo,
+                streetName: customer.streetName,
+                meterNumber: customer.meterNumber,
+                vat: customer.vat,
+            }
+            : {
+                id: "",
+                firstName: "",
+                lastName: "",
+                nin: "",
+                phoneNumber: "",
+                email: "",
+                state: "",
+                city: "",
+                houseNo: "",
+                streetName: "",
+                meterNumber: null,
+                vat: "Not Paying",
+            };
+    }, [mode, customer, states, cities]);
+
+    const [formData, setFormData] = useState(initialFormData);
+
+    // This useEffect hook ensures the form data is reset whenever the dialog is opened in edit mode
+    useEffect(() => {
+        if (isOpen && mode === "edit" && customer) {
+            setFormData(initialFormData);
+        }
+    }, [isOpen, mode, customer, initialFormData]);
 
     const cleanUpOverlay = useCallback(() => {
         const overlays = document.querySelectorAll("[data-radix-dialog-overlay]");
@@ -85,45 +86,18 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
         }
     }, []);
 
-    useEffect(() => {
-        if (isOpen && customer && mode === "edit") {
-            setFormData(customer);
-        } else if (!isOpen) {
-            setFormData({
-                id: "",
-                customerId: "", // Reset to empty string for new customers
-                firstName: "",
-                lastName: "",
-                accountNumber: "",
-                nin: "",
-                phoneNumber: "",
-                email: "",
-                state: "",
-                city: "",
-                houseNo: "",
-                streetName: "",
-                meterNumber: "",
-                location: "",
-                address: "",
-                status: "Active",
-                virtual: undefined,
-                actual: undefined,
-                valueAddedTax: "Not Paying",
-            });
-        }
-    }, [customer, isOpen, mode]);
-
     const handleOpenChange = useCallback((open: boolean) => {
         if (mode === "add") {
             setInternalIsOpen(open);
         }
         if (!open) {
+            setFormData(initialFormData);
             cleanUpOverlay();
             if (onClose) {
                 onClose();
             }
         }
-    }, [mode, onClose, cleanUpOverlay]);
+    }, [mode, onClose, cleanUpOverlay, initialFormData]);
 
     const handleChange = useCallback(
         (e: React.ChangeEvent<HTMLInputElement> | string, field?: string) => {
@@ -143,38 +117,80 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
         []
     );
 
-    const handleTaxChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleVatChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         const { checked } = e.target;
         setFormData((prev) => ({
             ...prev,
-            valueAddedTax: checked ? "Paying" : "Not Paying",
+            vat: checked ? "Paying" : "Not Paying",
         }));
     }, []);
+
+    const addCustomerMutation = useAddCustomer();
+    const updateCustomerMutation = useUpdateCustomer();
 
     const handleSubmit = useCallback(
         (e: React.FormEvent) => {
             e.preventDefault();
-            // Ensure customerId is set before saving, especially for 'add' mode
-            const customerToSave = {
-                ...formData,
-                id: formData.id || Date.now().toString(), // Default to timestamp if not provided
-                customerId: formData.customerId || `C-${Date.now().toString().slice(-6)}`, // Default to a unique customerId if not provided
-            };
-            onSave(customerToSave);
+
             if (mode === "add") {
-                setInternalIsOpen(false);
-            }
-            cleanUpOverlay();
-            if (onClose) {
-                onClose();
+                const payload: AddCustomerPayload = {
+                    firstname: formData.firstName,
+                    lastname: formData.lastName,
+                    nin: formData.nin,
+                    phoneNumber: formData.phoneNumber,
+                    email: formData.email,
+                    state: states?.find((s) => s.id === formData.state)?.name ?? "",
+                    city: cities?.find((c) => c.id === formData.city)?.name ?? "",
+                    houseNo: formData.houseNo,
+                    streetName: formData.streetName,
+                    vat: formData.vat,
+                };
+
+                addCustomerMutation.mutate(payload, {
+                    onSuccess: () => {
+                        toast.success("Customer added successfully!");
+                        onSave();
+                        handleOpenChange(false);
+                    },
+                    onError: (error) => {
+                        toast.error(`Error adding customer: ${error.message}`);
+                    },
+                });
+            } else {
+                const payload: UpdateCustomerPayload = {
+                    id: formData.id,
+                    firstname: formData.firstName,
+                    lastname: formData.lastName,
+                    nin: formData.nin,
+                    phoneNumber: formData.phoneNumber,
+                    email: formData.email,
+                    state: states?.find((s) => s.id === formData.state)?.name ?? "",
+                    city: cities?.find((c) => c.id === formData.city)?.name ?? "",
+                    houseNo: formData.houseNo,
+                    streetName: formData.streetName,
+                    vat: formData.vat,
+                };
+
+                updateCustomerMutation.mutate(payload, {
+                    onSuccess: () => {
+                        toast.success("Customer updated successfully!");
+                        onSave();
+                        handleOpenChange(false);
+                    },
+                    onError: (error) => {
+                        toast.error(`Error updating customer: ${error.message}`);
+                    },
+                });
             }
         },
-        [formData, onSave, mode, onClose, cleanUpOverlay]
+        [mode, formData, states, cities, addCustomerMutation, onSave, handleOpenChange, updateCustomerMutation]
     );
 
     if (mode === "edit" && !customer) {
         return null;
     }
+
+    const isPending = addCustomerMutation.isPending || updateCustomerMutation.isPending;
 
     return (
         <Dialog open={isOpen} onOpenChange={handleOpenChange}>
@@ -266,29 +282,55 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
                                     <SelectValue placeholder="Select state" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {states.map((state) => (
-                                        <SelectItem key={state.value} value={state.value}>
-                                            {state.label}
-                                        </SelectItem>
-                                    ))}
+                                    {isLoadingStates ? (
+                                        <SelectItem value="loading" disabled>Loading states...</SelectItem>
+                                    ) : isErrorStates ? (
+                                        <SelectItem value="error-states" disabled>Error loading states</SelectItem>
+                                    ) : states?.length === 0 ? (
+                                        <SelectItem value="no-states-found" disabled>No states found</SelectItem>
+                                    ) : (
+                                        states?.map((state) => (
+                                            <SelectItem key={state.id} value={state.id}>
+                                                {state.name}
+                                            </SelectItem>
+                                        ))
+                                    )}
                                 </SelectContent>
                             </Select>
                         </div>
-                        <div className="space-y-2">
+                        <div className="space-y-2 w-full">
                             <Label htmlFor="city">City<span className="text-red-600">*</span></Label>
                             <Select
                                 value={formData.city}
                                 onValueChange={(value) => handleChange(value, "city")}
+                                disabled={!formData.state || isLoadingCities}
+                                required
                             >
-                                <SelectTrigger className="border-[rgba(228,231,236,1)] w-full">
-                                    <SelectValue placeholder="Select city" />
+                                <SelectTrigger id="city" className="w-full">
+                                    <SelectValue
+                                        placeholder={
+                                            isLoadingCities
+                                                ? "Loading cities..."
+                                                : formData.state
+                                                    ? "Select City"
+                                                    : "Select a state first"
+                                        }
+                                    />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {cities.map((city) => (
-                                        <SelectItem key={city.value} value={city.value}>
-                                            {city.label}
-                                        </SelectItem>
-                                    ))}
+                                    {isLoadingCities ? (
+                                        <SelectItem value="loading" disabled>Loading cities...</SelectItem>
+                                    ) : isErrorCities ? (
+                                        <SelectItem value="error-cities" disabled>Error loading cities</SelectItem>
+                                    ) : cities?.length === 0 && formData.state ? (
+                                        <SelectItem value="no-cities-found" disabled>No cities found for this state</SelectItem>
+                                    ) : (
+                                        cities?.map((city) => (
+                                            <SelectItem key={city.id} value={city.id}>
+                                                {city.name}
+                                            </SelectItem>
+                                        ))
+                                    )}
                                 </SelectContent>
                             </Select>
                         </div>
@@ -322,12 +364,12 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
                         <Label>Value Added Tax</Label>
                         <div className="flex items-center justify-between gap-2 border border-gray-500 p-2 rounded-md">
                             <Label className="text-sm text-gray-700">
-                                {formData.valueAddedTax === "Paying" ? "Paying" : "Not Paying"}
+                                {formData.vat === "Paying" ? "Paying" : "Not Paying"}
                             </Label>
                             <input
                                 type="checkbox"
-                                checked={formData.valueAddedTax === "Paying"}
-                                onChange={handleTaxChange}
+                                checked={formData.vat === "Paying"}
+                                onChange={handleVatChange}
                                 className="cursor-pointer accent-green-500"
                             />
                         </div>
@@ -336,22 +378,20 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
                     <div className="mt-12 flex justify-between gap-3">
                         <Button
                             variant="outline"
-                            onClick={() => {
-                                if (mode === "add") {
-                                    setInternalIsOpen(false);
-                                }
-                                cleanUpOverlay();
-                                if (onClose) {
-                                    onClose();
-                                }
-                            }}
+                            onClick={() => handleOpenChange(false)}
                             type="button"
+                            size={"lg"}
                             className="border-[#161CCA] text-[#161CCA] cursor-pointer"
                         >
                             Cancel
                         </Button>
-                        <Button type="submit" className="bg-[#161CCA] text-white cursor-pointer">
-                            {mode === "add" ? "Add Customer" : "Save Changes"}
+                        <Button
+                            type="submit"
+                            size={"lg"}
+                            className="bg-[#161CCA] text-white cursor-pointer"
+                            disabled={isPending}
+                        >
+                            {isPending ? "Saving..." : (mode === "add" ? "Add Customer" : "Save Changes")}
                         </Button>
                     </div>
                 </form>
