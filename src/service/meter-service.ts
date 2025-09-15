@@ -141,7 +141,7 @@ export async function fetchMeterInventory(
 > {
   try {
     // ✅ Handle the default value inside the function
-    const queryFilters = filters || {};
+    const queryFilters = filters ?? {};
     
     const token = localStorage.getItem("auth_token");
 
