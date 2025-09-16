@@ -138,6 +138,8 @@ export function TariffTable({
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editDialog.tariff?.id || !isFormValid) return;
+
+    console.log("Form submitted with data:", formData);
   };
   const handleActivateAndDeactivateTariff = async (
     tariff: Tariff,
