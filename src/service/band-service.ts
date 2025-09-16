@@ -148,11 +148,9 @@ export async function deactivateBand(
   try {
     const token = localStorage.getItem("auth_token");
 
-    const response = await axios.put<BandResponse>(
-      `${API_URL}/band/service/deactivate`,
-      {
-        bandId: bandId,
-      },
+    const response = await axios.patch<BandResponse>(
+      `${API_URL}/band/service/change-state?bandId=${bandId}&status=false`,
+      {},
       {
         headers: {
           "Content-Type": "application/json",
@@ -186,11 +184,9 @@ export async function activateBand(
   try {
     const token = localStorage.getItem("auth_token");
 
-    const response = await axios.put<BandResponse>(
-      `${API_URL}/band/service/activate`,
-      {
-        bandId: bandId,
-      },
+    const response = await axios.patch<BandResponse>(
+      `${API_URL}/band/service/change-state?bandId=${bandId}&status=true`,
+      {},
       {
         headers: {
           "Content-Type": "application/json",

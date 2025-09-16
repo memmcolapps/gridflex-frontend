@@ -5,13 +5,24 @@ import { handleApiError } from "error";
 export interface Tariff {
   id: number;
   name: string;
-  tariff_index: number;
+  org_id: string;
+  action: string;
   tariff_type: string;
   effective_date: string;
   tariff_rate: string;
-  band: string;
+  band_id: string;
+  band: {
+    id: string;
+    org_id: string;
+    name: string;
+    hour: number;
+    approve_status: string;
+    status: boolean;
+    created_at: string;
+    updated_at: string;
+  };
   status: boolean;
-  approve_status: "Pending" | "Approved" | "Rejected";
+  approve_status: string;
   created_at: string;
   updated_at: string;
 }
@@ -20,7 +31,7 @@ export interface TariffPayload {
   name: string;
   tariff_type: string;
   effective_date: string;
-  band: string;
+  band_id: string;
   tariff_rate: string;
 }
 
@@ -35,6 +46,9 @@ interface TariffListResponse {
   responsedesc: string;
   responsedata: {
     data: Array<Tariff>;
+    totalData: number;
+    page: number;
+    size: number;
   };
 }
 
