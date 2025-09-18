@@ -40,6 +40,7 @@ import { changeTariffStatus } from "@/service/tarriff-service";
 import { TariffDatePicker } from "../tarrif-datepicker";
 import { getStatusStyle } from "../status-style";
 import { useBand } from "@/hooks/use-band";
+import { DeactivateTariffDialog } from "./deactivate-tarrif-dialog";
 
 interface TariffTableProps {
   tariffs: Tariff[];
@@ -74,6 +75,16 @@ export function TariffTable({
     isOpen: false,
     tariff: null,
   });
+
+  const [statusDialog, setStatusDialog] = useState<{
+    isOpen: boolean;
+    tariff: Tariff | null;
+  }>({
+    isOpen: false,
+    tariff: null,
+  });
+
+  const [isStatusLoading, setIsStatusLoading] = useState(false);
 
   const [formData, setFormData] = useState<{
     name: string;
@@ -141,20 +152,35 @@ export function TariffTable({
 
     console.log("Form submitted with data:", formData);
   };
+  const handleToggleTariffStatus = (tariff: Tariff) => {
+    setStatusDialog({ isOpen: true, tariff });
+  };
+
   const handleActivateAndDeactivateTariff = async (
     tariff: Tariff,
     newStatus: boolean,
   ) => {
     try {
+      setIsStatusLoading(true);
       const success = await changeTariffStatus(tariff.id.toString(), newStatus);
       if (success) {
         toast.success("Tariff status updated successfully");
+        setStatusDialog({ isOpen: false, tariff: null });
       } else {
         toast.error("Failed to update tariff status");
       }
     } catch (error) {
       console.error("Error updating tariff status:", error);
       toast.error("Failed to update tariff status");
+    } finally {
+      setIsStatusLoading(false);
+    }
+  };
+
+  const confirmToggleTariffStatus = () => {
+    if (statusDialog.tariff) {
+      const newStatus = statusDialog.tariff.status === false;
+      handleActivateAndDeactivateTariff(statusDialog.tariff, newStatus);
     }
   };
 
@@ -249,10 +275,7 @@ export function TariffTable({
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         onSelect={() => {
-                          handleActivateAndDeactivateTariff(
-                            tariff,
-                            tariff.status === false ? true : false,
-                          );
+                          handleToggleTariffStatus(tariff);
                         }}
                       >
                         <div className="flex w-full items-center gap-2 p-2">
@@ -459,6 +482,17 @@ export function TariffTable({
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Status Toggle Dialog */}
+      <DeactivateTariffDialog
+        open={statusDialog.isOpen}
+        onOpenChange={(open: boolean) =>
+          setStatusDialog((prev) => ({ ...prev, isOpen: open }))
+        }
+        tariff={statusDialog.tariff}
+        onConfirm={confirmToggleTariffStatus}
+        isLoading={isStatusLoading}
+      />
     </div>
   );
 }
