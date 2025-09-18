@@ -17,10 +17,12 @@ export interface FetchParams {
   searchTerm?: string;
   sortBy?: string | null;
   sortDirection?: "asc" | "desc" | null;
+  approveStatus?: string; // Filter by approval status
 }
 
 export interface ApproveRejectPayload {
-  id: string;
+  id?: string;
+  liabilityCauseId?: string;
   approveStatus: "approve" | "reject";
   reason?: string;
 }
@@ -29,7 +31,7 @@ export interface ApproveRejectPayload {
 async function fetchApi<T>(
   url: string,
   params: Record<string, any> = {},
-  method: "GET" | "POST" = "GET",
+  method: "GET" | "POST" | "PUT" = "GET",
   data?: any,
 ): Promise<T> {
   try {
@@ -41,8 +43,8 @@ async function fetchApi<T>(
     const config = {
       method,
       url,
-      params: method === "GET" ? params : undefined,
-      data: method === "POST" ? data : undefined,
+      params,
+      data: method === "POST" || method === "PUT" ? data : undefined,
       headers: {
         "Content-Type": "application/json",
         custom: CUSTOM_HEADER,
@@ -53,7 +55,9 @@ async function fetchApi<T>(
     const response = await axios(config);
 
     if (response.data.responsecode !== "000") {
-      throw new Error(response.data.responsedesc ?? "An unknown error occurred.");
+      throw new Error(
+        response.data.responsedesc ?? "An unknown error occurred.",
+      );
     }
 
     return response.data;
@@ -69,12 +73,17 @@ export async function getAllPercentageRanges({
   searchTerm,
   sortBy,
   sortDirection,
+  approveStatus = "pending",
 }: FetchParams): Promise<GetPercentageResponse> {
   const params: Record<string, any> = {
     page: String(page),
     pageSize: String(pageSize),
-    type: "pending",
   };
+
+  if (approveStatus) {
+    params.approveStatus = approveStatus;
+  }
+
   if (searchTerm) params.search = searchTerm;
   if (sortBy) {
     params.sortBy = sortBy;
@@ -82,34 +91,16 @@ export async function getAllPercentageRanges({
   }
 
   const url = `${API_URL}/debt-setting/service/percentage-range/all`;
-  
-  // Debug logging
-  console.log("getAllPercentageRanges API Call:", {
-    url,
-    params,
-    API_URL,
-    CUSTOM_HEADER
-  });
 
-  try {
-    const response = await fetchApi<GetPercentageResponse>(url, params);
-    console.log("getAllPercentageRanges API Response:", {
-      responsecode: response.responsecode,
-      responsedesc: response.responsedesc,
-      dataLength: response.responsedata?.length || 0,
-      data: response.responsedata
-    });
-    return response;
-  } catch (error) {
-    console.error("getAllPercentageRanges API Error:", error);
-    throw error;
-  }
+  return await fetchApi<GetPercentageResponse>(url, params);
 }
 
-export async function getPercentageRange(id: string): Promise<GetPercentageResponse> {
+export async function getPercentageRange(
+  id: string,
+): Promise<GetPercentageResponse> {
   return fetchApi<GetPercentageResponse>(
     `${API_URL}/debt-setting/service/percentage-range/single`,
-    { percentageVersionId: id }
+    { percentageVersionId: id },
   );
 }
 
@@ -118,15 +109,13 @@ export async function reviewPercentageRange(
   approveStatus: "approve" | "reject",
   reason?: string,
 ): Promise<GetPercentageResponse> {
-  const payload: ApproveRejectPayload = { id, approveStatus };
-  if (reason) {
-    payload.reason = reason;
-  }
+  const params = { percentageId: id, approveStatus };
+  const data = reason ? { reason } : undefined;
   return fetchApi<GetPercentageResponse>(
     `${API_URL}/debt-setting/service/percentage-range/approve`,
-    {},
-    "POST",
-    payload
+    params,
+    "PUT",
+    data,
   );
 }
 
@@ -137,21 +126,32 @@ export async function getAllLiabilities({
   searchTerm,
   sortBy,
   sortDirection,
+  approveStatus,
 }: FetchParams): Promise<GetAllLiabilitiesResponse> {
   const params: Record<string, any> = {
     page: String(page),
     pageSize: String(pageSize),
   };
+  if (approveStatus) {
+    params.approveStatus = approveStatus;
+  }
   if (searchTerm) params.search = searchTerm;
   if (sortBy) {
     params.sortBy = sortBy;
     params.sortDirection = sortDirection ?? "asc";
   }
-  return fetchApi<GetAllLiabilitiesResponse>(`${API_URL}/liability/service/all`, params);
+  return fetchApi<GetAllLiabilitiesResponse>(
+    `${API_URL}/debt-setting/service/liability-cause/all`,
+    params,
+  );
 }
 
-export async function getLiability(id: string): Promise<GetAllLiabilitiesResponse> {
-  return fetchApi<GetAllLiabilitiesResponse>(`${API_URL}/liability/service/${id}`);
+export async function getLiability(
+  id: string,
+): Promise<GetAllLiabilitiesResponse> {
+  return fetchApi<GetAllLiabilitiesResponse>(
+    `${API_URL}/liability/service/${id}`,
+  );
 }
 
 export async function reviewLiability(
@@ -159,15 +159,13 @@ export async function reviewLiability(
   approveStatus: "approve" | "reject",
   reason?: string,
 ): Promise<GetAllLiabilitiesResponse> {
-  const payload: ApproveRejectPayload = { id, approveStatus };
-  if (reason) {
-    payload.reason = reason;
-  }
+  const params = { liabilityCauseId: id, approveStatus };
+  const data = reason ? { reason } : undefined;
   return fetchApi<GetAllLiabilitiesResponse>(
-    `${API_URL}/liability/service/approve-reject`,
-    {},
-    "POST",
-    payload
+    `${API_URL}/debt-setting/service/liability-cause/approve`,
+    params,
+    "PUT",
+    data,
   );
 }
 
@@ -208,7 +206,7 @@ export async function reviewBand(
     `${API_URL}/band/service/approve`,
     {},
     "POST",
-    payload
+    payload,
   );
 }
 
@@ -249,7 +247,7 @@ export async function reviewTariff(
     `${API_URL}/tariff/service/approve-reject`,
     {},
     "POST",
-    payload
+    payload,
   );
 }
 
@@ -290,6 +288,6 @@ export async function reviewMeter(
     `${API_URL}/meter/service/approve`,
     {},
     "POST",
-    payload
+    payload,
   );
 }

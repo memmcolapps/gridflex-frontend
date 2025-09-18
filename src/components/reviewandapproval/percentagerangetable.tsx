@@ -1,3 +1,4 @@
+"use client";
 // components/PercentageRangeTable.tsx
 import { useState } from 'react';
 import { Card } from '@/components/ui/card';
@@ -46,6 +47,7 @@ const PercentageRangeTable = () => {
     searchTerm: '',
     sortBy: null,
     sortDirection: null,
+    approveStatus: undefined,
   });
   const [selectedRow, setSelectedRow] = useState<PercentageRange | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -57,18 +59,32 @@ const PercentageRangeTable = () => {
 
   const { percentageRanges, isLoading, isError, error, reviewMutation } = usePercentageRanges(fetchParams);
 
-  const totalPages = Math.ceil(percentageRanges.length / fetchParams.pageSize);
+  // Filter out approved percentage ranges
+  const filteredPercentageRanges = percentageRanges.filter(item => item.approveStatus !== 'Approved');
+
+  const totalData = filteredPercentageRanges.length;
+  const totalPages = Math.ceil(totalData / fetchParams.pageSize);
 
   const handlePrevious = () => {
-    setFetchParams({ ...fetchParams, page: Math.max(fetchParams.page - 1, 1) });
+    setFetchParams((prevParams) => ({ 
+      ...prevParams, 
+      page: Math.max(prevParams.page - 1, 1) 
+    }));
   };
 
   const handleNext = () => {
-    setFetchParams({ ...fetchParams, page: Math.min(fetchParams.page + 1, totalPages) });
+    setFetchParams((prevParams) => ({
+      ...prevParams,
+      page: Math.min(prevParams.page + 1, totalPages),
+    }));
   };
 
   const handleRowsPerPageChange = (value: string) => {
-    setFetchParams({ ...fetchParams, pageSize: Number(value), page: 1 });
+    setFetchParams((prevParams) => ({
+      ...prevParams,
+      pageSize: Number(value),
+      page: 1,
+    }));
   };
 
   const toggleSelection = (id: string) => {
@@ -99,12 +115,13 @@ const PercentageRangeTable = () => {
     setDropdownOpenId(null);
   };
 
-  const handleConfirmAction = async () => {
+  const handleConfirmAction = async (reason?: string) => {
     if (selectedItem && confirmAction) {
       try {
         await reviewMutation.mutateAsync({
           id: selectedItem.id,
           approveStatus: confirmAction,
+          reason,
         });
         toast.success(`Percentage range ${confirmAction}d successfully!`, {
           description: `Percentage: ${selectedItem.percentage}, Code: ${selectedItem.code}`,
@@ -120,13 +137,16 @@ const PercentageRangeTable = () => {
     setSelectedItem(null);
   };
 
-  const paginatedData = percentageRanges.slice(
-    (fetchParams.page - 1) * fetchParams.pageSize,
-    fetchParams.page * fetchParams.pageSize
-  );
-
   if (isLoading) return <div>Loading...</div>;
-  if (isError) return <div>Error: {error?.message}</div>;
+  if (isError) {
+    toast.error('Failed to fetch percentage ranges.', {
+      description: error instanceof Error ? error.message : 'An unknown error occurred',
+    });
+    return <div>Error: {error?.message}</div>;
+  }
+
+  // Use the filtered data
+  const dataToDisplay = filteredPercentageRanges;
 
   return (
     <Card className="border-none shadow-none bg-transparent overflow-x-auto min-h-[calc(100vh-300px)]">
@@ -137,10 +157,10 @@ const PercentageRangeTable = () => {
               <div className="flex items-center gap-2">
                 <Checkbox
                   className="h-4 w-4 border-gray-500"
-                  checked={selectedTariffs.length === percentageRanges.length && percentageRanges.length > 0}
+                  checked={selectedTariffs.length === dataToDisplay.length && dataToDisplay.length > 0}
                   onCheckedChange={(checked) => {
                     if (checked) {
-                      setSelectedTariffs(percentageRanges.map((item) => item.id));
+                      setSelectedTariffs(filteredPercentageRanges.map((item) => item.id));
                     } else {
                       setSelectedTariffs([]);
                     }
@@ -159,14 +179,14 @@ const PercentageRangeTable = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {paginatedData.length === 0 ? (
+          {dataToDisplay.length === 0 ? (
             <TableRow>
               <TableCell colSpan={8} className="h-24 text-center text-sm text-gray-500">
                 No data available
               </TableCell>
             </TableRow>
           ) : (
-            paginatedData.map((item, index) => (
+            dataToDisplay.map((item, index) => (
               <TableRow key={item.id} className="hover:bg-gray-50 cursor-pointer">
                 <TableCell className="px-4 py-3">
                   <div className="flex items-center gap-2">
@@ -190,7 +210,7 @@ const PercentageRangeTable = () => {
                 <TableCell className="px-4 py-3 text-sm text-[#161CCA]">{item.description}</TableCell>
                 <TableCell className="px-4 py-3 text-center">
                   <span className="inline-block px-3 py-1 text-sm font-medium text-[#C86900] bg-[#FFF5EA] p-1 rounded-full">
-                    {item.approveStatus}
+                    Pending
                   </span>
                 </TableCell>
                 <TableCell className="px-4 py-3 text-right">
@@ -255,8 +275,7 @@ const PercentageRangeTable = () => {
           </Select>
           <span className="text-sm font-medium">
             {(fetchParams.page - 1) * fetchParams.pageSize + 1}-
-            {Math.min(fetchParams.page * fetchParams.pageSize, percentageRanges.length)} of{' '}
-            {percentageRanges.length}
+            {Math.min(fetchParams.page * fetchParams.pageSize, totalData)} of {totalData}
           </span>
         </div>
         <PaginationContent>

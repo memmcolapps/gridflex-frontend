@@ -25,7 +25,7 @@ const ViewDetailsDialog: React.FC<ViewDetailsDialogProps> = ({
 }) => {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="w-fit lg:max-w-[1200px] bg-white text-black p-4 sm:p-6 rounded-lg shadow-lg overflow-hidden h-fit">
+      <DialogContent className="w-fit lg:max-w-[1000px] bg-white text-black p-4 sm:p-6 rounded-lg shadow-lg overflow-hidden h-fit">
         <div className="w-full">
           <DialogHeader>
             <DialogTitle className="text-left text-base sm:text-lg font-semibold text-gray-900 truncate">
@@ -36,7 +36,7 @@ const ViewDetailsDialog: React.FC<ViewDetailsDialogProps> = ({
             </span>
           </DialogHeader>
 
-          <div className="flex flex-col gap-3 py-4 sm:py-6 p-4">
+          <div className="flex flex-col gap-3 py-4 sm:py-6">
             {[
               { label: 'Percentage:', value: selectedRow?.percentage },
               { label: 'Code:', value: selectedRow?.code },
@@ -51,11 +51,11 @@ const ViewDetailsDialog: React.FC<ViewDetailsDialogProps> = ({
               { label: 'Created At:', value: new Date(selectedRow?.createdAt ?? '').toLocaleString() },
               { label: 'Updated At:', value: new Date(selectedRow?.updatedAt ?? '').toLocaleString() },
             ].map(({ label, value }) => (
-              <div key={label} className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                <div className="w-[120px] text-sm sm:text-base font-medium text-gray-700 whitespace-nowrap">
+              <div key={label} className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full">
+                <div className="w-full sm:w-[120px] text-sm sm:text-base font-medium text-gray-700 whitespace-nowrap">
                   {label}
                 </div>
-                <div className="w-full text-sm sm:text-base font-bold text-gray-900 truncate">
+                <div className="w-full sm:w-[150px] text-sm sm:text-base font-bold text-gray-900 whitespace-nowrap ml-10">
                   {value ?? 'N/A'}
                 </div>
               </div>

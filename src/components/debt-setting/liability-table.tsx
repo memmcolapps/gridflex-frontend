@@ -34,6 +34,7 @@ import { ArrowUpDown, Ban, CircleCheck, CircleX, EllipsisVertical, Pencil, Searc
 import React, { useState, useEffect, useMemo } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { getStatusStyle } from "../status-style";
+import { useLiabilities } from "@/hooks/use-ReviewApproval";
 
 type Liability = {
     sNo: number;
@@ -95,6 +96,8 @@ const LiabilityTable = ({ view, onViewChange, onDataChange, onAddPercentageRange
             : defaultPercentageData.map(item => ({ ...item, deactivated: item.deactivated ?? false }));
     });
 
+    const { reviewMutation: liabilityReviewMutation } = useLiabilities({ page: 1, pageSize: 10, approveStatus: 'pending' });
+
     const areDataArraysEqual = (arr1: TableData[], arr2: TableData[]): boolean => {
         if (arr1.length !== arr2.length) return false;
         return arr1.every((item1, index) => {
@@ -151,18 +154,47 @@ const LiabilityTable = ({ view, onViewChange, onDataChange, onAddPercentageRange
         setIsDeactivateDialogOpen(true);
     };
 
-    const handleApproveClick = (row: TableData) => {
-        const updatedData = tableData.map((item) =>
-            item.sNo === row.sNo ? { ...item, approvalStatus: "Approved" as const, deactivated: false } : item
-        );
-        setTableData(updatedData);
+    const handleApproveClick = async (row: TableData) => {
+        if (view === "liability") {
+            try {
+                await liabilityReviewMutation.mutateAsync({
+                    id: row.sNo.toString(),
+                    approveStatus: 'approve',
+                });
+                // Remove the approved item from the table
+                const updatedData = tableData.filter((item) => item.sNo !== row.sNo);
+                setTableData(updatedData);
+            } catch (error) {
+                console.error('Failed to approve liability', error);
+            }
+        } else {
+            const updatedData = tableData.map((item) =>
+                item.sNo === row.sNo ? { ...item, approvalStatus: "Approved" as const, deactivated: false } : item
+            );
+            setTableData(updatedData);
+        }
     };
 
-    const handleRejectClick = (row: TableData) => {
-        const updatedData = tableData.map((item) =>
-            item.sNo === row.sNo ? { ...item, approvalStatus: "Rejected" as const } : item
-        );
-        setTableData(updatedData);
+    const handleRejectClick = async (row: TableData) => {
+        if (view === "liability") {
+            try {
+                await liabilityReviewMutation.mutateAsync({
+                    id: row.sNo.toString(),
+                    approveStatus: 'reject',
+                });
+                const updatedData = tableData.map((item) =>
+                    item.sNo === row.sNo ? { ...item, approvalStatus: "Rejected" as const } : item
+                );
+                setTableData(updatedData);
+            } catch (error) {
+                console.error('Failed to reject liability', error);
+            }
+        } else {
+            const updatedData = tableData.map((item) =>
+                item.sNo === row.sNo ? { ...item, approvalStatus: "Rejected" as const } : item
+            );
+            setTableData(updatedData);
+        }
     };
 
     const handleEditFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {

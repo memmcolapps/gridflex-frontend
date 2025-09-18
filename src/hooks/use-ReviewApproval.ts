@@ -58,8 +58,20 @@ export const usePercentageRanges = (params: FetchParams): UsePercentageRangesRes
 
   const reviewMutation = useMutation({
     mutationFn: (payload: ReviewPayload) => reviewPercentageRange(payload.id, payload.approveStatus, payload.reason),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["percentageRanges"] });
+    onSuccess: (data, variables) => {
+      if (variables.approveStatus === 'approve') {
+        queryClient.setQueryData(["percentageRanges", params], (oldData: GetPercentageResponse | undefined) => {
+          if (oldData) {
+            return {
+              ...oldData,
+              responsedata: oldData.responsedata.filter(item => item.id !== variables.id)
+            };
+          }
+          return oldData;
+        });
+      } else {
+        queryClient.invalidateQueries({ queryKey: ["percentageRanges"] });
+      }
     },
   });
 
@@ -91,8 +103,20 @@ export const useLiabilities = (params: FetchParams): UseLiabilitiesResult => {
 
   const reviewMutation = useMutation({
     mutationFn: (payload: ReviewPayload) => reviewLiability(payload.id, payload.approveStatus, payload.reason),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["liabilities"] });
+    onSuccess: (data, variables) => {
+      if (variables.approveStatus === 'approve') {
+        queryClient.setQueryData(["liabilities", params], (oldData: GetAllLiabilitiesResponse | undefined) => {
+          if (oldData) {
+            return {
+              ...oldData,
+              responsedata: oldData.responsedata.filter(item => item.id !== variables.id)
+            };
+          }
+          return oldData;
+        });
+      } else {
+        queryClient.invalidateQueries({ queryKey: ["liabilities"] });
+      }
     },
   });
 
