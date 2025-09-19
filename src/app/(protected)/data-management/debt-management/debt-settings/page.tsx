@@ -33,15 +33,6 @@ export default function DebtSettingsPage() {
     // Optional: Store data for display or other purposes
   };
 
-  // Handle adding a percentage range (passed to LiabilityTable)
-  const handleAddPercentageRange = (_range: {
-    percentage: string;
-    amountStartRange: string;
-    amountEndRange: string;
-  }) => {
-    // LiabilityTable will handle the addition internally
-  };
-
   // Handle adding a liability (placeholder; implement in LiabilityTable if needed)
   const handleAddLiability = (newLiability: {
     liabilityName: string;
@@ -63,9 +54,7 @@ export default function DebtSettingsPage() {
             {view === "liability" ? (
               <AddLiabilityDialog onAddLiability={handleAddLiability} />
             ) : (
-              <AddPercentageRangeDialog
-                onAddPercentageRange={handleAddPercentageRange}
-              />
+              <AddPercentageRangeDialog />
             )}
           </div>
         </div>
@@ -74,7 +63,7 @@ export default function DebtSettingsPage() {
             view={view}
             onViewChange={setView}
             onDataChange={handleDataChange}
-            onAddPercentageRange={handleAddPercentageRange}
+            // onAddPercentageRange is no longer a prop
           />
         </section>
       </div>

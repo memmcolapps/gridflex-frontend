@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import type { ColumnDef } from "@tanstack/react-table";
 import {
     flexRender,
@@ -30,139 +31,65 @@ import {
     DialogDescription,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { ArrowUpDown, Ban, CircleCheck, CircleX, EllipsisVertical, Pencil, Search, AlertTriangle } from "lucide-react";
-import React, { useState, useEffect, useMemo } from "react";
+import { ArrowUpDown, Ban, CircleCheck, CircleX, EllipsisVertical, Pencil, Search, AlertTriangle, Loader2 } from "lucide-react";
+import React, { useState, useMemo } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { getStatusStyle } from "../status-style";
+import {
+    useAllLiabilityCauses,
+    useUpdateLiabilityCause,
+    useAllPercentageRanges,
+    useUpdatePercentageRange,
+} from "@/hooks/use-debit-settings";
+import { type LiabilityCause, type PercentageRange, type UpdatedLiabilityCausePayload, type UpdatedPercentageRangePayload, type Band } from "@/types/credit-debit";
+import { useBand } from "@/hooks/use-band";
 
-type Liability = {
-    sNo: number;
-    liabilityName: string;
-    liabilityCode: string;
-    approvalStatus: "Pending" | "Rejected" | "Approved";
-    deactivated?: boolean;
-};
+// This is correct as is, it's a good way to handle the type extension.
+type FixedLiabilityCause = LiabilityCause & { approveStatus: "Pending" | "Rejected" | "Approved" };
 
-type PercentageRange = {
-    sNo: number;
-    percentage: string;
-    percentageCode: string;
-    band: string;
-    amountStartRange: string;
-    amountEndRange: string;
-    approvalStatus: "Pending" | "Rejected" | "Approved";
-    deactivated?: boolean;
-};
-
-type TableData = (Liability | PercentageRange) & { deactivated?: boolean };
+// This union type is also correct.
+type TableData = (FixedLiabilityCause & { deactivated?: boolean }) | (PercentageRange & { deactivated?: boolean });
 
 type LiabilityTableProps = {
     view: "liability" | "percentage";
     onViewChange: (view: "liability" | "percentage") => void;
-    onDataChange?: (data: TableData[]) => void;
-    onAddPercentageRange?: (range: { percentage: string; percentageCode: string; band: string; amountStartRange: string; amountEndRange: string }) => void;
 };
 
-const defaultLiabilityData: Liability[] = [
-    { sNo: 1, liabilityName: "Loan Default", liabilityCode: "LD001", approvalStatus: "Pending", deactivated: false },
-    { sNo: 2, liabilityName: "Overdraft", liabilityCode: "OD002", approvalStatus: "Approved", deactivated: false },
-    { sNo: 3, liabilityName: "Credit Card Debt", liabilityCode: "CC003", approvalStatus: "Rejected", deactivated: false },
-    { sNo: 4, liabilityName: "Mortgage", liabilityCode: "MG004", approvalStatus: "Approved", deactivated: false },
-];
-
-const defaultPercentageData: PercentageRange[] = [
-    { sNo: 1, percentage: "2%", percentageCode: "C90bqt", band: "Band A", amountStartRange: "0", amountEndRange: "9,999", approvalStatus: "Pending", deactivated: true },
-    { sNo: 2, percentage: "5%", percentageCode: "C90bqt", band: "Band A", amountStartRange: "10,000", amountEndRange: "99,999", approvalStatus: "Approved", deactivated: false },
-    { sNo: 3, percentage: "10%", percentageCode: "C90bqt", band: "Band A", amountStartRange: "100,000", amountEndRange: "999,999", approvalStatus: "Approved", deactivated: false },
-    { sNo: 4, percentage: "15%", percentageCode: "C90bqt", band: "Band A", amountStartRange: "1,000,000", amountEndRange: "9,999,999", approvalStatus: "Approved", deactivated: false },
-    { sNo: 5, percentage: "20%", percentageCode: "C90bqt", band: "Band A", amountStartRange: "10,000,000", amountEndRange: "99,999,999", approvalStatus: "Approved", deactivated: false },
-    { sNo: 6, percentage: "2%", percentageCode: "C90bqt", band: "Band B", amountStartRange: "0", amountEndRange: "4,999", approvalStatus: "Approved", deactivated: false },
-    { sNo: 7, percentage: "5%", percentageCode: "C90bqt", band: "Band B", amountStartRange: "5,000", amountEndRange: "9,999", approvalStatus: "Rejected", deactivated: true },
-    { sNo: 8, percentage: "10%", percentageCode: "C90bqt", band: "Band B", amountStartRange: "10,000", amountEndRange: "14,999", approvalStatus: "Approved", deactivated: false },
-    { sNo: 9, percentage: "15%", percentageCode: "C90bqt", band: "Band B", amountStartRange: "15,000", amountEndRange: "19,999", approvalStatus: "Approved", deactivated: false },
-    { sNo: 10, percentage: "20%", percentageCode: "C90bqt", band: "Band B", amountStartRange: "20,000", amountEndRange: "24,999", approvalStatus: "Approved", deactivated: false },
-];
-
-const LiabilityTable = ({ view, onViewChange, onDataChange, onAddPercentageRange: _onAddPercentageRange }: LiabilityTableProps) => {
+const LiabilityTable = ({ view, onViewChange }: LiabilityTableProps) => {
     const [searchTerm, setSearchTerm] = useState("");
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [isDeactivateDialogOpen, setIsDeactivateDialogOpen] = useState(false);
     const [selectedRow, setSelectedRow] = useState<TableData | null>(null);
     const [editFormData, setEditFormData] = useState<Partial<TableData>>({});
-    const [tableData, setTableData] = useState<TableData[]>(() => {
-        return view === "liability"
-            ? defaultLiabilityData.map(item => ({ ...item, deactivated: item.deactivated ?? false }))
-            : defaultPercentageData.map(item => ({ ...item, deactivated: item.deactivated ?? false }));
-    });
 
-    const areDataArraysEqual = (arr1: TableData[], arr2: TableData[]): boolean => {
-        if (arr1.length !== arr2.length) return false;
-        return arr1.every((item1, index) => {
-            const item2 = arr2[index];
-            if (!item2) return false;
-            return (
-                item1.sNo === item2.sNo &&
-                ("liabilityName" in item1 ? item1.liabilityName === (item2 as Liability).liabilityName : true) &&
-                ("liabilityCode" in item1 ? item1.liabilityCode === (item2 as Liability).liabilityCode : true) &&
-                ("percentage" in item1 ? item1.percentage === (item2 as PercentageRange).percentage : true) &&
-                ("percentageCode" in item1 ? item1.percentageCode === (item2 as PercentageRange).percentageCode : true) &&
-                ("band" in item1 ? item1.band === (item2 as PercentageRange).band : true) &&
-                ("amountStartRange" in item1 ? item1.amountStartRange === (item2 as PercentageRange).amountStartRange : true) &&
-                ("amountEndRange" in item1 ? item1.amountEndRange === (item2 as PercentageRange).amountEndRange : true) &&
-                item1.approvalStatus === item2.approvalStatus &&
-                (item1.deactivated ?? false) === (item2.deactivated ?? false)
-            );
-        });
-    };
+    const { data: liabilityData, isLoading: isLoadingLiabilities, refetch: refetchLiabilities } = useAllLiabilityCauses();
+    const { data: percentageData, isLoading: isLoadingPercentages, refetch: refetchPercentages } = useAllPercentageRanges();
+    const { mutate: updateLiability } = useUpdateLiabilityCause();
+    const { mutate: updatePercentage } = useUpdatePercentageRange();
+    const { bands } = useBand();
 
-    useEffect(() => {
-        const newData = view === "liability"
-            ? defaultLiabilityData.map(item => ({ ...item, deactivated: item.deactivated ?? false }))
-            : defaultPercentageData.map(item => ({ ...item, deactivated: item.deactivated ?? false }));
-        if (!areDataArraysEqual(tableData, newData)) {
-            setTableData(newData);
+    const tableData = useMemo(() => {
+        if (view === "liability" && liabilityData) {
+            // Your original code here is fine; the casting is necessary.
+            return liabilityData.map(item => ({ ...(item as FixedLiabilityCause), deactivated: item.deactivated ?? false }));
         }
-    }, [view, tableData]);
-
-    useEffect(() => {
-        if (onDataChange) {
-            onDataChange(tableData);
+        if (view === "percentage" && percentageData) {
+            return percentageData.map(item => ({ ...item, deactivated: item.deactivated ?? false }));
         }
-    }, [tableData, onDataChange]);
+        return [];
+    }, [view, liabilityData, percentageData]);
+
+    const isLoading = isLoadingLiabilities || isLoadingPercentages;
 
     const handleEditClick = (row: TableData) => {
         setSelectedRow(row);
-        setEditFormData({
-            sNo: row.sNo,
-            liabilityName: "liabilityName" in row ? row.liabilityName : undefined,
-            liabilityCode: "liabilityCode" in row ? row.liabilityCode : undefined,
-            percentage: "percentage" in row ? row.percentage : undefined,
-            percentageCode: "percentageCode" in row ? row.percentageCode : undefined,
-            band: "band" in row ? row.band : undefined,
-            amountStartRange: "amountStartRange" in row ? row.amountStartRange : undefined,
-            amountEndRange: "amountEndRange" in row ? row.amountEndRange : undefined,
-            approvalStatus: row.approvalStatus,
-        });
+        setEditFormData({ ...row });
         setIsEditDialogOpen(true);
     };
 
     const handleDeactivateClick = (row: TableData) => {
         setSelectedRow(row);
         setIsDeactivateDialogOpen(true);
-    };
-
-    const handleApproveClick = (row: TableData) => {
-        const updatedData = tableData.map((item) =>
-            item.sNo === row.sNo ? { ...item, approvalStatus: "Approved" as const, deactivated: false } : item
-        );
-        setTableData(updatedData);
-    };
-
-    const handleRejectClick = (row: TableData) => {
-        const updatedData = tableData.map((item) =>
-            item.sNo === row.sNo ? { ...item, approvalStatus: "Rejected" as const } : item
-        );
-        setTableData(updatedData);
     };
 
     const handleEditFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -176,57 +103,70 @@ const LiabilityTable = ({ view, onViewChange, onDataChange, onAddPercentageRange
     const handleEditSubmit = () => {
         if (!selectedRow) return;
 
-        const updatedData = tableData.map((item) => {
-            if (item.sNo === selectedRow.sNo) {
-                if (view === "liability") {
-                    return {
-                        ...item,
-                        liabilityName: ("liabilityName" in editFormData && editFormData.liabilityName !== undefined)
-                            ? editFormData.liabilityName
-                            : (item as Liability).liabilityName,
-                        liabilityCode: ("liabilityCode" in editFormData && editFormData.liabilityCode !== undefined)
-                            ? editFormData.liabilityCode
-                            : (item as Liability).liabilityCode,
-                    };
-                } else {
-                    return {
-                        ...item,
-                        percentage: ("percentage" in editFormData && editFormData.percentage !== undefined)
-                            ? editFormData.percentage
-                            : (item as PercentageRange).percentage,
-                        percentageCode: ("percentageCode" in editFormData && editFormData.percentageCode !== undefined)
-                            ? editFormData.percentageCode
-                            : (item as PercentageRange).percentageCode,
-                        band: ("band" in editFormData && editFormData.band !== undefined)
-                            ? editFormData.band
-                            : (item as PercentageRange).band,
-                        amountStartRange: ("amountStartRange" in editFormData && editFormData.amountStartRange !== undefined)
-                            ? editFormData.amountStartRange
-                            : (item as PercentageRange).amountStartRange,
-                        amountEndRange: ("amountEndRange" in editFormData && editFormData.amountEndRange !== undefined)
-                            ? editFormData.amountEndRange
-                            : (item as PercentageRange).amountEndRange,
-                    };
+        if (view === "liability") {
+            const liabilityCauseId = (selectedRow as FixedLiabilityCause).id;
+            const payload: UpdatedLiabilityCausePayload = {
+                liabilityCauseId,
+                name: (editFormData as FixedLiabilityCause).name,
+                code: (editFormData as FixedLiabilityCause).code,
+            };
+            updateLiability(payload, {
+                onSuccess: () => {
+                    setIsEditDialogOpen(false);
+                    setSelectedRow(null);
+                    setEditFormData({});
+                    refetchLiabilities();
                 }
-            }
-            return item;
-        });
-
-        setTableData(updatedData);
-        setIsEditDialogOpen(false);
-        setSelectedRow(null);
-        setEditFormData({});
+            });
+        } else {
+            const percentageId = (selectedRow as PercentageRange).id;
+            const payload: UpdatedPercentageRangePayload = {
+                percentageId,
+                percentage: ("percentage" in editFormData && editFormData.percentage) ? editFormData.percentage : undefined,
+                code: ("code" in editFormData && editFormData.code) ? editFormData.code : undefined,
+                bandId: ("band" in editFormData && editFormData.band) ? editFormData.band.id : undefined,
+                amountStartRange:
+                    'amountStartRange' in editFormData && editFormData.amountStartRange
+                        ? (editFormData.amountStartRange as string)
+                        : undefined,
+                amountEndRange:
+                    'amountEndRange' in editFormData && editFormData.amountEndRange
+                        ? (editFormData.amountEndRange as string)
+                        : undefined,
+            };
+            updatePercentage(payload, {
+                onSuccess: () => {
+                    setIsEditDialogOpen(false);
+                    setSelectedRow(null);
+                    setEditFormData({});
+                    refetchPercentages();
+                }
+            });
+        }
     };
 
     const handleDeactivateSubmit = () => {
         if (!selectedRow) return;
 
-        const updatedData = tableData.map((item) =>
-            item.sNo === selectedRow.sNo ? { ...item, deactivated: true } : item
-        );
-        setTableData(updatedData);
-        setIsDeactivateDialogOpen(false);
-        setSelectedRow(null);
+        if (view === "liability") {
+            const liability = selectedRow as FixedLiabilityCause;
+            updateLiability({ liabilityCauseId: liability.id, deactivated: true }, {
+                onSuccess: () => {
+                    setIsDeactivateDialogOpen(false);
+                    setSelectedRow(null);
+                    refetchLiabilities();
+                }
+            });
+        } else {
+            const percentage = selectedRow as PercentageRange;
+            updatePercentage({ percentageId: percentage.id, deactivated: true }, {
+                onSuccess: () => {
+                    setIsDeactivateDialogOpen(false);
+                    setSelectedRow(null);
+                    refetchPercentages();
+                }
+            });
+        }
     };
 
     const getColumns = (): ColumnDef<TableData>[] => {
@@ -243,17 +183,20 @@ const LiabilityTable = ({ view, onViewChange, onDataChange, onAddPercentageRange
                     cell: ({ row }) => (
                         <div className="flex items-center">
                             <input type="checkbox" className="mr-2" disabled={row.original.deactivated} />
-                            {row.getValue("sNo")}
+                            {(row.index + 1)}
                         </div>
                     ),
                 },
-                { accessorKey: "liabilityName", header: "Liability Name" },
-                { accessorKey: "liabilityCode", header: "Liability Code" },
+                { accessorKey: "name", header: "Liability Name" },
+                { accessorKey: "code", header: "Liability Code" },
                 {
-                    accessorKey: "approvalStatus",
-                    header: "Approval Status",
+                    // Correcting the header text as requested.
+                    accessorKey: "approveStatus",
+                    header: "Liability Cause Stage",
                     cell: ({ row }) => {
-                        const status = row.getValue("approvalStatus") as string;
+                        // Access the correct property from the row object.
+                        const status = (row.original as FixedLiabilityCause).approveStatus;
+                        // Your `getStatusStyle` function will handle the dynamic styling.
                         return <span className={getStatusStyle(status)}>{status}</span>;
                     },
                 },
@@ -279,24 +222,6 @@ const LiabilityTable = ({ view, onViewChange, onDataChange, onAddPercentageRange
                                 >
                                     <Pencil size={14} className="text-gray-700" /> Edit Liability
                                 </DropdownMenuItem>
-                                {row.original.approvalStatus === "Pending" && (
-                                    <DropdownMenuItem
-                                        className="cursor-pointer gap-2"
-                                        onClick={() => handleApproveClick(row.original)}
-                                        disabled={row.original.deactivated}
-                                    >
-                                        <CircleCheck size={14} className="text-gray-700" /> Approve
-                                    </DropdownMenuItem>
-                                )}
-                                {row.original.approvalStatus === "Pending" && (
-                                    <DropdownMenuItem
-                                        className="cursor-pointer gap-2"
-                                        onClick={() => handleRejectClick(row.original)}
-                                        disabled={row.original.deactivated}
-                                    >
-                                        <CircleX size={14} className="text-gray-700" /> Reject
-                                    </DropdownMenuItem>
-                                )}
                                 <DropdownMenuItem
                                     className="cursor-pointer gap-2"
                                     onClick={() => handleDeactivateClick(row.original)}
@@ -322,33 +247,21 @@ const LiabilityTable = ({ view, onViewChange, onDataChange, onAddPercentageRange
                     cell: ({ row }) => (
                         <div className="flex items-center">
                             <input type="checkbox" className="mr-2" disabled={row.original.deactivated} />
-                            {row.getValue("sNo")}
+                            {(row.index + 1)}
                         </div>
                     ),
                 },
                 { accessorKey: "percentage", header: "Percentage" },
-                { accessorKey: "percentageCode", header: "Percentage Code" },
-                { accessorKey: "band", header: "Band" },
+                { accessorKey: "code", header: "Percentage Code" },
+                { accessorKey: "band.name", header: "Band" },
                 { accessorKey: "amountStartRange", header: "Amount Start Range" },
                 { accessorKey: "amountEndRange", header: "Amount End Range" },
                 {
-                    accessorKey: "approvalStatus",
+                    accessorKey: "approveStatus",
                     header: "Approval Status",
                     cell: ({ row }) => {
-                        const status = row.getValue("approvalStatus") as string;
+                        const status = (row.original as PercentageRange).approveStatus;
                         return <span className={getStatusStyle(status)}>{status}</span>;
-                    },
-                },
-                {
-                    id: "status",
-                    header: "Status",
-                    cell: ({ row }) => {
-                        const isActive = !row.original.deactivated;
-                        return (
-                            <span className={getStatusStyle(isActive ? "Active" : "Inactive")}>
-                                {isActive ? "Active" : "Inactive"}
-                            </span>
-                        );
                     },
                 },
                 {
@@ -373,24 +286,6 @@ const LiabilityTable = ({ view, onViewChange, onDataChange, onAddPercentageRange
                                 >
                                     <Pencil size={14} className="text-gray-700" /> Edit Range
                                 </DropdownMenuItem>
-                                {row.original.approvalStatus === "Pending" && (
-                                    <DropdownMenuItem
-                                        className="cursor-pointer gap-2"
-                                        onClick={() => handleApproveClick(row.original)}
-                                        disabled={row.original.deactivated}
-                                    >
-                                        <CircleCheck size={14} className="text-gray-700" /> Approve
-                                    </DropdownMenuItem>
-                                )}
-                                {row.original.approvalStatus === "Pending" && (
-                                    <DropdownMenuItem
-                                        className="cursor-pointer gap-2"
-                                        onClick={() => handleRejectClick(row.original)}
-                                        disabled={row.original.deactivated}
-                                    >
-                                        <CircleX size={14} className="text-gray-700" /> Reject
-                                    </DropdownMenuItem>
-                                )}
                                 <DropdownMenuItem
                                     className="cursor-pointer gap-2"
                                     onClick={() => handleDeactivateClick(row.original)}
@@ -411,17 +306,24 @@ const LiabilityTable = ({ view, onViewChange, onDataChange, onAddPercentageRange
             if (!searchTerm) return true;
             const lowerSearch = searchTerm.toLowerCase();
             if (view === "liability") {
+                const liabilityItem = item as FixedLiabilityCause;
                 return (
-                    ("liabilityName" in item && item.liabilityName.toLowerCase().includes(lowerSearch)) ||
-                    ("liabilityCode" in item && item.liabilityCode.toLowerCase().includes(lowerSearch))
+                    liabilityItem.name?.toLowerCase().includes(lowerSearch) ||
+                    liabilityItem.code?.toLowerCase().includes(lowerSearch) ||
+                    // Ensure approvalStatus is also searchable
+                    liabilityItem.approveStatus?.toLowerCase().includes(lowerSearch)
                 );
             } else {
+                const percentageItem = item as PercentageRange;
                 return (
-                    ("percentage" in item && item.percentage.toLowerCase().includes(lowerSearch)) ||
-                    ("percentageCode" in item && item.percentageCode.toLowerCase().includes(lowerSearch)) ||
-                    ("band" in item && item.band.toLowerCase().includes(lowerSearch)) ||
-                    ("amountStartRange" in item && item.amountStartRange.toLowerCase().includes(lowerSearch)) ||
-                    ("amountEndRange" in item && item.amountEndRange.toLowerCase().includes(lowerSearch))
+                    percentageItem.percentage?.toString().toLowerCase().includes(lowerSearch) ||
+                    percentageItem.code?.toLowerCase().includes(lowerSearch) ||
+                    percentageItem.band?.name?.toLowerCase().includes(lowerSearch) ||
+                    // Using optional chaining to prevent error if range properties are null
+                    String(percentageItem.amountStartRange)?.toLowerCase().includes(lowerSearch) ||
+                    String(percentageItem.amountEndRange)?.toLowerCase().includes(lowerSearch) ||
+                    // Ensure approvalStatus is also searchable
+                    percentageItem.approveStatus?.toLowerCase().includes(lowerSearch)
                 );
             }
         });
@@ -463,7 +365,7 @@ const LiabilityTable = ({ view, onViewChange, onDataChange, onAddPercentageRange
                         />
                         <Input
                             type="text"
-                            placeholder="Search by Name, Id, cont..."
+                            placeholder="Search by Name, Code, Status..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="pl-10 w-fit border-gray-300 focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50 text-sm lg:text-base"
@@ -506,7 +408,7 @@ const LiabilityTable = ({ view, onViewChange, onDataChange, onAddPercentageRange
                                 <TableRow
                                     key={row.id}
                                     data-state={row.getIsSelected() && "selected"}
-                                    className={view === "liability" && row.original.deactivated ? "bg-gray-200 opacity-50" : ""}
+                                    className={row.original.deactivated ? "bg-gray-200 opacity-50" : ""}
                                 >
                                     {row.getVisibleCells().map((cell) => (
                                         <TableCell key={cell.id}>
@@ -515,6 +417,13 @@ const LiabilityTable = ({ view, onViewChange, onDataChange, onAddPercentageRange
                                     ))}
                                 </TableRow>
                             ))
+                        ) : isLoading ? (
+                            <TableRow>
+                                <TableCell colSpan={columns.length} className="h-24 text-center">
+                                <Loader2 className="mx-auto animate-spin" />
+                                    Loading
+                                </TableCell>
+                            </TableRow>
                         ) : (
                             <TableRow>
                                 <TableCell colSpan={columns.length} className="h-24 text-center">
@@ -538,9 +447,9 @@ const LiabilityTable = ({ view, onViewChange, onDataChange, onAddPercentageRange
                                     <Label htmlFor="liabilityName">Liability Name</Label>
                                     <Input
                                         id="liabilityName"
-                                        name="liabilityName"
+                                        name="name"
                                         placeholder="Enter liability name"
-                                        value={"liabilityName" in editFormData ? editFormData.liabilityName ?? "" : ""}
+                                        value={"name" in editFormData ? editFormData.name ?? "" : ""}
                                         onChange={handleEditFormChange}
                                         className="border-[#bebebe] focus:ring-ring/50"
                                     />
@@ -549,9 +458,9 @@ const LiabilityTable = ({ view, onViewChange, onDataChange, onAddPercentageRange
                                     <Label htmlFor="liabilityCode">Liability Code</Label>
                                     <Input
                                         id="liabilityCode"
-                                        name="liabilityCode"
+                                        name="code"
                                         placeholder="Enter liability code"
-                                        value={"liabilityCode" in editFormData ? editFormData.liabilityCode ?? "" : ""}
+                                        value={"code" in editFormData ? editFormData.code ?? "" : ""}
                                         onChange={handleEditFormChange}
                                         className="border-[#bebebe] focus:ring-ring/50"
                                     />
@@ -575,9 +484,9 @@ const LiabilityTable = ({ view, onViewChange, onDataChange, onAddPercentageRange
                                         <Label htmlFor="percentageCode" className="mb-2">Percentage Code</Label>
                                         <Input
                                             id="percentageCode"
-                                            name="percentageCode"
+                                            name="code"
                                             placeholder="Enter percentage code"
-                                            value={"percentageCode" in editFormData ? editFormData.percentageCode ?? "" : ""}
+                                            value={"code" in editFormData ? editFormData.code ?? "" : ""}
                                             onChange={handleEditFormChange}
                                             className="border-[#bebebe] focus:ring-ring/50"
                                         />
@@ -585,18 +494,19 @@ const LiabilityTable = ({ view, onViewChange, onDataChange, onAddPercentageRange
                                     <div>
                                         <Label htmlFor="band" className="mb-2">Band</Label>
                                         <Select
-                                            value={"band" in editFormData ? editFormData.band ?? "" : ""}
-                                            onValueChange={(value) => setEditFormData((prev) => ({ ...prev, band: value }))}
+                                            value={"band" in editFormData ? (editFormData.band)?.name ?? "" : ""}
+                                            onValueChange={(value) => {
+                                                const selectedBand = bands.find(b => b.name === value);
+                                                setEditFormData((prev) => ({ ...prev, band: selectedBand }));
+                                            }}
                                         >
                                             <SelectTrigger className="w-full border-[#bebebe] focus:ring-ring/50 rounded-md h-10 px-3">
                                                 <SelectValue placeholder="Select Band" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="Band A">Band A</SelectItem>
-                                                <SelectItem value="Band B">Band B</SelectItem>
-                                                <SelectItem value="Band C">Band C</SelectItem>
-                                                <SelectItem value="Band D">Band D</SelectItem>
-                                                <SelectItem value="Band E">Band E</SelectItem>
+                                                {bands.map(bandItem => (
+                                                    <SelectItem key={bandItem.id} value={bandItem.name}>{bandItem.name}</SelectItem>
+                                                ))}
                                             </SelectContent>
                                         </Select>
                                     </div>
@@ -643,7 +553,7 @@ const LiabilityTable = ({ view, onViewChange, onDataChange, onAddPercentageRange
                                 view === "percentage" &&
                                 (
                                     !("percentage" in editFormData && editFormData.percentage) ||
-                                    !("percentageCode" in editFormData && editFormData.percentageCode) ||
+                                    !("code" in editFormData && editFormData.code) ||
                                     !("band" in editFormData && editFormData.band) ||
                                     !("amountStartRange" in editFormData && editFormData.amountStartRange) ||
                                     !("amountEndRange" in editFormData && editFormData.amountEndRange)
