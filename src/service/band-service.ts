@@ -157,8 +157,15 @@ export async function deactivateBand(
           custom: CUSTOM_HEADER,
           Authorization: `Bearer ${token}`,
         },
+        validateStatus: (status) => status < 500,
       },
     );
+    if (response.data.responsecode === "060") {
+      return {
+        success: false,
+        error: "Cannot deactivate band in use",
+      };
+    }
 
     if (response.data.responsecode !== "000") {
       return {

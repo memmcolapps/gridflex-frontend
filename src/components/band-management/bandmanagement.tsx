@@ -184,7 +184,7 @@ export default function BandManagement() {
           },
           onError: (error) => {
             console.error("Failed to deactivate band:", error);
-            toast.error("Failed to deactivate band");
+            toast.error(`Failed to deactivate band: ${error.message || error}`);
           },
         });
       } else {

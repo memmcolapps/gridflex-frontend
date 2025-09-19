@@ -36,11 +36,11 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { useState, useMemo } from "react";
-import { changeTariffStatus } from "@/service/tarriff-service";
 import { TariffDatePicker } from "../tarrif-datepicker";
 import { getStatusStyle } from "../status-style";
 import { useBand } from "@/hooks/use-band";
 import { DeactivateTariffDialog } from "./deactivate-tarrif-dialog";
+import { useChangeTariffStatus } from "@/hooks/use-tarrif";
 
 interface TariffTableProps {
   tariffs: Tariff[];
@@ -55,6 +55,7 @@ export function TariffTable({
   setSelectedTariffs,
 }: TariffTableProps) {
   const { bands, isLoading: isBandsLoading, error: bandsError } = useBand();
+  const { mutate: changeTariffStatus } = useChangeTariffStatus();
 
   const [confirmDialog, setConfirmDialog] = useState<{
     isOpen: boolean;
@@ -161,14 +162,28 @@ export function TariffTable({
     newStatus: boolean,
   ) => {
     try {
-      setIsStatusLoading(true);
-      const success = await changeTariffStatus(tariff.id.toString(), newStatus);
-      if (success) {
-        toast.success("Tariff status updated successfully");
-        setStatusDialog({ isOpen: false, tariff: null });
-      } else {
-        toast.error("Failed to update tariff status");
-      }
+      changeTariffStatus(
+        { tariffId: tariff.id, status: newStatus },
+        {
+          onSuccess: () => {
+            toast.success(
+              `Tariff ${newStatus ? "activated" : "deactivated"} successfully`,
+            );
+            setStatusDialog({ isOpen: false, tariff: null });
+          },
+          onError: (error) => {
+            console.error("Error changing tariff status:", error);
+            toast.error(
+              `Failed to ${
+                newStatus ? "activate" : "deactivate"
+              } tariff: ${error.message || error}`,
+            );
+          },
+          onSettled: () => {
+            setIsStatusLoading(false);
+          },
+        },
+      );
     } catch (error) {
       console.error("Error updating tariff status:", error);
       toast.error("Failed to update tariff status");
