@@ -31,7 +31,7 @@ import {
     DialogDescription,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { ArrowUpDown, Ban, CircleCheck, CircleX, EllipsisVertical, Pencil, Search, AlertTriangle, Loader2 } from "lucide-react";
+import { ArrowUpDown, Ban, EllipsisVertical, Pencil, Search, AlertTriangle, Loader2 } from "lucide-react";
 import React, { useState, useMemo } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { getStatusStyle } from "../status-style";
@@ -44,10 +44,30 @@ import {
 import { type LiabilityCause, type PercentageRange, type UpdatedLiabilityCausePayload, type UpdatedPercentageRangePayload, type Band } from "@/types/credit-debit";
 import { useBand } from "@/hooks/use-band";
 
-type FixedLiabilityCause = LiabilityCause & { approveStatus: "Pending" | "Rejected" | "Approved" };
-type UiPercentageRange = PercentageRange & { deactivated?: boolean };
-type UiLiabilityCause = FixedLiabilityCause & { deactivated?: boolean };
-type TableData = UiLiabilityCause | UiPercentageRange;
+// Defining types for the UI's view model.
+// This is the data structure the table needs to function correctly.
+type UILiability = {
+    id: string;
+    sNo: number;
+    liabilityName: string;
+    liabilityCode: string;
+    approvalStatus: "Pending" | "Rejected" | "Approved";
+    deactivated?: boolean;
+};
+
+type UiPercentageRange = {
+    id: string;
+    sNo: number;
+    percentage: string;
+    percentageCode: string;
+    band: string;
+    amountStartRange: string;
+    amountEndRange: string;
+    approvalStatus: "Pending" | "Rejected" | "Approved";
+    deactivated?: boolean;
+};
+
+type TableData = UILiability | UiPercentageRange;
 
 type LiabilityTableProps = {
     view: "liability" | "percentage";
@@ -61,7 +81,7 @@ const LiabilityTable = ({ view, onViewChange, onDataChange }: LiabilityTableProp
     const [isDeactivateDialogOpen, setIsDeactivateDialogOpen] = useState(false);
     const [selectedRow, setSelectedRow] = useState<TableData | null>(null);
 
-    // Initializing editFormData with a type that can handle both liability and percentage data
+    // Initializing editFormData with a type that can handle both liability and percentage data.
     const [editFormData, setEditFormData] = useState<Partial<TableData>>({});
 
     const { data: liabilityData, isLoading: isLoadingLiabilities, refetch: refetchLiabilities } = useAllLiabilityCauses();
@@ -71,18 +91,34 @@ const LiabilityTable = ({ view, onViewChange, onDataChange }: LiabilityTableProp
     const { bands } = useBand();
 
     const tableData = useMemo(() => {
+        let data: TableData[] = [];
         if (view === "liability" && liabilityData) {
-            const data = liabilityData.map(item => ({ ...(item as FixedLiabilityCause), deactivated: item.deactivated ?? false }));
-            onDataChange(data);
-            return data;
+            // Explicitly mapping API data to the UI-friendly UILiability type.
+            data = liabilityData.map((item, index) => ({
+                id: item.id,
+                sNo: index + 1,
+                liabilityName: item.name,
+                liabilityCode: item.code,
+                approvalStatus: item.approveStatus,
+                deactivated: item.deactivated ?? false,
+            }));
         }
         if (view === "percentage" && percentageData) {
-            const data = percentageData.map(item => ({ ...item, deactivated: item.deactivated ?? false }));
-            onDataChange(data);
-            return data;
+            // Explicitly mapping API data to the UI-friendly UiPercentageRange type.
+            data = percentageData.map((item, index) => ({
+                id: item.id,
+                sNo: index + 1,
+                percentage: item.percentage,
+                percentageCode: item.code,
+                band: item.band.name, // Accessing the band name directly for the UI display.
+                amountStartRange: item.amountStartRange,
+                amountEndRange: item.amountEndRange,
+                approvalStatus: item.approveStatus,
+                deactivated: item.deactivated ?? false,
+            }));
         }
-        onDataChange([]);
-        return [];
+        onDataChange(data);
+        return data;
     }, [view, liabilityData, percentageData, onDataChange]);
 
     const isLoading = isLoadingLiabilities || isLoadingPercentages;
@@ -109,6 +145,7 @@ const LiabilityTable = ({ view, onViewChange, onDataChange }: LiabilityTableProp
     const handleEditSelectChange = (value: string) => {
         const selectedBand = bands.find(b => b.name === value);
         if (selectedBand) {
+            // Store the full Band object in state for the API payload.
             setEditFormData((prev) => ({ ...prev, band: selectedBand }));
         }
     };
@@ -116,11 +153,11 @@ const LiabilityTable = ({ view, onViewChange, onDataChange }: LiabilityTableProp
     const handleEditSubmit = () => {
         if (!selectedRow) return;
 
-        if (view === "liability") {
+        if ("liabilityName" in selectedRow) {
             const payload: UpdatedLiabilityCausePayload = {
-                liabilityCauseId: (selectedRow as FixedLiabilityCause).id,
-                name: (editFormData as FixedLiabilityCause).name,
-                code: (editFormData as FixedLiabilityCause).code,
+                liabilityCauseId: selectedRow.id,
+                name: (editFormData as UILiability).liabilityName,
+                code: (editFormData as UILiability).liabilityCode,
             };
             updateLiability(payload, {
                 onSuccess: () => {
@@ -130,20 +167,16 @@ const LiabilityTable = ({ view, onViewChange, onDataChange }: LiabilityTableProp
                     refetchLiabilities();
                 }
             });
-        } else {
+        } else if ("percentage" in selectedRow) {
+            const editDataAsPercentage = editFormData as UiPercentageRange & { band: Band };
             const payload: UpdatedPercentageRangePayload = {
-                percentageId: (selectedRow as PercentageRange).id,
-                percentage: ("percentage" in editFormData && editFormData.percentage) ? editFormData.percentage : undefined,
-                code: ("code" in editFormData && editFormData.code) ? editFormData.code : undefined,
-                bandId: ("band" in editFormData && editFormData.band) ? editFormData.band.id : undefined,
-                amountStartRange:
-                    'amountStartRange' in editFormData && editFormData.amountStartRange
-                        ? (editFormData.amountStartRange as string)
-                        : undefined,
-                amountEndRange:
-                    'amountEndRange' in editFormData && editFormData.amountEndRange
-                        ? (editFormData.amountEndRange as string)
-                        : undefined,
+                percentageId: selectedRow.id,
+                percentage: editDataAsPercentage.percentage,
+                code: editDataAsPercentage.percentageCode,
+                // Correctly accessing the id from the stored Band object.
+                bandId: editDataAsPercentage.band.id,
+                amountStartRange: editDataAsPercentage.amountStartRange,
+                amountEndRange: editDataAsPercentage.amountEndRange,
             };
             updatePercentage(payload, {
                 onSuccess: () => {
@@ -159,18 +192,16 @@ const LiabilityTable = ({ view, onViewChange, onDataChange }: LiabilityTableProp
     const handleDeactivateSubmit = () => {
         if (!selectedRow) return;
 
-        if (view === "liability") {
-            const liability = selectedRow as FixedLiabilityCause;
-            updateLiability({ liabilityCauseId: liability.id, deactivated: true }, {
+        if ("liabilityName" in selectedRow) {
+            updateLiability({ liabilityCauseId: selectedRow.id, deactivated: true }, {
                 onSuccess: () => {
                     setIsDeactivateDialogOpen(false);
                     setSelectedRow(null);
                     refetchLiabilities();
                 }
             });
-        } else {
-            const percentage = selectedRow as PercentageRange;
-            updatePercentage({ percentageId: percentage.id, deactivated: true }, {
+        } else if ("percentage" in selectedRow) {
+            updatePercentage({ percentageId: selectedRow.id, deactivated: true }, {
                 onSuccess: () => {
                     setIsDeactivateDialogOpen(false);
                     setSelectedRow(null);
@@ -194,18 +225,18 @@ const LiabilityTable = ({ view, onViewChange, onDataChange }: LiabilityTableProp
                     cell: ({ row }) => (
                         <div className="flex items-center">
                             <input type="checkbox" className="mr-2" disabled={row.original.deactivated} />
-                            {(row.index + 1)}
+                            {row.index + 1}
                         </div>
                     ),
                 },
-                { accessorKey: "name", header: "Liability Name" },
-                { accessorKey: "code", header: "Liability Code" },
+                { accessorKey: "liabilityName", header: "Liability Name" },
+                { accessorKey: "liabilityCode", header: "Liability Code" },
                 {
-                    accessorKey: "approveStatus",
+                    accessorKey: "approvalStatus",
                     header: "Liability Cause Stage",
                     cell: ({ row }) => {
-                        const original = row.original as UiLiabilityCause;
-                        return <span className={getStatusStyle(original.approveStatus)}>{original.approveStatus}</span>;
+                        const original = row.original as UILiability;
+                        return <span className={getStatusStyle(original.approvalStatus)}>{original.approvalStatus}</span>;
                     },
                 },
                 {
@@ -255,21 +286,21 @@ const LiabilityTable = ({ view, onViewChange, onDataChange }: LiabilityTableProp
                     cell: ({ row }) => (
                         <div className="flex items-center">
                             <input type="checkbox" className="mr-2" disabled={row.original.deactivated} />
-                            {(row.index + 1)}
+                            {row.index + 1}
                         </div>
                     ),
                 },
                 { accessorKey: "percentage", header: "Percentage" },
-                { accessorKey: "code", header: "Percentage Code" },
-                { accessorKey: "band.name", header: "Band" },
+                { accessorKey: "percentageCode", header: "Percentage Code" },
+                { accessorKey: "band", header: "Band" },
                 { accessorKey: "amountStartRange", header: "Amount Start Range" },
                 { accessorKey: "amountEndRange", header: "Amount End Range" },
                 {
-                    accessorKey: "approveStatus",
+                    accessorKey: "approvalStatus",
                     header: "Approval Status",
                     cell: ({ row }) => {
                         const original = row.original as UiPercentageRange;
-                        return <span className={getStatusStyle(original.approveStatus)}>{original.approveStatus}</span>;
+                        return <span className={getStatusStyle(original.approvalStatus)}>{original.approvalStatus}</span>;
                     },
                 },
                 {
@@ -313,27 +344,28 @@ const LiabilityTable = ({ view, onViewChange, onDataChange }: LiabilityTableProp
         return tableData.filter((item) => {
             if (!searchTerm) return true;
             const lowerSearch = searchTerm.toLowerCase();
-            // Using a type guard to properly filter based on the view
-            if (view === "liability") {
-                const liabilityItem = item as UiLiabilityCause;
+
+            if ("liabilityName" in item) {
+                const liabilityItem = item as UILiability;
                 return (
-                    liabilityItem.name?.toLowerCase().includes(lowerSearch) ||
-                    liabilityItem.code?.toLowerCase().includes(lowerSearch) ||
-                    liabilityItem.approveStatus?.toLowerCase().includes(lowerSearch)
+                    liabilityItem.liabilityName?.toLowerCase().includes(lowerSearch) ||
+                    liabilityItem.liabilityCode?.toLowerCase().includes(lowerSearch) ||
+                    liabilityItem.approvalStatus?.toLowerCase().includes(lowerSearch)
                 );
-            } else {
+            } else if ("percentage" in item) {
                 const percentageItem = item as UiPercentageRange;
                 return (
-                    percentageItem.percentage?.toString().toLowerCase().includes(lowerSearch) ||
-                    percentageItem.code?.toLowerCase().includes(lowerSearch) ||
-                    percentageItem.band?.name?.toLowerCase().includes(lowerSearch) ||
-                    String(percentageItem.amountStartRange)?.toLowerCase().includes(lowerSearch) ||
-                    String(percentageItem.amountEndRange)?.toLowerCase().includes(lowerSearch) ||
-                    percentageItem.approveStatus?.toLowerCase().includes(lowerSearch)
+                    percentageItem.percentage?.toLowerCase().includes(lowerSearch) ||
+                    percentageItem.percentageCode?.toLowerCase().includes(lowerSearch) ||
+                    percentageItem.band?.toLowerCase().includes(lowerSearch) ||
+                    percentageItem.amountStartRange?.toLowerCase().includes(lowerSearch) ||
+                    percentageItem.amountEndRange?.toLowerCase().includes(lowerSearch) ||
+                    percentageItem.approvalStatus?.toLowerCase().includes(lowerSearch)
                 );
             }
+            return false;
         });
-    }, [tableData, searchTerm, view]);
+    }, [tableData, searchTerm]);
 
     const columns = getColumns();
     const table = useReactTable({
@@ -453,9 +485,9 @@ const LiabilityTable = ({ view, onViewChange, onDataChange }: LiabilityTableProp
                                     <Label htmlFor="liabilityName">Liability Name</Label>
                                     <Input
                                         id="liabilityName"
-                                        name="name"
+                                        name="liabilityName"
                                         placeholder="Enter liability name"
-                                        value={"name" in editFormData ? editFormData.name ?? "" : ""}
+                                        value={"liabilityName" in editFormData ? editFormData.liabilityName ?? "" : ""}
                                         onChange={handleEditFormChange}
                                         className="border-[#bebebe] focus:ring-ring/50"
                                     />
@@ -464,9 +496,9 @@ const LiabilityTable = ({ view, onViewChange, onDataChange }: LiabilityTableProp
                                     <Label htmlFor="liabilityCode">Liability Code</Label>
                                     <Input
                                         id="liabilityCode"
-                                        name="code"
+                                        name="liabilityCode"
                                         placeholder="Enter liability code"
-                                        value={"code" in editFormData ? editFormData.code ?? "" : ""}
+                                        value={"liabilityCode" in editFormData ? editFormData.liabilityCode ?? "" : ""}
                                         onChange={handleEditFormChange}
                                         className="border-[#bebebe] focus:ring-ring/50"
                                     />
@@ -490,9 +522,9 @@ const LiabilityTable = ({ view, onViewChange, onDataChange }: LiabilityTableProp
                                         <Label htmlFor="percentageCode" className="mb-2">Percentage Code</Label>
                                         <Input
                                             id="percentageCode"
-                                            name="code"
+                                            name="percentageCode"
                                             placeholder="Enter percentage code"
-                                            value={"code" in editFormData ? editFormData.code ?? "" : ""}
+                                            value={"percentageCode" in editFormData ? editFormData.percentageCode ?? "" : ""}
                                             onChange={handleEditFormChange}
                                             className="border-[#bebebe] focus:ring-ring/50"
                                         />
@@ -500,7 +532,7 @@ const LiabilityTable = ({ view, onViewChange, onDataChange }: LiabilityTableProp
                                     <div>
                                         <Label htmlFor="band" className="mb-2">Band</Label>
                                         <Select
-                                            value={"band" in editFormData ? (editFormData.band)?.name ?? "" : ""}
+                                            value={"band" in editFormData ? (editFormData.band!) ?? "" : ""}
                                             onValueChange={handleEditSelectChange}
                                         >
                                             <SelectTrigger className="w-full border-[#bebebe] focus:ring-ring/50 rounded-md h-10 px-3">
@@ -556,7 +588,7 @@ const LiabilityTable = ({ view, onViewChange, onDataChange }: LiabilityTableProp
                                 view === "percentage" &&
                                 (
                                     !("percentage" in editFormData && editFormData.percentage) ||
-                                    !("code" in editFormData && editFormData.code) ||
+                                    !("percentageCode" in editFormData && editFormData.percentageCode) ||
                                     !("band" in editFormData && editFormData.band) ||
                                     !("amountStartRange" in editFormData && editFormData.amountStartRange) ||
                                     !("amountEndRange" in editFormData && editFormData.amountEndRange)
@@ -574,7 +606,9 @@ const LiabilityTable = ({ view, onViewChange, onDataChange }: LiabilityTableProp
                     <DialogHeader>
                         <div className="flex items-center space-x-3">
                             <AlertTriangle size={16} className="text-[#F50202] p-2 rounded-full bg-[#FEE2E2]" />
-                            <DialogTitle>{view === "liability" ? "Deactivate Liability Cause" : "Deactivate Percentage Range"}</DialogTitle>
+                            <DialogTitle>
+                                {view === "liability" ? "Deactivate Liability Cause" : "Deactivate Percentage Range"}
+                            </DialogTitle>
                         </div>
                         <DialogDescription className="pt-2">
                             Are you sure you want to deactivate this {view === "liability" ? "liability cause" : "percentage range"}? This action cannot be undone.

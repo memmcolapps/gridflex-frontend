@@ -5,6 +5,7 @@ export interface LiabilityCause {
     createdAt: string;
     updatedAt: string;
     deactivated?: boolean;
+    approveStatus: "Pending" | "Rejected" | "Approved";
 }
 
 export interface CustomerDetails {
