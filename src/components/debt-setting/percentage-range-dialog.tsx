@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -17,52 +17,60 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import type { Band } from "@/service/band-service";
 import { useBand } from "@/hooks/use-band";
+import { useCreatePercentageRange } from "@/hooks/use-debit-settings";
+import { toast } from "sonner";
 
-type AddPercentageRangeDialogProps = {
-  onAddPercentageRange: (range: {
-    percentage: string;
-    percentageCode: string;
-    band: string;
-    amountStartRange: string;
-    amountEndRange: string;
-  }) => void;
-};
-
-const AddPercentageRangeDialog = ({
-  onAddPercentageRange,
-}: AddPercentageRangeDialogProps) => {
+const AddPercentageRangeDialog = () => {
   const [open, setOpen] = useState(false);
   const [percentage, setPercentage] = useState("");
   const [percentageCode, setPercentageCode] = useState("");
   const [band, setBand] = useState("");
   const [amountStartRange, setAmountStartRange] = useState("");
   const [amountEndRange, setAmountEndRange] = useState("");
-  const [loading, setLoading] = useState(false);
-  const { bands, error } = useBand();
+  const { bands } = useBand();
+  const { mutate, isPending } = useCreatePercentageRange();
+
+  // Filter the bands to only include those with an 'Approved' status.
+  const approvedBands = bands.filter(band => band.approveStatus === "Approved");
 
   const handleSubmit = () => {
+    const startRange = amountStartRange;
+    const endRange = amountEndRange;
+    const selectedBand = bands.find((b) => b.name === band);
+
     if (
       percentage &&
       percentageCode &&
-      band &&
-      amountStartRange &&
-      amountEndRange
+      selectedBand &&
+      startRange &&
+      endRange
     ) {
-      onAddPercentageRange({
-        percentage,
-        percentageCode,
-        band,
-        amountStartRange,
-        amountEndRange,
-      });
-      setPercentage("");
-      setPercentageCode("");
-      setBand("");
-      setAmountStartRange("");
-      setAmountEndRange("");
-      setOpen(false);
+      mutate(
+        {
+          percentage,
+          code: percentageCode,
+          bandId: selectedBand!.id,
+          amountStartRange: startRange,
+          amountEndRange: endRange,
+        },
+        {
+          onSuccess: (response) => {
+            setPercentage("");
+            setPercentageCode("");
+            setBand("");
+            setAmountStartRange("");
+            setAmountEndRange("");
+            setOpen(false);
+            toast.success(response.responsedesc ?? "Percentage range created successfully!");
+          },
+          onError: (error) => {
+            toast.error(error.message);
+          },
+        },
+      );
+    } else {
+      toast.error("Please fill in all required fields correctly.");
     }
   };
 
@@ -113,27 +121,30 @@ const AddPercentageRangeDialog = ({
               <Select
                 value={band}
                 onValueChange={setBand}
-                disabled={loading || bands.length === 0}
+                // You should now disable based on the new array
+                disabled={isPending || approvedBands.length === 0}
               >
                 <SelectTrigger className="focus:ring-ring/50 h-10 w-full rounded-md border-[#bebebe] px-3">
                   <SelectValue
-                    placeholder={loading ? "Loading bands..." : "Select Band"}
+                    // Update the placeholder to reflect the new state
+                    placeholder={isPending ? "Loading bands..." : "Select Band"}
                   />
                 </SelectTrigger>
                 <SelectContent>
-                  {bands.length > 0 ? (
-                    bands.map((bandItem) => (
+                  {/* Use the new 'approvedBands' array here */}
+                  {approvedBands.length > 0 ? (
+                    approvedBands.map((bandItem) => (
                       <SelectItem key={bandItem.id} value={bandItem.name}>
                         {bandItem.name}
                       </SelectItem>
                     ))
-                  ) : loading ? (
+                  ) : isPending ? (
                     <SelectItem value="loading" disabled>
                       Loading...
                     </SelectItem>
                   ) : (
                     <SelectItem value="no-bands" disabled>
-                      No bands available
+                      No approved bands available
                     </SelectItem>
                   )}
                 </SelectContent>
@@ -171,7 +182,7 @@ const AddPercentageRangeDialog = ({
           onClick={handleSubmit}
           className="bg-[rgba(22,28,202,1)] text-white"
           disabled={
-            loading ||
+            isPending ||
             !percentage ||
             !percentageCode ||
             !band ||
