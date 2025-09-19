@@ -6,31 +6,14 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { MoveRight } from 'lucide-react';
-
-interface TariffItem {
-  id: number;
-  tariffName: string;
-  tariffId: string;
-  tariffType: string;
-  bandCode: string;
-  tariffRate: string;
-  effectiveDate: string;
-  changeDescription: string;
-  approvalStatus: string;
-  newTariffName?: string;
-  newTariffId?: string;
-  newTariffType?: string;
-  newBandCode?: string;
-  newTariffRate?: string;
-  newEffectiveDate?: string;
-}
+import { Tariff } from '@/types/review-approval';
 
 interface ViewTariffDetailsDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  selectedRow: TariffItem | null;
-  onApprove: (row: TariffItem) => void;
-  onReject: (row: TariffItem) => void;
+  selectedRow: Tariff | null;
+  onApprove: (row: Tariff) => void;
+  onReject: (row: Tariff) => void;
 }
 
 const ViewTariffDetailsDialog: React.FC<ViewTariffDetailsDialogProps> = ({
@@ -40,7 +23,7 @@ const ViewTariffDetailsDialog: React.FC<ViewTariffDetailsDialogProps> = ({
   onApprove,
   onReject,
 }) => {
-  const isTariffEdited = selectedRow?.changeDescription === 'Tariff Edited';
+  const isTariffEdited = selectedRow?.description === 'Tariff Edited';
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -50,7 +33,7 @@ const ViewTariffDetailsDialog: React.FC<ViewTariffDetailsDialogProps> = ({
         <div className="w-full">
           <DialogHeader>
             <DialogTitle className="text-left text-base sm:text-lg font-semibold text-gray-900 truncate">
-              {selectedRow?.changeDescription ?? 'Tariff Details'}
+              {selectedRow?.description ?? 'Tariff Details'}
             </DialogTitle>
             <span className="text-gray-500 text-sm sm:text-base">
               Operator: <span className="font-medium">Margaret</span>
@@ -67,33 +50,33 @@ const ViewTariffDetailsDialog: React.FC<ViewTariffDetailsDialogProps> = ({
             {[
               {
                 label: 'Tariff Name:',
-                oldValue: selectedRow?.tariffName,
-                newValue: selectedRow?.newTariffName,
+                oldValue: selectedRow?.name,
+                newValue: undefined, // API doesn't provide new values yet
               },
               {
                 label: 'Tariff ID:',
-                oldValue: selectedRow?.tariffId,
-                newValue: selectedRow?.newTariffId,
+                oldValue: selectedRow?.tariff_id,
+                newValue: undefined, // API doesn't provide new values yet
               },
               {
                 label: 'Tariff Type:',
-                oldValue: selectedRow?.tariffType,
-                newValue: selectedRow?.newTariffType,
+                oldValue: selectedRow?.tariff_type,
+                newValue: undefined, // API doesn't provide new values yet
               },
               {
-                label: 'Band Code:',
-                oldValue: selectedRow?.bandCode,
-                newValue: selectedRow?.newBandCode,
+                label: 'Band:',
+                oldValue: selectedRow?.band,
+                newValue: undefined, // API doesn't provide new values yet
               },
               {
                 label: 'Tariff Rate:',
-                oldValue: selectedRow?.tariffRate,
-                newValue: selectedRow?.newTariffRate,
+                oldValue: selectedRow?.tariff_rate,
+                newValue: undefined, // API doesn't provide new values yet
               },
               {
                 label: 'Effective Date:',
-                oldValue: selectedRow?.effectiveDate,
-                newValue: selectedRow?.newEffectiveDate,
+                oldValue: selectedRow?.effective_date,
+                newValue: undefined, // API doesn't provide new values yet
               },
             ].map(({ label, oldValue, newValue }) => (
               <div

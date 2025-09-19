@@ -45,7 +45,7 @@ const LiabilityCauseTable = () => {
     searchTerm: '',
     sortBy: null,
     sortDirection: null,
-    approveStatus: 'pending-state',
+    type: 'pending-state',
   });
   const [selectedRow, setSelectedRow] = useState<Liability | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -104,12 +104,13 @@ const LiabilityCauseTable = () => {
     setDropdownOpenId(null);
   };
 
-  const handleConfirmAction = async () => {
+  const handleConfirmAction = async (reason?: string) => {
     if (selectedItem && confirmAction) {
       try {
         await reviewMutation.mutateAsync({
-          id: selectedItem.id,
+          id: selectedItem.liabilityCauseId,
           approveStatus: confirmAction,
+          reason,
         });
         toast.success(`Liability cause ${confirmAction}d successfully!`, {
           description: `Name: ${selectedItem.name}, Code: ${selectedItem.code}`,
@@ -166,79 +167,79 @@ const LiabilityCauseTable = () => {
             <TableHead className="px-4 py-3 text-sm font-medium text-gray-900 text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
-        <TableBody>
-          {paginatedData.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={6} className="h-24 text-center text-sm text-gray-500">
-                No data available
-              </TableCell>
-            </TableRow>
-          ) : (
-            paginatedData.map((item, index) => (
-              <TableRow key={item.id} className="hover:bg-gray-50 cursor-pointer">
-                <TableCell className="px-4 py-3">
-                  <div className="flex items-center gap-2">
-                    <Checkbox
-                      className="h-4 w-4 border-gray-500"
-                      id={`select-${item.id}`}
-                      checked={selectedItems.includes(item.id)}
-                      onCheckedChange={() => toggleSelection(item.id)}
-                    />
-                    <span className="text-sm text-gray-900">
-                      {index + 1 + (fetchParams.page - 1) * fetchParams.pageSize}
-                    </span>
-                  </div>
-                </TableCell>
-                <TableCell className="px-4 py-3 text-sm text-gray-900">{item.name}</TableCell>
-                <TableCell className="px-4 py-3 text-sm text-gray-900">{item.code}</TableCell>
-                <TableCell className="px-4 py-3 text-sm text-[#161CCA]">{item.description}</TableCell>
-                <TableCell className="px-4 py-3 text-center">
-                  <span className="inline-block px-3 py-1 text-sm font-medium text-[#C86900] bg-[#FFF5EA] p-1 rounded-full">
-                    Pending
-                  </span>
-                </TableCell>
-                <TableCell className="px-4 py-3 text-right">
-                  <DropdownMenu
-                    open={dropdownOpenId === item.id}
-                    onOpenChange={(open) => setDropdownOpenId(open ? item.id : null)}
-                  >
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0 cursor-pointer">
-                        <MoreVertical size={14} className="text-gray-500" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-fit bg-white shadow-lg">
-                      <DropdownMenuItem
-                        className="flex items-center gap-2 cursor-pointer"
-                        onSelect={(e) => e.preventDefault()}
-                        onClick={() => handleViewDetails(item)}
-                      >
-                        <EyeIcon size={14} />
-                        <span className="text-sm text-gray-700">View Details</span>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className="flex items-center gap-2 cursor-pointer"
-                        onSelect={(e) => e.preventDefault()}
-                        onClick={() => handleApprove(item)}
-                      >
-                        <CheckCircle size={14} />
-                        <span className="text-sm text-gray-700">Approve</span>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className="flex items-center gap-2 cursor-pointer"
-                        onSelect={(e) => e.preventDefault()}
-                        onClick={() => handleReject(item)}
-                      >
-                        <Ban size={14} />
-                        <span className="text-sm text-gray-700">Reject</span>
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TableCell>
-              </TableRow>
-            ))
-          )}
-        </TableBody>
+       <TableBody>
+  {paginatedData.length === 0 ? (
+    <TableRow>
+      <TableCell colSpan={6} className="h-24 text-center text-sm text-gray-500">
+        No data available
+      </TableCell>
+    </TableRow>
+  ) : (
+    paginatedData.map((item, index) => (
+      <TableRow key={item.id} className="hover:bg-gray-50 cursor-pointer">
+        <TableCell className="px-4 py-3">
+          <div className="flex items-center gap-2">
+            <Checkbox
+              className="h-4 w-4 border-gray-500"
+              id={`select-${item.id}`}
+              checked={selectedItems.includes(item.id)}
+              onCheckedChange={() => toggleSelection(item.id)}
+            />
+            <span className="text-sm text-gray-900">
+              {index + 1 + (fetchParams.page - 1) * fetchParams.pageSize}
+            </span>
+          </div>
+        </TableCell>
+        <TableCell className="px-4 py-3 text-sm text-gray-900">{item.name}</TableCell>
+        <TableCell className="px-4 py-3 text-sm text-gray-900">{item.code}</TableCell>
+        <TableCell className="px-4 py-3 text-sm text-[#161CCA]">{item.description}</TableCell>
+        <TableCell className="px-4 py-3 text-center">
+          <span className="inline-block px-3 py-1 text-sm font-medium text-[#C86900] bg-[#FFF5EA] p-1 rounded-full">
+            {item.approveStatus ?? 'Pending'}
+          </span>
+        </TableCell>
+        <TableCell className="px-4 py-3 text-right">
+          <DropdownMenu
+            open={dropdownOpenId === item.id}
+            onOpenChange={(open) => setDropdownOpenId(open ? item.id : null)}
+          >
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 cursor-pointer">
+                <MoreVertical size={14} className="text-gray-500" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-fit bg-white shadow-lg">
+              <DropdownMenuItem
+                className="flex items-center gap-2 cursor-pointer"
+                onSelect={(e) => e.preventDefault()}
+                onClick={() => handleViewDetails(item)}
+              >
+                <EyeIcon size={14} />
+                <span className="text-sm text-gray-700">View Details</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="flex items-center gap-2 cursor-pointer"
+                onSelect={(e) => e.preventDefault()}
+                onClick={() => handleApprove(item)}
+              >
+                <CheckCircle size={14} />
+                <span className="text-sm text-gray-700">Approve</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="flex items-center gap-2 cursor-pointer"
+                onSelect={(e) => e.preventDefault()}
+                onClick={() => handleReject(item)}
+              >
+                <Ban size={14} />
+                <span className="text-sm text-gray-700">Reject</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </TableCell>
+      </TableRow>
+    ))
+  )}
+</TableBody>
       </Table>
 
       <Pagination className="mt-4 flex items-center justify-between">

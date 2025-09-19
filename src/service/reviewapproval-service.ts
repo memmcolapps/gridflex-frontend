@@ -17,7 +17,7 @@ export interface FetchParams {
   searchTerm?: string;
   sortBy?: string | null;
   sortDirection?: "asc" | "desc" | null;
-  approveStatus?: string; // Filter by approval status
+  type?: string; // Filter by approval status
 }
 
 export interface ApproveRejectPayload {
@@ -73,15 +73,15 @@ export async function getAllPercentageRanges({
   searchTerm,
   sortBy,
   sortDirection,
-  approveStatus = "pending",
+  type = "pending-state",
 }: FetchParams): Promise<GetPercentageResponse> {
   const params: Record<string, any> = {
     page: String(page),
     pageSize: String(pageSize),
   };
 
-  if (approveStatus) {
-    params.approveStatus = approveStatus;
+  if (type) {
+    params.type = type;
   }
 
   if (searchTerm) params.search = searchTerm;
@@ -109,13 +109,25 @@ export async function reviewPercentageRange(
   approveStatus: "approve" | "reject",
   reason?: string,
 ): Promise<GetPercentageResponse> {
-  const params = { percentageId: id, approveStatus };
-  const data = reason ? { reason } : undefined;
+  // Create a payload object with all required data for the request body
+  const params: {
+    percentageId: string;
+    approveStatus: "approve" | "reject";
+    reason?: string;
+  } = {
+    percentageId: id,
+    approveStatus,
+  };
+
+  if (reason) {
+    params.reason = reason;
+  }
+
   return fetchApi<GetPercentageResponse>(
     `${API_URL}/debt-setting/service/percentage-range/approve`,
-    params,
+    params, // Pass an empty object for params since all data will be in the body
     "PUT",
-    data,
+    undefined, // Pass the payload as the data for the request body
   );
 }
 
@@ -126,14 +138,15 @@ export async function getAllLiabilities({
   searchTerm,
   sortBy,
   sortDirection,
-  approveStatus,
+  type = "pending-state",
 }: FetchParams): Promise<GetAllLiabilitiesResponse> {
   const params: Record<string, any> = {
     page: String(page),
     pageSize: String(pageSize),
   };
-  if (approveStatus) {
-    params.approveStatus = approveStatus;
+
+  if (type) {
+    params.type = type;
   }
   if (searchTerm) params.search = searchTerm;
   if (sortBy) {
@@ -176,11 +189,19 @@ export async function getAllBands({
   searchTerm,
   sortBy,
   sortDirection,
+  type = "pending-state",
 }: FetchParams): Promise<GetBandResponse> {
   const params: Record<string, any> = {
     page: String(page),
     pageSize: String(pageSize),
   };
+  if (type) {
+    params.type = type;
+  }
+  if (type) {
+    params.type = type;
+  }
+
   if (searchTerm) params.search = searchTerm;
   if (sortBy) {
     params.sortBy = sortBy;
@@ -217,11 +238,19 @@ export async function getAllTariffs({
   searchTerm,
   sortBy,
   sortDirection,
+  type = "pending-state",
 }: FetchParams): Promise<GetTariffResponse> {
   const params: Record<string, any> = {
     page: String(page),
     pageSize: String(pageSize),
   };
+
+  if (type) {
+    params.type = type;
+  }
+  if (type) {
+    params.type = type;
+  }
   if (searchTerm) params.search = searchTerm;
   if (sortBy) {
     params.sortBy = sortBy;
@@ -258,11 +287,18 @@ export async function getAllMeters({
   searchTerm,
   sortBy,
   sortDirection,
+  type = "pending-state",
 }: FetchParams): Promise<MeterResponse> {
   const params: Record<string, any> = {
     page: String(page),
     pageSize: String(pageSize),
   };
+  if (type) {
+    params.type = type;
+  }
+  if (type) {
+    params.type = type;
+  }
   if (searchTerm) params.search = searchTerm;
   if (sortBy) {
     params.sortBy = sortBy;

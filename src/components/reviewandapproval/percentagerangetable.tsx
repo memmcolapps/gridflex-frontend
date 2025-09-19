@@ -47,7 +47,7 @@ const PercentageRangeTable = () => {
     searchTerm: '',
     sortBy: null,
     sortDirection: null,
-    approveStatus: undefined,
+    type: 'pending-state',
   });
   const [selectedRow, setSelectedRow] = useState<PercentageRange | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -66,9 +66,9 @@ const PercentageRangeTable = () => {
   const totalPages = Math.ceil(totalData / fetchParams.pageSize);
 
   const handlePrevious = () => {
-    setFetchParams((prevParams) => ({ 
-      ...prevParams, 
-      page: Math.max(prevParams.page - 1, 1) 
+    setFetchParams((prevParams) => ({
+      ...prevParams,
+      page: Math.max(prevParams.page - 1, 1)
     }));
   };
 
@@ -210,7 +210,7 @@ const PercentageRangeTable = () => {
                 <TableCell className="px-4 py-3 text-sm text-[#161CCA]">{item.description}</TableCell>
                 <TableCell className="px-4 py-3 text-center">
                   <span className="inline-block px-3 py-1 text-sm font-medium text-[#C86900] bg-[#FFF5EA] p-1 rounded-full">
-                    Pending
+                    {item.approveStatus ?? 'Pending'}
                   </span>
                 </TableCell>
                 <TableCell className="px-4 py-3 text-right">

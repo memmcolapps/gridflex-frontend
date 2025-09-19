@@ -1,4 +1,5 @@
 // components/reviewandapproval/confirmapprovaldialog.tsx
+
 import {
   Dialog,
   DialogContent,
@@ -7,7 +8,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle } from 'lucide-react';
-import type  { PercentageRange, Liability, Band, Tariff, Meter } from '@/types/review-approval';
+import type { PercentageRange, Liability, Band, Tariff, Meter } from '@/types/review-approval';
 
 type SupportedItem = PercentageRange | Liability | Band | Tariff | Meter;
 
@@ -50,18 +51,20 @@ const ConfirmDialog = <T extends SupportedItem | null>({
 
     if ('percentage' in selectedItem && 'code' in selectedItem && 'band' in selectedItem) {
       // PercentageRange
+
       return {
         message: `Please confirm you would like to approve this changes`,
       };
     } else if ('name' in selectedItem && 'code' in selectedItem && 'description' in selectedItem && !('percentage' in selectedItem) && !('tariff_id' in selectedItem) && !('bandId' in selectedItem)) {
+
       // Liability
       return {
         message: `Are you sure you want to ${action} the liability with name "${selectedItem.name}" and code "${selectedItem.code}"?`,
-        details: (
-          <div className="mt-2 text-sm text-gray-600">
-            <p>Description: {selectedItem.description || 'N/A'}</p>
-          </div>
-        ),
+        // details: (
+        //   <div className="mt-2 text-sm text-gray-600">
+        //     <p>Description: {selectedItem.description || 'N/A'}</p>
+        //   </div>
+        // ),
       };
     } else if ('bandId' in selectedItem && 'name' in selectedItem && 'hour' in selectedItem) {
       // Band

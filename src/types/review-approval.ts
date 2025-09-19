@@ -72,6 +72,7 @@ export interface GetTariffResponse {
   responsedesc: string;
   responsedata: Tariff[];
 }
+
 export interface Tariff {
   id: string;
   name: string;

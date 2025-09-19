@@ -58,20 +58,8 @@ export const usePercentageRanges = (params: FetchParams): UsePercentageRangesRes
 
   const reviewMutation = useMutation({
     mutationFn: (payload: ReviewPayload) => reviewPercentageRange(payload.id, payload.approveStatus, payload.reason),
-    onSuccess: (data, variables) => {
-      if (variables.approveStatus === 'approve') {
-        queryClient.setQueryData(["percentageRanges", params], (oldData: GetPercentageResponse | undefined) => {
-          if (oldData) {
-            return {
-              ...oldData,
-              responsedata: oldData.responsedata.filter(item => item.id !== variables.id)
-            };
-          }
-          return oldData;
-        });
-      } else {
-        queryClient.invalidateQueries({ queryKey: ["percentageRanges"] });
-      }
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["percentageRanges"] });
     },
   });
 
@@ -109,7 +97,7 @@ export const useLiabilities = (params: FetchParams): UseLiabilitiesResult => {
           if (oldData) {
             return {
               ...oldData,
-              responsedata: oldData.responsedata.filter(item => item.id !== variables.id)
+              responsedata: oldData.responsedata.filter(item => item.liabilityCauseId !== variables.id)
             };
           }
           return oldData;
@@ -162,7 +150,7 @@ export const useBands = (params: FetchParams): UseBandsResult => {
   };
 };
 
-// Hook for Tariffs
+// Hook for Tariffs (Modified)
 interface UseTariffsResult {
   tariffs: Tariff[];
   isLoading: boolean;
@@ -179,6 +167,22 @@ export const useTariffs = (params: FetchParams): UseTariffsResult => {
     queryFn: () => getAllTariffs(params),
   });
 
+  console.log("Tariff API response:", data); // Debug log to inspect the response
+
+  // Ensure tariffs is always an array, handling different response structures
+  let tariffs: Tariff[] = [];
+  if (data?.responsedata) {
+    if (Array.isArray(data.responsedata)) {
+      tariffs = data.responsedata;
+    } else if (
+      typeof data.responsedata === 'object' &&
+      'data' in data.responsedata &&
+      Array.isArray((data.responsedata as any).data)
+    ) {
+      tariffs = (data.responsedata as any).data;
+    }
+  }
+
   const reviewMutation = useMutation({
     mutationFn: (payload: ReviewPayload) => reviewTariff(payload.id, payload.approveStatus, payload.reason),
     onSuccess: () => {
@@ -187,7 +191,7 @@ export const useTariffs = (params: FetchParams): UseTariffsResult => {
   });
 
   return {
-    tariffs: data?.responsedata || [],
+    tariffs,
     isLoading,
     isError,
     error,
@@ -220,7 +224,7 @@ export const useMeters = (params: FetchParams): UseMetersResult => {
   });
 
   return {
-    meters: data?.responsedata?.data || [], // Note: MeterResponse has a nested 'data' property
+    meters: data?.responsedata?.data || [],
     isLoading,
     isError,
     error,
@@ -228,45 +232,43 @@ export const useMeters = (params: FetchParams): UseMetersResult => {
   };
 };
 
-// You can also add hooks for single item fetching here if needed
+// Single item fetching hooks (unchanged)
 export const useSinglePercentageRange = (id: string): UseQueryResult<GetPercentageResponse, Error> => {
-    return useQuery<GetPercentageResponse, Error>({
-      queryKey: ["percentageRange", id],
-      queryFn: () => getPercentageRange(id),
-      enabled: !!id,
-    });
+  return useQuery<GetPercentageResponse, Error>({
+    queryKey: ["percentageRange", id],
+    queryFn: () => getPercentageRange(id),
+    enabled: !!id,
+  });
 };
 
 export const useSingleLiability = (id: string): UseQueryResult<GetAllLiabilitiesResponse, Error> => {
-    return useQuery<GetAllLiabilitiesResponse, Error>({
-      queryKey: ["liability", id],
-      queryFn: () => getLiability(id),
-      enabled: !!id,
-    });
+  return useQuery<GetAllLiabilitiesResponse, Error>({
+    queryKey: ["liability", id],
+    queryFn: () => getLiability(id),
+    enabled: !!id,
+  });
 };
 
 export const useSingleBand = (id: string): UseQueryResult<GetBandResponse, Error> => {
-    return useQuery<GetBandResponse, Error>({
-      queryKey: ["band", id],
-      queryFn: () => getBand(id),
-      enabled: !!id,
-    });
+  return useQuery<GetBandResponse, Error>({
+    queryKey: ["band", id],
+    queryFn: () => getBand(id),
+    enabled: !!id,
+  });
 };
 
 export const useSingleTariff = (id: string): UseQueryResult<GetTariffResponse, Error> => {
-    return useQuery<GetTariffResponse, Error>({
-      queryKey: ["tariff", id],
-      queryFn: () => getTariff(id),
-      enabled: !!id,
-    });
+  return useQuery<GetTariffResponse, Error>({
+    queryKey: ["tariff", id],
+    queryFn: () => getTariff(id),
+    enabled: !!id,
+  });
 };
 
 export const useSingleMeter = (id: string): UseQueryResult<MeterResponse, Error> => {
-    return useQuery<MeterResponse, Error>({
-      queryKey: ["meter", id],
-      queryFn: () => getMeter(id),
-      enabled: !!id,
-    });
+  return useQuery<MeterResponse, Error>({
+    queryKey: ["meter", id],
+    queryFn: () => getMeter(id),
+    enabled: !!id,
+  });
 };
-
-
