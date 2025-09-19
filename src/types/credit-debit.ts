@@ -23,7 +23,6 @@ export interface Meter {
     customer: CustomerDetails;
     createdAt: string;
     updatedAt: string;
-    
 }
 
 export interface Payment {
@@ -76,7 +75,6 @@ export interface AdjustmentTableProps {
     type: "credit" | "debit";
 }
 
-// New types for the API payload and response
 export interface AdjustmentPayload {
     meterId: string;
     liabilityCauseId: string;
@@ -90,7 +88,6 @@ export interface AdjustmentMutationResponse {
     responsedata: Adjustment;
 }
 
-// New types for debit settings
 export interface LiabilityCausePayload {
     name: string;
     code: string;
@@ -144,8 +141,8 @@ export interface UpdatedPercentageRangePayload {
     deactivated?: boolean;
 }
 
-// New types added to support the UI components
-export type Liability = {
+// UI-specific types, defined only once
+export type UILiability = {
     sNo: number;
     liabilityName: string;
     liabilityCode: string;
@@ -163,7 +160,7 @@ export type UiPercentageRange = {
     approvalStatus: "Pending" | "Rejected" | "Approved";
 };
 
-export type TableData = (Liability | UiPercentageRange) & { deactivated?: boolean };
+export type TableData = (UILiability | UiPercentageRange) & { deactivated?: boolean };
 
 export type LiabilityTableProps = {
     view: "liability" | "percentage";

@@ -44,22 +44,24 @@ import {
 import { type LiabilityCause, type PercentageRange, type UpdatedLiabilityCausePayload, type UpdatedPercentageRangePayload, type Band } from "@/types/credit-debit";
 import { useBand } from "@/hooks/use-band";
 
-// This is correct as is, it's a good way to handle the type extension.
 type FixedLiabilityCause = LiabilityCause & { approveStatus: "Pending" | "Rejected" | "Approved" };
-
-// This union type is also correct.
-type TableData = (FixedLiabilityCause & { deactivated?: boolean }) | (PercentageRange & { deactivated?: boolean });
+type UiPercentageRange = PercentageRange & { deactivated?: boolean };
+type UiLiabilityCause = FixedLiabilityCause & { deactivated?: boolean };
+type TableData = UiLiabilityCause | UiPercentageRange;
 
 type LiabilityTableProps = {
     view: "liability" | "percentage";
     onViewChange: (view: "liability" | "percentage") => void;
+    onDataChange: (data: TableData[]) => void;
 };
 
-const LiabilityTable = ({ view, onViewChange }: LiabilityTableProps) => {
+const LiabilityTable = ({ view, onViewChange, onDataChange }: LiabilityTableProps) => {
     const [searchTerm, setSearchTerm] = useState("");
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [isDeactivateDialogOpen, setIsDeactivateDialogOpen] = useState(false);
     const [selectedRow, setSelectedRow] = useState<TableData | null>(null);
+
+    // Initializing editFormData with a type that can handle both liability and percentage data
     const [editFormData, setEditFormData] = useState<Partial<TableData>>({});
 
     const { data: liabilityData, isLoading: isLoadingLiabilities, refetch: refetchLiabilities } = useAllLiabilityCauses();
@@ -70,14 +72,18 @@ const LiabilityTable = ({ view, onViewChange }: LiabilityTableProps) => {
 
     const tableData = useMemo(() => {
         if (view === "liability" && liabilityData) {
-            // Your original code here is fine; the casting is necessary.
-            return liabilityData.map(item => ({ ...(item as FixedLiabilityCause), deactivated: item.deactivated ?? false }));
+            const data = liabilityData.map(item => ({ ...(item as FixedLiabilityCause), deactivated: item.deactivated ?? false }));
+            onDataChange(data);
+            return data;
         }
         if (view === "percentage" && percentageData) {
-            return percentageData.map(item => ({ ...item, deactivated: item.deactivated ?? false }));
+            const data = percentageData.map(item => ({ ...item, deactivated: item.deactivated ?? false }));
+            onDataChange(data);
+            return data;
         }
+        onDataChange([]);
         return [];
-    }, [view, liabilityData, percentageData]);
+    }, [view, liabilityData, percentageData, onDataChange]);
 
     const isLoading = isLoadingLiabilities || isLoadingPercentages;
 
@@ -100,13 +106,19 @@ const LiabilityTable = ({ view, onViewChange }: LiabilityTableProps) => {
         }));
     };
 
+    const handleEditSelectChange = (value: string) => {
+        const selectedBand = bands.find(b => b.name === value);
+        if (selectedBand) {
+            setEditFormData((prev) => ({ ...prev, band: selectedBand }));
+        }
+    };
+
     const handleEditSubmit = () => {
         if (!selectedRow) return;
 
         if (view === "liability") {
-            const liabilityCauseId = (selectedRow as FixedLiabilityCause).id;
             const payload: UpdatedLiabilityCausePayload = {
-                liabilityCauseId,
+                liabilityCauseId: (selectedRow as FixedLiabilityCause).id,
                 name: (editFormData as FixedLiabilityCause).name,
                 code: (editFormData as FixedLiabilityCause).code,
             };
@@ -119,9 +131,8 @@ const LiabilityTable = ({ view, onViewChange }: LiabilityTableProps) => {
                 }
             });
         } else {
-            const percentageId = (selectedRow as PercentageRange).id;
             const payload: UpdatedPercentageRangePayload = {
-                percentageId,
+                percentageId: (selectedRow as PercentageRange).id,
                 percentage: ("percentage" in editFormData && editFormData.percentage) ? editFormData.percentage : undefined,
                 code: ("code" in editFormData && editFormData.code) ? editFormData.code : undefined,
                 bandId: ("band" in editFormData && editFormData.band) ? editFormData.band.id : undefined,
@@ -190,14 +201,11 @@ const LiabilityTable = ({ view, onViewChange }: LiabilityTableProps) => {
                 { accessorKey: "name", header: "Liability Name" },
                 { accessorKey: "code", header: "Liability Code" },
                 {
-                    // Correcting the header text as requested.
                     accessorKey: "approveStatus",
                     header: "Liability Cause Stage",
                     cell: ({ row }) => {
-                        // Access the correct property from the row object.
-                        const status = (row.original as FixedLiabilityCause).approveStatus;
-                        // Your `getStatusStyle` function will handle the dynamic styling.
-                        return <span className={getStatusStyle(status)}>{status}</span>;
+                        const original = row.original as UiLiabilityCause;
+                        return <span className={getStatusStyle(original.approveStatus)}>{original.approveStatus}</span>;
                     },
                 },
                 {
@@ -260,8 +268,8 @@ const LiabilityTable = ({ view, onViewChange }: LiabilityTableProps) => {
                     accessorKey: "approveStatus",
                     header: "Approval Status",
                     cell: ({ row }) => {
-                        const status = (row.original as PercentageRange).approveStatus;
-                        return <span className={getStatusStyle(status)}>{status}</span>;
+                        const original = row.original as UiPercentageRange;
+                        return <span className={getStatusStyle(original.approveStatus)}>{original.approveStatus}</span>;
                     },
                 },
                 {
@@ -305,24 +313,22 @@ const LiabilityTable = ({ view, onViewChange }: LiabilityTableProps) => {
         return tableData.filter((item) => {
             if (!searchTerm) return true;
             const lowerSearch = searchTerm.toLowerCase();
+            // Using a type guard to properly filter based on the view
             if (view === "liability") {
-                const liabilityItem = item as FixedLiabilityCause;
+                const liabilityItem = item as UiLiabilityCause;
                 return (
                     liabilityItem.name?.toLowerCase().includes(lowerSearch) ||
                     liabilityItem.code?.toLowerCase().includes(lowerSearch) ||
-                    // Ensure approvalStatus is also searchable
                     liabilityItem.approveStatus?.toLowerCase().includes(lowerSearch)
                 );
             } else {
-                const percentageItem = item as PercentageRange;
+                const percentageItem = item as UiPercentageRange;
                 return (
                     percentageItem.percentage?.toString().toLowerCase().includes(lowerSearch) ||
                     percentageItem.code?.toLowerCase().includes(lowerSearch) ||
                     percentageItem.band?.name?.toLowerCase().includes(lowerSearch) ||
-                    // Using optional chaining to prevent error if range properties are null
                     String(percentageItem.amountStartRange)?.toLowerCase().includes(lowerSearch) ||
                     String(percentageItem.amountEndRange)?.toLowerCase().includes(lowerSearch) ||
-                    // Ensure approvalStatus is also searchable
                     percentageItem.approveStatus?.toLowerCase().includes(lowerSearch)
                 );
             }
@@ -420,7 +426,7 @@ const LiabilityTable = ({ view, onViewChange }: LiabilityTableProps) => {
                         ) : isLoading ? (
                             <TableRow>
                                 <TableCell colSpan={columns.length} className="h-24 text-center">
-                                <Loader2 className="mx-auto animate-spin" />
+                                    <Loader2 className="mx-auto animate-spin" />
                                     Loading
                                 </TableCell>
                             </TableRow>
@@ -495,10 +501,7 @@ const LiabilityTable = ({ view, onViewChange }: LiabilityTableProps) => {
                                         <Label htmlFor="band" className="mb-2">Band</Label>
                                         <Select
                                             value={"band" in editFormData ? (editFormData.band)?.name ?? "" : ""}
-                                            onValueChange={(value) => {
-                                                const selectedBand = bands.find(b => b.name === value);
-                                                setEditFormData((prev) => ({ ...prev, band: selectedBand }));
-                                            }}
+                                            onValueChange={handleEditSelectChange}
                                         >
                                             <SelectTrigger className="w-full border-[#bebebe] focus:ring-ring/50 rounded-md h-10 px-3">
                                                 <SelectValue placeholder="Select Band" />

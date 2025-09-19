@@ -69,6 +69,7 @@ import {
   LiabilityCause,
 } from "@/types/credit-debit";
 import axios from 'axios';
+import { Card } from "../ui/card";
 
 const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
   const queryClient = useQueryClient();
@@ -654,7 +655,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
             </Button>
           </div>
         </div>
-        <div className="min-h-0 flex-grow overflow-auto">
+        <Card className="h-4/6 overflow-x-hidden border-none bg-transparent shadow-none">
           <Table>
             <TableHeader className="bg-transparent">
               <TableRow className="h-16 py-4">
@@ -686,7 +687,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
               {renderTableBody()}
             </TableBody>
           </Table>
-        </div>
+        </Card>
 
         <Pagination className="mt-4 flex items-center justify-between">
           <div className="flex items-center space-x-2">
@@ -921,7 +922,6 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                 <TableRow className="h-16 py-4">
                   <TableHead className="w-[30px] py-4 pr-0"></TableHead>
                   <TableHead className="py-4">Date</TableHead>
-                  {/* Correctly render Credit/Debit headings based on the type prop */}
                   <TableHead className="py-4">
                     {type === "credit" ? "Credit" : "Debit"}
                   </TableHead>
@@ -942,7 +942,6 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                     <TableCell className="py-4 align-middle">
                       {transaction.date}
                     </TableCell>
-                    {/* Conditional rendering for the Debit/Credit columns */}
                     {type === "credit" ? (
                       <>
                         <TableCell className="py-4 align-middle">
