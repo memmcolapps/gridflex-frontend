@@ -85,8 +85,8 @@ const navItems: NavItemProps[] = [
         title: "Customer Management",
         href: "/data-management/customer-management",
       },
-      { title: "Tariff", href: "/data-management/tarrif" },
       { title: "Band Management", href: "/data-management/band-management" },
+      { title: "Tariff Rate", href: "/data-management/tarrif-rate" },
       {
         title: "Debt Management",
         href: "/data-management/debt-management",
