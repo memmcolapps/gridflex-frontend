@@ -43,7 +43,7 @@ export const useCreateTariff = () => {
 };
 
 type ChangeTariffStatusParams = {
-  tariffId: string | number;
+  tariffId: string;
   status: boolean;
 };
 

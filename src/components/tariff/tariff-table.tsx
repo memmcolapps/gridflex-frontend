@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { MoreVertical } from "lucide-react";
+import { Ban, MoreVertical, Pencil, UserCheck } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,11 +36,11 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { useState, useMemo } from "react";
-import { useAuth } from "@/context/auth-context";
-import { checkUserPermission } from "@/utils/permissions";
-import { changeTariffStatus } from "@/service/tarriff-service";
 import { TariffDatePicker } from "../tarrif-datepicker";
 import { getStatusStyle } from "../status-style";
+import { useBand } from "@/hooks/use-band";
+import { DeactivateTariffDialog } from "./deactivate-tarrif-dialog";
+import { useChangeTariffStatus } from "@/hooks/use-tarrif";
 
 interface TariffTableProps {
   tariffs: Tariff[];
@@ -54,8 +54,8 @@ export function TariffTable({
   selectedTariffs,
   setSelectedTariffs,
 }: TariffTableProps) {
-  const { user } = useAuth();
-  const canApprove = checkUserPermission(user, "approve");
+  const { bands, isLoading: isBandsLoading, error: bandsError } = useBand();
+  const { mutate: changeTariffStatus } = useChangeTariffStatus();
 
   const [confirmDialog, setConfirmDialog] = useState<{
     isOpen: boolean;
@@ -77,6 +77,16 @@ export function TariffTable({
     tariff: null,
   });
 
+  const [statusDialog, setStatusDialog] = useState<{
+    isOpen: boolean;
+    tariff: Tariff | null;
+  }>({
+    isOpen: false,
+    tariff: null,
+  });
+
+  const [isStatusLoading, setIsStatusLoading] = useState(false);
+
   const [formData, setFormData] = useState<{
     name: string;
     type: string;
@@ -90,15 +100,6 @@ export function TariffTable({
     bandCode: "",
     tariffRate: "",
   });
-
-  // Placeholder for band data (replace with actual data fetching logic)
-  const bands = [
-    { id: "1", name: "A" },
-    { id: "2", name: "B" },
-    { id: "3", name: "C" },
-  ];
-  const isBandsLoading = false;
-  const bandsError = null;
 
   const isFormValid = useMemo(() => {
     return (
@@ -126,79 +127,6 @@ export function TariffTable({
     }
   };
 
-  const handleStatusChange = async (tariffId: string, newStatus: boolean) => {
-    if (!canApprove) {
-      toast.error("You don't have permission to change tariff status");
-      return;
-    }
-
-    setConfirmDialog({
-      isOpen: true,
-      title: `${newStatus ? "Activate" : "Deactivate"} Tariff`,
-      description: `Are you sure you want to ${newStatus ? "activate" : "deactivate"} this tariff?`,
-      action: async () => {
-        const success = await changeTariffStatus(tariffId, newStatus);
-        if (success) {
-          // onUpdateTariff(tariffId, { status: newStatus });
-        }
-        setConfirmDialog((prev) => ({ ...prev, isOpen: false }));
-      },
-    });
-  };
-
-  const handleApprovalChange = async (
-    tariffId: string,
-    newStatus: "Approved" | "Rejected",
-  ) => {
-    if (!canApprove) {
-      toast.error("You don't have permission to change approval status");
-      return;
-    }
-
-    setConfirmDialog({
-      isOpen: true,
-      title: `${newStatus} Tariff`,
-      description: `Are you sure you want to ${newStatus.toLowerCase()} this tariff?`,
-      action: async () => {
-        // await changeTariffApprovalStatus(tariffId, newStatus);
-        setConfirmDialog((prev) => ({ ...prev, isOpen: false }));
-      },
-    });
-  };
-
-  const handleStatusToggle = async (
-    tariffId: string,
-    currentStatus: boolean,
-  ) => {
-    if (!canApprove) {
-      toast.error("You don't have permission to change tariff status");
-      return;
-    }
-
-    setConfirmDialog({
-      isOpen: true,
-      title: `${currentStatus ? "Deactivate" : "Activate"} Tariff`,
-      description: `Are you sure you want to ${
-        currentStatus ? "deactivate" : "activate"
-      } this tariff?`,
-      action: async () => {
-        try {
-          const success = await changeTariffStatus(tariffId, !currentStatus);
-          if (success) {
-            console.log("Status change successful, refreshing..."); // Debug log
-          } else {
-            console.error("Status change failed"); // Debug log
-          }
-        } catch (error) {
-          console.error("Error in status toggle:", error);
-          toast.error("Failed to update tariff status");
-        } finally {
-          setConfirmDialog((prev) => ({ ...prev, isOpen: false }));
-        }
-      },
-    });
-  };
-
   const handleEditTariff = (tariff: Tariff) => {
     setEditDialog({ isOpen: true, tariff });
     setFormData({
@@ -207,7 +135,7 @@ export function TariffTable({
       effectiveDate: tariff.effective_date
         ? new Date(tariff.effective_date)
         : null,
-      bandCode: tariff.band || "",
+      bandCode: tariff.band.id || "",
       tariffRate: tariff.tariff_rate?.toString() || "",
     });
   };
@@ -223,34 +151,52 @@ export function TariffTable({
     e.preventDefault();
     if (!editDialog.tariff?.id || !isFormValid) return;
 
+    console.log("Form submitted with data:", formData);
+  };
+  const handleToggleTariffStatus = (tariff: Tariff) => {
+    setStatusDialog({ isOpen: true, tariff });
+  };
+
+  const handleActivateAndDeactivateTariff = async (
+    tariff: Tariff,
+    newStatus: boolean,
+  ) => {
     try {
-      const updates: Partial<Tariff> = {
-        name: formData.name,
-        tariff_type: formData.type,
-        effective_date: formData.effectiveDate?.toISOString(),
-        band: formData.bandCode,
-        tariff_rate: formData.tariffRate,
-      };
-      const success = await updateTariff(
-        editDialog.tariff.id.toString(),
-        updates,
+      changeTariffStatus(
+        { tariffId: tariff.id, status: newStatus },
+        {
+          onSuccess: () => {
+            toast.success(
+              `Tariff ${newStatus ? "activated" : "deactivated"} successfully`,
+            );
+            setStatusDialog({ isOpen: false, tariff: null });
+          },
+          onError: (error) => {
+            console.error("Error changing tariff status:", error);
+            toast.error(
+              `Failed to ${
+                newStatus ? "activate" : "deactivate"
+              } tariff: ${error.message || error}`,
+            );
+          },
+          onSettled: () => {
+            setIsStatusLoading(false);
+          },
+        },
       );
-      if (success) {
-        updateTariff(editDialog.tariff.id.toString(), updates);
-        toast.success("Tariff updated successfully");
-        setEditDialog({ isOpen: false, tariff: null });
-      }
     } catch (error) {
-      console.error("Error updating tariff:", error);
-      toast.error("Failed to update tariff");
+      console.error("Error updating tariff status:", error);
+      toast.error("Failed to update tariff status");
+    } finally {
+      setIsStatusLoading(false);
     }
   };
 
-  // Placeholder for updateTariff service function
-  const updateTariff = async (_id: string, _updates: Partial<Tariff>) => {
-    // Implement your API call here
-    // Example: return await api.put(`/tariffs/${id}`, _updates);
-    return true; // Replace with actual implementation
+  const confirmToggleTariffStatus = () => {
+    if (statusDialog.tariff) {
+      const newStatus = statusDialog.tariff.status === false;
+      handleActivateAndDeactivateTariff(statusDialog.tariff, newStatus);
+    }
   };
 
   const validTariffs = useMemo(() => {
@@ -276,7 +222,6 @@ export function TariffTable({
             <TableHead>Tariff Type</TableHead>
             <TableHead>Band Code</TableHead>
             <TableHead>Tariff Rate</TableHead>
-            <TableHead>Status</TableHead>
             <TableHead>Effective Date</TableHead>
             <TableHead>Approval Status</TableHead>
             <TableHead>Actions</TableHead>
@@ -310,19 +255,8 @@ export function TariffTable({
                 </TableCell>
                 <TableCell>{tariff.name}</TableCell>
                 <TableCell>{tariff.tariff_type}</TableCell>
-                <TableCell>{tariff.band}</TableCell>
+                <TableCell>{tariff.band.name}</TableCell>
                 <TableCell>{tariff.tariff_rate}</TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={getStatusStyle(
-                        tariff.status ? "Active" : "Inactive",
-                      )}
-                    >
-                      {tariff.status ? "Active" : "Inactive"}
-                    </span>
-                  </div>
-                </TableCell>
                 <TableCell>{tariff.effective_date}</TableCell>
                 <TableCell>
                   <span className={getStatusStyle(tariff.approve_status)}>
@@ -332,35 +266,45 @@ export function TariffTable({
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
-                        <span className="sr-only">Open menu</span>
-                        <MoreVertical className="h-4 w-4" size={12} />
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-8 w-8 cursor-pointer p-2"
+                      >
+                        <MoreVertical size={14} />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="bg-white">
+                    <DropdownMenuContent
+                      align="center"
+                      className="cursor-pointer bg-white"
+                    >
                       <DropdownMenuItem
-                        onClick={() => handleEditTariff(tariff)}
-                        className="px-3 py-3"
+                        onSelect={() => {
+                          handleEditTariff(tariff);
+                        }}
                       >
-                        Edit Tariff
+                        <div className="flex w-full items-center gap-2 p-2">
+                          <Pencil size={14} />
+                          <span className="cursor-pointer">Edit Tariff</span>
+                        </div>
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        onClick={() =>
-                          handleStatusToggle(tariff.id.toString(), true)
-                        }
-                        className="px-3 py-3"
-                        disabled={tariff.status}
+                        onSelect={() => {
+                          handleToggleTariffStatus(tariff);
+                        }}
                       >
-                        Activate Tariff
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() =>
-                          handleStatusToggle(tariff.id.toString(), false)
-                        }
-                        className="px-3 py-3"
-                        disabled={!tariff.status}
-                      >
-                        Deactivate Tariff
+                        <div className="flex w-full items-center gap-2 p-2">
+                          {tariff.status !== false ? (
+                            <Ban size={14} />
+                          ) : (
+                            <UserCheck size={14} />
+                          )}
+                          <span>
+                            {tariff.status !== false
+                              ? "Deactivate"
+                              : "Activate"}
+                          </span>
+                        </div>
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -492,11 +436,13 @@ export function TariffTable({
                 </SelectTrigger>
                 <SelectContent>
                   {bands.length > 0 ? (
-                    bands.map((band) => (
-                      <SelectItem key={band.id} value={band.name}>
-                        {band.name}
-                      </SelectItem>
-                    ))
+                    bands
+                      .filter((band) => band.approveStatus === "Approved")
+                      .map((band) => (
+                        <SelectItem key={band.id} value={band.id ?? band.name}>
+                          {band.name}
+                        </SelectItem>
+                      ))
                   ) : (
                     <SelectItem value="" disabled>
                       {bandsError
@@ -507,7 +453,9 @@ export function TariffTable({
                 </SelectContent>
               </Select>
               {bandsError && (
-                <span className="text-sm text-red-500">{bandsError}</span>
+                <span className="text-sm text-red-500">
+                  {bandsError.message}
+                </span>
               )}
             </div>
             <div className="flex flex-col gap-2">
@@ -549,6 +497,17 @@ export function TariffTable({
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Status Toggle Dialog */}
+      <DeactivateTariffDialog
+        open={statusDialog.isOpen}
+        onOpenChange={(open: boolean) =>
+          setStatusDialog((prev) => ({ ...prev, isOpen: open }))
+        }
+        tariff={statusDialog.tariff}
+        onConfirm={confirmToggleTariffStatus}
+        isLoading={isStatusLoading}
+      />
     </div>
   );
 }

@@ -184,7 +184,7 @@ export default function BandManagement() {
           },
           onError: (error) => {
             console.error("Failed to deactivate band:", error);
-            toast.error("Failed to deactivate band");
+            toast.error(`Failed to deactivate band: ${error.message || error}`);
           },
         });
       } else {
@@ -279,7 +279,6 @@ export default function BandManagement() {
                 </div>
               </TableHead>
               <TableHead>Approval Status</TableHead>
-              <TableHead>Status</TableHead>
               <TableHead>Created At</TableHead>
               <TableHead>Updated At</TableHead>
               <TableHead>Actions</TableHead>
@@ -306,17 +305,6 @@ export default function BandManagement() {
                   <TableCell>
                     <span className={getStatusStyle(band.approveStatus)}>
                       {band.approveStatus}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <span
-                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                        band.status !== false
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
-                      }`}
-                    >
-                      {band.status !== false ? "Active" : "Inactive"}
                     </span>
                   </TableCell>
                   <TableCell>

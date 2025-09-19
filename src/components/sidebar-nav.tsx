@@ -208,11 +208,11 @@ const navItems: NavItemProps[] = [
     icon: Users,
     hasSubmenu: true,
     submenuItems: [
-      { title: "Users", href: "/user-management" },
       {
         title: "Group Permission",
         href: "/user-management/group-permission",
       },
+      { title: "Users", href: "/user-management" },
     ],
   },
   {

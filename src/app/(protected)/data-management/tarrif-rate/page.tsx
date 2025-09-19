@@ -55,8 +55,8 @@ export default function TariffManagementPage() {
     effectiveDate: null as Date | null,
     bandCode: "",
     tariffRate: "",
-    status: "inactive" as "active" | "inactive",
-    approvalStatus: "pending" as "Approved" | "pending" | "rejected",
+    status: "",
+    approvalStatus: "pending",
   });
 
   const { bands, isLoading: bandsLoading, error: bandsError } = useBand();
@@ -107,7 +107,7 @@ export default function TariffManagementPage() {
       name: formData.name,
       tariff_type: formData.type,
       effective_date: formData.effectiveDate?.toISOString().split("T")[0] ?? "",
-      band: formData.bandCode,
+      band_id: formData.bandCode,
       tariff_rate: formData.tariffRate,
     };
 
@@ -304,11 +304,16 @@ export default function TariffManagementPage() {
                     </SelectTrigger>
                     <SelectContent>
                       {bands && bands.length > 0 ? (
-                        bands.map((band) => (
-                          <SelectItem key={band.id} value={band.name}>
-                            {band.name}
-                          </SelectItem>
-                        ))
+                        bands
+                          .filter((band) => band.approveStatus === "Approved")
+                          .map((band) => (
+                            <SelectItem
+                              key={band.id}
+                              value={band.id ?? band.name}
+                            >
+                              {band.name}
+                            </SelectItem>
+                          ))
                       ) : (
                         <SelectItem value="" disabled>
                           {bandsError

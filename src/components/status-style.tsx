@@ -22,6 +22,7 @@ export const statusStyles: Record<string, string> = {
   pendingassigned: "bg-[#FFF5EA] text-[#C86900] py-2 px-2 rounded-full",
   pendingdetached: "bg-[#FFF5EA] text-[#C86900] py-2 px-2 rounded-full",
   pendingmigrated: "bg-[#FFF5EA] text-[#C86900] py-2 px-2 rounded-full",
+  pendingdeactivated: "bg-[#FFF5EA] text-[#C86900] py-2 px-2 rounded-full",
   rejectedcreated: "text-[#F50202] bg-[#FBE9E9] py-2 px-2 rounded-full",
   created: "bg-[#E9F6FF] text-[#161CCA] py-2 px-2 rounded-full",
 };
@@ -34,6 +35,7 @@ const statusMappings: Record<string, string> = {
   "pending-detached": "pendingdetached",
   "pending-migrated": "pendingmigrated",
   "pending-edited": "pending",
+  "pending-deactivated": "pendingdeactivated",
 };
 
 export const getStatusStyle = (status: string | undefined): string => {
