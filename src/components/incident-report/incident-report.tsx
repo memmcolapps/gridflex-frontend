@@ -1,8 +1,9 @@
-import { ListFilter } from "lucide-react";
 import { ContentHeader } from "../ui/content-header";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Button } from "../ui/button";
 import RecentIncidents from "./incident-report-table";
+import { useState } from "react";
+import IncidentDialog from "./incident-dialogs/incident-report-dialog";
 
 const ALL_STATUS = [
     {
@@ -14,6 +15,7 @@ const ALL_STATUS = [
 ]
 
 export default function IncidentReport() {
+    const [isDialogOpen , setIsDialogOpen] = useState(false)
     return (
         <div className="min-h-screen bg-transparent">
             <div className="max-w-screen-2xl space-y-6 bg-transparent">
@@ -44,7 +46,7 @@ export default function IncidentReport() {
                         <Button
                             variant={"default"}
                             className="text-md cursor-pointer gap-2 text-white px-8 py-6 font-semibold bg-[#161CCA]"
-                        // onClick={() => setIsDialogOpen(true)}
+                        onClick={() => setIsDialogOpen(true)}
                         >
                             Report An Incident
                         </Button>
@@ -55,6 +57,11 @@ export default function IncidentReport() {
                     <RecentIncidents/>
                 </div>
             </div>
+
+            <IncidentDialog
+                isOpen={isDialogOpen}
+                onOpenChange={setIsDialogOpen} 
+            />
         </div>
     )
 }
