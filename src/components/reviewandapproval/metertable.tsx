@@ -159,10 +159,12 @@ const MeterTable = () => {
                             </div>
                         </TableHead>
                         <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">Meter Number</TableHead>
-                        <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">Meter Type</TableHead>
+                        <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">Sim No</TableHead>
                         <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">Manufacturer</TableHead>
+                        <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">Class</TableHead>
+                        <TableHead className="px-4 py-3 text-sm font-medium text-gray-900"> Type</TableHead>
                         <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">Category</TableHead>
-                        <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">Status</TableHead>
+                        <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">Change Description</TableHead>
                         <TableHead className="px-4 py-3 text-sm font-medium text-gray-900 text-center">Approval Status</TableHead>
                         <TableHead className="px-4 py-3 text-sm font-medium text-gray-900 text-right">Actions</TableHead>
                     </TableRow>
@@ -191,13 +193,16 @@ const MeterTable = () => {
                                     </div>
                                 </TableCell>
                                 <TableCell className="px-4 py-3 w-[150px] text-sm text-gray-900">{item.meterNumber}</TableCell>
+                                <TableCell className="px-4 py-3 w-[150px] text-sm text-gray-900">{item.simNumber}</TableCell>
+                                <TableCell className="px-4 py-3 w-[100px] text-sm text-gray-900">{item.manufacturer.name}</TableCell>
+                                           <TableCell className="px-4 py-3 w-[120px] text-sm text-gray-900">{item.meterClass}</TableCell>
                                 <TableCell className="px-4 py-3 w-[120px] text-sm text-gray-900">{item.meterType}</TableCell>
-                                <TableCell className="px-4 py-3 w-[100px] text-sm text-gray-900">{item.manufacturer}</TableCell>
-                                <TableCell className="px-4 py-3 w-[100px] text-sm text-gray-900">{item.category}</TableCell>
-                                <TableCell className="px-4 py-3 w-[120px] text-sm text-gray-900">{item.status ? 'Active' : 'Inactive'}</TableCell>
+
+                                <TableCell className="px-4 py-3 w-[100px] text-sm text-gray-900">{item.meterCategory}</TableCell>
+                                <TableCell className="px-4 py-3 w-[120px] text-sm text-gray-900">{item.changeDescription}</TableCell>
                                 <TableCell className="px-4 py-3 text-center">
                                     <span className="inline-block px-3 py-1 text-sm font-medium text-[#C86900] bg-[#FFF5EA] p-1 rounded-full">
-                                        {item.approveStatus === 'pending-state' ? 'Pending' : item.approveStatus}
+                                        {item.meterStage === 'pending-state' ? 'Pending' : item.meterStage}
                                     </span>
                                 </TableCell>
                                 <TableCell className="px-4 py-3 text-right">

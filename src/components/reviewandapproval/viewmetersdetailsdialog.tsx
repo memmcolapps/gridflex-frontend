@@ -1,247 +1,336 @@
-"use client";
-
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft, Ban, CheckCircle, ChevronDown, ChevronUp, Unlink } from "lucide-react";
-import Image from "next/image";
-import { useState, useEffect } from "react";
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { MoveRight, UnlinkIcon } from 'lucide-react';
+import Image from 'next/image';
 import type { Meter } from "@/types/review-approval";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableRow,
-} from "@/components/ui/table";
 
 interface ViewMeterDetailsDialogProps {
-  isOpen: boolean;
-  onOpenChange: (open: boolean) => void;
-  selectedRow: Meter | null;
-  onApprove: (item: Meter | null) => void;
-  onReject: (item: Meter | null) => void;
+    isOpen: boolean;
+    onOpenChange: (open: boolean) => void;
+    selectedRow: Meter | null;
+    onApprove: (item: Meter | null) => void;
+    onReject: (item: Meter | null) => void;
 }
 
-type DialogMode = "main" | "image";
+const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
+    isOpen,
+    onOpenChange,
+    selectedRow,
+    onApprove,
+    onReject,
+}) => {
+    const renderContent = () => {
+        if (!selectedRow) return null;
 
-const ViewMeterDetailsDialog = ({
-  isOpen,
-  onOpenChange,
-  selectedRow,
-  onApprove,
-  onReject,
-}: ViewMeterDetailsDialogProps) => {
-  const [dialogMode, setDialogMode] = useState<DialogMode>("main");
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const [isDetailsVisible, setIsDetailsVisible] = useState(true);
+        switch (selectedRow.changeDescription) {
+            case 'Meter Allocated':
+                return (
+                    <>
+                        <DialogHeader>
+                            <DialogTitle className="text-left text-base sm:text-lg font-semibold text-gray-900 truncate">
+                                Meter Allocated
+                            </DialogTitle>
+                            <span className="text-gray-500 text-sm sm:text-base">
+                                Operator: <span className="font-medium">Margaret</span>
+                            </span>
+                        </DialogHeader>
+                        <div className="flex flex-col gap-3 py-4 sm:py-6 w-150">
+                            <div className="flex items-center gap-4 p-2">
+                                <div className="flex-1 text-sm sm:text-base font-bold text-gray-900">
+                                    {selectedRow.meterNumber ?? 'N/A'}
+                                </div>
+                                <div className="flex-1 flex items-center gap-2 text-sm sm:text-base font-bold text-gray-900">
+                                    <MoveRight className="text-gray-900 mr-2 scale-x-185" size={16} />
+                                    <span>Molete Business Hub</span>
+                                </div>
+                            </div>
+                        </div>
+                    </>
+                );
 
-  useEffect(() => {
-    if (isOpen) {
-      setDialogMode("main");
-      setIsDetailsVisible(true);
-    }
-  }, [isOpen]);
+            case 'Meter Assigned':
+                return (
+                    <>
+                        <DialogHeader>
+                            <DialogTitle className="text-left text-base sm:text-lg font-semibold text-gray-900 truncate">
+                                Meter Assigned
+                            </DialogTitle>
+                            <span className="text-gray-500 text-sm sm:text-base">
+                                Operator: <span className="font-medium">Margaret</span>
+                            </span>
+                        </DialogHeader>
+                        <div className="flex flex-col gap-3 py-4 sm:py-6 w-150 h-fit">
+                            {/* Two-column layout */}
+                            <div className="grid grid-cols-2 gap-4">
+                                {/* Left Column */}
+                                <div className="flex flex-col gap-3 space-y-6">
+                                    <div className="flex items-center gap-4">
+                                        <div className="text-sm sm:text-base font-bold text-gray-900">
+                                            {selectedRow.meterNumber}
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-[120px] text-sm sm:text-base font-bold text-gray-700 whitespace-nowrap">
+                                            Uploaded Image:
+                                        </div>
+                                    </div>
+                                </div>
+                                {/* Right Column */}
+                                <div className="flex flex-col gap-3 space-y-6">
+                                    <div className="flex items-center gap-2">
+                                        <MoveRight className="text-gray-900 mr-2 scale-x-185" size={16} />
+                                        <div className="text-sm sm:text-base font-bold text-gray-700">
+                                            C-1234567890
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-4">
+                                        <div className="text-sm sm:text-base font-bold text-gray-900">
 
-  const handleOpenImage = () => {
-    setIsTransitioning(true);
-    setTimeout(() => {
-      setDialogMode("image");
-      setIsTransitioning(false);
-    }, 300); // Duration of the fade out
-  };
+                                            <Image
+                                                src="/images/mdj.jpg"
+                                                alt="C-1234567890"
+                                                className=" object-cover w-100 h-50"
+                                            />
 
-  const handleBackClick = () => {
-    setIsTransitioning(true);
-    setTimeout(() => {
-      setDialogMode("main");
-      setIsTransitioning(false);
-    }, 300); // Duration of the fade out
-  };
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </>
+                );
 
-  const mainDetailsData = [
-    { label: "Meter Number", value: selectedRow?.meterNumber ?? "N/A" },
-    { label: "Meter Type", value: selectedRow?.meterType ?? "N/A" },
-    { label: "Meter Manufacturer", value: selectedRow?.manufacturer ?? "N/A" },
-    { label: "Meter Category", value: selectedRow?.category ?? "N/A" },
-    { label: "Approval Status", value: selectedRow?.approvalStatus ?? "N/A" },
-    { label: "Reason", value: selectedRow?.reason ?? "N/A" },
-    { label: "Description", value: selectedRow?.description ?? "N/A" },
-  ];
+            case 'Meter Deactivated':
+                return (
+                    <>
+                        <DialogHeader>
 
-  const oldValuesData = [
-    { label: "Customer ID", value: selectedRow?.customerId ?? "N/A" },
-    { label: "Customer Name", value: selectedRow?.customerName ?? "N/A" },
-    { label: "SIM Number", value: selectedRow?.simNumber ?? "N/A" },
-    { label: "Old SGC", value: selectedRow?.oldSGC ?? "N/A" },
-    { label: "Old KRN", value: selectedRow?.oldkrn ?? "N/A" },
-    { label: "Old Tariff Index", value: selectedRow?.oldTariffIndex ?? "N/A" },
-    { label: "Meter Class", value: selectedRow?.class ?? "N/A" },
-    { label: "Change Description", value: selectedRow?.changeDescription ?? "N/A" },
-  ];
+                            <DialogTitle className="text-left text-base sm:text-lg font-semibold text-gray-900 truncate">
+                                Meter Deactivated
+                            </DialogTitle>
+                            <span className="text-gray-500 text-sm sm:text-base">
+                                Operator: <span className="font-medium">Margaret</span>
+                            </span>
+                        </DialogHeader>
+                        <div className="flex flex-col gap-3 py-4 sm:py-6 w-[405px]">
+                            {[
+                                { label: 'Meter Number:', value: selectedRow.meterNumber },
+                                { label: 'SIM No.:', value: selectedRow.simNumber },
+                                { label: 'Meter Type:', value: 'Electricity' },
+                                { label: 'Meter Manufacturer:', value: selectedRow.manufacturer?.name },
+                                { label: 'Meter Class:', value: selectedRow.meterClass },
+                                { label: 'Meter Category:', value: selectedRow.meterCategory },
+                                { label: 'Old SGC:', value: selectedRow.oldSGC },
+                                { label: 'New SGC:', value: selectedRow.newSGC },
+                                { label: 'Old KRN:', value: selectedRow.oldkrn },
+                                { label: 'New KRN:', value: selectedRow.newkrn },
+                                { label: 'Old Tariff Index:', value: selectedRow.oldTariffIndex },
+                                { label: 'New Tariff Index:', value: selectedRow.newTariffIndex },
+                                { label: 'Reason:', value: selectedRow.reason },
+                            ].map(({ label, value }) => (
+                                <div key={label} className="flex items-center whitespace-nowrap">
+                                    <div className="w-[120px] text-sm sm:text-base font-medium text-gray-700 whitespace-nowrap">
+                                        {label}
+                                    </div>
+                                    <div className="text-sm sm:text-base font-bold text-gray-900 ml-30">
+                                        {value}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </>
+                );
 
-  const newValuesData = [
-    { label: "New SGC", value: selectedRow?.newSGC ?? "N/A" },
-    { label: "New KRN", value: selectedRow?.newkrn ?? "N/A" },
-    { label: "New Tariff Index", value: selectedRow?.newTariffIndex ?? "N/A" },
-  ];
 
-  const renderDetailsSection = (title: string, data: { label: string; value: string }[]) => (
-    <div>
-      <h3 className="text-md font-semibold text-gray-800">{title}</h3>
-      <Table className="mt-2 text-sm">
-        <TableBody>
-          {data.map((row, index) => (
-            <TableRow key={index}>
-              <TableCell className="px-0 py-1 text-gray-600">{row.label}</TableCell>
-              <TableCell className="px-0 py-1 text-right font-medium text-gray-800">{row.value}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
-  );
 
-  return (
-    <>
-      <style>{`
-        .fade-out {
-          opacity: 0;
-          transition: opacity 0.3s ease-out;
+            case 'Meter Detached':
+                return (
+                    <>
+                        <DialogHeader>
+                            <DialogTitle className="text-left text-base sm:text-lg font-semibold text-gray-900 truncate">
+                                Meter Detached
+                            </DialogTitle>
+                            <span className="text-gray-500 text-sm sm:text-base">
+                                Operator: <span className="font-medium">Margaret</span>
+                            </span>
+                        </DialogHeader>
+                        <div className="flex flex-col gap-3 py-4 sm:py-6">
+                            <div className="flex items-start gap-4 w-150">
+                                <div className="flex-1 flex flex-col gap-3 p-2">
+                                    <div className="text-sm sm:text-base font-bold text-gray-900">
+                                        {selectedRow.meterNumber ?? 'N/A'}
+                                    </div>
+                                    <div className="text-sm sm:text-base font-medium text-gray-700">
+                                        Reason:
+                                    </div>
+                                </div>
+                                <div className="flex-1 flex flex-col gap-3 p-2">
+                                    <div className="flex items-center gap-2 text-sm sm:text-base text-gray-900">
+                                        <UnlinkIcon size={20} className="text-gray-700" />
+                                        <span className='font-bold'>C-122623669</span>
+                                    </div>
+                                    <div className="text-sm sm:text-base font-bold text-gray-900">
+                                        {selectedRow.reason}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </>
+                );
+
+
+            case 'Meter Migrated':
+                const newCategory = selectedRow.meterCategory === 'Postpaid' ? 'Prepaid' : selectedRow.meterCategory === 'Prepaid' ? 'Postpaid' : 'N/A';
+                return (
+                    <>
+                        <DialogHeader>
+                            <DialogTitle className="text-left text-base sm:text-lg font-semibold text-gray-900 truncate">
+                                Meter Migrated
+                            </DialogTitle>
+                            <span className="text-gray-500 text-sm sm:text-base">
+                                Operator: <span className="font-medium">Margaret</span>
+                            </span>
+                        </DialogHeader>
+                        <div className="flex flex-col gap-6 py-4 sm:py-6 w-150">
+                            <div className="flex items-center gap-4 p-2">
+                                <div className="flex-1 text-sm sm:text-base text-gray-900">
+                                    {selectedRow.meterNumber}
+                                </div>
+                                <div className="flex-1 text-sm sm:text-base font-bold text-gray-900">
+                                    {selectedRow.meterCategory ?? 'N/A'}
+                                </div>
+                                <div className="flex-1 flex items-center gap-2 text-sm sm:text-base font-bold text-gray-900">
+                                    <MoveRight className="text-gray-900 mr-2 scale-x-185" size={16} />
+                                    <span>{newCategory}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </>
+                );
+
+            case 'Newly Added':
+                return (
+                    <>
+                        <DialogHeader>
+                            <DialogTitle className="text-left text-base sm:text-lg font-semibold text-gray-900 truncate">
+                                Newly Added
+                            </DialogTitle>
+                            <span className="text-gray-500 text-sm sm:text-base">
+                                Operator: <span className="font-medium">Margaret</span>
+                            </span>
+                        </DialogHeader>
+                        <div className="flex flex-col gap-3 py-4 sm:py-6 w-[405px]">
+                            {[
+                                { label: 'Meter Number:', value: selectedRow.meterNumber },
+                                { label: 'SIM No:', value: selectedRow.simNumber },
+                                { label: 'Meter Type:', value: selectedRow.meterType },
+                                { label: 'Meter Manufacturer:', value: selectedRow.manufacturer?.name },
+                                { label: 'Meter Class:', value: selectedRow.meterClass },
+                                { label: 'Meter Category:', value: selectedRow.meterCategory },
+                                { label: 'Old SGC:', value: selectedRow.oldSGC },
+                                { label: 'New SGC:', value: selectedRow.newSGC },
+                                { label: 'Old KRN:', value: selectedRow.oldkrn },
+                                { label: 'New KRN:', value: selectedRow.newkrn },
+                                { label: 'Old Tariff Index:', value: selectedRow.oldTariffIndex },
+                                { label: 'New Tariff Index:', value: selectedRow.newTariffIndex },
+                            ].map(({ label, value }) => (
+                                <div key={label} className="flex items-center">
+                                    <div className="w-[120px] text-sm sm:text-base font-medium text-gray-700 whitespace-nowrap">
+                                        {label}
+                                    </div>
+                                    <div className="text-sm sm:text-base font-bold text-gray-900 ml-20">
+                                        {value ?? 'N/A'}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </>
+                );
+
+            case 'Meter Edited':
+                return (
+                    <>
+                        <DialogHeader>
+                            <DialogTitle className="text-left text-base sm:text-lg font-semibold text-gray-900 truncate">
+                                Meter Edited
+                            </DialogTitle>
+                            <span className="text-gray-500 text-sm sm:text-base">
+                                Operator: <span className="font-medium">Margaret</span>
+                            </span>
+                        </DialogHeader>
+                        <div className="flex flex-col gap-3 py-4 sm:py-6">
+                            {[
+                                { label: 'Meter No:', oldValue: selectedRow.meterNumber, newValue: selectedRow.meterNumber === '6201021223' ? '6201021224' : selectedRow.meterNumber },
+                                { label: 'SIM Number:', oldValue: selectedRow.simNumber, newValue: selectedRow.simNumber === '890068073404' ? '890068073403' : selectedRow.simNumber },
+                                { label: 'Meter Type:', oldValue: selectedRow.meterType, newValue: 'Water' },
+                                { label: 'Meter Manufacturer:', oldValue: selectedRow.manufacturer?.name, newValue: 'Majec' },
+                                { label: 'Meter Class:', oldValue: selectedRow.meterClass, newValue: '3 Phase' },
+                                { label: 'Meter Category:', oldValue: selectedRow.meterCategory, newValue: 'Postpaid' },
+                                { label: 'Old SGC:', oldValue: selectedRow.oldSGC, newValue: selectedRow.oldSGC },
+                                { label: 'New SGC:', oldValue: selectedRow.newSGC, newValue: selectedRow.newSGC },
+                                { label: 'Old KRN:', oldValue: selectedRow.oldkrn, newValue: selectedRow.oldkrn },
+                                { label: 'New KRN:', oldValue: selectedRow.newkrn, newValue: selectedRow.newkrn },
+                                { label: 'Old Tariff Index:', oldValue: selectedRow.oldTariffIndex, newValue: '3' },
+                                { label: 'New Tariff Index:', oldValue: selectedRow.newTariffIndex, newValue: '4' },
+                            ].map(({ label, oldValue, newValue }) => (
+                                <div key={label} className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                                    <div className="w-[100px] sm:w-[120px] text-sm sm:text-base font-medium text-gray-700 whitespace-nowrap">
+                                        {label}
+                                    </div>
+                                    <div className="w-full sm:w-[120px] lg:max-w-[700px] text-sm sm:text-base font-bold text-gray-900 whitespace-nowrap ml-20">
+                                        {oldValue ?? 'N/A'}
+                                    </div>
+                                    {newValue && (
+                                        <div className="flex items-start text-sm sm:text-base text-gray-900 whitespace-nowrap ml-10">
+                                            <MoveRight className="text-gray-900 mr-4 scale-x-185" size={16} />
+                                            <span className="font-bold truncate">{newValue}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </>
+                );
+
+            default:
+                return null;
         }
-        .fade-in {
-          opacity: 1;
-          transition: opacity 0.3s ease-in;
-        }
-      `}</style>
-      <Dialog open={isOpen && dialogMode === "main" && !isTransitioning} onOpenChange={onOpenChange}>
-        <DialogContent
-          className={`w-full max-w-sm sm:max-w-md h-fit mx-auto bg-white text-black rounded-lg shadow-lg p-6 z-[1000] ${
-            isTransitioning ? "fade-out" : "fade-in"
-          }`}
-        >
-          <DialogHeader className="flex flex-col items-start">
-            <DialogTitle className="text-xl font-semibold text-gray-900">Meter Details</DialogTitle>
-            <div className="flex items-center gap-2 mt-2">
-              <span
-                className={`px-3 py-1 text-xs font-medium rounded-full ${
-                  selectedRow?.approvalStatus === "pending-state"
-                    ? "bg-orange-100 text-orange-800"
-                    : "bg-green-100 text-green-800"
-                }`}
-              >
-                {selectedRow?.approvalStatus === "pending-state" ? "Pending" : "Approved"}
-              </span>
-              <span className="text-sm text-gray-500">
-                Created on: {selectedRow?.createdAt ? new Date(selectedRow.createdAt).toLocaleDateString() : "N/A"}
-              </span>
-            </div>
-          </DialogHeader>
+    };
 
-          <div className="mt-4 space-y-4 max-h-[60vh] overflow-y-auto pr-2">
-            {renderDetailsSection("Main Details", mainDetailsData)}
-
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <div
-                className="flex justify-between items-center cursor-pointer"
-                onClick={() => setIsDetailsVisible(!isDetailsVisible)}
-              >
-                <h3 className="text-md font-semibold text-gray-800">Change Details</h3>
-                {isDetailsVisible ? (
-                  <ChevronUp size={20} className="text-gray-500" />
-                ) : (
-                  <ChevronDown size={20} className="text-gray-500" />
-                )}
-              </div>
-              {isDetailsVisible && (
-                <div className="mt-4 space-y-4">
-                  {renderDetailsSection("Old Values", oldValuesData)}
-                  {renderDetailsSection("New Values", newValuesData)}
-                  {selectedRow?.imageUrl && (
-                    <div className="mt-4">
-                      <h4 className="text-sm font-semibold text-gray-700">Image</h4>
-                      <div className="mt-2 relative">
-                        <Image
-                          src={selectedRow.imageUrl}
-                          alt="Uploaded meter image"
-                          width={400}
-                          height={200}
-                          className="w-full h-auto rounded-lg"
-                        />
+    return (
+        <Dialog open={isOpen} onOpenChange={onOpenChange}>
+            <DialogContent
+                className="w-fit lg:max-w-[1200px] bg-white text-black p-4 sm:p-6 rounded-lg shadow-lg overflow-hidden h-fit"
+            >
+                <div className="w-full">
+                    {renderContent()}
+                    <div className="flex justify-between gap-2 mt-4">
                         <Button
-                          variant="ghost"
-                          onClick={handleOpenImage}
-                          className="absolute bottom-2 right-2 flex items-center gap-1 text-xs font-medium bg-white/80 backdrop-blur-sm p-2 rounded-md transition-colors"
+                            onClick={() => selectedRow && onReject(selectedRow)}
+                            variant="outline"
+                            className="border-red-500 text-red-500 bg-white hover:bg-red-50 hover:text-red-600 text-sm sm:text-base font-medium w-full sm:w-auto px-3 py-2 sm:px-4 sm:py-2 rounded-md transition-colors focus:ring-red-500/0"
+                            disabled={!selectedRow}
                         >
-                          <Unlink size={12} />
-                          <span className="text-gray-700">View Full Image</span>
+                            Reject
                         </Button>
-                      </div>
+                        <Button
+                            onClick={() => selectedRow && onApprove(selectedRow)}
+                            variant="default"
+                            className="bg-[#22C55E] text-white hover:bg-[#1ea34d] text-sm sm:text-base font-medium w-full sm:w-auto px-3 py-2 sm:px-4 sm:py-2 rounded-md transition-colors"
+                            disabled={!selectedRow}
+                        >
+                            Approve
+                        </Button>
                     </div>
-                  )}
                 </div>
-              )}
-            </div>
-          </div>
-
-          <div className="mt-6 flex justify-between gap-2">
-            <Button
-              variant="outline"
-              className="text-sm font-medium w-full px-4 py-2 rounded-md border-gray-300 text-gray-700 transition-colors hover:bg-gray-100"
-              onClick={() => onOpenChange(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="outline"
-              className="text-sm font-medium w-full px-4 py-2 rounded-md border-[#161CCA] text-[#161CCA] transition-colors hover:bg-indigo-50"
-              onClick={() => {
-                onApprove(selectedRow);
-              }}
-            >
-              <CheckCircle size={16} className="mr-2" /> Approve
-            </Button>
-            <Button
-              variant="outline"
-              className="text-sm font-medium w-full px-4 py-2 rounded-md border-red-500 text-red-500 transition-colors hover:bg-red-50"
-              onClick={() => {
-                onReject(selectedRow);
-              }}
-            >
-              <Ban size={16} className="mr-2" /> Reject
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={isOpen && dialogMode === "image" && !isTransitioning} onOpenChange={(open) => setDialogMode(open ? "image" : "main")}>
-        <DialogContent className="w-fit max-w-[800px] bg-white p-6 rounded-lg shadow-lg h-fit">
-          <DialogHeader className="flex flex-col items-start">
-            <Button
-              variant="ghost"
-              onClick={handleBackClick}
-              className="mb-4 text-start font-medium text-gray-700 hover:text-gray-900 flex items-center gap-2 cursor-pointer"
-            >
-              <ArrowLeft size={16} />
-              Back
-            </Button>
-          </DialogHeader>
-          <div className="flex justify-center mb-4">
-            <Image
-              src={selectedRow?.imageUrl ?? "/images/placeholder.jpg"}
-              alt="Full-size uploaded meter image"
-              className="object-contain max-w-full max-h-[70vh]"
-              width={800}
-              height={400}
-            />
-          </div>
-        </DialogContent>
-      </Dialog>
-    </>
-  );
+            </DialogContent>
+        </Dialog>
+    );
 };
 
 export default ViewMeterDetailsDialog;

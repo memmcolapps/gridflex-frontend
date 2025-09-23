@@ -13,7 +13,9 @@ const CUSTOM_HEADER = process.env.NEXT_PUBLIC_CUSTOM_HEADER;
 
 // Validate environment variables
 if (!API_URL || !CUSTOM_HEADER) {
-  throw new Error("Missing required environment variables: API_URL or CUSTOM_HEADER");
+  throw new Error(
+    "Missing required environment variables: API_URL or CUSTOM_HEADER",
+  );
 }
 
 export interface FetchParams {
@@ -23,6 +25,7 @@ export interface FetchParams {
   sortBy?: string | null;
   sortDirection?: "asc" | "desc" | null;
   type?: string; // Filter by approval status
+  meterStage?: string; // Filter by meter approval status
 }
 
 export interface ApproveRejectPayload {
@@ -292,14 +295,14 @@ export async function getAllMeters({
   searchTerm,
   sortBy,
   sortDirection,
-  type = "pending-state",
+  meterStage = "pending-state",
 }: FetchParams): Promise<MeterResponse> {
   const params: QueryParams = {
     page: String(page),
     pageSize: String(pageSize),
   };
 
-  if (type) params.type = type;
+  if (meterStage) params.type = meterStage;
   if (searchTerm) params.search = searchTerm;
   if (sortBy) {
     params.sortBy = sortBy;

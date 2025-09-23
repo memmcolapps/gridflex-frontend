@@ -89,7 +89,6 @@ export interface Tariff {
   approve_status: string;
   created_at: string;
   updated_at: string;
-  
 }
 
 export interface MeterResponse {
@@ -110,8 +109,21 @@ export interface Meter {
   orgId: string;
   meterNumber: string;
   meterType: string;
-  manufacturer: string;
-  category: string;
+  manufacturer: {
+    id: string;
+    orgId: string;
+    manufacturerId: string;
+    name: string;
+    contactPerson: string;
+    state: string;
+    city: string;
+    street: string;
+    email: string;
+    phoneNo: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+  meterCategory: string;
   status: boolean;
   approveStatus: string;
   createdBy: string;
@@ -123,9 +135,9 @@ export interface Meter {
   simNumber: string;
   oldSGC: string;
   newSGC: string;
-  class: string;
+  meterClass: string;
   changeDescription: string;
-  approvalStatus: string;
+  meterStage: string;
   reason?: string;
   oldkrn?: string;
   newkrn?: string;
