@@ -142,26 +142,31 @@ export interface UpdatedPercentageRangePayload {
     deactivated?: boolean;
 }
 
+export type ApprovalStatusType = "Pending" | "Rejected" | "Approved";
+
 // UI-specific types, defined only once
 export type UILiability = {
+    id: string;
     sNo: number;
     liabilityName: string;
     liabilityCode: string;
-    approvalStatus: "Pending" | "Rejected" | "Approved";
+    approvalStatus: ApprovalStatusType;
     deactivated?: boolean;
 };
 
 export type UiPercentageRange = {
+    id: string;
     sNo: number;
     percentage: string;
     percentageCode: string;
     band: string;
     amountStartRange: string;
     amountEndRange: string;
-    approvalStatus: "Pending" | "Rejected" | "Approved";
+    approvalStatus: ApprovalStatusType;
+    deactivated?: boolean;
 };
 
-export type TableData = (UILiability | UiPercentageRange) & { deactivated?: boolean };
+export type TableData = UILiability | UiPercentageRange;
 
 export type LiabilityTableProps = {
     view: "liability" | "percentage";
