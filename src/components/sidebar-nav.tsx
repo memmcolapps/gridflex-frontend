@@ -26,6 +26,7 @@ import {
   Info,
   MessageSquareMore,
   type LucideIcon,
+  CircleAlert,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -225,6 +226,12 @@ const navItems: NavItemProps[] = [
     title: "Customized Report",
     href: "/customized-report",
     icon: ClipboardList,
+    hasSubmenu: false,
+  },
+  {
+    title: "Incident Report",
+    href: "/incident-report",
+    icon: CircleAlert,
     hasSubmenu: false,
   },
 
