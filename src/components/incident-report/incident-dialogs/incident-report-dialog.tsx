@@ -3,10 +3,30 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
+import { useCreateIncident } from "@/hooks/use-incident";
+import { useState } from "react";
+
 export default function IncidentDialog({ isOpen, onOpenChange }: {
     isOpen: boolean;
     onOpenChange: (open: boolean) => void;
 }) {
+
+    const { mutate: sendMessage, isPending } = useCreateIncident();
+    const [message, setMessage] = useState('')
+
+    const handleSubmit = () => {
+        sendMessage(
+            {
+                message,
+            },
+            {
+                onSuccess: () => {
+                    setMessage("");
+                },
+            }
+        );
+    };
+
 
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -23,10 +43,18 @@ export default function IncidentDialog({ isOpen, onOpenChange }: {
                         <Textarea
                             id="message"
                             name="message"
+                            value={message}
+                            onChange={(e) => setMessage(e.target.value)}
                             className="focus:outline-none focus:ring-0 focus:border-transparent  h-50 border-gray-200"
                             placeholder="Message..."
                         />
                         <Button
+                            onClick={handleSubmit}
+                            variant={"default"}
+                            disabled={isPending}
+                            className="text-md w-full cursor-pointer gap-2 text-white px-8 py-6 font-semibold bg-[#161CCA]"
+                        >
+                            {isPending ? "Sending..." : "Send"}
                             variant={"default"}
                             className="text-md w-full cursor-pointer gap-2 text-white px-8 py-6 font-semibold bg-[#161CCA]"
                         >
