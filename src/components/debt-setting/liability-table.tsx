@@ -31,7 +31,7 @@ import {
     DialogDescription,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { ArrowUpDown, Ban, EllipsisVertical, Pencil, Search, AlertTriangle, Loader2 } from "lucide-react";
+import { ArrowUpDown, Ban, EllipsisVertical, Pencil, Search, AlertTriangle, Loader2, Play, CheckCircle } from "lucide-react";
 import React, { useState, useMemo } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { getStatusStyle } from "../status-style";
@@ -40,18 +40,19 @@ import {
     useUpdateLiabilityCause,
     useAllPercentageRanges,
     useUpdatePercentageRange,
+    useChangeLiabilityCauseStatus,
+    useChangePercentageRangeStatus,
 } from "@/hooks/use-debit-settings";
-import { type LiabilityCause, type PercentageRange, type UpdatedLiabilityCausePayload, type UpdatedPercentageRangePayload, type Band } from "@/types/credit-debit";
+import { type LiabilityCause, type PercentageRange, type UpdatedLiabilityCausePayload, type UpdatedPercentageRangePayload, type Band, type ApprovalStatusType, type TableData } from "@/types/credit-debit";
 import { useBand } from "@/hooks/use-band";
 
-// Defining types for the UI's view model.
-// This is the data structure the table needs to function correctly.
+// Defining types for the UI's view model, aligned with imported types
 type UILiability = {
     id: string;
     sNo: number;
     liabilityName: string;
     liabilityCode: string;
-    approvalStatus: "Pending" | "Rejected" | "Approved";
+    approvalStatus: ApprovalStatusType;
     deactivated?: boolean;
 };
 
@@ -63,11 +64,9 @@ type UiPercentageRange = {
     band: string;
     amountStartRange: string;
     amountEndRange: string;
-    approvalStatus: "Pending" | "Rejected" | "Approved";
+    approvalStatus: ApprovalStatusType;
     deactivated?: boolean;
 };
-
-type TableData = UILiability | UiPercentageRange;
 
 type LiabilityTableProps = {
     view: "liability" | "percentage";
@@ -79,21 +78,22 @@ const LiabilityTable = ({ view, onViewChange, onDataChange }: LiabilityTableProp
     const [searchTerm, setSearchTerm] = useState("");
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [isDeactivateDialogOpen, setIsDeactivateDialogOpen] = useState(false);
+    const [isActivateDialogOpen, setIsActivateDialogOpen] = useState(false);
     const [selectedRow, setSelectedRow] = useState<TableData | null>(null);
 
-    // Initializing editFormData with a type that can handle both liability and percentage data.
     const [editFormData, setEditFormData] = useState<Partial<TableData>>({});
 
     const { data: liabilityData, isLoading: isLoadingLiabilities, refetch: refetchLiabilities } = useAllLiabilityCauses();
     const { data: percentageData, isLoading: isLoadingPercentages, refetch: refetchPercentages } = useAllPercentageRanges();
     const { mutate: updateLiability } = useUpdateLiabilityCause();
     const { mutate: updatePercentage } = useUpdatePercentageRange();
+    const { mutate: changeLiabilityStatus } = useChangeLiabilityCauseStatus();
+    const { mutate: changePercentageStatus } = useChangePercentageRangeStatus();
     const { bands } = useBand();
 
     const tableData = useMemo(() => {
         let data: TableData[] = [];
         if (view === "liability" && liabilityData) {
-            // Explicitly mapping API data to the UI-friendly UILiability type.
             data = liabilityData.map((item, index) => ({
                 id: item.id,
                 sNo: index + 1,
@@ -104,13 +104,12 @@ const LiabilityTable = ({ view, onViewChange, onDataChange }: LiabilityTableProp
             }));
         }
         if (view === "percentage" && percentageData) {
-            // Explicitly mapping API data to the UI-friendly UiPercentageRange type.
             data = percentageData.map((item, index) => ({
                 id: item.id,
                 sNo: index + 1,
                 percentage: item.percentage,
                 percentageCode: item.code,
-                band: item.band.name, // Accessing the band name directly for the UI display.
+                band: item.band.name,
                 amountStartRange: item.amountStartRange,
                 amountEndRange: item.amountEndRange,
                 approvalStatus: item.approveStatus,
@@ -134,6 +133,11 @@ const LiabilityTable = ({ view, onViewChange, onDataChange }: LiabilityTableProp
         setIsDeactivateDialogOpen(true);
     };
 
+    const handleActivateClick = (row: TableData) => {
+        setSelectedRow(row);
+        setIsActivateDialogOpen(true);
+    };
+
     const handleEditFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setEditFormData((prev) => ({
@@ -145,14 +149,12 @@ const LiabilityTable = ({ view, onViewChange, onDataChange }: LiabilityTableProp
     const handleEditSelectChange = (value: string) => {
         const selectedBand = bands.find(b => b.name === value);
         if (selectedBand) {
-            // Store the full Band object in state for the API payload.
             setEditFormData((prev) => ({ ...prev, band: selectedBand }));
         }
     };
 
     const handleEditSubmit = () => {
         if (!selectedRow) return;
-
         if ("liabilityName" in selectedRow) {
             const payload: UpdatedLiabilityCausePayload = {
                 liabilityCauseId: selectedRow.id,
@@ -164,7 +166,6 @@ const LiabilityTable = ({ view, onViewChange, onDataChange }: LiabilityTableProp
                     setIsEditDialogOpen(false);
                     setSelectedRow(null);
                     setEditFormData({});
-                    refetchLiabilities();
                 }
             });
         } else if ("percentage" in selectedRow) {
@@ -173,7 +174,6 @@ const LiabilityTable = ({ view, onViewChange, onDataChange }: LiabilityTableProp
                 percentageId: selectedRow.id,
                 percentage: editDataAsPercentage.percentage,
                 code: editDataAsPercentage.percentageCode,
-                // Correctly accessing the id from the stored Band object.
                 bandId: editDataAsPercentage.band.id,
                 amountStartRange: editDataAsPercentage.amountStartRange,
                 amountEndRange: editDataAsPercentage.amountEndRange,
@@ -183,7 +183,6 @@ const LiabilityTable = ({ view, onViewChange, onDataChange }: LiabilityTableProp
                     setIsEditDialogOpen(false);
                     setSelectedRow(null);
                     setEditFormData({});
-                    refetchPercentages();
                 }
             });
         }
@@ -193,19 +192,37 @@ const LiabilityTable = ({ view, onViewChange, onDataChange }: LiabilityTableProp
         if (!selectedRow) return;
 
         if ("liabilityName" in selectedRow) {
-            updateLiability({ liabilityCauseId: selectedRow.id, deactivated: true }, {
+            changeLiabilityStatus({ id: selectedRow.id, status: false }, {
                 onSuccess: () => {
                     setIsDeactivateDialogOpen(false);
                     setSelectedRow(null);
-                    refetchLiabilities();
                 }
             });
         } else if ("percentage" in selectedRow) {
-            updatePercentage({ percentageId: selectedRow.id, deactivated: true }, {
+            changePercentageStatus({ id: selectedRow.id, status: false }, {
                 onSuccess: () => {
                     setIsDeactivateDialogOpen(false);
                     setSelectedRow(null);
-                    refetchPercentages();
+                }
+            });
+        }
+    };
+
+    const handleActivateSubmit = () => {
+        if (!selectedRow) return;
+        
+        if ("liabilityName" in selectedRow) {
+            changeLiabilityStatus({ id: selectedRow.id, status: true }, {
+                onSuccess: () => {
+                    setIsActivateDialogOpen(false);
+                    setSelectedRow(null);
+                }
+            });
+        } else if ("percentage" in selectedRow) {
+            changePercentageStatus({ id: selectedRow.id, status: true }, {
+                onSuccess: () => {
+                    setIsActivateDialogOpen(false);
+                    setSelectedRow(null);
                 }
             });
         }
@@ -248,26 +265,41 @@ const LiabilityTable = ({ view, onViewChange, onDataChange }: LiabilityTableProp
                                 <Button
                                     variant="secondary"
                                     className="p-1 text-gray-600 hover:text-gray-800 border-none cursor-pointer focus:outline-none ring-[rgba(22,28,202,0)]"
-                                    disabled={row.original.deactivated}
                                 >
                                     <EllipsisVertical size={14} strokeWidth={2.7} className="border border-gray-500 p-1 rounded-lg" />
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
-                                <DropdownMenuItem
-                                    className="cursor-pointer gap-2"
-                                    onClick={() => handleEditClick(row.original)}
-                                    disabled={row.original.deactivated}
-                                >
-                                    <Pencil size={14} className="text-gray-700" /> Edit Liability
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                    className="cursor-pointer gap-2"
-                                    onClick={() => handleDeactivateClick(row.original)}
-                                    disabled={row.original.deactivated}
-                                >
-                                    <Ban size={14} className="text-gray-700" /> Deactivate Liability
-                                </DropdownMenuItem>
+                                {row.original.approvalStatus.toLowerCase() === "deactivated" ? (
+                                    <DropdownMenuItem
+                                        className="cursor-pointer gap-2"
+                                        onClick={() => handleActivateClick(row.original)}
+                                    >
+                                        <CheckCircle size={14} className="text-gray-700" /> Activate Liability
+                                    </DropdownMenuItem>
+                                ) : row.original.approvalStatus.toLowerCase().includes("pending") ? (
+                                    <DropdownMenuItem
+                                        className="text-gray-500 cursor-default"
+                                        disabled
+                                    >
+                                        <Loader2 size={14} className="text-gray-700 mr-2 animate-spin" /> Wait for approval
+                                    </DropdownMenuItem>
+                                ) : (
+                                    <>
+                                        <DropdownMenuItem
+                                            className="cursor-pointer gap-2"
+                                            onClick={() => handleEditClick(row.original)}
+                                        >
+                                            <Pencil size={14} className="text-gray-700" /> Edit Liability
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            className="cursor-pointer gap-2"
+                                            onClick={() => handleDeactivateClick(row.original)}
+                                        >
+                                            <Ban size={14} className="text-gray-700" /> Deactivate Liability
+                                        </DropdownMenuItem>
+                                    </>
+                                )}
                             </DropdownMenuContent>
                         </DropdownMenu>
                     ),
@@ -312,26 +344,41 @@ const LiabilityTable = ({ view, onViewChange, onDataChange }: LiabilityTableProp
                                 <Button
                                     variant="secondary"
                                     className="p-1 text-gray-600 hover:text-gray-800 border-none cursor-pointer focus:outline-none ring-[rgba(22,28,202,0)]"
-                                    disabled={row.original.deactivated}
                                 >
                                     <EllipsisVertical size={14} strokeWidth={2.7} className="border border-gray-500 p-1 rounded-lg" />
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
-                                <DropdownMenuItem
-                                    className="cursor-pointer gap-2"
-                                    onClick={() => handleEditClick(row.original)}
-                                    disabled={row.original.deactivated}
-                                >
-                                    <Pencil size={14} className="text-gray-700" /> Edit Range
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                    className="cursor-pointer gap-2"
-                                    onClick={() => handleDeactivateClick(row.original)}
-                                    disabled={row.original.deactivated}
-                                >
-                                    <Ban size={14} className="text-gray-700" /> Deactivate Range
-                                </DropdownMenuItem>
+                                {row.original.approvalStatus.toLowerCase() === "deactivated" ? (
+                                    <DropdownMenuItem
+                                        className="cursor-pointer gap-2"
+                                        onClick={() => handleActivateClick(row.original)}
+                                    >
+                                        <CheckCircle size={14} className="text-gray-700" /> Activate Range
+                                    </DropdownMenuItem>
+                                ) : row.original.approvalStatus.toLowerCase().includes("pending") ? (
+                                    <DropdownMenuItem
+                                        className="text-gray-500 cursor-default"
+                                        disabled
+                                    >
+                                        <Loader2 size={14} className="text-gray-700 mr-2 animate-spin" /> Wait for approval
+                                    </DropdownMenuItem>
+                                ) : (
+                                    <>
+                                        <DropdownMenuItem
+                                            className="cursor-pointer gap-2"
+                                            onClick={() => handleEditClick(row.original)}
+                                        >
+                                            <Pencil size={14} className="text-gray-700" /> Edit Range
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            className="cursor-pointer gap-2"
+                                            onClick={() => handleDeactivateClick(row.original)}
+                                        >
+                                            <Ban size={14} className="text-gray-700" /> Deactivate Range
+                                        </DropdownMenuItem>
+                                    </>
+                                )}
                             </DropdownMenuContent>
                         </DropdownMenu>
                     ),
@@ -344,7 +391,6 @@ const LiabilityTable = ({ view, onViewChange, onDataChange }: LiabilityTableProp
         return tableData.filter((item) => {
             if (!searchTerm) return true;
             const lowerSearch = searchTerm.toLowerCase();
-
             if ("liabilityName" in item) {
                 const liabilityItem = item as UILiability;
                 return (
@@ -532,7 +578,7 @@ const LiabilityTable = ({ view, onViewChange, onDataChange }: LiabilityTableProp
                                     <div>
                                         <Label htmlFor="band" className="mb-2">Band</Label>
                                         <Select
-                                            value={"band" in editFormData ? (editFormData.band!) ?? "" : ""}
+                                            value={"band" in editFormData ? (editFormData.band as unknown as Band)?.name ?? "" : ""}
                                             onValueChange={handleEditSelectChange}
                                         >
                                             <SelectTrigger className="w-full border-[#bebebe] focus:ring-ring/50 rounded-md h-10 px-3">
@@ -627,6 +673,37 @@ const LiabilityTable = ({ view, onViewChange, onDataChange }: LiabilityTableProp
                             className="bg-[#F50202] text-white hover:bg-[#F50202]/90"
                         >
                             Deactivate
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={isActivateDialogOpen} onOpenChange={setIsActivateDialogOpen}>
+                <DialogContent className="bg-white border-none w-full h-fit">
+                    <DialogHeader>
+                        <div className="flex items-center space-x-3">
+                            <CheckCircle size={16} className="text-[#161CCA] p-2 rounded-full bg-[#E5F1FF]" />
+                            <DialogTitle>
+                                {view === "liability" ? "Activate Liability Cause" : "Activate Percentage Range"}
+                            </DialogTitle>
+                        </div>
+                        <DialogDescription className="pt-2">
+                            Are you sure you want to activate this {view === "liability" ? "liability cause" : "percentage range"}?
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="mt-4">
+                        <Button
+                            variant="outline"
+                            onClick={() => setIsActivateDialogOpen(false)}
+                            className="border-[#161CCA] text-[#161CCA] hover:bg-[#161CCA]/10 ring-[#161CCA]/20 cursor-pointer"
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            onClick={handleActivateSubmit}
+                            className="bg-[#161CCA] text-white hover:bg-[#161CCA]/90"
+                        >
+                            Activate
                         </Button>
                     </DialogFooter>
                 </DialogContent>

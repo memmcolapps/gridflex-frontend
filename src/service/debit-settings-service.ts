@@ -81,6 +81,23 @@ export const updateLiabilityCause = async (payload: UpdatedLiabilityCausePayload
     }
 };
 
+export const changeLiabilityCauseStatus = async (id: string, status: boolean): Promise<ApiResponse<LiabilityCause>> => {
+    try {
+        axiosInstance.defaults.headers.common.Authorization = getAuthHeader();
+        const response = await axiosInstance.put<ApiResponse<LiabilityCause>>(`/debt-setting/service/liability-cause/update/status`, { id, deactivated: !status });
+        if (response.data?.responsecode !== "000") {
+            throw new Error(response.data?.responsedesc || `Failed to ${status ? 'activate' : 'deactivate'} liability cause.`);
+        }
+        return response.data;
+    } catch (error) {
+        console.error(`Error ${status ? 'activating' : 'deactivating'} liability cause:`, error);
+        if (axios.isAxiosError(error) && error.response) {
+            throw new Error(error.response.data?.responsedesc ?? `Failed to ${status ? 'activate' : 'deactivate'} liability cause.`);
+        }
+        throw error;
+    }
+};
+
 // --- Percentage Range API Calls ---
 
 export const fetchAllPercentageRanges = async (): Promise<PercentageRange[]> => {
@@ -129,6 +146,23 @@ export const updatePercentageRange = async (payload: UpdatedPercentageRangePaylo
         console.error('Error updating percentage range:', error);
         if (axios.isAxiosError(error) && error.response) {
             throw new Error(error.response.data?.responsedesc ?? "Failed to update percentage range.");
+        }
+        throw error;
+    }
+};
+
+export const changePercentageRangeStatus = async (id: string, status: boolean): Promise<ApiResponse<PercentageRange>> => {
+    try {
+        axiosInstance.defaults.headers.common.Authorization = getAuthHeader();
+        const response = await axiosInstance.put<ApiResponse<PercentageRange>>(`/debt-setting/service/percentage-range/update/status`, { id, deactivated: !status });
+        if (response.data?.responsecode !== "000") {
+            throw new Error(response.data?.responsedesc || `Failed to ${status ? 'activate' : 'deactivate'} percentage range.`);
+        }
+        return response.data;
+    } catch (error) {
+        console.error(`Error ${status ? 'activating' : 'deactivating'} percentage range:`, error);
+        if (axios.isAxiosError(error) && error.response) {
+            throw new Error(error.response.data?.responsedesc ?? `Failed to ${status ? 'activate' : 'deactivate'} percentage range.`);
         }
         throw error;
     }

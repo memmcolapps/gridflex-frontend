@@ -1,6 +1,6 @@
 // hooks/use-customer.ts
 
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
     getCustomers,
     addCustomer,
@@ -38,8 +38,12 @@ export const useCustomers = ({ page, pageSize, searchTerm, sortBy, sortDirection
  * It returns a mutation object to be used in components.
  */
 export const useAddCustomer = () => {
+    const queryClient = useQueryClient();
     return useMutation<unknown, Error, AddCustomerPayload>({
         mutationFn: addCustomer,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["customers"] });
+        },
     });
 };
 
@@ -48,8 +52,12 @@ export const useAddCustomer = () => {
  * It returns a mutation object to be used in components.
  */
 export const useUpdateCustomer = () => {
+    const queryClient = useQueryClient();
     return useMutation<unknown, Error, UpdateCustomerPayload>({
         mutationFn: updateCustomer,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["customers"] });
+        },
     });
 };
 
@@ -58,7 +66,11 @@ export const useUpdateCustomer = () => {
  * It returns a mutation object to be used in components.
  */
 export const useBlockCustomer = () => {
+    const queryClient = useQueryClient();
     return useMutation<unknown, Error, BlockCustomerPayload>({
         mutationFn: blockCustomer,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["customers"] });
+        },
     });
 };
