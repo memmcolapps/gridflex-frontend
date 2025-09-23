@@ -72,13 +72,6 @@ const ConfirmDialog = <T extends SupportedItem | null>({
       // Meter
       return {
         message: `Are you sure you want to ${action} the meter with number "${selectedItem.meterNumber}" and type "${selectedItem.meterType}"?`,
-        details: (
-          <div className="mt-2 text-sm text-gray-600">
-            <p>Category: {selectedItem.category || 'N/A'}</p>
-            <p>Manufacturer: {selectedItem.manufacturer || 'N/A'}</p>
-            <p>Status: {selectedItem.status ? 'Active' : 'Inactive'}</p>
-          </div>
-        ),
       };
     }
 
