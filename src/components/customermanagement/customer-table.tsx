@@ -18,6 +18,7 @@ import { useCustomers } from "@/hooks/use-customer";
 import { toast } from "sonner";
 import { type Customer } from "@/types/customer-types";
 import { FilterControl, SearchControl, SortControl } from "../search-control";
+import { Card } from "../ui/card";
 
 interface CustomerTableProps {
     onEditCustomer: (customer: Customer) => void;
@@ -128,7 +129,7 @@ export default function CustomerTable({
         return customers.map((customer: Customer, index: number) => {
             // Add a console.log here to inspect the customer object
             console.log("Rendering customer:", customer);
-            
+
             return (
                 <TableRow
                     key={customer.id}
@@ -188,7 +189,7 @@ export default function CustomerTable({
     };
 
     return (
-        <div className="h-4/6">
+        <div className="h-screen flex flex-col">
             <div className="flex items-center mb-6 gap-4 w-80">
                 <div className="relative flex-1">
                     <SearchControl
@@ -200,48 +201,50 @@ export default function CustomerTable({
                 <FilterControl />
                 <SortControl />
             </div>
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead className="w-[30px] pr-0">
-                            <div className="flex items-center gap-2 text-center">
-                                <span>S/N</span>
-                            </div>
-                        </TableHead>
-                        <TableHead onClick={() => requestSort("customerId")} className="text-center">
-                            Customer ID
-                        </TableHead>
-                        <TableHead onClick={() => requestSort("firstname")} className="text-center">
-                            First Name
-                        </TableHead>
-                        <TableHead onClick={() => requestSort("lastname")} className="text-center">
-                            Last Name
-                        </TableHead>
-                        <TableHead onClick={() => requestSort("phoneNumber")} className="text-center">
-                            Phone Number
-                        </TableHead>
-                        <TableHead onClick={() => requestSort("streetName")} className="text-center">
-                            Street
-                        </TableHead>
-                        <TableHead onClick={() => requestSort("city")} className="text-center">
-                            City
-                        </TableHead>
-                        <TableHead onClick={() => requestSort("state")} className="text-center">
-                            State
-                        </TableHead>
-                        <TableHead onClick={() => requestSort("meterNumber")} className="text-center">
-                            Meter Number
-                        </TableHead>
-                        <TableHead onClick={() => requestSort("status")} className="text-center">
-                            Status
-                        </TableHead>
-                        <TableHead>Actions</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {renderTableBody()}
-                </TableBody>
-            </Table>
+            <Card className="h-4/6 overflow-x-hidden border-none bg-transparent shadow-none">
+                <Table className="h-fit">
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead className="w-[30px] pr-0">
+                                <div className="flex items-center gap-2 text-center">
+                                    <span>S/N</span>
+                                </div>
+                            </TableHead>
+                            <TableHead onClick={() => requestSort("customerId")} className="text-center">
+                                Customer ID
+                            </TableHead>
+                            <TableHead onClick={() => requestSort("firstname")} className="text-center">
+                                First Name
+                            </TableHead>
+                            <TableHead onClick={() => requestSort("lastname")} className="text-center">
+                                Last Name
+                            </TableHead>
+                            <TableHead onClick={() => requestSort("phoneNumber")} className="text-center">
+                                Phone Number
+                            </TableHead>
+                            <TableHead onClick={() => requestSort("streetName")} className="text-center">
+                                Street
+                            </TableHead>
+                            <TableHead onClick={() => requestSort("city")} className="text-center">
+                                City
+                            </TableHead>
+                            <TableHead onClick={() => requestSort("state")} className="text-center">
+                                State
+                            </TableHead>
+                            <TableHead onClick={() => requestSort("meterNumber")} className="text-center">
+                                Meter Number
+                            </TableHead>
+                            <TableHead onClick={() => requestSort("status")} className="text-center">
+                                Status
+                            </TableHead>
+                            <TableHead>Actions</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {renderTableBody()}
+                    </TableBody>
+                </Table>
+            </Card>
             <Pagination className="mt-4 flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                     <span className="text-sm font-medium">Rows per page</span>

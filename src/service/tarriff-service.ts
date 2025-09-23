@@ -3,7 +3,7 @@ import { env } from "@/env";
 import { handleApiError } from "error";
 
 export interface Tariff {
-  id: number;
+  id: string;
   name: string;
   org_id: string;
   action: string;
@@ -139,7 +139,7 @@ export async function createTariff(
 }
 
 export async function changeTariffStatus(
-  tariffId: string | number,
+  tariffId: string,
   status: boolean,
 ): Promise<{ success: true } | { success: false; error: string }> {
   try {

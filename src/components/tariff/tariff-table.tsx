@@ -36,10 +36,11 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { useState, useMemo } from "react";
-import { changeTariffStatus } from "@/service/tarriff-service";
 import { TariffDatePicker } from "../tarrif-datepicker";
 import { getStatusStyle } from "../status-style";
 import { useBand } from "@/hooks/use-band";
+import { DeactivateTariffDialog } from "./deactivate-tarrif-dialog";
+import { useChangeTariffStatus } from "@/hooks/use-tarrif";
 
 interface TariffTableProps {
   tariffs: Tariff[];
@@ -54,6 +55,7 @@ export function TariffTable({
   setSelectedTariffs,
 }: TariffTableProps) {
   const { bands, isLoading: isBandsLoading, error: bandsError } = useBand();
+  const { mutate: changeTariffStatus } = useChangeTariffStatus();
 
   const [confirmDialog, setConfirmDialog] = useState<{
     isOpen: boolean;
@@ -74,6 +76,16 @@ export function TariffTable({
     isOpen: false,
     tariff: null,
   });
+
+  const [statusDialog, setStatusDialog] = useState<{
+    isOpen: boolean;
+    tariff: Tariff | null;
+  }>({
+    isOpen: false,
+    tariff: null,
+  });
+
+  const [isStatusLoading, setIsStatusLoading] = useState(false);
 
   const [formData, setFormData] = useState<{
     name: string;
@@ -141,20 +153,49 @@ export function TariffTable({
 
     console.log("Form submitted with data:", formData);
   };
+  const handleToggleTariffStatus = (tariff: Tariff) => {
+    setStatusDialog({ isOpen: true, tariff });
+  };
+
   const handleActivateAndDeactivateTariff = async (
     tariff: Tariff,
     newStatus: boolean,
   ) => {
     try {
-      const success = await changeTariffStatus(tariff.id.toString(), newStatus);
-      if (success) {
-        toast.success("Tariff status updated successfully");
-      } else {
-        toast.error("Failed to update tariff status");
-      }
+      changeTariffStatus(
+        { tariffId: tariff.id, status: newStatus },
+        {
+          onSuccess: () => {
+            toast.success(
+              `Tariff ${newStatus ? "activated" : "deactivated"} successfully`,
+            );
+            setStatusDialog({ isOpen: false, tariff: null });
+          },
+          onError: (error) => {
+            console.error("Error changing tariff status:", error);
+            toast.error(
+              `Failed to ${
+                newStatus ? "activate" : "deactivate"
+              } tariff: ${error.message || error}`,
+            );
+          },
+          onSettled: () => {
+            setIsStatusLoading(false);
+          },
+        },
+      );
     } catch (error) {
       console.error("Error updating tariff status:", error);
       toast.error("Failed to update tariff status");
+    } finally {
+      setIsStatusLoading(false);
+    }
+  };
+
+  const confirmToggleTariffStatus = () => {
+    if (statusDialog.tariff) {
+      const newStatus = statusDialog.tariff.status === false;
+      handleActivateAndDeactivateTariff(statusDialog.tariff, newStatus);
     }
   };
 
@@ -249,10 +290,7 @@ export function TariffTable({
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         onSelect={() => {
-                          handleActivateAndDeactivateTariff(
-                            tariff,
-                            tariff.status === false ? true : false,
-                          );
+                          handleToggleTariffStatus(tariff);
                         }}
                       >
                         <div className="flex w-full items-center gap-2 p-2">
@@ -459,6 +497,17 @@ export function TariffTable({
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Status Toggle Dialog */}
+      <DeactivateTariffDialog
+        open={statusDialog.isOpen}
+        onOpenChange={(open: boolean) =>
+          setStatusDialog((prev) => ({ ...prev, isOpen: open }))
+        }
+        tariff={statusDialog.tariff}
+        onConfirm={confirmToggleTariffStatus}
+        isLoading={isStatusLoading}
+      />
     </div>
   );
 }

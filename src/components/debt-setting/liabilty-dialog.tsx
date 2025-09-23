@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState } from "react";
 import {
     Dialog,
@@ -10,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CirclePlus } from "lucide-react";
+import { useCreateLiabilityCause } from "@/hooks/use-debit-settings";
 
 type AddLiabilityDialogProps = {
     onAddLiability: (liability: { liabilityName: string; liabilityCode: string }) => void;
@@ -19,13 +21,17 @@ const AddLiabilityDialog = ({ onAddLiability }: AddLiabilityDialogProps) => {
     const [open, setOpen] = useState(false);
     const [liabilityName, setLiabilityName] = useState("");
     const [liabilityCode, setLiabilityCode] = useState("");
+    const { mutate, isPending } = useCreateLiabilityCause();
 
     const handleSubmit = () => {
         if (liabilityName && liabilityCode) {
-            onAddLiability({ liabilityName, liabilityCode });
-            setLiabilityName("");
-            setLiabilityCode("");
-            setOpen(false);
+            mutate({ name: liabilityName, code: liabilityCode }, {
+                onSuccess: () => {
+                    setLiabilityName("");
+                    setLiabilityCode("");
+                    setOpen(false);
+                },
+            });
         }
     };
 
@@ -70,7 +76,7 @@ const AddLiabilityDialog = ({ onAddLiability }: AddLiabilityDialogProps) => {
                 <Button
                     onClick={handleSubmit}
                     className="bg-[rgba(22,28,202,1)] text-white"
-                    disabled={!liabilityName || !liabilityCode}
+                    disabled={isPending || !liabilityName || !liabilityCode}
                 >
                     Submit
                 </Button>
