@@ -15,8 +15,8 @@ import { Label } from "@/components/ui/label";
 import { type Customer } from "@/types/customer-types";
 import { X } from "lucide-react";
 import { toast } from "sonner";
-import { useBlockCustomer } from "@/hooks/use-customer"; // Import the new hook
-import { useQueryClient } from "@tanstack/react-query"; // Import useQueryClient
+import { useBlockCustomer } from "@/hooks/use-customer";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface BlockCustomerDialogProps {
     isBlockOpen: boolean;
@@ -67,7 +67,10 @@ export default function BlockCustomerDialog({
         }
     };
 
-    if (!customer) return null;
+    // The component will now always render, but the content will be null if no customer exists.
+    if (!customer) {
+        return null;
+    }
 
     return (
         <>

@@ -88,6 +88,7 @@ export default function RecentIncidents() {
                                                         className="flex h-10 text-black font-semibold items-center rounded-md border border-1 border-gray-400 px-4 gap-2 bg-transparent "
                                                     >
                                                         {incident.status === false ? 'Unresolved' : 'Resolved'}
+
                                                     </div>
                                                 </div>
                                             </div>

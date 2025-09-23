@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+
 import { useCreateIncident } from "@/hooks/use-incident";
 import { useState } from "react";
 
@@ -9,6 +10,7 @@ export default function IncidentDialog({ isOpen, onOpenChange }: {
     isOpen: boolean;
     onOpenChange: (open: boolean) => void;
 }) {
+
     const { mutate: sendMessage, isPending } = useCreateIncident();
     const [message, setMessage] = useState('')
 
@@ -24,6 +26,7 @@ export default function IncidentDialog({ isOpen, onOpenChange }: {
             }
         );
     };
+
 
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -52,6 +55,10 @@ export default function IncidentDialog({ isOpen, onOpenChange }: {
                             className="text-md w-full cursor-pointer gap-2 text-white px-8 py-6 font-semibold bg-[#161CCA]"
                         >
                             {isPending ? "Sending..." : "Send"}
+                            variant={"default"}
+                            className="text-md w-full cursor-pointer gap-2 text-white px-8 py-6 font-semibold bg-[#161CCA]"
+                        >
+                            Send
                         </Button>
                     </div>
                 </div>
