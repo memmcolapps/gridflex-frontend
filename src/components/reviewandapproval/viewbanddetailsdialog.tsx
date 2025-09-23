@@ -6,23 +6,14 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '../ui/button';
 import { MoveRight } from 'lucide-react';
-
-interface BandItem {
-    id: number;
-    bandName: string;
-    electricityHr: string;
-    changeDescription: string;
-    approvalStatus: string;
-    newBandName?: string;
-    newElectricityHr?: string;
-}
+import type { Band } from '@/types/review-approval';
 
 interface ViewBandDetailsDialogProps {
     isOpen: boolean;
     onOpenChange: (open: boolean) => void;
-    selectedRow: BandItem | null;
-    onApprove: (row: BandItem) => void;
-    onReject: (row: BandItem) => void;
+    selectedRow: Band | null;
+    onApprove: (row: Band) => void;
+    onReject: (row: Band) => void;
 }
 
 const ViewBandDetailsDialog: React.FC<ViewBandDetailsDialogProps> = ({
@@ -32,7 +23,7 @@ const ViewBandDetailsDialog: React.FC<ViewBandDetailsDialogProps> = ({
     onApprove,
     onReject,
 }) => {
-    const isNewlyAdded = selectedRow?.changeDescription === 'Newly Added';
+    const isNewlyAdded = selectedRow?.description === 'Newly Added';
 
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -42,7 +33,7 @@ const ViewBandDetailsDialog: React.FC<ViewBandDetailsDialogProps> = ({
                 <div className="w-full">
                     <DialogHeader>
                         <DialogTitle className="text-left text-base sm:text-lg font-semibold text-gray-900 truncate">
-                            {selectedRow?.changeDescription ?? 'Band Details'}
+                            {selectedRow?.description ?? 'Band Details'}
                         </DialogTitle>
                         <span className="text-gray-500 text-sm sm:text-base">
                             Operator: <span className="font-medium">Margaret</span>
@@ -50,7 +41,7 @@ const ViewBandDetailsDialog: React.FC<ViewBandDetailsDialogProps> = ({
                     </DialogHeader>
 
                     <div className="flex flex-col gap-3 py-4 sm:py-6">
-                        {selectedRow?.changeDescription === 'Band Edited' && (
+                        {selectedRow?.description === 'Band Edited' && (
                             <div className="hidden sm:flex items-center gap-4 ml-[120px] sm:ml-[140px] mb-1">
                                 <div className="w-[120px] text-center font-semibold text-gray-500">From</div>
                                 <div className="w-[120px] text-center font-semibold text-gray-500 ml-18">To</div>
@@ -60,13 +51,18 @@ const ViewBandDetailsDialog: React.FC<ViewBandDetailsDialogProps> = ({
                         {[
                             {
                                 label: 'Band Name:',
-                                oldValue: selectedRow?.bandName,
-                                newValue: selectedRow?.newBandName,
+                                oldValue: selectedRow?.name,
+                                newValue: undefined, // API doesn't provide new values yet
                             },
                             {
                                 label: 'Electricity Hr:',
-                                oldValue: selectedRow?.electricityHr,
-                                newValue: selectedRow?.newElectricityHr,
+                                oldValue: selectedRow?.hour,
+                                newValue: undefined, // API doesn't provide new values yet
+                            },
+                            {
+                                label: 'Band ID:',
+                                oldValue: selectedRow?.bandId,
+                                newValue: undefined,
                             },
                         ].map(({ label, oldValue, newValue }) => (
                             <div

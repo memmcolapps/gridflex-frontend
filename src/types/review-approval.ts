@@ -47,3 +47,89 @@ export interface Liability {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface GetBandResponse {
+  responsecode: string;
+  responsedesc: string;
+  responsedata: Band[];
+}
+export interface Band {
+  id: string;
+  orgId: string;
+  bandId: string;
+  name: string;
+  hour: string;
+  createdBy: string;
+  approveBy: string;
+  approveStatus: string;
+  description: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GetTariffResponse {
+  responsecode: string;
+  responsedesc: string;
+  responsedata: Tariff[];
+}
+
+export interface Tariff {
+  id: string;
+  name: string;
+  org_id: string;
+  created_by: string;
+  description: string;
+  t_id: string;
+  tariff_id: string;
+  tariff_type: string;
+  effective_date: string;
+  tariff_rate: string;
+  band: Band;
+  status: boolean;
+  approve_status: string;
+  created_at: string;
+  updated_at: string;
+  
+}
+
+export interface MeterResponse {
+  responsecode: string;
+  responsedesc: string;
+  responsedata: {
+    totalData: number;
+    data: Meter[];
+    size: number;
+    totalPages: number;
+    page: number;
+  };
+}
+
+export interface Meter {
+  id: string;
+  meterId: string;
+  orgId: string;
+  meterNumber: string;
+  meterType: string;
+  manufacturer: string;
+  category: string;
+  status: boolean;
+  approveStatus: string;
+  createdBy: string;
+  description: string;
+  createdAt: string;
+  updatedAt: string;
+  customerId: string;
+  customerName: string;
+  simNumber: string;
+  oldSGC: string;
+  newSGC: string;
+  class: string;
+  changeDescription: string;
+  approvalStatus: string;
+  reason?: string;
+  oldkrn?: string;
+  newkrn?: string;
+  oldTariffIndex?: string;
+  newTariffIndex?: string;
+  imageUrl?: string;
+}
