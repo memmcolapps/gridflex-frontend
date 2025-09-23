@@ -6,7 +6,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { PercentageRange } from '@/types/review-approval';
+import type { PercentageRange } from '@/types/review-approval';
 
 interface ViewDetailsDialogProps {
   isOpen: boolean;

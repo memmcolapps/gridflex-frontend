@@ -33,10 +33,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Tariff } from '@/types/review-approval';
+import type { Tariff } from '@/types/review-approval';
 import { toast } from 'sonner';
 import { useTariffs } from '@/hooks/use-ReviewApproval';
-import { FetchParams } from '@/service/reviewapproval-service';
+import type{ FetchParams } from '@/service/reviewapproval-service';
 
 const TariffTable = () => {
   const [fetchParams, setFetchParams] = useState<FetchParams>({

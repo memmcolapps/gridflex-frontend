@@ -6,7 +6,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { MoveRight } from 'lucide-react';
-import { Tariff } from '@/types/review-approval';
+import type { Tariff } from '@/types/review-approval';
 
 interface ViewTariffDetailsDialogProps {
   isOpen: boolean;
@@ -90,7 +90,7 @@ const ViewTariffDetailsDialog: React.FC<ViewTariffDetailsDialogProps> = ({
 
                 {/* Old Value */}
                 <div className="w-full sm:w-[120px] lg:max-w-[700px] text-sm sm:text-base font-bold text-gray-900 whitespace-nowrap ml-20">
-                  {oldValue ?? 'N/A'}
+                  {oldValue !== undefined && oldValue !== null ? String(oldValue) : 'N/A'}
                 </div>
 
                 {/* New Value */}

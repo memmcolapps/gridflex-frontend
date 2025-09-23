@@ -33,9 +33,9 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { Meter } from '@/types/review-approval';
+import type { Meter } from '@/types/review-approval';
 import { useMeters } from '@/hooks/use-ReviewApproval';
-import { FetchParams } from '@/service/reviewapproval-service';
+import type { FetchParams } from '@/service/reviewapproval-service';
 import { toast } from 'sonner';
 
 const MeterTable = () => {

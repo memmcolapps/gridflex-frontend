@@ -6,7 +6,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { MoveRight } from 'lucide-react';
-import { Liability } from '@/types/review-approval';
+import type { Liability } from '@/types/review-approval';
 
 interface ViewLiabilityDetailsDialogProps {
     isOpen: boolean;

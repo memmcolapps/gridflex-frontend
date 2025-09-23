@@ -6,7 +6,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '../ui/button';
 import { MoveRight } from 'lucide-react';
-import { Band } from '@/types/review-approval';
+import type { Band } from '@/types/review-approval';
 
 interface ViewBandDetailsDialogProps {
     isOpen: boolean;

@@ -33,10 +33,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Liability } from '@/types/review-approval';
+import type { Liability } from '@/types/review-approval';
 import { toast } from 'sonner';
 import { useLiabilities } from '@/hooks/use-ReviewApproval';
-import { FetchParams } from '@/service/reviewapproval-service';
+import type { FetchParams } from '@/service/reviewapproval-service';
 
 const LiabilityCauseTable = () => {
   const [fetchParams, setFetchParams] = useState<FetchParams>({

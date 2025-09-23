@@ -1,7 +1,8 @@
-// hooks/useReviewApproval.ts
-import { useQuery, useMutation, useQueryClient, UseQueryResult, UseMutationResult } from "@tanstack/react-query";
-import {
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import type {
   FetchParams,
+} from "@/service/reviewapproval-service";
+import {
   getAllPercentageRanges,
   getPercentageRange,
   reviewPercentageRange,
@@ -18,8 +19,7 @@ import {
   getMeter,
   reviewMeter,
 } from "@/service/reviewapproval-service";
-
-import {
+import type {
   GetPercentageResponse,
   GetAllLiabilitiesResponse,
   GetBandResponse,
@@ -31,6 +31,7 @@ import {
   Tariff,
   Meter,
 } from "@/types/review-approval";
+import type { UseQueryResult, UseMutationResult } from "@tanstack/react-query";
 
 // Define a generic type for the review mutation payload
 interface ReviewPayload {
@@ -39,13 +40,18 @@ interface ReviewPayload {
   reason?: string;
 }
 
+// Interface for Tariff response data to handle nested structure
+interface TariffResponseData {
+  data?: Tariff[];
+}
+
 // Hook for Percentage Ranges
 interface UsePercentageRangesResult {
   percentageRanges: PercentageRange[];
   isLoading: boolean;
   isError: boolean;
   error: Error | null;
-  reviewMutation: UseMutationResult<any, Error, ReviewPayload>;
+  reviewMutation: UseMutationResult<GetPercentageResponse, Error, ReviewPayload>;
 }
 
 export const usePercentageRanges = (params: FetchParams): UsePercentageRangesResult => {
@@ -56,15 +62,15 @@ export const usePercentageRanges = (params: FetchParams): UsePercentageRangesRes
     queryFn: () => getAllPercentageRanges(params),
   });
 
-  const reviewMutation = useMutation({
-    mutationFn: (payload: ReviewPayload) => reviewPercentageRange(payload.id, payload.approveStatus),
+  const reviewMutation = useMutation<GetPercentageResponse, Error, ReviewPayload>({
+    mutationFn: (payload) => reviewPercentageRange(payload.id, payload.approveStatus),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["percentageRanges"] });
     },
   });
 
   return {
-    percentageRanges: data?.responsedata || [],
+    percentageRanges: data?.responsedata ?? [],
     isLoading,
     isError,
     error,
@@ -78,7 +84,7 @@ interface UseLiabilitiesResult {
   isLoading: boolean;
   isError: boolean;
   error: Error | null;
-  reviewMutation: UseMutationResult<any, Error, ReviewPayload>;
+  reviewMutation: UseMutationResult<GetPercentageResponse, Error, ReviewPayload>;
 }
 
 export const useLiabilities = (params: FetchParams): UseLiabilitiesResult => {
@@ -89,15 +95,15 @@ export const useLiabilities = (params: FetchParams): UseLiabilitiesResult => {
     queryFn: () => getAllLiabilities(params),
   });
 
-  const reviewMutation = useMutation({
-    mutationFn: (payload: ReviewPayload) => reviewLiability(payload.id, payload.approveStatus),
+  const reviewMutation = useMutation<GetPercentageResponse, Error, ReviewPayload>({
+    mutationFn: (payload) => reviewLiability(payload.id, payload.approveStatus),
     onSuccess: (data, variables) => {
-      if (variables.approveStatus === 'approve') {
+      if (variables.approveStatus === "approve") {
         queryClient.setQueryData(["liabilities", params], (oldData: GetAllLiabilitiesResponse | undefined) => {
           if (oldData) {
             return {
               ...oldData,
-              responsedata: oldData.responsedata.filter(item => item.liabilityCauseId !== variables.id)
+              responsedata: oldData.responsedata.filter((item) => item.liabilityCauseId !== variables.id),
             };
           }
           return oldData;
@@ -109,7 +115,7 @@ export const useLiabilities = (params: FetchParams): UseLiabilitiesResult => {
   });
 
   return {
-    liabilities: data?.responsedata || [],
+    liabilities: data?.responsedata ?? [],
     isLoading,
     isError,
     error,
@@ -123,7 +129,7 @@ interface UseBandsResult {
   isLoading: boolean;
   isError: boolean;
   error: Error | null;
-  reviewMutation: UseMutationResult<any, Error, ReviewPayload>;
+  reviewMutation: UseMutationResult<GetPercentageResponse, Error, ReviewPayload>;
 }
 
 export const useBands = (params: FetchParams): UseBandsResult => {
@@ -134,15 +140,15 @@ export const useBands = (params: FetchParams): UseBandsResult => {
     queryFn: () => getAllBands(params),
   });
 
-  const reviewMutation = useMutation({
-    mutationFn: (payload: ReviewPayload) => reviewBand(payload.id, payload.approveStatus),
+  const reviewMutation = useMutation<GetPercentageResponse, Error, ReviewPayload>({
+    mutationFn: (payload) => reviewBand(payload.id, payload.approveStatus),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["bands"] });
     },
   });
 
   return {
-    bands: data?.responsedata || [],
+    bands: data?.responsedata ?? [],
     isLoading,
     isError,
     error,
@@ -150,13 +156,13 @@ export const useBands = (params: FetchParams): UseBandsResult => {
   };
 };
 
-// Hook for Tariffs (Modified)
+// Hook for Tariffs
 interface UseTariffsResult {
   tariffs: Tariff[];
   isLoading: boolean;
   isError: boolean;
   error: Error | null;
-  reviewMutation: UseMutationResult<any, Error, ReviewPayload>;
+  reviewMutation: UseMutationResult<GetPercentageResponse, Error, ReviewPayload>;
 }
 
 export const useTariffs = (params: FetchParams): UseTariffsResult => {
@@ -167,24 +173,18 @@ export const useTariffs = (params: FetchParams): UseTariffsResult => {
     queryFn: () => getAllTariffs(params),
   });
 
-  console.log("Tariff API response:", data); // Debug log to inspect the response
-
   // Ensure tariffs is always an array, handling different response structures
   let tariffs: Tariff[] = [];
   if (data?.responsedata) {
     if (Array.isArray(data.responsedata)) {
       tariffs = data.responsedata;
-    } else if (
-      typeof data.responsedata === 'object' &&
-      'data' in data.responsedata &&
-      Array.isArray((data.responsedata as any).data)
-    ) {
-      tariffs = (data.responsedata as any).data;
+    } else if (typeof data.responsedata === "object" && Array.isArray((data.responsedata as TariffResponseData).data)) {
+      tariffs = (data.responsedata as TariffResponseData).data ?? [];
     }
   }
 
-  const reviewMutation = useMutation({
-    mutationFn: (payload: ReviewPayload) => reviewTariff(payload.id, payload.approveStatus),
+  const reviewMutation = useMutation<GetPercentageResponse, Error, ReviewPayload>({
+    mutationFn: (payload) => reviewTariff(payload.id, payload.approveStatus),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tariffs"] });
     },
@@ -205,7 +205,7 @@ interface UseMetersResult {
   isLoading: boolean;
   isError: boolean;
   error: Error | null;
-  reviewMutation: UseMutationResult<any, Error, ReviewPayload>;
+  reviewMutation: UseMutationResult<GetPercentageResponse, Error, ReviewPayload>;
 }
 
 export const useMeters = (params: FetchParams): UseMetersResult => {
@@ -216,15 +216,15 @@ export const useMeters = (params: FetchParams): UseMetersResult => {
     queryFn: () => getAllMeters(params),
   });
 
-  const reviewMutation = useMutation({
-    mutationFn: (payload: ReviewPayload) => reviewMeter(payload.id, payload.approveStatus),
+  const reviewMutation = useMutation<GetPercentageResponse, Error, ReviewPayload>({
+    mutationFn: (payload) => reviewMeter(payload.id, payload.approveStatus),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["meters"] });
     },
   });
 
   return {
-    meters: data?.responsedata?.data || [],
+    meters: data?.responsedata?.data ?? [],
     isLoading,
     isError,
     error,
@@ -232,7 +232,7 @@ export const useMeters = (params: FetchParams): UseMetersResult => {
   };
 };
 
-// Single item fetching hooks (unchanged)
+// Single item fetching hooks
 export const useSinglePercentageRange = (id: string): UseQueryResult<GetPercentageResponse, Error> => {
   return useQuery<GetPercentageResponse, Error>({
     queryKey: ["percentageRange", id],

@@ -33,10 +33,10 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { Band } from '@/types/review-approval';
+import type { Band } from '@/types/review-approval';
 import { toast } from 'sonner';
 import { useBands } from '@/hooks/use-ReviewApproval';
-import { FetchParams } from '@/service/reviewapproval-service';
+import type { FetchParams } from '@/service/reviewapproval-service';
 
 const BandTable = () => {
     const [fetchParams, setFetchParams] = useState<FetchParams>({

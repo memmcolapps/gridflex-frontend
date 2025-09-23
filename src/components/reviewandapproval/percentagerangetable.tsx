@@ -35,9 +35,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { PercentageRange } from '@/types/review-approval';
+import type { PercentageRange } from '@/types/review-approval';
 import { usePercentageRanges } from '@/hooks/use-ReviewApproval';
-import { FetchParams } from '@/service/reviewapproval-service';
+import type { FetchParams } from '@/service/reviewapproval-service';
 import { toast } from 'sonner';
 
 const PercentageRangeTable = () => {
