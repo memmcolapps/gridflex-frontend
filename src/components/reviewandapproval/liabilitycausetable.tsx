@@ -113,11 +113,11 @@ const LiabilityCauseTable = () => {
           reason,
         });
         toast.success(`Liability cause ${confirmAction}d successfully!`, {
-          description: `Name: ${selectedItem.name}, Code: ${selectedItem.code}`,
+          // description: `Name: ${selectedItem.name}, Code: ${selectedItem.code}`,
         });
       } catch (error) {
         toast.error(`Failed to ${confirmAction} liability cause.`, {
-          description: error instanceof Error ? error.message : 'An error occurred',
+          // description: error instanceof Error ? error.message : 'An error occurred',
         });
       }
     }

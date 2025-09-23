@@ -108,16 +108,16 @@ const BandTable = () => {
         if (selectedItem && confirmAction) {
             try {
                 await reviewMutation.mutateAsync({
-                    id: selectedItem.id,
+                    id: selectedItem.bandId,
                     approveStatus: confirmAction,
                     reason,
                 });
                 toast.success(`Band ${confirmAction}d successfully!`, {
-                    description: `Name: ${selectedItem.name}, ID: ${selectedItem.bandId}`,
+                    // description: `Name: ${selectedItem.name}, ID: ${selectedItem.bandId}`,
                 });
             } catch (error) {
                 toast.error(`Failed to ${confirmAction} band.`, {
-                    description: error instanceof Error ? error.message : 'An error occurred',
+                    // description: error instanceof Error ? error.message : 'An error occurred',
                 });
             }
         }

@@ -104,30 +104,29 @@ export async function getPercentageRange(
   );
 }
 
+// reviewapproval-service.ts
 export async function reviewPercentageRange(
-  id: string,
+  percentageId: string,
   approveStatus: "approve" | "reject",
-  reason?: string,
 ): Promise<GetPercentageResponse> {
-  // Create a payload object with all required data for the request body
+  // Create a params object with all required data for the URL query
   const params: {
     percentageId: string;
     approveStatus: "approve" | "reject";
-    reason?: string;
   } = {
-    percentageId: id,
+    percentageId: percentageId,
     approveStatus,
   };
 
-  if (reason) {
-    params.reason = reason;
+  if (approveStatus) {
+    params.approveStatus = approveStatus;
   }
 
   return fetchApi<GetPercentageResponse>(
     `${API_URL}/debt-setting/service/percentage-range/approve`,
-    params, // Pass an empty object for params since all data will be in the body
+    params, // Pass the payload as the URL parameters
     "PUT",
-    undefined, // Pass the payload as the data for the request body
+    undefined, // No request body
   );
 }
 
@@ -167,18 +166,29 @@ export async function getLiability(
   );
 }
 
+
 export async function reviewLiability(
   id: string,
   approveStatus: "approve" | "reject",
-  reason?: string,
-): Promise<GetAllLiabilitiesResponse> {
-  const params = { liabilityCauseId: id, approveStatus };
-  const data = reason ? { reason } : undefined;
-  return fetchApi<GetAllLiabilitiesResponse>(
+): Promise<GetPercentageResponse> {
+  // Create a params object with all required data for the URL query
+  const params: {
+    liabilityCauseId: string;
+    approveStatus: "approve" | "reject";
+  } = {
+    liabilityCauseId: id,
+    approveStatus,
+  };
+
+  if (approveStatus) {
+    params.approveStatus = approveStatus;
+  }
+
+  return fetchApi<GetPercentageResponse>(
     `${API_URL}/debt-setting/service/liability-cause/approve`,
-    params,
+    params, // Pass the payload as the URL parameters
     "PUT",
-    data,
+    undefined, // No request body
   );
 }
 
@@ -217,17 +227,25 @@ export async function getBand(id: string): Promise<GetBandResponse> {
 export async function reviewBand(
   id: string,
   approveStatus: "approve" | "reject",
-  reason?: string,
-): Promise<GetBandResponse> {
-  const payload: ApproveRejectPayload = { id, approveStatus };
-  if (reason) {
-    payload.reason = reason;
+): Promise<GetPercentageResponse> {
+  // Create a params object with all required data for the URL query
+  const params: {
+    bandId: string;
+    approveStatus: "approve" | "reject";
+  } = {
+     bandId: id,
+    approveStatus,
+  };
+
+  if (approveStatus) {
+    params.approveStatus = approveStatus;
   }
-  return fetchApi<GetBandResponse>(
+
+  return fetchApi<GetPercentageResponse>(
     `${API_URL}/band/service/approve`,
-    {},
-    "POST",
-    payload,
+    params, // Pass the payload as the URL parameters
+    "PUT",
+    undefined, // No request body
   );
 }
 
@@ -266,17 +284,25 @@ export async function getTariff(id: string): Promise<GetTariffResponse> {
 export async function reviewTariff(
   id: string,
   approveStatus: "approve" | "reject",
-  reason?: string,
-): Promise<GetTariffResponse> {
-  const payload: ApproveRejectPayload = { id, approveStatus };
-  if (reason) {
-    payload.reason = reason;
+): Promise<GetPercentageResponse> {
+  // Create a params object with all required data for the URL query
+  const params: {
+    tId: string;
+    approveStatus: "approve" | "reject";
+  } = {
+     tId: id,
+    approveStatus,
+  };
+
+  if (approveStatus) {
+    params.approveStatus = approveStatus;
   }
-  return fetchApi<GetTariffResponse>(
-    `${API_URL}/tariff/service/approve-reject`,
-    {},
-    "POST",
-    payload,
+
+  return fetchApi<GetPercentageResponse>(
+    `${API_URL}/tariff/service/approve`,
+    params, // Pass the payload as the URL parameters
+    "PUT",
+    undefined, // No request body
   );
 }
 
@@ -314,16 +340,24 @@ export async function getMeter(id: string): Promise<MeterResponse> {
 export async function reviewMeter(
   id: string,
   approveStatus: "approve" | "reject",
-  reason?: string,
-): Promise<MeterResponse> {
-  const payload: ApproveRejectPayload = { id, approveStatus };
-  if (reason) {
-    payload.reason = reason;
+): Promise<GetPercentageResponse> {
+  // Create a params object with all required data for the URL query
+  const params: {
+    meterVersionId: string;
+    approveStatus: "approve" | "reject";
+  } = {
+      meterVersionId: id,
+    approveStatus,
+  };
+
+  if (approveStatus) {
+    params.approveStatus = approveStatus;
   }
-  return fetchApi<MeterResponse>(
-    `${API_URL}/meter/service/approve`,
-    {},
-    "POST",
-    payload,
+
+  return fetchApi<GetPercentageResponse>(
+    `${API_URL}/debt-setting/service/meter/approve`,
+    params, // Pass the payload as the URL parameters
+    "PUT",
+    undefined, // No request body
   );
 }

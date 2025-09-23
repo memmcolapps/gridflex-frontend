@@ -57,7 +57,7 @@ export const usePercentageRanges = (params: FetchParams): UsePercentageRangesRes
   });
 
   const reviewMutation = useMutation({
-    mutationFn: (payload: ReviewPayload) => reviewPercentageRange(payload.id, payload.approveStatus, payload.reason),
+    mutationFn: (payload: ReviewPayload) => reviewPercentageRange(payload.id, payload.approveStatus),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["percentageRanges"] });
     },
@@ -90,7 +90,7 @@ export const useLiabilities = (params: FetchParams): UseLiabilitiesResult => {
   });
 
   const reviewMutation = useMutation({
-    mutationFn: (payload: ReviewPayload) => reviewLiability(payload.id, payload.approveStatus, payload.reason),
+    mutationFn: (payload: ReviewPayload) => reviewLiability(payload.id, payload.approveStatus),
     onSuccess: (data, variables) => {
       if (variables.approveStatus === 'approve') {
         queryClient.setQueryData(["liabilities", params], (oldData: GetAllLiabilitiesResponse | undefined) => {
@@ -135,7 +135,7 @@ export const useBands = (params: FetchParams): UseBandsResult => {
   });
 
   const reviewMutation = useMutation({
-    mutationFn: (payload: ReviewPayload) => reviewBand(payload.id, payload.approveStatus, payload.reason),
+    mutationFn: (payload: ReviewPayload) => reviewBand(payload.id, payload.approveStatus),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["bands"] });
     },
@@ -184,7 +184,7 @@ export const useTariffs = (params: FetchParams): UseTariffsResult => {
   }
 
   const reviewMutation = useMutation({
-    mutationFn: (payload: ReviewPayload) => reviewTariff(payload.id, payload.approveStatus, payload.reason),
+    mutationFn: (payload: ReviewPayload) => reviewTariff(payload.id, payload.approveStatus),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tariffs"] });
     },
@@ -217,7 +217,7 @@ export const useMeters = (params: FetchParams): UseMetersResult => {
   });
 
   const reviewMutation = useMutation({
-    mutationFn: (payload: ReviewPayload) => reviewMeter(payload.id, payload.approveStatus, payload.reason),
+    mutationFn: (payload: ReviewPayload) => reviewMeter(payload.id, payload.approveStatus),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["meters"] });
     },

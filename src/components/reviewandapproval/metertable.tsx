@@ -33,368 +33,174 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { Meter } from '@/types/review-approval';
+import { useMeters } from '@/hooks/use-ReviewApproval';
+import { FetchParams } from '@/service/reviewapproval-service';
+import { toast } from 'sonner';
 
-type MeterItem = {
-    id: number;
-    meterNo: string;
-    customerId: string;
-    customerName: string;
-    simNumber: string;
-    oldSGC: string;
-    newSGC: string;
-    manufacturer: string;
-    metertype: string;
-    class: string;
-    category: string;
-    changeDescription: string;
-    approvalStatus: string;
-    reason?: string;
-    oldkrn?: string;
-    newkrn?: string;
-    oldTariffIndex?: string;
-    newTariffIndex?: string;
-    imageUrl?: string;
-};
-
-interface MeterTableProps {
-    searchTerm?: string;
-    sortConfig?: { key: string; direction: string };
-    filters?: Record<string, string[]>;
-}
-
-const MeterTable = ({ searchTerm = '', sortConfig = { key: '', direction: 'asc' }, filters = {} }: MeterTableProps) => {
-    const [selectedRow, setSelectedRow] = useState<MeterItem | null>(null);
+const MeterTable = () => {
+    const [fetchParams, setFetchParams] = useState<FetchParams>({
+        page: 1,
+        pageSize: 10,
+        searchTerm: '',
+        sortBy: null,
+        sortDirection: null,
+        type: 'pending-state',
+    });
+    const [selectedRow, setSelectedRow] = useState<Meter | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedMeters, setSelectedMeters] = useState<number[]>([]);
-    const [rowsPerPage, setRowsPerPage] = useState<number>(10);
-    const [currentPage, setCurrentPage] = useState<number>(1);
+    const [selectedItems, setSelectedItems] = useState<string[]>([]);
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [confirmAction, setConfirmAction] = useState<'approve' | 'reject' | null>(null);
-    const [selectedItem, setSelectedItem] = useState<MeterItem | null>(null);
-    const [dropdownOpenId, setDropdownOpenId] = useState<number | null>(null);
+    const [selectedItem, setSelectedItem] = useState<Meter | null>(null);
+    const [dropdownOpenId, setDropdownOpenId] = useState<string | null>(null);
 
-    // Sample data with 7 records based on the uploaded images
-    const data: MeterItem[] = [
-        {
-            id: 1,
-            meterNo: '620102123',
-            customerId: 'C-12344123',
-            customerName: 'John Doe',
-            simNumber: '890060873404',
-            oldSGC: '999962',
-            newSGC: '600894',
-            manufacturer: 'Momas',
-            class: 'MD',
-            category: 'Prepaid',
-            changeDescription: 'Meter Allocated',
-            approvalStatus: 'Pending',
-            oldkrn: '1234567',
-            newkrn: '1234567',
-            oldTariffIndex: '1',
-            newTariffIndex: '3',
-            metertype: 'Electricity',
-            reason: 'Burnt',
-        },
-        {
-            id: 2,
-            meterNo: '620102123',
-            customerId: 'C-12344123',
-            customerName: 'John Doe',
-            simNumber: '890060873404',
-            oldSGC: '999962',
-            newSGC: '600894',
-            manufacturer: 'Momas',
-            class: 'Single Phase',
-            category: 'Prepaid',
-            changeDescription: 'Meter Assigned',
-            approvalStatus: 'Pending',
-            oldkrn: '1234567',
-            newkrn: '1234567',
-            oldTariffIndex: '1',
-            newTariffIndex: '3',
-            metertype: 'Electricity',
-            reason: 'Burnt',
-        },
-        {
-            id: 3,
-            meterNo: '620102123',
-            customerId: '',
-            customerName: '',
-            simNumber: '890060873404',
-            oldSGC: '999962',
-            newSGC: '600894',
-            manufacturer: 'Momas',
-            class: 'MD',
-            category: 'Prepaid',
-            changeDescription: 'Meter Detached',
-            approvalStatus: 'Pending',
-            oldkrn: '1234567',
-            newkrn: '1234567',
-            oldTariffIndex: '1',
-            newTariffIndex: '3',
-            metertype: 'Electricity',
-            reason: 'Burnt',
-        },
-        {
-            id: 4,
-            meterNo: '620102123',
-            customerId: 'CUST123',
-            customerName: 'John Doe',
-            simNumber: '890060873404',
-            oldSGC: '999962',
-            newSGC: '600894',
-            manufacturer: 'Momas',
-            class: 'Single Phase',
-            category: 'Prepaid',
-            changeDescription: 'Meter Migrated',
-            approvalStatus: 'Pending',
-            oldkrn: '1234567',
-            newkrn: '1234567',
-            oldTariffIndex: '1',
-            newTariffIndex: '3',
-            metertype: 'Electricity',
-            reason: 'Burnt',
-        },
-        {
-            id: 5,
-            meterNo: '620102123',
-            customerId: 'C-12344123',
-            customerName: 'John Doe',
-            simNumber: '890060873404',
-            oldSGC: '999962',
-            newSGC: '600894',
-            manufacturer: 'Momas',
-            class: 'Three Phase',
-            category: 'Prepaid',
-            changeDescription: 'Meter Deactivated',
-            approvalStatus: 'Pending',
-            oldkrn: '1234567',
-            newkrn: '1234567',
-            oldTariffIndex: '1',
-            newTariffIndex: '3',
-            metertype: 'Electricity',
-            reason: 'Burnt',
-        },
-        {
-            id: 6,
-            meterNo: '620102123',
-            customerId: 'C-12344123',
-            customerName: 'John Doe',
-            simNumber: '890060873404',
-            oldSGC: '999962',
-            newSGC: '600894',
-            manufacturer: 'Momas',
-            class: 'Three Phase',
-            category: 'Prepaid',
-            changeDescription: 'Meter Activated',
-            approvalStatus: 'Pending',
-            oldkrn: '1234567',
-            newkrn: '1234567',
-            oldTariffIndex: '1',
-            newTariffIndex: '3',
-            metertype: 'Electricity',
-            reason: 'Burnt',
-        },
-        {
-            id: 7,
-            meterNo: '620102123',
-            customerId: 'C-12344123',
-            customerName: 'John Doe',
-            simNumber: '890060873404',
-            oldSGC: '999962',
-            newSGC: '600894',
-            manufacturer: 'Momas',
-            class: 'Three Phase',
-            category: 'Prepaid',
-            changeDescription: 'Newly Added',
-            approvalStatus: 'Pending',
-            oldkrn: '1234567',
-            newkrn: '1234567',
-            oldTariffIndex: '1',
-            newTariffIndex: '3',
-            metertype: 'Electricity',
-            reason: 'Burnt',
-        },
-        {
-            id: 8,
-            meterNo: '620102123',
-            customerId: 'C-12344123',
-            customerName: 'John Doe',
-            simNumber: '890060873404',
-            oldSGC: '999962',
-            newSGC: '600894',
-            manufacturer: 'Momas',
-            class: 'MD',
-            category: 'Prepaid',
-            changeDescription: 'Meter Edited',
-            approvalStatus: 'Pending',
-            oldkrn: '1234567',
-            newkrn: '1234567',
-            oldTariffIndex: '1',
-            newTariffIndex: '3',
-            metertype: 'Electricity',
-            reason: 'Burnt',
-        },
-    ];
-
-    // Apply search and filters
-    const filteredData = data.filter((item) => {
-        const matchesSearch = searchTerm
-            ? item.meterNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            item.simNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            item.changeDescription.toLowerCase().includes(searchTerm.toLowerCase())
-            : true;
-
-        const matchesFilters = filters.status?.length
-            ? filters.status.includes(item.approvalStatus.toLowerCase())
-            : true;
-
-        return matchesSearch && matchesFilters;
-    });
-
-    // Apply sorting
-    const sortedData = [...filteredData].sort((a, b) => {
-        if (!sortConfig.key) return 0;
-        const aValue = a[sortConfig.key as keyof MeterItem] ?? '';
-        const bValue = b[sortConfig.key as keyof MeterItem] ?? '';
-        if (typeof aValue === 'string' && typeof bValue === 'string') {
-            return sortConfig.direction === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
-        }
-        return 0;
-    });
-
-    const totalPages = Math.ceil(sortedData.length / rowsPerPage);
+    const { meters, isLoading, isError, error, reviewMutation } = useMeters(fetchParams);
+    const totalCount = meters.length;
+    const totalPages = Math.ceil(totalCount / fetchParams.pageSize);
 
     const handlePrevious = () => {
-        setCurrentPage((prev) => Math.max(prev - 1, 1));
+        setFetchParams({ ...fetchParams, page: Math.max(fetchParams.page - 1, 1) });
     };
 
     const handleNext = () => {
-        setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+        setFetchParams({ ...fetchParams, page: Math.min(fetchParams.page + 1, totalPages) });
     };
 
     const handleRowsPerPageChange = (value: string) => {
-        setRowsPerPage(Number(value));
-        setCurrentPage(1);
+        setFetchParams({ ...fetchParams, pageSize: Number(value), page: 1 });
     };
 
-    const paginatedData = sortedData.slice(
-        (currentPage - 1) * rowsPerPage,
-        currentPage * rowsPerPage
-    );
-
-    const toggleSelection = (id: number) => {
-        setSelectedMeters((prev) =>
+    const toggleSelection = (id: string) => {
+        setSelectedItems((prev) =>
             prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
         );
     };
 
-    const handleViewDetails = (item: MeterItem) => {
-        console.log('View details clicked:', item);
+    const handleViewDetails = (item: Meter) => {
         setSelectedRow(item);
         setIsModalOpen(true);
         setDropdownOpenId(null);
     };
 
-    const handleApprove = (item: MeterItem) => {
-        console.log('Opening confirm modal for approve:', item);
-        setSelectedItem(item);
-        setConfirmAction('approve');
-        setIsModalOpen(false);
-        setIsConfirmOpen(true);
-        setDropdownOpenId(null);
+    const handleApprove = (item: Meter | null) => {
+        if (item) {
+            setSelectedItem(item);
+            setConfirmAction('approve');
+            setIsModalOpen(false);
+            setIsConfirmOpen(true);
+            setDropdownOpenId(null);
+        }
     };
 
-    const handleReject = (item: MeterItem) => {
-        console.log('Opening confirm modal for reject:', item);
-        setSelectedItem(item);
-        setConfirmAction('reject');
-        setIsModalOpen(false);
-        setIsConfirmOpen(true);
-        setDropdownOpenId(null);
+    const handleReject = (item: Meter | null) => {
+        if (item) {
+            setSelectedItem(item);
+            setConfirmAction('reject');
+            setIsModalOpen(false);
+            setIsConfirmOpen(true);
+            setDropdownOpenId(null);
+        }
     };
 
-    const handleConfirmAction = () => {
-        console.log('Confirm action triggered:', confirmAction, selectedItem);
+    const handleConfirmAction = async () => {
         if (selectedItem && confirmAction) {
-            console.log(`${confirmAction === 'approve' ? 'Approve' : 'Reject'}:`, selectedItem);
-            // Add your actual approve/reject logic here (e.g., API call)
+            try {
+                await reviewMutation.mutateAsync({
+                    id: selectedItem.id.toString(),
+                    approveStatus: confirmAction,
+                });
+                toast.success(`Meter ${confirmAction}d successfully!`, {
+                    description: `Meter Number: ${selectedItem.meterNumber}, Meter Type: ${selectedItem.meterType}`,
+                });
+            } catch (error) {
+                toast.error(`Failed to ${confirmAction} meter.`, {
+                    description: error instanceof Error ? error.message : 'An unknown error occurred',
+                });
+            }
         }
         setIsConfirmOpen(false);
         setConfirmAction(null);
         setSelectedItem(null);
     };
 
+    if (isLoading) return <div>Loading...</div>;
+    if (isError) {
+        toast.error('Failed to fetch meters.', {
+            // description: error instanceof Error ? error.message : 'An unknown error occurred',
+        });
+        return <div>Error: {error?.message}</div>;
+    }
+
+    const paginatedData = meters.slice(
+        (fetchParams.page - 1) * fetchParams.pageSize,
+        fetchParams.page * fetchParams.pageSize
+    );
+
     return (
-        <Card className="border-none shadow-none bg-transparent overflow-x-auto">
+        <Card className="border-none shadow-none bg-transparent overflow-x-auto min-h-[calc(100vh-300px)]">
             <Table className="table-auto w-full">
-                <TableHeader className='bg-transparent'>
+                <TableHeader className="bg-transparent">
                     <TableRow>
                         <TableHead className="px-4 py-3 w-[100px]">
                             <div className="flex items-center gap-2">
                                 <Checkbox
                                     className="h-4 w-4 border-gray-500"
-                                    checked={selectedMeters.length === sortedData.length && sortedData.length > 0}
+                                    checked={selectedItems.length === totalCount && totalCount > 0}
                                     onCheckedChange={(checked) => {
                                         if (checked) {
-                                            setSelectedMeters(sortedData.map((item) => item.id));
+                                            setSelectedItems(meters.map((item) => item.id));
                                         } else {
-                                            setSelectedMeters([]);
+                                            setSelectedItems([]);
                                         }
                                     }}
                                 />
                                 <span className="text-sm font-medium text-gray-900">S/N</span>
                             </div>
                         </TableHead>
-                        <TableHead className="px-4 py-3 w-[120px] text-sm font-medium text-gray-900">Meter No</TableHead>
-                        <TableHead className="px-4 py-3 w-[150px] text-sm font-medium text-gray-900">SIM Number</TableHead>
-                        <TableHead className="px-4 py-3 w-[120px] text-sm font-medium text-gray-900">Old SGC</TableHead>
-                        <TableHead className="px-4 py-3 w-[120px] text-sm font-medium text-gray-900">New SGC</TableHead>
-                        <TableHead className="px-4 py-3 w-[150px] text-sm font-medium text-gray-900">Manufacturer</TableHead>
-                        <TableHead className="px-4 py-3 w-[120px] text-sm font-medium text-gray-900">Class</TableHead>
-                        <TableHead className="px-4 py-3 w-[120px] text-sm font-medium text-gray-900">Category</TableHead>
-                        <TableHead className="px-4 py-3 w-[150px] text-sm font-medium text-gray-900">Change Description</TableHead>
-                        <TableHead className="px-4 py-3 w-[120px] text-sm font-medium text-gray-900 text-center">Approval Status</TableHead>
-                        <TableHead className="px-4 py-3 w-[80px] text-sm font-medium text-gray-900 text-right">Actions</TableHead>
+                        <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">Meter Number</TableHead>
+                        <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">Meter Type</TableHead>
+                        <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">Manufacturer</TableHead>
+                        <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">Category</TableHead>
+                        <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">Status</TableHead>
+                        <TableHead className="px-4 py-3 text-sm font-medium text-gray-900 text-center">Approval Status</TableHead>
+                        <TableHead className="px-4 py-3 text-sm font-medium text-gray-900 text-right">Actions</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
                     {paginatedData.length === 0 ? (
                         <TableRow>
-                            <TableCell colSpan={11} className="h-24 text-center text-sm text-gray-500">
+                            <TableCell colSpan={8} className="h-24 text-center text-sm text-gray-500">
                                 No data available
                             </TableCell>
                         </TableRow>
                     ) : (
                         paginatedData.map((item, index) => (
                             <TableRow key={item.id} className="hover:bg-gray-50 cursor-pointer">
-                                <TableCell className="px-4 py-3 w-[100px]">
+                                <TableCell className="px-4 py-3">
                                     <div className="flex items-center gap-2">
                                         <Checkbox
                                             className="h-4 w-4 border-gray-500"
                                             id={`select-${item.id}`}
-                                            checked={selectedMeters.includes(item.id)}
+                                            checked={selectedItems.includes(item.id)}
                                             onCheckedChange={() => toggleSelection(item.id)}
                                         />
                                         <span className="text-sm text-gray-900">
-                                            {index + 1 + (currentPage - 1) * rowsPerPage}
+                                            {index + 1 + (fetchParams.page - 1) * fetchParams.pageSize}
                                         </span>
                                     </div>
                                 </TableCell>
-                                <TableCell className="px-4 py-3 w-[120px] text-sm text-gray-900">{item.meterNo}</TableCell>
-                                <TableCell className="px-4 py-3 w-[150px] text-sm text-gray-900">{item.simNumber}</TableCell>
-                                <TableCell className="px-4 py-3 w-[120px] text-sm text-gray-900">{item.oldSGC}</TableCell>
-                                <TableCell className="px-4 py-3 w-[120px] text-sm text-gray-900">{item.newSGC}</TableCell>
-                                <TableCell className="px-4 py-3 w-[150px] text-sm text-gray-900">{item.manufacturer}</TableCell>
-                                <TableCell className="px-4 py-3 w-[120px] text-sm text-gray-900">{item.class}</TableCell>
-                                <TableCell className="px-4 py-3 w-[120px] text-sm text-gray-900">{item.category}</TableCell>
-                                <TableCell className="px-4 py-3 w-[150px] text-sm text-[#161CCA]">{item.changeDescription}</TableCell>
-                                <TableCell className="px-4 py-3 w-[120px] text-center">
-                                    <span className="inline-block px-3 py-1 text-sm font-medium text-[#C86900] bg-[#FFF5EA] rounded-full">
-                                        {item.approvalStatus}
+                                <TableCell className="px-4 py-3 w-[150px] text-sm text-gray-900">{item.meterNumber}</TableCell>
+                                <TableCell className="px-4 py-3 w-[120px] text-sm text-gray-900">{item.meterType}</TableCell>
+                                <TableCell className="px-4 py-3 w-[100px] text-sm text-gray-900">{item.manufacturer}</TableCell>
+                                <TableCell className="px-4 py-3 w-[100px] text-sm text-gray-900">{item.category}</TableCell>
+                                <TableCell className="px-4 py-3 w-[120px] text-sm text-gray-900">{item.status ? 'Active' : 'Inactive'}</TableCell>
+                                <TableCell className="px-4 py-3 text-center">
+                                    <span className="inline-block px-3 py-1 text-sm font-medium text-[#C86900] bg-[#FFF5EA] p-1 rounded-full">
+                                        {item.approveStatus === 'pending-state' ? 'Pending' : item.approveStatus}
                                     </span>
                                 </TableCell>
-                                <TableCell className="px-4 py-3 w-[80px] text-right">
+                                <TableCell className="px-4 py-3 text-right">
                                     <DropdownMenu
                                         open={dropdownOpenId === item.id}
                                         onOpenChange={(open) => setDropdownOpenId(open ? item.id : null)}
@@ -442,26 +248,21 @@ const MeterTable = ({ searchTerm = '', sortConfig = { key: '', direction: 'asc' 
                 <div className="flex items-center space-x-2">
                     <span className="text-sm font-medium">Rows per page</span>
                     <Select
-                        value={rowsPerPage.toString()}
+                        value={fetchParams.pageSize.toString()}
                         onValueChange={handleRowsPerPageChange}
                     >
                         <SelectTrigger className="h-8 w-[70px]">
-                            <SelectValue placeholder={rowsPerPage.toString()} />
+                            <SelectValue placeholder={fetchParams.pageSize.toString()} />
                         </SelectTrigger>
-                        <SelectContent
-                            position="popper"
-                            side="top"
-                            align="center"
-                            className="mb-1 ring-gray-50"
-                        >
+                        <SelectContent position="popper" side="top" align="center" className="mb-1 ring-gray-50">
                             <SelectItem value="10">10</SelectItem>
                             <SelectItem value="24">24</SelectItem>
                             <SelectItem value="48">48</SelectItem>
                         </SelectContent>
                     </Select>
                     <span className="text-sm font-medium">
-                        {(currentPage - 1) * rowsPerPage + 1}-
-                        {Math.min(currentPage * rowsPerPage, sortedData.length)} of {sortedData.length}
+                        {(fetchParams.page - 1) * fetchParams.pageSize + 1}-
+                        {Math.min(fetchParams.page * fetchParams.pageSize, totalCount)} of {totalCount}
                     </span>
                 </div>
                 <PaginationContent>
@@ -472,7 +273,7 @@ const MeterTable = ({ searchTerm = '', sortConfig = { key: '', direction: 'asc' 
                                 e.preventDefault();
                                 handlePrevious();
                             }}
-                            aria-disabled={currentPage === 1}
+                            aria-disabled={fetchParams.page === 1}
                         />
                     </PaginationItem>
                     <PaginationItem>
@@ -482,7 +283,7 @@ const MeterTable = ({ searchTerm = '', sortConfig = { key: '', direction: 'asc' 
                                 e.preventDefault();
                                 handleNext();
                             }}
-                            aria-disabled={currentPage === totalPages}
+                            aria-disabled={fetchParams.page === totalPages}
                         />
                     </PaginationItem>
                 </PaginationContent>
@@ -501,6 +302,7 @@ const MeterTable = ({ searchTerm = '', sortConfig = { key: '', direction: 'asc' 
                 onOpenChange={setIsConfirmOpen}
                 action={confirmAction ?? 'approve'}
                 onConfirm={handleConfirmAction}
+                selectedItem={selectedItem}
             />
         </Card>
     );

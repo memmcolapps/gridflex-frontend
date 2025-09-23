@@ -84,11 +84,12 @@ export interface Tariff {
   tariff_type: string;
   effective_date: string;
   tariff_rate: string;
-  band: string;
+  band: Band;
   status: boolean;
   approve_status: string;
   created_at: string;
   updated_at: string;
+  
 }
 
 export interface MeterResponse {
@@ -104,13 +105,31 @@ export interface MeterResponse {
 }
 
 export interface Meter {
-  approveStatus: string;
-  category: string;
+  id: string;
+  meterId: string;
+  orgId: string;
   meterNumber: string;
-  simNo: string;
+  meterType: string;
   manufacturer: string;
-  meterClass: string;
+  category: string;
   status: boolean;
+  approveStatus: string;
+  createdBy: string;
+  description: string;
   createdAt: string;
+  updatedAt: string;
   customerId: string;
+  customerName: string;
+  simNumber: string;
+  oldSGC: string;
+  newSGC: string;
+  class: string;
+  changeDescription: string;
+  approvalStatus: string;
+  reason?: string;
+  oldkrn?: string;
+  newkrn?: string;
+  oldTariffIndex?: string;
+  newTariffIndex?: string;
+  imageUrl?: string;
 }

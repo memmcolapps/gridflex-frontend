@@ -119,16 +119,16 @@ const PercentageRangeTable = () => {
     if (selectedItem && confirmAction) {
       try {
         await reviewMutation.mutateAsync({
-          id: selectedItem.id,
+          id: selectedItem.percentageId,
           approveStatus: confirmAction,
           reason,
         });
         toast.success(`Percentage range ${confirmAction}d successfully!`, {
-          description: `Percentage: ${selectedItem.percentage}, Code: ${selectedItem.code}`,
+          // description: `Percentage: ${selectedItem.percentage}, Code: ${selectedItem.code}`,
         });
       } catch (error) {
         toast.error(`Failed to ${confirmAction} percentage range.`, {
-          description: error instanceof Error ? error.message : 'An error occurred',
+          // description: error instanceof Error ? error.message : 'An error occurred',
         });
       }
     }
@@ -170,10 +170,10 @@ const PercentageRangeTable = () => {
               </div>
             </TableHead>
             <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">Percentage</TableHead>
-            <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">Code</TableHead>
+            <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">Percentage Code</TableHead>
             <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">Band</TableHead>
             <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">Amount Range</TableHead>
-            <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">Description</TableHead>
+            <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">Change Description</TableHead>
             <TableHead className="px-4 py-3 text-sm font-medium text-gray-900 text-center">Approval Status</TableHead>
             <TableHead className="px-4 py-3 text-sm font-medium text-gray-900 text-right">Actions</TableHead>
           </TableRow>

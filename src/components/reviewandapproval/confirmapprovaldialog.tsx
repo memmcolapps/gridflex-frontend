@@ -1,5 +1,3 @@
-// components/reviewandapproval/confirmapprovaldialog.tsx
-
 import {
   Dialog,
   DialogContent,
@@ -51,7 +49,6 @@ const ConfirmDialog = <T extends SupportedItem | null>({
 
     if ('percentage' in selectedItem && 'code' in selectedItem && 'band' in selectedItem) {
       // PercentageRange
-
       return {
         message: `Please confirm you would like to approve this changes`,
       };
@@ -60,36 +57,16 @@ const ConfirmDialog = <T extends SupportedItem | null>({
       // Liability
       return {
         message: `Are you sure you want to ${action} the liability with name "${selectedItem.name}" and code "${selectedItem.code}"?`,
-        // details: (
-        //   <div className="mt-2 text-sm text-gray-600">
-        //     <p>Description: {selectedItem.description || 'N/A'}</p>
-        //   </div>
-        // ),
       };
     } else if ('bandId' in selectedItem && 'name' in selectedItem && 'hour' in selectedItem) {
       // Band
       return {
-        message: `Are you sure you want to ${action} the band with name "${selectedItem.name}" and ID "${selectedItem.bandId}"?`,
-        details: (
-          <div className="mt-2 text-sm text-gray-600">
-            <p>Hour: {selectedItem.hour || 'N/A'}</p>
-            <p>Description: {selectedItem.description || 'N/A'}</p>
-          </div>
-        ),
+        message: `Please confirm you would like to approve this changes`,
       };
     } else if ('tariff_id' in selectedItem && 'name' in selectedItem && 'tariff_type' in selectedItem) {
       // Tariff
       return {
-        message: `Are you sure you want to ${action} the tariff with name "${selectedItem.name}" and ID "${selectedItem.tariff_id}"?`,
-        details: (
-          <div className="mt-2 text-sm text-gray-600">
-            <p>Tariff Type: {selectedItem.tariff_type || 'N/A'}</p>
-            <p>Effective Date: {selectedItem.effective_date || 'N/A'}</p>
-            <p>Tariff Rate: {selectedItem.tariff_rate || 'N/A'}</p>
-            <p>Band: {selectedItem.band || 'N/A'}</p>
-            <p>Description: {selectedItem.description || 'N/A'}</p>
-          </div>
-        ),
+        message: `Please confirm you would like to approve this changes`,
       };
     } else if ('meterNumber' in selectedItem && 'meterType' in selectedItem) {
       // Meter

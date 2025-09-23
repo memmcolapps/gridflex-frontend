@@ -45,6 +45,7 @@ const TariffTable = () => {
     searchTerm: '',
     sortBy: null,
     sortDirection: null,
+    type: 'pending-state',
   });
   const [selectedRow, setSelectedRow] = useState<Tariff | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -55,13 +56,7 @@ const TariffTable = () => {
   const [dropdownOpenId, setDropdownOpenId] = useState<string | null>(null);
 
   const { tariffs, isLoading, isError, error, reviewMutation } = useTariffs(fetchParams);
-
-  console.log("Tariffs in TariffTable:", tariffs); // Debug log to inspect tariffs array
-
-  // Filter out approved tariffs
-  const filteredTariffs = Array.isArray(tariffs) ? tariffs.filter((item) => item.approve_status !== 'Approved') : [];
-
-  const totalCount = filteredTariffs.length;
+  const totalCount = tariffs.length;
   const totalPages = Math.ceil(totalCount / fetchParams.pageSize);
 
   const handlePrevious = () => {
@@ -104,16 +99,15 @@ const TariffTable = () => {
     setDropdownOpenId(null);
   };
 
-  const handleConfirmAction = async (reason?: string) => {
+  const handleConfirmAction = async () => {
     if (selectedItem && confirmAction) {
       try {
         await reviewMutation.mutateAsync({
-          id: selectedItem.id,
+          id: selectedItem.t_id.toString(),
           approveStatus: confirmAction,
-          reason,
         });
         toast.success(`Tariff ${confirmAction}d successfully!`, {
-          description: `Name: ${selectedItem.name}, ID: ${selectedItem.t_id}`,
+          description: `Name: ${selectedItem.name}, Type: ${selectedItem.tariff_type}`,
         });
       } catch (error) {
         toast.error(`Failed to ${confirmAction} tariff.`, {
@@ -129,12 +123,12 @@ const TariffTable = () => {
   if (isLoading) return <div>Loading...</div>;
   if (isError) {
     toast.error('Failed to fetch tariffs.', {
-      description: error instanceof Error ? error.message : 'An unknown error occurred',
+      // description: error instanceof Error ? error.message : 'An unknown error occurred',
     });
     return <div>Error: {error?.message}</div>;
   }
 
-  const paginatedData = filteredTariffs.slice(
+  const paginatedData = tariffs.slice(
     (fetchParams.page - 1) * fetchParams.pageSize,
     fetchParams.page * fetchParams.pageSize
   );
@@ -151,7 +145,7 @@ const TariffTable = () => {
                   checked={selectedItems.length === totalCount && totalCount > 0}
                   onCheckedChange={(checked) => {
                     if (checked) {
-                      setSelectedItems(filteredTariffs.map((item) => item.id));
+                      setSelectedItems(tariffs.map((item) => item.id));
                     } else {
                       setSelectedItems([]);
                     }
@@ -160,15 +154,15 @@ const TariffTable = () => {
                 <span className="text-sm font-medium text-gray-900">S/N</span>
               </div>
             </TableHead>
-            <TableHead className="px-4 py-3 w-[150px] text-sm font-medium text-gray-900">Tariff Name</TableHead>
-            {/* <TableHead className="px-4 py-3 w-[100px] text-sm font-medium text-gray-900">Tariff ID</TableHead> */}
-            <TableHead className="px-4 py-3 w-[120px] text-sm font-medium text-gray-900">Tariff Type</TableHead>
-            <TableHead className="px-4 py-3 w-[100px] text-sm font-medium text-gray-900">Band Code</TableHead>
-            <TableHead className="px-4 py-3 w-[100px] text-sm font-medium text-gray-900">Tariff Rate</TableHead>
-            <TableHead className="px-4 py-3 w-[120px] text-sm font-medium text-gray-900">Effective Date</TableHead>
-            <TableHead className="px-4 py-3 w-[150px] text-sm font-medium text-gray-900">Description</TableHead>
-            <TableHead className="px-4 py-3 w-[120px] text-sm font-medium text-gray-900 text-center">Approval Status</TableHead>
-            <TableHead className="px-4 py-3 w-[80px] text-sm font-medium text-gray-900 text-right">Actions</TableHead>
+            <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">Tariff Name</TableHead>
+            <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">Tariff Type</TableHead>
+            {/* <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">Band Code</TableHead> */}
+            <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">Band Code</TableHead>
+            <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">Tariff Rate</TableHead>
+            <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">Effective Date</TableHead>
+            <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">Change Description</TableHead>
+            <TableHead className="px-4 py-3 text-sm font-medium text-gray-900 text-center">Approval Status</TableHead>
+            <TableHead className="px-4 py-3 text-sm font-medium text-gray-900 text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -181,7 +175,7 @@ const TariffTable = () => {
           ) : (
             paginatedData.map((item, index) => (
               <TableRow key={item.id} className="hover:bg-gray-50 cursor-pointer">
-                <TableCell className="px-4 py-3 w-[100px]">
+                <TableCell className="px-4 py-3">
                   <div className="flex items-center gap-2">
                     <Checkbox
                       className="h-4 w-4 border-gray-500"
@@ -195,18 +189,19 @@ const TariffTable = () => {
                   </div>
                 </TableCell>
                 <TableCell className="px-4 py-3 w-[150px] text-sm text-gray-900">{item.name}</TableCell>
-                {/* <TableCell className="px-4 py-3 w-[100px] text-sm text-gray-900">{item.t_id}</TableCell> */}
                 <TableCell className="px-4 py-3 w-[120px] text-sm text-gray-900">{item.tariff_type}</TableCell>
-                <TableCell className="px-4 py-3 w-[100px] text-sm text-gray-900">{item.band}</TableCell>
+                {/* Correctly access the band properties from the object */}
+                {/* <TableCell className="px-4 py-3 w-[100px] text-sm text-gray-900">{item.band.bandId}</TableCell> */}
+                <TableCell className="px-4 py-3 w-[100px] text-sm text-gray-900">{item.band.name}</TableCell>
                 <TableCell className="px-4 py-3 w-[100px] text-sm text-gray-900">{item.tariff_rate}</TableCell>
                 <TableCell className="px-4 py-3 w-[120px] text-sm text-gray-900">{item.effective_date}</TableCell>
                 <TableCell className="px-4 py-3 w-[150px] text-sm text-[#161CCA]">{item.description}</TableCell>
-                <TableCell className="px-4 py-3 w-[120px] text-center">
-                  <span className="inline-block px-3 py-1 text-sm font-medium text-[#C86900] bg-[#FFF5EA] rounded-full">
-                    {item.approve_status ?? 'Pending'}
+                <TableCell className="px-4 py-3 text-center">
+                  <span className="inline-block px-3 py-1 text-sm font-medium text-[#C86900] bg-[#FFF5EA] p-1 rounded-full">
+                    {item.approve_status === 'pending-state' ? 'Pending' : item.approve_status}
                   </span>
                 </TableCell>
-                <TableCell className="px-4 py-3 w-[80px] text-right">
+                <TableCell className="px-4 py-3 text-right">
                   <DropdownMenu
                     open={dropdownOpenId === item.id}
                     onOpenChange={(open) => setDropdownOpenId(open ? item.id : null)}
@@ -260,12 +255,7 @@ const TariffTable = () => {
             <SelectTrigger className="h-8 w-[70px]">
               <SelectValue placeholder={fetchParams.pageSize.toString()} />
             </SelectTrigger>
-            <SelectContent
-              position="popper"
-              side="top"
-              align="center"
-              className="mb-1 ring-gray-50"
-            >
+            <SelectContent position="popper" side="top" align="center" className="mb-1 ring-gray-50">
               <SelectItem value="10">10</SelectItem>
               <SelectItem value="24">24</SelectItem>
               <SelectItem value="48">48</SelectItem>
