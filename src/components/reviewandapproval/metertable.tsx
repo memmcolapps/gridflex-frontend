@@ -199,7 +199,7 @@ const MeterTable = () => {
                                 <TableCell className="px-4 py-3 w-[120px] text-sm text-gray-900">{item.meterType}</TableCell>
 
                                 <TableCell className="px-4 py-3 w-[100px] text-sm text-gray-900">{item.meterCategory}</TableCell>
-                                <TableCell className="px-4 py-3 w-[120px] text-sm text-gray-900">{item.changeDescription}</TableCell>
+                                <TableCell className="px-4 py-3 w-[120px] text-sm text-gray-900">{item.description}</TableCell>
                                 <TableCell className="px-4 py-3 text-center">
                                     <span className="inline-block px-3 py-1 text-sm font-medium text-[#C86900] bg-[#FFF5EA] p-1 rounded-full">
                                         {item.meterStage === 'pending-state' ? 'Pending' : item.meterStage}
