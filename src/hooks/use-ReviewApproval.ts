@@ -232,6 +232,8 @@ export const useMeters = (params: FetchParams): UseMetersResult => {
   };
 };
 
+
+
 // Single item fetching hooks
 export const useSinglePercentageRange = (id: string): UseQueryResult<GetPercentageResponse, Error> => {
   return useQuery<GetPercentageResponse, Error>({
