@@ -17,7 +17,7 @@ const ALL_STATUS = [
 export default function IncidentReport() {
     const [isDialogOpen , setIsDialogOpen] = useState(false)
     return (
-        <div className="min-h-screen bg-transparent">
+        <div className="min-h-screen  bg-transparent">
             <div className="max-w-screen-2xl space-y-6 bg-transparent">
                 <div className="flex items-start justify-between bg-transparent">
                     <ContentHeader
