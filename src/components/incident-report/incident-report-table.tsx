@@ -1,35 +1,13 @@
 'use client'
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useIncidentReports } from "@/hooks/use-incident";
 import { Clock } from "lucide-react";
 
-const IncidentReported = [
-    {
-        message: 'Payment not going through',
-        user: 'Margeret Adeleke',
-        organization: 'IBDEC',
-        createdAt: '2025-09-23 05:09:52.854',
-        status: false}
-    ,
-    {
-        message: 'Payment not going through',
-        user: 'Margeret Adeleke',
-        organization: 'IBDEC',
-        createdAt: '2025-09-23 05:09:52.854',
-        status: false}
-    ,
-    {
-        message: 'Payment not going through',
-        user: 'Margeret Adeleke',
-        organization: 'IBDEC',
-        createdAt: '2025-09-23 05:09:52.854',
-        status: false
-    }
-]
 
 export default function RecentIncidents() {
-    // const { data: incidents } = useIncidentReports()
-    // const { mutate: resolveIncident } = useResolveIncidents();
+    const { data: incidents } = useIncidentReports()
+    const incidentReported = incidents?.data?.data
 
     return (
         <div className="py-8">
@@ -43,7 +21,7 @@ export default function RecentIncidents() {
                         </CardHeader>
                         <CardContent className="pt-4">
                             <div className="flex flex-col gap-5">
-                                {IncidentReported.map((incident, index) => (
+                                {incidentReported?.map((incident, index) => (
                                         <div key={index} className={`
                                         rounded-lg flex flex-col gap-1 bg-gray-100
                                         `}>
@@ -56,11 +34,9 @@ export default function RecentIncidents() {
                                                             </div>
                                                             <li className="flex flex-col">
                                                                 <span className="text-gray-900">{incident.message}</span>
-                                                                {/* {incident?.user && ( */}
-                                                                    <span className="text-gray-600">User: `{incident?.user} `</span>
-                                                                {/* )} */}
+                                                                    <span className="text-gray-600">User: `{incident.user.firstname} {incident.user.lastname}`</span>
                                                                 {/* {incident?.organization && ( */}
-                                                                    <span className="text-gray-600">Utility Company: {incident.organization} </span>
+                                                                    <span className="text-gray-600">Utility Company: {incident.organization.businessName} </span>
                                                                 {/* )} */}
                                                                 <span className="text-gray-600 gap-1 flex items-center">
                                                                     {new Date(incident.createdAt).toLocaleDateString("en-US", {
