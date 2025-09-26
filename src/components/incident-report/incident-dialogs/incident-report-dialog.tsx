@@ -51,7 +51,7 @@ export default function IncidentDialog({ isOpen, onOpenChange }: {
                         />
                         <Button
                             onClick={handleSubmit}
-                            variant={"default"}
+                            variant="default"
                             disabled={isPending}
                             className="text-md w-full cursor-pointer gap-2 text-white px-8 py-6 font-semibold bg-[#161CCA]"
                         >

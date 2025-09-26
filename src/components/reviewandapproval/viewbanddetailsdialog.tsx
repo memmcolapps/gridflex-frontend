@@ -28,9 +28,9 @@ const ViewBandDetailsDialog: React.FC<ViewBandDetailsDialogProps> = ({
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
             <DialogContent
-                className="w-fit lg:max-w-[1200px] bg-white text-black p-4 sm:p-6 rounded-lg shadow-lg overflow-hidden h-fit"
+                className="w-fit lg:max-w-[1250px] bg-white text-black p-4 sm:p-6 rounded-lg shadow-lg overflow-hidden h-fit"
             >
-                <div className="w-full">
+                <div className="w-fit">
                     <DialogHeader>
                         <DialogTitle className="text-left text-base sm:text-lg font-semibold text-gray-900 truncate">
                             {selectedRow?.description ?? 'Band Details'}
@@ -42,27 +42,22 @@ const ViewBandDetailsDialog: React.FC<ViewBandDetailsDialogProps> = ({
 
                     <div className="flex flex-col gap-3 py-4 sm:py-6">
                         {selectedRow?.description === 'Band Edited' && (
-                            <div className="hidden sm:flex items-center gap-4 ml-[120px] sm:ml-[140px] mb-1">
+                            <div className="hidden sm:flex items-center gap-2 ml-[100px] sm:ml-[140px] mb-1">
                                 <div className="w-[120px] text-center font-semibold text-gray-500">From</div>
-                                <div className="w-[120px] text-center font-semibold text-gray-500 ml-18">To</div>
+                                <div className="w-[120px] text-center font-semibold text-gray-500 ml-22">To</div>
                             </div>
                         )}
 
                         {[
                             {
                                 label: 'Band Name:',
-                                oldValue: selectedRow?.name,
-                                newValue: undefined, // API doesn't provide new values yet
+                                oldValue: selectedRow?.oldBandInfo?.name,
+                                newValue: selectedRow?.name, // API doesn't provide new values yet
                             },
                             {
-                                label: 'Electricity Hr:',
-                                oldValue: selectedRow?.hour,
-                                newValue: undefined, // API doesn't provide new values yet
-                            },
-                            {
-                                label: 'Band ID:',
-                                oldValue: selectedRow?.bandId,
-                                newValue: undefined,
+                                label: 'Electricity Hour:',
+                                oldValue: selectedRow?.oldBandInfo?.hour,
+                                newValue: selectedRow?.hour, // API doesn't provide new values yet
                             },
                         ].map(({ label, oldValue, newValue }) => (
                             <div

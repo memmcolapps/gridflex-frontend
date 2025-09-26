@@ -111,11 +111,11 @@ const MeterTable = () => {
                     approveStatus: confirmAction,
                 });
                 toast.success(`Meter ${confirmAction}d successfully!`, {
-                    description: `Meter Number: ${selectedItem.meterNumber}, Meter Type: ${selectedItem.meterType}`,
+                    // description: `Meter Number: ${selectedItem.meterNumber}, Meter Type: ${selectedItem.meterType}`,
                 });
             } catch (error) {
                 toast.error(`Failed to ${confirmAction} meter.`, {
-                    description: error instanceof Error ? error.message : 'An unknown error occurred',
+                    // description: error instanceof Error ? error.message : 'An unknown error occurred',
                 });
             }
         }
@@ -195,11 +195,10 @@ const MeterTable = () => {
                                 <TableCell className="px-4 py-3 w-[150px] text-sm text-gray-900">{item.meterNumber}</TableCell>
                                 <TableCell className="px-4 py-3 w-[150px] text-sm text-gray-900">{item.simNumber}</TableCell>
                                 <TableCell className="px-4 py-3 w-[100px] text-sm text-gray-900">{item.manufacturer.name}</TableCell>
-                                           <TableCell className="px-4 py-3 w-[120px] text-sm text-gray-900">{item.meterClass}</TableCell>
+                                <TableCell className="px-4 py-3 w-[120px] text-sm text-gray-900">{item.meterClass}</TableCell>
                                 <TableCell className="px-4 py-3 w-[120px] text-sm text-gray-900">{item.meterType}</TableCell>
-
                                 <TableCell className="px-4 py-3 w-[100px] text-sm text-gray-900">{item.meterCategory}</TableCell>
-                                <TableCell className="px-4 py-3 w-[120px] text-sm text-gray-900">{item.changeDescription}</TableCell>
+                                <TableCell className="px-4 py-3 w-[120px] text-sm text-gray-900">{item.description}</TableCell>
                                 <TableCell className="px-4 py-3 text-center">
                                     <span className="inline-block px-3 py-1 text-sm font-medium text-[#C86900] bg-[#FFF5EA] p-1 rounded-full">
                                         {item.meterStage === 'pending-state' ? 'Pending' : item.meterStage}
