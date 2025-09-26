@@ -8,7 +8,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useState, useEffect } from "react";
-import type { Band } from "@/service/band-service";
 import { useBand } from "@/hooks/use-band";
 
 interface SearchAndFiltersProps {
@@ -32,8 +31,8 @@ export const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({
   selectedMeterType,
   setSelectedMeterType,
 }) => {
-  const [loading, setLoading] = useState(false);
-  const { bands, error } = useBand();
+  const [loading] = useState(false);
+  const { bands } = useBand();
 
   // Reset selectedBand if it's not a valid option (e.g., during loading or if no bands are available)
   useEffect(() => {
@@ -65,7 +64,7 @@ export const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({
         <Input
           type="text"
           value={searchTerm}
-          onChange={(e) => setSearchTerm && setSearchTerm(e.target.value)}
+          onChange={(e) => setSearchTerm?.(e.target.value)}
           placeholder="Search by meter no., account no., ..."
           className="rounded-md border-gray-300 pl-10 focus:border-blue-500 focus:ring-blue-500 md:w-[300px]"
         />

@@ -22,6 +22,7 @@ export default function IncidentDialog({ isOpen, onOpenChange }: {
             {
                 onSuccess: () => {
                     setMessage("");
+                    onOpenChange(false)
                 },
             }
         );
