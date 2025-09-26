@@ -21,16 +21,18 @@ export interface IncidentReport {
   responsedesc: string;
   responsedata: {
     totalData: number;
-    data: {
-      id: string;
-      type?: string;
-      message: string;
-      createdAt: string;
-      organization: Org;
-      status: boolean;
-      user: Client;
-    }[];
+    data: Incident[];
   };
+}
+
+export interface Incident {
+  id: string;
+  type?: string;
+  message: string;
+  createdAt: string;
+  status: boolean;
+  organization: Org;
+  user: Client;
 }
 
 
