@@ -9,6 +9,8 @@ import {
     fetchAllPercentageRanges,
     createPercentageRange,
     updatePercentageRange,
+    changeLiabilityCauseStatus,
+    changePercentageRangeStatus,
 } from "@/service/debit-settings-service";
 import {
     type LiabilityCause,
@@ -56,6 +58,20 @@ export const useUpdateLiabilityCause = () => {
     });
 };
 
+export const useChangeLiabilityCauseStatus = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ id, status }: { id: string, status: boolean }) => changeLiabilityCauseStatus(id, status),
+        onSuccess: (response) => {
+            toast.success(response.responsedesc ?? "Liability cause status updated successfully!");
+            queryClient.invalidateQueries({ queryKey: ["liability-causes"] });
+        },
+        onError: (error) => {
+            toast.error(error.message);
+        },
+    });
+};
+
 // --- Percentage Range Hooks ---
 
 export const useAllPercentageRanges = () => {
@@ -92,3 +108,19 @@ export const useUpdatePercentageRange = () => {
         },
     });
 };
+
+export const useChangePercentageRangeStatus = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ id, status }: { id: string, status: boolean }) => changePercentageRangeStatus(id, status),
+        onSuccess: (response) => {
+            toast.success(response.responsedesc ?? "Percentage range status updated successfully!");
+            queryClient.invalidateQueries({ queryKey: ["percentage-ranges"] });
+        },
+        onError: (error) => {
+            toast.error(error.message);
+        },
+    });
+};
+
+
