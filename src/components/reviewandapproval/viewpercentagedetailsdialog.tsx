@@ -1,4 +1,3 @@
-// components/viewpercentagedetailsdialog.tsx
 import {
   Dialog,
   DialogContent,
@@ -6,7 +5,9 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { MoveRight } from 'lucide-react';
 import type { PercentageRange } from '@/types/review-approval';
+import { useAuth } from '@/context/auth-context';
 
 interface ViewDetailsDialogProps {
   isOpen: boolean;
@@ -23,45 +24,131 @@ const ViewDetailsDialog: React.FC<ViewDetailsDialogProps> = ({
   onApprove,
   onReject,
 }) => {
+  const { user } = useAuth();
+
+  const renderContent = () => {
+    if (!selectedRow) return null;
+
+    switch (selectedRow.description) {
+      case 'Newly Added':
+      case 'Percentage Range Deactivated':
+        return (
+          <>
+            <DialogHeader>
+              <DialogTitle className="text-left text-base sm:text-lg font-semibold text-gray-900 truncate">
+                {selectedRow.description}
+              </DialogTitle>
+              <span className="text-gray-500 text-sm sm:text-base">
+                Operator:{' '}
+                <span className="font-medium">
+                  {user?.business?.businessName?.toUpperCase() ?? 'BUSINESS NAME'}
+                </span>
+              </span>
+            </DialogHeader>
+            <div className="flex flex-col gap-3 py-4 sm:py-6">
+              {[
+                { label: 'Percentage:', value: selectedRow.percentage },
+                { label: 'Percentage Code:', value: selectedRow.code },
+                { label: 'Band Code:', value: selectedRow.band.name },
+                {
+                  label: 'Amount Range:',
+                  value: `${selectedRow.amountStartRange} - ${selectedRow.amountEndRange}`,
+                },
+              ].map(({ label, value }) => (
+                <div
+                  key={label}
+                  className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full"
+                >
+                  <div className="w-full sm:w-[120px] text-sm sm:text-base font-medium text-gray-700 whitespace-nowrap">
+                    {label}
+                  </div>
+                  <div className="w-full sm:w-[150px] text-sm sm:text-base font-bold text-gray-900 whitespace-nowrap ml-0 sm:ml-10">
+                    {value ?? 'N/A'}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        );
+
+      case 'Percentage Range Edited':
+        return (
+          <>
+            <DialogHeader>
+              <DialogTitle className="text-left text-base sm:text-lg font-semibold text-gray-900 truncate">
+                Percentage Range Edited
+              </DialogTitle>
+              <span className="text-gray-500 text-sm sm:text-base">
+                Operator:{' '}
+                <span className="font-medium">
+                  {user?.business?.businessName?.toUpperCase() ?? 'BUSINESS NAME'}
+                </span>
+              </span>
+            </DialogHeader>
+            <div className="flex flex-col gap-3 py-4 sm:py-6">
+              {/* Header row with From and To labels */}
+              <div className="flex flex-row items-center gap-4">
+                <div className="w-[120px] text-sm sm:text-base  whitespace-nowrap"></div>
+                <div className="w-[120px] text-sm sm:text-base  whitespace-nowrap">
+                  From
+                </div>
+                <div className="w-[120px] text-sm sm:text-base  whitespace-nowrap ml-14">
+                  To
+                </div>
+              </div>
+              {/* Data rows */}
+              {[
+                {
+                  label: 'Percentage:',
+                  oldValue: selectedRow.oldPercentage,
+                  newValue: selectedRow.percentage,
+                },
+                {
+                  label: 'Percentage Code:',
+                  oldValue: selectedRow.code,
+                  newValue: selectedRow.code,
+                },
+                {
+                  label: 'Band Code:',
+                  oldValue: selectedRow.band.name,
+                  newValue: selectedRow.band.name,
+                },
+                {
+                  label: 'Amount Range:',
+                  oldValue: `${selectedRow.oldAmountStartRange} - ${selectedRow.oldAmountEndRange}`,
+                  newValue: `${selectedRow.amountStartRange} - ${selectedRow.amountEndRange}`,
+                },
+              ].map(({ label, oldValue, newValue }) => (
+                <div
+                  key={label}
+                  className="flex flex-row items-center gap-4"
+                >
+                  <div className="w-[120px] text-sm sm:text-base font-medium text-gray-700 whitespace-nowrap">
+                    {label}
+                  </div>
+                  <div className="w-[120px] text-sm sm:text-base font-bold text-gray-900 whitespace-nowrap">
+                    {oldValue ?? 'N/A'}
+                  </div>
+                  <div className="flex items-center text-sm sm:text-base text-gray-900 whitespace-nowrap ml-4">
+                    <MoveRight className="text-gray-900 mr-4 scale-x-185" size={16} />
+                    <span className="font-bold truncate">{newValue ?? 'N/A'}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        );
+
+      default:
+        return null;
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="w-fit lg:max-w-[1000px] bg-white text-black p-4 sm:p-6 rounded-lg shadow-lg overflow-hidden h-fit">
         <div className="w-full">
-          <DialogHeader>
-            <DialogTitle className="text-left text-base sm:text-lg font-semibold text-gray-900 truncate">
-              {selectedRow?.description ?? 'Percentage Range Details'}
-            </DialogTitle>
-            <span className="text-gray-500 text-sm sm:text-base">
-              Created By: <span className="font-medium">{selectedRow?.createdBy ?? 'Unknown'}</span>
-            </span>
-          </DialogHeader>
-
-          <div className="flex flex-col gap-3 py-4 sm:py-6">
-            {[
-              { label: 'Percentage:', value: selectedRow?.percentage },
-              { label: 'Code:', value: selectedRow?.code },
-              { label: 'Band:', value: selectedRow?.band.name },
-              {
-                label: 'Amount Range:',
-                value: selectedRow ? `${selectedRow.amountStartRange} - ${selectedRow.amountEndRange}` : 'N/A',
-              },
-              { label: 'Description:', value: selectedRow?.description },
-              { label: 'Status:', value: selectedRow?.status ? 'Active' : 'Inactive' },
-              { label: 'Approval Status:', value: selectedRow?.approveStatus },
-              { label: 'Created At:', value: new Date(selectedRow?.createdAt ?? '').toLocaleString() },
-              { label: 'Updated At:', value: new Date(selectedRow?.updatedAt ?? '').toLocaleString() },
-            ].map(({ label, value }) => (
-              <div key={label} className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full">
-                <div className="w-full sm:w-[120px] text-sm sm:text-base font-medium text-gray-700 whitespace-nowrap">
-                  {label}
-                </div>
-                <div className="w-full sm:w-[150px] text-sm sm:text-base font-bold text-gray-900 whitespace-nowrap ml-10">
-                  {value ?? 'N/A'}
-                </div>
-              </div>
-            ))}
-          </div>
-
+          {renderContent()}
           <div className="flex justify-between gap-2 mt-4">
             <Button
               onClick={() => selectedRow && onReject(selectedRow)}
