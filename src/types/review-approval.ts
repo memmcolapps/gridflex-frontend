@@ -5,6 +5,12 @@ export interface GetPercentageResponse {
 }
 
 export interface PercentageRange {
+  approveStatus: string;
+  description: string;
+  amountStartRange: string;
+  amountEndRange: string;
+  oldAmountStartRange: string;
+  oldAmountEndRange:string;
   id: string;
   percentageId: string;
   orgId: string;
@@ -19,14 +25,29 @@ export interface PercentageRange {
     createdAt: string;
     updatedAt: string;
   };
-  amountStartRange: string;
-  amountEndRange: string;
-  status: boolean;
-  approveStatus: string;
-  createdBy: string;
-  description: string;
-  createdAt: string;
-  updatedAt: string;
+  oldPercentageRangeInfo: {
+    id: string;
+    orgId: string;
+    percentage: string;
+    code: string;
+    band: {
+      id: string;
+      orgId: string;
+      name: string;
+      hour: string;
+      approveStatus: string;
+      createdAt: string;
+      updatedAt: string;
+    };
+    amountStartRange: string;
+    amountEndRange: string;
+    status: boolean;
+    approveStatus: string;
+    createdBy: string;
+    description: string;
+    createdAt: string;
+    updatedAt: string;
+  };
 }
 
 export interface GetAllLiabilitiesResponse {

@@ -100,22 +100,22 @@ const ViewDetailsDialog: React.FC<ViewDetailsDialogProps> = ({
               {[
                 {
                   label: 'Percentage:',
-                  oldValue: selectedRow.oldPercentage,
+                  oldValue: selectedRow.oldPercentageRangeInfo.percentage,
                   newValue: selectedRow.percentage,
                 },
                 {
                   label: 'Percentage Code:',
-                  oldValue: selectedRow.code,
+                  oldValue: selectedRow.oldPercentageRangeInfo.code,
                   newValue: selectedRow.code,
                 },
                 {
                   label: 'Band Code:',
-                  oldValue: selectedRow.band.name,
+                  oldValue: selectedRow.oldPercentageRangeInfo.band.name,
                   newValue: selectedRow.band.name,
                 },
                 {
                   label: 'Amount Range:',
-                  oldValue: `${selectedRow.oldAmountStartRange} - ${selectedRow.oldAmountEndRange}`,
+                  oldValue: `${selectedRow.oldPercentageRangeInfo.amountStartRange} - ${selectedRow.oldPercentageRangeInfo.amountEndRange}`,
                   newValue: `${selectedRow.amountStartRange} - ${selectedRow.amountEndRange}`,
                 },
               ].map(({ label, oldValue, newValue }) => (
