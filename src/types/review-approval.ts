@@ -10,7 +10,7 @@ export interface PercentageRange {
   amountStartRange: string;
   amountEndRange: string;
   oldAmountStartRange: string;
-  oldAmountEndRange:string;
+  oldAmountEndRange: string;
   id: string;
   percentageId: string;
   orgId: string;
@@ -67,6 +67,15 @@ export interface Liability {
   description: string;
   createdAt: string;
   updatedAt: string;
+  oldLiabilityCauseInfo: {
+    id: string;
+    orgId: string;
+    name: string;
+    code: string;
+    approveStatus: string;
+    createdAt: string;
+    updatedAt: string;
+  };
 }
 
 export interface GetBandResponse {
@@ -86,6 +95,15 @@ export interface Band {
   description: string;
   createdAt: string;
   updatedAt: string;
+  oldBandInfo: {
+    id: string;
+    orgId: string;
+    name: string;
+    hour: string;
+    approveStatus: string;
+    createdAt: string;
+    updatedAt: string;
+  };
 }
 
 export interface GetTariffResponse {
@@ -100,7 +118,7 @@ export interface Tariff {
   org_id: string;
   created_by: string;
   description: string;
-  t_id: string;
+  tId: string;
   tariff_id: string;
   tariff_type: string;
   effective_date: string;
@@ -110,6 +128,25 @@ export interface Tariff {
   approve_status: string;
   created_at: string;
   updated_at: string;
+  oldTariffInfo: {
+    id: string;
+    name: string;
+    org_id: string;
+    tariff_type: string;
+    effective_date: string;
+    tariff_rate: string;
+    approve_status: string;
+    band: {
+      id: string;
+      orgId: string;
+      name: string;
+      hour: string;
+      approveStatus: string;
+      createdAt: string;
+    };
+    created_at: string;
+    updated_at: string;
+  };
 }
 
 export interface MeterResponse {
