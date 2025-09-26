@@ -13,8 +13,8 @@ export default function RecentIncidents() {
     const [rowsPerPage, setRowsPerPage] = useState(10)
 
     const { data: incidents } = useIncidentReports(currentPage, rowsPerPage)
-    const incidentList = incidents?.data?.data || [];
-    const totalData = incidents?.data?.totalData || 0;
+    const incidentList = incidents?.data?.data ?? [];
+    const totalData = incidents?.data?.totalData ?? 0;
     const totalPages = Math.ceil(totalData / rowsPerPage)
 
     const handleRowsPerPageChange = (value: string) => {
