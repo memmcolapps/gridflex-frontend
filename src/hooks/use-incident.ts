@@ -1,5 +1,5 @@
 import { queryClient } from "@/lib/queryClient";
-import { createMessage, getIncidentReports, IncidentMessage } from "@/service/incident-service";
+import { createMessage, getIncidentReports, type IncidentMessage } from "@/service/incident-service";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
 export const useCreateIncident = () => {
