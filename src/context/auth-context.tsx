@@ -2,8 +2,8 @@
 
 "use client";
 
-import React, { createContext, useContext, useState, useCallback } from "react";
-import { loginApi } from "../service/auth-service";
+import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
+import { loginApi, logoutApi } from "../service/auth-service";
 import { useRouter } from "next/navigation";
 
 // Centralized types
@@ -20,7 +20,7 @@ interface AuthContextType {
   user: UserInfo | null;
   error: string | null;
   login: (username: string, password: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   isLoading: boolean;
   // This is the missing part, you need to add updateUser to the type definition
   updateUser: (userInfo: UserInfo) => void;
@@ -86,23 +86,58 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     [router],
   );
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
     setIsLoading(true);
+    setError(null);
+
     try {
+      const token = localStorage.getItem("auth_token");
+      const userInfo = localStorage.getItem("user_info");
+      
+      const parsedUser = userInfo ? JSON.parse(userInfo) : null;
+      const username = parsedUser?.email ?? parsedUser?.username;
+
+      if (token && username) {
+        try {
+          await logoutApi(token, username);
+        } catch (apiError) {
+          console.warn("Logout API failed:", apiError);
+        }
+      }
+
       localStorage.removeItem("auth_token");
       localStorage.removeItem("user_info");
       setUser(null);
       setIsAuthenticated(false);
-      setError(null);
+      
       router.push("/login");
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to logout";
       setError(errorMessage);
       console.error("Logout error:", err);
+      
+      localStorage.removeItem("auth_token");
+      localStorage.removeItem("user_info");
+      setUser(null);
+      setIsAuthenticated(false);
+      router.push("/login");
     } finally {
       setIsLoading(false);
     }
   }, [router]);
+
+  useEffect(() => {
+    const handleExpired= () => {
+      console.log("Token expired detected!");
+      logout()
+    }
+
+    window.addEventListener('auth-token-expired', handleExpired)
+
+    return() => {
+    window.addEventListener('auth-token-expired', handleExpired)
+    }
+  },[logout])
   
   // This is the new function to allow other components to update the user data
   const updateUser = useCallback((userInfo: UserInfo) => {
