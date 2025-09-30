@@ -81,10 +81,20 @@ export const updateLiabilityCause = async (payload: UpdatedLiabilityCausePayload
     }
 };
 
+// FIX: Uses URL query parameters and sends status directly (true for activate, false for deactivate).
 export const changeLiabilityCauseStatus = async (id: string, status: boolean): Promise<ApiResponse<LiabilityCause>> => {
     try {
         axiosInstance.defaults.headers.common.Authorization = getAuthHeader();
-        const response = await axiosInstance.put<ApiResponse<LiabilityCause>>(`/debt-setting/service/liability-cause/update/status`, { id, deactivated: !status });
+        const response = await axiosInstance.patch<ApiResponse<LiabilityCause>>(
+            `/debt-setting/service/liability-cause/change-state`,
+            null, // Body is null for parameters in URL
+            {
+                params: {
+                    liabilityCauseId: id,
+                    status: status,
+                },
+            }
+        );
         if (response.data?.responsecode !== "000") {
             throw new Error(response.data?.responsedesc || `Failed to ${status ? 'activate' : 'deactivate'} liability cause.`);
         }
@@ -151,10 +161,20 @@ export const updatePercentageRange = async (payload: UpdatedPercentageRangePaylo
     }
 };
 
+// FINAL FIX: Uses URL query parameters, sends percentageId, and sends status directly as 'status'.
 export const changePercentageRangeStatus = async (id: string, status: boolean): Promise<ApiResponse<PercentageRange>> => {
     try {
         axiosInstance.defaults.headers.common.Authorization = getAuthHeader();
-        const response = await axiosInstance.put<ApiResponse<PercentageRange>>(`/debt-setting/service/percentage-range/update/status`, { id, deactivated: !status });
+        const response = await axiosInstance.patch<ApiResponse<PercentageRange>>(
+            `/debt-setting/service/percentage-range/change-state`,
+            null,
+            {
+                params: {
+                    percentageId: id,
+                    status: status,
+                },
+            }
+        );
         if (response.data?.responsecode !== "000") {
             throw new Error(response.data?.responsedesc || `Failed to ${status ? 'activate' : 'deactivate'} percentage range.`);
         }
