@@ -1,4 +1,6 @@
-import { SetStateAction, useState } from 'react';
+"use client";
+// components/PercentageRangeTable.tsx
+import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import {
   Table,
@@ -17,7 +19,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Ban, CheckCircle, EyeIcon, MoreVertical } from 'lucide-react';
-import ViewDetailsDialog from './viewpercentagedetailsdialog';
+import ViewDetailsDialog from '@/components/reviewandapproval/viewpercentagedetailsdialog';
 import ConfirmDialog from '@/components/reviewandapproval/confirmapprovaldialog';
 import {
   Pagination,
@@ -33,163 +35,132 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-
-type PercentageRangeItem = {
-  id: number;
-  percentage: string;
-  percentageCode: string;
-  band: string;
-  amountRange: string;
-  changeDescription: string;
-  approvalStatus: string;
-  newPercentage?: string;
-  newPercentageCode?: string;
-  newBand?: string;
-  newAmountRange?: string;
-};
+import type { PercentageRange } from '@/types/review-approval';
+import { usePercentageRanges } from '@/hooks/use-ReviewApproval';
+import type { FetchParams } from '@/service/reviewapproval-service';
+import { toast } from 'sonner';
 
 const PercentageRangeTable = () => {
-  const [selectedRow, setSelectedRow] = useState<PercentageRangeItem | null>(null);
+  const [fetchParams, setFetchParams] = useState<FetchParams>({
+    page: 1,
+    pageSize: 10,
+    searchTerm: '',
+    sortBy: null,
+    sortDirection: null,
+    type: 'pending-state',
+  });
+  const [selectedRow, setSelectedRow] = useState<PercentageRange | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedTariffs, setSelectedTariffs] = useState<number[]>([]);
-  const [rowsPerPage, setRowsPerPage] = useState<number>(10);
-  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [selectedTariffs, setSelectedTariffs] = useState<string[]>([]);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState<'approve' | 'reject' | null>(null);
-  const [selectedItem, setSelectedItem] = useState<PercentageRangeItem | null>(null);
-  const [dropdownOpenId, setDropdownOpenId] = useState<number | null>(null); // New state to track open dropdown
+  const [selectedItem, setSelectedItem] = useState<PercentageRange | null>(null);
+  const [dropdownOpenId, setDropdownOpenId] = useState<string | null>(null);
 
-  // Sample data (unchanged)
-  const data: PercentageRangeItem[] = [
-    {
-      id: 1,
-      percentage: '2%',
-      percentageCode: 'C90bqt',
-      band: 'Band A',
-      amountRange: '0-9999',
-      changeDescription: 'Percentage Range Edited',
-      approvalStatus: 'Pending',
-      newPercentage: '3%',
-      newPercentageCode: 'C91bqt',
-      newBand: 'Band B',
-      newAmountRange: '0-19999',
-    },
-    {
-      id: 2,
-      percentage: '5%',
-      percentageCode: 'C90bqt',
-      band: 'Band A',
-      amountRange: '10,000-99,999',
-      changeDescription: 'Percentage Range Deactivated',
-      approvalStatus: 'Pending',
-    },
-    {
-      id: 3,
-      percentage: '10%',
-      percentageCode: 'C90bqt',
-      band: 'Band A',
-      amountRange: '100,000-999,999',
-      changeDescription: 'Percentage Range Activated',
-      approvalStatus: 'Pending',
+  const { percentageRanges, isLoading, isError, error, reviewMutation } = usePercentageRanges(fetchParams);
 
-    },
-    {
-      id: 4,
-      percentage: '15%',
-      percentageCode: 'C90bqt',
-      band: 'Band A',
-      amountRange: '1,000,000-9,999,999',
-      changeDescription: 'Newly Added',
-      approvalStatus: 'Pending',
-    },
-    {
-      id: 5,
-      percentage: '2%',
-      percentageCode: 'C90bqt',
-      band: 'Band B',
-      amountRange: '0-4,999',
-      changeDescription: 'Newly Added',
-      approvalStatus: 'Pending',
-    },
-  ];
+  // Filter out approved percentage ranges
+  const filteredPercentageRanges = percentageRanges.filter(item => item.approveStatus !== 'Approved');
 
-  const totalPages = Math.ceil(data.length / rowsPerPage);
+  const totalData = filteredPercentageRanges.length;
+  const totalPages = Math.ceil(totalData / fetchParams.pageSize);
 
   const handlePrevious = () => {
-    setCurrentPage((prev) => Math.max(prev - 1, 1));
+    setFetchParams((prevParams) => ({
+      ...prevParams,
+      page: Math.max(prevParams.page - 1, 1)
+    }));
   };
 
   const handleNext = () => {
-    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+    setFetchParams((prevParams) => ({
+      ...prevParams,
+      page: Math.min(prevParams.page + 1, totalPages),
+    }));
   };
 
   const handleRowsPerPageChange = (value: string) => {
-    setRowsPerPage(Number(value));
-    setCurrentPage(1);
+    setFetchParams((prevParams) => ({
+      ...prevParams,
+      pageSize: Number(value),
+      page: 1,
+    }));
   };
 
-  const paginatedData = data.slice(
-    (currentPage - 1) * rowsPerPage,
-    currentPage * rowsPerPage
-  );
-
-  const toggleSelection = (id: number) => {
+  const toggleSelection = (id: string) => {
     setSelectedTariffs((prev) =>
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
     );
   };
 
-  const handleViewDetails = (item: PercentageRangeItem) => {
-    console.log('View details clicked:', item); // Debug log
+  const handleViewDetails = (item: PercentageRange) => {
     setSelectedRow(item);
     setIsModalOpen(true);
-    setDropdownOpenId(null); // Close dropdown
+    setDropdownOpenId(null);
   };
 
-  const handleApprove = (item: PercentageRangeItem) => {
-    console.log('Opening confirm modal for approve:', item); // Debug log
+  const handleApprove = (item: PercentageRange) => {
     setSelectedItem(item);
     setConfirmAction('approve');
-    setIsModalOpen(false); // Close ViewDetailsDialog
-    setIsConfirmOpen(true); // Open ConfirmDialog
-    setDropdownOpenId(null); // Close dropdown
+    setIsModalOpen(false);
+    setIsConfirmOpen(true);
+    setDropdownOpenId(null);
   };
 
-  const handleReject = (item: PercentageRangeItem) => {
-    console.log('Opening confirm modal for reject:', item); // Debug log
+  const handleReject = (item: PercentageRange) => {
     setSelectedItem(item);
     setConfirmAction('reject');
-    setIsModalOpen(false); // Close ViewDetailsDialog
-    setIsConfirmOpen(true); // Open ConfirmDialog
-    setDropdownOpenId(null); // Close dropdown
+    setIsModalOpen(false);
+    setIsConfirmOpen(true);
+    setDropdownOpenId(null);
   };
 
-  const handleConfirmAction = () => {
-    console.log('Confirm action triggered:', confirmAction, selectedItem); // Debug log
+  const handleConfirmAction = async (reason?: string) => {
     if (selectedItem && confirmAction) {
-      console.log(`${confirmAction === 'approve' ? 'Approve' : 'Reject'}:`, selectedItem);
-      // Add your actual approve/reject logic here (e.g., API call)
+      try {
+        await reviewMutation.mutateAsync({
+          id: selectedItem.percentageId,
+          approveStatus: confirmAction,
+          reason,
+        });
+        toast.success(`Percentage range ${confirmAction}d successfully!`, {
+          // description: `Percentage: ${selectedItem.percentage}, Code: ${selectedItem.code}`,
+        });
+      } catch (error) {
+        toast.error(`Failed to ${confirmAction} percentage range.`, {
+          // description: error instanceof Error ? error.message : 'An error occurred',
+        });
+      }
     }
     setIsConfirmOpen(false);
     setConfirmAction(null);
     setSelectedItem(null);
   };
 
-  console.log('Rendering PercentageRangeTable, isConfirmOpen:', isConfirmOpen, 'confirmAction:', confirmAction); // Debug log
+  if (isLoading) return <div>Loading...</div>;
+  if (isError) {
+    toast.error('Failed to fetch percentage ranges.', {
+      description: error instanceof Error ? error.message : 'An unknown error occurred',
+    });
+    return <div>Error: {error?.message}</div>;
+  }
+
+  // Use the filtered data
+  const dataToDisplay = filteredPercentageRanges;
 
   return (
     <Card className="border-none shadow-none bg-transparent overflow-x-auto min-h-[calc(100vh-300px)]">
       <Table className="table-auto w-full">
-        <TableHeader className='bg-transparent'>
+        <TableHeader className="bg-transparent">
           <TableRow>
             <TableHead className="px-4 py-3 w-[100px]">
               <div className="flex items-center gap-2">
                 <Checkbox
                   className="h-4 w-4 border-gray-500"
-                  checked={selectedTariffs.length === data.length && data.length > 0}
+                  checked={selectedTariffs.length === dataToDisplay.length && dataToDisplay.length > 0}
                   onCheckedChange={(checked) => {
                     if (checked) {
-                      setSelectedTariffs(data.map((item) => item.id));
+                      setSelectedTariffs(filteredPercentageRanges.map((item) => item.id));
                     } else {
                       setSelectedTariffs([]);
                     }
@@ -208,18 +179,15 @@ const PercentageRangeTable = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data.length === 0 ? (
+          {dataToDisplay.length === 0 ? (
             <TableRow>
               <TableCell colSpan={8} className="h-24 text-center text-sm text-gray-500">
                 No data available
               </TableCell>
             </TableRow>
           ) : (
-            paginatedData.map((item, index) => (
-              <TableRow
-                key={item.id}
-                className="hover:bg-gray-50 cursor-pointer"
-              >
+            dataToDisplay.map((item, index) => (
+              <TableRow key={item.id} className="hover:bg-gray-50 cursor-pointer">
                 <TableCell className="px-4 py-3">
                   <div className="flex items-center gap-2">
                     <Checkbox
@@ -229,18 +197,20 @@ const PercentageRangeTable = () => {
                       onCheckedChange={() => toggleSelection(item.id)}
                     />
                     <span className="text-sm text-gray-900">
-                      {index + 1 + (currentPage - 1) * rowsPerPage}
+                      {index + 1 + (fetchParams.page - 1) * fetchParams.pageSize}
                     </span>
                   </div>
                 </TableCell>
                 <TableCell className="px-4 py-3 text-sm text-gray-900">{item.percentage}</TableCell>
-                <TableCell className="px-4 py-3 text-sm text-gray-900">{item.percentageCode}</TableCell>
-                <TableCell className="px-4 py-3 text-sm text-gray-900">{item.band}</TableCell>
-                <TableCell className="px-4 py-3 text-sm text-gray-900">{item.amountRange}</TableCell>
-                <TableCell className="px-4 py-3 text-sm text-[#161CCA]">{item.changeDescription}</TableCell>
+                <TableCell className="px-4 py-3 text-sm text-gray-900">{item.code}</TableCell>
+                <TableCell className="px-4 py-3 text-sm text-gray-900">{item.band.name}</TableCell>
+                <TableCell className="px-4 py-3 text-sm text-gray-900">
+                  {item.amountStartRange} - {item.amountEndRange}
+                </TableCell>
+                <TableCell className="px-4 py-3 text-sm text-[#161CCA]">{item.description}</TableCell>
                 <TableCell className="px-4 py-3 text-center">
                   <span className="inline-block px-3 py-1 text-sm font-medium text-[#C86900] bg-[#FFF5EA] p-1 rounded-full">
-                    Pending
+                    {item.approveStatus ?? 'Pending'}
                   </span>
                 </TableCell>
                 <TableCell className="px-4 py-3 text-right">
@@ -265,10 +235,7 @@ const PercentageRangeTable = () => {
                       <DropdownMenuItem
                         className="flex items-center gap-2 cursor-pointer"
                         onSelect={(e) => e.preventDefault()}
-                        onClick={() => {
-                          console.log('Approve clicked');
-                          handleApprove(item);
-                        }}
+                        onClick={() => handleApprove(item)}
                       >
                         <CheckCircle size={14} />
                         <span className="text-sm text-gray-700">Approve</span>
@@ -276,10 +243,7 @@ const PercentageRangeTable = () => {
                       <DropdownMenuItem
                         className="flex items-center gap-2 cursor-pointer"
                         onSelect={(e) => e.preventDefault()}
-                        onClick={() => {
-                          console.log('Reject clicked');
-                          handleReject(item);
-                        }}
+                        onClick={() => handleReject(item)}
                       >
                         <Ban size={14} />
                         <span className="text-sm text-gray-700">Reject</span>
@@ -297,26 +261,21 @@ const PercentageRangeTable = () => {
         <div className="flex items-center space-x-2">
           <span className="text-sm font-medium">Rows per page</span>
           <Select
-            value={rowsPerPage.toString()}
+            value={fetchParams.pageSize.toString()}
             onValueChange={handleRowsPerPageChange}
           >
             <SelectTrigger className="h-8 w-[70px]">
-              <SelectValue placeholder={rowsPerPage.toString()} />
+              <SelectValue placeholder={fetchParams.pageSize.toString()} />
             </SelectTrigger>
-            <SelectContent
-              position="popper"
-              side="top"
-              align="center"
-              className="mb-1 ring-gray-50"
-            >
+            <SelectContent position="popper" side="top" align="center" className="mb-1 ring-gray-50">
               <SelectItem value="10">10</SelectItem>
               <SelectItem value="24">24</SelectItem>
               <SelectItem value="48">48</SelectItem>
             </SelectContent>
           </Select>
           <span className="text-sm font-medium">
-            {(currentPage - 1) * rowsPerPage + 1}-
-            {Math.min(currentPage * rowsPerPage, data.length)} of {data.length}
+            {(fetchParams.page - 1) * fetchParams.pageSize + 1}-
+            {Math.min(fetchParams.page * fetchParams.pageSize, totalData)} of {totalData}
           </span>
         </div>
         <PaginationContent>
@@ -327,7 +286,7 @@ const PercentageRangeTable = () => {
                 e.preventDefault();
                 handlePrevious();
               }}
-              aria-disabled={currentPage === 1}
+              aria-disabled={fetchParams.page === 1}
             />
           </PaginationItem>
           <PaginationItem>
@@ -337,7 +296,7 @@ const PercentageRangeTable = () => {
                 e.preventDefault();
                 handleNext();
               }}
-              aria-disabled={currentPage === totalPages}
+              aria-disabled={fetchParams.page === totalPages}
             />
           </PaginationItem>
         </PaginationContent>
@@ -356,6 +315,7 @@ const PercentageRangeTable = () => {
         onOpenChange={setIsConfirmOpen}
         action={confirmAction ?? 'approve'}
         onConfirm={handleConfirmAction}
+        selectedItem={selectedItem}
       />
     </Card>
   );

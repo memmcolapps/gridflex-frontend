@@ -1,6 +1,10 @@
 "use client";
 
-import { type Tariff } from "@/service/tarriff-service";
+import {
+  updateTariff,
+  type UpdateTariffPayload,
+  type Tariff,
+} from "@/service/tarriff-service";
 import { toast } from "sonner";
 import {
   Table,
@@ -40,11 +44,10 @@ import { TariffDatePicker } from "../tarrif-datepicker";
 import { getStatusStyle } from "../status-style";
 import { useBand } from "@/hooks/use-band";
 import { DeactivateTariffDialog } from "./deactivate-tarrif-dialog";
-import { useChangeTariffStatus } from "@/hooks/use-tarrif";
+import { useChangeTariffStatus, useUpdateTariff } from "@/hooks/use-tarrif";
 
 interface TariffTableProps {
   tariffs: Tariff[];
-  // onUpdateTariff: (id: string, updates: Partial<Tariff>) => void;
   selectedTariffs: string[];
   setSelectedTariffs: (ids: string[]) => void;
 }
@@ -56,6 +59,7 @@ export function TariffTable({
 }: TariffTableProps) {
   const { bands, isLoading: isBandsLoading, error: bandsError } = useBand();
   const { mutate: changeTariffStatus } = useChangeTariffStatus();
+  const { mutate: updateTariff } = useUpdateTariff();
 
   const [confirmDialog, setConfirmDialog] = useState<{
     isOpen: boolean;
@@ -151,7 +155,27 @@ export function TariffTable({
     e.preventDefault();
     if (!editDialog.tariff?.id || !isFormValid) return;
 
-    console.log("Form submitted with data:", formData);
+    updateTariff(
+      {
+        t_id: editDialog.tariff.id,
+        name: formData.name,
+        tariff_type: formData.type,
+        effective_date:
+          formData.effectiveDate?.toISOString().split("T")[0] ?? "",
+        tariff_rate: formData.tariffRate.trim(),
+        band_id: formData.bandCode,
+      },
+      {
+        onSuccess: () => {
+          toast.success("Tariff updated successfully");
+          setEditDialog({ isOpen: false, tariff: null });
+        },
+        onError: (error) => {
+          console.error("Error updating tariff:", error);
+          toast.error(`Failed to update tariff: ${error.message || error}`);
+        },
+      },
+    );
   };
   const handleToggleTariffStatus = (tariff: Tariff) => {
     setStatusDialog({ isOpen: true, tariff });

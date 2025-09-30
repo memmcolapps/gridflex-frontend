@@ -6,23 +6,15 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { MoveRight } from 'lucide-react';
-
-interface LiabilityCauseItem {
-    id: number;
-    liabilityName: string;
-    liabilityCode: string;
-    changeDescription: string;
-    approvalStatus: string;
-    newLiabilityName?: string;
-    newLiabilityCode?: string;
-}
+import type { Liability } from '@/types/review-approval';
+import { useAuth } from '@/context/auth-context';
 
 interface ViewLiabilityDetailsDialogProps {
     isOpen: boolean;
     onOpenChange: (open: boolean) => void;
-    selectedRow: LiabilityCauseItem | null;
-    onApprove: (row: LiabilityCauseItem) => void;
-    onReject: (row: LiabilityCauseItem) => void;
+    selectedRow: Liability | null;
+    onApprove: (row: Liability) => void;
+    onReject: (row: Liability) => void;
 }
 
 const ViewLiabilityDetailsDialog: React.FC<ViewLiabilityDetailsDialogProps> = ({
@@ -32,8 +24,8 @@ const ViewLiabilityDetailsDialog: React.FC<ViewLiabilityDetailsDialogProps> = ({
     onApprove,
     onReject,
 }) => {
-    const isNewlyAdded = selectedRow?.changeDescription === 'Newly Added';
-
+    const isNewlyAdded = selectedRow?.description === 'Newly Added';
+    const { user } = useAuth();
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
             <DialogContent
@@ -44,15 +36,17 @@ const ViewLiabilityDetailsDialog: React.FC<ViewLiabilityDetailsDialogProps> = ({
                 <div className="w-full">
                     <DialogHeader>
                         <DialogTitle className="text-left text-base sm:text-lg font-semibold text-gray-900 truncate">
-                            {selectedRow?.changeDescription ?? 'Details'}
+                            {selectedRow?.description ?? 'Details'}
                         </DialogTitle>
                         <span className="text-gray-500 text-sm sm:text-base">
-                            Operator: <span className="font-medium">Margaret</span>
+                            Operator: <span className="font-medium">
+                                {user?.business?.businessName?.toUpperCase() ?? 'BUSINESS NAME'}
+                            </span>
                         </span>
                     </DialogHeader>
 
                     <div className="flex flex-col gap-3 py-4 sm:py-6">
-                        {selectedRow?.changeDescription === 'Liability Cause Edited' && (
+                        {selectedRow?.description === 'Liability Cause Edited' && (
                             <div className="hidden sm:flex items-center gap-4 ml-[120px] sm:ml-[140px] mb-1">
                                 <div className="w-[150px] text-sm ml-6 font-semibold text-gray-500">From</div>
                                 <div className="w-[150px] text-sm ml-24 font-semibold text-gray-500">To</div>
@@ -62,13 +56,13 @@ const ViewLiabilityDetailsDialog: React.FC<ViewLiabilityDetailsDialogProps> = ({
                         {[
                             {
                                 label: 'Liability Name:',
-                                oldValue: selectedRow?.liabilityName,
-                                newValue: selectedRow?.newLiabilityName,
+                                oldValue: selectedRow?.oldLiabilityCauseInfo?.name,
+                                newValue: selectedRow?.name,
                             },
                             {
                                 label: 'Liability Code:',
-                                oldValue: selectedRow?.liabilityCode,
-                                newValue: selectedRow?.newLiabilityCode,
+                                oldValue: selectedRow?.oldLiabilityCauseInfo.code,
+                                newValue: selectedRow?.code,
                             },
                         ].map(({ label, oldValue, newValue }) => (
                             <div

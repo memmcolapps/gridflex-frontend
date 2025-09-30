@@ -159,29 +159,3 @@ export const updatePercentageRange = async (payload: UpdatedPercentageRangePaylo
         throw error;
     }
 };
-
-export const changePercentageRangeStatus = async (id: string, status: boolean): Promise<ApiResponse<PercentageRange>> => {
-    try {
-        axiosInstance.defaults.headers.common.Authorization = getAuthHeader();
-        const response = await axiosInstance.patch<ApiResponse<PercentageRange>>(
-            `/debt-setting/service/percentage-range/change-state`,
-            null,
-            {
-                params: {
-                    percentageId: id,
-                    deactivated: !status,
-                },
-            }
-        ); 
-        if (response.data?.responsecode !== "000") {
-            throw new Error(response.data?.responsedesc || `Failed to ${status ? 'activate' : 'deactivate'} percentage range.`);
-        }
-        return response.data;
-    } catch (error) {
-        console.error(`Error ${status ? 'activating' : 'deactivating'} percentage range:`, error);
-        if (axios.isAxiosError(error) && error.response) {
-            throw new Error(error.response.data?.responsedesc ?? `Failed to ${status ? 'activate' : 'deactivate'} percentage range.`);
-        }
-        throw error;
-    }
-};

@@ -6,31 +6,14 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { MoveRight } from 'lucide-react';
-
-interface TariffItem {
-  id: number;
-  tariffName: string;
-  tariffId: string;
-  tariffType: string;
-  bandCode: string;
-  tariffRate: string;
-  effectiveDate: string;
-  changeDescription: string;
-  approvalStatus: string;
-  newTariffName?: string;
-  newTariffId?: string;
-  newTariffType?: string;
-  newBandCode?: string;
-  newTariffRate?: string;
-  newEffectiveDate?: string;
-}
+import type { Tariff } from '@/types/review-approval';
 
 interface ViewTariffDetailsDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  selectedRow: TariffItem | null;
-  onApprove: (row: TariffItem) => void;
-  onReject: (row: TariffItem) => void;
+  selectedRow: Tariff | null;
+  onApprove: (row: Tariff) => void;
+  onReject: (row: Tariff) => void;
 }
 
 const ViewTariffDetailsDialog: React.FC<ViewTariffDetailsDialogProps> = ({
@@ -40,7 +23,7 @@ const ViewTariffDetailsDialog: React.FC<ViewTariffDetailsDialogProps> = ({
   onApprove,
   onReject,
 }) => {
-  const isTariffEdited = selectedRow?.changeDescription === 'Tariff Edited';
+  const isTariffEdited = selectedRow?.description === 'Tariff Edited';
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -50,7 +33,7 @@ const ViewTariffDetailsDialog: React.FC<ViewTariffDetailsDialogProps> = ({
         <div className="w-full">
           <DialogHeader>
             <DialogTitle className="text-left text-base sm:text-lg font-semibold text-gray-900 truncate">
-              {selectedRow?.changeDescription ?? 'Tariff Details'}
+              {selectedRow?.description ?? 'Tariff Details'}
             </DialogTitle>
             <span className="text-gray-500 text-sm sm:text-base">
               Operator: <span className="font-medium">Margaret</span>
@@ -67,33 +50,28 @@ const ViewTariffDetailsDialog: React.FC<ViewTariffDetailsDialogProps> = ({
             {[
               {
                 label: 'Tariff Name:',
-                oldValue: selectedRow?.tariffName,
-                newValue: selectedRow?.newTariffName,
-              },
-              {
-                label: 'Tariff ID:',
-                oldValue: selectedRow?.tariffId,
-                newValue: selectedRow?.newTariffId,
+                oldValue: selectedRow?.oldTariffInfo?.name,
+                newValue: selectedRow?.name, // API doesn't provide new values yet
               },
               {
                 label: 'Tariff Type:',
-                oldValue: selectedRow?.tariffType,
-                newValue: selectedRow?.newTariffType,
+                oldValue: selectedRow?.oldTariffInfo.tariff_type,
+                newValue: selectedRow?.tariff_type,
               },
               {
                 label: 'Band Code:',
-                oldValue: selectedRow?.bandCode,
-                newValue: selectedRow?.newBandCode,
+                oldValue: selectedRow?.oldTariffInfo?.band?.name,
+                newValue: selectedRow?.band.name, // API doesn't provide new values yet
               },
               {
                 label: 'Tariff Rate:',
-                oldValue: selectedRow?.tariffRate,
-                newValue: selectedRow?.newTariffRate,
+                oldValue: selectedRow?.oldTariffInfo?.tariff_rate,
+                newValue: selectedRow?.tariff_rate,// API doesn't provide new values yet
               },
               {
-                label: 'Effective Date:',
-                oldValue: selectedRow?.effectiveDate,
-                newValue: selectedRow?.newEffectiveDate,
+                label: 'Tariff Effective Date:',
+                oldValue: selectedRow?.oldTariffInfo?.effective_date,
+                newValue: selectedRow?.effective_date, // API doesn't provide new values yet
               },
             ].map(({ label, oldValue, newValue }) => (
               <div
@@ -107,7 +85,7 @@ const ViewTariffDetailsDialog: React.FC<ViewTariffDetailsDialogProps> = ({
 
                 {/* Old Value */}
                 <div className="w-full sm:w-[120px] lg:max-w-[700px] text-sm sm:text-base font-bold text-gray-900 whitespace-nowrap ml-20">
-                  {oldValue ?? 'N/A'}
+                  {oldValue !== undefined && oldValue !== null ? String(oldValue) : 'N/A'}
                 </div>
 
                 {/* New Value */}

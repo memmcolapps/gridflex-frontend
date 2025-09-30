@@ -1,5 +1,5 @@
 "use client";
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -29,32 +29,47 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
     const [internalIsOpen, setInternalIsOpen] = useState(false);
     const isOpen = mode === "add" ? internalIsOpen : controlledIsOpen ?? false;
 
+    const [formData, setFormData] = useState({
+        id: "",
+        firstName: "",
+        lastName: "",
+        nin: "",
+        phoneNumber: "",
+        email: "",
+        state: "",
+        city: "",
+        houseNo: "",
+        streetName: "",
+        meterNumber: "" as string | null,
+        vat: "Not Paying",
+    });
+
     const { data: states, isLoading: isLoadingStates, isError: isErrorStates } = useNigerianStates();
     const {
         data: cities,
         isLoading: isLoadingCities,
         isError: isErrorCities,
-    } = useNigerianCities(
-        states?.find(s => s.name === customer?.state)?.id ?? ""
-    );
+    } = useNigerianCities(formData.state);
 
-    const initialFormData = useMemo(() => {
-        return mode === "edit" && customer
-            ? {
+    useEffect(() => {
+        if (isOpen && mode === "edit" && customer && states) {
+            const customerState = states.find(s => s.name === customer.state);
+            setFormData({
                 id: customer.id,
                 firstName: customer.firstname,
                 lastName: customer.lastname,
                 nin: customer.nin,
                 phoneNumber: customer.phoneNumber,
                 email: customer.email,
-                state: states?.find(s => s.name === customer.state)?.id ?? "",
-                city: cities?.find(c => c.name === customer.city)?.id ?? "",
+                state: customerState?.id ?? "",
+                city: "",
                 houseNo: customer.houseNo,
                 streetName: customer.streetName,
                 meterNumber: customer.meterNumber,
                 vat: customer.vat,
-            }
-            : {
+            });
+        } else if (isOpen && mode === "add") {
+            setFormData({
                 id: "",
                 firstName: "",
                 lastName: "",
@@ -67,17 +82,21 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
                 streetName: "",
                 meterNumber: null,
                 vat: "Not Paying",
-            };
-    }, [mode, customer, states, cities]);
-
-    const [formData, setFormData] = useState(initialFormData);
-
-    // This useEffect hook ensures the form data is reset whenever the dialog is opened in edit mode
-    useEffect(() => {
-        if (isOpen && mode === "edit" && customer) {
-            setFormData(initialFormData);
+            });
         }
-    }, [isOpen, mode, customer, initialFormData]);
+    }, [isOpen, mode, customer, states]);
+
+    useEffect(() => {
+        if (mode === "edit" && customer && cities && formData.state) {
+            const customerCity = cities.find(c => c.name === customer.city);
+            if (customerCity) {
+                setFormData(prev => ({
+                    ...prev,
+                    city: customerCity.id,
+                }));
+            }
+        }
+    }, [mode, customer, cities, formData.state]);
 
     const cleanUpOverlay = useCallback(() => {
         const overlays = document.querySelectorAll("[data-radix-dialog-overlay]");
@@ -91,13 +110,26 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
             setInternalIsOpen(open);
         }
         if (!open) {
-            setFormData(initialFormData);
+            setFormData({
+                id: "",
+                firstName: "",
+                lastName: "",
+                nin: "",
+                phoneNumber: "",
+                email: "",
+                state: "",
+                city: "",
+                houseNo: "",
+                streetName: "",
+                meterNumber: null,
+                vat: "Not Paying",
+            });
             cleanUpOverlay();
             if (onClose) {
                 onClose();
             }
         }
-    }, [mode, onClose, cleanUpOverlay, initialFormData]);
+    }, [mode, onClose, cleanUpOverlay]);
 
     const handleChange = useCallback(
         (e: React.ChangeEvent<HTMLInputElement> | string, field?: string) => {
@@ -131,21 +163,23 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
     const handleSubmit = useCallback(
         (e: React.FormEvent) => {
             e.preventDefault();
+            const commonPayload = {
+                firstname: formData.firstName,
+                lastname: formData.lastName,
+                nin: formData.nin,
+                phoneNumber: formData.phoneNumber,
+                email: formData.email,
+                state: states?.find((s) => s.id === formData.state)?.name ?? "",
+                city: cities?.find((c) => c.id === formData.city)?.name ?? "",
+                houseNo: formData.houseNo,
+                streetName: formData.streetName,
+                vat: formData.vat,
+            };
 
             if (mode === "add") {
                 const payload: AddCustomerPayload = {
-                    firstname: formData.firstName,
-                    lastname: formData.lastName,
-                    nin: formData.nin,
-                    phoneNumber: formData.phoneNumber,
-                    email: formData.email,
-                    state: states?.find((s) => s.id === formData.state)?.name ?? "",
-                    city: cities?.find((c) => c.id === formData.city)?.name ?? "",
-                    houseNo: formData.houseNo,
-                    streetName: formData.streetName,
-                    vat: formData.vat,
+                    ...commonPayload,
                 };
-
                 addCustomerMutation.mutate(payload, {
                     onSuccess: () => {
                         toast.success("Customer added successfully!");
@@ -158,17 +192,8 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
                 });
             } else {
                 const payload: UpdateCustomerPayload = {
+                    ...commonPayload,
                     id: formData.id,
-                    firstname: formData.firstName,
-                    lastname: formData.lastName,
-                    nin: formData.nin,
-                    phoneNumber: formData.phoneNumber,
-                    email: formData.email,
-                    state: states?.find((s) => s.id === formData.state)?.name ?? "",
-                    city: cities?.find((c) => c.id === formData.city)?.name ?? "",
-                    houseNo: formData.houseNo,
-                    streetName: formData.streetName,
-                    vat: formData.vat,
                 };
 
                 updateCustomerMutation.mutate(payload, {
@@ -246,26 +271,24 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="nin">NIN<span className="text-red-600">*</span></Label>
+                            <Label htmlFor="nin">NIN</Label>
                             <Input
                                 id="nin"
                                 name="nin"
                                 value={formData.nin}
                                 onChange={handleChange}
-                                required
                                 placeholder="Enter NIN"
                                 className="border-[rgba(228,231,236,1)]"
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="email">Email <span className="text-red-600">*</span></Label>
+                            <Label htmlFor="email">Email</Label>
                             <Input
                                 id="email"
                                 name="email"
                                 type="email"
                                 value={formData.email}
                                 onChange={handleChange}
-                                required
                                 placeholder="Enter email"
                                 className="border-[rgba(228,231,236,1)]"
                             />
@@ -276,7 +299,9 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
                             <Label htmlFor="state">State<span className="text-red-600">*</span></Label>
                             <Select
                                 value={formData.state}
-                                onValueChange={(value) => handleChange(value, "state")}
+                                onValueChange={(value) => {
+                                    setFormData(prev => ({ ...prev, state: value, city: "" }));
+                                }}
                             >
                                 <SelectTrigger className="border-[rgba(228,231,236,1)] w-full">
                                     <SelectValue placeholder="Select state" />

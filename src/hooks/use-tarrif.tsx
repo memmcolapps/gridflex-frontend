@@ -5,6 +5,8 @@ import {
   changeTariffStatus,
   changeTariffApprovalStatus,
   type TariffPayload,
+  type UpdateTariffPayload,
+  updateTariff,
 } from "../service/tarriff-service";
 import { useAuth } from "../context/auth-context";
 import { queryClient } from "@/lib/queryClient";
@@ -79,6 +81,23 @@ export const useChangeTariffApprovalStatus = () => {
         tariffId,
         approvalStatus,
       );
+      if ("success" in response && !response.success) {
+        throw new Error(response.error);
+      }
+      return response;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["tariffs"],
+      });
+    },
+  });
+};
+
+export const useUpdateTariff = () => {
+  return useMutation({
+    mutationFn: async (tariff: UpdateTariffPayload) => {
+      const response = await updateTariff(tariff);
       if ("success" in response && !response.success) {
         throw new Error(response.error);
       }
