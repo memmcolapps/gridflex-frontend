@@ -1,4 +1,3 @@
-
 // src/service/debt-settings-service.ts
 
 import axios from 'axios';
@@ -85,7 +84,16 @@ export const updateLiabilityCause = async (payload: UpdatedLiabilityCausePayload
 export const changeLiabilityCauseStatus = async (id: string, status: boolean): Promise<ApiResponse<LiabilityCause>> => {
     try {
         axiosInstance.defaults.headers.common.Authorization = getAuthHeader();
-        const response = await axiosInstance.put<ApiResponse<LiabilityCause>>(`/debt-setting/service/liability-cause/update/status`, { id, deactivated: !status });
+        const response = await axiosInstance.patch<ApiResponse<LiabilityCause>>(
+            `/debt-setting/service/liability-cause/change-state`,
+            null,
+            {
+                params: {
+                    liabilityCauseId: id,
+                    status: status,
+                },
+            }
+        );
         if (response.data?.responsecode !== "000") {
             throw new Error(response.data?.responsedesc || `Failed to ${status ? 'activate' : 'deactivate'} liability cause.`);
         }
@@ -155,7 +163,16 @@ export const updatePercentageRange = async (payload: UpdatedPercentageRangePaylo
 export const changePercentageRangeStatus = async (id: string, status: boolean): Promise<ApiResponse<PercentageRange>> => {
     try {
         axiosInstance.defaults.headers.common.Authorization = getAuthHeader();
-        const response = await axiosInstance.put<ApiResponse<PercentageRange>>(`/debt-setting/service/percentage-range/update/status`, { id, deactivated: !status });
+        const response = await axiosInstance.patch<ApiResponse<PercentageRange>>(
+            `/debt-setting/service/percentage-range/change-state`,
+            null,
+            {
+                params: {
+                    percentageId: id,
+                    deactivated: !status,
+                },
+            }
+        ); 
         if (response.data?.responsecode !== "000") {
             throw new Error(response.data?.responsedesc || `Failed to ${status ? 'activate' : 'deactivate'} percentage range.`);
         }
@@ -168,5 +185,3 @@ export const changePercentageRangeStatus = async (id: string, status: boolean): 
         throw error;
     }
 };
-
-

@@ -35,6 +35,7 @@ const statusMappings: Record<string, string> = {
   "pending-detached": "pendingdetached",
   "pending-migrated": "pendingmigrated",
   "pending-edited": "pending",
+  "pending-activated": "pending",
   "pending-deactivated": "pendingdeactivated",
 };
 

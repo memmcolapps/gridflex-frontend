@@ -152,6 +152,7 @@ export type UILiability = {
     liabilityCode: string;
     approvalStatus: ApprovalStatusType;
     deactivated?: boolean;
+    liabilityCauseId?: string;
 };
 
 export type UiPercentageRange = {
