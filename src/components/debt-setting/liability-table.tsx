@@ -711,5 +711,4 @@ const LiabilityTable = ({ view, onViewChange, onDataChange }: LiabilityTableProp
         </div>
     );
 };
-
 export default LiabilityTable;
