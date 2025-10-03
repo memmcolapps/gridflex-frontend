@@ -171,7 +171,7 @@ const LiabilityTable = ({ view, onViewChange, onDataChange }: LiabilityTableProp
         } else if ("percentage" in selectedRow) {
             const editDataAsPercentage = editFormData as UiPercentageRange & { band: Band };
             const payload: UpdatedPercentageRangePayload = {
-                percentageId: selectedRow.id,
+                percentageId: editDataAsPercentage.id,
                 percentage: editDataAsPercentage.percentage,
                 code: editDataAsPercentage.percentageCode,
                 bandId: editDataAsPercentage.band.id,
@@ -711,5 +711,4 @@ const LiabilityTable = ({ view, onViewChange, onDataChange }: LiabilityTableProp
         </div>
     );
 };
-
 export default LiabilityTable;

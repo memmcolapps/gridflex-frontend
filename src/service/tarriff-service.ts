@@ -221,3 +221,47 @@ export async function changeTariffApprovalStatus(
     };
   }
 }
+
+export interface UpdateTariffPayload {
+  t_id: string;
+  name?: string;
+  tariff_type?: string;
+  effective_date?: string;
+  tariff_rate?: string;
+  band_id?: string;
+}
+
+export async function updateTariff(
+  tariff: UpdateTariffPayload,
+): Promise<{ success: true } | { success: false; error: string }> {
+  try {
+    const token = localStorage.getItem("auth_token");
+
+    const response = await axios.put<TariffResponse>(
+      `${API_URL}/tariff/service/update`,
+      tariff,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    if (response.data.responsecode !== "000") {
+      return {
+        success: false,
+        error: response.data.responsedesc || "Failed to update tariff",
+      };
+    }
+    return {
+      success: true,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: handleApiError(error),
+    };
+  }
+}

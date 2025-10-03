@@ -50,33 +50,28 @@ const ViewTariffDetailsDialog: React.FC<ViewTariffDetailsDialogProps> = ({
             {[
               {
                 label: 'Tariff Name:',
-                oldValue: selectedRow?.name,
-                newValue: undefined, // API doesn't provide new values yet
-              },
-              {
-                label: 'Tariff ID:',
-                oldValue: selectedRow?.tariff_id,
-                newValue: undefined, // API doesn't provide new values yet
+                oldValue: selectedRow?.oldTariffInfo?.name,
+                newValue: selectedRow?.name, // API doesn't provide new values yet
               },
               {
                 label: 'Tariff Type:',
-                oldValue: selectedRow?.tariff_type,
-                newValue: undefined, // API doesn't provide new values yet
+                oldValue: selectedRow?.oldTariffInfo.tariff_type,
+                newValue: selectedRow?.tariff_type,
               },
               {
-                label: 'Band:',
-                oldValue: selectedRow?.band,
-                newValue: undefined, // API doesn't provide new values yet
+                label: 'Band Code:',
+                oldValue: selectedRow?.oldTariffInfo?.band?.name,
+                newValue: selectedRow?.band.name, // API doesn't provide new values yet
               },
               {
                 label: 'Tariff Rate:',
-                oldValue: selectedRow?.tariff_rate,
-                newValue: undefined, // API doesn't provide new values yet
+                oldValue: selectedRow?.oldTariffInfo?.tariff_rate,
+                newValue: selectedRow?.tariff_rate,// API doesn't provide new values yet
               },
               {
-                label: 'Effective Date:',
-                oldValue: selectedRow?.effective_date,
-                newValue: undefined, // API doesn't provide new values yet
+                label: 'Tariff Effective Date:',
+                oldValue: selectedRow?.oldTariffInfo?.effective_date,
+                newValue: selectedRow?.effective_date, // API doesn't provide new values yet
               },
             ].map(({ label, oldValue, newValue }) => (
               <div

@@ -223,7 +223,7 @@ const navItems: NavItemProps[] = [
     hasSubmenu: false,
   },
   {
-    title: "Customized Report",
+    title: "Report Summary",
     href: "/customized-report",
     icon: ClipboardList,
     hasSubmenu: false,

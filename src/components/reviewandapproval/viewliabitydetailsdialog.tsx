@@ -7,6 +7,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { MoveRight } from 'lucide-react';
 import type { Liability } from '@/types/review-approval';
+import { useAuth } from '@/context/auth-context';
 
 interface ViewLiabilityDetailsDialogProps {
     isOpen: boolean;
@@ -24,7 +25,7 @@ const ViewLiabilityDetailsDialog: React.FC<ViewLiabilityDetailsDialogProps> = ({
     onReject,
 }) => {
     const isNewlyAdded = selectedRow?.description === 'Newly Added';
-
+    const { user } = useAuth();
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
             <DialogContent
@@ -38,7 +39,9 @@ const ViewLiabilityDetailsDialog: React.FC<ViewLiabilityDetailsDialogProps> = ({
                             {selectedRow?.description ?? 'Details'}
                         </DialogTitle>
                         <span className="text-gray-500 text-sm sm:text-base">
-                            Operator: <span className="font-medium">Margaret</span>
+                            Operator: <span className="font-medium">
+                                {user?.business?.businessName?.toUpperCase() ?? 'BUSINESS NAME'}
+                            </span>
                         </span>
                     </DialogHeader>
 
@@ -53,13 +56,13 @@ const ViewLiabilityDetailsDialog: React.FC<ViewLiabilityDetailsDialogProps> = ({
                         {[
                             {
                                 label: 'Liability Name:',
-                                oldValue: selectedRow?.name,
-                                newValue: undefined, // No new value in Liability type
+                                oldValue: selectedRow?.oldLiabilityCauseInfo?.name,
+                                newValue: selectedRow?.name,
                             },
                             {
                                 label: 'Liability Code:',
-                                oldValue: selectedRow?.code,
-                                newValue: undefined, // No new value in Liability type
+                                oldValue: selectedRow?.oldLiabilityCauseInfo.code,
+                                newValue: selectedRow?.code,
                             },
                         ].map(({ label, oldValue, newValue }) => (
                             <div

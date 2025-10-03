@@ -36,8 +36,8 @@ const statusMappings: Record<string, string> = {
   "pending-detached": "pendingdetached",
   "pending-migrated": "pendingmigrated",
   "pending-edited": "pending",
+  "pending-activated": "pending",
   "pending-deactivated": "pendingdeactivated",
-  "pending-activated": "pendingactivated",
 };
 
 export const getStatusStyle = (status: string | undefined): string => {
