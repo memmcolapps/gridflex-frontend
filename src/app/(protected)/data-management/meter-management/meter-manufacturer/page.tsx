@@ -46,7 +46,7 @@ import {
 import { type Manufacturer } from "@/types/meters-manufacturers";
 import {
   useCreateManufacturer,
-  useGetMeterManufactures,
+ useGetMeterManufactures,
   useUpdateManufacturer,
 } from "@/hooks/use-meter";
 import { toast } from "sonner";
@@ -636,7 +636,7 @@ function EditManufacturerDialog({
 
 export default function ManufacturersPage() {
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const { data } = useGetMeterManufactures();
+  const { data } = useGetMeterManufactures ();
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [rowsPerPage, setRowsPerPage] = useState<number>(10);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);

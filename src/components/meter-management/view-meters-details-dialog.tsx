@@ -1,5 +1,5 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import type { MeterData } from "@/types/meter";
+import type { MeterInventoryItem } from "@/types/meter-inventory";
 
 // interface MeterData {
 //   id: string;
@@ -25,7 +25,7 @@ import type { MeterData } from "@/types/meter";
 interface ViewMeterDetailsDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  meter: MeterData | null;
+  meter: MeterInventoryItem  | null;
 }
 
 export function ViewMeterDetailsDialog({ isOpen, onClose, meter }: ViewMeterDetailsDialogProps) {
@@ -44,7 +44,7 @@ export function ViewMeterDetailsDialog({ isOpen, onClose, meter }: ViewMeterDeta
             </div>
             <div className="grid grid-cols-[150px_1fr] items-center gap-16">
               <span className="font-medium text-gray-700">SIM No:</span>
-              <span className="text-gray-900 font-bold">{meter.simNo}</span>
+              <span className="text-gray-900 font-bold">{meter.simNumber}</span>
             </div>
             <div className="grid grid-cols-[150px_1fr] items-center gap-16">
               <span className="font-medium text-gray-700">Meter Type:</span>
@@ -52,11 +52,11 @@ export function ViewMeterDetailsDialog({ isOpen, onClose, meter }: ViewMeterDeta
             </div>
             <div className="grid grid-cols-[150px_1fr] items-center gap-16">
               <span className="font-medium text-gray-700">Meter Manufacturer:</span>
-              <span className="text-gray-900 font-bold">{meter.manufactureName}</span>
+              <span className="text-gray-900 font-bold">{meter.manufacturer?.name}</span>
             </div>
             <div className="grid grid-cols-[150px_1fr] items-center gap-16">
               <span className="font-medium text-gray-700">Meter Class:</span>
-              <span className="text-gray-900 font-bold">{meter.class}</span>
+              <span className="text-gray-900 font-bold">{meter.meterClass}</span>
             </div>
             <div className="grid grid-cols-[150px_1fr] items-center gap-16">
               <span className="font-medium text-gray-700">Meter Category:</span>
@@ -64,7 +64,7 @@ export function ViewMeterDetailsDialog({ isOpen, onClose, meter }: ViewMeterDeta
             </div>
                  <div className="grid grid-cols-[150px_1fr] items-center gap-16">
               <span className="font-medium text-gray-700">Samart Meter:</span>
-              <span className="text-gray-900 font-bold">{meter.smartMeter ?? "N/A"}</span>
+              <span className="text-gray-900 font-bold">{meter.smartStatus ?? "N/A"}</span>
             </div>
                   <div className="grid grid-cols-[150px_1fr] items-center gap-16">
               <span className="font-medium text-gray-700">Old SGC:</span>
