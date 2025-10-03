@@ -1,157 +1,122 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, JSXElementConstructor, Key, ReactElement, ReactNode, ReactPortal } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import type { MeterData } from "@/types/meter";
-
-
-//  customerId, accountNumber, tariff, assignedStatus, status(2322)
-// export interface MeterData {
-//   customerId: any;
-//   accountNumber: string;
-//   tariff: string;
-//   assignedStatus: string;
-//   status: string;
-//   id: string;
-//   meterNumber: string;
-//   manufactureName: string;
-//   class: string;
-//   meterType: string;
-//   category: string;
-//   dateAdded: string;
-//   oldSgc: string;
-//   newSgc: string;
-//   oldKrn: string;
-//   newKrn: string;
-//   oldTariffIndex: string;
-//   newTariffIndex: string;
-//   simNo: string;
-//   smartMeter: string;
-//   ctRatioNumerator: string;
-//   ctRatioDenominator: string;
-//   voltageRatioNumerator: string;
-//   voltageRatioDenominator: string;
-//   multiplier: string;
-//   meterRating: string;
-//   initialReading: string;
-//   dial: string;
-//   longitude: string;
-//   latitude: string;
-//   meterModel: string,
-//   protocol: string
-//   authentication: string
-//   password: string
-// }
+import type { MeterInventoryItem} from "@/types/meter-inventory";
+import type { CreateMeterPayload } from "@/types/meter-inventory";
+import { useCreateMeter, useGetMeterManufactures} from "@/hooks/use-meter";
 
 interface AddMeterDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onSaveMeter: (meter: MeterData) => void;
-  editMeter?: MeterData | null;
+  onSaveMeter: (meter: MeterInventoryItem) => void;
+  editMeter?: MeterInventoryItem | null;
 }
 
 export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddMeterDialogProps) {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     meterNumber: "",
-    simNo: "",
+    simNumber: "",
     meterCategory: "",
     meterClass: "",
     meterType: "",
-    manufactureName: "",
+    meterManufacturer: "",
     oldSgc: "",
     newSgc: "",
     oldKrn: "",
     newKrn: "",
     oldTariffIndex: "",
     newTariffIndex: "",
-    smartMeter: false,
+    smartStatus: false,
     meterModel: "",
     protocol: "",
     authentication: "",
     password: "",
-    ctRatioNumerator: "",
-    ctRatioDenominator: "",
-    voltageRatioNumerator: "",
-    voltageRatioDenominator: "",
+    ctRatioNum: "",
+    ctRatioDenom: "",
+    voltRatioNum: "",
+    voltRatioDenom: "",
     multiplier: "",
     meterRating: "",
     initialReading: "",
     dial: "",
     longitude: "",
-    latitude: "",
+    latitude: ""
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const { mutate: createMeter, isPending } = useCreateMeter();
 
   useEffect(() => {
     console.log("editMeter received:", editMeter);
     if (editMeter && isOpen) {
       setFormData({
         meterNumber: editMeter.meterNumber ?? "",
-        simNo: editMeter.simNo ?? "",
-        meterCategory: editMeter.category ?? "",
-        meterClass: editMeter.class ?? "",
+        simNumber: editMeter.simNumber ?? "",
+        meterCategory: editMeter.meterCategory ?? "",
+        meterClass: editMeter.meterClass ?? "",
         meterType: editMeter.meterType ?? "",
-        manufactureName: editMeter.manufactureName ?? "",
+        meterManufacturer: editMeter.meterManufacturer ?? "",
         oldSgc: editMeter.oldSgc ?? "",
         newSgc: editMeter.newSgc ?? "",
         oldKrn: editMeter.oldKrn ?? "",
         newKrn: editMeter.newKrn ?? "",
-        oldTariffIndex: editMeter.oldTariffIndex ?? "",
-        newTariffIndex: editMeter.newTariffIndex ?? "",
-        smartMeter: editMeter.smartMeter === "Smart",
-        meterModel: editMeter.meterModel ?? "",
-        protocol: editMeter.protocol ?? "",
-        authentication: editMeter.authentication ?? "",
-        password: editMeter.password ?? "",
-        ctRatioNumerator: editMeter.ctRatioNumerator ?? "",
-        ctRatioDenominator: editMeter.ctRatioDenominator ?? "",
-        voltageRatioNumerator: editMeter.voltageRatioNumerator ?? "",
-        voltageRatioDenominator: editMeter.voltageRatioDenominator ?? "",
-        multiplier: editMeter.multiplier ?? "",
-        meterRating: editMeter.meterRating ?? "",
-        initialReading: editMeter.initialReading ?? "",
-        dial: editMeter.dial ?? "",
-        longitude: editMeter.longitude ?? "",
-        latitude: editMeter.latitude ?? "",
+        oldTariffIndex: editMeter.oldTariffIndex !== undefined && editMeter.oldTariffIndex !== null ? String(editMeter.oldTariffIndex) : "",
+        newTariffIndex: editMeter.newTariffIndex !== undefined && editMeter.newTariffIndex !== null ? String(editMeter.newTariffIndex) : "",
+        smartStatus: !!editMeter.smartStatus,
+        meterModel: editMeter.smartMeterInfo?.meterModel ?? "",
+        protocol: editMeter.smartMeterInfo?.protocol ?? "",
+        authentication: editMeter.smartMeterInfo?.authentication ?? "",
+        password: editMeter.smartMeterInfo?.password ?? "",
+        ctRatioNum: editMeter.mdMeterInfo?.ctRatioNum ?? "",
+        ctRatioDenom: editMeter.mdMeterInfo?.ctRatioDenom ?? "",
+        voltRatioNum: editMeter.mdMeterInfo?.voltRatioNum ?? "",
+        voltRatioDenom: editMeter.mdMeterInfo?.voltRatioDenom ?? "",
+        multiplier: editMeter.mdMeterInfo?.multiplier ?? "",
+        meterRating: editMeter.mdMeterInfo?.meterRating ?? "",
+        initialReading: editMeter.mdMeterInfo?.initialReading ?? "",
+        dial: editMeter.mdMeterInfo?.dial ?? "",
+        longitude: editMeter.mdMeterInfo?.longitude ?? "",
+        latitude: editMeter.mdMeterInfo?.latitude ?? ""
       });
       setStep(1);
       setErrors({});
     } else if (isOpen) {
       setFormData({
         meterNumber: "",
-        simNo: "",
+        simNumber: "", // Corrected
         meterCategory: "",
         meterClass: "",
         meterType: "",
-        manufactureName: "",
+        meterManufacturer: "",
         oldSgc: "",
         newSgc: "",
         oldKrn: "",
         newKrn: "",
         oldTariffIndex: "",
         newTariffIndex: "",
-        smartMeter: false,
+        smartStatus: false,
         meterModel: "",
         protocol: "",
         authentication: "",
         password: "",
-        ctRatioNumerator: "",
-        ctRatioDenominator: "",
-        voltageRatioNumerator: "",
-        voltageRatioDenominator: "",
+        ctRatioNum: "",
+        ctRatioDenom: "",
+        voltRatioNum: "",
+        voltRatioDenom: "",
         multiplier: "",
         meterRating: "",
         initialReading: "",
         dial: "",
         longitude: "",
-        latitude: "",
+        latitude: ""
       });
       setStep(1);
       setErrors({});
@@ -161,10 +126,10 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
   const validateStep1 = () => {
     const newErrors: Record<string, string> = {};
     if (!formData.meterNumber) newErrors.meterNumber = "Meter Number is required";
-    if (!formData.simNo) newErrors.simNo = "Sim Card is required";
+    if (!formData.simNumber) newErrors.simNumber = "Sim Card is required";
     if (!formData.meterCategory) newErrors.meterCategory = "Meter Category is required";
     if (!formData.meterClass) newErrors.meterClass = "Meter Class is required";
-    if (!formData.manufactureName) newErrors.manufactureName = "Meter Manufacturer is required";
+    if (!formData.meterManufacturer) newErrors.meterManufacturer = "Meter Manufacturer is required";
     if (!formData.oldSgc) newErrors.oldSgc = "Old SGC is required";
     if (!formData.newSgc) newErrors.newSgc = "New SGC is required";
     if (!formData.oldKrn) newErrors.oldKrn = "Old KRN is required";
@@ -178,10 +143,10 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
   const validateStep2 = () => {
     const newErrors: Record<string, string> = {};
     if (formData.meterClass === "MD") {
-      if (!formData.ctRatioNumerator) newErrors.ctRatioNumerator = "CT Ratio Numerator is required";
-      if (!formData.ctRatioDenominator) newErrors.ctRatioDenominator = "CT Ratio Denominator is required";
-      if (!formData.voltageRatioNumerator) newErrors.voltageRatioNumerator = "Voltage Ratio Numerator is required";
-      if (!formData.voltageRatioDenominator) newErrors.voltageRatioDenominator = "Voltage Ratio Denominator is required";
+      if (!formData.ctRatioNum) newErrors.ctRatioNum = "CT Ratio Numerator is required";
+      if (!formData.ctRatioDenom) newErrors.ctRatioDenom = "CT Ratio Denominator is required";
+      if (!formData.voltRatioNum) newErrors.voltRatioNum = "Voltage Ratio Numerator is required";
+      if (!formData.voltRatioDenom) newErrors.voltRatioDenom = "Voltage Ratio Denominator is required";
       if (!formData.multiplier) newErrors.multiplier = "Multiplier is required";
       if (!formData.meterRating) newErrors.meterRating = "Meter Rating is required";
       if (!formData.initialReading) newErrors.initialReading = "Initial Reading is required";
@@ -195,7 +160,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
 
   const validateStep3 = () => {
     const newErrors: Record<string, string> = {};
-    if (formData.smartMeter) {
+    if (formData.smartStatus) {
       if (!formData.meterModel) newErrors.meterModel = "Meter Model is required";
       if (!formData.protocol) newErrors.protocol = "Protocol is required";
       if (!formData.authentication) newErrors.authentication = "Authentication is required";
@@ -217,7 +182,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
   const handleCheckboxChange = (checked: boolean) => {
     setFormData((prev) => ({
       ...prev,
-      smartMeter: checked,
+      smartStatus: checked,
     }));
   };
 
@@ -233,7 +198,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
     if (validateStep1()) {
       if (formData.meterClass === "MD") {
         setStep(2);
-      } else if (formData.smartMeter) {
+      } else if (formData.smartStatus) {
         setStep(3);
       } else {
         saveMeter();
@@ -243,7 +208,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
 
   const handleNextFromStep2 = () => {
     if (validateStep2()) {
-      if (formData.smartMeter) {
+      if (formData.smartStatus) {
         setStep(3);
       } else {
         saveMeter();
@@ -268,85 +233,88 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
     if (step === 2 && formData.meterClass === "MD" && !validateStep2()) return;
     if (step === 3 && !validateStep3()) return;
 
-    const updatedMeter: MeterData = {
-      id: editMeter ? String(editMeter.id) : uuidv4(), // Use UUID
-      meterNumber: formData.meterNumber || "N/A",
-      customerId: editMeter ? editMeter.customerId : "N/A",
-      accountNumber: editMeter ? editMeter.accountNumber : "N/A",
-      tariff: editMeter ? editMeter.tariff : "N/A",
-      assignedStatus: editMeter ? editMeter.assignedStatus : "N/A",
-      status: editMeter ? editMeter.status : "N/A",
-      manufactureName: formData.manufactureName || "N/A",
-      class: formData.meterClass || "N/A",
-      meterType: formData.meterType || "N/A",
-      category: formData.meterCategory || "N/A",
-      dateAdded: new Date().toLocaleDateString("en-GB").split("/").join("-"),
-      oldSgc: formData.oldSgc || "N/A",
-      newSgc: formData.newSgc || "N/A",
-      oldKrn: formData.oldKrn || "N/A",
-      newKrn: formData.newKrn || "N/A",
-      oldTariffIndex: formData.oldTariffIndex || "N/A",
-      newTariffIndex: formData.newTariffIndex || "N/A",
-      simNo: formData.simNo || "N/A",
-      smartMeter: formData.smartMeter ? "Smart" : "Non-Smart",
-      ctRatioNumerator: formData.ctRatioNumerator || "N/A",
-      ctRatioDenominator: formData.ctRatioDenominator || "N/A",
-      voltageRatioNumerator: formData.voltageRatioNumerator || "N/A",
-      voltageRatioDenominator: formData.voltageRatioDenominator || "N/A",
-      multiplier: formData.multiplier || "N/A",
-      meterRating: formData.meterRating || "N/A",
-      initialReading: formData.initialReading || "N/A",
-      dial: formData.dial || "N/A",
-      longitude: formData.longitude || "N/A",
-      latitude: formData.latitude || "N/A",
-      meterModel: formData.meterModel || "N/A",
-      protocol: formData.protocol || "N/A",
-      authentication: formData.authentication || "N/A",
-      password: formData.password || "N/A"
+    const payload: CreateMeterPayload = {
+      id: editMeter?.id ?? uuidv4(),
+      meterNumber: formData.meterNumber,
+      simNumber: formData.simNumber,
+      meterCategory: formData.meterCategory,
+      meterClass: formData.meterClass,
+      meterType: formData.meterType,
+      meterManufacturer: formData.meterManufacturer,
+      oldSgc: formData.oldSgc,
+      newSgc: formData.newSgc,
+      oldKrn: formData.oldKrn,
+      newKrn: formData.newKrn,
+      oldTariffIndex: Number(formData.oldTariffIndex) || 0,
+      newTariffIndex: Number(formData.newTariffIndex) || 0,
+      smartStatus: formData.smartStatus,
+      mdMeterInfo: formData.meterClass === "MD"
+        ? {
+          ctRatioNum: formData.ctRatioNum,
+          ctRatioDenom: formData.ctRatioDenom,
+          voltRatioNum: formData.voltRatioNum,
+          voltRatioDenom: formData.voltRatioDenom,
+          multiplier: formData.multiplier,
+          meterRating: formData.meterRating,
+          initialReading: formData.initialReading,
+          dial: formData.dial,
+          longitude: formData.longitude,
+          latitude: formData.latitude,
+        }
+        : undefined,
+      smartMeterInfo: formData.smartStatus === true
+        ? {
+          meterModel: formData.meterModel,
+          protocol: formData.protocol,
+          authentication: formData.authentication,
+          password: formData.password,
+        }
+        : undefined
     };
-    console.log("Saving meter:", updatedMeter);
-    onSaveMeter(updatedMeter);
+
+    createMeter(payload);
     onClose();
     setStep(1);
+    // Use empty strings for reset, consistent with form structure
     setFormData({
       meterNumber: "",
-      simNo: "",
+      simNumber: "", 
       meterCategory: "",
       meterClass: "",
       meterType: "",
-      manufactureName: "",
+      meterManufacturer: "",
       oldSgc: "",
       newSgc: "",
       oldKrn: "",
       newKrn: "",
       oldTariffIndex: "",
       newTariffIndex: "",
-      smartMeter: false,
+      smartStatus: false,
       meterModel: "",
       protocol: "",
       authentication: "",
       password: "",
-      ctRatioNumerator: "",
-      ctRatioDenominator: "",
-      voltageRatioNumerator: "",
-      voltageRatioDenominator: "",
+      ctRatioNum: "",
+      ctRatioDenom: "",
+      voltRatioNum: "",
+      voltRatioDenom: "",
       multiplier: "",
       meterRating: "",
       initialReading: "",
       dial: "",
       longitude: "",
-      latitude: "",
+      latitude: ""
     });
     setErrors({});
   };
-
+  const { data: manufacturers, isLoading: isManufacturersLoading, error: manufacturersError } = useGetMeterManufactures();
   const dialogTitle = editMeter ? "Edit Meter" : "Add new meter";
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-lg h-fit bg-white p-6 rounded-lg">
         <DialogHeader className="flex flex-col">
-          {(formData.meterClass === "MD" || formData.smartMeter || (editMeter && formData.meterClass === "MD")) && (
+          {(formData.meterClass === "MD" || formData.smartStatus || (editMeter && formData.meterClass === "MD")) && (
             <div className="w-full h-2 bg-gray-200 rounded-full mb-4 mt-6">
               <div
                 className={`h-full bg-[#161CCA] rounded-full transition-all duration-300 ${step === 1 ? "w-1/3" : step === 2 ? "w-2/3" : "w-full"
@@ -381,21 +349,21 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                 {errors.meterNumber && <p className="text-xs text-red-500 mt-1">{errors.meterNumber}</p>}
               </div>
               <div className="space-y-1">
-                <Label htmlFor="simNo" className="text-sm font-medium text-gray-700">
+                <Label htmlFor="simNumber" className="text-sm font-medium text-gray-700">
                   Sim Card Number <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   type="text"
-                  id="simNo"
-                  name="simNo"
-                  value={formData.simNo}
+                  id="simNumber" // Corrected id to simNumber
+                  name="simNumber" // Corrected name to simNumber
+                  value={formData.simNumber} // Corrected value key
                   onChange={handleInputChange}
                   placeholder="E.g 8900080734059874"
-                  className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.simNo ? "border-red-500" : ""
+                  className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.simNumber ? "border-red-500" : "" // Corrected error key
                     }`}
                   required
                 />
-                {errors.simNo && <p className="text-xs text-red-500 mt-1">{errors.simNo}</p>}
+                {errors.simNumber && <p className="text-xs text-red-500 mt-1">{errors.simNumber}</p>} {/* Corrected error key */}
               </div>
               <div className="space-y-1">
                 <Label htmlFor="meterType" className="text-sm font-medium text-gray-700">
@@ -463,28 +431,35 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                 {errors.meterClass && <p className="text-xs text-red-500 mt-1">{errors.meterClass}</p>}
               </div>
               <div className="space-y-1">
-                <Label htmlFor="manufactureName" className="text-sm font-medium text-gray-700">
+                <Label htmlFor="meterManufacturer" className="text-sm font-medium text-gray-700">
                   Meter Manufacturer <span className="text-red-500">*</span>
                 </Label>
                 <Select
-                  onValueChange={(value) => handleSelectChange("manufactureName", value)}
-                  value={formData.manufactureName}
+                  onValueChange={(value) => handleSelectChange("meterManufacturer", value)}
+                  value={formData.meterManufacturer}
                 >
                   <SelectTrigger
-                    id="manufactureName"
-                    className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.manufactureName ? "border-red-500" : ""
+                    id="meterManufacturer"
+                    className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.meterManufacturer ? "border-red-500" : ""
                       }`}
                   >
                     <SelectValue placeholder="Select Manufacturer" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Momas">Momas</SelectItem>
-                    <SelectItem value="Honglian">Honglian</SelectItem>
-                    <SelectItem value="Mojec">Mojec</SelectItem>
-                    <SelectItem value="Hexing">Hexing</SelectItem>
+                    {manufacturers && manufacturers.length > 0 ? (
+                      manufacturers.map((manufacturer) => (
+                        <SelectItem key={manufacturer.id} value={manufacturer.name || 'unknown'}>  
+                          {manufacturer.name}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem value="no-manufacturers-available" disabled> 
+                        No manufacturers available
+                      </SelectItem>
+                    )}
                   </SelectContent>
                 </Select>
-                {errors.manufactureName && <p className="text-xs text-red-500 mt-1">{errors.manufactureName}</p>}
+                {errors.meterManufacturer && <p className="text-xs text-red-500 mt-1">{errors.meterManufacturer}</p>}
               </div>
               <div className="space-y-1">
                 <Label htmlFor="oldSgc" className="text-sm font-medium text-gray-700">
@@ -596,7 +571,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                   <span className="text-sm text-gray-700">Smart</span>
                   <Checkbox
                     id="smartMeter"
-                    checked={formData.smartMeter}
+                    checked={formData.smartStatus}
                     onCheckedChange={handleCheckboxChange}
                     className="border-gray-500 rounded-md data-[state=checked]:bg-green-500 data-[state=checked]:text-white focus:ring-green-500 focus:ring-offset-0 focus:ring-1"
                   />
@@ -606,75 +581,75 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
           ) : step === 2 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 py-4">
               <div className="space-y-1">
-                <Label htmlFor="ctRatioNumerator" className="text-sm font-medium text-gray-700">
+                <Label htmlFor="ctRatioNum" className="text-sm font-medium text-gray-700">
                   CT Ratio Numerator <span className="text-red-500">*</span>
                 </Label>
                 <Input
-                  id="ctRatioNumerator"
-                  name="ctRatioNumerator"
+                  id="ctRatioNum"
+                  name="ctRatioNum"
                   type="text"
-                  value={formData.ctRatioNumerator}
+                  value={formData.ctRatioNum}
                   onChange={handleInputChange}
                   placeholder="E.g., 100"
-                  className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.ctRatioNumerator ? "border-red-500" : ""
+                  className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.ctRatioNum ? "border-red-500" : ""
                     }`}
                   required
                 />
-                {errors.ctRatioNumerator && <p className="text-xs text-red-500 mt-1">{errors.ctRatioNumerator}</p>}
+                {errors.ctRatioNum && <p className="text-xs text-red-500 mt-1">{errors.ctRatioNum}</p>}
               </div>
               <div className="space-y-1">
-                <Label htmlFor="ctRatioDenominator" className="text-sm font-medium text-gray-700">
+                <Label htmlFor="ctRatioDenom" className="text-sm font-medium text-gray-700">
                   CT Ratio Denominator <span className="text-red-500">*</span>
                 </Label>
                 <Input
-                  id="ctRatioDenominator"
-                  name="ctRatioDenominator"
+                  id="ctRatioDenom"
+                  name="ctRatioDenom"
                   type="text"
-                  value={formData.ctRatioDenominator}
+                  value={formData.ctRatioDenom}
                   onChange={handleInputChange}
                   placeholder="E.g., 5"
-                  className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.ctRatioDenominator ? "border-red-500" : ""
+                  className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.ctRatioDenom ? "border-red-500" : ""
                     }`}
                   required
                 />
-                {errors.ctRatioDenominator && <p className="text-xs text-red-500 mt-1">{errors.ctRatioDenominator}</p>}
+                {errors.ctRatioDenom && <p className="text-xs text-red-500 mt-1">{errors.ctRatioDenom}</p>}
               </div>
               <div className="space-y-1">
-                <Label htmlFor="voltageRatioNumerator" className="text-sm font-medium text-gray-700">
+                <Label htmlFor="voltRatioNum" className="text-sm font-medium text-gray-700">
                   Voltage Ratio Numerator <span className="text-red-500">*</span>
                 </Label>
                 <Input
-                  id="voltageRatioNumerator"
-                  name="voltageRatioNumerator"
+                  id="voltRatioNum"
+                  name="voltRatioNum"
                   type="text"
-                  value={formData.voltageRatioNumerator}
+                  value={formData.voltRatioNum}
                   onChange={handleInputChange}
                   placeholder="E.g., 11000"
-                  className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.voltageRatioNumerator ? "border-red-500" : ""
+                  className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.voltRatioNum ? "border-red-500" : ""
                     }`}
                   required
                 />
-                {errors.voltageRatioNumerator && (
-                  <p className="text-xs text-red-500 mt-1">{errors.voltageRatioNumerator}</p>
+                {errors.voltRatioNum && (
+                  <p className="text-xs text-red-500 mt-1">{errors.voltRatioNum}</p>
                 )}
               </div>
               <div className="space-y-1">
-                <Label htmlFor="voltageRatioDenominator" className="text-sm font-medium text-gray-700">
+                <Label htmlFor="voltRatioDenom" className="text-sm font-medium text-gray-700">
                   Voltage Ratio Denominator <span className="text-red-500">*</span>
                 </Label>
                 <Input
-                  id="voltageRatioDenominator"
-                  name="voltageRatioDenominator"
+                  id="voltRatioDenom"
+                  name="voltRatioDenom"
                   type="text"
-                  value={formData.voltageRatioDenominator}
+                  value={formData.voltRatioDenom}
                   onChange={handleInputChange}
                   placeholder="E.g., 110"
-                  className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.voltageRatioDenominator ? "border-red-500" : ""
+                  className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.voltRatioDenom ? "border-red-500" : ""
                     }`}
                   required
                 />
-                {errors.voltageRatioDenominator && (
-                  <p className="text-xs text-red-500 mt-1">{errors.voltageRatioDenominator}</p>
+                {errors.voltRatioDenom && (
+                  <p className="text-xs text-red-500 mt-1">{errors.voltRatioDenom}</p>
                 )}
               </div>
               <div className="space-y-1">
@@ -867,30 +842,31 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
               </Button>
               <Button
                 onClick={
-                  !editMeter && (formData.meterClass === "Single Phase" || formData.meterClass === "Three Phase") && !formData.smartMeter
+                  !editMeter && (formData.meterClass === "Single Phase" || formData.meterClass === "Three Phase") && !formData.smartStatus
                     ? saveMeter
                     : handleNext
                 }
                 size="lg"
                 disabled={
                   !formData.meterNumber ||
-                  !formData.simNo ||
+                  !formData.simNumber || // Corrected validation check
                   !formData.meterCategory ||
                   !formData.meterClass ||
-                  !formData.manufactureName ||
+                  !formData.meterManufacturer ||
                   !formData.oldSgc ||
                   !formData.newSgc ||
                   !formData.oldKrn ||
                   !formData.newKrn ||
                   !formData.oldTariffIndex ||
-                  !formData.newTariffIndex
+                  !formData.newTariffIndex ||
+                  isPending
                 }
                 className="text-sm font-medium bg-[#161CCA] text-white hover:bg-[#1e2abf]"
               >
                 {/* {!editMeter && (formData.meterClass === "Single Phase" || formData.meterClass === "Three Phase") && !formData.smartMeter
                   ? "Add Meter"
                   : "Next"} */}
-                {editMeter || formData.meterClass === "MD" || formData.smartMeter ? "Next" : "Add Meter"}
+                {editMeter || formData.meterClass === "MD" || formData.smartStatus ? "Next" : "Add Meter"}
               </Button>
             </>
           ) : step === 2 ? (
@@ -908,10 +884,10 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                 size="lg"
                 disabled={
                   formData.meterClass === "MD" &&
-                  (!formData.ctRatioNumerator ||
-                    !formData.ctRatioDenominator ||
-                    !formData.voltageRatioNumerator ||
-                    !formData.voltageRatioDenominator ||
+                  (!formData.ctRatioNum ||
+                    !formData.ctRatioDenom ||
+                    !formData.voltRatioNum ||
+                    !formData.voltRatioDenom ||
                     !formData.multiplier ||
                     !formData.meterRating ||
                     !formData.initialReading ||
@@ -921,7 +897,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                 }
                 className="text-sm font-medium bg-[#161CCA] text-white hover:bg-[#1e2abf] cursor-pointer"
               >
-                {formData.smartMeter ? "Next" : "Save"}
+                {formData.smartStatus ? "Next" : "Save"}
               </Button>
             </>
           ) : (
@@ -938,7 +914,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                 onClick={saveMeter}
                 size="lg"
                 disabled={
-                  formData.smartMeter &&
+                  formData.smartStatus &&
                   (!formData.meterModel || !formData.protocol || !formData.authentication || !formData.password)
                 }
                 className="text-sm font-medium bg-[#161CCA] text-white hover:bg-[#1e2abf] cursor-pointer"
@@ -954,5 +930,5 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
 }
 
 function uuidv4(): string {
-  throw new Error("Function not implemented.");
+  return crypto.randomUUID();
 }

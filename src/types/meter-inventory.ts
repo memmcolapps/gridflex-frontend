@@ -1,25 +1,83 @@
 // Meter inventory item from GET response
+export interface ManufacturerDetails {
+  id: string;
+  orgId: string;
+  manufacturerId: string;
+  name: string;
+  contactPerson: string;
+  state: string;
+  city: string;
+  street: string;
+  email: string;
+  phoneNo: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface MeterInventoryItem {
   id: string;
   meterNumber: string;
-  simNumber: string;
-  substation: string;
-  feederLine: string;
-  transformer: string;
-  meterCategory: string;
+  meterManufacturer: string;
   meterClass: string;
-  meterType: string;
-  approvedStatus: string;
-  status: boolean;
-  ctRatioNum: number;
-  ctRatioDenom: number;
-  voltRatioNum: number;
-  multiplier: number;
-  meterRating: number;
-  initialReading: number;
-  dial: number;
-  latitude: string;
-  longitude: string;
+  meterType?: string;
+  meterCategory: string;
+  dateAdded?: string;
+  oldSgc?: string;
+  newSgc?: string;
+  oldKrn?: string;
+  newKrn?: string;
+  oldTariffIndex?: number;
+  newTariffIndex?: number;
+  simNumber?: string;
+  smartStatus: boolean;
+  mdMeterInfo?: {
+    ctRatioNum?: string;
+    ctRatioDenom?: string;
+    voltRatioNum?: string;
+    voltRatioDenom?: string;
+    multiplier?: string;
+    meterRating?: string;
+    initialReading?: string;
+    dial?: string;
+    longitude?: string;
+    latitude?: string;
+  };
+  meterModel?: string;
+  protocol?: string;
+  authentication?: string;
+  password?: string;
+  customerId?: string | null;
+  accountNumber?: string;
+  tariff?: string;
+  assignedStatus?: string;
+  status?: string;
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  debitMop?: string; // Added for payment fields
+  debitPaymentPlan?: string;
+  creditPaymentPlan?: string;
+  creditMop?: string;
+  Image?: File;
+  feederLine?: string;
+  dss?: string; // Optional, as not always required
+  cin?: string;
+  state?: string;
+  city?: string;
+  streetName?: string;
+  houseNo?: string;
+  approvedStatus?: string;
+  meterStage?: string;
+  simNo?: string;
+  manufacturer?: ManufacturerDetails;
+  category?: string;
+  type?: string;
+  smartMeterInfo: {
+    meterModel: string;
+    protocol: string;
+    authentication: string;
+    password: string;
+  };
   createdAt: string;
   updatedAt: string;
 }
@@ -38,13 +96,22 @@ export interface MdMeterInfo {
   longitude: string;
 }
 
-// Create meter payload
+// Smart meter info (aligned with expected structure)
+export interface SmartMeterInfo {
+  meterModel: string;
+  protocol: string;
+  authentication: string;
+  password: string;
+}
+
+// Create meter payload (now includes missing fields)
 export interface CreateMeterPayload {
+  id: string;
   meterNumber: string;
   simNumber: string;
   meterCategory: string;
   meterClass: string;
-  meterManufacturer: string; // Manufacturer ID
+  meterManufacturer: string; // Standardized field name
   meterType: string;
   oldSgc: string;
   newSgc: string;
@@ -52,18 +119,22 @@ export interface CreateMeterPayload {
   newKrn: string;
   oldTariffIndex: number;
   newTariffIndex: number;
+  smartStatus?: boolean; // Added missing property
+  smartMeterInfo?: SmartMeterInfo; // Added missing property (optional for creation)
   mdMeterInfo?: MdMeterInfo; // Optional - only for MD meters
 }
 
-// Update meter payload (different structure)
+// Update meter payload (now includes missing fields; standardized field names)
 export interface UpdateMeterPayload {
   id: string;
   meterNumber: string;
   simNumber: string;
   meterCategory: string;
   meterClass: string;
-  manufacturer: string; // Note: different field name
+  meterManufacturer: string; // Standardized from 'manufacturer'
   meterType: string;
+  smartStatus: boolean; // Added missing property
+  smartMeterInfo: SmartMeterInfo; // Added missing property
   ctRatioNum: string;
   ctRatioDenom: string;
   voltRatioNum: string;
@@ -107,4 +178,82 @@ export interface ApiResponse {
   responsecode: string;
   responsedesc: string;
   responsedata: string;
+}
+
+// types.ts
+export interface MeterData {
+  id: string;
+  meterNumber: string;
+  meterManufacturer: string;
+  meterClass: string;
+  meterType?: string;
+  meterCategory: string;
+  dateAdded?: string;
+  oldSgc?: string;
+  newSgc?: string;
+  oldKrn?: string;
+  newKrn?: string;
+  oldTariffIndex?: number;
+  newTariffIndex?: number;
+  simNumber?: string;
+  smartStatus: boolean;
+  MdMeterInfo?: {
+    ctRatioNum?: string;
+    ctRatioDenom?: string;
+    voltRatioNum?: string;
+    voltRatioDenom?: string;
+    multiplier?: string;
+    meterRating?: string;
+    initialReading?: string;
+    dial?: string;
+    longitude?: string;
+    latitude?: string;
+  };
+  meterModel?: string;
+  protocol?: string;
+  authentication?: string;
+  password?: string;
+  customerId?: string | null;
+  accountNumber?: string;
+  tariff?: string;
+  assignedStatus?: string;
+  status?: string;
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  debitMop?: string; // Added for payment fields
+  debitPaymentPlan?: string;
+  creditPaymentPlan?: string;
+  creditMop?: string;
+  Image?: File;
+  feederLine?: string;
+  dss?: string; // Optional, as not always required
+  cin?: string;
+  state?: string;
+  city?: string;
+  streetName?: string;
+  houseNo?: string;
+  approvedStatus?: string;
+  meterStage?: string;
+  type?: string;
+  manufacturer?: {
+    id: string;
+    orgId: string;
+    manufacturerId: string;
+    name: string;
+    contactPerson: string;
+    state: string;
+    city: string;
+    street: string;
+    email: string;
+    phoneNo: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+  smartMeterInfo: {
+    meterModel: string;
+    protocol: string;
+    authentication: string;
+    password: string;
+  };
 }

@@ -1,8 +1,4 @@
-
-
-/* eslint-disable @typescript-eslint/non-nullable-type-assertion-style, @typescript-eslint/prefer-optional-chain */
-
-
+/* eslint-disable */
 "use client";
 import { ContentHeader } from "@/components/ui/content-header";
 import { useEffect, useState } from "react";
@@ -33,7 +29,8 @@ import VirtualMeterConfirmDialog from "@/components/meter-management/virtual-met
 import DeactivatePhysicalMeterDialog from "@/components/meter-management/deactivate-physical-meter-dialog";
 import AddVirtualMeterDetailsDialog from "@/components/meter-management/add-virtual-meter-dialog";
 import SelectCustomerDialog from "@/components/meter-management/select-customer-dialog";
-import type { MeterData, VirtualMeterData } from "@/types/meter";
+import type { VirtualMeterData } from "@/types/meter";
+import type { MeterInventoryItem } from "@/types/meter-inventory";
 import { getStatusStyle } from "@/components/status-style";
 import { cn } from "@/lib/utils";
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
@@ -49,232 +46,232 @@ import { ViewVirtualMeterDetailsDialog } from "@/components/meter-management/vie
 
 
 
-const initialMeterData = [
-    {
-        id: "MT-0001",
-        customerId: "C-0123456790",
-        meterNumber: "62010229441",
-        simNo: "SIM-0001",
-        class: "Single Phase",
-        category: "Prepaid",
-        meterType: "Electricity",
-        oldTariffIndex: "1",
-        newTariffIndex: "2",
-        manufactureName: "Momas",
-        accountNumber: "20250129544",
-        oldSgc: "SGC-0001",
-        oldKrn: "KRN-0001",
-        newKrn: "KRN-1001",
-        newSgc: "SGC-1001",
-        tariff: "Residential",
-        assignedStatus: "Pending",
-        status: "InStock",
-        cin: "C0123456790",
-        firstName: "Shina",
-        lastName: "Tiger",
-        phone: "08098765343",
-        image: null,
-    },
-    {
-        id: "MT-0002",
-        customerId: "C-1234567891",
-        meterNumber: "62010229442",
-        simNo: "SIM-0002",
-        class: "Three Phase",
-        category: "Postpaid",
-        meterType: "Electricity",
-        oldTariffIndex: "1",
-        newTariffIndex: "2",
-        manufactureName: "Momas",
-        accountNumber: "20250129545",
-        oldSgc: "SGC-0002",
-        oldKrn: "KRN-0002",
-        newKrn: "KRN-1002",
-        newSgc: "SGC-1002",
-        tariff: "Residential",
-        assignedStatus: "Approved",
-        status: "Assigned",
-        cin: "C1234567891",
-        firstName: "Seun",
-        lastName: "Tope",
-        phone: "09043216161",
-        image: null,
-    },
-    {
-        id: "MT-0003",
-        customerId: "C-2345678902",
-        meterNumber: "62010229443",
-        simNo: "SIM-0003",
-        class: "MD",
-        category: "Prepaid",
-        meterType: "Electricity",
-        oldTariffIndex: "1",
-        newTariffIndex: "2",
-        manufactureName: "Momas",
-        accountNumber: "20250129546",
-        oldSgc: "SGC-0003",
-        oldKrn: "KRN-0003",
-        newKrn: "KRN-1003",
-        newSgc: "SGC-1003",
-        tariff: "Residential",
-        assignedStatus: "Pending",
-        status: "InStock",
-        cin: "C2345678902",
-        firstName: "",
-        lastName: "",
-        phone: "08098765343",
-        image: null,
-    },
-    {
-        id: "MT-0004",
-        customerId: "C-3456789013",
-        meterNumber: "62010229444",
-        simNo: "SIM-0004",
-        class: "Single Phase",
-        category: "Postpaid",
-        meterType: "Electricity",
-        oldTariffIndex: "1",
-        newTariffIndex: "2",
-        manufactureName: "Momas",
-        accountNumber: "20250129547",
-        oldSgc: "SGC-0004",
-        oldKrn: "KRN-0004",
-        newKrn: "KRN-1004",
-        newSgc: "SGC-1004",
-        tariff: "Residential",
-        assignedStatus: "Approved",
-        status: "Assigned",
-        cin: "C3456789013",
-        firstName: "",
-        lastName: "",
-        phone: "08098765343",
-        image: null,
-    },
-    {
-        id: "MT-0005",
-        customerId: "C-4567890124",
-        meterNumber: "62010229445",
-        simNo: "SIM-0005",
-        class: "Three Phase",
-        category: "Prepaid",
-        meterType: "Electricity",
-        oldTariffIndex: "1",
-        newTariffIndex: "2",
-        manufactureName: "Momas",
-        accountNumber: "20250129548",
-        oldSgc: "SGC-0005",
-        oldKrn: "KRN-0005",
-        newKrn: "KRN-1005",
-        newSgc: "SGC-1005",
-        tariff: "Residential",
-        assignedStatus: "Pending",
-        status: "InStock",
-        cin: "C4567890124",
-        firstName: "",
-        lastName: "",
-        phone: "08098765343",
-        image: null,
-    },
-    {
-        id: "MT-0006",
-        customerId: "C-5678901235",
-        meterNumber: "62010229446",
-        simNo: "SIM-0006",
-        class: "MD",
-        category: "Postpaid",
-        meterType: "Electricity",
-        oldTariffIndex: "1",
-        newTariffIndex: "2",
-        manufactureName: "Momas",
-        accountNumber: "20250129549",
-        oldSgc: "SGC-0006",
-        oldKrn: "KRN-0006",
-        newKrn: "KRN-1006",
-        newSgc: "SGC-1006",
-        tariff: "Residential",
-        assignedStatus: "Approved",
-        status: "Assigned",
-        cin: "C5678901235",
-        firstName: "",
-        lastName: "",
-        phone: "08098765343",
-        image: null,
-    },
-    {
-        id: "MT-0007",
-        customerId: "C-6678901236",
-        meterNumber: "62010229446",
-        simNo: "SIM-0007",
-        class: "Single Phase",
-        category: "Postpaid",
-        meterType: "Electricity",
-        oldTariffIndex: "1",
-        newTariffIndex: "2",
-        manufactureName: "Momas",
-        accountNumber: "20250179549",
-        oldSgc: "SGC-0007",
-        oldKrn: "KRN-0007",
-        newKrn: "KRN-1007",
-        newSgc: "SGC-1007",
-        tariff: "Residential",
-        assignedStatus: "Approved",
-        status: "Assigned",
-        cin: "C5678901235",
-        firstName: "",
-        lastName: "",
-        phone: "08098765343",
-        image: null,
-    },
-    {
-        id: "MT-0008",
-        customerId: "C-7678901235",
-        meterNumber: "62010229446",
-        simNo: "SIM-0008",
-        class: "Three Phase",
-        category: "Postpaid",
-        meterType: "Electricity",
-        oldTariffIndex: "1",
-        newTariffIndex: "2",
-        manufactureName: "Momas",
-        accountNumber: "20250129559",
-        oldSgc: "SGC-0008",
-        oldKrn: "KRN-0008",
-        newKrn: "KRN-1008",
-        newSgc: "SGC-1008",
-        tariff: "Residential",
-        assignedStatus: "Approved",
-        status: "Assigned",
-        cin: "C5678901235",
-        firstName: "",
-        lastName: "",
-        phone: "08098765343",
-        image: null,
-    },
-    {
-        id: "MT-0009",
-        customerId: "C-8678901235",
-        meterNumber: "62010229446",
-        simNo: "SIM-0009",
-        class: "MD",
-        category: "Postpaid",
-        meterType: "Electricity",
-        oldTariffIndex: "1",
-        newTariffIndex: "2",
-        manufactureName: "Momas",
-        accountNumber: "20250129249",
-        oldSgc: "SGC-0009",
-        oldKrn: "KRN-0009",
-        newKrn: "KRN-1009",
-        newSgc: "SGC-1009",
-        tariff: "Residential",
-        assignedStatus: "Approved",
-        status: "Assigned",
-        cin: "C5678901235",
-        firstName: "",
-        lastName: "",
-        phone: "08098765343",
-        image: null,
-    },
+const initialMeterData: MeterInventoryItem[] | (() => MeterInventoryItem[]) = [
+    // {
+    //     id: "MT-0001",
+    //     customerId: "C-0123456790",
+    //     meterNumber: "62010229441",
+    //     simNo: "SIM-0001",
+    //     class: "Single Phase",
+    //     category: "Prepaid",
+    //     meterType: "Electricity",
+    //     oldTariffIndex: "1",
+    //     newTariffIndex: "2",
+    //     manufactureName: "Momas",
+    //     accountNumber: "20250129544",
+    //     oldSgc: "SGC-0001",
+    //     oldKrn: "KRN-0001",
+    //     newKrn: "KRN-1001",
+    //     newSgc: "SGC-1001",
+    //     tariff: "Residential",
+    //     assignedStatus: "Pending",
+    //     status: "InStock",
+    //     cin: "C0123456790",
+    //     firstName: "Shina",
+    //     lastName: "Tiger",
+    //     phone: "08098765343",
+    //     image: null,
+    // },
+    // {
+    //     id: "MT-0002",
+    //     customerId: "C-1234567891",
+    //     meterNumber: "62010229442",
+    //     simNo: "SIM-0002",
+    //     class: "Three Phase",
+    //     category: "Postpaid",
+    //     meterType: "Electricity",
+    //     oldTariffIndex: "1",
+    //     newTariffIndex: "2",
+    //     manufactureName: "Momas",
+    //     accountNumber: "20250129545",
+    //     oldSgc: "SGC-0002",
+    //     oldKrn: "KRN-0002",
+    //     newKrn: "KRN-1002",
+    //     newSgc: "SGC-1002",
+    //     tariff: "Residential",
+    //     assignedStatus: "Approved",
+    //     status: "Assigned",
+    //     cin: "C1234567891",
+    //     firstName: "Seun",
+    //     lastName: "Tope",
+    //     phone: "09043216161",
+    //     image: null,
+    // },
+    // {
+    //     id: "MT-0003",
+    //     customerId: "C-2345678902",
+    //     meterNumber: "62010229443",
+    //     simNo: "SIM-0003",
+    //     class: "MD",
+    //     category: "Prepaid",
+    //     meterType: "Electricity",
+    //     oldTariffIndex: "1",
+    //     newTariffIndex: "2",
+    //     manufactureName: "Momas",
+    //     accountNumber: "20250129546",
+    //     oldSgc: "SGC-0003",
+    //     oldKrn: "KRN-0003",
+    //     newKrn: "KRN-1003",
+    //     newSgc: "SGC-1003",
+    //     tariff: "Residential",
+    //     assignedStatus: "Pending",
+    //     status: "InStock",
+    //     cin: "C2345678902",
+    //     firstName: "",
+    //     lastName: "",
+    //     phone: "08098765343",
+    //     image: null,
+    // },
+    // {
+    //     id: "MT-0004",
+    //     customerId: "C-3456789013",
+    //     meterNumber: "62010229444",
+    //     simNo: "SIM-0004",
+    //     class: "Single Phase",
+    //     category: "Postpaid",
+    //     meterType: "Electricity",
+    //     oldTariffIndex: "1",
+    //     newTariffIndex: "2",
+    //     manufactureName: "Momas",
+    //     accountNumber: "20250129547",
+    //     oldSgc: "SGC-0004",
+    //     oldKrn: "KRN-0004",
+    //     newKrn: "KRN-1004",
+    //     newSgc: "SGC-1004",
+    //     tariff: "Residential",
+    //     assignedStatus: "Approved",
+    //     status: "Assigned",
+    //     cin: "C3456789013",
+    //     firstName: "",
+    //     lastName: "",
+    //     phone: "08098765343",
+    //     image: null,
+    // },
+    // {
+    //     id: "MT-0005",
+    //     customerId: "C-4567890124",
+    //     meterNumber: "62010229445",
+    //     simNo: "SIM-0005",
+    //     class: "Three Phase",
+    //     category: "Prepaid",
+    //     meterType: "Electricity",
+    //     oldTariffIndex: "1",
+    //     newTariffIndex: "2",
+    //     manufactureName: "Momas",
+    //     accountNumber: "20250129548",
+    //     oldSgc: "SGC-0005",
+    //     oldKrn: "KRN-0005",
+    //     newKrn: "KRN-1005",
+    //     newSgc: "SGC-1005",
+    //     tariff: "Residential",
+    //     assignedStatus: "Pending",
+    //     status: "InStock",
+    //     cin: "C4567890124",
+    //     firstName: "",
+    //     lastName: "",
+    //     phone: "08098765343",
+    //     image: null,
+    // },
+    // {
+    //     id: "MT-0006",
+    //     customerId: "C-5678901235",
+    //     meterNumber: "62010229446",
+    //     simNo: "SIM-0006",
+    //     class: "MD",
+    //     category: "Postpaid",
+    //     meterType: "Electricity",
+    //     oldTariffIndex: "1",
+    //     newTariffIndex: "2",
+    //     manufactureName: "Momas",
+    //     accountNumber: "20250129549",
+    //     oldSgc: "SGC-0006",
+    //     oldKrn: "KRN-0006",
+    //     newKrn: "KRN-1006",
+    //     newSgc: "SGC-1006",
+    //     tariff: "Residential",
+    //     assignedStatus: "Approved",
+    //     status: "Assigned",
+    //     cin: "C5678901235",
+    //     firstName: "",
+    //     lastName: "",
+    //     phone: "08098765343",
+    //     image: null,
+    // },
+    // {
+    //     id: "MT-0007",
+    //     customerId: "C-6678901236",
+    //     meterNumber: "62010229446",
+    //     simNo: "SIM-0007",
+    //     class: "Single Phase",
+    //     category: "Postpaid",
+    //     meterType: "Electricity",
+    //     oldTariffIndex: "1",
+    //     newTariffIndex: "2",
+    //     manufactureName: "Momas",
+    //     accountNumber: "20250179549",
+    //     oldSgc: "SGC-0007",
+    //     oldKrn: "KRN-0007",
+    //     newKrn: "KRN-1007",
+    //     newSgc: "SGC-1007",
+    //     tariff: "Residential",
+    //     assignedStatus: "Approved",
+    //     status: "Assigned",
+    //     cin: "C5678901235",
+    //     firstName: "",
+    //     lastName: "",
+    //     phone: "08098765343",
+    //     image: null,
+    // },
+    // {
+    //     id: "MT-0008",
+    //     customerId: "C-7678901235",
+    //     meterNumber: "62010229446",
+    //     simNo: "SIM-0008",
+    //     class: "Three Phase",
+    //     category: "Postpaid",
+    //     meterType: "Electricity",
+    //     oldTariffIndex: "1",
+    //     newTariffIndex: "2",
+    //     manufactureName: "Momas",
+    //     accountNumber: "20250129559",
+    //     oldSgc: "SGC-0008",
+    //     oldKrn: "KRN-0008",
+    //     newKrn: "KRN-1008",
+    //     newSgc: "SGC-1008",
+    //     tariff: "Residential",
+    //     assignedStatus: "Approved",
+    //     status: "Assigned",
+    //     cin: "C5678901235",
+    //     firstName: "",
+    //     lastName: "",
+    //     phone: "08098765343",
+    //     image: null,
+    // },
+    // {
+    //     id: "MT-0009",
+    //     customerId: "C-8678901235",
+    //     meterNumber: "62010229446",
+    //     simNo: "SIM-0009",
+    //     class: "MD",
+    //     category: "Postpaid",
+    //     meterType: "Electricity",
+    //     oldTariffIndex: "1",
+    //     newTariffIndex: "2",
+    //     manufactureName: "Momas",
+    //     accountNumber: "20250129249",
+    //     oldSgc: "SGC-0009",
+    //     oldKrn: "KRN-0009",
+    //     newKrn: "KRN-1009",
+    //     newSgc: "SGC-1009",
+    //     tariff: "Residential",
+    //     assignedStatus: "Approved",
+    //     status: "Assigned",
+    //     cin: "C5678901235",
+    //     firstName: "",
+    //     lastName: "",
+    //     phone: "08098765343",
+    //     image: null,
+    // },
 ];
 
 
@@ -285,16 +282,16 @@ export default function MeterManagementPage() {
     const [rowsPerPage, setRowsPerPage] = useState<number>(10);
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [isBulkUploadDialogOpen, setIsBulkUploadDialogOpen] = useState(false);
-    const [editMeter, setEditMeter] = useState<MeterData | VirtualMeterData | undefined>(undefined);
+    const [editMeter, setEditMeter] = useState<MeterInventoryItem | VirtualMeterData | undefined>(undefined);
     const [isDeactivateDialogOpen, setIsDeactivateDialogOpen] = useState(false);
-    const [selectedMeter, setSelectedMeter] = useState<MeterData | VirtualMeterData | null>(null);
+    const [selectedMeter, setSelectedMeter] = useState<MeterInventoryItem | VirtualMeterData | null>(null);
     const [activeFilters, setActiveFilters] = useState<Record<string, boolean>>({});
     const [activeTab, setActiveTab] = useState<"actual" | "virtual">("actual");
     const [sortConfig, setSortConfig] = useState<{
-        key: keyof MeterData | keyof VirtualMeterData | null;
+        key: keyof MeterInventoryItem | keyof VirtualMeterData | null;
         direction: "asc" | "desc";
     }>({ key: null, direction: "asc" });
-    const [processedData, setProcessedData] = useState<(MeterData | VirtualMeterData)[]>([]);
+    const [processedData, setProcessedData] = useState<(MeterInventoryItem | VirtualMeterData)[]>([]);
 
     // Add Virtual Meter flow states
     const [isAddVirtualMeterOpen, setIsAddVirtualMeterOpen] = useState(false);
@@ -313,14 +310,13 @@ export default function MeterManagementPage() {
     const [city, setCity] = useState("");
     const [streetName, setStreetName] = useState("");
     const [houseNo, setHouseNo] = useState("");
-    const [energyType, setEnergyType] = useState(""); // <-- Added this line
-    const [fixedEnergy, setFixedEnergy] = useState(""); // <-- Added for fixedEnergy
+    const [energyType, setEnergyType] = useState("");
+    const [fixedEnergy, setFixedEnergy] = useState("");
     const [isEditVirtualMeterOpen, setIsEditVirtualMeterOpen] = useState(false);
-    // const [phoneNumber, setPhoneNumber] = useState("");
     const [isViewDetailsOpen, setIsViewDetailsOpen] = useState(false);
-    const [viewMeter, setViewMeter] = useState<MeterData | null>(null);
+    const [viewMeter, setViewMeter] = useState<MeterInventoryItem | null>(null);
     const [isCustomerIdModalOpen, setIsCustomerIdModalOpen] = useState(false);
-    const [meterData, setMeterData] = useState<MeterData[]>(initialMeterData);
+    const [meterData, setMeterData] = useState<MeterInventoryItem[]>(initialMeterData);
     const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
     const [progress, setProgress] = useState(50);
     const [meterNumber, setMeterNumber] = useState("");
@@ -333,7 +329,7 @@ export default function MeterManagementPage() {
     const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
     const [category, setCategory] = useState("");
     const [phone, setPhone] = useState<string>("");
-    const [editCustomer, setEditCustomer] = useState<MeterData | null>(null);
+    const [editCustomer] = useState<MeterInventoryItem | null>(null);
     const [isUploadImageOpen, setIsUploadImageOpen] = useState(false);
     const [isConfirmImageOpen, setIsConfirmImageOpen] = useState(false);
     const [uploadedImage, setUploadedImage] = useState<File | null>(null);
@@ -608,244 +604,244 @@ export default function MeterManagementPage() {
         { id: "PM-0159000000302-3", number: "0159000000304", address: "7, Glorious Orimerumnu, Obafemi Owode, Ogun State" },
     ];
 
-    const [data, setData] = useState<MeterData[]>([
-        {
-            id: "MT-1001",
-            meterNumber: "64533729273",
-            meterType: "Electricity",
-            oldTariffIndex: "1",
-            newTariffIndex: "2",
-            simNo: "SIM-895623",
-            oldSgc: "999962",
-            newSgc: "600094",
-            oldKrn: "900009",
-            newKrn: "900876",
-            manufactureName: "Momas",
-            class: "MD",
-            category: "Prepaid",
-            accountNumber: "001/654321",
-            tariff: "Residential",
-            assignedStatus: "Deactivated",
-            status: "Assigned",
-            customerId: undefined,
-            smartMeter: 'Smart',
-            meterStage: "Pending-assigned"
-        },
+    const [data, setData] = useState<MeterInventoryItem[]>([
+        // {
+        //     id: "MT-1001",
+        //     meterNumber: "64533729273",
+        //     meterType: "Electricity",
+        //     oldTariffIndex: 1,
+        //     newTariffIndex: 2,
+        //     simNo: "SIM-895623",
+        //     oldSgc: "999962",
+        //     newSgc: "600094",
+        //     oldKrn: "900009",
+        //     newKrn: "900876",
+        //     manufactureName: "Momas",
+        //     class: "MD",
+        //     category: "Prepaid",
+        //     accountNumber: "001/654321",
+        //     tariff: "Residential",
+        //     assignedStatus: "Deactivated",
+        //     status: "Assigned",
+        //     customerId: undefined,
+        //     smartMeter: 'Smart',
+        //     meterStage: "Pending-assigned"
+        // },
 
-        {
-            id: "MT-1002",
-            meterNumber: "64533729273",
-            meterType: "Electricity",
-            oldTariffIndex: "1",
-            newTariffIndex: "2",
-            simNo: "SIM-895623",
-            oldSgc: "999962",
-            newSgc: "600094",
-            oldKrn: "900009",
-            newKrn: "906544",
-            manufactureName: "MOMAS",
-            class: "MD",
-            category: "Postpaid",
-            accountNumber: "001/654321",
-            tariff: "Residential",
-            assignedStatus: "Deactivated",
-            status: "Assigned",
-            customerId: undefined,
-            smartMeter: 'Smart',
-            meterStage: "Pending-assigned"
-        },
-        {
-            id: "MT-1003",
-            meterNumber: "64533729273",
-            meterType: "Electricity",
-            oldTariffIndex: "1",
-            newTariffIndex: "2",
-            simNo: "SIM-895623",
-            oldSgc: "999962",
-            newSgc: "600094",
-            oldKrn: "900876",
-            newKrn: "987654",
-            manufactureName: "MOMAS",
-            class: "MD",
-            category: "Prepaid",
-            accountNumber: "001/654321",
-            tariff: "Residential",
-            assignedStatus: "Active",
-            status: "Unassigned",
-            customerId: undefined,
-            meterStage: "Unassigned"
-        },
+        // {
+        //     id: "MT-1002",
+        //     meterNumber: "64533729273",
+        //     meterType: "Electricity",
+        //     oldTariffIndex: "1",
+        //     newTariffIndex: "2",
+        //     simNo: "SIM-895623",
+        //     oldSgc: "999962",
+        //     newSgc: "600094",
+        //     oldKrn: "900009",
+        //     newKrn: "906544",
+        //     manufactureName: "MOMAS",
+        //     class: "MD",
+        //     category: "Postpaid",
+        //     accountNumber: "001/654321",
+        //     tariff: "Residential",
+        //     assignedStatus: "Deactivated",
+        //     status: "Assigned",
+        //     customerId: undefined,
+        //     smartMeter: 'Smart',
+        //     meterStage: "Pending-assigned"
+        // },
+        // {
+        //     id: "MT-1003",
+        //     meterNumber: "64533729273",
+        //     meterType: "Electricity",
+        //     oldTariffIndex: "1",
+        //     newTariffIndex: "2",
+        //     simNo: "SIM-895623",
+        //     oldSgc: "999962",
+        //     newSgc: "600094",
+        //     oldKrn: "900876",
+        //     newKrn: "987654",
+        //     manufactureName: "MOMAS",
+        //     class: "MD",
+        //     category: "Prepaid",
+        //     accountNumber: "001/654321",
+        //     tariff: "Residential",
+        //     assignedStatus: "Active",
+        //     status: "Unassigned",
+        //     customerId: undefined,
+        //     meterStage: "Unassigned"
+        // },
 
-        {
-            id: "MT-1004",
-            meterNumber: "64533729273",
-            meterType: "Electricity",
-            oldTariffIndex: "1",
-            newTariffIndex: "2",
-            simNo: "SIM-895623",
-            oldSgc: "999962",
-            newSgc: "600094",
-            oldKrn: "",
-            newKrn: "",
-            manufactureName: "MOMAS",
-            class: "MD",
-            category: "Prepaid",
-            accountNumber: "001/654321",
-            tariff: "Residential",
-            assignedStatus: "Active",
-            status: "Unassigned",
-            customerId: undefined,
-            meterStage: "Unassigned"
-        },
+        // {
+        //     id: "MT-1004",
+        //     meterNumber: "64533729273",
+        //     meterType: "Electricity",
+        //     oldTariffIndex: "1",
+        //     newTariffIndex: "2",
+        //     simNo: "SIM-895623",
+        //     oldSgc: "999962",
+        //     newSgc: "600094",
+        //     oldKrn: "",
+        //     newKrn: "",
+        //     manufactureName: "MOMAS",
+        //     class: "MD",
+        //     category: "Prepaid",
+        //     accountNumber: "001/654321",
+        //     tariff: "Residential",
+        //     assignedStatus: "Active",
+        //     status: "Unassigned",
+        //     customerId: undefined,
+        //     meterStage: "Unassigned"
+        // },
 
-        {
-            id: "MT-1005",
-            meterNumber: "64533729273",
-            meterType: "Electricity",
-            oldTariffIndex: "1",
-            newTariffIndex: "2",
-            simNo: "SIM-895623",
-            oldSgc: "999962",
-            newSgc: "600094",
-            oldKrn: "908765",
-            newKrn: "609865",
-            manufactureName: "MOMAS",
-            class: "MD",
-            category: "Prepaid",
-            accountNumber: "001/654321",
-            tariff: "Residential",
-            assignedStatus: "Active",
-            status: "Assigned",
-            customerId: undefined,
-            meterStage: "Unassigned"
-        },
-        {
-            id: "MT-1006",
-            meterNumber: "64533729273",
-            meterType: "Electricity",
-            oldTariffIndex: "1",
-            newTariffIndex: "2",
-            simNo: "SIM-895623",
-            oldSgc: "999962",
-            newSgc: "600094",
-            oldKrn: "986543",
-            newKrn: "900865",
-            manufactureName: "MOMAS",
-            class: "MD",
-            category: "Postpaid",
-            accountNumber: "001/654321",
-            tariff: "Residential",
-            assignedStatus: "Deactivated",
-            status: "Assigned",
-            customerId: undefined,
-            meterStage: "Unassigned"
-        },
-        {
-            id: "MT-1007",
-            meterNumber: "64533729273",
-            meterType: "Electricity",
-            oldTariffIndex: "1",
-            newTariffIndex: "2",
-            simNo: "SIM-895623",
-            oldSgc: "999962",
-            newSgc: "600094",
-            oldKrn: "908766",
-            newKrn: "908765",
-            manufactureName: "MOMAS",
-            class: "MD",
-            category: "Prepaid",
-            accountNumber: "001/654321",
-            tariff: "Residential",
-            assignedStatus: "Active",
-            status: "Assigned",
-            customerId: undefined,
-            meterStage: "Unassigned"
-        },
-        {
-            id: "MT-1008",
-            meterNumber: "64533729273",
-            meterType: "Electricity",
-            oldTariffIndex: "1",
-            newTariffIndex: "2",
-            simNo: "SIM-895623",
-            oldSgc: "999962",
-            newSgc: "600094",
-            oldKrn: "898790",
-            newKrn: "998866",
-            manufactureName: "MOMAS",
-            class: "MD",
-            category: "Prepaid",
-            accountNumber: "001/654321",
-            tariff: "Residential",
-            assignedStatus: "Active",
-            status: "Unassigned",
-            customerId: undefined,
-             meterStage:"Assigned"
-        },
-        {
-            id: "MT-1009",
-            meterNumber: "64533729273",
-            meterType: "Electricity",
-            oldTariffIndex: "1",
-            newTariffIndex: "2",
-            simNo: "SIM-895623",
-            oldSgc: "999962",
-            newSgc: "600094",
-            oldKrn: "909878",
-            newKrn: "998888",
-            manufactureName: "MOMAS",
-            class: "MD",
-            category: "Prepaid",
-            accountNumber: "001/654321",
-            tariff: "Residential",
-            assignedStatus: "Pending",
-            status: "Unassigned",
-            customerId: undefined,
-            meterStage: "Assigned",
+        // {
+        //     id: "MT-1005",
+        //     meterNumber: "64533729273",
+        //     meterType: "Electricity",
+        //     oldTariffIndex: "1",
+        //     newTariffIndex: "2",
+        //     simNo: "SIM-895623",
+        //     oldSgc: "999962",
+        //     newSgc: "600094",
+        //     oldKrn: "908765",
+        //     newKrn: "609865",
+        //     manufactureName: "MOMAS",
+        //     class: "MD",
+        //     category: "Prepaid",
+        //     accountNumber: "001/654321",
+        //     tariff: "Residential",
+        //     assignedStatus: "Active",
+        //     status: "Assigned",
+        //     customerId: undefined,
+        //     meterStage: "Unassigned"
+        // },
+        // {
+        //     id: "MT-1006",
+        //     meterNumber: "64533729273",
+        //     meterType: "Electricity",
+        //     oldTariffIndex: "1",
+        //     newTariffIndex: "2",
+        //     simNo: "SIM-895623",
+        //     oldSgc: "999962",
+        //     newSgc: "600094",
+        //     oldKrn: "986543",
+        //     newKrn: "900865",
+        //     manufactureName: "MOMAS",
+        //     class: "MD",
+        //     category: "Postpaid",
+        //     accountNumber: "001/654321",
+        //     tariff: "Residential",
+        //     assignedStatus: "Deactivated",
+        //     status: "Assigned",
+        //     customerId: undefined,
+        //     meterStage: "Unassigned"
+        // },
+        // {
+        //     id: "MT-1007",
+        //     meterNumber: "64533729273",
+        //     meterType: "Electricity",
+        //     oldTariffIndex: "1",
+        //     newTariffIndex: "2",
+        //     simNo: "SIM-895623",
+        //     oldSgc: "999962",
+        //     newSgc: "600094",
+        //     oldKrn: "908766",
+        //     newKrn: "908765",
+        //     manufactureName: "MOMAS",
+        //     class: "MD",
+        //     category: "Prepaid",
+        //     accountNumber: "001/654321",
+        //     tariff: "Residential",
+        //     assignedStatus: "Active",
+        //     status: "Assigned",
+        //     customerId: undefined,
+        //     meterStage: "Unassigned"
+        // },
+        // {
+        //     id: "MT-1008",
+        //     meterNumber: "64533729273",
+        //     meterType: "Electricity",
+        //     oldTariffIndex: "1",
+        //     newTariffIndex: "2",
+        //     simNo: "SIM-895623",
+        //     oldSgc: "999962",
+        //     newSgc: "600094",
+        //     oldKrn: "898790",
+        //     newKrn: "998866",
+        //     manufactureName: "MOMAS",
+        //     class: "MD",
+        //     category: "Prepaid",
+        //     accountNumber: "001/654321",
+        //     tariff: "Residential",
+        //     assignedStatus: "Active",
+        //     status: "Unassigned",
+        //     customerId: undefined,
+        //      meterStage:"Assigned"
+        // },
+        // {
+        //     id: "MT-1009",
+        //     meterNumber: "64533729273",
+        //     meterType: "Electricity",
+        //     oldTariffIndex: "1",
+        //     newTariffIndex: "2",
+        //     simNo: "SIM-895623",
+        //     oldSgc: "999962",
+        //     newSgc: "600094",
+        //     oldKrn: "909878",
+        //     newKrn: "998888",
+        //     manufactureName: "MOMAS",
+        //     class: "MD",
+        //     category: "Prepaid",
+        //     accountNumber: "001/654321",
+        //     tariff: "Residential",
+        //     assignedStatus: "Pending",
+        //     status: "Unassigned",
+        //     customerId: undefined,
+        //     meterStage: "Assigned",
 
-        },
-        {
-            id: "MT-1018",
-            meterNumber: "64533729273",
-            meterType: "Electricity",
-            oldTariffIndex: "1",
-            newTariffIndex: "2",
-            simNo: "SIM-895623",
-            oldSgc: "999962",
-            newSgc: "600094",
-            oldKrn: "898790",
-            newKrn: "998866",
-            manufactureName: "MOMAS",
-            class: "MD",
-            category: "Prepaid",
-            accountNumber: "001/654321",
-            tariff: "Residential",
-            assignedStatus: "Pending",
-            status: "Unassigned",
-            customerId: undefined,
-            meterStage: "Assigned"
-        },
-        {
-            id: "MT-1019",
-            meterNumber: "64533729273",
-            meterType: "Electricity",
-            oldTariffIndex: "1",
-            newTariffIndex: "2",
-            simNo: "SIM-895623",
-            oldSgc: "999962",
-            newSgc: "600094",
-            oldKrn: "909878",
-            newKrn: "998765",
-            manufactureName: "MOMAS",
-            class: "MD",
-            category: "Prepaid",
-            accountNumber: "001/654321",
-            tariff: "Residential",
-            assignedStatus: "Pending",
-            status: "Unassigned",
-            customerId: undefined,
-            meterStage: "Assigned"
-        },
+        // },
+        // {
+        //     id: "MT-1018",
+        //     meterNumber: "64533729273",
+        //     meterType: "Electricity",
+        //     oldTariffIndex: "1",
+        //     newTariffIndex: "2",
+        //     simNo: "SIM-895623",
+        //     oldSgc: "999962",
+        //     newSgc: "600094",
+        //     oldKrn: "898790",
+        //     newKrn: "998866",
+        //     manufactureName: "MOMAS",
+        //     class: "MD",
+        //     category: "Prepaid",
+        //     accountNumber: "001/654321",
+        //     tariff: "Residential",
+        //     assignedStatus: "Pending",
+        //     status: "Unassigned",
+        //     customerId: undefined,
+        //     meterStage: "Assigned"
+        // },
+        // {
+        //     id: "MT-1019",
+        //     meterNumber: "64533729273",
+        //     meterType: "Electricity",
+        //     oldTariffIndex: "1",
+        //     newTariffIndex: "2",
+        //     simNo: "SIM-895623",
+        //     oldSgc: "999962",
+        //     newSgc: "600094",
+        //     oldKrn: "909878",
+        //     newKrn: "998765",
+        //     manufactureName: "MOMAS",
+        //     class: "MD",
+        //     category: "Prepaid",
+        //     accountNumber: "001/654321",
+        //     tariff: "Residential",
+        //     assignedStatus: "Pending",
+        //     status: "Unassigned",
+        //     customerId: undefined,
+        //     meterStage: "Assigned"
+        // },
     ]);
 
     const [virtualData, setVirtualData] = useState<VirtualMeterData[]>([
@@ -1063,7 +1059,7 @@ export default function MeterManagementPage() {
     };
 
     const handleSortChange = () => {
-        const sortKey: keyof MeterData | keyof VirtualMeterData = sortConfig.key ?? (activeTab === "actual" ? "meterNumber" : "meterNumber");
+        const sortKey: keyof MeterInventoryItem | keyof VirtualMeterData = sortConfig.key ?? (activeTab === "actual" ? "meterNumber" : "meterNumber");
         const newDirection = sortConfig.direction === "asc" ? "desc" : "asc";
         setSortConfig({ key: sortKey, direction: newDirection });
         applyFiltersAndSort(searchTerm, sortKey, newDirection);
@@ -1071,22 +1067,20 @@ export default function MeterManagementPage() {
 
     useEffect(() => {
         applyFiltersAndSort(searchTerm, sortConfig.key, sortConfig.direction);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [data, virtualData, activeTab, activeFilters, searchTerm, sortConfig.key, sortConfig.direction]);
 
-    // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
     const applyFiltersAndSort = (
         term: string,
-        sortBy: keyof MeterData | keyof VirtualMeterData | null,
+        sortBy: keyof MeterInventoryItem | keyof VirtualMeterData | null,
         direction: "asc" | "desc"
     ) => {
-        let results: (MeterData | VirtualMeterData)[] = activeTab === "actual" ? data : virtualData;
+        let results: (MeterInventoryItem | VirtualMeterData)[] = activeTab === "actual" ? data : virtualData;
 
         // Apply filters
         if (Object.keys(activeFilters).length > 0) {
             results = results.filter((item) => {
                 if (activeTab === "actual") {
-                    const meter = item as MeterData;
+                    const meter = item as MeterInventoryItem;
 
                     // Status filter: Match if no status filters are selected or any selected status matches
                     const statusFilters = [
@@ -1105,7 +1099,7 @@ export default function MeterManagementPage() {
                     ];
                     const classMatch =
                         classFilters.every((f) => !f.value) ||
-                        classFilters.some((filter) => filter.value && meter.class === filter.class);
+                        classFilters.some((filter) => filter.value && meter.meterClass === filter.class);
 
                     return statusMatch && classMatch;
                 } else {
@@ -1130,9 +1124,9 @@ export default function MeterManagementPage() {
                 activeTab === "actual"
                     ? ([
                         item.meterNumber,
-                        (item as MeterData).assignedStatus ?? "",
+                        (item as MeterInventoryItem).assignedStatus ?? "",
                         item.status,
-                        (item as MeterData).class ?? "",
+                        (item as MeterInventoryItem).meterClass ?? "",
                     ] as string[]).some((value) => value.toLowerCase().includes(term.toLowerCase()))
                     : ([
                         item.meterNumber,
@@ -1151,10 +1145,10 @@ export default function MeterManagementPage() {
                 let bValue: string | undefined;
 
                 if (activeTab === "actual") {
-                    const meterA = a as MeterData;
-                    const meterB = b as MeterData;
-                    aValue = String(meterA[sortBy as keyof MeterData] ?? "");
-                    bValue = String(meterB[sortBy as keyof MeterData] ?? "");
+                    const meterA = a as MeterInventoryItem;
+                    const meterB = b as MeterInventoryItem;
+                    aValue = String(meterA[sortBy as keyof MeterInventoryItem] ?? "");
+                    bValue = String(meterB[sortBy as keyof MeterInventoryItem] ?? "");
                 } else {
                     const meterA = a as VirtualMeterData;
                     const meterB = b as VirtualMeterData;
@@ -1189,11 +1183,11 @@ export default function MeterManagementPage() {
         }
     };
 
-    const handleSaveMeter = (updatedMeter: MeterData | VirtualMeterData) => {
+    const handleSaveMeter = (updatedMeter: MeterInventoryItem | VirtualMeterData) => {
         if (editMeter) {
             if (activeTab === "actual" && "manufactureName" in updatedMeter) {
                 setData((prev) =>
-                    prev.map((meter) => (meter.id === updatedMeter.id ? updatedMeter as MeterData : meter))
+                    prev.map((meter) => (meter.id === updatedMeter.id ? updatedMeter as MeterInventoryItem : meter))
                 );
             } else if (activeTab === "virtual" && "customerId" in updatedMeter) {
                 setVirtualData((prev) =>
@@ -1203,14 +1197,14 @@ export default function MeterManagementPage() {
             setEditMeter(undefined);
         } else {
             if (activeTab === "actual" && "manufactureName" in updatedMeter) {
-                setData((prev) => [...prev, updatedMeter as MeterData]);
+                setData((prev) => [...prev, updatedMeter as MeterInventoryItem]);
             } else if (activeTab === "virtual" && "customerId" in updatedMeter) {
                 setVirtualData((prev) => [...prev, updatedMeter as VirtualMeterData]);
             }
         }
     };
 
-    const handleSaveMeterForActual = (meter: MeterData) => {
+    const handleSaveMeterForActual = (meter: MeterInventoryItem) => {
         handleSaveMeter(meter);
     };
 
@@ -1260,10 +1254,6 @@ export default function MeterManagementPage() {
     };
 
 
-
-
-
-
     const handleAssign = (data: {
         firstName: string;
         lastName: string;
@@ -1294,9 +1284,9 @@ export default function MeterManagementPage() {
     };
 
 
-    const handleBulkUpload = (newData: (MeterData | VirtualMeterData)[]) => {
+    const handleBulkUpload = (newData: (MeterInventoryItem | VirtualMeterData)[]) => {
         if (activeTab === "actual") {
-            setData((prev) => [...prev, ...(newData.filter((item) => "manufactureName" in item) as MeterData[])]);
+            setData((prev) => [...prev, ...(newData.filter((item) => "manufactureName" in item) as MeterInventoryItem[])]);
         } else {
             setVirtualData((prev) => [...prev, ...(newData.filter((item) => "customerId" in item) as VirtualMeterData[])]);
         }
@@ -1768,32 +1758,22 @@ export default function MeterManagementPage() {
                                                         </div>
                                                     </TableCell>
                                                     <TableCell className="px-4 py-3 text-sm text-gray-900">{item.meterNumber}</TableCell>
-                                                    <TableCell className="px-4 py-3 text-sm text-gray-900">{item.simNo}</TableCell>
+                                                    {/* <TableCell className="px-4 py-3 text-sm text-gray-900">{item.simNo}</TableCell>
                                                     <TableCell className="px-4 py-3 text-sm text-gray-900">{item.oldSgc}</TableCell>
                                                     <TableCell className="px-4 py-3 text-sm text-gray-900">{item.newSgc}</TableCell>
                                                     <TableCell className="px-4 py-3 text-sm text-gray-900">{item.manufactureName}</TableCell>
-                                                    <TableCell className="px-4 py-3 text-sm text-gray-900">{item.class}</TableCell>
+                                                    <TableCell className="px-4 py-3 text-sm text-gray-900">{item.class}</TableCell> */}
                                                     <TableCell className="px-4 py-3 text-sm text-gray-900">{item.category}</TableCell>
                                                     <TableCell className="px-4 py-3 text-center">
-                                                        <span className={cn("inline-block text-sm font-medium", getStatusStyle(item.meterStage))}>
+                                                        {/* <span className={cn("inline-block text-sm font-medium", getStatusStyle(item.meterStage))}>
                                                             {item.meterStage}
-                                                        </span>
+                                                        </span> */}
                                                     </TableCell>
-                                                    {/* <TableCell className="px-4 py-3 text-center">
-                                                        <span className={cn("inline-block text-sm font-medium", getStatusStyle(item.status))}>
-                                                            {item.status}
-                                                        </span>
-                                                    </TableCell> */}
-                                                    {/* <TableCell className="px-4 py-3 text-center">
-                                                        <span className={cn("inline-block text-sm font-medium", getStatusStyle(item.status))}>
-                                                            {item.status}
-                                                        </span>
-                                                    </TableCell> */}
-                                                    <TableCell className="px-4 py-3">
+                                                    {/* <TableCell className="px-4 py-3">
                                                         <span className={cn("inline-block text-sm font-medium", getStatusStyle(item.assignedStatus))}>
                                                             {item.assignedStatus}
                                                         </span>
-                                                    </TableCell>
+                                                    </TableCell> */}
                                                     <TableCell className="px-4 py-3 text-right">
                                                         <DropdownMenu>
                                                             <DropdownMenuTrigger asChild>
@@ -1806,7 +1786,7 @@ export default function MeterManagementPage() {
                                                                     className="flex items-center gap-2 cursor-pointer"
                                                                     onClick={(event) => {
                                                                         event.stopPropagation();
-                                                                        setViewMeter(item);
+                                                                        setViewMeter(item as MeterInventoryItem);
                                                                         setIsViewActualDetailsOpen(true); // Updated to use actual-specific state
                                                                     }}
                                                                 >
@@ -1939,7 +1919,7 @@ export default function MeterManagementPage() {
                                                             {item.accountNumber}
                                                         </TableCell>
                                                         <TableCell className="px-4 py-3 text-sm text-gray-900 break-words">
-                                                            {item.feeder}
+                                                            {/* {item.feeder} */}
                                                         </TableCell>
                                                         <TableCell className="px-4 py-3 text-sm text-gray-900 break-words">
                                                             {item.dss}
@@ -2220,7 +2200,7 @@ export default function MeterManagementPage() {
                             customerId: editMeter.customerId,
                             meterNumber: editMeter.meterNumber ?? "",
                             accountNumber: editMeter.accountNumber ?? "",
-                            feeder: editMeter.feeder ?? "",
+                            // feederLine: editMeter.feeder ?? "",
                             dss: editMeter.dss ?? "",
                             cin: editMeter.cin ?? "",
                             tariff: editMeter.tariff ?? "",
@@ -2250,7 +2230,7 @@ export default function MeterManagementPage() {
                 onSaveMeter={handleSaveMeterForActual}
                 editMeter={
                     activeTab === "actual" && editMeter && "manufactureName" in editMeter
-                        ? editMeter as MeterData
+                        ? editMeter as MeterInventoryItem
                         : undefined
                 }
             />
@@ -2306,7 +2286,7 @@ export default function MeterManagementPage() {
                 onProceed={handleProceedFromDeactivate}
             />
 
-            <BulkUploadDialog<MeterData>
+            <BulkUploadDialog<MeterInventoryItem >
                 isOpen={isBulkUploadDialogOpen}
                 onClose={() => setIsBulkUploadDialogOpen(false)}
                 onSave={handleBulkUpload}
@@ -2357,5 +2337,3 @@ export default function MeterManagementPage() {
         </div>
     );
 }
-
-
