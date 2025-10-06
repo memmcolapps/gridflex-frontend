@@ -59,8 +59,8 @@ const filterSections = [
   {
     title: "Meter Class",
     options: [
-      { label: "Single Phase", id: "singlePhase" },
-      { label: "Three Phase", id: "threePhase" },
+      { label: "Single-Phase", id: "singlePhase" },
+      { label: "Three-Phase", id: "threePhase" },
       { label: "MD", id: "md" },
     ],
   },
@@ -75,11 +75,11 @@ const filterSections = [
 
 const mapFiltersToApi = (uiFilters: Record<string, boolean>): Partial<MeterInventoryFilters> => {
   const apiFilters: Partial<MeterInventoryFilters> = {};
-  if (uiFilters.singlePhase) apiFilters.meterClass = "single-phase";
-  else if (uiFilters.threePhase) apiFilters.meterClass = "three-phase";
+  if (uiFilters.singlePhase) apiFilters.meterClass = "Single-phase";
+  else if (uiFilters.threePhase) apiFilters.meterClass = "Three-phase";
   else if (uiFilters.md) apiFilters.meterClass = "MD";
-  if (uiFilters.prepaid) apiFilters.category = "prepaid";
-  else if (uiFilters.postPaid) apiFilters.category = "postpaid";
+  if (uiFilters.prepaid) apiFilters.category = "Prepaid";
+  else if (uiFilters.postPaid) apiFilters.category = "Postpaid";
   return apiFilters;
 };
 

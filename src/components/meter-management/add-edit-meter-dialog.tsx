@@ -10,6 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import type { MeterInventoryItem } from "@/types/meter-inventory";
 import type { CreateMeterPayload } from "@/types/meter-inventory";
 import { useCreateMeter, useGetMeterManufactures } from "@/hooks/use-meter";
+import { toast } from "sonner";
 
 interface AddMeterDialogProps {
   isOpen: boolean;
@@ -137,6 +138,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
     if (!formData.newKrn) newErrors.newKrn = "New KRN is required";
     if (!formData.oldTariffIndex) newErrors.oldTariffIndex = "Old Tariff Index is required";
     if (!formData.newTariffIndex) newErrors.newTariffIndex = "New Tariff Index is required";
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -230,7 +232,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
     setErrors({});
   };
 
-  const saveMeter = () => {
+  const saveMeter = async () => {
     if (step === 2 && formData.meterClass === "MD" && !validateStep2()) return;
     if (step === 3 && !validateStep3()) return;
 
@@ -269,43 +271,52 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
           authentication: formData.authentication,
           password: formData.password,
         }
-        : undefined
+        : undefined,
     };
 
-    createMeter(payload);
-    onClose();
-    setStep(1);
-    // Use empty strings for reset, consistent with form structure
-    setFormData({
-      meterNumber: "",
-      simNumber: "",
-      meterCategory: "",
-      meterClass: "",
-      meterType: "",
-      meterManufacturer: "",
-      oldSgc: "",
-      newSgc: "",
-      oldKrn: "",
-      newKrn: "",
-      oldTariffIndex: 0,
-      newTariffIndex: 0,
-      smartStatus: false,
-      meterModel: "",
-      protocol: "",
-      authentication: "",
-      password: "",
-      ctRatioNum: "",
-      ctRatioDenom: "",
-      voltRatioNum: "",
-      voltRatioDenom: "",
-      multiplier: "",
-      meterRating: "",
-      initialReading: "",
-      dial: "",
-      longitude: "",
-      latitude: ""
-    });
-    setErrors({});
+    try {
+      await createMeter(payload); // Assuming createMeter is an async function that returns a promise
+      toast.success("Meter saved successfully!", {
+        duration: 3000, // Toast duration in milliseconds
+      });
+      onClose();
+      setStep(1);
+      setFormData({
+        meterNumber: "",
+        simNumber: "",
+        meterCategory: "",
+        meterClass: "",
+        meterType: "",
+        meterManufacturer: "",
+        oldSgc: "",
+        newSgc: "",
+        oldKrn: "",
+        newKrn: "",
+        oldTariffIndex: 0,
+        newTariffIndex: 0,
+        smartStatus: false,
+        meterModel: "",
+        protocol: "",
+        authentication: "",
+        password: "",
+        ctRatioNum: "",
+        ctRatioDenom: "",
+        voltRatioNum: "",
+        voltRatioDenom: "",
+        multiplier: "",
+        meterRating: "",
+        initialReading: "",
+        dial: "",
+        longitude: "",
+        latitude: "",
+      });
+      setErrors({});
+    } catch (error) {
+      toast.error("Failed to save meter", {
+        duration: 5000, // Longer duration for error messages
+      });
+      console.error("Save meter error:", error);
+    }
   };
   const { data: manufacturers, isLoading: isManufacturersLoading, error: manufacturersError } = useGetMeterManufactures();
   const dialogTitle = editMeter ? "Edit Meter" : "Add new meter";
