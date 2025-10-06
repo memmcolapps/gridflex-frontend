@@ -49,7 +49,7 @@ import {
 } from "@/components/ui/pagination";
 import { AddMeterDialog } from "@/components/meter-management/add-edit-meter-dialog";
 import { ViewMeterInfoDialog } from "@/components/meter-management/view-meter-info-dialog";
-import type { MeterData } from "@/types/meter";
+// import type { MeterData } from "@/types/meter";
 import type { MeterInventoryItem } from "@/types/meter-inventory";
 import { getStatusStyle } from "@/components/status-style";
 import { useMeterInventory } from "@/hooks/use-meter";
@@ -59,8 +59,8 @@ const filterSections = [
   {
     title: "Meter Class",
     options: [
-      { label: "Single Phase", id: "singlePhase" },
-      { label: "Three Phase", id: "threePhase" },
+      { label: "Single-Phase", id: "singlePhase" },
+      { label: "Three-Phase", id: "threePhase" },
       { label: "MD", id: "md" },
     ],
   },
@@ -75,11 +75,11 @@ const filterSections = [
 
 const mapFiltersToApi = (uiFilters: Record<string, boolean>): Partial<MeterInventoryFilters> => {
   const apiFilters: Partial<MeterInventoryFilters> = {};
-  if (uiFilters.singlePhase) apiFilters.meterClass = "single-phase";
-  else if (uiFilters.threePhase) apiFilters.meterClass = "three-phase";
+  if (uiFilters.singlePhase) apiFilters.meterClass = "Single-phase";
+  else if (uiFilters.threePhase) apiFilters.meterClass = "Three-phase";
   else if (uiFilters.md) apiFilters.meterClass = "MD";
-  if (uiFilters.prepaid) apiFilters.category = "prepaid";
-  else if (uiFilters.postPaid) apiFilters.category = "postpaid";
+  if (uiFilters.prepaid) apiFilters.category = "Prepaid";
+  else if (uiFilters.postPaid) apiFilters.category = "Postpaid";
   return apiFilters;
 };
 
@@ -104,7 +104,7 @@ export default function MeterInventoryPage() {
   const [viewInfoDialogOpen, setViewInfoDialogOpen] = useState(false);
   const [apiFilters, setApiFilters] = useState<Partial<MeterInventoryFilters>>({});
   const [sortConfig, setSortConfig] = useState<{
-    key: keyof MeterData | null;
+    key: keyof MeterInventoryItem | null;
     direction: "asc" | "desc";
   }>({ key: "dateAdded", direction: "desc" });
 
@@ -122,26 +122,26 @@ export default function MeterInventoryPage() {
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedMeters(meters.map((meter) => meter.id));
+      setSelectedMeters(meters.map((meter) => meter.meterNumber));
     } else {
       setSelectedMeters([]);
     }
   };
 
-  const handleSelectItem = (checked: boolean, id: string) => {
+  const handleSelectItem = (checked: boolean, meterNumber: string) => {
     if (checked) {
-      setSelectedMeters([...selectedMeters, id]);
+      setSelectedMeters([...selectedMeters, meterNumber]);
     } else {
-      setSelectedMeters(selectedMeters.filter((meterId) => meterId !== id));
+      setSelectedMeters(selectedMeters.filter((meterId) => meterId !== meterNumber));
     }
   };
 
-  const handleSaveMeter = (meter: MeterData) => {
+  const handleSaveMeter = (meter: MeterInventoryItem) => {
     setIsAddMeterDialogOpen(false);
     setSelectedMeter(null);
   };
 
-  const handleSaveBulkAllocate = (data: MeterData[]) => {
+  const handleSaveBulkAllocate = (data: MeterInventoryItem[]) => {
     console.log("Saved data:", data);
   };
 
@@ -176,7 +176,7 @@ export default function MeterInventoryPage() {
     setSelectedMeter(null);
   };
 
-  const handleBulkUpload = (_newData: MeterData[]) => {
+  const handleBulkUpload = (_newData: MeterInventoryItem[]) => {
     refetch();
   };
 
@@ -191,7 +191,7 @@ export default function MeterInventoryPage() {
   };
 
   const handleSortChange = () => {
-    const sortKey: keyof MeterData = sortConfig.key ?? "meterNumber";
+    const sortKey: keyof MeterInventoryItem = sortConfig.key ?? "meterNumber";
     const newDirection = sortConfig.direction === "asc" ? "desc" : "asc";
     setSortConfig({ key: sortKey, direction: newDirection });
   };
@@ -438,14 +438,14 @@ export default function MeterInventoryPage() {
             )}
             {!isLoading && sortedMeters.length > 0 ? (
               sortedMeters.map((meter, index) => (
-                <TableRow key={meter.id}>
+                <TableRow key={meter.meterNumber}>
                   <TableCell className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       <Checkbox
                         className="border-gray-500"
-                        checked={selectedMeters.includes(meter.id)}
+                        checked={selectedMeters.includes(meter.meterNumber)}
                         onCheckedChange={(checked) =>
-                          handleSelectItem(checked as boolean, meter.id)
+                          handleSelectItem(checked as boolean, meter.meterNumber)
                         }
                         aria-label={`Select meter ${meter.meterNumber}`}
                       />

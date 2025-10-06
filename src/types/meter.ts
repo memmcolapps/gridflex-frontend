@@ -160,9 +160,7 @@ export interface SmartMeterInfo {
 }
 
 export interface CreateMeterPayload {
-  id: string;
   meterNumber: string;
-  // meterManufacturer?: string;
   meterClass: string;
   meterType: string;
   meterCategory: string;
@@ -187,7 +185,7 @@ export interface CreateMeterPayload {
     longitude?: string;
     latitude?: string;
   };
-  meterModel?: string;
+  // meterModel?: string;
   protocol?: string;
   authentication?: string;
   password?: string;

@@ -7,9 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import type { MeterInventoryItem} from "@/types/meter-inventory";
+import type { MeterInventoryItem } from "@/types/meter-inventory";
 import type { CreateMeterPayload } from "@/types/meter-inventory";
-import { useCreateMeter, useGetMeterManufactures} from "@/hooks/use-meter";
+import { useCreateMeter, useGetMeterManufactures } from "@/hooks/use-meter";
+import { toast } from "sonner";
 
 interface AddMeterDialogProps {
   isOpen: boolean;
@@ -21,6 +22,7 @@ interface AddMeterDialogProps {
 export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddMeterDialogProps) {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
+
     meterNumber: "",
     simNumber: "",
     meterCategory: "",
@@ -31,8 +33,8 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
     newSgc: "",
     oldKrn: "",
     newKrn: "",
-    oldTariffIndex: "",
-    newTariffIndex: "",
+    oldTariffIndex: 0,
+    newTariffIndex: 0,
     smartStatus: false,
     meterModel: "",
     protocol: "",
@@ -68,9 +70,9 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
         newSgc: editMeter.newSgc ?? "",
         oldKrn: editMeter.oldKrn ?? "",
         newKrn: editMeter.newKrn ?? "",
-        oldTariffIndex: editMeter.oldTariffIndex !== undefined && editMeter.oldTariffIndex !== null ? String(editMeter.oldTariffIndex) : "",
-        newTariffIndex: editMeter.newTariffIndex !== undefined && editMeter.newTariffIndex !== null ? String(editMeter.newTariffIndex) : "",
-        smartStatus: !!editMeter.smartStatus,
+        oldTariffIndex: editMeter.oldTariffIndex ?? 0,
+        newTariffIndex: editMeter.newTariffIndex ?? 0,
+        smartStatus: editMeter.smartStatus ?? "false",
         meterModel: editMeter.smartMeterInfo?.meterModel ?? "",
         protocol: editMeter.smartMeterInfo?.protocol ?? "",
         authentication: editMeter.smartMeterInfo?.authentication ?? "",
@@ -100,8 +102,8 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
         newSgc: "",
         oldKrn: "",
         newKrn: "",
-        oldTariffIndex: "",
-        newTariffIndex: "",
+        oldTariffIndex: 0,
+        newTariffIndex: 0,
         smartStatus: false,
         meterModel: "",
         protocol: "",
@@ -136,6 +138,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
     if (!formData.newKrn) newErrors.newKrn = "New KRN is required";
     if (!formData.oldTariffIndex) newErrors.oldTariffIndex = "Old Tariff Index is required";
     if (!formData.newTariffIndex) newErrors.newTariffIndex = "New Tariff Index is required";
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -229,12 +232,11 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
     setErrors({});
   };
 
-  const saveMeter = () => {
+  const saveMeter = async () => {
     if (step === 2 && formData.meterClass === "MD" && !validateStep2()) return;
     if (step === 3 && !validateStep3()) return;
 
     const payload: CreateMeterPayload = {
-      id: editMeter?.id ?? uuidv4(),
       meterNumber: formData.meterNumber,
       simNumber: formData.simNumber,
       meterCategory: formData.meterCategory,
@@ -269,43 +271,52 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
           authentication: formData.authentication,
           password: formData.password,
         }
-        : undefined
+        : undefined,
     };
 
-    createMeter(payload);
-    onClose();
-    setStep(1);
-    // Use empty strings for reset, consistent with form structure
-    setFormData({
-      meterNumber: "",
-      simNumber: "", 
-      meterCategory: "",
-      meterClass: "",
-      meterType: "",
-      meterManufacturer: "",
-      oldSgc: "",
-      newSgc: "",
-      oldKrn: "",
-      newKrn: "",
-      oldTariffIndex: "",
-      newTariffIndex: "",
-      smartStatus: false,
-      meterModel: "",
-      protocol: "",
-      authentication: "",
-      password: "",
-      ctRatioNum: "",
-      ctRatioDenom: "",
-      voltRatioNum: "",
-      voltRatioDenom: "",
-      multiplier: "",
-      meterRating: "",
-      initialReading: "",
-      dial: "",
-      longitude: "",
-      latitude: ""
-    });
-    setErrors({});
+    try {
+      await createMeter(payload); // Assuming createMeter is an async function that returns a promise
+      toast.success("Meter saved successfully!", {
+        duration: 3000, // Toast duration in milliseconds
+      });
+      onClose();
+      setStep(1);
+      setFormData({
+        meterNumber: "",
+        simNumber: "",
+        meterCategory: "",
+        meterClass: "",
+        meterType: "",
+        meterManufacturer: "",
+        oldSgc: "",
+        newSgc: "",
+        oldKrn: "",
+        newKrn: "",
+        oldTariffIndex: 0,
+        newTariffIndex: 0,
+        smartStatus: false,
+        meterModel: "",
+        protocol: "",
+        authentication: "",
+        password: "",
+        ctRatioNum: "",
+        ctRatioDenom: "",
+        voltRatioNum: "",
+        voltRatioDenom: "",
+        multiplier: "",
+        meterRating: "",
+        initialReading: "",
+        dial: "",
+        longitude: "",
+        latitude: "",
+      });
+      setErrors({});
+    } catch (error) {
+      toast.error("Failed to save meter", {
+        duration: 5000, // Longer duration for error messages
+      });
+      console.error("Save meter error:", error);
+    }
   };
   const { data: manufacturers, isLoading: isManufacturersLoading, error: manufacturersError } = useGetMeterManufactures();
   const dialogTitle = editMeter ? "Edit Meter" : "Add new meter";
@@ -424,8 +435,8 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="MD">MD</SelectItem>
-                    <SelectItem value="Single Phase">Single Phase</SelectItem>
-                    <SelectItem value="Three Phase">Three Phase</SelectItem>
+                    <SelectItem value="Single-Phase">Single-Phase</SelectItem>
+                    <SelectItem value="Three-Phase">Three-Phase</SelectItem>
                   </SelectContent>
                 </Select>
                 {errors.meterClass && <p className="text-xs text-red-500 mt-1">{errors.meterClass}</p>}
@@ -448,12 +459,12 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                   <SelectContent>
                     {manufacturers && manufacturers.length > 0 ? (
                       manufacturers.map((manufacturer) => (
-                        <SelectItem key={manufacturer.id} value={manufacturer.name || 'unknown'}>  
+                        <SelectItem key={manufacturer.id} value={manufacturer.id || 'unknown'}>
                           {manufacturer.name}
                         </SelectItem>
                       ))
                     ) : (
-                      <SelectItem value="no-manufacturers-available" disabled> 
+                      <SelectItem value="no-manufacturers-available" disabled>
                         No manufacturers available
                       </SelectItem>
                     )}
@@ -863,9 +874,6 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                 }
                 className="text-sm font-medium bg-[#161CCA] text-white hover:bg-[#1e2abf]"
               >
-                {/* {!editMeter && (formData.meterClass === "Single Phase" || formData.meterClass === "Three Phase") && !formData.smartMeter
-                  ? "Add Meter"
-                  : "Next"} */}
                 {editMeter || formData.meterClass === "MD" || formData.smartStatus ? "Next" : "Add Meter"}
               </Button>
             </>

@@ -3,13 +3,13 @@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertTriangle } from "lucide-react";
-import type { MeterData } from "@/types/meter";
+import type { MeterInventoryItem } from "@/types/meter-inventory";
 import type { VirtualMeterData } from "@/types/meter";
 
 interface ConfirmationModalDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  selectedCustomer: MeterData | VirtualMeterData | null;
+  selectedCustomer:  MeterInventoryItem| VirtualMeterData | null;
   onConfirm: () => void;
   onCancel: () => void;
 }

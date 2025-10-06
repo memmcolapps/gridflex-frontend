@@ -3,12 +3,12 @@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertTriangle } from "lucide-react";
-import type { MeterData } from "@/types/meter";
+import type { MeterInventoryItem } from "@/types/meter-inventory";
 
 interface DetachConfirmationDialogProps {
     isOpen: boolean;
     onOpenChange: (open: boolean) => void;
-    customerToDetach: MeterData | null;
+    customerToDetach: MeterInventoryItem | null;
     onConfirm: () => void;
     onCancel: () => void;
 }

@@ -50,7 +50,9 @@ export function ViewMeterInfoDialog({ isOpen, onClose, meter }: ViewMeterInfoDia
                         </div>
                         <div className="grid grid-cols-[150px_1fr] items-center gap-16">
                             <span className="font-medium text-gray-700">Smart Meter:</span>
-                            <span className="text-gray-900 font-bold">{meter.smartStatus ?? "N/A"}</span>
+                            <span className="text-gray-900 font-bold">
+                                {meter.smartStatus ? "Smart" : "Not Smart"}
+                            </span>
                         </div>
                         <div className="grid grid-cols-[150px_1fr] items-center gap-16">
                             <span className="font-medium text-gray-700">Old SGC:</span>
@@ -76,11 +78,11 @@ export function ViewMeterInfoDialog({ isOpen, onClose, meter }: ViewMeterInfoDia
                             <span className="font-medium text-gray-700">New Tariff Index:</span>
                             <span className="text-gray-900 font-bold">{meter.newTariffIndex}</span>
                         </div>
-                    
+
                     </div>
                 )}
                 <DialogFooter>
-                 
+
                 </DialogFooter>
             </DialogContent>
         </Dialog>
