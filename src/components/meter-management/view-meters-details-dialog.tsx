@@ -31,7 +31,7 @@ interface ViewMeterDetailsDialogProps {
 export function ViewMeterDetailsDialog({ isOpen, onClose, meter }: ViewMeterDetailsDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="h-fit overflow-y-auto bg-white w-[500px] rounded-lg">
+      <DialogContent className="h-fit overflow-y-auto w-[500px] rounded-lg">
         <DialogHeader>
           <DialogTitle>View Meter Details</DialogTitle>
           <DialogDescription />

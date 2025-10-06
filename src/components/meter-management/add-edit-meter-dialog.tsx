@@ -874,9 +874,6 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                 }
                 className="text-sm font-medium bg-[#161CCA] text-white hover:bg-[#1e2abf]"
               >
-                {/* {!editMeter && (formData.meterClass === "Single Phase" || formData.meterClass === "Three Phase") && !formData.smartMeter
-                  ? "Add Meter"
-                  : "Next"} */}
                 {editMeter || formData.meterClass === "MD" || formData.smartStatus ? "Next" : "Add Meter"}
               </Button>
             </>
