@@ -8,15 +8,16 @@ import {
 } from "@/types/meters-manufacturers";
 
 import {
-  type CreateMeterPayload,
   type GetMeterInventoryResponse,
   type MeterInventoryFilters,
   type MeterInventoryResponse,
-  type UpdateMeterPayload,
-  type ApiResponse as MeterApiResponse,
 } from "@/types/meter-inventory";
 
-
+import {
+  type CreateMeterPayload,
+  type UpdateMeterPayload,
+  type MeterApiResponse,
+} from "@/types/meter";
 
 const API_URL = env.NEXT_PUBLIC_BASE_URL;
 const CUSTOM_HEADER = env.NEXT_PUBLIC_CUSTOM_HEADER;
@@ -104,6 +105,7 @@ export async function updateManufacturer(
     const response = await axios.put<ApiResponse>(
       `${API_URL}/manufacturer/service/update`,
       manufacturer,
+      
       {
         headers: {
           "Content-Type": "application/json",
@@ -131,42 +133,45 @@ export async function updateManufacturer(
 }
 
 export async function fetchMeterInventory(
-  filters?: MeterInventoryFilters
+  filters?: MeterInventoryFilters,
 ): Promise<
-  | {
-      success: true;
-      data: MeterInventoryResponse;
-    }
+  | { success: true; data: MeterInventoryResponse }
   | { success: false; error: string }
 > {
   try {
-    // ✅ Handle the default value inside the function
     const queryFilters = filters ?? {};
-    
     const token = localStorage.getItem("auth_token");
 
     // Build query parameters
     const params = new URLSearchParams();
-    if (queryFilters.page !== undefined) params.append("page", queryFilters.page.toString());
-    if (queryFilters.size !== undefined) params.append("size", queryFilters.size.toString());
-    if (queryFilters.meterNumber) params.append("meterNumber", queryFilters.meterNumber);
+    if (queryFilters.page)
+      params.append("page", queryFilters.page.toString());
+    if (queryFilters.size)
+      params.append("size", queryFilters.size.toString());
+    if (queryFilters.meterNumber)
+      params.append("meterNumber", queryFilters.meterNumber);
     if (queryFilters.simNo) params.append("simNo", queryFilters.simNo);
-    if (queryFilters.manufacturer) params.append("manufacturer", queryFilters.manufacturer);
-    if (queryFilters.meterClass) params.append("meterClass", queryFilters.meterClass);
+    if (queryFilters.manufacturer)
+      params.append("manufacturer", queryFilters.manufacturer);
+    if (queryFilters.meterClass)
+      params.append("meterClass", queryFilters.meterClass);
     if (queryFilters.category) params.append("category", queryFilters.category);
-    if (queryFilters.approvedStatus) params.append("approvedStatus", queryFilters.approvedStatus);
+    if (queryFilters.approvedStatus)
+      params.append("approvedStatus", queryFilters.approvedStatus);
     if (queryFilters.status) params.append("status", queryFilters.status);
-    if (queryFilters.createdAt) params.append("createdAt", queryFilters.createdAt);
+    if (queryFilters.createdAt)
+      params.append("createdAt", queryFilters.createdAt);
 
     const response = await axios.get<GetMeterInventoryResponse>(
-      `${API_URL}/meter/service/all-meters?${params.toString()}`,
+      `${API_URL}/meter/service/all`,
       {
+        params,
         headers: {
           "Content-Type": "application/json",
           custom: CUSTOM_HEADER,
           Authorization: `Bearer ${token}`,
         },
-      }
+      },
     );
 
     if (response.data.responsecode !== "000") {
@@ -175,10 +180,9 @@ export async function fetchMeterInventory(
         error: response.data.responsedesc || "Failed to fetch meter inventory",
       };
     }
-
     return {
       success: true,
-      data: response.data.responsedata,
+      data: response.data.responsedata, // { totalData, data, size, totalPages, page }
     };
   } catch (error) {
     return {
@@ -189,7 +193,7 @@ export async function fetchMeterInventory(
 }
 
 export async function createMeter(
-  meter: CreateMeterPayload
+  meter: CreateMeterPayload,
 ): Promise<{ success: true } | { success: false; error: string }> {
   try {
     const token = localStorage.getItem("auth_token");
@@ -203,7 +207,7 @@ export async function createMeter(
           custom: CUSTOM_HEADER,
           Authorization: `Bearer ${token}`,
         },
-      }
+      },
     );
 
     if (response.data.responsecode !== "000") {
@@ -225,7 +229,7 @@ export async function createMeter(
 }
 
 export async function updateMeter(
-  meter: UpdateMeterPayload
+  meter: UpdateMeterPayload,
 ): Promise<{ success: true } | { success: false; error: string }> {
   try {
     const token = localStorage.getItem("auth_token");
@@ -239,7 +243,7 @@ export async function updateMeter(
           custom: CUSTOM_HEADER,
           Authorization: `Bearer ${token}`,
         },
-      }
+      },
     );
 
     if (response.data.responsecode !== "000") {

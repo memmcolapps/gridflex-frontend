@@ -74,7 +74,7 @@ export const useUpdateManufacturer = () => {
 
 // Meter inventory hooks
 export const useMeterInventory = (filters?: MeterInventoryFilters) => {
-  const { data, error, isLoading, refetch } = useQuery({
+  const { data, error, isLoading, refetch,isError } = useQuery({
     queryKey: ["meter-inventory", filters], // ✅ Clear separation
     queryFn: () => fetchMeterInventory(filters),
     placeholderData: (previousData) => previousData,
@@ -88,6 +88,7 @@ export const useMeterInventory = (filters?: MeterInventoryFilters) => {
     currentPage: data?.success ? data.data.page : 0,
     currentSize: data?.success ? data.data.size : 0,
     error,
+    isError,
     isLoading,
     refetch,
   };

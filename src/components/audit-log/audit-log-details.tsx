@@ -4,7 +4,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { AuditLog } from "@/service/audit-log-service";
+import type { AuditLog } from "@/service/audit-log-service";
 
 interface AuditLogDetailsDialogProps {
   open: boolean;
