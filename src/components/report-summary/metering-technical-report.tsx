@@ -100,7 +100,7 @@ export function MeteringTechnicalReport() {
                     {cards.map((card, index) => (
                         <Card
                             key={index}
-                            className="px-10 py-12 border border-gray-200 rounded-lg cursor-pointer flex-shrink-0 snap-start"
+                            className="w-90 px-6 shadow-none py-12 border border-gray-200 rounded-lg cursor-pointer flex-shrink-0 snap-start"
                         >
                             <div className="flex flex-row gap-2 items-center text-gray-700 font-semibold text-2xl">
                                 <card.icon size={20} />
