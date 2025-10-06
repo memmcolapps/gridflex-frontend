@@ -412,7 +412,7 @@ export default function MeterManagementPage() {
         const customer = meterData.find((item) => item.customerId === customerId);
         if (customer && customer.customerId) {
             setSelectedCustomer({
-                id: customer.id ?? "",
+                // id: customer.id ?? "",
                 customerId: customer.customerId, // Ensure customerId is a string
                 meterNumber: "",
                 cin: "",
@@ -1166,11 +1166,11 @@ export default function MeterManagementPage() {
         setProcessedData(results);
     };
 
-    const toggleSelection = (id: string) => {
+    const toggleSelection = (customerId: string) => {
         setSelectedTariffs(
-            selectedTariffs.includes(id)
-                ? selectedTariffs.filter((selectedId) => selectedId !== id)
-                : [...selectedTariffs, id]
+            selectedTariffs.includes(customerId)
+                ? selectedTariffs.filter((selectedId) => selectedId !== customerId)
+                : [...selectedTariffs, customerId]
         );
     };
 
@@ -1179,7 +1179,7 @@ export default function MeterManagementPage() {
         if (selectedTariffs.length === currentData.length) {
             setSelectedTariffs([]);
         } else {
-            setSelectedTariffs(currentData.map((item) => item.id));
+            setSelectedTariffs(currentData.map((item) => item.customerId || item.customerId) as string[]);
         }
     };
 
@@ -1187,11 +1187,11 @@ export default function MeterManagementPage() {
         if (editMeter) {
             if (activeTab === "actual" && "manufactureName" in updatedMeter) {
                 setData((prev) =>
-                    prev.map((meter) => (meter.id === updatedMeter.id ? updatedMeter as MeterInventoryItem : meter))
+                    prev.map((meter) => (meter.customerId === updatedMeter.customerId ? updatedMeter as MeterInventoryItem : meter))
                 );
             } else if (activeTab === "virtual" && "customerId" in updatedMeter) {
                 setVirtualData((prev) =>
-                    prev.map((meter) => (meter.id === updatedMeter.id ? updatedMeter as VirtualMeterData : meter))
+                    prev.map((meter) => (meter.id === updatedMeter.customerId ? updatedMeter as VirtualMeterData : meter))
                 );
             }
             setEditMeter(undefined);
@@ -1214,7 +1214,7 @@ export default function MeterManagementPage() {
             if (activeTab === "actual" && "manufactureName" in selectedMeter) {
                 setData((prev) =>
                     prev.map((meter) =>
-                        meter.id === selectedMeter.id
+                        meter.customerId === selectedMeter.customerId
                             ? { ...meter, assignedStatus: "Active", reason: undefined }
                             : meter
                     )
@@ -1222,7 +1222,7 @@ export default function MeterManagementPage() {
             } else if (activeTab === "virtual" && "customerId" in selectedMeter) {
                 setVirtualData((prev) =>
                     prev.map((meter) =>
-                        meter.id === selectedMeter.id ? { ...meter, status: "Assigned", reason: undefined } : meter
+                        meter.id === selectedMeter.customerId ? { ...meter, status: "Assigned", reason: undefined } : meter
                     )
                 );
             }
@@ -1236,7 +1236,7 @@ export default function MeterManagementPage() {
             if (activeTab === "actual" && "manufactureName" in selectedMeter) {
                 setData((prev) =>
                     prev.map((meter) =>
-                        meter.id === selectedMeter.id
+                        meter.customerId === selectedMeter.customerId
                             ? { ...meter, assignedStatus: "Deactivated", reason }
                             : meter
                     )
@@ -1244,7 +1244,7 @@ export default function MeterManagementPage() {
             } else if (activeTab === "virtual" && "customerId" in selectedMeter) {
                 setVirtualData((prev) =>
                     prev.map((meter) =>
-                        meter.id === selectedMeter.id ? { ...meter, status: "Deactivated", reason } : meter
+                        meter.id === selectedMeter.customerId ? { ...meter, status: "Deactivated", reason } : meter
                     )
                 );
             }
@@ -1270,13 +1270,13 @@ export default function MeterManagementPage() {
             if (activeTab === "actual" && "manufactureName" in selectedMeter) {
                 setData((prev) =>
                     prev.map((meter) =>
-                        meter.id === selectedMeter.id ? { ...meter, status: "Assigned", ...data } : meter
+                        meter.customerId === selectedMeter.customerId ? { ...meter, status: "Assigned", ...data } : meter
                     )
                 );
             } else if (activeTab === "virtual" && "customerId" in selectedMeter) {
                 setVirtualData((prev) =>
                     prev.map((meter) =>
-                        meter.id === selectedMeter.id ? { ...meter, status: "Assigned", ...data } : meter
+                        meter.id === selectedMeter.customerId ? { ...meter, status: "Assigned", ...data } : meter
                     )
                 );
             }
@@ -1320,7 +1320,7 @@ export default function MeterManagementPage() {
                 fixedEnergy: virtualMeter.fixedEnergy ?? "",
             };
             setVirtualData((prev) =>
-                prev.map((meter) => (meter.id === editMeter.id ? updatedMeter : meter))
+                prev.map((meter) => (meter.id === editMeter.customerId ? updatedMeter : meter))
             );
             setIsEditVirtualMeterOpen(false);
             setEditMeter(undefined);
@@ -1452,7 +1452,7 @@ export default function MeterManagementPage() {
             // Optionally update the physical meter status in data
             setData((prev) =>
                 prev.map((meter) =>
-                    meter.id === selectedPhysicalMeter ? { ...meter, status: "Deactivated" } : meter
+                    meter.customerId === selectedPhysicalMeter ? { ...meter, status: "Deactivated" } : meter
                 )
             );
         }
@@ -1708,7 +1708,7 @@ export default function MeterManagementPage() {
                                                     checked={selectedTariffs.length === data.length && data.length > 0}
                                                     onCheckedChange={(checked) => {
                                                         if (checked) {
-                                                            setSelectedTariffs(data.map(item => item.id));
+                                                            setSelectedTariffs(data.map(item => item.customerId) as string[]);
                                                         } else {
                                                             setSelectedTariffs([]);
                                                         }
@@ -1740,7 +1740,7 @@ export default function MeterManagementPage() {
                                         paginatedData.map((item, index) =>
                                             "manufactureName" in item ? (
                                                 <TableRow
-                                                    key={item.id}
+                                                    key={item.customerId}
                                                     className="hover:bg-gray-50 cursor-pointer"
                                                 // onClick={(event) => handleRowClick(item, event)}
                                                 >
@@ -1748,9 +1748,9 @@ export default function MeterManagementPage() {
                                                         <div className="flex items-center gap-2">
                                                             <Checkbox
                                                                 className="h-4 w-4 border-gray-500"
-                                                                id={`select-${item.id}`}
-                                                                checked={selectedTariffs.includes(item.id)}
-                                                                onCheckedChange={() => toggleSelection(item.id)}
+                                                                id={`select-${item.customerId}`}
+                                                                checked={selectedTariffs.includes(item.meterNumber)}
+                                                                onCheckedChange={() => toggleSelection(item.meterNumber)}
                                                             />
                                                             <span className="text-sm text-gray-900">
                                                                 {index + 1 + (currentPage - 1) * rowsPerPage}
@@ -1895,14 +1895,14 @@ export default function MeterManagementPage() {
                                         ) : (
                                             paginatedData.map((item, index) =>
                                                 "customerId" in item ? (
-                                                    <TableRow key={item.id} className="hover:bg-gray-50">
+                                                    <TableRow key={item.customerId} className="hover:bg-gray-50">
                                                         <TableCell className="px-4 py-3">
                                                             <div className="flex items-center gap-2">
                                                                 <Checkbox
                                                                     className="h-4 w-4 border-gray-500"
-                                                                    id={`select-${item.id}`}
-                                                                    checked={selectedTariffs.includes(item.id)}
-                                                                    onCheckedChange={() => toggleSelection(item.id)}
+                                                                    id={`select-${item.customerId}`}
+                                                                    checked={selectedTariffs.includes(item.meterNumber)}
+                                                                    onCheckedChange={() => toggleSelection(item.meterNumber)}
                                                                 />
                                                                 <span className="text-sm text-gray-900">
                                                                     {index + 1 + (currentPage - 1) * rowsPerPage}
@@ -2196,7 +2196,7 @@ export default function MeterManagementPage() {
                 meter={
                     editMeter && "customerId" in editMeter && typeof editMeter.customerId === "string"
                         ? {
-                            id: editMeter.id,
+                            // id: editMeter.id,
                             customerId: editMeter.customerId,
                             meterNumber: editMeter.meterNumber ?? "",
                             accountNumber: editMeter.accountNumber ?? "",

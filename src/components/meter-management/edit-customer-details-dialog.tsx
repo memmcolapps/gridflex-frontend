@@ -6,11 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
-import type { MeterData } from "@/types/meter";
+import type { MeterInventoryItem } from "@/types/meter-inventory";
 interface EditCustomerDetailsDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  editCustomer: MeterData | null;
+  editCustomer: MeterInventoryItem | null;
   meterNumber: string;
   setMeterNumber: (value: string) => void;
   cin: string;

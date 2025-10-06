@@ -137,7 +137,6 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
     if (!formData.newKrn) newErrors.newKrn = "New KRN is required";
     if (!formData.oldTariffIndex) newErrors.oldTariffIndex = "Old Tariff Index is required";
     if (!formData.newTariffIndex) newErrors.newTariffIndex = "New Tariff Index is required";
-    formData.smartStatus;
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };

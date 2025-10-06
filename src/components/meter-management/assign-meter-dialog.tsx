@@ -5,11 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { VirtualMeterData } from "@/types/meter";
 import type{ MeterData } from "@/types/meter";
+import { MeterInventoryItem } from "@/types/meter-inventory";
 
 interface AssignMeterDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  selectedCustomer: MeterData | VirtualMeterData | null;
+  selectedCustomer: MeterInventoryItem | VirtualMeterData | null;
   meterNumber: string;
   setMeterNumber: (value: string) => void;
   cin: string;
@@ -74,7 +75,7 @@ export function AssignMeterDialog({
   // progress,
 }: AssignMeterDialogProps) {
   // Type guard to check if selectedCustomer is MeterData
-  const isMeterData = (customer: MeterData | VirtualMeterData): customer is MeterData => {
+  const isMeterData = (customer: MeterInventoryItem | VirtualMeterData): customer is MeterInventoryItem  => {
     return "approvedStatus" in customer && "class" in customer;
   };
 

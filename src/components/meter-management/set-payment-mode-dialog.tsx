@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
-import type {MeterData}  from "@/types/meter";
+import type {MeterInventoryItem}  from "@/types/meter-inventory";
 
 interface SetPaymentModeDialogProps {
   isOpen: boolean;
@@ -20,7 +20,7 @@ interface SetPaymentModeDialogProps {
   setCreditPaymentPlan: (value: string) => void;
   progress: number;
   isPaymentFormComplete: boolean;
-  editCustomer: MeterData | null;
+  editCustomer: MeterInventoryItem | null;
   onProceed: () => void;
 }
 
