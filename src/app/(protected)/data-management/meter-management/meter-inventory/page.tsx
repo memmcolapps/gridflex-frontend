@@ -241,7 +241,7 @@ export default function MeterInventoryPage() {
       <div className="mb-4 flex items-center justify-between">
         <ContentHeader
           title="Meter Inventory"
-          description="Add Meters and Allocate meter to respective"
+          description="Add Meters and Allocate meter to respective organization"
         />
         <div className="mb-4 flex items-center justify-between">
           <div className="flex gap-2">

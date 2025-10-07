@@ -24,15 +24,17 @@ export interface FetchParams {
   searchTerm?: string;
   sortBy?: string | null;
   sortDirection?: "asc" | "desc" | null;
-  type?: string; // Filter by approval status
-  meterStage?: string; // Filter by meter approval status
+  type?: string; 
+  meterStage?: string; 
 }
 
 export interface ApproveRejectPayload {
   id?: string;
   liabilityCauseId?: string;
+  tId?: string;
   approveStatus: "approve" | "reject";
   reason?: string;
+  meterId?: string;
 }
 
 interface QueryParams {
@@ -47,8 +49,10 @@ interface QueryParams {
   bandId?: string;
   tId?: string;
   meterVersionId?: string;
+  meterId?: string;
   approveStatus?: "approve" | "reject";
-  [key: string]: string | undefined; // Allow additional string params
+  approveState?: "approve" | "reject";
+  [key: string]: string | undefined;
 }
 
 // Utility function to construct API URLs
@@ -318,15 +322,15 @@ export async function getMeter(id: string): Promise<MeterResponse> {
 
 export async function reviewMeter(
   id: string,
-  approveStatus: "approve" | "reject",
+  approveState: "approve" | "reject",
 ): Promise<GetPercentageResponse> {
   const params: QueryParams = {
     meterVersionId: id,
-    approveStatus,
+    approveState,
   };
 
   return fetchApi<GetPercentageResponse>(
-    getApiUrl("/debt-setting/service/meter/approve"),
+    getApiUrl("/meter/service/approve"),
     params,
     "PUT",
     undefined,

@@ -38,6 +38,25 @@ import { useMeters } from '@/hooks/use-ReviewApproval';
 import type { FetchParams } from '@/service/reviewapproval-service';
 import { toast } from 'sonner';
 
+/**
+ * Utility function to capitalize all two-letter words in a string.
+ * This is achieved using a regular expression that looks for whole words
+ * of exactly two characters (\b\w{2}\b).
+ * @param text T
+ * @returns 
+ */
+const formatDescription = (text: string | null | undefined): string => {
+    if (!text || typeof text !== 'string') {
+        console.warn('Invalid description:', text);
+        return ''; // Return empty string or handle as needed
+    }
+    return text
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(' ');
+};
+
+
 const MeterTable = () => {
     const [fetchParams, setFetchParams] = useState<FetchParams>({
         page: 1,
@@ -107,15 +126,19 @@ const MeterTable = () => {
         if (selectedItem && confirmAction) {
             try {
                 await reviewMutation.mutateAsync({
-                    id: selectedItem.id.toString(),
+                    id: selectedItem.meterId.toString(),
                     approveStatus: confirmAction,
                 });
                 toast.success(`Meter ${confirmAction}d successfully!`, {
                     // description: `Meter Number: ${selectedItem.meterNumber}, Meter Type: ${selectedItem.meterType}`,
                 });
             } catch (error) {
+                // Ensure the error message is formatted as well
+                const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+                const formattedErrorMessage = formatDescription(errorMessage);
+
                 toast.error(`Failed to ${confirmAction} meter.`, {
-                    // description: error instanceof Error ? error.message : 'An unknown error occurred',
+                    description: formattedErrorMessage,
                 });
             }
         }
@@ -198,7 +221,10 @@ const MeterTable = () => {
                                 <TableCell className="px-4 py-3 w-[120px] text-sm text-gray-900">{item.meterClass}</TableCell>
                                 <TableCell className="px-4 py-3 w-[120px] text-sm text-gray-900">{item.meterType}</TableCell>
                                 <TableCell className="px-4 py-3 w-[100px] text-sm text-gray-900">{item.meterCategory}</TableCell>
-                                <TableCell className="px-4 py-3 w-[120px] text-sm text-gray-900">{item.description}</TableCell>
+                                {/* Change Description: Apply the formatting function here */}
+                                <TableCell className="px-4 py-3 w-[120px] text-sm text-[#161CCA]">
+                                    {formatDescription(item.description)}
+                                </TableCell>
                                 <TableCell className="px-4 py-3 text-center">
                                     <span className="inline-block px-3 py-1 text-sm font-medium text-[#C86900] bg-[#FFF5EA] p-1 rounded-full">
                                         {item.meterStage === 'pending-state' ? 'Pending' : item.meterStage}

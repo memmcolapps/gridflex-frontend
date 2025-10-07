@@ -17,6 +17,19 @@ interface ViewLiabilityDetailsDialogProps {
     onReject: (row: Liability) => void;
 }
 
+// Normalize description to handle case sensitivity and whitespace
+const formatDescription = (text: string | null | undefined): string => {
+    if (!text || typeof text !== 'string') {
+        console.warn('Invalid description:', text);
+        return '';
+    }
+    return text
+        .trim()
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(' ');
+};
+
 const ViewLiabilityDetailsDialog: React.FC<ViewLiabilityDetailsDialogProps> = ({
     isOpen,
     onOpenChange,
@@ -24,29 +37,38 @@ const ViewLiabilityDetailsDialog: React.FC<ViewLiabilityDetailsDialogProps> = ({
     onApprove,
     onReject,
 }) => {
-    const isNewlyAdded = selectedRow?.description === 'Newly Added';
     const { user } = useAuth();
+    const normalizedDescription = formatDescription(selectedRow?.description);
+    console.log('Raw description:', selectedRow?.description, 'Normalized:', normalizedDescription);
+
+    // Define descriptions that should not show From/To or MoveRight
+    const noChangeDescriptions = [
+        'Newly Added',
+        'Liability Cause Activated',
+        'Liability Cause Deactivated',
+    ];
+    const showChangeFields = normalizedDescription === 'Liability Cause Edited';
+
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
             <DialogContent
-                className="w-fit lg:max-w-[1000px] bg-white text-black p-4 sm:p-6 rounded-lg shadow-lg overflow-hidden h-fit 
-
-"
+                className="w-fit lg:max-w-[1000px] bg-white text-black p-4 sm:p-6 rounded-lg shadow-lg overflow-hidden h-fit"
             >
                 <div className="w-full">
                     <DialogHeader>
                         <DialogTitle className="text-left text-base sm:text-lg font-semibold text-gray-900 truncate">
-                            {selectedRow?.description ?? 'Details'}
+                            {normalizedDescription || 'Details'}
                         </DialogTitle>
                         <span className="text-gray-500 text-sm sm:text-base">
-                            Operator: <span className="font-medium">
+                            Operator:{' '}
+                            <span className="font-medium">
                                 {user?.business?.businessName?.toUpperCase() ?? 'BUSINESS NAME'}
                             </span>
                         </span>
                     </DialogHeader>
 
                     <div className="flex flex-col gap-3 py-4 sm:py-6">
-                        {selectedRow?.description === 'Liability Cause Edited' && (
+                        {showChangeFields && (
                             <div className="hidden sm:flex items-center gap-4 ml-[120px] sm:ml-[140px] mb-1">
                                 <div className="w-[150px] text-sm ml-6 font-semibold text-gray-500">From</div>
                                 <div className="w-[150px] text-sm ml-24 font-semibold text-gray-500">To</div>
@@ -61,7 +83,7 @@ const ViewLiabilityDetailsDialog: React.FC<ViewLiabilityDetailsDialogProps> = ({
                             },
                             {
                                 label: 'Liability Code:',
-                                oldValue: selectedRow?.oldLiabilityCauseInfo.code,
+                                oldValue: selectedRow?.oldLiabilityCauseInfo?.code,
                                 newValue: selectedRow?.code,
                             },
                         ].map(({ label, oldValue, newValue }) => (
@@ -80,7 +102,7 @@ const ViewLiabilityDetailsDialog: React.FC<ViewLiabilityDetailsDialogProps> = ({
                                 </div>
 
                                 {/* New Value */}
-                                {!isNewlyAdded && newValue != null && (
+                                {showChangeFields && newValue != null && (
                                     <div className="flex items-center w-full sm:w-[150px] text-sm sm:text-base text-gray-900 whitespace-nowrap ml-14">
                                         <MoveRight
                                             className="text-gray-900 mr-3 sm:mr-4 scale-x-185"
@@ -92,7 +114,6 @@ const ViewLiabilityDetailsDialog: React.FC<ViewLiabilityDetailsDialogProps> = ({
                             </div>
                         ))}
                     </div>
-
 
                     {/* Action Buttons */}
                     <div className="flex justify-between gap-2 mt-4">
