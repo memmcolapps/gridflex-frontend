@@ -262,52 +262,62 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
             );
         }
 
-        if (isMeterEdited) {
-            return (
-                <>
-                    <DialogHeader>
-                        <DialogTitle className="text-left text-base sm:text-lg font-semibold text-gray-900 truncate">
-                            Meter Edited
-                        </DialogTitle>
-                        <span className="text-gray-500 text-sm sm:text-base">
-                            Operator: <span className="font-medium">Margaret</span>
-                        </span>
-                    </DialogHeader>
-                    <div className="flex flex-col gap-3 py-4 sm:py-6">
-                        {[
-                            { label: 'Meter No:', oldValue: selectedRow.meterNumber, newValue: selectedRow.meterNumber === '6201021223' ? '6201021224' : selectedRow.meterNumber },
-                            { label: 'SIM Number:', oldValue: selectedRow.simNumber, newValue: selectedRow.simNumber === '890068073404' ? '890068073403' : selectedRow.simNumber },
-                            { label: 'Meter Type:', oldValue: selectedRow.meterType, newValue: 'Water' },
-                            { label: 'Meter Manufacturer:', oldValue: selectedRow.manufacturer?.name, newValue: 'Majec' },
-                            { label: 'Meter Class:', oldValue: selectedRow.meterClass, newValue: '3 Phase' },
-                            { label: 'Meter Category:', oldValue: selectedRow.meterCategory, newValue: 'Postpaid' },
-                            { label: 'Old SGC:', oldValue: selectedRow.oldSgc, newValue: selectedRow.oldSgc },
-                            { label: 'New SGC:', oldValue: selectedRow.newSgc, newValue: selectedRow.newSgc },
-                            { label: 'Old KRN:', oldValue: selectedRow.oldKrn, newValue: selectedRow.oldKrn },
-                            { label: 'New KRN:', oldValue: selectedRow.newKrn, newValue: selectedRow.newKrn },
-                            { label: 'Old Tariff Index:', oldValue: selectedRow.oldTariffIndex, newValue: '3' },
-                            { label: 'New Tariff Index:', oldValue: selectedRow.newTariffIndex, newValue: '4' },
-                        ].map(({ label, oldValue, newValue }) => (
-                            <div key={label} className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                                <div className="w-[100px] sm:w-[120px] text-sm sm:text-base font-medium text-gray-700 whitespace-nowrap">
-                                    {label}
-                                </div>
-                                <div className="w-full sm:w-[120px] lg:max-w-[700px] text-sm sm:text-base font-bold text-gray-900 whitespace-nowrap ml-20">
-                                    {oldValue ?? 'N/A'}
-                                </div>
-                                {newValue && (
-                                    <div className="flex items-start text-sm sm:text-base text-gray-900 whitespace-nowrap ml-10">
-                                        <MoveRight className="text-gray-900 mr-4 scale-x-185" size={16} />
-                                        <span className="font-bold truncate">{newValue}</span>
-                                    </div>
-                                )}
-                            </div>
-                        ))}
+     if (isMeterEdited) {
+    return (
+        <>
+            <DialogHeader>
+                <DialogTitle className="text-left text-base sm:text-lg font-semibold text-gray-900 truncate">
+                    Meter Edited
+                </DialogTitle>
+                <span className="text-gray-500 text-sm sm:text-base">
+                    Operator: <span className="font-medium">Margaret</span>
+                </span>
+            </DialogHeader>
+            <div className="flex flex-col gap-3 py-4 sm:py-6">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                    <div className="w-[100px] sm:w-[120px] text-sm sm:text-base font-medium text-gray-700 whitespace-nowrap">
+                        {/* Empty header for label column */}
                     </div>
-                </>
-            );
-        }
-
+                    <div className="w-full sm:w-[120px] lg:max-w-[700px] text-sm sm:text-base font-medium text-gray-700 whitespace-nowrap ml-20">
+                        From
+                    </div>
+                    <div className="flex items-start text-sm sm:text-base font-medium text-gray-700 whitespace-nowrap ml-10">
+                        To
+                    </div>
+                </div>
+                {[
+                    { label: 'Meter No:', oldValue: selectedRow.oldMeterInfo.meterNumber, newValue: selectedRow.meterNumber },
+                    { label: 'SIM Number:', oldValue: selectedRow.oldMeterInfo.simNumber, newValue: selectedRow.simNumber },
+                    { label: 'Meter Type:', oldValue: selectedRow.oldMeterInfo.meterType, newValue: selectedRow.meterType },
+                    { label: 'Meter Manufacturer:', oldValue: selectedRow.oldMeterInfo.manufacturer.name, newValue: selectedRow.manufacturer.name },
+                    { label: 'Meter Class:', oldValue: selectedRow.oldMeterInfo.meterClass, newValue: selectedRow.meterClass },
+                    { label: 'Meter Category:', oldValue: selectedRow.oldMeterInfo.meterCategory, newValue: selectedRow.meterCategory },
+                    { label: 'Old SGC:', oldValue: selectedRow.oldMeterInfo.oldSgc, newValue: selectedRow.oldSgc },
+                    { label: 'New SGC:', oldValue: selectedRow.oldMeterInfo.newSgc, newValue: selectedRow.newSgc },
+                    { label: 'Old KRN:', oldValue: selectedRow.oldMeterInfo.oldKrn, newValue: selectedRow.oldKrn },
+                    { label: 'New KRN:', oldValue: selectedRow.oldMeterInfo.newKrn, newValue: selectedRow.newKrn },
+                    { label: 'Old Tariff Index:', oldValue: selectedRow.oldMeterInfo.oldTariffIndex, newValue: selectedRow.oldTariffIndex },
+                    { label: 'New Tariff Index:', oldValue: selectedRow.oldMeterInfo.newTariffIndex, newValue: selectedRow.newTariffIndex },
+                ].map(({ label, oldValue, newValue }) => (
+                    <div key={label} className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                        <div className="w-[100px] sm:w-[120px] text-sm sm:text-base font-medium text-gray-700 whitespace-nowrap">
+                            {label}
+                        </div>
+                        <div className="w-full sm:w-[120px] lg:max-w-[700px] text-sm sm:text-base font-bold text-gray-900 whitespace-nowrap ml-20">
+                            {oldValue ?? 'N/A'}
+                        </div>
+                        {newValue && (
+                            <div className="flex items-start text-sm sm:text-base text-gray-900 whitespace-nowrap ml-10">
+                                <MoveRight className="text-gray-900 mr-4 scale-x-185" size={16} />
+                                <span className="font-bold truncate">{newValue}</span>
+                            </div>
+                        )}
+                    </div>
+                ))}
+            </div>
+        </>
+    );
+}
         // Default case for unknown changeDescription
         return (
             <VisuallyHidden>
