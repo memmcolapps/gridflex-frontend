@@ -15,6 +15,7 @@ export interface ManufacturerDetails {
 }
 
 export interface MeterInventoryItem {
+  id?: string;
   meterNumber: string;
   meterManufacturer: string;
   meterClass: string;
@@ -129,20 +130,17 @@ export interface UpdateMeterPayload {
   simNumber: string;
   meterCategory: string;
   meterClass: string;
-  meterManufacturer: string; // Standardized from 'manufacturer'
+  meterManufacturer: string; // Standardized field name
   meterType: string;
-  smartStatus: boolean; // Added missing property
-  smartMeterInfo: SmartMeterInfo; // Added missing property
-  ctRatioNum: string;
-  ctRatioDenom: string;
-  voltRatioNum: string;
-  voltRatioDenom: string;
-  multiplier: string;
-  meterRating: string;
-  initialReading: string;
-  dial: string;
-  latitude: string;
-  longitude: string;
+  oldSgc: string;
+  newSgc: string;
+  oldKrn: string;
+  newKrn: string;
+  oldTariffIndex: number;
+  newTariffIndex: number;
+  smartStatus?: boolean; // Added missing property
+  smartMeterInfo?: SmartMeterInfo; // Added missing property (optional for creation)
+  mdMeterInfo?: mdMeterInfo; //
 }
 
 export interface MeterInventoryResponse {

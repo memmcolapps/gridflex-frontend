@@ -119,6 +119,7 @@ export interface Tariff {
   created_by: string;
   description: string;
   tId: string;
+  t_id: string;
   tariff_id: string;
   tariff_type: string;
   effective_date: string;
