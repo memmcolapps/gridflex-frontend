@@ -299,14 +299,14 @@ export async function getAllMeters({
   searchTerm,
   sortBy,
   sortDirection,
-  meterStage = "pending-state",
+  type = "pending-state",
 }: FetchParams): Promise<MeterResponse> {
   const params: QueryParams = {
     page: String(page),
     pageSize: String(pageSize),
   };
 
-  if (meterStage) params.type = meterStage;
+  if (type) params.type = type;
   if (searchTerm) params.search = searchTerm;
   if (sortBy) {
     params.sortBy = sortBy;

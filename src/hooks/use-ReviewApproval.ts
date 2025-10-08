@@ -31,14 +31,11 @@ import type {
 } from "@/types/review-approval";
 import type { UseQueryResult, UseMutationResult } from "@tanstack/react-query";
 
-// Define a generic type for the review mutation payload
 interface ReviewPayload {
   id: string;
   approveStatus: "approve" | "reject";
   reason?: string;
 }
-
-// Interface for Tariff response data to handle nested structure
 interface TariffResponseData {
   data?: Tariff[];
 }

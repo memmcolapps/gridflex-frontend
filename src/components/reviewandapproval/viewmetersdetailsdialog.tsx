@@ -7,6 +7,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { MoveRight, UnlinkIcon } from 'lucide-react';
 import Image from 'next/image';
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden'; // Import VisuallyHidden
 import type { Meter } from "@/types/review-approval";
 
 interface ViewMeterDetailsDialogProps {
@@ -24,282 +25,295 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
     onApprove,
     onReject,
 }) => {
-    const renderContent = () => {
-        if (!selectedRow) return null;
+    const isMeterAllocated = selectedRow?.description === 'Meter Allocated';
+    const isMeterAssigned = selectedRow?.description === 'Meter Assigned';
+    const isMeterDeactivated = selectedRow?.description === 'Meter Deactivated';
+    const isMeterDetached = selectedRow?.description === 'Meter Detached';
+    const isMeterMigrated = selectedRow?.description === 'Meter Migrated';
+    const isNewlyAdded = selectedRow?.description === 'Newly added';
+    const isMeterEdited = selectedRow?.description === 'Pending edited';
 
-        switch (selectedRow.changeDescription) {
-            case 'Meter Allocated':
-                return (
-                    <>
-                        <DialogHeader>
-                            <DialogTitle className="text-left text-base sm:text-lg font-semibold text-gray-900 truncate">
-                                Meter Allocated
-                            </DialogTitle>
-                            <span className="text-gray-500 text-sm sm:text-base">
-                                Operator: <span className="font-medium">Margaret</span>
-                            </span>
-                        </DialogHeader>
-                        <div className="flex flex-col gap-3 py-4 sm:py-6 w-150">
-                            <div className="flex items-center gap-4 p-2">
-                                <div className="flex-1 text-sm sm:text-base font-bold text-gray-900">
+    const renderContent = () => {
+        if (!selectedRow) {
+            return (
+                <VisuallyHidden>
+                    <DialogTitle>No Meter Selected</DialogTitle>
+                </VisuallyHidden>
+            );
+        }
+        if (isMeterAllocated) {
+            return (
+                <>
+                    <DialogHeader>
+                        <DialogTitle className="text-left text-base sm:text-lg font-semibold text-gray-900 truncate">
+                            Meter Allocated
+                        </DialogTitle>
+                        <span className="text-gray-500 text-sm sm:text-base">
+                            Operator: <span className="font-medium">Margaret</span>
+                        </span>
+                    </DialogHeader>
+                    <div className="flex flex-col gap-3 py-4 sm:py-6 w-150">
+                        <div className="flex items-center gap-4 p-2">
+                            <div className="flex-1 text-sm sm:text-base font-bold text-gray-900">
+                                {selectedRow.meterNumber ?? 'N/A'}
+                            </div>
+                            <div className="flex-1 flex items-center gap-2 text-sm sm:text-base font-bold text-gray-900">
+                                <MoveRight className="text-gray-900 mr-2 scale-x-185" size={16} />
+                                <span>Molete Business Hub</span>
+                            </div>
+                        </div>
+                    </div>
+                </>
+            );
+        }
+
+        if (isMeterAssigned) {
+            return (
+                <>
+                    <DialogHeader>
+                        <DialogTitle className="text-left text-base sm:text-lg font-semibold text-gray-900 truncate">
+                            Meter Assigned
+                        </DialogTitle>
+                        <span className="text-gray-500 text-sm sm:text-base">
+                            Operator: <span className="font-medium">Margaret</span>
+                        </span>
+                    </DialogHeader>
+                    <div className="flex flex-col gap-3 py-4 sm:py-6 w-150 h-fit">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="flex flex-col gap-3 space-y-6">
+                                <div className="flex items-center gap-4">
+                                    <div className="text-sm sm:text-base font-bold text-gray-900">
+                                        {selectedRow.meterNumber}
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-4">
+                                    <div className="w-[120px] text-sm sm:text-base font-bold text-gray-700 whitespace-nowrap">
+                                        Uploaded Image:
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="flex flex-col gap-3 space-y-6">
+                                <div className="flex items-center gap-2">
+                                    <MoveRight className="text-gray-900 mr-2 scale-x-185" size={16} />
+                                    <div className="text-sm sm:text-base font-bold text-gray-700">
+                                        C-1234567890
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-4">
+                                    <div className="text-sm sm:text-base font-bold text-gray-900">
+                                        <Image
+                                            src="/images/mdj.jpg"
+                                            alt="C-1234567890"
+                                            className="object-cover w-100 h-50"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </>
+            );
+        }
+
+        if (isMeterDeactivated) {
+            return (
+                <>
+                    <DialogHeader>
+                        <DialogTitle className="text-left text-base sm:text-lg font-semibold text-gray-900 truncate">
+                            Meter Deactivated
+                        </DialogTitle>
+                        <span className="text-gray-500 text-sm sm:text-base">
+                            Operator: <span className="font-medium">Margaret</span>
+                        </span>
+                    </DialogHeader>
+                    <div className="flex flex-col gap-3 py-4 sm:py-6 w-[405px]">
+                        {[
+                            { label: 'Meter Number:', value: selectedRow.meterNumber },
+                            { label: 'SIM No.:', value: selectedRow.simNumber },
+                            { label: 'Meter Type:', value: 'Electricity' },
+                            { label: 'Meter Manufacturer:', value: selectedRow.manufacturer?.name },
+                            { label: 'Meter Class:', value: selectedRow.meterClass },
+                            { label: 'Meter Category:', value: selectedRow.meterCategory },
+                            { label: 'Old SGC:', value: selectedRow.oldSgc },
+                            { label: 'New SGC:', value: selectedRow.newSgc },
+                            { label: 'Old KRN:', value: selectedRow.oldKrn },
+                            { label: 'New KRN:', value: selectedRow.newKrn },
+                            { label: 'Old Tariff Index:', value: selectedRow.oldTariffIndex },
+                            { label: 'New Tariff Index:', value: selectedRow.newTariffIndex },
+                            { label: 'Reason:', value: selectedRow.reason },
+                        ].map(({ label, value }) => (
+                            <div key={label} className="flex items-center whitespace-nowrap">
+                                <div className="w-[120px] text-sm sm:text-base font-medium text-gray-700 whitespace-nowrap">
+                                    {label}
+                                </div>
+                                <div className="text-sm sm:text-base font-bold text-gray-900 ml-30">
+                                    {value}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </>
+            );
+        }
+
+        if (isMeterDetached) {
+            return (
+                <>
+                    <DialogHeader>
+                        <DialogTitle className="text-left text-base sm:text-lg font-semibold text-gray-900 truncate">
+                            Meter Detached
+                        </DialogTitle>
+                        <span className="text-gray-500 text-sm sm:text-base">
+                            Operator: <span className="font-medium">Margaret</span>
+                        </span>
+                    </DialogHeader>
+                    <div className="flex flex-col gap-3 py-4 sm:py-6">
+                        <div className="flex items-start gap-4 w-150">
+                            <div className="flex-1 flex flex-col gap-3 p-2">
+                                <div className="text-sm sm:text-base font-bold text-gray-900">
                                     {selectedRow.meterNumber ?? 'N/A'}
                                 </div>
-                                <div className="flex-1 flex items-center gap-2 text-sm sm:text-base font-bold text-gray-900">
-                                    <MoveRight className="text-gray-900 mr-2 scale-x-185" size={16} />
-                                    <span>Molete Business Hub</span>
+                                <div className="text-sm sm:text-base font-medium text-gray-700">
+                                    Reason:
+                                </div>
+                            </div>
+                            <div className="flex-1 flex flex-col gap-3 p-2">
+                                <div className="flex items-center gap-2 text-sm sm:text-base text-gray-900">
+                                    <UnlinkIcon size={20} className="text-gray-700" />
+                                    <span className='font-bold'>C-122623669</span>
+                                </div>
+                                <div className="text-sm sm:text-base font-bold text-gray-900">
+                                    {selectedRow.reason}
                                 </div>
                             </div>
                         </div>
-                    </>
-                );
-
-            case 'Meter Assigned':
-                return (
-                    <>
-                        <DialogHeader>
-                            <DialogTitle className="text-left text-base sm:text-lg font-semibold text-gray-900 truncate">
-                                Meter Assigned
-                            </DialogTitle>
-                            <span className="text-gray-500 text-sm sm:text-base">
-                                Operator: <span className="font-medium">Margaret</span>
-                            </span>
-                        </DialogHeader>
-                        <div className="flex flex-col gap-3 py-4 sm:py-6 w-150 h-fit">
-                            {/* Two-column layout */}
-                            <div className="grid grid-cols-2 gap-4">
-                                {/* Left Column */}
-                                <div className="flex flex-col gap-3 space-y-6">
-                                    <div className="flex items-center gap-4">
-                                        <div className="text-sm sm:text-base font-bold text-gray-900">
-                                            {selectedRow.meterNumber}
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-[120px] text-sm sm:text-base font-bold text-gray-700 whitespace-nowrap">
-                                            Uploaded Image:
-                                        </div>
-                                    </div>
-                                </div>
-                                {/* Right Column */}
-                                <div className="flex flex-col gap-3 space-y-6">
-                                    <div className="flex items-center gap-2">
-                                        <MoveRight className="text-gray-900 mr-2 scale-x-185" size={16} />
-                                        <div className="text-sm sm:text-base font-bold text-gray-700">
-                                            C-1234567890
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-4">
-                                        <div className="text-sm sm:text-base font-bold text-gray-900">
-
-                                            <Image
-                                                src="/images/mdj.jpg"
-                                                alt="C-1234567890"
-                                                className=" object-cover w-100 h-50"
-                                            />
-
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </>
-                );
-
-            case 'Meter Deactivated':
-                return (
-                    <>
-                        <DialogHeader>
-
-                            <DialogTitle className="text-left text-base sm:text-lg font-semibold text-gray-900 truncate">
-                                Meter Deactivated
-                            </DialogTitle>
-                            <span className="text-gray-500 text-sm sm:text-base">
-                                Operator: <span className="font-medium">Margaret</span>
-                            </span>
-                        </DialogHeader>
-                        <div className="flex flex-col gap-3 py-4 sm:py-6 w-[405px]">
-                            {[
-                                { label: 'Meter Number:', value: selectedRow.meterNumber },
-                                { label: 'SIM No.:', value: selectedRow.simNumber },
-                                { label: 'Meter Type:', value: 'Electricity' },
-                                { label: 'Meter Manufacturer:', value: selectedRow.manufacturer?.name },
-                                { label: 'Meter Class:', value: selectedRow.meterClass },
-                                { label: 'Meter Category:', value: selectedRow.meterCategory },
-                                { label: 'Old SGC:', value: selectedRow.oldSGC },
-                                { label: 'New SGC:', value: selectedRow.newSGC },
-                                { label: 'Old KRN:', value: selectedRow.oldkrn },
-                                { label: 'New KRN:', value: selectedRow.newkrn },
-                                { label: 'Old Tariff Index:', value: selectedRow.oldTariffIndex },
-                                { label: 'New Tariff Index:', value: selectedRow.newTariffIndex },
-                                { label: 'Reason:', value: selectedRow.reason },
-                            ].map(({ label, value }) => (
-                                <div key={label} className="flex items-center whitespace-nowrap">
-                                    <div className="w-[120px] text-sm sm:text-base font-medium text-gray-700 whitespace-nowrap">
-                                        {label}
-                                    </div>
-                                    <div className="text-sm sm:text-base font-bold text-gray-900 ml-30">
-                                        {value}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </>
-                );
-
-
-
-            case 'Meter Detached':
-                return (
-                    <>
-                        <DialogHeader>
-                            <DialogTitle className="text-left text-base sm:text-lg font-semibold text-gray-900 truncate">
-                                Meter Detached
-                            </DialogTitle>
-                            <span className="text-gray-500 text-sm sm:text-base">
-                                Operator: <span className="font-medium">Margaret</span>
-                            </span>
-                        </DialogHeader>
-                        <div className="flex flex-col gap-3 py-4 sm:py-6">
-                            <div className="flex items-start gap-4 w-150">
-                                <div className="flex-1 flex flex-col gap-3 p-2">
-                                    <div className="text-sm sm:text-base font-bold text-gray-900">
-                                        {selectedRow.meterNumber ?? 'N/A'}
-                                    </div>
-                                    <div className="text-sm sm:text-base font-medium text-gray-700">
-                                        Reason:
-                                    </div>
-                                </div>
-                                <div className="flex-1 flex flex-col gap-3 p-2">
-                                    <div className="flex items-center gap-2 text-sm sm:text-base text-gray-900">
-                                        <UnlinkIcon size={20} className="text-gray-700" />
-                                        <span className='font-bold'>C-122623669</span>
-                                    </div>
-                                    <div className="text-sm sm:text-base font-bold text-gray-900">
-                                        {selectedRow.reason}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </>
-                );
-
-
-            case 'Meter Migrated':
-                const newCategory = selectedRow.meterCategory === 'Postpaid' ? 'Prepaid' : selectedRow.meterCategory === 'Prepaid' ? 'Postpaid' : 'N/A';
-                return (
-                    <>
-                        <DialogHeader>
-                            <DialogTitle className="text-left text-base sm:text-lg font-semibold text-gray-900 truncate">
-                                Meter Migrated
-                            </DialogTitle>
-                            <span className="text-gray-500 text-sm sm:text-base">
-                                Operator: <span className="font-medium">Margaret</span>
-                            </span>
-                        </DialogHeader>
-                        <div className="flex flex-col gap-6 py-4 sm:py-6 w-150">
-                            <div className="flex items-center gap-4 p-2">
-                                <div className="flex-1 text-sm sm:text-base text-gray-900">
-                                    {selectedRow.meterNumber}
-                                </div>
-                                <div className="flex-1 text-sm sm:text-base font-bold text-gray-900">
-                                    {selectedRow.meterCategory ?? 'N/A'}
-                                </div>
-                                <div className="flex-1 flex items-center gap-2 text-sm sm:text-base font-bold text-gray-900">
-                                    <MoveRight className="text-gray-900 mr-2 scale-x-185" size={16} />
-                                    <span>{newCategory}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </>
-                );
-
-            case 'Newly Added':
-                return (
-                    <>
-                        <DialogHeader>
-                            <DialogTitle className="text-left text-base sm:text-lg font-semibold text-gray-900 truncate">
-                                Newly Added
-                            </DialogTitle>
-                            <span className="text-gray-500 text-sm sm:text-base">
-                                Operator: <span className="font-medium">Margaret</span>
-                            </span>
-                        </DialogHeader>
-                        <div className="flex flex-col gap-3 py-4 sm:py-6 w-[405px]">
-                            {[
-                                { label: 'Meter Number:', value: selectedRow.meterNumber },
-                                { label: 'SIM No:', value: selectedRow.simNumber },
-                                { label: 'Meter Type:', value: selectedRow.meterType },
-                                { label: 'Meter Manufacturer:', value: selectedRow.manufacturer?.name },
-                                { label: 'Meter Class:', value: selectedRow.meterClass },
-                                { label: 'Meter Category:', value: selectedRow.meterCategory },
-                                { label: 'Old SGC:', value: selectedRow.oldSGC },
-                                { label: 'New SGC:', value: selectedRow.newSGC },
-                                { label: 'Old KRN:', value: selectedRow.oldkrn },
-                                { label: 'New KRN:', value: selectedRow.newkrn },
-                                { label: 'Old Tariff Index:', value: selectedRow.oldTariffIndex },
-                                { label: 'New Tariff Index:', value: selectedRow.newTariffIndex },
-                            ].map(({ label, value }) => (
-                                <div key={label} className="flex items-center">
-                                    <div className="w-[120px] text-sm sm:text-base font-medium text-gray-700 whitespace-nowrap">
-                                        {label}
-                                    </div>
-                                    <div className="text-sm sm:text-base font-bold text-gray-900 ml-20">
-                                        {value ?? 'N/A'}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </>
-                );
-
-            case 'Meter Edited':
-                return (
-                    <>
-                        <DialogHeader>
-                            <DialogTitle className="text-left text-base sm:text-lg font-semibold text-gray-900 truncate">
-                                Meter Edited
-                            </DialogTitle>
-                            <span className="text-gray-500 text-sm sm:text-base">
-                                Operator: <span className="font-medium">Margaret</span>
-                            </span>
-                        </DialogHeader>
-                        <div className="flex flex-col gap-3 py-4 sm:py-6">
-                            {[
-                                { label: 'Meter No:', oldValue: selectedRow.meterNumber, newValue: selectedRow.meterNumber === '6201021223' ? '6201021224' : selectedRow.meterNumber },
-                                { label: 'SIM Number:', oldValue: selectedRow.simNumber, newValue: selectedRow.simNumber === '890068073404' ? '890068073403' : selectedRow.simNumber },
-                                { label: 'Meter Type:', oldValue: selectedRow.meterType, newValue: 'Water' },
-                                { label: 'Meter Manufacturer:', oldValue: selectedRow.manufacturer?.name, newValue: 'Majec' },
-                                { label: 'Meter Class:', oldValue: selectedRow.meterClass, newValue: '3 Phase' },
-                                { label: 'Meter Category:', oldValue: selectedRow.meterCategory, newValue: 'Postpaid' },
-                                { label: 'Old SGC:', oldValue: selectedRow.oldSGC, newValue: selectedRow.oldSGC },
-                                { label: 'New SGC:', oldValue: selectedRow.newSGC, newValue: selectedRow.newSGC },
-                                { label: 'Old KRN:', oldValue: selectedRow.oldkrn, newValue: selectedRow.oldkrn },
-                                { label: 'New KRN:', oldValue: selectedRow.newkrn, newValue: selectedRow.newkrn },
-                                { label: 'Old Tariff Index:', oldValue: selectedRow.oldTariffIndex, newValue: '3' },
-                                { label: 'New Tariff Index:', oldValue: selectedRow.newTariffIndex, newValue: '4' },
-                            ].map(({ label, oldValue, newValue }) => (
-                                <div key={label} className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                                    <div className="w-[100px] sm:w-[120px] text-sm sm:text-base font-medium text-gray-700 whitespace-nowrap">
-                                        {label}
-                                    </div>
-                                    <div className="w-full sm:w-[120px] lg:max-w-[700px] text-sm sm:text-base font-bold text-gray-900 whitespace-nowrap ml-20">
-                                        {oldValue ?? 'N/A'}
-                                    </div>
-                                    {newValue && (
-                                        <div className="flex items-start text-sm sm:text-base text-gray-900 whitespace-nowrap ml-10">
-                                            <MoveRight className="text-gray-900 mr-4 scale-x-185" size={16} />
-                                            <span className="font-bold truncate">{newValue}</span>
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-                    </>
-                );
-
-            default:
-                return null;
+                    </div>
+                </>
+            );
         }
+
+        if (isMeterMigrated) {
+            const newCategory = selectedRow.meterCategory === 'Postpaid' ? 'Prepaid' : selectedRow.meterCategory === 'Prepaid' ? 'Postpaid' : 'N/A';
+            return (
+                <>
+                    <DialogHeader>
+                        <DialogTitle className="text-left text-base sm:text-lg font-semibold text-gray-900 truncate">
+                            Meter Migrated
+                        </DialogTitle>
+                        <span className="text-gray-500 text-sm sm:text-base">
+                            Operator: <span className="font-medium">Margaret</span>
+                        </span>
+                    </DialogHeader>
+                    <div className="flex flex-col gap-6 py-4 sm:py-6 w-150">
+                        <div className="flex items-center gap-4 p-2">
+                            <div className="flex-1 text-sm sm:text-base text-gray-900">
+                                {selectedRow.meterNumber}
+                            </div>
+                            <div className="flex-1 text-sm sm:text-base font-bold text-gray-900">
+                                {selectedRow.meterCategory ?? 'N/A'}
+                            </div>
+                            <div className="flex-1 flex items-center gap-2 text-sm sm:text-base font-bold text-gray-900">
+                                <MoveRight className="text-gray-900 mr-2 scale-x-185" size={16} />
+                                <span>{newCategory}</span>
+                            </div>
+                        </div>
+                    </div>
+                </>
+            );
+        }
+
+        if (isNewlyAdded) {
+            return (
+                <>
+                    <DialogHeader>
+                        <DialogTitle className="text-left text-base sm:text-lg font-semibold text-gray-900 truncate">
+                            Newly Added
+                        </DialogTitle>
+                        <span className="text-gray-500 text-sm sm:text-base">
+                            Operator: <span className="font-medium">Margaret</span>
+                        </span>
+                    </DialogHeader>
+                    <div className="flex flex-col gap-3 py-4 sm:py-6 w-[405px]">
+                        {[
+                            { label: 'Meter Number:', value: selectedRow.meterNumber },
+                            { label: 'SIM No:', value: selectedRow.simNumber },
+                            { label: 'Meter Type:', value: selectedRow.meterType },
+                            { label: 'Meter Manufacturer:', value: selectedRow.manufacturer?.name },
+                            { label: 'Meter Class:', value: selectedRow.meterClass },
+                            { label: 'Meter Category:', value: selectedRow.meterCategory },
+                            { label: 'Old SGC:', value: selectedRow.oldSgc },
+                            { label: 'New SGC:', value: selectedRow.newSgc },
+                            { label: 'Old KRN:', value: selectedRow.oldKrn },
+                            { label: 'New KRN:', value: selectedRow.newKrn },
+                            { label: 'Old Tariff Index:', value: selectedRow.oldTariffIndex },
+                            { label: 'New Tariff Index:', value: selectedRow.newTariffIndex },
+                        ].map(({ label, value }) => (
+                            <div key={label} className="flex items-center">
+                                <div className="w-[120px] text-sm sm:text-base font-medium text-gray-700 whitespace-nowrap">
+                                    {label}
+                                </div>
+                                <div className="text-sm sm:text-base font-bold text-gray-900 ml-20">
+                                    {value ?? 'N/A'}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </>
+            );
+        }
+
+        if (isMeterEdited) {
+            return (
+                <>
+                    <DialogHeader>
+                        <DialogTitle className="text-left text-base sm:text-lg font-semibold text-gray-900 truncate">
+                            Meter Edited
+                        </DialogTitle>
+                        <span className="text-gray-500 text-sm sm:text-base">
+                            Operator: <span className="font-medium">Margaret</span>
+                        </span>
+                    </DialogHeader>
+                    <div className="flex flex-col gap-3 py-4 sm:py-6">
+                        {[
+                            { label: 'Meter No:', oldValue: selectedRow.meterNumber, newValue: selectedRow.meterNumber === '6201021223' ? '6201021224' : selectedRow.meterNumber },
+                            { label: 'SIM Number:', oldValue: selectedRow.simNumber, newValue: selectedRow.simNumber === '890068073404' ? '890068073403' : selectedRow.simNumber },
+                            { label: 'Meter Type:', oldValue: selectedRow.meterType, newValue: 'Water' },
+                            { label: 'Meter Manufacturer:', oldValue: selectedRow.manufacturer?.name, newValue: 'Majec' },
+                            { label: 'Meter Class:', oldValue: selectedRow.meterClass, newValue: '3 Phase' },
+                            { label: 'Meter Category:', oldValue: selectedRow.meterCategory, newValue: 'Postpaid' },
+                            { label: 'Old SGC:', oldValue: selectedRow.oldSgc, newValue: selectedRow.oldSgc },
+                            { label: 'New SGC:', oldValue: selectedRow.newSgc, newValue: selectedRow.newSgc },
+                            { label: 'Old KRN:', oldValue: selectedRow.oldKrn, newValue: selectedRow.oldKrn },
+                            { label: 'New KRN:', oldValue: selectedRow.newKrn, newValue: selectedRow.newKrn },
+                            { label: 'Old Tariff Index:', oldValue: selectedRow.oldTariffIndex, newValue: '3' },
+                            { label: 'New Tariff Index:', oldValue: selectedRow.newTariffIndex, newValue: '4' },
+                        ].map(({ label, oldValue, newValue }) => (
+                            <div key={label} className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                                <div className="w-[100px] sm:w-[120px] text-sm sm:text-base font-medium text-gray-700 whitespace-nowrap">
+                                    {label}
+                                </div>
+                                <div className="w-full sm:w-[120px] lg:max-w-[700px] text-sm sm:text-base font-bold text-gray-900 whitespace-nowrap ml-20">
+                                    {oldValue ?? 'N/A'}
+                                </div>
+                                {newValue && (
+                                    <div className="flex items-start text-sm sm:text-base text-gray-900 whitespace-nowrap ml-10">
+                                        <MoveRight className="text-gray-900 mr-4 scale-x-185" size={16} />
+                                        <span className="font-bold truncate">{newValue}</span>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </>
+            );
+        }
+
+        // Default case for unknown changeDescription
+        return (
+            <VisuallyHidden>
+                <DialogTitle>Unknown Meter Action</DialogTitle>
+            </VisuallyHidden>
+        );
     };
 
     return (
