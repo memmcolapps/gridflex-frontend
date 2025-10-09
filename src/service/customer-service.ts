@@ -12,6 +12,31 @@ import {
     type BlockCustomerPayload,
 } from "@/types/customer-types";
 
+interface Tariff {
+    name: string;
+    org_id: string;
+    tariff_rate: string;
+    band_id: string;
+    band: {
+        id: string;
+        orgId: string;
+        name: string;
+        hour: string;
+        approveStatus: string;
+        createdAt: string;
+        updatedAt: string;
+    };
+    created_at: string;
+    updated_at: string;
+}
+
+export interface FetchCustomerResponse {
+    GeneratedVirtualMeterNo: string;
+    GeneratedAccountNumber: string;
+    customer: Customer;
+    tariffs: Tariff[];
+}
+
 const API_URL = env.NEXT_PUBLIC_BASE_URL;
 const CUSTOM_HEADER = env.NEXT_PUBLIC_CUSTOM_HEADER;
 
@@ -145,3 +170,46 @@ export async function blockCustomer({ customerId, reason }: BlockCustomerPayload
         throw new Error(handleApiError(error));
     }
 }
+/**
+ * Fetches a single customer record by customer ID.
+ * Endpoint: /api/meter/service/customer?customerId={id}
+ * @param customerId The ID of the customer to fetch.
+ * @returns A promise that resolves to the Customer record.
+ */
+export const fetchCustomerRecord = async (
+    customerId: string
+): Promise<FetchCustomerResponse> => {
+    if (!customerId) {
+        // This should ideally not happen if the query is disabled correctly,
+        // but serves as a safeguard.
+        throw new Error("Customer ID is required for this search.");
+    }
+
+    const token = localStorage.getItem("auth_token");
+    if (!token) {
+        throw new Error("Authentication token not found.");
+    }
+
+    // The backend expects customerId in URL parameters (query string) for a GET request.
+    const url = `${API_URL}/meter/service/customer?customerId=${customerId}`;
+
+    const response = await fetch(url, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+            custom: CUSTOM_HEADER,
+            Authorization: `Bearer ${token}`,
+        },
+    });
+
+    if (!response.ok) {
+        const errorBody = await response.json().catch(() => ({ responsedesc: "Unknown error" }));
+        // Throw error for TanStack Query to catch
+        throw new Error(errorBody.responsedesc ?? "Failed to fetch customer record.");
+    }
+
+    // Assuming the successful API response structure is: { responsedata: FetchCustomerResponse }
+    const result: { responsedata: FetchCustomerResponse } = await response.json();
+
+    return result.responsedata;
+};

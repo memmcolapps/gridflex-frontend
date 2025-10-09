@@ -7,7 +7,7 @@ export interface Customer {
     status: boolean;
     firstName: string;
     lastName: string;
-    accountNumber: string;
+    accountNumber?: string;
     customerId: string;
     nin: string;
     phoneNumber: string;

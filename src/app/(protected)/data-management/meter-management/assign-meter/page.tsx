@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 import { FilterControl } from "@/components/search-control";
 import { Button } from "@/components/ui/button";
@@ -11,15 +13,16 @@ import {
 import { Input } from "@/components/ui/input";
 import {
     ArrowUpDown,
-    CirclePlus,
     Search,
     MoreVertical,
     Pencil,
     SquareArrowOutUpRight,
     Navigation,
     Unlink,
+    Loader2,
+    Database,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
     Table,
     TableBody,
@@ -44,6 +47,7 @@ import { cn } from "@/lib/utils";
 import { getStatusStyle } from "@/components/status-style";
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useMeters } from "@/hooks/use-assign-meter";
 
 // Define filter sections
 const filterSections = [
@@ -64,9 +68,6 @@ const filterSections = [
     },
 ];
 
-// Updated mock data with payment plans set to "3"
-const initialMeterData: MeterInventoryItem[] = [];
-
 export default function AssignMeterPage() {
     const [searchTerm, setSearchTerm] = useState<string>("");
     const [isCustomerIdModalOpen, setIsCustomerIdModalOpen] = useState(false);
@@ -83,10 +84,10 @@ export default function AssignMeterPage() {
     const [customerIdInput, setCustomerIdInput] = useState<string>("");
     const [filteredCustomerIds, setFilteredCustomerIds] = useState<string[]>([]);
     const [selectedRows, setSelectedRows] = useState<number[]>([]);
-    const [meterData, setMeterData] = useState<MeterInventoryItem[]>(initialMeterData);
+    const [meterData, setMeterData] = useState<(MeterInventoryItem | VirtualMeterData)[]>([]);
     const [activeFilters, setActiveFilters] = useState<Record<string, boolean>>({});
     const [sortConfig, setSortConfig] = useState<{
-        key: keyof MeterInventoryItem | null;
+        key: keyof MeterInventoryItem | keyof VirtualMeterData | null;
         direction: "asc" | "desc";
     }>({ key: null, direction: "asc" });
     const [meterNumber, setMeterNumber] = useState("");
@@ -118,8 +119,28 @@ export default function AssignMeterPage() {
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [isBulkUploadModalOpen, setIsBulkUploadModalOpen] = useState(false);
 
+    // Fetch meter data using the API
+    const { data: metersData, isLoading } = useMeters({
+        page: 1,
+        pageSize: 1000, // Fetch a large number to handle client-side filtering/pagination
+        searchTerm,
+        sortBy: sortConfig.key as any,
+        sortDirection: sortConfig.direction,
+    });
+
+    // Filter and process data
+    const processedData = useMemo(() => {
+        if (!metersData) return [];
+        const allMeters = [...metersData.actualMeters, ...metersData.virtualMeters];
+        return allMeters.filter(meter => 'meterStage' in meter ? meter.meterStage === "Assigned" : meter.status === "Assigned");
+    }, [metersData]);
+
+    // Update meterData when processedData changes
+    useEffect(() => {
+        setMeterData(processedData);
+    }, [processedData]);
+
     // Calculate pagination values
-    const [processedData] = useState<MeterInventoryItem[]>(initialMeterData);
     const totalRows = Math.ceil(processedData.length / rowsPerPage);
     const startIndex = (currentPage - 1) * rowsPerPage;
     const endIndex = startIndex + rowsPerPage;
@@ -162,30 +183,34 @@ export default function AssignMeterPage() {
                 .filter((customer) =>
                     customer.customerId?.toLowerCase().includes(value.toLowerCase())
                 )
-                .map((customer) => customer.customerId!); // Still safe due to filter
+                .map((customer) => customer.customerId!);
             setFilteredCustomerIds(filtered);
         }
     };
 
     const handleCustomerIdSelect = (customerId: string) => {
-        const customer = meterData.find((item) => item.customerId === customerId);
+        setCustomerIdInput(customerId);
+        setFilteredCustomerIds([]);
+    };
+
+    const handleCustomerIdProceed = () => {
+        const customer = meterData.find((item) => item.customerId === customerIdInput);
         if (customer) {
             setSelectedCustomer(customer);
-            setCustomerIdInput(customerId);
-            setFilteredCustomerIds([]);
             setIsCustomerIdModalOpen(false);
             setIsAssignModalOpen(true);
             setProgress(50);
             setMeterNumber("");
-            setCin("");
-            setAccountNumber("");
+            setCin(customer.cin ?? "");
+            setAccountNumber(customer.accountNumber ?? "");
             setTariff("");
             setFeeder("");
             setDss("");
-            setState("");
-            setCity("");
-            setStreetName("");
-            setHouseNo("");
+            setState(customer.state ?? "");
+            setCity(customer.city ?? "");
+            setStreetName(customer.streetName ?? "");
+            setHouseNo(customer.houseNo ?? "");
+            setPhone(customer.phone ?? "");
             setDebitMop("");
             setCreditMop("");
             setDebitPaymentPlan("");
@@ -235,33 +260,40 @@ export default function AssignMeterPage() {
         setIsConfirmationModalOpen(false);
     };
 
-    const handleEditDetails = (customer: MeterInventoryItem) => {
-        setEditCustomer({
-            ...customer,
-            tariff: customer.tariff ?? "",
-            feederLine: customer.feederLine ?? "",
-            dss: customer.dss ?? "",
-            state: customer.state ?? "",
-            city: customer.city ?? "",
-            streetName: customer.streetName ?? "",
-            houseNo: customer.houseNo ?? ""
-        });
-        setMeterNumber(customer.meterNumber ?? "");
-        setCin(customer.cin ?? "");
-        setAccountNumber(customer.accountNumber ?? "");
-        setTariff(customer.tariff ?? "");
-        setFeeder(customer.feederLine ?? "");
-        setDss(customer.dss ?? "");
-        setState(customer.state ?? "");
-        setCity(customer.city ?? "");
-        setStreetName(customer.streetName ?? "");
-        setHouseNo(customer.houseNo ?? "");
-        setDebitMop(customer.debitMop ?? "");
-        setCreditMop(customer.creditMop ?? "");
-        setDebitPaymentPlan(customer.debitPaymentPlan ?? "");
-        setCreditPaymentPlan(customer.creditPaymentPlan ?? "");
-        setProgress(50);
-        setIsEditModalOpen(true);
+    const handleEditDetails = (customer: MeterInventoryItem | VirtualMeterData) => {
+        if ('meterManufacturer' in customer) {
+            // Actual meter
+            setEditCustomer({
+                ...customer,
+                tariff: customer.tariff ?? "",
+                feederLine: customer.feederLine ?? "",
+                dss: customer.dss ?? "",
+                state: customer.state ?? "",
+                city: customer.city ?? "",
+                streetName: customer.streetName ?? "",
+                houseNo: customer.houseNo ?? ""
+            });
+            setMeterNumber(customer.meterNumber ?? "");
+            setCin(customer.cin ?? "");
+            setAccountNumber(customer.accountNumber ?? "");
+            setTariff(customer.tariff ?? "");
+            setFeeder(customer.feederLine ?? "");
+            setDss(customer.dss ?? "");
+            setState(customer.state ?? "");
+            setCity(customer.city ?? "");
+            setStreetName(customer.streetName ?? "");
+            setHouseNo(customer.houseNo ?? "");
+            setDebitMop(customer.debitMop ?? "");
+            setCreditMop(customer.creditMop ?? "");
+            setDebitPaymentPlan(customer.debitPaymentPlan ?? "");
+            setCreditPaymentPlan(customer.creditPaymentPlan ?? "");
+            setProgress(50);
+            setIsEditModalOpen(true);
+        } else {
+            // Virtual meter, perhaps open virtual edit dialog
+            // For now, do nothing or show message
+            alert("Edit not supported for virtual meters here.");
+        }
     };
 
     const handleProceedFromEdit = () => {
@@ -322,9 +354,13 @@ export default function AssignMeterPage() {
         alert(`Details and payment mode updated successfully for prepaid customer ${editCustomer.customerId}!`);
     };
 
-    const handleDetachMeter = (customer: MeterInventoryItem) => {
-        setCustomerToDetach(customer);
-        setIsDetachModalOpen(true);
+    const handleDetachMeter = (customer: MeterInventoryItem | VirtualMeterData) => {
+        if ('meterManufacturer' in customer) {
+            setCustomerToDetach(customer);
+            setIsDetachModalOpen(true);
+        } else {
+            alert("Detach not supported for virtual meters.");
+        }
     };
 
     const handleProceedFromDetach = () => {
@@ -356,14 +392,18 @@ export default function AssignMeterPage() {
         setCustomerToDetach(null);
     };
 
-    const handleMigrateMeter = (customer: MeterInventoryItem) => {
-        setMigrateCustomer(customer);
-        setMigrateToCategory(customer.category === "Postpaid" ? "Prepaid" : "Postpaid");
-        setMigrateDebitMop(customer.debitMop ?? "");
-        setMigrateDebitPaymentPlan(customer.debitPaymentPlan ?? "");
-        setMigrateCreditMop(customer.creditMop ?? "");
-        setMigrateCreditPaymentPlan(customer.creditPaymentPlan ?? "");
-        setIsMigrateModalOpen(true);
+    const handleMigrateMeter = (customer: MeterInventoryItem | VirtualMeterData) => {
+        if ('meterManufacturer' in customer) {
+            setMigrateCustomer(customer);
+            setMigrateToCategory(customer.category === "Postpaid" ? "Prepaid" : "Postpaid");
+            setMigrateDebitMop(customer.debitMop ?? "");
+            setMigrateDebitPaymentPlan(customer.debitPaymentPlan ?? "");
+            setMigrateCreditMop(customer.creditMop ?? "");
+            setMigrateCreditPaymentPlan(customer.creditPaymentPlan ?? "");
+            setIsMigrateModalOpen(true);
+        } else {
+            alert("Migrate not supported for virtual meters.");
+        }
     };
 
     const handleConfirmMigrate = () => {
@@ -411,10 +451,10 @@ export default function AssignMeterPage() {
 
     const applyFiltersAndSort = (
         term: string,
-        sortBy: keyof MeterInventoryItem | null,
+        sortBy: keyof MeterInventoryItem | keyof VirtualMeterData | null,
         direction: "asc" | "desc"
     ) => {
-        let results = initialMeterData;
+        let results = processedData;
 
         if (term.trim() !== "") {
             results = results.filter(item =>
@@ -437,7 +477,7 @@ export default function AssignMeterPage() {
                 !activeFilters.singlePhase && !activeFilters.threePhase && !activeFilters.md
                     ? true
                     : classOptions.some(
-                        ({ active, value }) => active && meter.meterClass?.toLowerCase().includes(value)
+                        ({ active, value }) => active && 'meterClass' in meter && meter.meterClass?.toLowerCase().includes(value)
                     );
 
             const typeOptions = [
@@ -456,8 +496,8 @@ export default function AssignMeterPage() {
 
         if (sortBy) {
             results = [...results].sort((a, b) => {
-                const aValue = (a as MeterInventoryItem)[sortBy!] ?? "";
-                const bValue = (b as MeterInventoryItem)[sortBy!] ?? "";
+                const aValue = (a as any)[sortBy!] ?? "";
+                const bValue = (b as any)[sortBy!] ?? "";
                 if (aValue < bValue) return direction === "asc" ? -1 : 1;
                 if (aValue > bValue) return direction === "asc" ? 1 : -1;
                 return 0;
@@ -626,72 +666,95 @@ export default function AssignMeterPage() {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {currentPageData.map((meter, index) => (
-                        <TableRow key={index}>
-                            <TableCell>
-                                <div className="flex items-center gap-2">
-                                    <input
-                                        type="checkbox"
-                                        checked={selectedRows.includes(index)}
-                                        onChange={() => {
-                                            setSelectedRows((prev) =>
-                                                prev.includes(index)
-                                                    ? prev.filter((i) => i !== index)
-                                                    : [...prev, index]
-                                            );
-                                        }}
-                                    />
-                                    <span>{index + 1}</span>
+                    {currentPageData.length === 0 && !isLoading ? (
+                        <TableRow>
+                            <TableCell colSpan={12} className="h-24 text-center">
+                                <div className="flex flex-col items-center justify-center py-8">
+                                    <Database size={48} className="text-gray-400 mb-2" />
+                                    <p className="text-gray-500 text-sm">No records found</p>
                                 </div>
                             </TableCell>
-                            <TableCell>{meter.customerId}</TableCell>
-                            <TableCell>{meter.meterNumber}</TableCell>
-                            <TableCell>{meter.accountNumber}</TableCell>
-                            <TableCell>{meter.cin}</TableCell>
-                            <TableCell>{meter.category}</TableCell>
-                            <TableCell>{meter.debitMop}</TableCell>
-                            <TableCell className="px-4 py-3 text-center">{meter.debitPaymentPlan}</TableCell>
-                            <TableCell>{meter.creditMop}</TableCell>
-                            <TableCell className="px-4 py-3 text-center">{meter.creditPaymentPlan}</TableCell>
-                            <TableCell className="px-4 py-3 text-center">
-                                <span className={cn("inline-block text-sm font-medium", getStatusStyle(meter.meterStage))}>
-                                    {meter.meterStage ?? "N/A"}
-                                </span>
-                            </TableCell>
-                            <TableCell>
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button variant="ghost" className="h-8 w-8 p-0 cursor-pointer">
-                                            <MoreVertical size={14} className="cursor-pointer" />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" className="whitespace-nowrap">
-                                        <DropdownMenuItem
-                                            onClick={() => handleEditDetails(meter)}
-                                            className="flex items-center gap-2 cursor-pointer"
-                                        >
-                                            <Pencil size={14} />
-                                            Edit Details
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem
-                                            onClick={() => handleDetachMeter(meter)}
-                                            className="flex items-center gap-2 cursor-pointer"
-                                        >
-                                            <Unlink size={14} />
-                                            Detach Meter
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem
-                                            onClick={() => handleMigrateMeter(meter)}
-                                            className="flex items-center gap-2 cursor-pointer"
-                                        >
-                                            <Navigation size={14} />
-                                            Migrate Meter
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </TableCell>
                         </TableRow>
-                    ))}
+                    ) : (
+                        <>
+                            {currentPageData.map((meter, index) => (
+                                <TableRow key={index}>
+                                    <TableCell>
+                                        <div className="flex items-center gap-2">
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedRows.includes(index)}
+                                                onChange={() => {
+                                                    setSelectedRows((prev) =>
+                                                        prev.includes(index)
+                                                            ? prev.filter((i) => i !== index)
+                                                            : [...prev, index]
+                                                    );
+                                                }}
+                                            />
+                                            <span>{index + 1}</span>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>{meter.customerId}</TableCell>
+                                    <TableCell>{meter.meterNumber}</TableCell>
+                                    <TableCell>{meter.accountNumber}</TableCell>
+                                    <TableCell>{meter.cin}</TableCell>
+                                    <TableCell>{meter.category ?? 'N/A'}</TableCell>
+                                    <TableCell>{meter.debitMop}</TableCell>
+                                    <TableCell className="px-4 py-3 text-center">{meter.debitPaymentPlan}</TableCell>
+                                    <TableCell>{meter.creditMop}</TableCell>
+                                    <TableCell className="px-4 py-3 text-center">{meter.creditPaymentPlan}</TableCell>
+                                    <TableCell className="px-4 py-3 text-center">
+                                        <span className={cn("inline-block text-sm font-medium", getStatusStyle('meterStage' in meter ? meter.meterStage : meter.status))}>
+                                            {'meterStage' in meter ? meter.meterStage ?? "N/A" : meter.status ?? "N/A"}
+                                        </span>
+                                    </TableCell>
+                                    <TableCell>
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button variant="ghost" className="h-8 w-8 p-0 cursor-pointer">
+                                                    <MoreVertical size={14} className="cursor-pointer" />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end" className="whitespace-nowrap">
+                                                <DropdownMenuItem
+                                                    onClick={() => handleEditDetails(meter)}
+                                                    className="flex items-center gap-2 cursor-pointer"
+                                                >
+                                                    <Pencil size={14} />
+                                                    Edit Details
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem
+                                                    onClick={() => handleDetachMeter(meter)}
+                                                    className="flex items-center gap-2 cursor-pointer"
+                                                >
+                                                    <Unlink size={14} />
+                                                    Detach Meter
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem
+                                                    onClick={() => handleMigrateMeter(meter)}
+                                                    className="flex items-center gap-2 cursor-pointer"
+                                                >
+                                                    <Navigation size={14} />
+                                                    Migrate Meter
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                            {isLoading && (
+                                <TableRow>
+                                    <TableCell colSpan={12} className="h-16 text-center">
+                                        <div className="flex items-center justify-center gap-2">
+                                            <Loader2 size={20} className="animate-spin text-gray-500" />
+                                            <span className="text-gray-500 text-sm">Loading...</span>
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                        </>
+                    )}
                 </TableBody>
             </Table>
             <Pagination className="mt-4 flex items-center justify-between">
@@ -750,11 +813,13 @@ export default function AssignMeterPage() {
                 onCustomerIdChange={handleCustomerIdChange}
                 filteredCustomerIds={filteredCustomerIds}
                 onCustomerSelect={handleCustomerIdSelect}
+                onProceed={handleCustomerIdProceed}
+                isLoading={false}
             />
             <AssignMeterDialog
                 isOpen={isAssignModalOpen}
                 onOpenChange={setIsAssignModalOpen}
-                selectedCustomer={selectedCustomer}
+                customer={selectedCustomer}
                 meterNumber={meterNumber}
                 setMeterNumber={setMeterNumber}
                 cin={cin}

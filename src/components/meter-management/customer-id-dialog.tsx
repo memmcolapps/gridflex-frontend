@@ -1,6 +1,10 @@
+// src/components/meter-management/CustomerIdDialog.tsx
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "../ui/button";
+import { Loader2 } from "lucide-react";
 
 interface CustomerIdDialogProps {
   isOpen: boolean;
@@ -9,6 +13,8 @@ interface CustomerIdDialogProps {
   onCustomerIdChange: (value: string) => void;
   filteredCustomerIds: string[];
   onCustomerSelect: (customerId: string) => void;
+  onProceed: () => void;
+  isLoading: boolean;
 }
 
 export default function CustomerIdDialog({
@@ -18,6 +24,9 @@ export default function CustomerIdDialog({
   onCustomerIdChange,
   filteredCustomerIds,
   onCustomerSelect,
+  // NEW PROPS
+  onProceed,
+  isLoading,
 }: CustomerIdDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -49,6 +58,20 @@ export default function CustomerIdDialog({
                 ))}
               </ul>
             )}
+          </div>
+          <div className="flex justify-end">
+            <Button
+              onClick={onProceed}
+              disabled={!customerIdInput || isLoading}
+              className="mt-4 cursor-pointer bg-[#162acc] text-white hover:bg-[#162acc] hover:text-white"
+              size={"lg"}
+            >
+              {isLoading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                "Proceed"
+              )}
+            </Button>
           </div>
         </div>
       </DialogContent>

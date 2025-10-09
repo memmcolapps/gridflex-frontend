@@ -3,15 +3,16 @@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertTriangle } from "lucide-react";
-import type { MeterData } from "@/types/meter";
+import type { Customer } from "@/types/customer-types";
+import type { MeterInventoryItem } from "@/types/meter-inventory";
 import type { VirtualMeterData } from "@/types/meter";
 
 interface ConfirmationModalDialogProps {
-  isOpen: boolean;
-  onOpenChange: (open: boolean) => void;
-  selectedCustomer: MeterData | VirtualMeterData | null;
-  onConfirm: () => void;
-  onCancel: () => void;
+    isOpen: boolean;
+    onOpenChange: (open: boolean) => void;
+    selectedCustomer: Customer | MeterInventoryItem | VirtualMeterData | null;
+    onConfirm: () => void;
+    onCancel: () => void;
 }
 
 export function ConfirmationModalDialog({

@@ -1,15 +1,27 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { VirtualMeterData } from "@/types/meter";
-import type{ MeterData } from "@/types/meter";
+import type { MeterInventoryItem } from "@/types/meter-inventory";
+import type { Customer } from "@/types/customer-types";
+import { useTariff } from "@/hooks/use-tarrif";
+
+type CustomerDisplay = {
+  firstName?: string;
+  firstname?: string;
+  lastName?: string;
+  lastname?: string;
+  phone?: string;
+  phoneNumber?: string;
+};
 
 interface AssignMeterDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  selectedCustomer: MeterData | VirtualMeterData | null;
+  customer: Customer | MeterInventoryItem | VirtualMeterData | null;
   meterNumber: string;
   setMeterNumber: (value: string) => void;
   cin: string;
@@ -44,7 +56,7 @@ interface AssignMeterDialogProps {
 export function AssignMeterDialog({
   isOpen,
   onOpenChange,
-  selectedCustomer,
+  customer,
   meterNumber,
   setMeterNumber,
   cin,
@@ -73,15 +85,17 @@ export function AssignMeterDialog({
   isFormComplete,
   // progress,
 }: AssignMeterDialogProps) {
-  // Type guard to check if selectedCustomer is MeterData
-  const isMeterData = (customer: MeterData | VirtualMeterData): customer is MeterData => {
-    return "approvedStatus" in customer && "class" in customer;
+  const { tariffs, isLoading: tariffsLoading } = useTariff();
+
+  // Type guard to check if customer is MeterInventoryItem
+  const isMeterInventoryItem = (customer: Customer | MeterInventoryItem | VirtualMeterData): customer is MeterInventoryItem => {
+    return "meterManufacturer" in customer;
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="bg-white text-black h-fit">
-        {/* {selectedCustomer?.category === "Prepaid" && <Progress value={progress} className="w-full" />} */}
+        {/* {customer?.category === "Prepaid" && <Progress value={progress} className="w-full" />} */}
         <DialogHeader>
           <DialogTitle>Assign meter to customer</DialogTitle>
           <p className="text-sm">Fill all compulsory fields</p>
@@ -94,10 +108,10 @@ export function AssignMeterDialog({
                 <span className="text-red-700">*</span>
               </Label>
               <Input
-                value={selectedCustomer?.customerId ?? ""}
+                value={customer?.customerId ?? ""}
 
                 readOnly
-                placeholder={selectedCustomer && isMeterData(selectedCustomer) ? "Enter Meter ID" : "Enter Customer ID"}
+                placeholder={customer && isMeterInventoryItem(customer) ? "Enter Meter ID" : "Enter Customer ID"}
                 className="border-gray-200 text-gray-600"
               />
             </div>
@@ -106,7 +120,7 @@ export function AssignMeterDialog({
                 First Name<span className="text-red-700">*</span>
               </Label>
               <Input
-                value={selectedCustomer?.firstName ?? ""}
+                value={(customer as CustomerDisplay)?.firstName ?? (customer as CustomerDisplay)?.firstname ?? ""}
                 readOnly
                 placeholder="Enter First Name"
                 className="border-gray-200 text-gray-600"
@@ -117,7 +131,7 @@ export function AssignMeterDialog({
                 Last Name<span className="text-red-700">*</span>
               </Label>
               <Input
-                value={selectedCustomer?.lastName ?? ""}
+                value={(customer as CustomerDisplay)?.lastName ?? (customer as CustomerDisplay)?.lastname ?? ""}
                 readOnly
                 placeholder="Enter Last Name"
                 className="border-gray-200 text-gray-600"
@@ -128,7 +142,7 @@ export function AssignMeterDialog({
                 Phone Number<span className="text-red-700">*</span>
               </Label>
               <Input
-                value={selectedCustomer?.phone ?? ""}
+                value={(customer as CustomerDisplay)?.phone ?? (customer as CustomerDisplay)?.phoneNumber ?? ""}
                 readOnly
                 placeholder="Enter Phone Number"
                 className="border-gray-200 text-gray-600"
@@ -145,7 +159,7 @@ export function AssignMeterDialog({
                 className="border-gray-200 text-gray-600"
               />
             </div>
-            {/* {selectedCustomer && !isMeterData(selectedCustomer) && ( */}
+            {/* {customer && !isMeterData(customer) && ( */}
 
             <div className="space-y-2">
               <Label>
@@ -155,6 +169,7 @@ export function AssignMeterDialog({
                 value={cin}
                 onChange={(e) => setCin(e.target.value)}
                 placeholder="Enter CIN"
+                readOnly
                 className="border-gray-200 text-gray-600"
               />
             </div>
@@ -168,6 +183,7 @@ export function AssignMeterDialog({
               <Input
                 value={accountNumber}
                 onChange={(e) => setAccountNumber(e.target.value)}
+                readOnly
                 placeholder="Enter Account Number"
                 className="border-gray-200 text-gray-600"
               />
@@ -176,13 +192,16 @@ export function AssignMeterDialog({
               <Label>
                 Tariff<span className="text-red-700">*</span>
               </Label>
-              <Select onValueChange={setTariff} value={tariff}>
+              <Select onValueChange={setTariff} value={tariff} disabled={tariffsLoading}>
                 <SelectTrigger className="border-gray-200 text-gray-600 w-full">
                   <SelectValue placeholder="Select Tariff" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="tariff1">Tariff 1</SelectItem>
-                  <SelectItem value="tariff2">Tariff 2</SelectItem>
+                  {tariffs.map((t) => (
+                    <SelectItem key={t.id} value={t.name}>
+                      {t.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -213,15 +232,13 @@ export function AssignMeterDialog({
               <Label>
                 State<span className="text-red-700">*</span>
               </Label>
-              <Select onValueChange={setState} value={state}>
-                <SelectTrigger className="border-gray-100 text-gray-600 w-full">
-                  <SelectValue placeholder="Select State" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="state1">State 1</SelectItem>
-                  <SelectItem value="state2">State 2</SelectItem>
-                </SelectContent>
-              </Select>
+              <Input
+                value={state}
+                onChange={(e) => setState(e.target.value)}
+                readOnly
+                placeholder="Enter City"
+                className="border-gray-100 text-gray-600"
+              />
             </div>
             <div className="space-y-2">
               <Label>
@@ -229,6 +246,7 @@ export function AssignMeterDialog({
               </Label>
               <Input
                 value={city}
+                readOnly
                 onChange={(e) => setCity(e.target.value)}
                 placeholder="Enter City"
                 className="border-gray-100 text-gray-600"
@@ -240,6 +258,7 @@ export function AssignMeterDialog({
               </Label>
               <Input
                 value={streetName}
+                readOnly
                 onChange={(e) => setStreetName(e.target.value)}
                 placeholder="Enter Street Name"
                 className="border-gray-100 text-gray-600"
@@ -251,6 +270,7 @@ export function AssignMeterDialog({
               </Label>
               <Input
                 value={houseNo}
+                readOnly
                 onChange={(e) => setHouseNo(e.target.value)}
                 placeholder="Enter House No"
                 className="border-gray-100 text-gray-600"
@@ -272,7 +292,7 @@ export function AssignMeterDialog({
             className={
               isFormComplete
                 ? "bg-[#161CCA] text-white cursor-pointer"
-                : "bg-blue-200 text-white cursor-not-allowed"
+                : "bg-[#161CCA] text-white cursor-not-allowed"
             }
           >
             Proceed
