@@ -253,3 +253,26 @@ export interface MeterData {
     password: string;
   };
 }
+
+
+export interface BusinessHub {
+  id: string;
+  orgId: string;
+  nodeId: string;
+  parentId: string;
+  regionId: string;
+  name: string;
+  phoneNo: string;
+  email: string;
+  contactPerson: string;
+  address: string;
+  type: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BusinessHubResponse {
+  responsecode: string;
+  responsedesc: string;
+  responsedata: BusinessHub[];
+}
