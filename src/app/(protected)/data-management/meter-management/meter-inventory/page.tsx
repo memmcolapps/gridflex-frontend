@@ -1,3 +1,5 @@
+// page.tsx
+
 "use client";
 
 import React, { useState, useMemo } from "react";
@@ -10,6 +12,7 @@ import {
   Pencil,
   Search,
   Loader2,
+  CirclePlus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,7 +24,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { CirclePlus } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -49,11 +51,17 @@ import {
 } from "@/components/ui/pagination";
 import { AddMeterDialog } from "@/components/meter-management/add-edit-meter-dialog";
 import { ViewMeterInfoDialog } from "@/components/meter-management/view-meter-info-dialog";
-// import type { MeterData } from "@/types/meter";
 import type { MeterInventoryItem } from "@/types/meter-inventory";
 import { getStatusStyle } from "@/components/status-style";
-import { useMeterInventory } from "@/hooks/use-meter";
-import type { MeterInventoryFilters } from "@/types/meter-inventory";
+import { useMeterInventory, useBusinessHubs, useAllocateMeter } from "@/hooks/use-meter";
+import type { MeterInventoryFilters,BusinessHub } from "@/types/meter-inventory";
+import { useAuth } from '@/context/auth-context';
+
+// Placeholder for toast utility
+const toast = (props: { title: string, description?: string, variant?: 'default' | 'destructive' }) => {
+  console.log(`[TOAST] ${props.title}: ${props.description ?? ''} (Variant: ${props.variant})`);
+};
+
 
 const filterSections = [
   {
@@ -91,11 +99,18 @@ const mapMeterInventoryToMeterData = (meter: MeterInventoryItem): MeterInventory
 });
 
 export default function MeterInventoryPage() {
+  const { user } = useAuth();
+
+  const userOrgId = user?.orgId;
+
   const [selectedMeters, setSelectedMeters] = useState<string[]>([]);
   const [rowsPerPage, setRowsPerPage] = useState<number>(10);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [selectedMeter, setSelectedMeter] = useState<MeterInventoryItem | null>(null);
-  const [organizationId, setOrganizationId] = useState<string>("");
+
+  // State for the selected Business Hub (will hold the hub's name, used as regionId)
+  const [selectedHubId, setSelectedHubId] = useState<string>("");
+  const [hubSearchTerm, setHubSearchTerm] = useState<string>(""); // <-- added for select search
   const [isBulkUploadDialogOpen, setIsBulkUploadDialogOpen] = useState(false);
   const [meterNumberInput, setMeterNumberInput] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -116,6 +131,19 @@ export default function MeterInventoryPage() {
   }), [currentPage, rowsPerPage, searchTerm, apiFilters]);
 
   const { data, isLoading, isError, error, refetch } = useMeterInventory(filters);
+
+  const {
+    data: businessHubs = [],
+    isLoading: isHubsLoading,
+    isError: isHubsError
+  } = useBusinessHubs(userOrgId ?? '');
+
+  const {
+    mutate: allocate,
+    isPending: isAllocating
+  } = useAllocateMeter();
+
+
   const meters = useMemo(() => data?.data ?? [], [data]);
   const totalPages = data?.totalPages ?? 1;
   const totalData = data?.totalData ?? 0;
@@ -147,8 +175,10 @@ export default function MeterInventoryPage() {
 
   const isAllSelected = meters.length > 0 && selectedMeters.length === meters.length;
 
+  // MODIFIED: Handle meter number change and set selected meter for allocation/autocomplete
   const handleMeterNumberChange = (value: string) => {
     setMeterNumberInput(value);
+
     const _meter = meters.find((m) => m.meterNumber === value);
     if (_meter) {
       setSelectedMeter(mapMeterInventoryToMeterData(_meter));
@@ -158,22 +188,67 @@ export default function MeterInventoryPage() {
   };
 
   const handleAllocate = () => {
-    if (!selectedMeter) {
-      alert("Please select a valid meter number.");
+    if (isAllocating) return;
+
+    const meterNumber = meterNumberInput.trim();
+    // The API requires regionId, which is mapped from the selectedHubId (Business Hub Name)
+    const regionId = selectedHubId;
+
+    if (!meterNumber) {
+      toast({
+        title: "Allocation Failed",
+        description: "Please enter a Meter Number.",
+        variant: 'destructive'
+      });
       return;
     }
-    if (!organizationId) {
-      alert("Please select an Organization ID.");
+
+    // Validation: Ensure meter number matches an existing meter
+    if (!selectedMeter || selectedMeter.meterNumber !== meterNumber) {
+      toast({
+        title: "Allocation Failed",
+        description: "The entered Meter Number is invalid or not found in the current inventory. Please ensure exact match.",
+        variant: 'destructive'
+      });
       return;
     }
-    console.log("Allocated:", {
-      meterNumber: selectedMeter.meterNumber,
-      organizationId,
+
+    if (!regionId) {
+      toast({
+        title: "Allocation Failed",
+        description: "Please select an Organization ID.",
+        variant: 'destructive'
+      });
+      return;
+    }
+    // Call the mutation
+    allocate({ meterNumber, regionId }, {
+      onSuccess: () => {
+        toast({
+          title: "Allocation Successful",
+          description: `Meter ${meterNumber} allocated to hub ${regionId}.`,
+          variant: 'default'
+        });
+        // Reset fields on success
+        setSelectedHubId("");
+        setMeterNumberInput("");
+        setSelectedMeter(null);
+        setHubSearchTerm("");
+      },
+      onError: (error: unknown) => {
+        const err = error as Error;
+        const errorDescription = err.message?.includes('Failed to allocate meter')
+          ? `API Error: ${err.message}`
+          : err.message || "An unknown error occurred during allocation.";
+
+        toast({
+          title: "Allocation Error",
+          description: errorDescription,
+          variant: 'destructive',
+        });
+      }
+
     });
-    refetch();
-    setOrganizationId("");
-    setMeterNumberInput("");
-    setSelectedMeter(null);
   };
 
   const handleBulkUpload = (_newData: MeterInventoryItem[]) => {
@@ -235,6 +310,35 @@ export default function MeterInventoryPage() {
 
   const startRange = totalData > 0 ? (currentPage - 1) * rowsPerPage + 1 : 0;
   const endRange = Math.min(currentPage * rowsPerPage, totalData);
+
+  const SelectHubTrigger = () => {
+    if (!userOrgId) {
+      return <span className="text-sm text-yellow-600">Org ID not available</span>;
+    }
+    if (isHubsLoading) {
+      return (
+        <div className="flex items-center text-sm text-gray-500">
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          Loading Hubs...
+        </div>
+      );
+    }
+    if (isHubsError) {
+      return <span className="text-sm text-red-500">Failed to load hubs</span>;
+    }
+    return <SelectValue placeholder="Select Organization ID" />;
+  };
+
+  // Filter hubs based on hubSearchTerm (search both name and regionId/id)
+  const filteredHubs = useMemo(() => {
+    const term = (hubSearchTerm ?? "").trim().toLowerCase();
+    if (!term) return businessHubs;
+    return businessHubs.filter((hub: BusinessHub) => {
+      const regionId = (hub.regionId ?? hub.id)?.toString().toLowerCase();
+      const name = (hub.name ?? "").toString().toLowerCase();
+      return name.includes(term) ?? regionId.includes(term);
+    });
+  }, [businessHubs, hubSearchTerm]);
 
   return (
     <div className="h-fit p-6">
@@ -317,6 +421,8 @@ export default function MeterInventoryPage() {
             </DropdownMenu>
           </div>
         </div>
+
+        {/* REVERTED: Allocation Section to previous UI layout */}
         <div className="flex items-center gap-4 py-4">
           <div className="flex-1">
             <Label
@@ -334,12 +440,11 @@ export default function MeterInventoryPage() {
             />
           </div>
           <div className="flex h-16 w-16 items-center justify-center">
-            <ArrowRightLeft
-              className="w-full cursor-pointer rounded-3xl bg-green-500 px-6 py-3 text-white"
-              size={28}
-              strokeWidth={2.75}
-              onClick={handleAllocate}
-            />
+            {isAllocating ? (
+              <Loader2 className="h-7 w-7 animate-spin" strokeWidth={2.75} />
+            ) : (
+              <ArrowRightLeft onClick={handleAllocate} size={28} strokeWidth={2.75} className="w-full px-6 py-3 bg-green-500 text-white rounded-3xl cursor-pointer" />
+            )}
           </div>
           <div className="flex-1">
             <Label
@@ -348,14 +453,44 @@ export default function MeterInventoryPage() {
             >
               Organization ID <span className="text-red-500">*</span>
             </Label>
-            <Select value={organizationId} onValueChange={setOrganizationId}>
+            <Select
+              value={selectedHubId}
+              onValueChange={setSelectedHubId}
+              disabled={isHubsLoading || isHubsError || !userOrgId || isAllocating}
+            >
               <SelectTrigger className="w-full border-gray-300 focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50">
-                <SelectValue placeholder="Select Organization ID" />
+                <SelectHubTrigger />
               </SelectTrigger>
+
               <SelectContent>
-                <SelectItem value="Ojoo">Ojoo</SelectItem>
-                <SelectItem value="Molete">Molete</SelectItem>
-                <SelectItem value="Ibadan">Ibadan</SelectItem>
+                {/* Search box inside SelectContent */}
+                <div className="p-2">
+                  <Input
+                    placeholder="Search hubs..."
+                    value={hubSearchTerm}
+                    onChange={(e) => setHubSearchTerm(e.target.value)}
+                    className="h-8 text-sm"
+                  />
+                </div>
+
+                <div className="h-px bg-gray-100 my-1" />
+
+                {/* Filtered list */}
+                {filteredHubs.length > 0 ? (
+                  filteredHubs.map((hub: BusinessHub) => {
+                    const regionId = hub.regionId ?? hub.id;
+                    const displayName = `${hub.name} (${regionId})`;
+
+                    return (
+                      <SelectItem key={regionId} value={regionId}>
+                        {displayName}
+                      </SelectItem>
+                    );
+                  })
+                ) : (
+                  <div className="p-2 text-sm text-gray-500">No results found</div>
+                )}
+
               </SelectContent>
             </Select>
           </div>

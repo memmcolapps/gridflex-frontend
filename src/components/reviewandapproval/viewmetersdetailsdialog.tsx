@@ -9,6 +9,7 @@ import { MoveRight, UnlinkIcon } from 'lucide-react';
 import Image from 'next/image';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden'; // Import VisuallyHidden
 import type { Meter } from "@/types/review-approval";
+import { useAuth } from '@/context/auth-context';
 
 interface ViewMeterDetailsDialogProps {
     isOpen: boolean;
@@ -25,13 +26,14 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
     onApprove,
     onReject,
 }) => {
+    const { user } = useAuth();
     const isMeterAllocated = selectedRow?.description === 'Meter Allocated';
     const isMeterAssigned = selectedRow?.description === 'Meter Assigned';
     const isMeterDeactivated = selectedRow?.description === 'Meter Deactivated';
     const isMeterDetached = selectedRow?.description === 'Meter Detached';
     const isMeterMigrated = selectedRow?.description === 'Meter Migrated';
     const isNewlyAdded = selectedRow?.description === 'Newly added';
-    const isMeterEdited = selectedRow?.description === 'Pending edited';
+    const isMeterEdited = selectedRow?.description === 'Meter edited';
 
     const renderContent = () => {
         if (!selectedRow) {
@@ -49,13 +51,13 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
                             Meter Allocated
                         </DialogTitle>
                         <span className="text-gray-500 text-sm sm:text-base">
-                            Operator: <span className="font-medium">Margaret</span>
+                            Operator: {user?.business?.businessName?.toUpperCase() ?? 'BUSINESS NAME'}
                         </span>
                     </DialogHeader>
                     <div className="flex flex-col gap-3 py-4 sm:py-6 w-150">
                         <div className="flex items-center gap-4 p-2">
                             <div className="flex-1 text-sm sm:text-base font-bold text-gray-900">
-                                {selectedRow.meterNumber ?? 'N/A'}
+                                {selectedRow.meterNumber}
                             </div>
                             <div className="flex-1 flex items-center gap-2 text-sm sm:text-base font-bold text-gray-900">
                                 <MoveRight className="text-gray-900 mr-2 scale-x-185" size={16} />
@@ -75,7 +77,7 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
                             Meter Assigned
                         </DialogTitle>
                         <span className="text-gray-500 text-sm sm:text-base">
-                            Operator: <span className="font-medium">Margaret</span>
+                            Operator: {user?.business?.businessName?.toUpperCase() ?? 'BUSINESS NAME'}
                         </span>
                     </DialogHeader>
                     <div className="flex flex-col gap-3 py-4 sm:py-6 w-150 h-fit">
@@ -123,7 +125,7 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
                             Meter Deactivated
                         </DialogTitle>
                         <span className="text-gray-500 text-sm sm:text-base">
-                            Operator: <span className="font-medium">Margaret</span>
+                            Operator: {user?.business?.businessName?.toUpperCase() ?? 'BUSINESS NAME'}
                         </span>
                     </DialogHeader>
                     <div className="flex flex-col gap-3 py-4 sm:py-6 w-[405px]">
@@ -164,7 +166,7 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
                             Meter Detached
                         </DialogTitle>
                         <span className="text-gray-500 text-sm sm:text-base">
-                            Operator: <span className="font-medium">Margaret</span>
+                            Operator: {user?.business?.businessName?.toUpperCase() ?? 'BUSINESS NAME'}
                         </span>
                     </DialogHeader>
                     <div className="flex flex-col gap-3 py-4 sm:py-6">
@@ -201,7 +203,7 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
                             Meter Migrated
                         </DialogTitle>
                         <span className="text-gray-500 text-sm sm:text-base">
-                            Operator: <span className="font-medium">Margaret</span>
+                            Operator: {user?.business?.businessName?.toUpperCase() ?? 'BUSINESS NAME'}
                         </span>
                     </DialogHeader>
                     <div className="flex flex-col gap-6 py-4 sm:py-6 w-150">
@@ -229,8 +231,8 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
                         <DialogTitle className="text-left text-base sm:text-lg font-semibold text-gray-900 truncate">
                             Newly Added
                         </DialogTitle>
-                        <span className="text-gray-500 text-sm sm:text-base">
-                            Operator: <span className="font-medium">Margaret</span>
+                                               <span className="text-gray-500 text-sm sm:text-base">
+                            Operator: {user?.business?.businessName?.toUpperCase() ?? 'BUSINESS NAME'}
                         </span>
                     </DialogHeader>
                     <div className="flex flex-col gap-3 py-4 sm:py-6 w-[405px]">
@@ -262,62 +264,62 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
             );
         }
 
-     if (isMeterEdited) {
-    return (
-        <>
-            <DialogHeader>
-                <DialogTitle className="text-left text-base sm:text-lg font-semibold text-gray-900 truncate">
-                    Meter Edited
-                </DialogTitle>
-                <span className="text-gray-500 text-sm sm:text-base">
-                    Operator: <span className="font-medium">Margaret</span>
-                </span>
-            </DialogHeader>
-            <div className="flex flex-col gap-3 py-4 sm:py-6">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                    <div className="w-[100px] sm:w-[120px] text-sm sm:text-base font-medium text-gray-700 whitespace-nowrap">
-                        {/* Empty header for label column */}
-                    </div>
-                    <div className="w-full sm:w-[120px] lg:max-w-[700px] text-sm sm:text-base font-medium text-gray-700 whitespace-nowrap ml-20">
-                        From
-                    </div>
-                    <div className="flex items-start text-sm sm:text-base font-medium text-gray-700 whitespace-nowrap ml-10">
-                        To
-                    </div>
-                </div>
-                {[
-                    { label: 'Meter No:', oldValue: selectedRow.oldMeterInfo.meterNumber, newValue: selectedRow.meterNumber },
-                    { label: 'SIM Number:', oldValue: selectedRow.oldMeterInfo.simNumber, newValue: selectedRow.simNumber },
-                    { label: 'Meter Type:', oldValue: selectedRow.oldMeterInfo.meterType, newValue: selectedRow.meterType },
-                    { label: 'Meter Manufacturer:', oldValue: selectedRow.oldMeterInfo.manufacturer.name, newValue: selectedRow.manufacturer.name },
-                    { label: 'Meter Class:', oldValue: selectedRow.oldMeterInfo.meterClass, newValue: selectedRow.meterClass },
-                    { label: 'Meter Category:', oldValue: selectedRow.oldMeterInfo.meterCategory, newValue: selectedRow.meterCategory },
-                    { label: 'Old SGC:', oldValue: selectedRow.oldMeterInfo.oldSgc, newValue: selectedRow.oldSgc },
-                    { label: 'New SGC:', oldValue: selectedRow.oldMeterInfo.newSgc, newValue: selectedRow.newSgc },
-                    { label: 'Old KRN:', oldValue: selectedRow.oldMeterInfo.oldKrn, newValue: selectedRow.oldKrn },
-                    { label: 'New KRN:', oldValue: selectedRow.oldMeterInfo.newKrn, newValue: selectedRow.newKrn },
-                    { label: 'Old Tariff Index:', oldValue: selectedRow.oldMeterInfo.oldTariffIndex, newValue: selectedRow.oldTariffIndex },
-                    { label: 'New Tariff Index:', oldValue: selectedRow.oldMeterInfo.newTariffIndex, newValue: selectedRow.newTariffIndex },
-                ].map(({ label, oldValue, newValue }) => (
-                    <div key={label} className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                        <div className="w-[100px] sm:w-[120px] text-sm sm:text-base font-medium text-gray-700 whitespace-nowrap">
-                            {label}
-                        </div>
-                        <div className="w-full sm:w-[120px] lg:max-w-[700px] text-sm sm:text-base font-bold text-gray-900 whitespace-nowrap ml-20">
-                            {oldValue ?? 'N/A'}
-                        </div>
-                        {newValue && (
-                            <div className="flex items-start text-sm sm:text-base text-gray-900 whitespace-nowrap ml-10">
-                                <MoveRight className="text-gray-900 mr-4 scale-x-185" size={16} />
-                                <span className="font-bold truncate">{newValue}</span>
+        if (isMeterEdited) {
+            return (
+                <>
+                    <DialogHeader>
+                        <DialogTitle className="text-left text-base sm:text-lg font-semibold text-gray-900 truncate">
+                            Meter Edited
+                        </DialogTitle>
+                        <span className="text-gray-500 text-sm sm:text-base">
+                            Operator: {user?.business?.businessName?.toUpperCase() ?? 'BUSINESS NAME'}
+                        </span>
+                    </DialogHeader>
+                    <div className="flex flex-col gap-3 py-4 sm:py-6">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                            <div className="w-[100px] sm:w-[120px] text-sm sm:text-base font-medium text-gray-700 whitespace-nowrap">
+                                {/* Empty header for label column */}
                             </div>
-                        )}
+                            <div className="w-full sm:w-[120px] lg:max-w-[700px] text-sm sm:text-base font-medium text-gray-700 whitespace-nowrap ml-20">
+                                From
+                            </div>
+                            <div className="flex items-start text-sm sm:text-base font-medium text-gray-700 whitespace-nowrap ml-10">
+                                To
+                            </div>
+                        </div>
+                        {[
+                            { label: 'Meter No:', oldValue: selectedRow.oldMeterInfo.meterNumber, newValue: selectedRow.meterNumber },
+                            { label: 'SIM Number:', oldValue: selectedRow.oldMeterInfo.simNumber, newValue: selectedRow.simNumber },
+                            { label: 'Meter Type:', oldValue: selectedRow.oldMeterInfo.meterType, newValue: selectedRow.meterType },
+                            { label: 'Meter Manufacturer:', oldValue: selectedRow.oldMeterInfo.manufacturer.name, newValue: selectedRow.manufacturer.name },
+                            { label: 'Meter Class:', oldValue: selectedRow.oldMeterInfo.meterClass, newValue: selectedRow.meterClass },
+                            { label: 'Meter Category:', oldValue: selectedRow.oldMeterInfo.meterCategory, newValue: selectedRow.meterCategory },
+                            { label: 'Old SGC:', oldValue: selectedRow.oldMeterInfo.oldSgc, newValue: selectedRow.oldSgc },
+                            { label: 'New SGC:', oldValue: selectedRow.oldMeterInfo.newSgc, newValue: selectedRow.newSgc },
+                            { label: 'Old KRN:', oldValue: selectedRow.oldMeterInfo.oldKrn, newValue: selectedRow.oldKrn },
+                            { label: 'New KRN:', oldValue: selectedRow.oldMeterInfo.newKrn, newValue: selectedRow.newKrn },
+                            { label: 'Old Tariff Index:', oldValue: selectedRow.oldMeterInfo.oldTariffIndex, newValue: selectedRow.oldTariffIndex },
+                            { label: 'New Tariff Index:', oldValue: selectedRow.oldMeterInfo.newTariffIndex, newValue: selectedRow.newTariffIndex },
+                        ].map(({ label, oldValue, newValue }) => (
+                            <div key={label} className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                                <div className="w-[100px] sm:w-[120px] text-sm sm:text-base font-medium text-gray-700 whitespace-nowrap">
+                                    {label}
+                                </div>
+                                <div className="w-full sm:w-[120px] lg:max-w-[700px] text-sm sm:text-base font-bold text-gray-900 whitespace-nowrap ml-20">
+                                    {oldValue ?? 'N/A'}
+                                </div>
+                                {newValue && (
+                                    <div className="flex items-start text-sm sm:text-base text-gray-900 whitespace-nowrap ml-10">
+                                        <MoveRight className="text-gray-900 mr-4 scale-x-185" size={16} />
+                                        <span className="font-bold truncate">{newValue}</span>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
                     </div>
-                ))}
-            </div>
-        </>
-    );
-}
+                </>
+            );
+        }
         // Default case for unknown changeDescription
         return (
             <VisuallyHidden>

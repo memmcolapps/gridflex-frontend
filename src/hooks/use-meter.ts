@@ -1,3 +1,5 @@
+// use-meter.ts
+
 import { queryClient } from "@/lib/queryClient";
 import {
   createManufacturer,
@@ -6,15 +8,21 @@ import {
   fetchMeterInventory,
   createMeter,
   updateMeter,
+  fetchBusinessHubs,
+ 
+  allocateMeter,
+  type AllocateMeterPayload,
 } from "@/service/meter-service";
 import {
   type MeterInventoryFilters,
   type CreateMeterPayload,
   type UpdateMeterPayload,
   type MeterInventoryResponse,
+  type BusinessHub,
 } from "@/types/meter-inventory";
 import { type Manufacturer } from "@/types/meters-manufacturers";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 export const useGetMeterManufactures = () => {
   const { data, error, isLoading } = useQuery({
@@ -72,8 +80,8 @@ export const useUpdateManufacturer = () => {
 
 // Meter inventory hooks
 export const useMeterInventory = (filters?: MeterInventoryFilters) => {
-  const { data, error, isLoading, refetch,isError } = useQuery({
-    queryKey: ["meter-inventory", filters], // ✅ Clear separation
+  const { data, error, isLoading, refetch, isError } = useQuery({
+    queryKey: ["meter-inventory", filters],
     queryFn: () => fetchMeterInventory(filters),
     placeholderData: (previousData) => previousData,
   });
@@ -92,6 +100,47 @@ export const useMeterInventory = (filters?: MeterInventoryFilters) => {
   };
 };
 
+export const useBusinessHubs = (orgId: string) => {
+  const { data, error, isLoading, isError, refetch } = useQuery({
+    queryKey: ["business-hubs", orgId],
+    queryFn: () => fetchBusinessHubs(orgId),
+    enabled: !!orgId, // Only run the query if orgId is truthy
+  });
+
+  return {
+    data: data?.success ? data.data : ([] as BusinessHub[]),
+    error,
+    isError,
+    isLoading,
+    refetch,
+  };
+};
+
+export const useAllocateMeter = () => {
+  return useMutation({
+    mutationFn: async ({ meterNumber, regionId }: AllocateMeterPayload) => {
+      const response = await allocateMeter(meterNumber, regionId);
+
+      if (!response.success) {
+        throw new Error(response.error);
+      }
+
+      return response;
+    },
+
+    onSuccess: () => {
+      toast.success("Meter Allocated successfully");
+      queryClient.invalidateQueries({
+        queryKey: ["meter-inventory"],
+      });
+    },
+    onError: (error) => {
+      toast.error(error.message || "Allocation failed!");
+    },
+  });
+};
+
+
 export const useCreateMeter = () => {
   return useMutation({
     mutationFn: async (meter: CreateMeterPayload) => {
@@ -103,7 +152,7 @@ export const useCreateMeter = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["meter-inventory"], // ✅ Only invalidate meter inventory
+        queryKey: ["meter-inventory"],
       });
     },
   });
@@ -113,14 +162,14 @@ export const useUpdateMeter = () => {
   return useMutation({
     mutationFn: async (meter: UpdateMeterPayload) => {
       const response = await updateMeter(meter);
-      if ("success" in response && !response.success) { // <-- This correctly throws the error
-        throw new Error(response.error); 
+      if ("success" in response && !response.success) {
+        throw new Error(response.error);
       }
       return response;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["meter-inventory"], 
+        queryKey: ["meter-inventory"],
       });
     },
   });
