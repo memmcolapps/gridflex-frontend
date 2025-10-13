@@ -54,7 +54,7 @@ import { ViewMeterInfoDialog } from "@/components/meter-management/view-meter-in
 import type { MeterInventoryItem } from "@/types/meter-inventory";
 import { getStatusStyle } from "@/components/status-style";
 import { useMeterInventory, useBusinessHubs, useAllocateMeter } from "@/hooks/use-meter";
-import type { MeterInventoryFilters } from "@/types/meter-inventory";
+import type { MeterInventoryFilters,BusinessHub } from "@/types/meter-inventory";
 import { useAuth } from '@/context/auth-context';
 
 // Placeholder for toast utility
@@ -235,17 +235,19 @@ export default function MeterInventoryPage() {
         setSelectedMeter(null);
         setHubSearchTerm("");
       },
-      onError: (error: any) => {
-        const errorDescription = error.message?.includes('Failed to allocate meter') ?
-          `API Error: ${error.message}` :
-          error.message || "An unknown error occurred during allocation.";
+      onError: (error: unknown) => {
+        const err = error as Error;
+        const errorDescription = err.message?.includes('Failed to allocate meter')
+          ? `API Error: ${err.message}`
+          : err.message || "An unknown error occurred during allocation.";
 
         toast({
           title: "Allocation Error",
           description: errorDescription,
-          variant: 'destructive'
+          variant: 'destructive',
         });
       }
+
     });
   };
 
@@ -329,12 +331,12 @@ export default function MeterInventoryPage() {
 
   // Filter hubs based on hubSearchTerm (search both name and regionId/id)
   const filteredHubs = useMemo(() => {
-    const term = hubSearchTerm.trim().toLowerCase();
+    const term = (hubSearchTerm ?? "").trim().toLowerCase();
     if (!term) return businessHubs;
     return businessHubs.filter((hub: any) => {
       const regionId = (hub.regionId ?? hub.id)?.toString().toLowerCase();
       const name = (hub.name ?? "").toString().toLowerCase();
-      return name.includes(term) || regionId.includes(term);
+      return name.includes(term) ?? regionId.includes(term);
     });
   }, [businessHubs, hubSearchTerm]);
 
@@ -475,7 +477,7 @@ export default function MeterInventoryPage() {
 
                 {/* Filtered list */}
                 {filteredHubs.length > 0 ? (
-                  filteredHubs.map((hub: any) => {
+                  filteredHubs.map((hub: BusinessHub) => {
                     const regionId = hub.regionId ?? hub.id;
                     const displayName = `${hub.name} (${regionId})`;
 
@@ -488,6 +490,7 @@ export default function MeterInventoryPage() {
                 ) : (
                   <div className="p-2 text-sm text-gray-500">No results found</div>
                 )}
+
               </SelectContent>
             </Select>
           </div>
