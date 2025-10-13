@@ -70,8 +70,6 @@ export const useUpdateManufacturer = () => {
   });
 };
 
-
-
 // Meter inventory hooks
 export const useMeterInventory = (filters?: MeterInventoryFilters) => {
   const { data, error, isLoading, refetch,isError } = useQuery({
@@ -115,14 +113,14 @@ export const useUpdateMeter = () => {
   return useMutation({
     mutationFn: async (meter: UpdateMeterPayload) => {
       const response = await updateMeter(meter);
-      if ("success" in response && !response.success) {
-        throw new Error(response.error);
+      if ("success" in response && !response.success) { // <-- This correctly throws the error
+        throw new Error(response.error); 
       }
       return response;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["meter-inventory"],
+        queryKey: ["meter-inventory"], 
       });
     },
   });

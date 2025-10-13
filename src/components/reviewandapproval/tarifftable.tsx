@@ -103,7 +103,7 @@ const TariffTable = () => {
     if (selectedItem && confirmAction) {
       try {
         await reviewMutation.mutateAsync({
-          id: selectedItem.tId.toString(),
+          id: selectedItem.t_id,
           approveStatus: confirmAction,
         });
         toast.success(`Tariff ${confirmAction}d successfully!`, {

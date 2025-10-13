@@ -7,9 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import type { MeterInventoryItem} from "@/types/meter-inventory";
-import type { CreateMeterPayload } from "@/types/meter-inventory";
-import { useCreateMeter, useGetMeterManufactures} from "@/hooks/use-meter";
+import type { MeterInventoryItem } from "@/types/meter-inventory";
+import type { CreateMeterPayload, UpdateMeterPayload } from "@/types/meter-inventory";
+import { useCreateMeter, useGetMeterManufactures, useUpdateMeter } from "@/hooks/use-meter";
+import { toast } from "sonner";
 
 interface AddMeterDialogProps {
   isOpen: boolean;
@@ -21,6 +22,7 @@ interface AddMeterDialogProps {
 export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddMeterDialogProps) {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
+    id: "",
     meterNumber: "",
     simNumber: "",
     meterCategory: "",
@@ -31,8 +33,8 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
     newSgc: "",
     oldKrn: "",
     newKrn: "",
-    oldTariffIndex: "",
-    newTariffIndex: "",
+    oldTariffIndex: 0,
+    newTariffIndex: 0,
     smartStatus: false,
     meterModel: "",
     protocol: "",
@@ -52,12 +54,15 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const { mutate: createMeter, isPending } = useCreateMeter();
+  const { mutateAsync: createMeter, isPending: isCreatePending } = useCreateMeter();
+  const { mutateAsync: updateMeter, isPending: isUpdatePending } = useUpdateMeter(); // Changed mutate to mutateAsync
+  const isPending = isCreatePending || isUpdatePending; // Combined pending state
 
   useEffect(() => {
     console.log("editMeter received:", editMeter);
     if (editMeter && isOpen) {
       setFormData({
+        id: editMeter.id ?? "", // Set meter ID for update
         meterNumber: editMeter.meterNumber ?? "",
         simNumber: editMeter.simNumber ?? "",
         meterCategory: editMeter.meterCategory ?? "",
@@ -68,9 +73,9 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
         newSgc: editMeter.newSgc ?? "",
         oldKrn: editMeter.oldKrn ?? "",
         newKrn: editMeter.newKrn ?? "",
-        oldTariffIndex: editMeter.oldTariffIndex !== undefined && editMeter.oldTariffIndex !== null ? String(editMeter.oldTariffIndex) : "",
-        newTariffIndex: editMeter.newTariffIndex !== undefined && editMeter.newTariffIndex !== null ? String(editMeter.newTariffIndex) : "",
-        smartStatus: !!editMeter.smartStatus,
+        oldTariffIndex: editMeter.oldTariffIndex ?? 0,
+        newTariffIndex: editMeter.newTariffIndex ?? 0,
+        smartStatus: editMeter.smartStatus ?? false, // Ensure smartStatus is boolean
         meterModel: editMeter.smartMeterInfo?.meterModel ?? "",
         protocol: editMeter.smartMeterInfo?.protocol ?? "",
         authentication: editMeter.smartMeterInfo?.authentication ?? "",
@@ -89,7 +94,9 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
       setStep(1);
       setErrors({});
     } else if (isOpen) {
+      // Reset form for "Add new meter"
       setFormData({
+        id: "", // Clear ID
         meterNumber: "",
         simNumber: "", // Corrected
         meterCategory: "",
@@ -100,8 +107,8 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
         newSgc: "",
         oldKrn: "",
         newKrn: "",
-        oldTariffIndex: "",
-        newTariffIndex: "",
+        oldTariffIndex: 0,
+        newTariffIndex: 0,
         smartStatus: false,
         meterModel: "",
         protocol: "",
@@ -129,6 +136,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
     if (!formData.simNumber) newErrors.simNumber = "Sim Card is required";
     if (!formData.meterCategory) newErrors.meterCategory = "Meter Category is required";
     if (!formData.meterClass) newErrors.meterClass = "Meter Class is required";
+    if (!formData.meterType) newErrors.meterType = "Meter Type is required";
     if (!formData.meterManufacturer) newErrors.meterManufacturer = "Meter Manufacturer is required";
     if (!formData.oldSgc) newErrors.oldSgc = "Old SGC is required";
     if (!formData.newSgc) newErrors.newSgc = "New SGC is required";
@@ -136,6 +144,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
     if (!formData.newKrn) newErrors.newKrn = "New KRN is required";
     if (!formData.oldTariffIndex) newErrors.oldTariffIndex = "Old Tariff Index is required";
     if (!formData.newTariffIndex) newErrors.newTariffIndex = "New Tariff Index is required";
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -229,86 +238,170 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
     setErrors({});
   };
 
-  const saveMeter = () => {
+  const saveMeter = async () => {
     if (step === 2 && formData.meterClass === "MD" && !validateStep2()) return;
     if (step === 3 && !validateStep3()) return;
 
-    const payload: CreateMeterPayload = {
-      id: editMeter?.id ?? uuidv4(),
-      meterNumber: formData.meterNumber,
-      simNumber: formData.simNumber,
-      meterCategory: formData.meterCategory,
-      meterClass: formData.meterClass,
-      meterType: formData.meterType,
-      meterManufacturer: formData.meterManufacturer,
-      oldSgc: formData.oldSgc,
-      newSgc: formData.newSgc,
-      oldKrn: formData.oldKrn,
-      newKrn: formData.newKrn,
-      oldTariffIndex: Number(formData.oldTariffIndex) || 0,
-      newTariffIndex: Number(formData.newTariffIndex) || 0,
-      smartStatus: formData.smartStatus,
-      mdMeterInfo: formData.meterClass === "MD"
-        ? {
-          ctRatioNum: formData.ctRatioNum,
-          ctRatioDenom: formData.ctRatioDenom,
-          voltRatioNum: formData.voltRatioNum,
-          voltRatioDenom: formData.voltRatioDenom,
-          multiplier: formData.multiplier,
-          meterRating: formData.meterRating,
-          initialReading: formData.initialReading,
-          dial: formData.dial,
-          longitude: formData.longitude,
-          latitude: formData.latitude,
-        }
-        : undefined,
-      smartMeterInfo: formData.smartStatus === true
-        ? {
-          meterModel: formData.meterModel,
-          protocol: formData.protocol,
-          authentication: formData.authentication,
-          password: formData.password,
-        }
-        : undefined
-    };
+    if (editMeter) {
+      // Logic for UpdateMeter
+      const payload: UpdateMeterPayload = {
+        id: formData.id,
+        meterNumber: formData.meterNumber,
+        simNumber: formData.simNumber,
+        meterCategory: formData.meterCategory,
+        meterClass: formData.meterClass,
+        meterType: formData.meterType,
+        meterManufacturer: formData.meterManufacturer,
+        oldSgc: formData.oldSgc,
+        newSgc: formData.newSgc,
+        oldKrn: formData.oldKrn,
+        newKrn: formData.newKrn,
+        oldTariffIndex: Number(formData.oldTariffIndex) || 0,
+        newTariffIndex: Number(formData.newTariffIndex) || 0,
+        smartStatus: formData.smartStatus,
+        mdMeterInfo: formData.meterClass === "MD"
+          ? {
+            ctRatioNum: formData.ctRatioNum,
+            ctRatioDenom: formData.ctRatioDenom,
+            voltRatioNum: formData.voltRatioNum,
+            voltRatioDenom: formData.voltRatioDenom,
+            multiplier: formData.multiplier,
+            meterRating: formData.meterRating,
+            initialReading: formData.initialReading,
+            dial: formData.dial,
+            longitude: formData.longitude,
+            latitude: formData.latitude,
+          }
+          : undefined,
+        smartMeterInfo: formData.smartStatus === true
+          ? {
+            meterModel: formData.meterModel,
+            protocol: formData.protocol,
+            authentication: formData.authentication,
+            password: formData.password,
+          }
+          : undefined
 
-    createMeter(payload);
-    onClose();
-    setStep(1);
-    // Use empty strings for reset, consistent with form structure
-    setFormData({
-      meterNumber: "",
-      simNumber: "", 
-      meterCategory: "",
-      meterClass: "",
-      meterType: "",
-      meterManufacturer: "",
-      oldSgc: "",
-      newSgc: "",
-      oldKrn: "",
-      newKrn: "",
-      oldTariffIndex: "",
-      newTariffIndex: "",
-      smartStatus: false,
-      meterModel: "",
-      protocol: "",
-      authentication: "",
-      password: "",
-      ctRatioNum: "",
-      ctRatioDenom: "",
-      voltRatioNum: "",
-      voltRatioDenom: "",
-      multiplier: "",
-      meterRating: "",
-      initialReading: "",
-      dial: "",
-      longitude: "",
-      latitude: ""
-    });
-    setErrors({});
+        ,
+      };
+
+      try {
+        await updateMeter(payload);
+        toast.success("Meter updated successfully!", {
+          duration: 3000,
+        });
+        onClose();
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Failed to update meter due to an unknown error.";
+
+        toast.error(`Update failed: ${errorMessage}`, {
+          duration: 5000,
+        });
+        console.error("Update meter error:", error);
+      }
+
+    } else {
+      // Logic for CreateMeter
+      const payload: CreateMeterPayload = {
+        meterNumber: formData.meterNumber,
+        simNumber: formData.simNumber,
+        meterCategory: formData.meterCategory,
+        meterClass: formData.meterClass,
+        meterType: formData.meterType,
+        meterManufacturer: formData.meterManufacturer,
+        oldSgc: formData.oldSgc,
+        newSgc: formData.newSgc,
+        oldKrn: formData.oldKrn,
+        newKrn: formData.newKrn,
+        oldTariffIndex: Number(formData.oldTariffIndex) || 0,
+        newTariffIndex: Number(formData.newTariffIndex) || 0,
+        smartStatus: formData.smartStatus,
+        mdMeterInfo: formData.meterClass === "MD"
+          ? {
+            ctRatioNum: formData.ctRatioNum,
+            ctRatioDenom: formData.ctRatioDenom,
+            voltRatioNum: formData.voltRatioNum,
+            voltRatioDenom: formData.voltRatioDenom,
+            multiplier: formData.multiplier,
+            meterRating: formData.meterRating,
+            initialReading: formData.initialReading,
+            dial: formData.dial,
+            longitude: formData.longitude,
+            latitude: formData.latitude,
+          }
+          : undefined,
+        smartMeterInfo: formData.smartStatus === true
+          ? {
+            meterModel: formData.meterModel,
+            protocol: formData.protocol,
+            authentication: formData.authentication,
+            password: formData.password,
+          }
+          : undefined,
+      };
+
+      try {
+        await createMeter(payload);
+        toast.success("Meter saved successfully!", {
+          duration: 3000,
+        });
+        onClose();
+        // Reset form data only on successful creation
+        setStep(1);
+        setFormData({
+          id: "",
+          meterNumber: "",
+          simNumber: "",
+          meterCategory: "",
+          meterClass: "",
+          meterType: "",
+          meterManufacturer: "",
+          oldSgc: "",
+          newSgc: "",
+          oldKrn: "",
+          newKrn: "",
+          oldTariffIndex: 0,
+          newTariffIndex: 0,
+          smartStatus: false,
+          meterModel: "",
+          protocol: "",
+          authentication: "",
+          password: "",
+          ctRatioNum: "",
+          ctRatioDenom: "",
+          voltRatioNum: "",
+          voltRatioDenom: "",
+          multiplier: "",
+          meterRating: "",
+          initialReading: "",
+          dial: "",
+          longitude: "",
+          latitude: "",
+        });
+        setErrors({});
+      } catch (error) {
+        // Catch the error thrown by Tanstack Query's mutationFn
+        const errorMessage = error instanceof Error ? error.message : "Failed to save meter due to an unknown error.";
+
+        toast.error(`Save failed: ${errorMessage}`, {
+          duration: 5000,
+        });
+        console.error("Save meter error:", error);
+      }
+    }
   };
   const { data: manufacturers, isLoading: isManufacturersLoading, error: manufacturersError } = useGetMeterManufactures();
   const dialogTitle = editMeter ? "Edit Meter" : "Add new meter";
+
+  const shouldShowNext = formData.meterClass === "MD" || formData.smartStatus;
+
+  // Determine the button text on step 1
+  let step1ButtonText = "Add Meter";
+  if (editMeter) {
+    step1ButtonText = shouldShowNext ? "Next" : "Save";
+  } else {
+    step1ButtonText = shouldShowNext ? "Next" : "Add Meter";
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -424,8 +517,8 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="MD">MD</SelectItem>
-                    <SelectItem value="Single Phase">Single Phase</SelectItem>
-                    <SelectItem value="Three Phase">Three Phase</SelectItem>
+                    <SelectItem value="Single-Phase">Single-Phase</SelectItem>
+                    <SelectItem value="Three-Phase">Three-Phase</SelectItem>
                   </SelectContent>
                 </Select>
                 {errors.meterClass && <p className="text-xs text-red-500 mt-1">{errors.meterClass}</p>}
@@ -448,12 +541,12 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                   <SelectContent>
                     {manufacturers && manufacturers.length > 0 ? (
                       manufacturers.map((manufacturer) => (
-                        <SelectItem key={manufacturer.id} value={manufacturer.name || 'unknown'}>  
+                        <SelectItem key={manufacturer.id} value={manufacturer.id || 'unknown'}>
                           {manufacturer.name}
                         </SelectItem>
                       ))
                     ) : (
-                      <SelectItem value="no-manufacturers-available" disabled> 
+                      <SelectItem value="no-manufacturers-available" disabled>
                         No manufacturers available
                       </SelectItem>
                     )}
@@ -841,18 +934,15 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                 Cancel
               </Button>
               <Button
-                onClick={
-                  !editMeter && (formData.meterClass === "Single Phase" || formData.meterClass === "Three Phase") && !formData.smartStatus
-                    ? saveMeter
-                    : handleNext
-                }
+                onClick={shouldShowNext ? handleNext : saveMeter}
                 size="lg"
                 disabled={
                   !formData.meterNumber ||
-                  !formData.simNumber || // Corrected validation check
+                  !formData.simNumber ||
                   !formData.meterCategory ||
                   !formData.meterClass ||
                   !formData.meterManufacturer ||
+                  !formData.meterType || // Added meterType check
                   !formData.oldSgc ||
                   !formData.newSgc ||
                   !formData.oldKrn ||
@@ -863,10 +953,8 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                 }
                 className="text-sm font-medium bg-[#161CCA] text-white hover:bg-[#1e2abf]"
               >
-                {/* {!editMeter && (formData.meterClass === "Single Phase" || formData.meterClass === "Three Phase") && !formData.smartMeter
-                  ? "Add Meter"
-                  : "Next"} */}
-                {editMeter || formData.meterClass === "MD" || formData.smartStatus ? "Next" : "Add Meter"}
+                {/* Updated logic for button text */}
+                {step1ButtonText}
               </Button>
             </>
           ) : step === 2 ? (
@@ -883,17 +971,17 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                 onClick={handleNextFromStep2}
                 size="lg"
                 disabled={
-                  formData.meterClass === "MD" &&
-                  (!formData.ctRatioNum ||
-                    !formData.ctRatioDenom ||
-                    !formData.voltRatioNum ||
-                    !formData.voltRatioDenom ||
-                    !formData.multiplier ||
-                    !formData.meterRating ||
-                    !formData.initialReading ||
-                    !formData.dial ||
-                    !formData.longitude ||
-                    !formData.latitude)
+                  (formData.meterClass === "MD" &&
+                    (!formData.ctRatioNum ||
+                      !formData.ctRatioDenom ||
+                      !formData.voltRatioNum ||
+                      !formData.voltRatioDenom ||
+                      !formData.multiplier ||
+                      !formData.meterRating ||
+                      !formData.initialReading ||
+                      !formData.dial ||
+                      !formData.longitude ||
+                      !formData.latitude)) || isPending
                 }
                 className="text-sm font-medium bg-[#161CCA] text-white hover:bg-[#1e2abf] cursor-pointer"
               >
@@ -914,8 +1002,8 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                 onClick={saveMeter}
                 size="lg"
                 disabled={
-                  formData.smartStatus &&
-                  (!formData.meterModel || !formData.protocol || !formData.authentication || !formData.password)
+                  (formData.smartStatus &&
+                    (!formData.meterModel || !formData.protocol || !formData.authentication || !formData.password)) || isPending
                 }
                 className="text-sm font-medium bg-[#161CCA] text-white hover:bg-[#1e2abf] cursor-pointer"
               >

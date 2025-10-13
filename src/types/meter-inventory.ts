@@ -15,7 +15,7 @@ export interface ManufacturerDetails {
 }
 
 export interface MeterInventoryItem {
-  id: string;
+  id?: string;
   meterNumber: string;
   meterManufacturer: string;
   meterClass: string;
@@ -42,7 +42,7 @@ export interface MeterInventoryItem {
     longitude?: string;
     latitude?: string;
   };
-  meterModel?: string;
+  // meterModel?: string;
   protocol?: string;
   authentication?: string;
   password?: string;
@@ -83,7 +83,7 @@ export interface MeterInventoryItem {
 }
 
 // MD Meter specific information
-export interface MdMeterInfo {
+export interface mdMeterInfo {
   ctRatioNum: string;
   ctRatioDenom: string;
   voltRatioNum: string;
@@ -106,6 +106,25 @@ export interface SmartMeterInfo {
 
 // Create meter payload (now includes missing fields)
 export interface CreateMeterPayload {
+  meterNumber: string;
+  simNumber: string;
+  meterCategory: string;
+  meterClass: string;
+  meterManufacturer: string; // Standardized field name
+  meterType: string;
+  oldSgc: string;
+  newSgc: string;
+  oldKrn: string;
+  newKrn: string;
+  oldTariffIndex: number;
+  newTariffIndex: number;
+  smartStatus?: boolean; // Added missing property
+  smartMeterInfo?: SmartMeterInfo; // Added missing property (optional for creation)
+  mdMeterInfo?: mdMeterInfo; // Optional - only for MD meters
+}
+
+// Update meter payload (now includes missing fields; standardized field names)
+export interface UpdateMeterPayload {
   id: string;
   meterNumber: string;
   simNumber: string;
@@ -121,30 +140,7 @@ export interface CreateMeterPayload {
   newTariffIndex: number;
   smartStatus?: boolean; // Added missing property
   smartMeterInfo?: SmartMeterInfo; // Added missing property (optional for creation)
-  mdMeterInfo?: MdMeterInfo; // Optional - only for MD meters
-}
-
-// Update meter payload (now includes missing fields; standardized field names)
-export interface UpdateMeterPayload {
-  id: string;
-  meterNumber: string;
-  simNumber: string;
-  meterCategory: string;
-  meterClass: string;
-  meterManufacturer: string; // Standardized from 'manufacturer'
-  meterType: string;
-  smartStatus: boolean; // Added missing property
-  smartMeterInfo: SmartMeterInfo; // Added missing property
-  ctRatioNum: string;
-  ctRatioDenom: string;
-  voltRatioNum: string;
-  voltRatioDenom: string;
-  multiplier: string;
-  meterRating: string;
-  initialReading: string;
-  dial: string;
-  latitude: string;
-  longitude: string;
+  mdMeterInfo?: mdMeterInfo; //
 }
 
 export interface MeterInventoryResponse {

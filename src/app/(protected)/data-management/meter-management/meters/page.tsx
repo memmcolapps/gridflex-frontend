@@ -54,1377 +54,620 @@ import {
     useSaveVirtualMeter,
     useDeactivatePhysicalMeter,
     useCreateVirtualMeter,
+    useChangeMeterState, 
+    type AssignMeterPayload, 
+    type ChangeMeterStatePayload, 
 } from "@/hooks/use-assign-meter";
 import { toast } from "sonner";
 import { nigerianStates, customerTypes } from "@/constants";
 
+const ITEMS_PER_PAGE = 10;
+
+// Placeholder/Mock Type
+interface MeterData {
+    id: string;
+    number: string;
+    address: string;
+}
+
 export default function MeterManagementPage() {
     const [mounted, setMounted] = useState(false);
-    const [searchTerm, setSearchTerm] = useState<string>("");
-    const [selectedTariffs, setSelectedTariffs] = useState<string[]>([]);
-    const [currentPage, setCurrentPage] = useState<number>(1);
-    const [rowsPerPage, setRowsPerPage] = useState<number>(10);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [sortBy, setSortBy] = useState<keyof MeterInventoryItem | null>(null);
+    const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+    const [currentPage, setCurrentPage] = useState(1);
+    const [activeTab, setActiveTab] = useState("actual");
+    const [pageSize, setPageSize] = useState(ITEMS_PER_PAGE);
+
+    // Dialog States
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-    const [isBulkUploadDialogOpen, setIsBulkUploadDialogOpen] = useState(false);
-    const [editMeter, setEditMeter] = useState<MeterInventoryItem | VirtualMeterData | undefined>(undefined);
-    const [isDeactivateDialogOpen, setIsDeactivateDialogOpen] = useState(false);
-    const [selectedMeter, setSelectedMeter] = useState<MeterInventoryItem | VirtualMeterData | null>(null);
-    const [activeFilters, setActiveFilters] = useState<Record<string, boolean>>({});
-    const [activeTab, setActiveTab] = useState<"actual" | "virtual">("actual");
-    const [sortConfig, setSortConfig] = useState<{
-        key: keyof MeterInventoryItem | keyof VirtualMeterData | null;
-        direction: "asc" | "desc";
-    }>({ key: null, direction: "asc" });
-    const [isAddVirtualMeterOpen, setIsAddVirtualMeterOpen] = useState(false);
-    const [isDeactivatePhysicalOpen, setIsDeactivatePhysicalOpen] = useState(false);
+    const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
+    const [isViewActualDetailsOpen, setIsViewActualDetailsOpen] = useState(false);
+    const [isViewVirtualDetailsOpen, setIsViewVirtualDetailsOpen] = useState(false);
+    const [isEditVirtualDialogOpen, setIsEditVirtualDialogOpen] = useState(false);
     const [isVirtualConfirmOpen, setIsVirtualConfirmOpen] = useState(false);
-    const [selectedPhysicalMeter, setSelectedPhysicalMeter] = useState<string>("");
-    const [customerIdInput, setCustomerIdInput] = useState("");
-    const [filteredCustomerIds, setFilteredCustomerIds] = useState<string[]>([]);
-    const [selectedCustomer, setSelectedCustomer] = useState<VirtualMeterData | null>(null);
-    const [accountNumber, setAccountNumber] = useState("");
+    const [isDeactivatePhysicalOpen, setIsDeactivatePhysicalOpen] = useState(false);
+    const [isAddVirtualDetailsOpen, setIsAddVirtualDetailsOpen] = useState(false);
+    const [isSelectCustomerOpen, setIsSelectCustomerOpen] = useState(false);
+    const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+    const [isCustomerIdModalOpen, setIsCustomerIdModalOpen] = useState(false);
+    const [isSetPaymentModalOpen, setIsSetPaymentModalOpen] = useState(false);
+    const [isDeactivateVirtualOpen, setIsDeactivateVirtualOpen] = useState(false);
+    const [isUploadImageOpen, setIsUploadImageOpen] = useState(false);
+    const [isConfirmImageOpen, setIsConfirmImageOpen] = useState(false);
+    const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
+
+    // Data States
+    const [viewMeter, setViewMeter] = useState<MeterInventoryItem | null>(null);
+    const [editMeter, setEditMeter] = useState<MeterInventoryItem | null>(null);
+    const [viewVirtualMeter, setViewVirtualMeter] = useState<VirtualMeterData | null>(null);
+    const [editVirtualMeter, setEditVirtualMeter] = useState<VirtualMeterData | null>(null);
+    const [currentVirtualMeter, setCurrentVirtualMeter] = useState<VirtualMeterData | null>(null);
+
+    // Assign Flow States
+    const [flowCustomerData, setFlowCustomerData] = useState<Customer | null>(null);
+    const [meterNumber, setMeterNumber] = useState("");
     const [cin, setCin] = useState("");
+    const [accountNumber, setAccountNumber] = useState("");
+    const [tariff, setTariff] = useState("");
     const [feeder, setFeeder] = useState("");
     const [dss, setDss] = useState("");
-    const [tariff, setTariff] = useState("");
     const [state, setState] = useState("");
     const [city, setCity] = useState("");
     const [streetName, setStreetName] = useState("");
     const [houseNo, setHouseNo] = useState("");
-    const [energyType, setEnergyType] = useState("");
-    const [fixedEnergy, setFixedEnergy] = useState("");
-    const [isEditVirtualMeterOpen, setIsEditVirtualMeterOpen] = useState(false);
-    const [isViewActualDetailsOpen, setIsViewActualDetailsOpen] = useState(false);
-    const [isViewVirtualDetailsOpen, setIsViewVirtualDetailsOpen] = useState(false);
-    const [viewMeter, setViewMeter] = useState<MeterInventoryItem | null>(null);
-    const [viewVirtualMeter, setViewVirtualMeter] = useState<VirtualMeterData | null>(null);
-    const [isCustomerIdModalOpen, setIsCustomerIdModalOpen] = useState(false);
-    const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
-    const [progress, setProgress] = useState(50);
-    const [meterNumber, setMeterNumber] = useState("");
-    const [isDeactivateModalOpen, setIsDeactivateModalOpen] = useState(false);
-    const [debitMop, setDebitMop] = useState("");
-    const [creditMop, setCreditMop] = useState("");
-    const [debitPaymentPlan, setDebitPaymentPlan] = useState("");
-    const [creditPaymentPlan, setCreditPaymentPlan] = useState("");
-    const [isSetPaymentModalOpen, setIsSetPaymentModalOpen] = useState(false);
-    const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
+    const [selectedCustomer, setSelectedCustomer] = useState<Customer | MeterInventoryItem | VirtualMeterData | null>(null);
     const [category, setCategory] = useState("");
+    
+    // NEW STATE FOR CHANGE STATE LOGIC
+    const [isChangeStateModalOpen, setIsChangeStateModalOpen] = useState(false);
+    const [meterToChangeState, setMeterToChangeState] = useState<MeterInventoryItem | null>(null);
+    const [targetState, setTargetState] = useState<'Activate' | 'Deactivate' | ''>('');
+    // END NEW STATE
+
     const [phone, setPhone] = useState<string>("");
-    const [editCustomer] = useState<MeterInventoryItem | null>(null);
-    const [isUploadImageOpen, setIsUploadImageOpen] = useState(false);
-    const [isConfirmImageOpen, setIsConfirmImageOpen] = useState(false);
-    const [uploadedImage, setUploadedImage] = useState<File | null>(null);
-    const [selectedCustomerId, setSelectedCustomerId] = useState("");
-    const [fetchedCustomerData, setFetchedCustomerData] = useState<Customer | null>(null);
-    const [generatedAccountNumber, setGeneratedAccountNumber] = useState("");
-    const [generatedVirtualMeterNo, setGeneratedVirtualMeterNo] = useState("");
-    const [flowCustomerData, setFlowCustomerData] = useState<VirtualMeterData | null>(null);
-    const [selectedVirtualCustomerId, setSelectedVirtualCustomerId] = useState("");
+    const [virtualData, setVirtualData] = useState<VirtualMeterData[]>([]);
+    const [imageFile, setImageFile] = useState<File | null>(null);
+
     // Set mounted state to true after component mounts on client
     useEffect(() => {
         setMounted(true);
     }, []);
-    // --- TANSTACK QUERY HOOK ---
-    const {
-        data: customerRecord,
-        isFetching,
-        isFetched,
-        isError,
-        error,
-    } = useCustomerRecordQuery(selectedCustomerId);
-    const {
-        data: virtualCustomerRecord,
-        isFetching: isFetchingVirtual,
-        isFetched: isFetchedVirtual,
-        isError: isErrorVirtual,
-        error: errorVirtual,
-    } = useCustomerRecordQuery(selectedVirtualCustomerId);
-    // --- METERS HOOK ---
-    const { data: metersData, isLoading } = useMeters({
+
+    // --- HOOKS ---
+    const { data, isLoading, isError } = useMeters({
         page: currentPage,
-        pageSize: rowsPerPage,
+        pageSize: pageSize,
         searchTerm,
-        sortBy: sortConfig.key as any,
-        sortDirection: sortConfig.direction,
+        sortBy,
+        sortDirection,
+        type: activeTab === "actual" ? "NON-VIRTUAL" : "VIRTUAL",
     });
-    const { actualMeters = [], virtualMeters = [], totalData = 0 } = metersData || {};
+
+    const { data: customerRecordData } = useCustomerRecordQuery(phone); 
+
     // --- MUTATIONS ---
     const saveMeterMutation = useSaveMeter();
     const activateMeterMutation = useActivateMeter();
     const deactivateMeterMutation = useDeactivateMeter();
-    const assignMeterMutation = useAssignMeter();
+    const assignMeterMutation = useAssignMeter(); // Used for assignment
     const bulkUploadMutation = useBulkUploadMeters();
     const saveVirtualMeterMutation = useSaveVirtualMeter();
     const deactivatePhysicalMutation = useDeactivatePhysicalMeter();
     const createVirtualMeterMutation = useCreateVirtualMeter();
-    // --- CORE FLOW EFFECT: Handle transition after fetch ---
+    const changeStateMutation = useChangeMeterState(); // Used for Activate/Deactivate
+
+    // --- MOCK DATA/FETCHING ---
     useEffect(() => {
-        if (isFetched && customerRecord && mounted) {
-            setFetchedCustomerData(customerRecord.customer);
-            setGeneratedAccountNumber(customerRecord.GeneratedAccountNumber);
-            setGeneratedVirtualMeterNo(customerRecord.GeneratedVirtualMeterNo);
-            setAccountNumber(customerRecord.GeneratedAccountNumber);
-            setCin(customerRecord.customer.nin || customerRecord.customer.customerId);
-            setState(customerRecord.customer.state);
-            setCity(customerRecord.customer.city);
-            setStreetName(customerRecord.customer.streetName);
-            setHouseNo(customerRecord.customer.houseNo);
-            setPhone(customerRecord.customer.phoneNumber);
-            setFlowCustomerData({
-                id: customerRecord.customer.id,
-                customerId: customerRecord.customer.customerId,
-                firstName: customerRecord.customer.firstName || customerRecord.customer.firstname,
-                lastName: customerRecord.customer.lastName || customerRecord.customer.lastname,
-                phone: customerRecord.customer.phoneNumber,
-                cin: customerRecord.customer.nin || customerRecord.customer.customerId,
-                accountNumber: customerRecord.GeneratedAccountNumber,
-                state: customerRecord.customer.state,
-                city: customerRecord.customer.city,
-                streetName: customerRecord.customer.streetName,
-                houseNo: customerRecord.customer.houseNo,
-                meterNumber: "",
-                tariff: "",
-                feeder: "",
-                dss: "",
-                status: "Assigned",
-                image: null,
-                consumptionType: "Non-MD",
-                category: "",
-            } as VirtualMeterData);
-            setIsCustomerIdModalOpen(false);
-            setIsAssignModalOpen(true);
-            setProgress(50);
-            setSelectedCustomerId("");
-            setCustomerIdInput("");
+        if (customerRecordData) {
+            setFlowCustomerData(customerRecordData as Customer);
         }
-        if (isError && mounted) {
-            const errorMessage = error instanceof Error ? error.message : "An unexpected fetch error occurred.";
-            toast.error(`Customer search failed: ${errorMessage}`);
-        }
-    }, [isFetched, customerRecord, isError, error, mounted]);
-    // --- VIRTUAL CUSTOMER FETCH EFFECT ---
-    useEffect(() => {
-        if (isFetchedVirtual && virtualCustomerRecord && mounted) {
-            setFetchedCustomerData(virtualCustomerRecord.customer);
-            setGeneratedAccountNumber(virtualCustomerRecord.GeneratedAccountNumber);
-            setGeneratedVirtualMeterNo(virtualCustomerRecord.GeneratedVirtualMeterNo);
-            setAccountNumber(virtualCustomerRecord.GeneratedAccountNumber);
-            setCin(virtualCustomerRecord.customer.nin || virtualCustomerRecord.customer.customerId);
-            setState(virtualCustomerRecord.customer.state);
-            setCity(virtualCustomerRecord.customer.city);
-            setStreetName(virtualCustomerRecord.customer.streetName);
-            setHouseNo(virtualCustomerRecord.customer.houseNo);
-            setPhone(virtualCustomerRecord.customer.phoneNumber);
-            setSelectedCustomer({
-                id: "",
-                customerId: virtualCustomerRecord.customer.customerId,
-                meterNumber: "",
-                cin: virtualCustomerRecord.customer.nin || virtualCustomerRecord.customer.customerId,
-                accountNumber: virtualCustomerRecord.GeneratedAccountNumber,
-                state: virtualCustomerRecord.customer.state,
-                city: virtualCustomerRecord.customer.city,
-                streetName: virtualCustomerRecord.customer.streetName,
-                houseNo: virtualCustomerRecord.customer.houseNo,
-                phone: virtualCustomerRecord.customer.phoneNumber,
-                firstName: virtualCustomerRecord.customer.firstName || virtualCustomerRecord.customer.firstname,
-                lastName: virtualCustomerRecord.customer.lastName || virtualCustomerRecord.customer.lastname,
-                tariff: "",
-                feeder: "",
-                dss: "",
-                status: "Assigned",
-                image: null,
-                consumptionType: "Non-MD",
-                category: "",
-            } as VirtualMeterData);
-            setIsAddVirtualMeterOpen(true);
-            setProgress(50);
-            setSelectedVirtualCustomerId("");
-            setCustomerIdInput("");
-        }
-        if (isErrorVirtual && mounted) {
-            const errorMessage = errorVirtual instanceof Error ? errorVirtual.message : "An unexpected fetch error occurred.";
-            toast.error(`Customer search failed: ${errorMessage}`);
-        }
-    }, [isFetchedVirtual, virtualCustomerRecord, isErrorVirtual, errorVirtual, mounted]);
-    // --- Handlers ---
-    const handleCustomerProceed = () => {
-        if (customerIdInput) {
-            setSelectedCustomerId(customerIdInput);
+    }, [customerRecordData]);
+
+    // --- HANDLERS ---
+
+    // Handler to open the confirmation dialog for Activate/Deactivate
+    const handleOpenChangeState = (meter: MeterInventoryItem, action: 'Activate' | 'Deactivate') => {
+        setMeterToChangeState(meter);
+        setTargetState(action);
+        setIsChangeStateModalOpen(true);
+    };
+
+    // Handler to execute the state change mutation
+    const handleConfirmChangeState = async () => {
+        if (!meterToChangeState || !targetState) return;
+
+        const payload: ChangeMeterStatePayload = {
+            meterNumber: meterToChangeState.meterNumber,
+            status: targetState,
+        };
+
+        try {
+            await changeStateMutation.mutateAsync(payload);
+        } catch (e: any) {
+            toast.error(e.message || `Failed to ${targetState.toLowerCase()} meter.`);
+        } finally {
+            setIsChangeStateModalOpen(false);
+            setMeterToChangeState(null);
+            setTargetState('');
         }
     };
-    const handleProceedFromAssign = () => {
-        if (!flowCustomerData) {
-            toast.error("Customer data is missing. Please search again.");
+
+    // Assign Meter Confirmation Handler
+    const handleConfirmAssignment = async () => {
+        if (!flowCustomerData || !meterNumber || !category || !cin || !tariff || !feeder || !dss || !accountNumber || !state || !city || !streetName || !houseNo) {
+            toast.error("Missing required assignment data.");
             return;
         }
-        const updatedCustomer: VirtualMeterData = {
-            ...flowCustomerData,
-            meterNumber,
-            cin,
-            accountNumber,
-            tariff,
-            feeder,
-            dss,
-            state,
-            city,
-            streetName,
-            houseNo,
-            category,
-            phone,
+
+        // Prepare the payload for the new POST /meter/service/cin/assign API
+        const payload: AssignMeterPayload = {
+            meterNumber: meterNumber,
+            cin: cin,
+            tariff: tariff,
+            feeder: feeder,
+            dss: dss,
+            accountNumber: accountNumber,
+            category: category,
+            state: state,
+            city: city,
+            streetName: streetName,
+            houseNo: houseNo,
+            latitude: "0", 
+            longitude: "0", 
         };
-        setFlowCustomerData(updatedCustomer);
-        setIsAssignModalOpen(false);
-        setIsUploadImageOpen(true);
-        setProgress(60);
-    };
-    const handleProceedFromUploadImage = (image: File | null) => {
-        setUploadedImage(image);
-        setFlowCustomerData((prev) => (prev ? { ...prev, image } as VirtualMeterData : prev));
-        setIsUploadImageOpen(false);
-        setIsConfirmImageOpen(true);
-        setProgress(70);
-    };
-    const handleProceedFromConfirmImage = () => {
-        setIsConfirmImageOpen(false);
-        if (category === "Prepaid") {
-            setIsSetPaymentModalOpen(true);
-            setProgress(80);
-        } else if (category === "Postpaid") {
-            setIsDeactivateModalOpen(true);
-            setProgress(80);
-        }
-    };
-    const handleProceedFromSetPayment = () => {
-        setIsSetPaymentModalOpen(false);
-        setIsDeactivateModalOpen(true);
-        setProgress(90);
-    };
-    const handleProceedFromDeactivate = () => {
-        setIsDeactivateModalOpen(false);
-        setIsConfirmationModalOpen(true);
-        setProgress(100);
-    };
-    const handleConfirmAssignment = () => {
-        setIsConfirmationModalOpen(false);
-        toast.success(`Meter assigned successfully for ${(category || "").toLowerCase()} customer!`);
-        setFetchedCustomerData(null);
-        setFlowCustomerData(null);
-        setMeterNumber("");
-        setCategory("");
-        setProgress(0);
-    };
-    const isAssignFormComplete = !!meterNumber && !!tariff && !!feeder && !!dss && !!category;
-    const handleOpenCustomerIdModal = () => {
-        setCustomerIdInput("");
-        setFilteredCustomerIds([]);
-        setIsCustomerIdModalOpen(true);
-    };
-    const handleCustomerIdChange = (value: string) => {
-        setCustomerIdInput(value);
-        if (value.trim() === "") {
-            setFilteredCustomerIds([]);
-        } else {
-            const filtered = Array.from(
-                new Set(
-                    (activeTab === "actual" ? actualMeters : virtualMeters)
-                        .filter((customer) =>
-                            customer.customerId
-                                ? customer.customerId.toLowerCase().includes(value.toLowerCase())
-                                : false
-                        )
-                        .map((customer) => customer.customerId as string)
-                )
-            );
-            setFilteredCustomerIds(filtered);
-        }
-    };
-    const handleCustomerIdSelect = (customerId: string) => {
-        const customer = (activeTab === "actual" ? actualMeters : virtualMeters).find(
-            (item) => item.customerId === customerId
-        );
-        if (customer && customer.customerId) {
-            setSelectedCustomer({
-                id: customer.id ?? "",
-                customerId: customer.customerId,
-                meterNumber: "",
-                cin: "",
-                accountNumber: "",
-                tariff: "",
-                feeder: "",
-                dss: "",
-                state: "",
-                city: "",
-                streetName: "",
-                houseNo: "",
-                status: "Assigned",
-                firstName: customer.firstName ?? "",
-                lastName: customer.lastName ?? "",
-                phone: customer.phone ?? "",
-                image: null,
-                consumptionType: "Non-MD",
-                category: customer.category ?? "",
-            } as VirtualMeterData);
-            setCustomerIdInput(customerId);
-            setFilteredCustomerIds([]);
-            setIsCustomerIdModalOpen(false);
-            setIsAssignModalOpen(true);
-            setProgress(50);
+
+        try {
+            await assignMeterMutation.mutateAsync(payload);
+            toast.success(`Meter ${meterNumber} assigned to CIN ${cin} successfully!`);
+            // Reset states for the assignment flow
+            setIsConfirmationModalOpen(false);
+            setIsAssignModalOpen(false); 
             setMeterNumber("");
-            setCin("");
-            setAccountNumber("");
-            setTariff("");
-            setFeeder("");
-            setDss("");
-            setState("");
-            setCity("");
-            setStreetName("");
-            setHouseNo("");
-            setDebitMop("");
-            setCreditMop("");
-            setDebitPaymentPlan("");
-            setCreditPaymentPlan("");
-            setIsAddVirtualMeterOpen(false);
-            setIsDeactivatePhysicalOpen(false);
-            setIsVirtualConfirmOpen(false);
-            setSelectedPhysicalMeter("");
-            setEnergyType("");
-            setFixedEnergy("");
-            setCategory(customer.category ?? "");
-        } else {
-            toast.error("Customer search failed: Customer not found");
+        } catch (e: any) {
+            toast.error(e.message || "Failed to assign meter.");
         }
     };
-    const handleConfirmEditFromSetPayment = () => {
-        if (editCustomer) {
-            toast.success(`Details and payment mode updated successfully for prepaid customer ${editCustomer.customerId}!`);
-        }
-    };
-    const isPaymentFormComplete = debitMop !== "" && creditMop !== "";
+    
+    // Handler to cancel assignment flow and reset states
     const handleCancelConfirmation = () => {
         setIsConfirmationModalOpen(false);
-    };
-    const actualFilterSections = [
-        {
-            title: "Status",
-            options: [
-                { id: "assigned", label: "Assigned" },
-                { id: "unassigned", label: "Unassigned" },
-            ],
-        },
-        {
-            title: "Meter Class",
-            options: [
-                { id: "singlePhase", label: "Single phase" },
-                { id: "threePhase", label: "Three Phase" },
-                { id: "mdMeter", label: "MD Meter" },
-            ],
-        },
-    ];
-    const virtualFilterSections = [
-        {
-            title: "Status",
-            options: [
-                { id: "assigned", label: "Assigned" },
-                { id: "deactivated", label: "Deactivated" },
-            ],
-        },
-    ];
-    const handleSearchChange = (term: string) => {
-        setSearchTerm(term);
-    };
-    const handleSortChange = () => {
-        const sortKey: keyof MeterInventoryItem | keyof VirtualMeterData = sortConfig.key ?? (activeTab === "actual" ? "meterNumber" : "meterNumber");
-        const newDirection = sortConfig.direction === "asc" ? "desc" : "asc";
-        setSortConfig({ key: sortKey, direction: newDirection });
-    };
-    const processedData = useMemo(() => {
-        let results: (MeterInventoryItem | VirtualMeterData)[] = activeTab === "actual" ? actualMeters : virtualMeters;
-        if (Object.keys(activeFilters).length > 0) {
-            results = results.filter((item) => {
-                if (activeTab === "actual") {
-                    const meter = item as MeterInventoryItem;
-                    const statusFilters = [
-                        { id: "assigned", value: activeFilters.assigned, status: "Assigned" },
-                        { id: "unassigned", value: activeFilters.unassigned, status: "Unassigned" },
-                    ];
-                    const statusMatch =
-                        statusFilters.every((f) => !f.value) ||
-                        statusFilters.some((filter) => filter.value && meter.status === filter.status);
-                    const classFilters = [
-                        { id: "singlePhase", value: activeFilters.singlePhase, class: "Single phase" },
-                        { id: "threePhase", value: activeFilters.threePhase, class: "Three Phase" },
-                        { id: "mdMeter", value: activeFilters.mdMeter, class: "MD Meter" },
-                    ];
-                    const classMatch =
-                        classFilters.every((f) => !f.value) ||
-                        classFilters.some((filter) => filter.value && meter.meterClass === filter.class);
-                    return statusMatch && classMatch;
-                } else {
-                    const meter = item as VirtualMeterData;
-                    const statusFilters = [
-                        { id: "assigned", value: activeFilters.assigned, status: "Assigned" },
-                        { id: "deactivated", value: activeFilters.deactivated, status: "Deactivated" },
-                    ];
-                    return (
-                        statusFilters.every((f) => !f.value) ||
-                        statusFilters.some((filter) => filter.value && meter.status === filter.status)
-                    );
-                }
-            });
-        }
-        if (searchTerm.trim() !== "") {
-            if (activeTab === "actual") {
-                results = results.filter((item) => {
-                    const meter = item as MeterInventoryItem;
-                    return [
-                        meter.meterNumber,
-                        meter.status || "",
-                        meter.meterClass,
-                    ].some((value) => value.toLowerCase().includes(searchTerm.toLowerCase()));
-                });
-            } else {
-                results = results.filter((item) => {
-                    const meter = item as VirtualMeterData;
-                    return [
-                        meter.meterNumber,
-                        meter.customerId || "",
-                        meter.accountNumber || "",
-                        meter.tariff || "",
-                        meter.status || "",
-                    ].some((value) => value.toLowerCase().includes(searchTerm.toLowerCase()));
-                });
-            }
-        }
-        if (sortConfig.key) {
-            results = [...results].sort((a, b) => {
-                let aValue: string | undefined;
-                let bValue: string | undefined;
-                if (activeTab === "actual") {
-                    const meterA = a as MeterInventoryItem;
-                    const meterB = b as MeterInventoryItem;
-                    aValue = String(meterA[sortConfig.key as keyof MeterInventoryItem] ?? "");
-                    bValue = String(meterB[sortConfig.key as keyof MeterInventoryItem] ?? "");
-                } else {
-                    const meterA = a as VirtualMeterData;
-                    const meterB = b as VirtualMeterData;
-                    aValue = String(meterA[sortConfig.key as keyof VirtualMeterData] ?? "");
-                    bValue = String(meterB[sortConfig.key as keyof VirtualMeterData] ?? "");
-                }
-                if (aValue === undefined || bValue === undefined) {
-                    return 0;
-                }
-                return sortConfig.direction === "asc" ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
-            });
-        }
-        return results;
-    }, [activeTab, actualMeters, virtualMeters, activeFilters, searchTerm, sortConfig.key, sortConfig.direction]);
-    const toggleSelection = (id: string) => {
-        setSelectedTariffs(
-            selectedTariffs.includes(id)
-                ? selectedTariffs.filter((selectedId) => selectedId !== id)
-                : [...selectedTariffs, id]
-        );
-    };
-    const toggleSelectAll = () => {
-        const currentData = activeTab === "actual" ? actualMeters : virtualMeters;
-        if (selectedTariffs.length === currentData.length) {
-            setSelectedTariffs([]);
-        } else {
-            setSelectedTariffs(currentData.map((item) => item.id));
-        }
-    };
-    const handleSaveMeter = (updatedMeter: MeterInventoryItem | VirtualMeterData) => {
-        saveMeterMutation.mutate(updatedMeter);
-    };
-    const handleSaveMeterForActual = (meter: MeterInventoryItem) => {
-        handleSaveMeter(meter);
-    };
-    const handleActivate = () => {
-        if (selectedMeter) {
-            activateMeterMutation.mutate(selectedMeter.id, {
-                onSuccess: () => {
-                    setIsDeactivateDialogOpen(false);
-                    setSelectedMeter(null);
-                },
-            });
-        }
-    };
-    const handleDeactivate = (reason?: string) => {
-        if (selectedMeter) {
-            deactivateMeterMutation.mutate({ id: selectedMeter.id, reason }, {
-                onSuccess: () => {
-                    setIsDeactivateDialogOpen(false);
-                    setSelectedMeter(null);
-                },
-            });
-        }
-    };
-    const handleAssign = (data: {
-        firstName: string;
-        lastName: string;
-        accountNumber: string;
-        nin: string;
-        phone: string;
-        email: string;
-        state: string;
-        city: string;
-        streetName: string;
-        houseNo: string;
-    }) => {
-        if (selectedMeter) {
-            assignMeterMutation.mutate({ id: selectedMeter.id, data });
-        }
-    };
-    const handleBulkUpload = (newData: (MeterInventoryItem | VirtualMeterData)[]) => {
-        bulkUploadMutation.mutate(newData);
-    };
-    const handleSaveVirtualMeter = () => {
-        if (editMeter && isVirtualMeter(editMeter)) {
-            saveVirtualMeterMutation.mutate({ id: editMeter.id, meter: editMeter }, {
-                onSuccess: () => {
-                    setIsEditVirtualMeterOpen(false);
-                    setEditMeter(undefined);
-                    setSelectedMeter(null);
-                    setAccountNumber("");
-                    setCin("");
-                    setTariff("");
-                    setPhone("");
-                    setState("");
-                    setCity("");
-                    setStreetName("");
-                    setHouseNo("");
-                },
-            });
-        } else {
-            alert("Cannot save meter: Invalid or missing customer data.");
-        }
-    };
-    const handleOpenAddVirtualMeter = () => {
-        setCustomerIdInput("");
-        setFilteredCustomerIds([]);
+        setMeterNumber("");
+        setFlowCustomerData(null);
         setSelectedCustomer(null);
-        setSelectedPhysicalMeter("");
-        setIsAddVirtualMeterOpen(true);
-    };
-    const handleCustomerSelect = (customerId: string) => {
-        setCustomerIdInput(customerId);
-        setFilteredCustomerIds([]);
-    };
-    const handleProceedFromSelectCustomer = () => {
-        if (customerIdInput) {
-            setSelectedVirtualCustomerId(customerIdInput);
-        }
-    };
-    const handleProceedToDeactivate = () => {
-        setIsAddVirtualMeterOpen(false);
-        setIsDeactivatePhysicalOpen(true);
-    };
-    const handleDeactivationComplete = () => {
-        if (selectedPhysicalMeter) {
-            deactivatePhysicalMutation.mutate(selectedPhysicalMeter, {
-                onSuccess: () => {
-                    setIsDeactivatePhysicalOpen(false);
-                    setIsVirtualConfirmOpen(true);
-                },
-            });
-        } else {
-            setIsDeactivatePhysicalOpen(false);
-            setIsVirtualConfirmOpen(true);
-        }
-    };
-    const handleConfirmVirtualMeter = () => {
-        if (selectedCustomer) {
-            createVirtualMeterMutation.mutate(selectedCustomer, {
-                onSuccess: () => {
-                    setIsVirtualConfirmOpen(false);
-                    setSelectedCustomer(null);
-                    setIsDeactivatePhysicalOpen(false);
-                    setAccountNumber("");
-                    setCin("");
-                    setFeeder("");
-                    setDss("");
-                    setTariff("");
-                    setState("");
-                    setCity("");
-                    setStreetName("");
-                    setHouseNo("");
-                    setEnergyType("");
-                    setFixedEnergy("");
-                    setCategory("");
-                },
-            });
-        }
-    };
-    const isFormComplete =
-        meterNumber.trim() !== "" &&
-        cin.trim() !== "" &&
-        accountNumber.trim() !== "" &&
-        tariff.trim() !== "" &&
-        feeder.trim() !== "" &&
-        dss.trim() !== "" &&
-        state.trim() !== "" &&
-        city.trim() !== "" &&
-        streetName.trim() !== "" &&
-        houseNo.trim() !== "" &&
-        selectedCustomer?.phone?.trim() !== "";
-    const isVirtualFormComplete =
-        (cin || "").trim() !== "" &&
-        (accountNumber || "").trim() !== "" &&
-        (tariff || "").trim() !== "" &&
-        (feeder || "").trim() !== "" &&
-        (dss || "").trim() !== "" &&
-        (state || "").trim() !== "" &&
-        (city || "").trim() !== "" &&
-        (streetName || "").trim() !== "" &&
-        (houseNo || "").trim() !== "" &&
-        customerTypes.length > 0 &&
-        (selectedCustomer?.phone || "").trim() !== "";
-    const totalPages = Math.ceil(totalData / rowsPerPage);
-    const paginatedData = processedData.slice(
-        (currentPage - 1) * rowsPerPage,
-        currentPage * rowsPerPage
-    );
-    const isVirtualMeter = (item: MeterInventoryItem | VirtualMeterData): item is VirtualMeterData => "customerId" in item;
-    const changeTab = (tab: "actual" | "virtual") => {
-        setActiveTab(tab);
-        setSelectedTariffs([]);
-        setCurrentPage(1);
-        setActiveFilters({});
-        setSelectedCustomer(null);
-        setCustomerIdInput("");
-        setFilteredCustomerIds([]);
-        setAccountNumber("");
+        // Reset all assign flow states
         setCin("");
+        setAccountNumber("");
+        setTariff("");
         setFeeder("");
         setDss("");
-        setTariff("");
         setState("");
         setCity("");
         setStreetName("");
         setHouseNo("");
-        setEnergyType("");
-        setFixedEnergy("");
         setCategory("");
-        setIsCustomerIdModalOpen(false);
-        setIsAssignModalOpen(false);
-        setIsSetPaymentModalOpen(false);
-        setIsDeactivateModalOpen(false);
-        setIsConfirmationModalOpen(false);
-        setIsAddVirtualMeterOpen(false);
-        setIsDeactivatePhysicalOpen(false);
-        setIsVirtualConfirmOpen(false);
-        setSelectedPhysicalMeter("");
-        setSelectedVirtualCustomerId("");
     };
-    const handleRowsPerPageChange = (value: string) => {
-        setRowsPerPage(Number(value));
+
+    const handlePageChange = (newPage: number) => {
+        setCurrentPage(newPage);
+    };
+
+    const handlePageSizeChange = (size: string) => {
+        setPageSize(Number(size));
+        setCurrentPage(1); // Reset to first page when page size changes
+    };
+
+    const handleSort = (key: keyof MeterInventoryItem) => {
+        if (sortBy === key) {
+            setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+        } else {
+            setSortBy(key);
+            setSortDirection("asc");
+        }
+    };
+
+    const handleSearch = (term: string) => {
+        setSearchTerm(term);
         setCurrentPage(1);
     };
-    const handlePrevious = () => {
-        setCurrentPage((prev) => Math.max(prev - 1, 1));
-    };
-    const handleNext = () => {
-        setCurrentPage((prev) => Math.min(prev + 1, totalPages));
-    };
-    // Show loading state until component is mounted and data is loaded
-    if (!mounted || isLoading) {
+
+    // --- RENDER FUNCTIONS ---
+
+    // Function to render the action dropdown with conditional logic
+    const renderActionDropdown = (meter: MeterInventoryItem) => {
+        // Normalize status strings to upper case for reliable comparison
+        const status = meter.status?.toUpperCase() || '';
+        const meterStage = meter.meterStage?.toUpperCase() || '';
+
+        const isActive = status === "ACTIVE";
+        const isInactive = status === "INACTIVE";
+
+        const isAssigned = meterStage === "ASSIGNED";
+        const isPending = meterStage === "PENDING APPROVAL";
+        
+        // Show Assign only if not assigned and not pending
+        const showAssign = !isAssigned && !isPending;
+        
         return (
-            <div className="p-6 h-screen overflow-x-hidden bg-transparent">
-                <ContentHeader
-                    title="Meters"
-                    description="Manage and Access All Meter Records."
-                />
-                <div>Loading...</div>
-            </div>
-        );
-    }
-    return (
-        <div className="p-6 h-screen overflow-hidden bg-transparent">
-            <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4 bg-transparent">
-                <ContentHeader
-                    title="Meters"
-                    description="Manage and Access All Meter Records."
-                />
-                <div className="flex flex-col md:flex-row gap-2 bg-transparent">
-                    <Button
-                        className="flex items-center gap-2 border font-medium border-[#161CCA] text-[#161CCA] w-full md:w-auto cursor-pointer"
-                        variant="outline"
-                        size="lg"
-                        onClick={() => setIsBulkUploadDialogOpen(true)}
-                    >
-                        <CirclePlus size={14} strokeWidth={2.3} className="h-4 w-4" />
-                        <span className="text-sm md:text-base">Bulk Upload</span>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="h-8 w-8 p-0">
+                        <span className="sr-only">Open menu</span>
+                        <MoreVertical className="h-4 w-4" />
                     </Button>
-                    {activeTab === "actual" && (
-                        <Button
-                            className="flex items-center gap-2 bg-[#161CCA] text-white font-medium w-full md:w-auto cursor-pointer"
-                            variant="secondary"
-                            size="lg"
-                            onClick={handleOpenCustomerIdModal}
-                        >
-                            <CirclePlus size={14} strokeWidth={2.3} className="h-4 w-4" />
-                            <span className="text-sm md:text-base">Assign Meter</span>
-                        </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    
+                    {/* View Details (Always visible) */}
+                    <DropdownMenuItem
+                        onClick={() => {
+                            setViewMeter(meter);
+                            setIsViewActualDetailsOpen(true);
+                        }}
+                        className="flex items-center gap-2 cursor-pointer"
+                    >
+                        <Eye className="h-4 w-4" />
+                        View Details
+                    </DropdownMenuItem>
+
+                    {isPending && (
+                        // PENDING: Only show Wait for Approval (disabled/informative)
+                        <DropdownMenuItem disabled className="text-yellow-600">
+                            Wait for Approval
+                        </DropdownMenuItem>
                     )}
-                    {activeTab === "virtual" && (
-                        <Button
-                            className="flex items-center gap-2 bg-[#161CCA] text-white font-medium w-full md:w-auto cursor-pointer"
-                            variant="secondary"
-                            size="lg"
-                            onClick={handleOpenAddVirtualMeter}
+
+                    {showAssign && (
+                        // UNASSIGNED: Show Assign Meter
+                        <DropdownMenuItem
+                            onClick={() => {
+                                // Logic to start the assignment flow: set meter, open customer ID dialog
+                                setMeterNumber(meter.meterNumber);
+                                setIsCustomerIdModalOpen(true);
+                                setFlowCustomerData(null);
+                            }}
+                            className="flex items-center gap-2 cursor-pointer"
                         >
-                            <CirclePlus size={14} strokeWidth={2.3} className="h-4 w-4" />
-                            <span className="text-sm md:text-base">Add Virtual Meter</span>
-                        </Button>
+                            <Pencil className="h-4 w-4" />
+                            Assign Meter
+                        </DropdownMenuItem>
                     )}
-                </div>
-            </div>
-            <Card className="p-4 mb-4 border-none shadow-none bg-transparent">
-                <Tabs value={activeTab} onValueChange={(v) => changeTab(v as "actual" | "virtual")}>
-                    <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-                        <TabsList style={{ border: "2px solid #161CCA" }} className="h-12">
-                            <TabsTrigger
-                                value="actual"
-                                className="data-[state=active]:bg-[#161CCA] cursor-pointer data-[state=active]:text-white p-4"
+
+                    {isAssigned && isActive && (
+                        // ACTIVE METER: Show Edit and Deactivate
+                        <>
+                            <DropdownMenuItem
+                                onClick={() => {
+                                    setEditMeter(meter);
+                                    setIsAddDialogOpen(true);
+                                }}
+                                className="flex items-center gap-2 cursor-pointer"
                             >
-                                Actual Meters
-                            </TabsTrigger>
-                            <TabsTrigger
-                                value="virtual"
-                                className="data-[state=active]:bg-[#161CCA] cursor-pointer data-[state=active]:text-white p-4"
+                                <Pencil className="h-4 w-4" />
+                                Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                onClick={() => handleOpenChangeState(meter, 'Deactivate')}
+                                className="flex items-center gap-2 cursor-pointer text-red-600"
                             >
-                                Virtual Meters
-                            </TabsTrigger>
-                        </TabsList>
-                        <div className="flex items-center gap-2 w-full lg:w-auto">
-                            <SearchControl
-                                onSearchChange={handleSearchChange}
-                                value={searchTerm}
-                                placeholder="Search by Meter Number, SIM Number, or Status"
-                            />
-                            <FilterControl
-                                sections={activeTab === "actual" ? actualFilterSections : virtualFilterSections}
-                                filterType={activeTab === "actual" ? "multi-section" : "status"}
-                                onApply={(filters) => setActiveFilters(filters)}
-                                onReset={() => setActiveFilters({})}
-                            />
-                            <SortControl
-                                onSortChange={handleSortChange}
-                                currentSort={sortConfig.key ? `${sortConfig.key} (${sortConfig.direction})` : ""}
-                            />
-                            <Button
-                                variant="outline"
-                                size="lg"
-                                className="gap-2 border border-[#161CCA] text-[#161CCA] font-medium w-full lg:w-auto cursor-pointer"
-                            >
-                                <SquareArrowOutUpRight className="text-[#161CCA]" size={15} strokeWidth={2.3} />
-                                <span className="text-sm lg:text-base font-medium">Export</span>
-                            </Button>
-                        </div>
+                                <Ban className="h-4 w-4" />
+                                Deactivate
+                            </DropdownMenuItem>
+                        </>
+                    )}
+                    
+                    {isAssigned && isInactive && (
+                        // DEACTIVATED METER: Show Activate
+                        <DropdownMenuItem
+                            onClick={() => handleOpenChangeState(meter, 'Activate')}
+                            className="flex items-center gap-2 cursor-pointer text-green-600"
+                        >
+                            <CheckCircle className="h-4 w-4" />
+                            Activate
+                        </DropdownMenuItem>
+                    )}
+                </DropdownMenuContent>
+            </DropdownMenu>
+        );
+    };
+
+    const renderVirtualActionDropdown = (meter: VirtualMeterData) => {
+        return (
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="h-8 w-8 p-0">
+                        <span className="sr-only">Open menu</span>
+                        <MoreVertical className="h-4 w-4" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                        onClick={() => {
+                            setViewVirtualMeter(meter);
+                            setIsViewVirtualDetailsOpen(true);
+                        }}
+                        className="flex items-center gap-2 cursor-pointer"
+                    >
+                        <Eye className="h-4 w-4" />
+                        View Details
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                        onClick={() => {
+                            setEditVirtualMeter(meter);
+                            setIsEditVirtualDialogOpen(true);
+                        }}
+                        className="flex items-center gap-2 cursor-pointer"
+                    >
+                        <Pencil className="h-4 w-4" />
+                        Edit
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+        );
+    };
+
+    const renderRow = (meter: MeterInventoryItem | VirtualMeterData) => {
+        const isVirtual = "dss" in meter; 
+
+        const displayMeter = meter as MeterInventoryItem;
+        const statusStyle = getStatusStyle(displayMeter.status);
+        const stageStyle = getStatusStyle(displayMeter.meterStage);
+
+        return (
+            <TableRow key={meter.id}>
+                <TableCell>
+                    <Checkbox />
+                </TableCell>
+                <TableCell className="font-medium">{displayMeter.meterNumber}</TableCell>
+                <TableCell>{displayMeter.meterType}</TableCell>
+                <TableCell>{displayMeter.meterManufacturer}</TableCell>
+                <TableCell>{displayMeter.meterCategory}</TableCell>
+                <TableCell>
+                    <div className={cn("px-2 py-0.5 rounded-full text-xs font-medium w-fit", statusStyle.className)}>
+                        {displayMeter.status}
                     </div>
-                    <TabsContent value="actual" className="overflow-x-hidden">
-                        <Card className="border-none shadow-none bg-transparent overflow-x-auto min-h-[calc(100vh-300px)]">
-                            <Table className="table-auto w-full bg-transparent">
-                                <TableHeader className="bg-transparent">
+                </TableCell>
+                <TableCell>
+                    <div className={cn("px-2 py-0.5 rounded-full text-xs font-medium w-fit", stageStyle.className)}>
+                        {displayMeter.meterStage}
+                    </div>
+                </TableCell>
+                <TableCell>
+                    {isVirtual ? renderVirtualActionDropdown(meter as VirtualMeterData) : renderActionDropdown(displayMeter)}
+                </TableCell>
+            </TableRow>
+        );
+    };
+
+
+    const actualMeters = data?.actualMeters || [];
+    const virtualMeters = data?.virtualMeters || [];
+    const totalData = data?.totalData || 0;
+    const totalPages = Math.ceil(totalData / pageSize);
+
+    if (!mounted) {
+        return null;
+    }
+
+    return (
+        <div className="space-y-6 p-6">
+            <ContentHeader
+                title="Meter Management"
+                actions={
+                    <div className="flex gap-4">
+                        <Button
+                            variant="outline"
+                            onClick={() => setIsBulkUploadOpen(true)}
+                            className="text-[#161CCA] border-[#161CCA] hover:bg-[#161CCA]/10"
+                        >
+                            <SquareArrowOutUpRight className="mr-2 h-4 w-4" /> Bulk Upload
+                        </Button>
+                        <Button onClick={() => setIsAddDialogOpen(true)} className="bg-[#161CCA] text-white hover:bg-[#161CCA]/90">
+                            <CirclePlus className="mr-2 h-4 w-4" /> Add Meter
+                        </Button>
+                    </div>
+                }
+            />
+
+            <Tabs defaultValue="actual" onValueChange={(value) => {
+                setActiveTab(value);
+                setCurrentPage(1); 
+            }}>
+                <TabsList className="bg-white border-b border-gray-200">
+                    <TabsTrigger value="actual" className="data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#161CCA] data-[state=active]:text-[#161CCA]">
+                        Actual Meters
+                    </TabsTrigger>
+                    <TabsTrigger value="virtual" className="data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-[#161CCA] data-[state=active]:text-[#161CCA]">
+                        Virtual Meters
+                    </TabsTrigger>
+                </TabsList>
+
+                <div className="flex justify-between items-center py-4">
+                    <div className="flex gap-4">
+                        <SearchControl
+                            placeholder="Search by meter number, SIM number..."
+                            searchTerm={searchTerm}
+                            onSearch={handleSearch}
+                        />
+                        <FilterControl
+                            filters={[
+                                { key: "category", label: "Category", options: ["Prepaid", "Postpaid"] },
+                                { key: "status", label: "Status", options: ["Active", "Inactive"] },
+                            ]}
+                            onApply={(key, value) => { /* Handle filter application */ }}
+                        />
+                    </div>
+                </div>
+
+                <TabsContent value="actual" className="mt-0">
+                    <Card className="p-4">
+                        <div className="overflow-x-auto">
+                            <Table>
+                                <TableHeader>
                                     <TableRow>
-                                        <TableHead className="px-4 py-3 w-[100px]">
-                                            <div className="flex items-center gap-2">
-                                                <Checkbox
-                                                    className="h-4 w-4 border-gray-500"
-                                                    checked={selectedTariffs.length === actualMeters.length && actualMeters.length > 0}
-                                                    onCheckedChange={toggleSelectAll}
-                                                />
-                                                <span className="text-sm font-medium text-gray-900">S/N</span>
-                                            </div>
+                                        <TableHead>
+                                            <Checkbox />
                                         </TableHead>
-                                        <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">Meter Number</TableHead>
-                                        <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">SIM Number</TableHead>
-                                        <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">Old SGC</TableHead>
-                                        <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">New SGC</TableHead>
-                                        <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">Manufacturer</TableHead>
-                                        <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">Class</TableHead>
-                                        <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">Category</TableHead>
-                                        <TableHead className="px-4 py-3 text-sm font-medium text-gray-900 text-center">Meter Stage</TableHead>
-                                        <TableHead className="px-4 py-3 text-sm font-medium text-gray-900 text-left">Activation Status</TableHead>
-                                        <TableHead className="px-4 py-3 text-sm font-medium text-gray-900 text-right">Actions</TableHead>
+                                        <TableHead onClick={() => handleSort("meterNumber" as keyof MeterInventoryItem)} className="cursor-pointer">Meter Number</TableHead>
+                                        <TableHead onClick={() => handleSort("meterType" as keyof MeterInventoryItem)} className="cursor-pointer">Type</TableHead>
+                                        <TableHead onClick={() => handleSort("meterManufacturer" as keyof MeterInventoryItem)} className="cursor-pointer">Manufacturer</TableHead>
+                                        <TableHead onClick={() => handleSort("meterCategory" as keyof MeterInventoryItem)} className="cursor-pointer">Category</TableHead>
+                                        <TableHead onClick={() => handleSort("status" as keyof MeterInventoryItem)} className="cursor-pointer">Status</TableHead>
+                                        <TableHead onClick={() => handleSort("meterStage" as keyof MeterInventoryItem)} className="cursor-pointer">Stage</TableHead>
+                                        <TableHead>Actions</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {paginatedData.length === 0 ? (
+                                    {isLoading ? (
                                         <TableRow>
-                                            <TableCell colSpan={11} className="h-24 text-center text-sm text-gray-500">
-                                                No data available
-                                            </TableCell>
+                                            <TableCell colSpan={8} className="text-center">Loading meters...</TableCell>
+                                        </TableRow>
+                                    ) : isError ? (
+                                        <TableRow>
+                                            <TableCell colSpan={8} className="text-center text-red-500">Error loading meters.</TableCell>
+                                        </TableRow>
+                                    ) : actualMeters.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={8} className="text-center">No actual meters found.</TableCell>
                                         </TableRow>
                                     ) : (
-                                        paginatedData.map((item, index) =>
-                                            "meterManufacturer" in item ? (
-                                                <TableRow
-                                                    key={item.id}
-                                                    className="hover:bg-gray-50 cursor-pointer"
-                                                >
-                                                    <TableCell className="px-4 py-3">
-                                                        <div className="flex items-center gap-2">
-                                                            <Checkbox
-                                                                className="h-4 w-4 border-gray-500"
-                                                                id={`select-${item.id}`}
-                                                                checked={selectedTariffs.includes(item.id)}
-                                                                onCheckedChange={() => toggleSelection(item.id)}
-                                                            />
-                                                            <span className="text-sm text-gray-900">
-                                                                {index + 1 + (currentPage - 1) * rowsPerPage}
-                                                            </span>
-                                                        </div>
-                                                    </TableCell>
-                                                    <TableCell className="px-4 py-3 text-sm text-gray-900">{item.meterNumber}</TableCell>
-                                                    <TableCell className="px-4 py-3 text-sm text-gray-900">{item.simNumber}</TableCell>
-                                                    <TableCell className="px-4 py-3 text-sm text-gray-900">{item.oldSgc}</TableCell>
-                                                    <TableCell className="px-4 py-3 text-sm text-gray-900">{item.newSgc}</TableCell>
-                                                    <TableCell className="px-4 py-3 text-sm text-gray-900">{item.meterManufacturer}</TableCell>
-                                                    <TableCell className="px-4 py-3 text-sm text-gray-900">{item.meterClass}</TableCell>
-                                                    <TableCell className="px-4 py-3 text-sm text-gray-900">{item.meterCategory}</TableCell>
-                                                    <TableCell className="px-4 py-3 text-center">
-                                                        <span className={cn("inline-block text-sm font-medium", getStatusStyle(item.meterStage))}>
-                                                            {item.meterStage}
-                                                        </span>
-                                                    </TableCell>
-                                                    <TableCell className="px-4 py-3">
-                                                        <span className={cn("inline-block text-sm font-medium", getStatusStyle(item.status))}>
-                                                            {item.status}
-                                                        </span>
-                                                    </TableCell>
-                                                    <TableCell className="px-4 py-3 text-right">
-                                                        <DropdownMenu>
-                                                            <DropdownMenuTrigger asChild>
-                                                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 cursor-pointer">
-                                                                    <MoreVertical size={14} className="text-gray-500" />
-                                                                </Button>
-                                                            </DropdownMenuTrigger>
-                                                            <DropdownMenuContent align="end" className="w-fit bg-white shadow-lg">
-                                                                <DropdownMenuItem
-                                                                    className="flex items-center gap-2 cursor-pointer"
-                                                                    onClick={(event) => {
-                                                                        event.stopPropagation();
-                                                                        setViewMeter(item as MeterInventoryItem);
-                                                                        setIsViewActualDetailsOpen(true);
-                                                                    }}
-                                                                >
-                                                                    <Eye size={14} />
-                                                                    <span className="text-sm text-gray-700">View Details</span>
-                                                                </DropdownMenuItem>
-                                                                <DropdownMenuItem
-                                                                    className="flex items-center gap-2 cursor-pointer"
-                                                                    onClick={(event) => {
-                                                                        event.stopPropagation();
-                                                                        setSelectedMeter(item);
-                                                                        setEditMeter(item);
-                                                                        setIsAddDialogOpen(true);
-                                                                    }}
-                                                                >
-                                                                    <Pencil size={14} />
-                                                                    <span className="text-sm text-gray-700">Edit Meter</span>
-                                                                </DropdownMenuItem>
-                                                                <DropdownMenuItem
-                                                                    className="flex items-center gap-2 cursor-pointer"
-                                                                    onClick={(event) => {
-                                                                        event.stopPropagation();
-                                                                        setSelectedMeter(item);
-                                                                        setIsDeactivateDialogOpen(true);
-                                                                    }}
-                                                                >
-                                                                    {item.status === "Deactivated" ? (
-                                                                        <>
-                                                                            <CheckCircle size={14} />
-                                                                            <span className="text-sm text-gray-700">Activate</span>
-                                                                        </>
-                                                                    ) : (
-                                                                        <>
-                                                                            <Ban size={14} />
-                                                                            <span className="text-sm text-gray-700">Deactivate</span>
-                                                                        </>
-                                                                    )}
-                                                                </DropdownMenuItem>
-                                                            </DropdownMenuContent>
-                                                        </DropdownMenu>
-                                                    </TableCell>
-                                                </TableRow>
-                                            ) : null
-                                        )
+                                        actualMeters.map(renderRow)
                                     )}
                                 </TableBody>
                             </Table>
-                        </Card>
-                    </TabsContent>
-                    <TabsContent value="virtual">
-                        <Card className="border-none shadow-none bg-transparent min-h-[calc(100vh-300px)]">
-                            <div className="overflow-x-auto">
-                                <Table className="w-full table-auto">
-                                    <TableHeader className="bg-transparent">
-                                        <TableRow className="bg-transparent hover:bg-gray-50">
-                                            <TableHead className="w-20 px-4 py-3 text-left text-sm font-semibold text-gray-700">
-                                                <div className="flex items-center gap-2">
-                                                    <Checkbox
-                                                        className="h-4 w-4 border-gray-500"
-                                                        id="select-all-virtual"
-                                                        checked={virtualMeters.length > 0 && selectedTariffs.length === virtualMeters.length}
-                                                        onCheckedChange={toggleSelectAll}
-                                                    />
-                                                    <Label htmlFor="select-all-virtual" className="text-sm font-semibold text-gray-700">
-                                                        S/N
-                                                    </Label>
-                                                </div>
-                                            </TableHead>
-                                            <TableHead className="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-normal">
-                                                Customer ID
-                                            </TableHead>
-                                            <TableHead className="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-normal">
-                                                Meter Number
-                                            </TableHead>
-                                            <TableHead className="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-normal">
-                                                Account Number
-                                            </TableHead>
-                                            <TableHead className="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-normal">
-                                                Feeder
-                                            </TableHead>
-                                            <TableHead className="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-normal">
-                                                DSS
-                                            </TableHead>
-                                            <TableHead className="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-normal">
-                                                CIN
-                                            </TableHead>
-                                            <TableHead className="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-normal">
-                                                Tariff
-                                            </TableHead>
-                                            <TableHead className="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-normal">
-                                                Category
-                                            </TableHead>
-                                            <TableHead className="px-4 py-3 text-center text-sm font-semibold text-gray-700 whitespace-normal">
-                                                Activation Status
-                                            </TableHead>
-                                            <TableHead className="w-20 px-4 py-3 text-right text-sm font-semibold text-gray-700">
-                                                Actions
-                                            </TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {paginatedData.length === 0 ? (
-                                            <TableRow>
-                                                <TableCell colSpan={11} className="h-24 text-center text-sm text-gray-500">
-                                                    No virtual meter available
-                                                </TableCell>
-                                            </TableRow>
-                                        ) : (
-                                            paginatedData.map((item, index) =>
-                                                isVirtualMeter(item) ? (
-                                                    <TableRow key={item.id} className="hover:bg-gray-50">
-                                                        <TableCell className="px-4 py-3">
-                                                            <div className="flex items-center gap-2">
-                                                                <Checkbox
-                                                                    className="h-4 w-4 border-gray-500"
-                                                                    id={`select-${item.id}`}
-                                                                    checked={selectedTariffs.includes(item.id)}
-                                                                    onCheckedChange={() => toggleSelection(item.id)}
-                                                                />
-                                                                <span className="text-sm text-gray-900">
-                                                                    {index + 1 + (currentPage - 1) * rowsPerPage}
-                                                                </span>
-                                                            </div>
-                                                        </TableCell>
-                                                        <TableCell className="px-4 py-3 text-sm text-gray-900 break-words">
-                                                            {item.customerId}
-                                                        </TableCell>
-                                                        <TableCell className="px-4 py-3 text-sm text-gray-900 break-words">
-                                                            {item.meterNumber}
-                                                        </TableCell>
-                                                        <TableCell className="px-4 py-3 text-sm text-gray-900 break-words">
-                                                            {item.accountNumber}
-                                                        </TableCell>
-                                                        <TableCell className="px-4 py-3 text-sm text-gray-900 break-words">
-                                                            {item.feeder || ''}
-                                                        </TableCell>
-                                                        <TableCell className="px-4 py-3 text-sm text-gray-900 break-words">
-                                                            {item.dss}
-                                                        </TableCell>
-                                                        <TableCell className="px-4 py-3 text-sm text-gray-900 break-words">
-                                                            {item.cin}
-                                                        </TableCell>
-                                                        <TableCell className="px-4 py-3 text-sm text-gray-900 break-words">
-                                                            {item.tariff}
-                                                        </TableCell>
-                                                        <TableCell className="px-4 py-3 text-sm text-gray-900 break-words">
-                                                            {item.category || 'N/A'}
-                                                        </TableCell>
-                                                        <TableCell className="px-4 py-3 text-center">
-                                                            <span className={cn("inline-block text-sm font-medium", getStatusStyle(item.status))}>
-                                                                {item.status}
-                                                            </span>
-                                                        </TableCell>
-                                                        <TableCell className="px-4 py-3 text-right">
-                                                            <DropdownMenu>
-                                                                <DropdownMenuTrigger asChild>
-                                                                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 cursor-pointer">
-                                                                        <MoreVertical size={14} className="text-gray-500" />
-                                                                    </Button>
-                                                                </DropdownMenuTrigger>
-                                                                <DropdownMenuContent align="end" className="w-fit bg-white shadow-lg">
-                                                                    <DropdownMenuItem
-                                                                        className="flex items-center gap-2 cursor-pointer"
-                                                                        onClick={(event) => {
-                                                                            event.stopPropagation();
-                                                                            setViewVirtualMeter(item as VirtualMeterData);
-                                                                            setIsViewVirtualDetailsOpen(true);
-                                                                        }}
-                                                                    >
-                                                                        <Eye size={14} />
-                                                                        <span className="text-sm text-gray-700">View Details</span>
-                                                                    </DropdownMenuItem>
-                                                                    <DropdownMenuItem
-                                                                        className="flex items-center gap-2 cursor-pointer"
-                                                                        onClick={(event) => {
-                                                                            event.stopPropagation();
-                                                                            setSelectedMeter(item);
-                                                                            setEditMeter(item);
-                                                                            setIsEditVirtualMeterOpen(true);
-                                                                        }}
-                                                                    >
-                                                                        <Pencil size={14} />
-                                                                        <span className="text-sm text-gray-700">Edit Meter</span>
-                                                                    </DropdownMenuItem>
-                                                                    <DropdownMenuItem
-                                                                        className="flex items-center gap-2 cursor-pointer"
-                                                                        onClick={(event) => {
-                                                                            event.stopPropagation();
-                                                                            setSelectedMeter(item);
-                                                                            setIsDeactivateDialogOpen(true);
-                                                                        }}
-                                                                    >
-                                                                        {item.status === "Deactivated" ? (
-                                                                            <>
-                                                                                <CheckCircle size={14} />
-                                                                                <span className="text-sm text-gray-700">Activate</span>
-                                                                            </>
-                                                                        ) : (
-                                                                            <>
-                                                                                <Ban size={14} />
-                                                                                <span className="text-sm text-gray-700">Deactivate</span>
-                                                                            </>
-                                                                        )}
-                                                                    </DropdownMenuItem>
-                                                                </DropdownMenuContent>
-                                                            </DropdownMenu>
-                                                        </TableCell>
-                                                    </TableRow>
-                                                ) : null
-                                            )
-                                        )}
-                                    </TableBody>
-                                </Table>
+                        </div>
+                        <div className="flex items-center justify-between space-x-2 py-4">
+                            <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                                <span>Rows per page:</span>
+                                <Select value={String(pageSize)} onValueChange={handlePageSizeChange}>
+                                    <SelectTrigger className="h-8 w-[70px]">
+                                        <SelectValue placeholder={pageSize} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="10">10</SelectItem>
+                                        <SelectItem value="20">20</SelectItem>
+                                        <SelectItem value="50">50</SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </div>
-                        </Card>
-                    </TabsContent>
-                </Tabs>
-            </Card>
-            <Pagination className="mt-4 flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                    <span className="text-sm font-medium">Rows per page</span>
-                    <Select
-                        value={rowsPerPage.toString()}
-                        onValueChange={handleRowsPerPageChange}
-                    >
-                        <SelectTrigger className="h-8 w-[70px]">
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent
-                            position="popper"
-                            side="top"
-                            align="center"
-                            className="mb-1 ring-gray-50"
-                        >
-                            <SelectItem value="10">10</SelectItem>
-                            <SelectItem value="24">24</SelectItem>
-                            <SelectItem value="48">48</SelectItem>
-                        </SelectContent>
-                    </Select>
-                    <span className="text-sm font-medium">
-                        {(currentPage - 1) * rowsPerPage + 1}-
-                        {Math.min(currentPage * rowsPerPage, processedData.length)} of {totalData}
-                    </span>
-                </div>
-                <PaginationContent>
-                    <PaginationItem>
-                        <PaginationPrevious
-                            href="#"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                handlePrevious();
-                            }}
-                            aria-disabled={currentPage === 1}
-                        />
-                    </PaginationItem>
-                    <PaginationItem>
-                        <PaginationNext
-                            href="#"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                handleNext();
-                            }}
-                            aria-disabled={currentPage === totalPages}
-                        />
-                    </PaginationItem>
-                </PaginationContent>
-            </Pagination>
-            <CustomerIdDialog
-                isOpen={isCustomerIdModalOpen}
-                onOpenChange={setIsCustomerIdModalOpen}
-                customerIdInput={customerIdInput}
-                onCustomerIdChange={setCustomerIdInput}
-                filteredCustomerIds={filteredCustomerIds}
-                onCustomerSelect={setCustomerIdInput}
-                onProceed={handleCustomerProceed}
-                isLoading={isFetching}
-            />
-            <AssignMeterDialog
-                isOpen={isAssignModalOpen}
-                onOpenChange={setIsAssignModalOpen}
-                customer={fetchedCustomerData}
-                meterNumber={meterNumber}
-                setMeterNumber={setMeterNumber}
-                tariff={tariff}
-                setTariff={setTariff}
-                feeder={feeder}
-                setFeeder={setFeeder}
-                dss={dss}
-                setDss={setDss}
-                category={category}
-                setCategory={setCategory}
-                cin={cin}
-                setCin={setCin}
-                accountNumber={accountNumber}
-                setAccountNumber={setAccountNumber}
-                state={state}
-                setState={setState}
-                city={city}
-                setCity={setCity}
-                streetName={streetName}
-                setStreetName={setStreetName}
-                houseNo={houseNo}
-                setHouseNo={setHouseNo}
-                phone={phone}
-                setPhone={setPhone}
-                onProceed={handleProceedFromAssign}
-                isFormComplete={isAssignFormComplete}
-                progress={progress}
-            />
-            <UploadImageDialog
-                isOpen={isUploadImageOpen}
-                onOpenChange={(open) => {
-                    setIsUploadImageOpen(open);
-                    if (!open) setUploadedImage(null);
-                }}
-                onProceed={handleProceedFromUploadImage}
-                onCancel={() => setIsUploadImageOpen(false)}
-            />
-            <ConfirmImageDialog
-                isOpen={isConfirmImageOpen}
-                onOpenChange={(open) => {
-                    setIsConfirmImageOpen(open);
-                    if (!open) setUploadedImage(null);
-                }}
-                image={uploadedImage}
-                onProceed={handleProceedFromConfirmImage}
-                onCancel={() => setIsConfirmImageOpen(false)}
-            />
-            <SelectCustomerDialog
-                isOpen={isAddVirtualMeterOpen}
-                onOpenChange={setIsAddVirtualMeterOpen}
-                customerIdInput={customerIdInput}
-                onCustomerIdChange={handleCustomerIdChange}
-                filteredCustomerIds={filteredCustomerIds}
-                onCustomerSelect={handleCustomerSelect}
-                onProceed={handleProceedFromSelectCustomer}
-                isLoading={isFetchingVirtual}
-            />
-            <AddVirtualMeterDetailsDialog
-                isOpen={isAddVirtualMeterOpen && selectedCustomer !== null}
-                onOpenChange={(open) => {
-                    if (!open) {
-                        setSelectedCustomer(null);
-                        setIsAddVirtualMeterOpen(false);
-                    }
-                }}
-                selectedCustomer={selectedCustomer}
-                setSelectedCustomer={setSelectedCustomer}
-                accountNumber={accountNumber}
-                setAccountNumber={setAccountNumber}
-                cin={cin}
-                setCin={setCin}
-                feeder={feeder}
-                setFeeder={setFeeder}
-                dss={dss}
-                setDss={setDss}
-                tariff={tariff}
-                setTariff={setTariff}
-                state={state}
-                setState={setState}
-                city={city}
-                setCity={setCity}
-                streetName={streetName}
-                setStreetName={setStreetName}
-                houseNo={houseNo}
-                setHouseNo={setHouseNo}
-                energyType={energyType}
-                setEnergyType={setEnergyType}
-                fixedEnergy={fixedEnergy}
-                setFixedEnergy={setFixedEnergy}
-                onProceed={handleProceedToDeactivate}
-                isFormComplete={isVirtualFormComplete}
-                nigerianStates={nigerianStates}
-                customerTypes={customerTypes}
-            />
-            <DeactivatePhysicalMeterDialog
-                isOpen={isDeactivatePhysicalOpen}
-                onOpenChange={(open) => {
-                    setIsDeactivatePhysicalOpen(open);
-                    if (!open) {
-                        setSelectedPhysicalMeter("");
-                    }
-                }}
-                onProceed={handleDeactivationComplete}
-                onMeterSelect={setSelectedPhysicalMeter}
-                meters={actualMeters.map((m) => ({
-                    id: m.id,
-                    number: m.meterNumber,
-                    address: `${m.streetName || "N/A"}, ${m.city || "N/A"}, ${m.state || "N/A"}`,
-                }))}
-                address=""
-            />
-            <VirtualMeterConfirmDialog
-                isOpen={isVirtualConfirmOpen}
-                onOpenChange={setIsVirtualConfirmOpen}
-                customerId={selectedCustomer?.customerId}
-                onConfirm={handleConfirmVirtualMeter}
-            />
-            <EditVirtualMeterDialog
-                isOpen={isEditVirtualMeterOpen}
-                onClose={() => {
-                    setIsEditVirtualMeterOpen(false);
-                    setEditMeter(undefined);
-                    setSelectedMeter(null);
-                }}
-                onSave={handleSaveVirtualMeter}
-                meter={
-                    editMeter && isVirtualMeter(editMeter)
-                        ? {
-                            id: editMeter.id,
-                            customerId: editMeter.customerId,
-                            meterNumber: editMeter.meterNumber ?? "",
-                            accountNumber: editMeter.accountNumber ?? "",
-                            dss: editMeter.dss ?? "",
-                            cin: editMeter.cin ?? "",
-                            tariff: editMeter.tariff ?? "",
-                            status: editMeter.status ?? "Assigned",
-                            firstName: editMeter.firstName ?? "",
-                            lastName: editMeter.lastName ?? "",
-                            phone: editMeter.phone ?? "",
-                            state: editMeter.state ?? "",
-                            city: editMeter.city ?? "",
-                            streetName: editMeter.streetName ?? "",
-                            houseNo: editMeter.houseNo ?? "",
-                            custoType: editMeter.custoType ?? "",
-                            energyType: editMeter.energyType ?? "",
-                            fixedEnergy: editMeter.fixedEnergy ?? "",
-                        } as VirtualMeterData
-                        : null
-                }
-            />
+                            <Pagination>
+                                <PaginationContent>
+                                    <PaginationItem>
+                                        <PaginationPrevious
+                                            onClick={() => handlePageChange(currentPage - 1)}
+                                            disabled={currentPage === 1}
+                                        />
+                                    </PaginationItem>
+                                    <div className="text-sm text-muted-foreground px-4 flex items-center h-9">
+                                        Page {currentPage} of {totalPages}
+                                    </div>
+                                    <PaginationItem>
+                                        <PaginationNext
+                                            onClick={() => handlePageChange(currentPage + 1)}
+                                            disabled={currentPage === totalPages || totalPages === 0}
+                                        />
+                                    </PaginationItem>
+                                </PaginationContent>
+                            </Pagination>
+                        </div>
+                    </Card>
+                </TabsContent>
+
+                <TabsContent value="virtual" className="mt-0">
+                    <Card className="p-4">
+                        <div className="overflow-x-auto">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>
+                                            <Checkbox />
+                                        </TableHead>
+                                        <TableHead>Meter Number</TableHead>
+                                        <TableHead>Type</TableHead>
+                                        <TableHead>Manufacturer</TableHead>
+                                        <TableHead>Category</TableHead>
+                                        <TableHead>Status</TableHead>
+                                        <TableHead>Stage</TableHead>
+                                        <TableHead>Actions</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {isLoading ? (
+                                        <TableRow>
+                                            <TableCell colSpan={8} className="text-center">Loading meters...</TableCell>
+                                        </TableRow>
+                                    ) : isError ? (
+                                        <TableRow>
+                                            <TableCell colSpan={8} className="text-center text-red-500">Error loading meters.</TableCell>
+                                        </TableRow>
+                                    ) : virtualMeters.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={8} className="text-center">No virtual meters found.</TableCell>
+                                        </TableRow>
+                                    ) : (
+                                        virtualMeters.map(renderRow)
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </div>
+                        <div className="flex items-center justify-between space-x-2 py-4">
+                            <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                                <span>Rows per page:</span>
+                                <Select value={String(pageSize)} onValueChange={handlePageSizeChange}>
+                                    <SelectTrigger className="h-8 w-[70px]">
+                                        <SelectValue placeholder={pageSize} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="10">10</SelectItem>
+                                        <SelectItem value="20">20</SelectItem>
+                                        <SelectItem value="50">50</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <Pagination>
+                                <PaginationContent>
+                                    <PaginationItem>
+                                        <PaginationPrevious
+                                            onClick={() => handlePageChange(currentPage - 1)}
+                                            disabled={currentPage === 1}
+                                        />
+                                    </PaginationItem>
+                                    <div className="text-sm text-muted-foreground px-4 flex items-center h-9">
+                                        Page {currentPage} of {totalPages}
+                                    </div>
+                                    <PaginationItem>
+                                        <PaginationNext
+                                            onClick={() => handlePageChange(currentPage + 1)}
+                                            disabled={currentPage === totalPages || totalPages === 0}
+                                        />
+                                    </PaginationItem>
+                                </PaginationContent>
+                            </Pagination>
+                        </div>
+                    </Card>
+                </TabsContent>
+            </Tabs>
+
+            {/* --- Dialogs --- */}
+
             <AddMeterDialog
                 isOpen={isAddDialogOpen}
-                onClose={() => {
-                    setIsAddDialogOpen(false);
-                    setEditMeter(undefined);
-                    setSelectedMeter(null);
-                }}
-                onSaveMeter={handleSaveMeterForActual}
-                editMeter={
-                    activeTab === "actual" && editMeter && "meterManufacturer" in editMeter
-                        ? editMeter as MeterInventoryItem
-                        : undefined
-                }
+                onOpenChange={setIsAddDialogOpen}
+                meterToEdit={editMeter}
+                onSave={() => { /* Handle meter save logic */ }}
             />
-            <SetPaymentModeDialog
-                isOpen={isSetPaymentModalOpen}
-                onOpenChange={setIsSetPaymentModalOpen}
-                debitMop={debitMop}
-                setDebitMop={setDebitMop}
-                creditMop={creditMop}
-                setCreditMop={setCreditMop}
-                debitPaymentPlan={debitPaymentPlan}
-                setDebitPaymentPlan={setDebitPaymentPlan}
-                creditPaymentPlan={creditPaymentPlan}
-                setCreditPaymentPlan={setCreditPaymentPlan}
-                progress={progress}
-                isPaymentFormComplete={isPaymentFormComplete}
-                editCustomer={editCustomer}
-                onProceed={editCustomer ? handleConfirmEditFromSetPayment : handleProceedFromSetPayment}
-            />
-            <DeactivateDialog
-                isOpen={isDeactivateDialogOpen}
-                onClose={() => setIsDeactivateDialogOpen(false)}
-                onDeactivate={
-                    selectedMeter
-                        ? activeTab === "actual" && "meterManufacturer" in selectedMeter
-                            ? selectedMeter.status === "Deactivated"
-                                ? handleActivate
-                                : handleDeactivate
-                            : selectedMeter.status === "Deactivated"
-                                ? handleActivate
-                                : handleDeactivate
-                        : handleDeactivate
-                }
-                meterNumber={selectedMeter?.meterNumber ?? ""}
-                action={
-                    selectedMeter
-                        ? activeTab === "actual" && "meterManufacturer" in selectedMeter
-                            ? selectedMeter.status === "Deactivated"
-                                ? "activate"
-                                : "deactivate"
-                            : selectedMeter.status === "Deactivated"
-                                ? "activate"
-                                : "deactivate"
-                        : "deactivate"
-                }
-            />
-            <DeactivateVirtualMeterDialog
-                isOpen={isDeactivateModalOpen}
-                onOpenChange={setIsDeactivateModalOpen}
-                onProceed={handleProceedFromDeactivate}
-            />
-            <BulkUploadDialog<MeterInventoryItem>
-                isOpen={isBulkUploadDialogOpen}
-                onClose={() => setIsBulkUploadDialogOpen(false)}
-                onSave={handleBulkUpload}
-                title="Bulk Upload Meters"
-                requiredColumns={[
-                    "id",
-                    "meterNumber",
-                    "simNumber",
-                    "meterClass",
-                    "meterType",
-                    "oldTariffIndex",
-                    "newTariffIndex",
-                    "meterManufacturer",
-                    "accountNumber",
-                    "oldSgc",
-                    "oldKrn",
-                    "newKrn",
-                    "newSgc",
-                    "tariff",
-                    "approvalStatus",
-                    "status",
+
+            <BulkUploadDialog
+                isOpen={isBulkUploadOpen}
+                onOpenChange={setIsBulkUploadOpen}
+                expectedFields={[
+                    "meterNumber", "simNumber", "meterCategory", "meterClass", "meterType", 
+                    "oldTariffIndex", "newTariffIndex", "meterManufacturer", "accountNumber", 
+                    "oldSgc", "oldKrn", "newKrn", "newSgc", "tariff", "approvalStatus", "status",
                 ]}
                 templateUrl="/templates/meter-template.xlsx"
             />
+
             <ViewMeterDetailsDialog
                 isOpen={isViewActualDetailsOpen}
                 onClose={() => {
@@ -1433,6 +676,7 @@ export default function MeterManagementPage() {
                 }}
                 meter={viewMeter}
             />
+
             <ViewVirtualMeterDetailsDialog
                 isOpen={isViewVirtualDetailsOpen}
                 onClose={() => {
@@ -1441,13 +685,80 @@ export default function MeterManagementPage() {
                 }}
                 meter={viewVirtualMeter}
             />
+
+            {/* Dialog for getting Customer ID/Phone */}
+            <CustomerIdDialog
+                isOpen={isCustomerIdModalOpen}
+                onOpenChange={setIsCustomerIdModalOpen}
+                phone={phone}
+                setPhone={setPhone}
+                onProceed={() => {
+                    setIsCustomerIdModalOpen(false);
+                    setIsAssignModalOpen(true);
+                }}
+            />
+
+            {/* Dialog for entering assignment details */}
+            <AssignMeterDialog
+                isOpen={isAssignModalOpen}
+                onOpenChange={setIsAssignModalOpen}
+                customer={flowCustomerData}
+                meterNumber={meterNumber}
+                setMeterNumber={setMeterNumber}
+                cin={cin}
+                setCin={setCin}
+                accountNumber={accountNumber}
+                setAccountNumber={setAccountNumber}
+                tariff={tariff}
+                setTariff={setTariff}
+                feeder={feeder}
+                setFeeder={setFeeder}
+                dss={dss}
+                setDss={setDss}
+                state={state}
+                setState={setState}
+                city={city}
+                setCity={setCity}
+                streetName={streetName}
+                setStreetName={setStreetName}
+                houseNo={houseNo}
+                setHouseNo={setHouseNo}
+                category={category}
+                setCategory={setCategory}
+                onProceed={() => {
+                    setSelectedCustomer(flowCustomerData);
+                    setIsAssignModalOpen(false);
+                    setIsConfirmationModalOpen(true);
+                }}
+            />
+
+            {/* Dialog for Assign Confirmation (uses Assign Meter API) */}
             <ConfirmationModalDialog
                 isOpen={isConfirmationModalOpen}
                 onOpenChange={setIsConfirmationModalOpen}
                 selectedCustomer={selectedCustomer}
-                onConfirm={handleConfirmAssignment}
+                onConfirm={handleConfirmAssignment} 
                 onCancel={handleCancelConfirmation}
             />
+
+            {/* Dialog for Change State Confirmation (uses Change State API) */}
+            {meterToChangeState && (
+                <ConfirmationModalDialog
+                    isOpen={isChangeStateModalOpen}
+                    onOpenChange={setIsChangeStateModalOpen}
+                    // Reusing ConfirmationModalDialog
+                    selectedCustomer={{
+                        ...meterToChangeState,
+                        customerId: meterToChangeState.meterNumber, 
+                    } as Customer}
+                    onConfirm={handleConfirmChangeState} 
+                    onCancel={() => {
+                        setIsChangeStateModalOpen(false);
+                        setMeterToChangeState(null);
+                        setTargetState('');
+                    }}
+                />
+            )}
         </div>
     );
 }

@@ -3,14 +3,15 @@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertTriangle } from "lucide-react";
-import type { MeterData } from "@/types/meter";
+import type { MeterInventoryItem } from "@/types/meter-inventory";
 
 interface DetachConfirmationDialogProps {
     isOpen: boolean;
     onOpenChange: (open: boolean) => void;
-    customerToDetach: MeterData | null;
+    customerToDetach: MeterInventoryItem | null;
     onConfirm: () => void;
     onCancel: () => void;
+    isSubmitting: boolean; // ADDED
 }
 
 export function DetachConfirmationDialog({
@@ -19,6 +20,7 @@ export function DetachConfirmationDialog({
     customerToDetach,
     onConfirm,
     onCancel,
+    isSubmitting, // ADDED
 }: DetachConfirmationDialogProps) {
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -40,14 +42,16 @@ export function DetachConfirmationDialog({
                         variant="outline"
                         onClick={onCancel}
                         className="border border-[#F50202] text-[#F50202] cursor-pointer"
+                        disabled={isSubmitting} // Use isSubmitting
                     >
                         Cancel
                     </Button>
                     <Button
                         onClick={onConfirm}
                         className="bg-[#F50202] text-white hover:bg-red-700 cursor-pointer"
+                        disabled={isSubmitting} // Use isSubmitting
                     >
-                        Detach
+                        {isSubmitting ? "Detaching..." : "Detach"} {/* ADDED Loading text */}
                     </Button>
                 </DialogFooter>
             </DialogContent>

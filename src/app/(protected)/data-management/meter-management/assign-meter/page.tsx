@@ -1,7 +1,18 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
+import { AssignMeterDialog } from "@/components/meter-management/assign-meter-dialog";
+import { BulkUploadDialog } from "@/components/meter-management/bulk-upload";
+import { ConfirmationModalDialog } from "@/components/meter-management/confirmation-modal-dialog";
+import CustomerIdDialog from "@/components/meter-management/customer-id-dialog";
+import { DeactivateVirtualMeterDialog } from "@/components/meter-management/deactivate-virtual-meter-dialog";
+import { DetachConfirmationDialog } from "@/components/meter-management/detach-confirmation-dialog";
+import { DetachMeterDialog } from "@/components/meter-management/detach-meter-dialog";
+import { EditCustomerDetailsDialog } from "@/components/meter-management/edit-customer-details-dialog";
+import { MigrateMeterDialog } from "@/components/meter-management/migrate-meter-dialog";
+import { SetPaymentModeDialog } from "@/components/meter-management/set-payment-mode-dialog";
 import { FilterControl } from "@/components/search-control";
+import { getStatusStyle } from "@/components/status-style";
 import { Button } from "@/components/ui/button";
 import { ContentHeader } from "@/components/ui/content-header";
 import {
@@ -11,18 +22,8 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import {
-    ArrowUpDown,
-    Search,
-    MoreVertical,
-    Pencil,
-    SquareArrowOutUpRight,
-    Navigation,
-    Unlink,
-    Loader2,
-    Database,
-} from "lucide-react";
-import { useState, useEffect, useMemo } from "react";
+import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
     Table,
     TableBody,
@@ -31,23 +32,22 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import CustomerIdDialog from "@/components/meter-management/customer-id-dialog";
-import { AssignMeterDialog } from "@/components/meter-management/assign-meter-dialog";
-import type { MeterInventoryItem } from "@/types/meter-inventory";
-import type { VirtualMeterData } from "@/types/meter";
-import { EditCustomerDetailsDialog } from "@/components/meter-management/edit-customer-details-dialog";
-import { SetPaymentModeDialog } from "@/components/meter-management/set-payment-mode-dialog";
-import { DeactivateVirtualMeterDialog } from "@/components/meter-management/deactivate-virtual-meter-dialog";
-import { ConfirmationModalDialog } from "@/components/meter-management/confirmation-modal-dialog";
-import { MigrateMeterDialog } from "@/components/meter-management/migrate-meter-dialog";
-import { DetachMeterDialog } from "@/components/meter-management/detach-meter-dialog";
-import { DetachConfirmationDialog } from "@/components/meter-management/detach-confirmation-dialog";
-import { BulkUploadDialog } from "@/components/meter-management/bulk-upload";
-import { cn } from "@/lib/utils";
-import { getStatusStyle } from "@/components/status-style";
-import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useMeters } from "@/hooks/use-assign-meter";
+import { cn } from "@/lib/utils";
+import type { VirtualMeterData } from "@/types/meter";
+import type { MeterInventoryItem } from "@/types/meter-inventory";
+import {
+    ArrowUpDown,
+    Database,
+    Loader2,
+    MoreVertical,
+    Navigation,
+    Pencil,
+    Search,
+    SquareArrowOutUpRight,
+    Unlink,
+} from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 
 // Define filter sections
 const filterSections = [
@@ -126,6 +126,7 @@ export default function AssignMeterPage() {
         searchTerm,
         sortBy: sortConfig.key as any,
         sortDirection: sortConfig.direction,
+        type: "assigned",
     });
 
     // Filter and process data

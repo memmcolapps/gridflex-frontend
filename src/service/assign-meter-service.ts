@@ -1,4 +1,4 @@
-// service/meter-service.ts
+// service/assign-meter-service.ts
 
 import axios from "axios";
 import { env } from "@/env";
@@ -61,6 +61,7 @@ export interface GetMetersParams {
     searchTerm: string;
     sortBy: keyof MeterAPIItem | null;
     sortDirection: "asc" | "desc" | null;
+    type?: string;
 }
 
 export interface AssignData {
@@ -101,6 +102,71 @@ export interface VirtualMeterPayload {
     consumptionType?: string;
 }
 
+// --- NEW ACTION PAYLOADS ---
+
+/**
+ * Payload for POST /meter/service/cin/assign
+ */
+export interface AssignMeterPayload {
+    meterNumber: string;
+    cin: string;
+    tariff: string;
+    feeder: string;
+    dss: string;
+    accountNumber: string;
+    category: string; // "Prepaid" or "Postpaid"
+    state: string;
+    city: string;
+    streetName: string;
+    houseNo: string;
+    latitude: string | number;
+    longitude: string | number;
+}
+
+/**
+ * Payload for POST /meter/service/change-state
+ */
+export interface ChangeMeterStatePayload {
+    meterNumber: string;
+    status: "Activate" | "Deactivate";
+}
+
+/**
+ * Payload for POST /meter/service/update
+ */
+export interface UpdateMeterPayload {
+    meterNumber: string;
+    meterClass: string;
+    meterType: string;
+    meterManufacturer: string;
+    meterCategory: string; // E.g., "Prepaid", "Postpaid"
+    oldSgc: string;
+    newSgc: string;
+    oldKrn: string;
+    newKrn: string;
+    oldTariffIndex: number;
+    newTariffIndex: number;
+    simNumber: string;
+}
+
+/**
+ * Payload for POST /meter/service/migrate
+ */
+export interface MigrateMeterPayload {
+    meterNumber: string;
+    feeder: string;
+    dss: string;
+    tariff: string;
+}
+
+/**
+ * Payload for POST /meter/service/detach
+ */
+export interface DetachMeterPayload {
+    meterNumber: string;
+    reason: string;
+}
+
 // --- API Service Functions ---
 
 /**
@@ -115,6 +181,7 @@ export async function getMeters({
     searchTerm,
     sortBy,
     sortDirection,
+    type,
 }: GetMetersParams): Promise<MetersApiResponse> {
     try {
         const token = localStorage.getItem("auth_token");
@@ -131,6 +198,9 @@ export async function getMeters({
         if (sortBy) {
             params.append("sortBy", sortBy);
             params.append("sortDirection", sortDirection ?? "asc");
+        }
+        if (type) {
+            params.append("type", type);
         }
 
         const response = await axios.get(`${API_URL}/meter/service/all`, {
@@ -248,19 +318,18 @@ export async function deactivateMeter(id: string, reason?: string): Promise<{ re
 
 /**
  * Assigns a meter to a customer.
- * Endpoint: POST /api/meters/{id}/assign
- * @param id - The meter ID.
+ * Endpoint: POST /meter/service/cin/assign (NEW ENDPOINT)
  * @param data - Assignment data.
  * @returns A promise resolving to the API response.
  */
-export async function assignMeter(id: string, data: AssignData): Promise<{ responsecode: string; responsedesc: string }> {
+export async function assignMeter(data: AssignMeterPayload): Promise<{ responsecode: string; responsedesc: string }> {
     try {
         const token = localStorage.getItem("auth_token");
         if (!token) {
             throw new Error("Authentication token not found.");
         }
 
-        const response = await axios.post(`${API_URL}/api/meters/${id}/assign`, data, {
+        const response = await axios.post(`${API_URL}/meter/service/cin/assign`, data, {
             headers: {
                 "Content-Type": "application/json",
                 custom: CUSTOM_HEADER,
@@ -271,7 +340,110 @@ export async function assignMeter(id: string, data: AssignData): Promise<{ respo
         if (response.data.responsecode !== "000") {
             throw new Error(response.data.responsedesc ?? "Failed to assign meter.");
         }
+        return response.data;
+    } catch (error) {
+        throw new Error(handleApiError(error));
+    }
+}
 
+/**
+ * Changes meter state (Activate/Deactivate).
+ * Endpoint: POST /meter/service/change-state
+ */
+export async function changeMeterState(data: ChangeMeterStatePayload): Promise<{ responsecode: string; responsedesc: string }> {
+    try {
+        const token = localStorage.getItem("auth_token");
+        if (!token) throw new Error("Authentication token not found.");
+
+        const response = await axios.post(`${API_URL}/meter/service/change-state`, data, {
+            headers: {
+                "Content-Type": "application/json",
+                custom: CUSTOM_HEADER,
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        if (response.data.responsecode !== "000") {
+            throw new Error(response.data.responsedesc ?? `Failed to ${data.status.toLowerCase()} meter.`);
+        }
+        return response.data;
+    } catch (error) {
+        throw new Error(handleApiError(error));
+    }
+}
+
+/**
+ * Updates meter details (Edit).
+ * Endpoint: POST /meter/service/update
+ */
+export async function updateMeter(data: UpdateMeterPayload): Promise<{ responsecode: string; responsedesc: string }> {
+    try {
+        const token = localStorage.getItem("auth_token");
+        if (!token) throw new Error("Authentication token not found.");
+
+        const response = await axios.post(`${API_URL}/meter/service/update`, data, {
+            headers: {
+                "Content-Type": "application/json",
+                custom: CUSTOM_HEADER,
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        if (response.data.responsecode !== "000") {
+            throw new Error(response.data.responsedesc ?? "Failed to update meter.");
+        }
+        return response.data;
+    } catch (error) {
+        throw new Error(handleApiError(error));
+    }
+}
+
+/**
+ * Migrates a meter.
+ * Endpoint: POST /meter/service/migrate
+ */
+export async function migrateMeter(data: MigrateMeterPayload): Promise<{ responsecode: string; responsedesc: string }> {
+    try {
+        const token = localStorage.getItem("auth_token");
+        if (!token) throw new Error("Authentication token not found.");
+
+        const response = await axios.post(`${API_URL}/meter/service/migrate`, data, {
+            headers: {
+                "Content-Type": "application/json",
+                custom: CUSTOM_HEADER,
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        if (response.data.responsecode !== "000") {
+            throw new Error(response.data.responsedesc ?? "Failed to migrate meter.");
+        }
+        return response.data;
+    } catch (error) {
+        throw new Error(handleApiError(error));
+    }
+}
+
+/**
+ * Detaches a meter.
+ * Endpoint: POST /meter/service/detach
+ */
+export async function detachMeter(data: DetachMeterPayload): Promise<{ responsecode: string; responsedesc: string }> {
+    try {
+        const token = localStorage.getItem("auth_token");
+        if (!token) throw new Error("Authentication token not found.");
+
+        const response = await axios.post(`${API_URL}/meter/service/detach`, data, {
+            headers: {
+                "Content-Type": "application/json",
+                custom: CUSTOM_HEADER,
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        if (response.data.responsecode !== "000") {
+            throw new Error(response.data.responsedesc ?? "Failed to detach meter.");
+        }
         return response.data;
     } catch (error) {
         throw new Error(handleApiError(error));

@@ -38,6 +38,25 @@ import { useMeters } from '@/hooks/use-ReviewApproval';
 import type { FetchParams } from '@/service/reviewapproval-service';
 import { toast } from 'sonner';
 
+/**
+ * Utility function to capitalize all two-letter words in a string.
+ * This is achieved using a regular expression that looks for whole words
+ * of exactly two characters (\b\w{2}\b).
+ * @param text T
+ * @returns 
+ */
+// const formatDescription = (text: string | null | undefined): string => {
+//     if (!text || typeof text !== 'string') {
+//         console.warn('Invalid description:', text);
+//         return ''; // Return empty string or handle as needed
+//     }
+//     return text
+//         .split(' ')
+//         .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+//         .join(' ');
+// };
+
+
 const MeterTable = () => {
     const [fetchParams, setFetchParams] = useState<FetchParams>({
         page: 1,
@@ -103,26 +122,23 @@ const MeterTable = () => {
         }
     };
 
-    const handleConfirmAction = async () => {
-        if (selectedItem && confirmAction) {
-            try {
-                await reviewMutation.mutateAsync({
-                    id: selectedItem.id.toString(),
-                    approveStatus: confirmAction,
-                });
-                toast.success(`Meter ${confirmAction}d successfully!`, {
-                    // description: `Meter Number: ${selectedItem.meterNumber}, Meter Type: ${selectedItem.meterType}`,
-                });
-            } catch (error) {
-                toast.error(`Failed to ${confirmAction} meter.`, {
-                    // description: error instanceof Error ? error.message : 'An unknown error occurred',
-                });
-            }
+  const handleConfirmAction = async () => {
+    if (selectedItem && confirmAction) {
+        try {
+            await reviewMutation.mutateAsync({
+                id: selectedItem.meterId.toString(),
+                approveStatus: confirmAction,
+            });
+            toast.success(`Meter ${confirmAction}d successfully!`);
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+            toast.error(errorMessage);
         }
-        setIsConfirmOpen(false);
-        setConfirmAction(null);
-        setSelectedItem(null);
-    };
+    }
+    setIsConfirmOpen(false);
+    setConfirmAction(null);
+    setSelectedItem(null);
+};
 
     if (isLoading) return <div>Loading...</div>;
     if (isError) {
@@ -198,7 +214,9 @@ const MeterTable = () => {
                                 <TableCell className="px-4 py-3 w-[120px] text-sm text-gray-900">{item.meterClass}</TableCell>
                                 <TableCell className="px-4 py-3 w-[120px] text-sm text-gray-900">{item.meterType}</TableCell>
                                 <TableCell className="px-4 py-3 w-[100px] text-sm text-gray-900">{item.meterCategory}</TableCell>
-                                <TableCell className="px-4 py-3 w-[120px] text-sm text-gray-900">{item.description}</TableCell>
+                                <TableCell className="px-4 py-3 w-[120px] text-sm text-[#161CCA]">
+                                    {(item.description)}
+                                </TableCell>
                                 <TableCell className="px-4 py-3 text-center">
                                     <span className="inline-block px-3 py-1 text-sm font-medium text-[#C86900] bg-[#FFF5EA] p-1 rounded-full">
                                         {item.meterStage === 'pending-state' ? 'Pending' : item.meterStage}

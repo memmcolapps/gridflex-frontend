@@ -25,13 +25,13 @@ import type { MeterInventoryItem } from "@/types/meter-inventory";
 interface ViewMeterDetailsDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  meter: MeterInventoryItem  | null;
+  meter: MeterInventoryItem | null;
 }
 
 export function ViewMeterDetailsDialog({ isOpen, onClose, meter }: ViewMeterDetailsDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="h-fit overflow-y-auto bg-white w-[500px] rounded-lg">
+      <DialogContent className="h-fit overflow-y-auto w-[500px] rounded-lg bg-white">
         <DialogHeader>
           <DialogTitle>View Meter Details</DialogTitle>
           <DialogDescription />
@@ -60,13 +60,13 @@ export function ViewMeterDetailsDialog({ isOpen, onClose, meter }: ViewMeterDeta
             </div>
             <div className="grid grid-cols-[150px_1fr] items-center gap-16">
               <span className="font-medium text-gray-700">Meter Category:</span>
-              <span className="text-gray-900 font-bold">{meter.category ?? "N/A"}</span>
+              <span className="text-gray-900 font-bold">{meter.category ?? "-"}</span>
             </div>
-                 <div className="grid grid-cols-[150px_1fr] items-center gap-16">
+            <div className="grid grid-cols-[150px_1fr] items-center gap-16">
               <span className="font-medium text-gray-700">Samart Meter:</span>
-              <span className="text-gray-900 font-bold">{meter.smartStatus ?? "N/A"}</span>
+              <span className="text-gray-900 font-bold">{meter.smartStatus ?? "-"}</span>
             </div>
-                  <div className="grid grid-cols-[150px_1fr] items-center gap-16">
+            <div className="grid grid-cols-[150px_1fr] items-center gap-16">
               <span className="font-medium text-gray-700">Old SGC:</span>
               <span className="text-gray-900 font-bold">{meter.oldSgc}</span>
             </div>
@@ -74,7 +74,7 @@ export function ViewMeterDetailsDialog({ isOpen, onClose, meter }: ViewMeterDeta
               <span className="font-medium text-gray-700">New SGC:</span>
               <span className="text-gray-900 font-bold">{meter.newSgc}</span>
             </div>
-                   <div className="grid grid-cols-[150px_1fr] items-center gap-16">
+            <div className="grid grid-cols-[150px_1fr] items-center gap-16">
               <span className="font-medium text-gray-700">Old KRN:</span>
               <span className="text-gray-900 font-bold">{meter.oldKrn}</span>
             </div>

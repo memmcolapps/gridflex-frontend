@@ -35,7 +35,7 @@ function SelectTrigger({
       data-slot="select-trigger"
       data-size={size}
       className={cn(
-        "border-input border-[rgba(238,231,236,1)] focus:ring-ring/50 flex items-center justify-between gap-2 whitespace-nowrap rounded-lg border bg-white px-4 py-2 text-sm font-medium text-gray-900 transition-all hover:bg-gray-50",
+        "border-input border-[rgba(238,231,236,1)] focus:ring-ring/50 flex items-center justify-between gap-2 whitespace-nowrap rounded-lg border bg-transparent px-4 py-2 text-sm font-medium text-gray-900 transition-all hover:bg-gray-50",
         "data-[placeholder]:text-black-500",
         size === "default" ? "h-10" : "h-4 text-sm",
         className
