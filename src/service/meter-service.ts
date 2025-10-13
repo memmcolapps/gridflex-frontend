@@ -1,3 +1,5 @@
+// meter-service.ts
+
 import axios from "axios";
 import { env } from "@/env";
 import { handleApiError } from "error";
@@ -11,6 +13,7 @@ import {
   type GetMeterInventoryResponse,
   type MeterInventoryFilters,
   type MeterInventoryResponse,
+  type BusinessHub, // Only importing the BusinessHub type
 } from "@/types/meter-inventory";
 
 import {
@@ -21,6 +24,17 @@ import {
 
 const API_URL = env.NEXT_PUBLIC_BASE_URL;
 const CUSTOM_HEADER = env.NEXT_PUBLIC_CUSTOM_HEADER;
+
+interface BusinessHubsApiData {
+  responsecode: string;
+  responsedesc: string;
+  responsedata: BusinessHub[];
+}
+
+export type AllocateMeterPayload = {
+  meterNumber: string;
+  regionId: string;
+};
 
 export async function fetchManufacturers(): Promise<
   | {
@@ -105,7 +119,7 @@ export async function updateManufacturer(
     const response = await axios.put<ApiResponse>(
       `${API_URL}/manufacturer/service/update`,
       manufacturer,
-      
+
       {
         headers: {
           "Content-Type": "application/json",
@@ -144,10 +158,8 @@ export async function fetchMeterInventory(
 
     // Build query parameters
     const params = new URLSearchParams();
-    if (queryFilters.page)
-      params.append("page", queryFilters.page.toString());
-    if (queryFilters.size)
-      params.append("size", queryFilters.size.toString());
+    if (queryFilters.page) params.append("page", queryFilters.page.toString());
+    if (queryFilters.size) params.append("size", queryFilters.size.toString());
     if (queryFilters.meterNumber)
       params.append("meterNumber", queryFilters.meterNumber);
     if (queryFilters.simNo) params.append("simNo", queryFilters.simNo);
@@ -161,6 +173,7 @@ export async function fetchMeterInventory(
     if (queryFilters.status) params.append("status", queryFilters.status);
     if (queryFilters.createdAt)
       params.append("createdAt", queryFilters.createdAt);
+    params.append("type", "inventory");
 
     const response = await axios.get<GetMeterInventoryResponse>(
       `${API_URL}/meter/service/all`,
@@ -189,6 +202,80 @@ export async function fetchMeterInventory(
       success: false,
       error: handleApiError(error),
     };
+  }
+}
+
+export async function fetchBusinessHubs(orgId: string): Promise<
+  | {
+      success: true;
+      data: BusinessHub[];
+    }
+  | { success: false; error: string }
+> {
+  try {
+    const token = localStorage.getItem("auth_token");
+
+    const response = await axios.get<BusinessHubsApiData>(
+      `${API_URL}/node/service/businessHub`,
+      {
+        params: {
+          orgId,
+        },
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    if (response.data.responsecode !== "000") {
+      return {
+        success: false,
+        error: response.data.responsedesc || "Failed to fetch business hubs",
+      };
+    }
+    return {
+      success: true,
+      data: response.data.responsedata,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: handleApiError(error),
+    };
+  }
+}
+
+
+export async function allocateMeter(
+  meterNumber: string,
+  regionId: string,
+): Promise<{ success: true } | { success: false; error: string }> {
+  try {
+    const token = localStorage.getItem("auth_token");
+
+    const response = await axios.post<MeterApiResponse>(
+      `${API_URL}/meter/service/allocate?meterNumber=${encodeURIComponent(meterNumber)}&regionId=${encodeURIComponent(regionId)}`,
+      {}, // Empty body since backend expects params, not body
+      {
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    if (response.data.responsecode !== "000") {
+      throw new Error(
+        `Failed to allocate meter. API Response: ${response.data.responsecode} - ${response.data.responsedesc}`,
+      );
+    }
+
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: handleApiError(error) };
   }
 }
 
