@@ -7,6 +7,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { MoveRight } from 'lucide-react';
 import type { Tariff } from '@/types/review-approval';
+import { useAuth } from '@/context/auth-context';
 
 interface ViewTariffDetailsDialogProps {
   isOpen: boolean;
@@ -24,6 +25,7 @@ const ViewTariffDetailsDialog: React.FC<ViewTariffDetailsDialogProps> = ({
   onReject,
 }) => {
   const isTariffEdited = selectedRow?.description === 'Tariff Edited';
+  const { user } = useAuth();
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -36,7 +38,7 @@ const ViewTariffDetailsDialog: React.FC<ViewTariffDetailsDialogProps> = ({
               {selectedRow?.description ?? 'Tariff Details'}
             </DialogTitle>
             <span className="text-gray-500 text-sm sm:text-base">
-              Operator: <span className="font-medium">Margaret</span>
+              Operator: {user?.business?.businessName?.toUpperCase() ?? 'BUSINESS NAME'}
             </span>
           </DialogHeader>
 

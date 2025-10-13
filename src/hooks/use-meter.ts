@@ -9,11 +9,9 @@ import {
   createMeter,
   updateMeter,
   fetchBusinessHubs,
-  // -------------------------------------------------------------
-  // NEW: Import allocateMeter and its payload type
+ 
   allocateMeter,
   type AllocateMeterPayload,
-  // -------------------------------------------------------------
 } from "@/service/meter-service";
 import {
   type MeterInventoryFilters,
@@ -24,6 +22,7 @@ import {
 } from "@/types/meter-inventory";
 import { type Manufacturer } from "@/types/meters-manufacturers";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 export const useGetMeterManufactures = () => {
   const { data, error, isLoading } = useQuery({
@@ -101,9 +100,6 @@ export const useMeterInventory = (filters?: MeterInventoryFilters) => {
   };
 };
 
-/**
- * Hook to fetch business hubs filtered by orgId using TanStack Query.
- */
 export const useBusinessHubs = (orgId: string) => {
   const { data, error, isLoading, isError, refetch } = useQuery({
     queryKey: ["business-hubs", orgId],
@@ -133,10 +129,13 @@ export const useAllocateMeter = () => {
     },
 
     onSuccess: () => {
-      // Refetch the meter inventory list after successful allocation
+      toast.success("Meter Allocated successfully");
       queryClient.invalidateQueries({
         queryKey: ["meter-inventory"],
       });
+    },
+    onError: (error) => {
+      toast.error(error.message || "Allocation failed!");
     },
   });
 };

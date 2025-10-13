@@ -7,6 +7,7 @@ import {
 import { Button } from '../ui/button';
 import { MoveRight } from 'lucide-react';
 import type { Band } from '@/types/review-approval';
+import { useAuth } from '@/context/auth-context';
 
 interface ViewBandDetailsDialogProps {
     isOpen: boolean;
@@ -23,6 +24,7 @@ const ViewBandDetailsDialog: React.FC<ViewBandDetailsDialogProps> = ({
     onApprove,
     onReject,
 }) => {
+     const { user } = useAuth();
     const isNewlyAdded = selectedRow?.description === 'Newly Added';
 
     return (
@@ -36,7 +38,7 @@ const ViewBandDetailsDialog: React.FC<ViewBandDetailsDialogProps> = ({
                             {selectedRow?.description ?? 'Band Details'}
                         </DialogTitle>
                         <span className="text-gray-500 text-sm sm:text-base">
-                            Operator: <span className="font-medium">Margaret</span>
+                            Operator: {user?.business?.businessName?.toUpperCase() ?? 'BUSINESS NAME'}
                         </span>
                     </DialogHeader>
 
