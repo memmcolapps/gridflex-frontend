@@ -55,7 +55,7 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
                     <div className="flex flex-col gap-3 py-4 sm:py-6 w-150">
                         <div className="flex items-center gap-4 p-2">
                             <div className="flex-1 text-sm sm:text-base font-bold text-gray-900">
-                                {selectedRow.meterNumber ?? 'N/A'}
+                                {selectedRow.meterNumber}
                             </div>
                             <div className="flex-1 flex items-center gap-2 text-sm sm:text-base font-bold text-gray-900">
                                 <MoveRight className="text-gray-900 mr-2 scale-x-185" size={16} />
