@@ -54,12 +54,12 @@ const ViewBandDetailsDialog: React.FC<ViewBandDetailsDialogProps> = ({
                             {
                                 label: 'Band Name:',
                                 oldValue: selectedRow?.oldBandInfo?.name,
-                                newValue: selectedRow?.name, // API doesn't provide new values yet
+                                newValue: selectedRow?.name, 
                             },
                             {
                                 label: 'Electricity Hour:',
                                 oldValue: selectedRow?.oldBandInfo?.hour,
-                                newValue: selectedRow?.hour, // API doesn't provide new values yet
+                                newValue: selectedRow?.hour, 
                             },
                         ].map(({ label, oldValue, newValue }) => (
                             <div
