@@ -333,7 +333,7 @@ export default function MeterInventoryPage() {
   const filteredHubs = useMemo(() => {
     const term = (hubSearchTerm ?? "").trim().toLowerCase();
     if (!term) return businessHubs;
-    return businessHubs.filter((hub: any) => {
+    return businessHubs.filter((hub: BusinessHub) => {
       const regionId = (hub.regionId ?? hub.id)?.toString().toLowerCase();
       const name = (hub.name ?? "").toString().toLowerCase();
       return name.includes(term) ?? regionId.includes(term);
