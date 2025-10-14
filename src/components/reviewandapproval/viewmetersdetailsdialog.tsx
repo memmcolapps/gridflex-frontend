@@ -9,6 +9,7 @@ import { MoveRight, UnlinkIcon } from 'lucide-react';
 import Image from 'next/image';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden'; // Import VisuallyHidden
 import type { Meter } from "@/types/review-approval";
+import type { BusinessHub } from '@/types/meter-inventory';
 import { useAuth } from '@/context/auth-context';
 
 interface ViewMeterDetailsDialogProps {
@@ -17,6 +18,7 @@ interface ViewMeterDetailsDialogProps {
     selectedRow: Meter | null;
     onApprove: (item: Meter | null) => void;
     onReject: (item: Meter | null) => void;
+    hub: BusinessHub;
 }
 
 const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
@@ -25,6 +27,7 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
     selectedRow,
     onApprove,
     onReject,
+    hub,
 }) => {
     const { user } = useAuth();
     const isMeterAllocated = selectedRow?.description === 'Meter Allocated';
@@ -61,7 +64,7 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
                             </div>
                             <div className="flex-1 flex items-center gap-2 text-sm sm:text-base font-bold text-gray-900">
                                 <MoveRight className="text-gray-900 mr-2 scale-x-185" size={16} />
-                                <span>Molete Business Hub</span>
+                                <span>{hub?.name ?? 'N/A'}</span>
                             </div>
                         </div>
                     </div>
@@ -231,7 +234,7 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
                         <DialogTitle className="text-left text-base sm:text-lg font-semibold text-gray-900 truncate">
                             Newly Added
                         </DialogTitle>
-                                               <span className="text-gray-500 text-sm sm:text-base">
+                        <span className="text-gray-500 text-sm sm:text-base">
                             Operator: {user?.business?.businessName?.toUpperCase() ?? 'BUSINESS NAME'}
                         </span>
                     </DialogHeader>
