@@ -1,6 +1,13 @@
 import axios from "axios";
 import { env } from "@/env";
 import { handleApiError } from "error";
+import type {
+  CreateOrgResponse,
+  CreateRegionBhubServiceCenterPayload,
+  CreateSubstationTransfomerFeederPayload,
+  UpdateRegionBhubServiceCenterPayload,
+  UpdateSubstationTransfomerFeederPayload,
+} from "@/types/organization-types";
 
 export interface NodeInfo {
   id: string;
@@ -77,3 +84,139 @@ export async function fetchOrganizationNodes(): Promise<
     };
   }
 }
+
+export const createRegionBhubServiceCenter = async (
+  payload: CreateRegionBhubServiceCenterPayload,
+): Promise<{ success: boolean } | { success: boolean; error: string }> => {
+  try {
+    const token = localStorage.getItem("auth_token");
+    const response = await axios.post<CreateOrgResponse>(
+      `${API_URL}/node/service/create/node/region-bhub-service-center`,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          custom: CUSTOM_HEADER,
+        },
+      },
+    );
+
+    if (response.data.responsecode !== "000") {
+      return {
+        success: false,
+        error: response.data.responsedesc,
+      };
+    }
+
+    return {
+      success: true,
+    };
+  } catch (error: unknown) {
+    return {
+      success: false,
+      error: handleApiError(error),
+    };
+  }
+};
+
+export const updateRegionBhubServiceCenter = async (
+  payload: UpdateRegionBhubServiceCenterPayload,
+): Promise<{ success: boolean } | { success: boolean; error: string }> => {
+  try {
+    const token = localStorage.getItem("auth_token");
+    const response = await axios.put<CreateOrgResponse>(
+      `${API_URL}/node/service/update/node/region-bhub-service-center`,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          custom: CUSTOM_HEADER,
+        },
+      },
+    );
+
+    if (response.data.responsecode !== "000") {
+      return {
+        success: false,
+        error: response.data.responsedesc,
+      };
+    }
+
+    return {
+      success: true,
+    };
+  } catch (error: unknown) {
+    return {
+      success: false,
+      error: handleApiError(error),
+    };
+  }
+};
+
+export const createSubstationTransfomerFeeder = async (
+  payload: CreateSubstationTransfomerFeederPayload,
+): Promise<{ success: boolean } | { success: boolean; error: string }> => {
+  try {
+    const token = localStorage.getItem("auth_token");
+    const response = await axios.post<CreateOrgResponse>(
+      `${API_URL}/node/service/create/node/substation-transformer-feeder-line`,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          custom: CUSTOM_HEADER,
+        },
+      },
+    );
+
+    if (response.data.responsecode !== "000") {
+      return {
+        success: false,
+        error: response.data.responsedesc,
+      };
+    }
+
+    return {
+      success: true,
+    };
+  } catch (error: unknown) {
+    return {
+      success: false,
+      error: handleApiError(error),
+    };
+  }
+};
+
+export const updateSubstationTransfomerFeeder = async (
+  payload: UpdateSubstationTransfomerFeederPayload,
+): Promise<{ success: boolean } | { success: boolean; error: string }> => {
+  try {
+    const token = localStorage.getItem("auth_token");
+    const response = await axios.put<CreateOrgResponse>(
+      `${API_URL}/node/service/update/node/substation-transformer-feeder-line`,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          custom: CUSTOM_HEADER,
+        },
+      },
+    );
+
+    if (response.data.responsecode !== "000") {
+      return {
+        success: false,
+        error: response.data.responsedesc,
+      };
+    }
+
+    return {
+      success: true,
+    };
+  } catch (error: unknown) {
+    return {
+      success: false,
+      error: handleApiError(error),
+    };
+  }
+};
