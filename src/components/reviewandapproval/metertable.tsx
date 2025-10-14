@@ -75,8 +75,8 @@ const MeterTable = () => {
     const [dropdownOpenId, setDropdownOpenId] = useState<string | null>(null);
 
     const { meters, isLoading, isError, error, reviewMutation } = useMeters(fetchParams);
-    const totalCount = meters.length;
-    const totalPages = Math.ceil(totalCount / fetchParams.pageSize);
+    const totalCount = meters.length; // API already paginates, so this is the current page's data length
+    const totalPages = Math.ceil(totalCount / fetchParams.pageSize); // This might not be accurate if API doesn't provide total
 
     const handlePrevious = () => {
         setFetchParams({ ...fetchParams, page: Math.max(fetchParams.page - 1, 1) });
@@ -148,10 +148,8 @@ const MeterTable = () => {
         return <div>Error: {error?.message}</div>;
     }
 
-    const paginatedData = meters.slice(
-        (fetchParams.page - 1) * fetchParams.pageSize,
-        fetchParams.page * fetchParams.pageSize
-    );
+    // API already provides paginated data, so use meters directly
+    const paginatedData = meters;
 
     return (
         <Card className="border-none shadow-none bg-transparent overflow-x-auto min-h-[calc(100vh-300px)]">
@@ -162,10 +160,10 @@ const MeterTable = () => {
                             <div className="flex items-center gap-2">
                                 <Checkbox
                                     className="h-4 w-4 border-gray-500"
-                                    checked={selectedItems.length === totalCount && totalCount > 0}
+                                    checked={selectedItems.length === paginatedData.length && paginatedData.length > 0}
                                     onCheckedChange={(checked) => {
                                         if (checked) {
-                                            setSelectedItems(meters.map((item) => item.id));
+                                            setSelectedItems(paginatedData.map((item) => item.id));
                                         } else {
                                             setSelectedItems([]);
                                         }
@@ -188,7 +186,7 @@ const MeterTable = () => {
                 <TableBody>
                     {paginatedData.length === 0 ? (
                         <TableRow>
-                            <TableCell colSpan={8} className="h-24 text-center text-sm text-gray-500">
+                            <TableCell colSpan={9} className="h-24 text-center text-sm text-gray-500">
                                 No data available
                             </TableCell>
                         </TableRow>
@@ -284,7 +282,7 @@ const MeterTable = () => {
                     </Select>
                     <span className="text-sm font-medium">
                         {(fetchParams.page - 1) * fetchParams.pageSize + 1}-
-                        {Math.min(fetchParams.page * fetchParams.pageSize, totalCount)} of {totalCount}
+                        {Math.min(fetchParams.page * fetchParams.pageSize, totalCount)} of {totalCount} (page {fetchParams.page} of {totalPages})
                     </span>
                 </div>
                 <PaginationContent>

@@ -18,7 +18,7 @@ interface ViewMeterDetailsDialogProps {
     selectedRow: Meter | null;
     onApprove: (item: Meter | null) => void;
     onReject: (item: Meter | null) => void;
-    hub: BusinessHub;
+    hub?: BusinessHub;
 }
 
 const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
