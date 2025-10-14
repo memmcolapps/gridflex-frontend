@@ -254,7 +254,6 @@ export interface MeterData {
   };
 }
 
-
 export interface BusinessHub {
   id: string;
   orgId: string;
