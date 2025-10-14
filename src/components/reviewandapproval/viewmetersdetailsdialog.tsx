@@ -135,7 +135,7 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
                         {[
                             { label: 'Meter Number:', value: selectedRow.meterNumber },
                             { label: 'SIM No.:', value: selectedRow.simNumber },
-                            { label: 'Meter Type:', value: 'Electricity' },
+                            { label: 'Meter Type:', value: selectedRow.meterType },
                             { label: 'Meter Manufacturer:', value: selectedRow.manufacturer?.name },
                             { label: 'Meter Class:', value: selectedRow.meterClass },
                             { label: 'Meter Category:', value: selectedRow.meterCategory },

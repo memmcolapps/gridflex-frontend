@@ -119,7 +119,7 @@ export const AddNodeDialog = ({
       const isTechnicalNode = [
         "Substation",
         "Feeder Line",
-        "Distribution Substation (DSS)",
+        "dss",
       ].includes(nodeType);
 
       if (isRegionBhubServiceCenter) {
