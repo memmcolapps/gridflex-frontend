@@ -8,10 +8,10 @@ import {
 } from "../service/organaization-service";
 import { useAuth } from "../context/auth-context";
 import {
-  CreateRegionBhubServiceCenterPayload,
-  CreateSubstationTransfomerFeederPayload,
-  UpdateRegionBhubServiceCenterPayload,
-  UpdateSubstationTransfomerFeederPayload,
+  type CreateRegionBhubServiceCenterPayload,
+  type CreateSubstationTransfomerFeederPayload,
+  type UpdateRegionBhubServiceCenterPayload,
+  type UpdateSubstationTransfomerFeederPayload,
 } from "@/types/organization-types";
 import { queryClient } from "@/lib/queryClient";
 

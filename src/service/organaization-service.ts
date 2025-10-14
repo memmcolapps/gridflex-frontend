@@ -1,7 +1,7 @@
 import axios from "axios";
 import { env } from "@/env";
 import { handleApiError } from "error";
-import {
+import type {
   CreateOrgResponse,
   CreateRegionBhubServiceCenterPayload,
   CreateSubstationTransfomerFeederPayload,
@@ -89,7 +89,7 @@ export const createRegionBhubServiceCenter = async (
   payload: CreateRegionBhubServiceCenterPayload,
 ): Promise<{ success: boolean } | { success: boolean; error: string }> => {
   try {
-    const token = localStorage.getItem("access_token");
+    const token = localStorage.getItem("auth_token");
     const response = await axios.post<CreateOrgResponse>(
       `${API_URL}/node/service/create/node/region-bhub-service-center`,
       payload,
@@ -123,7 +123,7 @@ export const updateRegionBhubServiceCenter = async (
   payload: UpdateRegionBhubServiceCenterPayload,
 ): Promise<{ success: boolean } | { success: boolean; error: string }> => {
   try {
-    const token = localStorage.getItem("access_token");
+    const token = localStorage.getItem("auth_token");
     const response = await axios.put<CreateOrgResponse>(
       `${API_URL}/node/service/update/node/region-bhub-service-center`,
       payload,
@@ -157,7 +157,7 @@ export const createSubstationTransfomerFeeder = async (
   payload: CreateSubstationTransfomerFeederPayload,
 ): Promise<{ success: boolean } | { success: boolean; error: string }> => {
   try {
-    const token = localStorage.getItem("access_token");
+    const token = localStorage.getItem("auth_token");
     const response = await axios.post<CreateOrgResponse>(
       `${API_URL}/node/service/create/node/substation-transformer-feeder-line`,
       payload,
@@ -191,7 +191,7 @@ export const updateSubstationTransfomerFeeder = async (
   payload: UpdateSubstationTransfomerFeederPayload,
 ): Promise<{ success: boolean } | { success: boolean; error: string }> => {
   try {
-    const token = localStorage.getItem("access_token");
+    const token = localStorage.getItem("auth_token");
     const response = await axios.put<CreateOrgResponse>(
       `${API_URL}/node/service/update/node/substation-transformer-feeder-line`,
       payload,
