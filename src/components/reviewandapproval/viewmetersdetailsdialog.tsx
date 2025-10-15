@@ -1,3 +1,4 @@
+"use client";
 import {
     Dialog,
     DialogContent,
@@ -9,8 +10,8 @@ import { MoveRight, UnlinkIcon } from 'lucide-react';
 import Image from 'next/image';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden'; // Import VisuallyHidden
 import type { Meter } from "@/types/review-approval";
-import type { BusinessHub } from '@/types/meter-inventory';
 import { useAuth } from '@/context/auth-context';
+import { useState } from 'react';
 
 interface ViewMeterDetailsDialogProps {
     isOpen: boolean;
@@ -18,7 +19,6 @@ interface ViewMeterDetailsDialogProps {
     selectedRow: Meter | null;
     onApprove: (item: Meter | null) => void;
     onReject: (item: Meter | null) => void;
-    hub?: BusinessHub;
 }
 
 const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
@@ -27,7 +27,6 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
     selectedRow,
     onApprove,
     onReject,
-    hub,
 }) => {
     const { user } = useAuth();
     const isMeterAllocated = selectedRow?.description === 'Meter Allocated';
@@ -47,6 +46,8 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
             );
         }
         if (isMeterAllocated) {
+            const [showDetails, setShowDetails] = useState(false);
+
             return (
                 <>
                     <DialogHeader>
@@ -57,6 +58,7 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
                             Operator: {user?.business?.businessName?.toUpperCase() ?? 'BUSINESS NAME'}
                         </span>
                     </DialogHeader>
+
                     <div className="flex flex-col gap-3 py-4 sm:py-6 w-150">
                         <div className="flex items-center gap-4 p-2">
                             <div className="flex-1 text-sm sm:text-base font-bold text-gray-900">
@@ -64,9 +66,66 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
                             </div>
                             <div className="flex-1 flex items-center gap-2 text-sm sm:text-base font-bold text-gray-900">
                                 <MoveRight className="text-gray-900 mr-2 scale-x-185" size={16} />
-                                <span>{hub?.name ?? 'N/A'}</span>
+                                <span>{selectedRow.nodeInfo?.name}</span>
                             </div>
                         </div>
+
+                        {/* Details Toggle Button */}
+                        <button
+                            onClick={() => setShowDetails(!showDetails)}
+                            className="text-[#161CCA] text-sm  text-left pl-2 cursor-pointer"
+                        >
+                            Details
+                        </button>
+
+                        {/* Expanded Details */}
+                        {showDetails && (
+                            <div className="text-sm text-gray-700 pl-1 animate-fadeIn">
+                                <div className="flex items-center gap-4 p-2">
+                                    <div className="flex-1 text-sm sm:text-base font-bold text-gray-900">
+                                        <span className="font-medium">Business Hub ID:</span>
+                                    </div>
+                                    <div className="flex-1 flex items-center gap-2 text-sm sm:text-base font-bold text-gray-900">
+                                        <span>{selectedRow.nodeInfo?.regionId ?? 'N/A'}</span>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-4 p-2">
+                                    <div className="flex-1 text-sm sm:text-base font-bold text-gray-900">
+                                        <span className="font-medium">Meter Manufacturer:</span>
+                                    </div>
+                                    <div className="flex-1 flex items-center gap-2 text-sm sm:text-base font-bold text-gray-900">
+                                        <span>{selectedRow.manufacturer?.name ?? 'N/A'}</span>
+                                    </div>
+
+                                </div>
+                                <div className="flex items-center gap-4 p-2">
+                                    <div className="flex-1 text-sm sm:text-base font-bold text-gray-900">
+                                        <span className="font-medium">Meter Class:</span>
+                                    </div>
+                                    <div className="flex-1 flex items-center gap-2 text-sm sm:text-base font-bold text-gray-900">
+                                        <span>{selectedRow.meterClass ?? 'N/A'}</span>
+                                    </div>
+
+
+                                </div>
+                                <div className="flex items-center gap-4 p-2">
+                                    <div className="flex-1 text-sm sm:text-base font-bold text-gray-900">
+                                        <span className="font-medium">Meter Type:</span>
+                                    </div>
+                                    <div className="flex-1 flex items-center gap-2 text-sm sm:text-base font-bold text-gray-900">
+                                        <span>{selectedRow.meterType ?? 'N/A'}</span>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-4 p-2">
+                                    <div className="flex-1 text-sm sm:text-base font-bold text-gray-900">
+                                        <span className="font-medium">Meter Category:</span>
+                                    </div>
+                                    <div className="flex-1 flex items-center gap-2 text-sm sm:text-base font-bold text-gray-900">
+                                        <span>{selectedRow.meterCategory ?? 'N/A'}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </>
             );

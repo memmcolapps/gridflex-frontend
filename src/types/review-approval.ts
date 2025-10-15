@@ -214,11 +214,32 @@ export interface Meter {
       createdAt: string;
       updatedAt: string;
     };
+    smartMeterInfo?: {
+      id: string;
+      meterId: string;
+      orgId: string;
+      meterModel: string;
+      protocol: string;
+      authentication: string;
+      password: string;
+      createdAt: string;
+      updatedAt: string;
+    };
+    createdAt: string;
+    updatedAt: string;
+  };
+  nodeInfo: {
+    id: string;
+    regionId: string;
+    name: string;
+    email: string;
+    address: string;
+    type: string;
     createdAt: string;
     updatedAt: string;
   };
   meterCategory: string;
-  status: boolean;
+  status: boolean | string;
   approveStatus: string;
   createdBy: string;
   description: string;

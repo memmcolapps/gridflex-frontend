@@ -526,7 +526,7 @@ export default function MeterManagementPage() {
         setIsSetPaymentModalOpen(false);
         if (selectedCustomer?.category === "Prepaid") {
             setIsDeactivateModalOpen(true);
-            setProgress(90); // Increment progress to reflect additional step
+            setProgress(90);
         } else {
             setIsConfirmationModalOpen(true);
             setProgress(100);
