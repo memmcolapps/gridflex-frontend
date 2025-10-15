@@ -109,18 +109,20 @@ export interface VirtualMeterPayload {
  */
 export interface AssignMeterPayload {
     meterNumber: string;
+    customerId: string;
+    tariffId: string;
+    dssAssetId: string;
+    feederAssetId: string;
     cin: string;
-    tariff: string;
-    feeder: string;
-    dss: string;
     accountNumber: string;
-    category: string; // "Prepaid" or "Postpaid"
     state: string;
     city: string;
-    streetName: string;
     houseNo: string;
-    latitude: string | number;
-    longitude: string | number;
+    streetName: string;
+    creditPaymentMode: string;
+    debitPaymentMode: string;
+    creditPaymentPlan: string;
+    debitPaymentPlan: string;
 }
 
 /**
@@ -254,69 +256,6 @@ export async function saveMeter(meter: object): Promise<{ responsecode: string; 
 }
 
 /**
- * Activates a meter.
- * Endpoint: POST /api/meters/{id}/activate
- * @param id - The meter ID.
- * @returns A promise resolving to the API response.
- */
-export async function activateMeter(id: string): Promise<{ responsecode: string; responsedesc: string }> {
-    try {
-        const token = localStorage.getItem("auth_token");
-        if (!token) {
-            throw new Error("Authentication token not found.");
-        }
-
-        const response = await axios.post(`${API_URL}/api/meters/${id}/activate`, {}, {
-            headers: {
-                "Content-Type": "application/json",
-                custom: CUSTOM_HEADER,
-                Authorization: `Bearer ${token}`,
-            },
-        });
-
-        if (response.data.responsecode !== "000") {
-            throw new Error(response.data.responsedesc ?? "Failed to activate meter.");
-        }
-
-        return response.data;
-    } catch (error) {
-        throw new Error(handleApiError(error));
-    }
-}
-
-/**
- * Deactivates a meter.
- * Endpoint: POST /api/meters/{id}/deactivate
- * @param id - The meter ID.
- * @param reason - Optional deactivation reason.
- * @returns A promise resolving to the API response.
- */
-export async function deactivateMeter(id: string, reason?: string): Promise<{ responsecode: string; responsedesc: string }> {
-    try {
-        const token = localStorage.getItem("auth_token");
-        if (!token) {
-            throw new Error("Authentication token not found.");
-        }
-
-        const response = await axios.post(`${API_URL}/api/meters/${id}/deactivate`, { reason }, {
-            headers: {
-                "Content-Type": "application/json",
-                custom: CUSTOM_HEADER,
-                Authorization: `Bearer ${token}`,
-            },
-        });
-
-        if (response.data.responsecode !== "000") {
-            throw new Error(response.data.responsedesc ?? "Failed to deactivate meter.");
-        }
-
-        return response.data;
-    } catch (error) {
-        throw new Error(handleApiError(error));
-    }
-}
-
-/**
  * Assigns a meter to a customer.
  * Endpoint: POST /meter/service/cin/assign (NEW ENDPOINT)
  * @param data - Assignment data.
@@ -365,32 +304,6 @@ export async function changeMeterState(data: ChangeMeterStatePayload): Promise<{
 
         if (response.data.responsecode !== "000") {
             throw new Error(response.data.responsedesc ?? `Failed to ${data.status.toLowerCase()} meter.`);
-        }
-        return response.data;
-    } catch (error) {
-        throw new Error(handleApiError(error));
-    }
-}
-
-/**
- * Updates meter details (Edit).
- * Endpoint: POST /meter/service/update
- */
-export async function updateMeter(data: UpdateMeterPayload): Promise<{ responsecode: string; responsedesc: string }> {
-    try {
-        const token = localStorage.getItem("auth_token");
-        if (!token) throw new Error("Authentication token not found.");
-
-        const response = await axios.post(`${API_URL}/meter/service/update`, data, {
-            headers: {
-                "Content-Type": "application/json",
-                custom: CUSTOM_HEADER,
-                Authorization: `Bearer ${token}`,
-            },
-        });
-
-        if (response.data.responsecode !== "000") {
-            throw new Error(response.data.responsedesc ?? "Failed to update meter.");
         }
         return response.data;
     } catch (error) {

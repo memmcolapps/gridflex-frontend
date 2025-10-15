@@ -13,9 +13,20 @@ interface UploadImageDialogProps {
     onOpenChange: (open: boolean) => void;
     onProceed: (image: File | null) => void;
     onCancel: () => void;
+    onConfirmImage?: () => void;
+    title?: string;
+    description?: string;
 }
 
-const UploadImageDialog: FC<UploadImageDialogProps> = ({ isOpen, onOpenChange, onProceed, onCancel }) => {
+const UploadImageDialog: FC<UploadImageDialogProps> = ({
+    isOpen,
+    onOpenChange,
+    onProceed,
+    onCancel,
+    onConfirmImage,
+    title = "Upload Image",
+    description = "Upload an image of the meter for verification."
+}) => {
     const [selectedImage, setSelectedImage] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -54,7 +65,11 @@ const UploadImageDialog: FC<UploadImageDialogProps> = ({ isOpen, onOpenChange, o
 
     // Handle Proceed
     const handleProceedClick = () => {
-        onProceed(selectedImage);
+        if (onConfirmImage) {
+            onConfirmImage();
+        } else {
+            onProceed(selectedImage);
+        }
         setSelectedImage(null);
         setPreviewUrl(null);
         setError(null);
@@ -77,32 +92,64 @@ const UploadImageDialog: FC<UploadImageDialogProps> = ({ isOpen, onOpenChange, o
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-md rounded-lg p-6 h-fit bg-white">
                 <DialogHeader>
-                    <DialogTitle className="text-lg font-semibold text-gray-900">Upload Image</DialogTitle>
+                    <DialogTitle className="text-lg font-semibold text-gray-900">{title}</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4">
-                    {/* <p className="text-sm text-gray-700">
-                        Upload an image of the meter for verification. Click{" "}
-                        <a href="/template-image.jpg" className="text-[#161CCA] font-medium" download>
-                            here
-                        </a>{" "}
-                        to download a sample image format.
-                    </p> */}
+                    <p className="text-sm text-gray-700">
+                        {description}
+                    </p>
 
-                    <div
-                        onClick={handleUploadAreaClick}
-                        className={cn(
-                            "cursor-pointer border border-dashed border-[#161CCA] rounded-lg py-10 px-4 text-center flex flex-col items-center justify-center gap-2 hover:border-[#161CCA] transition"
-                        )}
-                    >
-                        <PlusIcon className="text-[#161CCA]" size={14} />
-                        <p>
-                            Click <span className="text-[#161CCA]">here</span> to upload image or Drag <br /> <span className="text-center"> and Drop</span>
-                        </p>
-                        <p className="text-md text-gray-500">
-                            Supported file format: <strong>Jpeg, .PNG</strong> <br />
-                            Maximum file size: <strong>2MB</strong>
-                        </p>
-                    </div>
+                    {!previewUrl ? (
+                        <div
+                            onClick={handleUploadAreaClick}
+                            className={cn(
+                                "cursor-pointer border border-dashed border-[#161CCA] rounded-lg py-10 px-4 text-center flex flex-col items-center justify-center gap-2 hover:border-[#161CCA] transition"
+                            )}
+                        >
+                            <PlusIcon className="text-[#161CCA]" size={14} />
+                            <p>
+                                Click <span className="text-[#161CCA]">here</span> to upload image or Drag <br /> <span className="text-center"> and Drop</span>
+                            </p>
+                            <p className="text-md text-gray-500">
+                                Supported file format: <strong>JPEG, PNG</strong> <br />
+                                Maximum file size: <strong>5MB</strong>
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="space-y-4">
+                            <div className="flex justify-center">
+                                <div className="relative">
+                                    <img
+                                        src={previewUrl}
+                                        alt="Meter Preview"
+                                        className="max-w-full h-auto rounded-lg border-2 border-[#161CCA] shadow-lg"
+                                        style={{ maxHeight: "300px", maxWidth: "300px" }}
+                                    />
+                                    <button
+                                        onClick={() => {
+                                            setSelectedImage(null);
+                                            setPreviewUrl(null);
+                                            setError(null);
+                                        }}
+                                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
+                                        title="Remove image"
+                                    >
+                                        ×
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="text-center">
+                                <p className="text-sm text-gray-600">
+                                    <strong>Image uploaded successfully!</strong>
+                                </p>
+                                <p className="text-xs text-gray-500 mt-1">
+                                    {selectedImage?.name} ({(selectedImage?.size ?? 0) / 1024 / 1024 < 1
+                                        ? `${Math.round((selectedImage?.size ?? 0) / 1024)} KB`
+                                        : `${((selectedImage?.size ?? 0) / 1024 / 1024).toFixed(1)} MB`})
+                                </p>
+                            </div>
+                        </div>
+                    )}
 
                     <Input
                         ref={fileInputRef}
@@ -113,18 +160,11 @@ const UploadImageDialog: FC<UploadImageDialogProps> = ({ isOpen, onOpenChange, o
                     />
                 
 
-                    {/* {error && <p className="text-sm text-red-600">{error}</p>}
-                    {previewUrl && (
-                        <div className="space-y-2">
-                            <Label>Image Preview</Label>
-                            <img
-                                src={previewUrl}
-                                alt="Meter Preview"
-                                className="max-w-full h-auto rounded-md border border-gray-300"
-                                style={{ maxHeight: "300px" }}
-                            />
+                    {error && (
+                        <div className="bg-red-50 border border-red-200 rounded-md p-3">
+                            <p className="text-sm text-red-600">{error}</p>
                         </div>
-                    )} */}
+                    )}
                 </div>
                 <DialogFooter>
                     <Button

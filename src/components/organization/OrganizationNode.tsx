@@ -150,6 +150,7 @@ export const OrganizationNode = ({
           onClose={() => setIsAddDialogOpen(false)}
           onAdd={handleAddNode}
           nodeType={selectedNodeType}
+          parentId={node.id}
         />
         <EditNodeDialog
           isOpen={isEditDialogOpen}
@@ -157,6 +158,13 @@ export const OrganizationNode = ({
           onSave={handleEditNode}
           nodeType={displayNodeType ?? "Node"}
           initialData={nodeDataForEdit}
+          nodeId={
+            node.nodeInfo?.nodeId ??
+            node.nodeInfo?.regionId ??
+            node.nodeInfo?.bhubId ??
+            node.nodeInfo?.id ??
+            node.id
+          }
         />
       </div>
     </Card>

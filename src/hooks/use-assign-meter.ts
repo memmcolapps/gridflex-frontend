@@ -5,27 +5,24 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
     getMeters,
     saveMeter,
-    activateMeter,
-    deactivateMeter,
     assignMeter,
     bulkUploadMeters,
     saveVirtualMeter,
     deactivatePhysicalMeter,
     createVirtualMeter,
-    changeMeterState, // NEW
-    updateMeter,      // NEW
-    migrateMeter,     // NEW
-    detachMeter,      // NEW
+    changeMeterState,
+    migrateMeter,
+    detachMeter,
     type MetersApiResponse,
     type MeterAPIItem,
     type GetMetersParams,
     type AssignData,
     type VirtualMeterPayload,
-    type AssignMeterPayload, // NEW
-    type ChangeMeterStatePayload, // NEW
-    type UpdateMeterPayload, // NEW
-    type MigrateMeterPayload, // NEW
-    type DetachMeterPayload, // NEW
+    type AssignMeterPayload,
+    type ChangeMeterStatePayload,
+    type UpdateMeterPayload,
+    type MigrateMeterPayload,
+    type DetachMeterPayload,
 } from "../service/assign-meter-service";
 import type { MeterInventoryItem } from "@/types/meter-inventory";
 import type { VirtualMeterData } from "@/types/meter";
@@ -58,7 +55,7 @@ const mapToFrontendMeter = (apiItem: MeterAPIItem, isVirtual: boolean): MeterInv
         return {
             ...baseData,
             // Map virtual-specific fields
-            status: apiItem.meterStage, // activation status
+            assignedStatus: apiItem.meterStage,
             customerId: 'VIRTUAL',
             accountNumber: 'VIRTUAL-' + apiItem.meterNumber,
             cin: 'N/A', tariff: 'N/A', feeder: 'N/A', dss: 'N/A',
@@ -67,6 +64,8 @@ const mapToFrontendMeter = (apiItem: MeterAPIItem, isVirtual: boolean): MeterInv
             city: apiItem.manufacturer?.city || 'N/A', streetName: apiItem.manufacturer?.street || 'N/A',
             houseNo: 'N/A', image: null, consumptionType: 'Non-MD',
             category: apiItem.meterCategory,
+            energyType: 'N/A',
+            custoType: 'N/A',
         } as VirtualMeterData;
     }
 
@@ -159,33 +158,6 @@ export const useSaveMeter = () => {
     });
 };
 
-export const useActivateMeter = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: activateMeter,
-        onSuccess: () => {
-            toast.success("Meter activated successfully!");
-            queryClient.invalidateQueries({ queryKey: ["meters"] });
-        },
-        onError: (error: Error) => {
-            toast.error(`Failed to activate meter: ${error.message}`);
-        },
-    });
-};
-
-export const useDeactivateMeter = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: ({ id, reason }: { id: string; reason?: string }) => deactivateMeter(id, reason),
-        onSuccess: () => {
-            toast.success("Meter deactivated successfully!");
-            queryClient.invalidateQueries({ queryKey: ["meters"] });
-        },
-        onError: (error: Error) => {
-            toast.error(`Failed to deactivate meter: ${error.message}`);
-        },
-    });
-};
 
 // Hook for Meter Assignment (POST /meter/service/cin/assign)
 export const useAssignMeter = () => {
@@ -221,25 +193,6 @@ export const useChangeMeterState = () => {
         },
         onError: (error: Error) => {
             toast.error(`Failed to change meter state: ${error.message}`);
-        },
-    });
-};
-
-// Hook for Update Meter (POST /meter/service/update)
-export const useUpdateMeter = () => {
-    const queryClient = useQueryClient();
-    return useMutation<
-        { responsecode: string; responsedesc: string },
-        Error,
-        UpdateMeterPayload
-    >({
-        mutationFn: updateMeter,
-        onSuccess: (data, variables) => {
-            toast.success(`Meter ${variables.meterNumber} updated successfully!`);
-            queryClient.invalidateQueries({ queryKey: ["meters"] });
-        },
-        onError: (error: Error) => {
-            toast.error(`Failed to update meter: ${error.message}`);
         },
     });
 };

@@ -20,12 +20,18 @@ import {
   type FormData,
 } from "../hooks/useNodeFormValidation";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  useCreateRegionBhubServiceCenter,
+  useCreateSubstationTransfomerFeeder,
+} from "@/hooks/use-org";
+import { toast } from "sonner";
 
 interface AddDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onAdd: (data: { name: string; nodeType: string; data: FormData }) => void;
   nodeType: string;
+  parentId: string;
 }
 
 export const AddNodeDialog = ({
@@ -33,6 +39,7 @@ export const AddNodeDialog = ({
   onClose,
   onAdd,
   nodeType,
+  parentId,
 }: AddDialogProps) => {
   const [formData, setFormData] = useState<FormData>({
     name: "",
@@ -53,6 +60,10 @@ export const AddNodeDialog = ({
     formData,
     nodeType,
   });
+
+  const createRegionBhubServiceCenter = useCreateRegionBhubServiceCenter();
+  const createSubstationTransfomerFeeder =
+    useCreateSubstationTransfomerFeeder();
 
   useEffect(() => {
     if (isOpen) {
@@ -95,14 +106,66 @@ export const AddNodeDialog = ({
     validateForm(newData);
   };
 
-  const handleAdd = () => {
-    if (isValid) {
+  const handleAdd = async () => {
+    if (!isValid) return;
+
+    try {
+      // Determine which mutation to use based on node type
+      const isRegionBhubServiceCenter = [
+        "Region",
+        "Business Hub",
+        "Service Centre",
+      ].includes(nodeType);
+      const isTechnicalNode = [
+        "Substation",
+        "Feeder Line",
+        "Distribution Substation (DSS)",
+      ].includes(nodeType);
+
+      if (isRegionBhubServiceCenter) {
+        await createRegionBhubServiceCenter.mutateAsync({
+          parentId,
+          regionId: formData.id,
+          name: formData.name,
+          phoneNo: formData.phoneNumber,
+          email: formData.email,
+          contactPerson: formData.contactPerson,
+          address: formData.address,
+          type: nodeType,
+        });
+      } else if (isTechnicalNode) {
+        await createSubstationTransfomerFeeder.mutateAsync({
+          parentId,
+          name: formData.name,
+          serialNo: formData.assetId,
+          phoneNo: formData.phoneNumber,
+          email: formData.email,
+          contactPerson: formData.contactPerson,
+          address: formData.address,
+          status: formData.status === "Active",
+          voltage: formData.voltage || "",
+          latitude: formData.latitude || "",
+          longitude: formData.longitude || "",
+          description: formData.description || "",
+          type: nodeType,
+        });
+      }
+
+      toast.success(`Successfully created ${nodeType}`);
       onAdd({ name: formData.name, nodeType, data: formData });
       onClose();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : `Failed to create ${nodeType}`,
+      );
     }
   };
 
-  const isTechnicalNode = ["Substation", "Feeder Line", "Distribution Substation (DSS)"].includes(nodeType);
+  const isTechnicalNode = [
+    "Substation",
+    "Feeder Line",
+    "Distribution Substation (DSS)",
+  ].includes(nodeType);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -161,7 +224,9 @@ export const AddNodeDialog = ({
                 className="mt-1 border-gray-300"
               />
               {errors.phoneNumber && (
-                <p className="mt-1 text-xs text-red-500">{errors.phoneNumber}</p>
+                <p className="mt-1 text-xs text-red-500">
+                  {errors.phoneNumber}
+                </p>
               )}
             </div>
             <div className="flex flex-col">
@@ -230,8 +295,12 @@ export const AddNodeDialog = ({
               <div className="flex flex-col">
                 <label className="text-sm font-medium">Voltage *</label>
                 <Select
-                  onValueChange={(value) => handleSelectChange("voltage", value)}
-                  value={formData.voltage ? String(formData.voltage) : undefined}
+                  onValueChange={(value) =>
+                    handleSelectChange("voltage", value)
+                  }
+                  value={
+                    formData.voltage ? String(formData.voltage) : undefined
+                  }
                 >
                   <SelectTrigger className="ring-opacity-0 border-gray-300">
                     <SelectValue placeholder="Select Voltage" />
@@ -249,7 +318,9 @@ export const AddNodeDialog = ({
               </div>
             </div>
           )}
-          {(nodeType === "Substation" || nodeType === "Distribution Substation (DSS)" || nodeType ==="Feeder Line") && (
+          {(nodeType === "Substation" ||
+            nodeType === "Distribution Substation (DSS)" ||
+            nodeType === "Feeder Line") && (
             <div className="grid gap-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col">
@@ -292,16 +363,27 @@ export const AddNodeDialog = ({
             onClick={onClose}
             size={"lg"}
             className="border-[rgba(22,28,202,1)] text-[rgba(22,28,202,1)] hover:bg-gray-300"
+            disabled={
+              createRegionBhubServiceCenter.isPending ||
+              createSubstationTransfomerFeeder.isPending
+            }
           >
             Cancel
           </Button>
           <Button
-            disabled={!isValid}
+            disabled={
+              !isValid ||
+              createRegionBhubServiceCenter.isPending ||
+              createSubstationTransfomerFeeder.isPending
+            }
             onClick={handleAdd}
             size={"lg"}
             className="ml-2 bg-[rgba(22,28,202,1)] text-white"
           >
-            Add {nodeType}
+            {createRegionBhubServiceCenter.isPending ||
+            createSubstationTransfomerFeeder.isPending
+              ? "Adding..."
+              : `Add ${nodeType}`}
           </Button>
         </DialogFooter>
       </DialogContent>

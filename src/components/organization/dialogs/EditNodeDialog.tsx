@@ -17,9 +17,14 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
   useNodeFormValidation,
- type FormData,
+  type FormData,
 } from "../hooks/useNodeFormValidation";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  useUpdateRegionBhubServiceCenter,
+  useUpdateSubstationTransfomerFeeder,
+} from "@/hooks/use-org";
+import { toast } from "sonner";
 
 interface EditDialogProps {
   isOpen: boolean;
@@ -27,6 +32,7 @@ interface EditDialogProps {
   onSave: (data: FormData) => void;
   nodeType: string;
   initialData: FormData;
+  nodeId: string;
 }
 
 export const EditNodeDialog = ({
@@ -35,6 +41,7 @@ export const EditNodeDialog = ({
   onSave,
   nodeType,
   initialData,
+  nodeId,
 }: EditDialogProps) => {
   const [formData, setFormData] = useState<FormData>(initialData);
 
@@ -43,6 +50,10 @@ export const EditNodeDialog = ({
     nodeType,
     isInitialValidation: true,
   });
+
+  const updateRegionBhubServiceCenter = useUpdateRegionBhubServiceCenter();
+  const updateSubstationTransfomerFeeder =
+    useUpdateSubstationTransfomerFeeder();
 
   useEffect(() => {
     if (isOpen) {
@@ -58,20 +69,78 @@ export const EditNodeDialog = ({
     validateForm(newData);
   };
 
+  const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    const newData = { ...formData, [name]: value };
+    setFormData(newData);
+    validateForm(newData);
+  };
+
   const handleSelectChange = (name: string, value: string) => {
     const newData = { ...formData, [name]: value };
     setFormData(newData);
     validateForm(newData);
   };
 
-  const handleSave = () => {
-    if (isValid) {
+  const handleSave = async () => {
+    if (!isValid) return;
+
+    try {
+      // Determine which mutation to use based on node type
+      const isRegionBhubServiceCenter = [
+        "Region",
+        "Business Hub",
+        "Service Centre",
+      ].includes(nodeType);
+      const isTechnicalNode = [
+        "Substation",
+        "Feeder Line",
+        "Distribution Substation (DSS)",
+      ].includes(nodeType);
+
+      if (isRegionBhubServiceCenter) {
+        await updateRegionBhubServiceCenter.mutateAsync({
+          nodeId,
+          regionId: formData.id,
+          name: formData.name,
+          phoneNo: formData.phoneNumber,
+          email: formData.email,
+          contactPerson: formData.contactPerson,
+          address: formData.address,
+          type: nodeType,
+        });
+      } else if (isTechnicalNode) {
+        await updateSubstationTransfomerFeeder.mutateAsync({
+          nodeId,
+          name: formData.name,
+          serialNo: formData.assetId,
+          phoneNo: formData.phoneNumber,
+          email: formData.email,
+          contactPerson: formData.contactPerson,
+          address: formData.address,
+          status: formData.status === "Active",
+          voltage: formData.voltage || "",
+          latitude: formData.latitude || "",
+          longitude: formData.longitude || "",
+          description: formData.description || "",
+        });
+      }
+
+      toast.success(`Successfully updated ${nodeType}`);
       onSave(formData);
       onClose();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : `Failed to update ${nodeType}`,
+      );
     }
   };
 
-  const isTechnicalNode = ["Substation", "Feeder Line", "Distribution Substation (DSS)"].includes(nodeType);
+  const isTechnicalNode = [
+    "Substation",
+    "Feeder Line",
+    "Distribution Substation (DSS)",
+  ].includes(nodeType);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -130,7 +199,9 @@ export const EditNodeDialog = ({
                 className="mt-1 border-gray-300"
               />
               {errors.phoneNumber && (
-                <p className="mt-1 text-xs text-red-500">{errors.phoneNumber}</p>
+                <p className="mt-1 text-xs text-red-500">
+                  {errors.phoneNumber}
+                </p>
               )}
             </div>
             <div className="flex flex-col">
@@ -199,8 +270,12 @@ export const EditNodeDialog = ({
               <div className="flex flex-col">
                 <label className="text-sm font-medium">Voltage *</label>
                 <Select
-                  onValueChange={(value) => handleSelectChange("voltage", value)}
-                  value={formData.voltage ? String(formData.voltage) : undefined}
+                  onValueChange={(value) =>
+                    handleSelectChange("voltage", value)
+                  }
+                  value={
+                    formData.voltage ? String(formData.voltage) : undefined
+                  }
                 >
                   <SelectTrigger className="ring-opacity-0 border-gray-300">
                     <SelectValue placeholder="Select Voltage" />
@@ -218,7 +293,8 @@ export const EditNodeDialog = ({
               </div>
             </div>
           )}
-          {(nodeType === "Substation" || nodeType === "Distribution Substation (DSS)") && (
+          {(nodeType === "Substation" ||
+            nodeType === "Distribution Substation (DSS)") && (
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col">
                 <label className="text-sm font-medium">Longitude *</label>
@@ -248,7 +324,7 @@ export const EditNodeDialog = ({
               <Textarea
                 name="description"
                 value={formData.description}
-                // onChange={handleInputChange}
+                onChange={handleTextareaChange}
                 placeholder="Enter Description"
                 className="mt-1 border-gray-300"
               />
@@ -261,16 +337,27 @@ export const EditNodeDialog = ({
             onClick={onClose}
             className="border-[rgba(22,28,202,1)] text-[rgba(22,28,202,1)] hover:bg-gray-300"
             size={"lg"}
+            disabled={
+              updateRegionBhubServiceCenter.isPending ||
+              updateSubstationTransfomerFeeder.isPending
+            }
           >
             Cancel
           </Button>
           <Button
-            disabled={!isValid}
+            disabled={
+              !isValid ||
+              updateRegionBhubServiceCenter.isPending ||
+              updateSubstationTransfomerFeeder.isPending
+            }
             onClick={handleSave}
             size={"lg"}
             className="ml-2 bg-[rgba(22,28,202,1)] text-white"
           >
-            Save
+            {updateRegionBhubServiceCenter.isPending ||
+            updateSubstationTransfomerFeeder.isPending
+              ? "Saving..."
+              : "Save"}
           </Button>
         </DialogFooter>
       </DialogContent>

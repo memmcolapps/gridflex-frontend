@@ -5,6 +5,7 @@ import { AssignMeterDialog } from "@/components/meter-management/assign-meter-di
 import { BulkUploadDialog } from "@/components/meter-management/bulk-upload";
 import { ConfirmationModalDialog } from "@/components/meter-management/confirmation-modal-dialog";
 import CustomerIdDialog from "@/components/meter-management/customer-id-dialog";
+import UploadImageDialog from "@/components/meter-management/upload-image-dialog";
 import { DeactivateVirtualMeterDialog } from "@/components/meter-management/deactivate-virtual-meter-dialog";
 import { DetachConfirmationDialog } from "@/components/meter-management/detach-confirmation-dialog";
 import { DetachMeterDialog } from "@/components/meter-management/detach-meter-dialog";
@@ -118,6 +119,7 @@ export default function AssignMeterPage() {
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [isBulkUploadModalOpen, setIsBulkUploadModalOpen] = useState(false);
+    const [isUploadImageModalOpen, setIsUploadImageModalOpen] = useState(false);
 
     // Fetch meter data using the API
     const { data: metersData, isLoading } = useMeters({
@@ -234,12 +236,7 @@ export default function AssignMeterPage() {
             houseNo,
         } as MeterInventoryItem));
         setIsAssignModalOpen(false);
-        setProgress(100);
-        if (selectedCustomer?.category === "Prepaid") {
-            setIsSetPaymentModalOpen(true);
-        } else if (selectedCustomer?.category === "Postpaid") {
-            setIsDeactivateModalOpen(true);
-        }
+        setIsUploadImageModalOpen(true);
     };
 
     const handleProceedFromSetPayment = () => {
@@ -252,9 +249,18 @@ export default function AssignMeterPage() {
         setIsConfirmationModalOpen(true);
     };
 
+    const handleUploadImageProceed = (image: File | null) => {
+        setIsUploadImageModalOpen(false);
+        setProgress(100);
+        if (selectedCustomer?.category === "Prepaid") {
+            setIsSetPaymentModalOpen(true);
+        } else if (selectedCustomer?.category === "Postpaid") {
+            setIsDeactivateModalOpen(true);
+        }
+    };
+
     const handleConfirmAssignment = () => {
         setIsConfirmationModalOpen(false);
-        alert(`Meter assigned successfully for ${(selectedCustomer?.category ?? "").toLowerCase()} customer!`);
     };
 
     const handleCancelConfirmation = () => {
@@ -293,7 +299,6 @@ export default function AssignMeterPage() {
         } else {
             // Virtual meter, perhaps open virtual edit dialog
             // For now, do nothing or show message
-            alert("Edit not supported for virtual meters here.");
         }
     };
 
@@ -328,14 +333,12 @@ export default function AssignMeterPage() {
                 setCreditPaymentPlan(editCustomer.creditPaymentPlan ?? "");
                 setIsSetPaymentModalOpen(true);
             } else {
-                alert(`Details updated successfully for postpaid customer ${editCustomer.customerId}!`);
             }
         }
     };
 
     const handleConfirmEditFromSetPayment = () => {
         if (!editCustomer?.customerId) {
-            alert("No valid customer selected for editing payment mode.");
             return;
         }
         setMeterData((prev) =>
@@ -352,7 +355,6 @@ export default function AssignMeterPage() {
             )
         );
         setIsSetPaymentModalOpen(false);
-        alert(`Details and payment mode updated successfully for prepaid customer ${editCustomer.customerId}!`);
     };
 
     const handleDetachMeter = (customer: MeterInventoryItem | VirtualMeterData) => {
@@ -360,7 +362,6 @@ export default function AssignMeterPage() {
             setCustomerToDetach(customer);
             setIsDetachModalOpen(true);
         } else {
-            alert("Detach not supported for virtual meters.");
         }
     };
 
@@ -380,7 +381,6 @@ export default function AssignMeterPage() {
 
     const handleConfirmDetach = () => {
         if (customerToDetach) {
-            alert(`Meter detachment process confirmed for customer ${customerToDetach.customerId}! Reason: ${detachReason}`);
             setIsDetachConfirmModalOpen(false);
             setDetachReason("");
             setCustomerToDetach(null);
@@ -403,13 +403,11 @@ export default function AssignMeterPage() {
             setMigrateCreditPaymentPlan(customer.creditPaymentPlan ?? "");
             setIsMigrateModalOpen(true);
         } else {
-            alert("Migrate not supported for virtual meters.");
         }
     };
 
     const handleConfirmMigrate = () => {
         if (!migrateCustomer?.customerId) {
-            alert("No valid customer selected for migration.");
             return;
         }
         setMeterData((prev) =>
@@ -436,7 +434,6 @@ export default function AssignMeterPage() {
             )
         );
         setIsMigrateModalOpen(false);
-        alert(`Meter migrated successfully for customer ${migrateCustomer.customerId} to ${migrateToCategory}!`);
     };
 
     const handleSearchChange = (term: string) => {
@@ -848,6 +845,7 @@ export default function AssignMeterPage() {
                 progress={progress}
                 phone={phone}
                 setPhone={setPhone}
+                onConfirmAssignment={handleConfirmAssignment}
             />
             <EditCustomerDetailsDialog
                 isOpen={isEditModalOpen}
@@ -906,6 +904,7 @@ export default function AssignMeterPage() {
                 selectedCustomer={selectedCustomer}
                 onConfirm={handleConfirmAssignment}
                 onCancel={handleCancelConfirmation}
+                isSubmitting={false}
             />
             <MigrateMeterDialog
                 isOpen={isMigrateModalOpen}
@@ -938,6 +937,7 @@ export default function AssignMeterPage() {
                 customerToDetach={customerToDetach}
                 onConfirm={handleConfirmDetach}
                 onCancel={() => setIsDetachConfirmModalOpen(false)}
+                isSubmitting={false}
             />
             <BulkUploadDialog<MeterInventoryItem>
                 isOpen={isBulkUploadModalOpen}
@@ -959,6 +959,12 @@ export default function AssignMeterPage() {
                 ]}
                 templateUrl="/templates/assign-meter-template.xlsx"
                 maxFileSizeMb={20}
+            />
+            <UploadImageDialog
+                isOpen={isUploadImageModalOpen}
+                onOpenChange={setIsUploadImageModalOpen}
+                onProceed={handleUploadImageProceed}
+                onCancel={() => setIsUploadImageModalOpen(false)}
             />
         </div>
     );
