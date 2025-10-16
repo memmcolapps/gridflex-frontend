@@ -103,17 +103,15 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
                                         <span className="font-medium">Meter Class:</span>
                                     </div>
                                     <div className="flex-1 flex items-center gap-2 text-sm sm:text-base font-bold text-gray-900">
-                                        <span>{selectedRow.meterClass ?? 'N/A'}</span>
+                                        <span>{selectedRow.meterClass}</span>
                                     </div>
-
-
                                 </div>
                                 <div className="flex items-center gap-4 p-2">
                                     <div className="flex-1 text-sm sm:text-base font-bold text-gray-900">
                                         <span className="font-medium">Meter Type:</span>
                                     </div>
                                     <div className="flex-1 flex items-center gap-2 text-sm sm:text-base font-bold text-gray-900">
-                                        <span>{selectedRow.meterType ?? 'N/A'}</span>
+                                        <span>{selectedRow.meterType}</span>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-4 p-2">
@@ -121,7 +119,7 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
                                         <span className="font-medium">Meter Category:</span>
                                     </div>
                                     <div className="flex-1 flex items-center gap-2 text-sm sm:text-base font-bold text-gray-900">
-                                        <span>{selectedRow.meterCategory ?? 'N/A'}</span>
+                                        <span>{selectedRow.meterCategory}</span>
                                     </div>
                                 </div>
                             </div>
