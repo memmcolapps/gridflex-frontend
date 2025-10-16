@@ -16,12 +16,12 @@ import {
 import { queryClient } from "@/lib/queryClient";
 
 export const useOrg = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ["organization-nodes"],
+    queryKey: ["organization-nodes", user?.id],
     queryFn: fetchOrganizationNodes,
-    enabled: isAuthenticated,
+    enabled: isAuthenticated && !!user?.id,
   });
 
   return {
@@ -32,6 +32,8 @@ export const useOrg = () => {
 };
 
 export const useCreateRegionBhubServiceCenter = () => {
+  const { user } = useAuth();
+
   return useMutation({
     mutationFn: async (payload: CreateRegionBhubServiceCenterPayload) => {
       const response = await createRegionBhubServiceCenter(payload);
@@ -42,13 +44,15 @@ export const useCreateRegionBhubServiceCenter = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["organization-nodes"],
+        queryKey: ["organization-nodes", user?.id],
       });
     },
   });
 };
 
 export const useUpdateRegionBhubServiceCenter = () => {
+  const { user } = useAuth();
+
   return useMutation({
     mutationFn: async (payload: UpdateRegionBhubServiceCenterPayload) => {
       const response = await updateRegionBhubServiceCenter(payload);
@@ -59,13 +63,15 @@ export const useUpdateRegionBhubServiceCenter = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["organization-nodes"],
+        queryKey: ["organization-nodes", user?.id],
       });
     },
   });
 };
 
 export const useCreateSubstationTransfomerFeeder = () => {
+  const { user } = useAuth();
+
   return useMutation({
     mutationFn: async (payload: CreateSubstationTransfomerFeederPayload) => {
       const response = await createSubstationTransfomerFeeder(payload);
@@ -76,13 +82,15 @@ export const useCreateSubstationTransfomerFeeder = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["organization-nodes"],
+        queryKey: ["organization-nodes", user?.id],
       });
     },
   });
 };
 
 export const useUpdateSubstationTransfomerFeeder = () => {
+  const { user } = useAuth();
+
   return useMutation({
     mutationFn: async (payload: UpdateSubstationTransfomerFeederPayload) => {
       const response = await updateSubstationTransfomerFeeder(payload);
@@ -93,7 +101,7 @@ export const useUpdateSubstationTransfomerFeeder = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["organization-nodes"],
+        queryKey: ["organization-nodes", user?.id],
       });
     },
   });

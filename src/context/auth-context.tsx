@@ -2,9 +2,16 @@
 
 "use client";
 
-import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useEffect,
+} from "react";
 import { loginApi, logoutApi } from "../service/auth-service";
 import { useRouter } from "next/navigation";
+import { queryClient } from "@/lib/queryClient";
 
 // Centralized types
 import { type UserInfo } from "@/types/user-info";
@@ -38,7 +45,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       return false;
     }
   });
-  
+
   const [user, setUser] = useState<UserInfo | null>(() => {
     try {
       const userInfo = localStorage.getItem("user_info");
@@ -73,7 +80,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         setIsAuthenticated(true);
         router.push("/data-management/dashboard");
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : "Failed to login";
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to login";
         setError(errorMessage);
         setIsAuthenticated(false);
         setUser(null);
@@ -93,7 +101,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       const token = localStorage.getItem("auth_token");
       const userInfo = localStorage.getItem("user_info");
-      
+
       const parsedUser = userInfo ? JSON.parse(userInfo) : null;
       const username = parsedUser?.email ?? parsedUser?.username;
 
@@ -105,17 +113,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         }
       }
 
+      // Clear all cached queries to prevent data leakage between users
+      queryClient.clear();
+
       localStorage.removeItem("auth_token");
       localStorage.removeItem("user_info");
       setUser(null);
       setIsAuthenticated(false);
-      
+
       router.push("/login");
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to logout";
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to logout";
       setError(errorMessage);
       console.error("Logout error:", err);
-      
+
+      // Clear cache even if logout API fails
+      queryClient.clear();
+
       localStorage.removeItem("auth_token");
       localStorage.removeItem("user_info");
       setUser(null);
@@ -127,18 +142,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [router]);
 
   useEffect(() => {
-    const handleExpired= () => {
+    const handleExpired = () => {
       console.log("Token expired detected!");
-      logout()
-    }
+      logout();
+    };
 
-    window.addEventListener('auth-token-expired', handleExpired)
+    window.addEventListener("auth-token-expired", handleExpired);
 
-    return() => {
-    window.addEventListener('auth-token-expired', handleExpired)
-    }
-  },[logout])
-  
+    return () => {
+      window.addEventListener("auth-token-expired", handleExpired);
+    };
+  }, [logout]);
+
   // This is the new function to allow other components to update the user data
   const updateUser = useCallback((userInfo: UserInfo) => {
     setUser(userInfo);
