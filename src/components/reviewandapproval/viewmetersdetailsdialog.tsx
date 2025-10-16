@@ -11,7 +11,8 @@ import Image from 'next/image';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden'; // Import VisuallyHidden
 import type { Meter } from "@/types/review-approval";
 import { useAuth } from '@/context/auth-context';
-import { useState } from 'react';
+import { useState } from 'react'; // Keep this import
+import { useEffect } from 'react'; // Added useEffect to reset state for better UX
 
 interface ViewMeterDetailsDialogProps {
     isOpen: boolean;
@@ -29,6 +30,16 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
     onReject,
 }) => {
     const { user } = useAuth();
+    
+    const [showDetails, setShowDetails] = useState(false);
+
+   
+    useEffect(() => {
+        if (isOpen || selectedRow) {
+            setShowDetails(false);
+        }
+    }, [isOpen, selectedRow]);
+
     const isMeterAllocated = selectedRow?.description === 'Meter Allocated';
     const isMeterAssigned = selectedRow?.description === 'Meter Assigned';
     const isMeterDeactivated = selectedRow?.description === 'Meter Deactivated';
@@ -46,8 +57,6 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
             );
         }
         if (isMeterAllocated) {
-            const [showDetails, setShowDetails] = useState(false);
-
             return (
                 <>
                     <DialogHeader>
@@ -73,7 +82,7 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
                         {/* Details Toggle Button */}
                         <button
                             onClick={() => setShowDetails(!showDetails)}
-                            className="text-[#161CCA] text-sm  text-left pl-2 cursor-pointer"
+                            className="text-[#161CCA] text-sm  text-left pl-2 cursor-pointer"
                         >
                             Details
                         </button>
