@@ -114,13 +114,11 @@ export const AddNodeDialog = ({
       const isRegionBhubServiceCenter = [
         "Region",
         "Business Hub",
-        "Service Centre",
+        "Service Center",
       ].includes(nodeType);
-      const isTechnicalNode = [
-        "Substation",
-        "Feeder Line",
-        "Distribution Substation (DSS)",
-      ].includes(nodeType);
+      const isTechnicalNode = ["Substation", "Feeder Line", "DSS"].includes(
+        nodeType,
+      );
 
       if (isRegionBhubServiceCenter) {
         await createRegionBhubServiceCenter.mutateAsync({
@@ -143,10 +141,10 @@ export const AddNodeDialog = ({
           contactPerson: formData.contactPerson,
           address: formData.address,
           status: formData.status === "Active",
-          voltage: formData.voltage || "",
-          latitude: formData.latitude || "",
-          longitude: formData.longitude || "",
-          description: formData.description || "",
+          voltage: formData.voltage ?? "",
+          latitude: formData.latitude ?? "",
+          longitude: formData.longitude ?? "",
+          description: formData.description ?? "",
           type: nodeType,
         });
       }
@@ -161,11 +159,9 @@ export const AddNodeDialog = ({
     }
   };
 
-  const isTechnicalNode = [
-    "Substation",
-    "Feeder Line",
-    "Distribution Substation (DSS)",
-  ].includes(nodeType);
+  const isTechnicalNode = ["Substation", "Feeder Line", "DSS"].includes(
+    nodeType,
+  );
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -319,7 +315,7 @@ export const AddNodeDialog = ({
             </div>
           )}
           {(nodeType === "Substation" ||
-            nodeType === "Distribution Substation (DSS)" ||
+            nodeType === "DSS" ||
             nodeType === "Feeder Line") && (
             <div className="grid gap-4">
               <div className="grid grid-cols-2 gap-4">

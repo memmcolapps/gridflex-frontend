@@ -90,13 +90,11 @@ export const EditNodeDialog = ({
       const isRegionBhubServiceCenter = [
         "Region",
         "Business Hub",
-        "Service Centre",
+        "Service Center",
       ].includes(nodeType);
-      const isTechnicalNode = [
-        "Substation",
-        "Feeder Line",
-        "Distribution Substation (DSS)",
-      ].includes(nodeType);
+      const isTechnicalNode = ["Substation", "Feeder Line", "DSS"].includes(
+        nodeType,
+      );
 
       if (isRegionBhubServiceCenter) {
         await updateRegionBhubServiceCenter.mutateAsync({
@@ -136,11 +134,9 @@ export const EditNodeDialog = ({
     }
   };
 
-  const isTechnicalNode = [
-    "Substation",
-    "Feeder Line",
-    "Distribution Substation (DSS)",
-  ].includes(nodeType);
+  const isTechnicalNode = ["Substation", "Feeder Line", "DSS"].includes(
+    nodeType,
+  );
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -293,8 +289,7 @@ export const EditNodeDialog = ({
               </div>
             </div>
           )}
-          {(nodeType === "Substation" ||
-            nodeType === "Distribution Substation (DSS)") && (
+          {(nodeType === "Substation" || nodeType === "DSS") && (
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col">
                 <label className="text-sm font-medium">Longitude *</label>

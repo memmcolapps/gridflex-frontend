@@ -1,10 +1,22 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { VirtualMeterData } from "@/types/meter";
-import type{ MeterData } from "@/types/meter";
+import type { MeterData } from "@/types/meter";
 import { MeterInventoryItem } from "@/types/meter-inventory";
 
 interface AssignMeterDialogProps {
@@ -75,13 +87,15 @@ export function AssignMeterDialog({
   // progress,
 }: AssignMeterDialogProps) {
   // Type guard to check if selectedCustomer is MeterData
-  const isMeterData = (customer: MeterInventoryItem | VirtualMeterData): customer is MeterInventoryItem  => {
+  const isMeterData = (
+    customer: MeterInventoryItem | VirtualMeterData,
+  ): customer is MeterInventoryItem => {
     return "approvedStatus" in customer && "class" in customer;
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-white text-black h-fit">
+      <DialogContent className="h-fit bg-white text-black">
         {/* {selectedCustomer?.category === "Prepaid" && <Progress value={progress} className="w-full" />} */}
         <DialogHeader>
           <DialogTitle>Assign meter to customer</DialogTitle>
@@ -96,9 +110,12 @@ export function AssignMeterDialog({
               </Label>
               <Input
                 value={selectedCustomer?.customerId ?? ""}
-
                 readOnly
-                placeholder={selectedCustomer && isMeterData(selectedCustomer) ? "Enter Meter ID" : "Enter Customer ID"}
+                placeholder={
+                  selectedCustomer && isMeterData(selectedCustomer)
+                    ? "Enter Meter ID"
+                    : "Enter Customer ID"
+                }
                 className="border-gray-200 text-gray-600"
               />
             </div>
@@ -160,7 +177,6 @@ export function AssignMeterDialog({
               />
             </div>
 
-
             {/* )} */}
             <div className="space-y-2">
               <Label>
@@ -178,7 +194,7 @@ export function AssignMeterDialog({
                 Tariff<span className="text-red-700">*</span>
               </Label>
               <Select onValueChange={setTariff} value={tariff}>
-                <SelectTrigger className="border-gray-200 text-gray-600 w-full">
+                <SelectTrigger className="w-full border-gray-200 text-gray-600">
                   <SelectValue placeholder="Select Tariff" />
                 </SelectTrigger>
                 <SelectContent>
@@ -201,7 +217,7 @@ export function AssignMeterDialog({
             </div>
             <div className="space-y-2">
               <Label>
-                Distribution Substation (DSS)<span className="text-red-700">*</span>
+                DSS<span className="text-red-700">*</span>
               </Label>
               <Input
                 value={dss}
@@ -215,7 +231,7 @@ export function AssignMeterDialog({
                 State<span className="text-red-700">*</span>
               </Label>
               <Select onValueChange={setState} value={state}>
-                <SelectTrigger className="border-gray-100 text-gray-600 w-full">
+                <SelectTrigger className="w-full border-gray-100 text-gray-600">
                   <SelectValue placeholder="Select State" />
                 </SelectTrigger>
                 <SelectContent>
@@ -263,7 +279,7 @@ export function AssignMeterDialog({
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="border-[#161CCA] text-[#161CCA] cursor-pointer"
+            className="cursor-pointer border-[#161CCA] text-[#161CCA]"
           >
             Cancel
           </Button>
@@ -272,8 +288,8 @@ export function AssignMeterDialog({
             disabled={!isFormComplete}
             className={
               isFormComplete
-                ? "bg-[#161CCA] text-white cursor-pointer"
-                : "bg-blue-200 text-white cursor-not-allowed"
+                ? "cursor-pointer bg-[#161CCA] text-white"
+                : "cursor-not-allowed bg-blue-200 text-white"
             }
           >
             Proceed

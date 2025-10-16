@@ -63,7 +63,7 @@ export const renderNodeIcon = (nodeTypeString?: string): React.ReactNode => {
       return <Grid2X2 size={14} className="text-gray-600" />;
     case "business hub":
       return <Building size={14} className="text-gray-600" />;
-    case "service centre":
+    case "Service Center":
       return <Wrench size={14} className="text-gray-600" />;
     case "substation":
       return <Database size={14} className="text-gray-600" />;

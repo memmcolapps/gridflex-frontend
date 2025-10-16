@@ -42,63 +42,68 @@ export const useNodeFormValidation = ({
   });
   const [isValid, setIsValid] = useState(false);
 
-  const validateForm = useCallback((data: FormData) => {
-    const newErrors: FormErrors = { email: "", phoneNumber: "", id: "" };
-    let allFieldsValid = true;
+  const validateForm = useCallback(
+    (data: FormData) => {
+      const newErrors: FormErrors = { email: "", phoneNumber: "", id: "" };
+      let allFieldsValid = true;
 
-    // Base required fields for all node types
-    const requiredFields: (keyof FormData)[] = [
-      "name",
-      "id",
-      "phoneNumber",
-      "email",
-      "contactPerson",
-      "address",
-    ];
+      // Base required fields for all node types
+      const requiredFields: (keyof FormData)[] = [
+        "name",
+        "id",
+        "phoneNumber",
+        "email",
+        "contactPerson",
+        "address",
+      ];
 
-    // Check for technical node specific fields
-    const isTechnicalNode = ["Substation", "Feeder Line", "Distribution Substation (DSS)"].includes(nodeType);
-    if (isTechnicalNode) {
-      requiredFields.push("status", "voltage", "assetId");
-    }
+      // Check for technical node specific fields
+      const isTechnicalNode = ["Substation", "Feeder Line", "DSS"].includes(
+        nodeType,
+      );
+      if (isTechnicalNode) {
+        requiredFields.push("status", "voltage", "assetId");
+      }
 
-    // Check for geolocation fields (longitude/latitude)
-    if (["Substation", "Distribution Substation (DSS)", "Feeder Line"].includes(nodeType)) {
-      requiredFields.push("longitude", "latitude");
-    }
+      // Check for geolocation fields (longitude/latitude)
+      if (["Substation", "DSS", "Feeder Line"].includes(nodeType)) {
+        requiredFields.push("longitude", "latitude");
+      }
 
-    requiredFields.forEach((field) => {
-      // The condition to check for a non-empty string is "!data[field]".
-      // For optional number/boolean fields, you would need to adjust this.
-      if (!data[field]) {
+      requiredFields.forEach((field) => {
+        // The condition to check for a non-empty string is "!data[field]".
+        // For optional number/boolean fields, you would need to adjust this.
+        if (!data[field]) {
+          allFieldsValid = false;
+        }
+      });
+
+      // Email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (data.email && !emailRegex.test(data.email)) {
+        newErrors.email = "Invalid email format";
         allFieldsValid = false;
       }
-    });
 
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (data.email && !emailRegex.test(data.email)) {
-      newErrors.email = "Invalid email format";
-      allFieldsValid = false;
-    }
+      // Phone number validation
+      const phoneRegex = /^\+?[0-9]{10,}$/;
+      if (data.phoneNumber && !phoneRegex.test(data.phoneNumber)) {
+        newErrors.phoneNumber = "Phone number must be at least 10 digits";
+        allFieldsValid = false;
+      }
 
-    // Phone number validation
-    const phoneRegex = /^\+?[0-9]{10,}$/;
-    if (data.phoneNumber && !phoneRegex.test(data.phoneNumber)) {
-      newErrors.phoneNumber = "Phone number must be at least 10 digits";
-      allFieldsValid = false;
-    }
+      // ID (serial number) validation
+      const idRegex = /^[a-zA-Z0-9]+$/;
+      if (data.id && data.id.trim() !== "" && !idRegex.test(data.id)) {
+        newErrors.id = "ID must be alphanumeric";
+        allFieldsValid = false;
+      }
 
-    // ID (serial number) validation
-    const idRegex = /^[a-zA-Z0-9]+$/;
-    if (data.id && data.id.trim() !== "" && !idRegex.test(data.id)) {
-      newErrors.id = "ID must be alphanumeric";
-      allFieldsValid = false;
-    }
-
-    setErrors(newErrors);
-    setIsValid(allFieldsValid);
-  }, [nodeType]);
+      setErrors(newErrors);
+      setIsValid(allFieldsValid);
+    },
+    [nodeType],
+  );
 
   useEffect(() => {
     if (isInitialValidation) {
