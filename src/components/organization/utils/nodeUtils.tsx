@@ -9,10 +9,7 @@ import {
 } from "lucide-react";
 import React from "react";
 import { type NodeInfo } from "../../../service/organaization-service";
-import {
-  normalizeHierarchyType,
-  HIERARCHY_TYPES,
-} from "../../../utils/hierarchy-utils";
+import { normalizeHierarchyType } from "../../../utils/hierarchy-utils";
 
 export const mapNodeInfoToFormData = (nodeInfo?: NodeInfo) => {
   if (!nodeInfo) {
@@ -55,23 +52,33 @@ export const mapNodeInfoToFormData = (nodeInfo?: NodeInfo) => {
 };
 
 export const renderNodeIcon = (nodeTypeString?: string): React.ReactNode => {
-  const type = nodeTypeString?.toLowerCase(); // Standardize to lowercase for comparison
-  switch (type) {
-    case "root":
-      return <Building2 size={14} className="text-gray-600" />;
+  if (!nodeTypeString) return null;
+
+  // Normalize the node type to match hierarchy types
+  const normalizedType = normalizeHierarchyType(nodeTypeString);
+
+  switch (normalizedType) {
     case "region":
       return <Grid2X2 size={14} className="text-gray-600" />;
-    case "business hub":
+    case "businesshub":
       return <Building size={14} className="text-gray-600" />;
-    case "Service Center":
+    case "servicecenter":
       return <Wrench size={14} className="text-gray-600" />;
     case "substation":
       return <Database size={14} className="text-gray-600" />;
-    case "feeder line":
+    case "feederline":
       return <Zap size={14} className="text-gray-600" />;
-    case "transformer":
+    case "dss":
       return <Lightbulb size={14} className="text-gray-600" />;
     default:
+      // Fallback for any other types (like "root" or legacy types)
+      const type = nodeTypeString.toLowerCase();
+      if (type === "root") {
+        return <Building2 size={14} className="text-gray-600" />;
+      }
+      if (type === "transformer") {
+        return <Lightbulb size={14} className="text-gray-600" />;
+      }
       return null;
   }
 };
