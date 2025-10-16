@@ -30,10 +30,10 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
     onReject,
 }) => {
     const { user } = useAuth();
-    
+
     const [showDetails, setShowDetails] = useState(false);
 
-   
+
     useEffect(() => {
         if (isOpen || selectedRow) {
             setShowDetails(false);
@@ -81,8 +81,11 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
 
                         {/* Details Toggle Button */}
                         <button
+
                             onClick={() => setShowDetails(!showDetails)}
-                            className="text-[#161CCA] text-sm  text-left pl-2 cursor-pointer"
+
+                            className="text-[#161CCA] text-sm  text-left pl-2 cursor-pointer"
+
                         >
                             Details
                         </button>
