@@ -148,9 +148,9 @@ export const EditNodeDialog = ({
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col">
               <label className="text-sm font-medium">
-                {nodeType === "Root"
+                {nodeType.toLowerCase() === "root"
                   ? "Root Name"
-                  : nodeType === "Region"
+                  : nodeType.toLowerCase() === "region"
                     ? "Region Name"
                     : `${nodeType} Name`}{" "}
                 *
@@ -167,13 +167,13 @@ export const EditNodeDialog = ({
               <label className="text-sm font-medium">
                 {isTechnicalNode
                   ? "Serial Number"
-                  : nodeType === "Root"
+                  : nodeType.toLowerCase() === "root"
                     ? "Root ID"
-                    : nodeType === "Region"
+                    : nodeType.toLowerCase() === "region"
                       ? "Region ID"
-                      : nodeType === "Business Hub"
+                      : nodeType.toLowerCase() === "business hub"
                         ? "Business Hub ID"
-                        : nodeType === "Service Center"
+                        : nodeType.toLowerCase() === "service center"
                           ? "Service Center ID"
                           : "ID"}{" "}
                 *
@@ -192,13 +192,13 @@ export const EditNodeDialog = ({
                   value={formData.regionId}
                   onChange={handleInputChange}
                   placeholder={`Enter ${
-                    nodeType === "Root"
+                    nodeType.toLowerCase() === "root"
                       ? "Root"
-                      : nodeType === "Region"
+                      : nodeType.toLowerCase() === "region"
                         ? "Region"
-                        : nodeType === "Business Hub"
+                        : nodeType.toLowerCase() === "business hub"
                           ? "Business Hub"
-                          : nodeType === "Service Center"
+                          : nodeType.toLowerCase() === "service center"
                             ? "Service Center"
                             : ""
                   } ID`}
