@@ -1,3 +1,4 @@
+"use client";
 import {
     Dialog,
     DialogContent,
@@ -10,6 +11,8 @@ import Image from 'next/image';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden'; // Import VisuallyHidden
 import type { Meter } from "@/types/review-approval";
 import { useAuth } from '@/context/auth-context';
+import { useState } from 'react'; // Keep this import
+import { useEffect } from 'react'; // Added useEffect to reset state for better UX
 
 interface ViewMeterDetailsDialogProps {
     isOpen: boolean;
@@ -27,6 +30,16 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
     onReject,
 }) => {
     const { user } = useAuth();
+
+    const [showDetails, setShowDetails] = useState(false);
+
+
+    useEffect(() => {
+        if (isOpen || selectedRow) {
+            setShowDetails(false);
+        }
+    }, [isOpen, selectedRow]);
+
     const isMeterAllocated = selectedRow?.description === 'Meter Allocated';
     const isMeterAssigned = selectedRow?.description === 'Meter Assigned';
     const isMeterDeactivated = selectedRow?.description === 'Meter Deactivated';
@@ -54,6 +67,7 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
                             Operator: {user?.business?.businessName?.toUpperCase() ?? 'BUSINESS NAME'}
                         </span>
                     </DialogHeader>
+
                     <div className="flex flex-col gap-3 py-4 sm:py-6 w-150">
                         <div className="flex items-center gap-4 p-2">
                             <div className="flex-1 text-sm sm:text-base font-bold text-gray-900">
@@ -61,9 +75,67 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
                             </div>
                             <div className="flex-1 flex items-center gap-2 text-sm sm:text-base font-bold text-gray-900">
                                 <MoveRight className="text-gray-900 mr-2 scale-x-185" size={16} />
-                                <span>Molete Business Hub</span>
+                                <span>{selectedRow.nodeInfo?.name}</span>
                             </div>
                         </div>
+
+                        {/* Details Toggle Button */}
+                        <button
+
+                            onClick={() => setShowDetails(!showDetails)}
+
+                            className="text-[#161CCA] text-sm  text-left pl-2 cursor-pointer"
+
+                        >
+                            Details
+                        </button>
+
+                        {/* Expanded Details */}
+                        {showDetails && (
+                            <div className="text-sm text-gray-700 pl-1 animate-fadeIn">
+                                <div className="flex items-center gap-4 p-2">
+                                    <div className="flex-1 text-sm sm:text-base font-bold text-gray-900">
+                                        <span className="font-medium">Business Hub ID:</span>
+                                    </div>
+                                    <div className="flex-1 flex items-center gap-2 text-sm sm:text-base font-bold text-gray-900">
+                                        <span>{selectedRow.nodeInfo?.regionId ?? 'N/A'}</span>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-4 p-2">
+                                    <div className="flex-1 text-sm sm:text-base font-bold text-gray-900">
+                                        <span className="font-medium">Meter Manufacturer:</span>
+                                    </div>
+                                    <div className="flex-1 flex items-center gap-2 text-sm sm:text-base font-bold text-gray-900">
+                                        <span>{selectedRow.manufacturer?.name ?? 'N/A'}</span>
+                                    </div>
+
+                                </div>
+                                <div className="flex items-center gap-4 p-2">
+                                    <div className="flex-1 text-sm sm:text-base font-bold text-gray-900">
+                                        <span className="font-medium">Meter Class:</span>
+                                    </div>
+                                    <div className="flex-1 flex items-center gap-2 text-sm sm:text-base font-bold text-gray-900">
+                                        <span>{selectedRow.meterClass}</span>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-4 p-2">
+                                    <div className="flex-1 text-sm sm:text-base font-bold text-gray-900">
+                                        <span className="font-medium">Meter Type:</span>
+                                    </div>
+                                    <div className="flex-1 flex items-center gap-2 text-sm sm:text-base font-bold text-gray-900">
+                                        <span>{selectedRow.meterType}</span>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-4 p-2">
+                                    <div className="flex-1 text-sm sm:text-base font-bold text-gray-900">
+                                        <span className="font-medium">Meter Category:</span>
+                                    </div>
+                                    <div className="flex-1 flex items-center gap-2 text-sm sm:text-base font-bold text-gray-900">
+                                        <span>{selectedRow.meterCategory}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </>
             );
@@ -132,7 +204,7 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
                         {[
                             { label: 'Meter Number:', value: selectedRow.meterNumber },
                             { label: 'SIM No.:', value: selectedRow.simNumber },
-                            { label: 'Meter Type:', value: 'Electricity' },
+                            { label: 'Meter Type:', value: selectedRow.meterType },
                             { label: 'Meter Manufacturer:', value: selectedRow.manufacturer?.name },
                             { label: 'Meter Class:', value: selectedRow.meterClass },
                             { label: 'Meter Category:', value: selectedRow.meterCategory },
@@ -231,7 +303,7 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
                         <DialogTitle className="text-left text-base sm:text-lg font-semibold text-gray-900 truncate">
                             Newly Added
                         </DialogTitle>
-                                               <span className="text-gray-500 text-sm sm:text-base">
+                        <span className="text-gray-500 text-sm sm:text-base">
                             Operator: {user?.business?.businessName?.toUpperCase() ?? 'BUSINESS NAME'}
                         </span>
                     </DialogHeader>

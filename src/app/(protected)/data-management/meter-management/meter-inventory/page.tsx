@@ -54,7 +54,7 @@ import { ViewMeterInfoDialog } from "@/components/meter-management/view-meter-in
 import type { MeterInventoryItem } from "@/types/meter-inventory";
 import { getStatusStyle } from "@/components/status-style";
 import { useMeterInventory, useBusinessHubs, useAllocateMeter } from "@/hooks/use-meter";
-import type { MeterInventoryFilters,BusinessHub } from "@/types/meter-inventory";
+import type { MeterInventoryFilters, BusinessHub } from "@/types/meter-inventory";
 import { useAuth } from '@/context/auth-context';
 
 // Placeholder for toast utility
@@ -610,7 +610,8 @@ export default function MeterInventoryPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleViewInfo(mapMeterInventoryToMeterData(meter))}>
+                        <DropdownMenuItem onClick={() => handleViewInfo(mapMeterInventoryToMeterData(meter))}
+                          className="cursor-pointer">
                           <Eye size={14} />
                           View Details
                         </DropdownMenuItem>
