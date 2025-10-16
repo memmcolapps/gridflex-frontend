@@ -54,7 +54,6 @@ export const mapNodeInfoToFormData = (nodeInfo?: NodeInfo) => {
 export const renderNodeIcon = (nodeTypeString?: string): React.ReactNode => {
   if (!nodeTypeString) return null;
 
-  // Normalize the node type to match hierarchy types
   const normalizedType = normalizeHierarchyType(nodeTypeString);
 
   switch (normalizedType) {
@@ -71,7 +70,6 @@ export const renderNodeIcon = (nodeTypeString?: string): React.ReactNode => {
     case "dss":
       return <Lightbulb size={14} className="text-gray-600" />;
     default:
-      // Fallback for any other types (like "root" or legacy types)
       const type = nodeTypeString.toLowerCase();
       if (type === "root") {
         return <Building2 size={14} className="text-gray-600" />;

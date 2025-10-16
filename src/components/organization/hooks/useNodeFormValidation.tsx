@@ -50,7 +50,6 @@ export const useNodeFormValidation = ({
       // Base required fields for all node types
       const requiredFields: (keyof FormData)[] = [
         "name",
-        "id",
         "phoneNumber",
         "email",
         "contactPerson",
@@ -62,7 +61,9 @@ export const useNodeFormValidation = ({
         nodeType,
       );
       if (isTechnicalNode) {
-        requiredFields.push("status", "voltage", "assetId");
+        requiredFields.push("status", "voltage", "serialNo");
+      } else {
+        requiredFields.push("id");
       }
 
       // Check for geolocation fields (longitude/latitude)
@@ -92,11 +93,22 @@ export const useNodeFormValidation = ({
         allFieldsValid = false;
       }
 
-      // ID (serial number) validation
+      // ID / Serial number validation
       const idRegex = /^[a-zA-Z0-9]+$/;
-      if (data.id && data.id.trim() !== "" && !idRegex.test(data.id)) {
-        newErrors.id = "ID must be alphanumeric";
-        allFieldsValid = false;
+      if (isTechnicalNode) {
+        if (
+          data.serialNo &&
+          data.serialNo.trim() !== "" &&
+          !idRegex.test(data.serialNo)
+        ) {
+          newErrors.id = "Serial number must be alphanumeric";
+          allFieldsValid = false;
+        }
+      } else {
+        if (data.id && data.id.trim() !== "" && !idRegex.test(data.id)) {
+          newErrors.id = "ID must be alphanumeric";
+          allFieldsValid = false;
+        }
       }
 
       setErrors(newErrors);

@@ -44,6 +44,7 @@ export const AddNodeDialog = ({
   const [formData, setFormData] = useState<FormData>({
     name: "",
     id: "",
+    serialNo: "",
     phoneNumber: "",
     email: "",
     contactPerson: "",
@@ -70,6 +71,7 @@ export const AddNodeDialog = ({
       const resetData: FormData = {
         name: "",
         id: "",
+        serialNo: "",
         phoneNumber: "",
         email: "",
         contactPerson: "",
@@ -135,7 +137,7 @@ export const AddNodeDialog = ({
         await createSubstationTransfomerFeeder.mutateAsync({
           parentId,
           name: formData.name,
-          serialNo: formData.assetId,
+          serialNo: formData.serialNo ?? "",
           phoneNo: formData.phoneNumber,
           email: formData.email,
           contactPerson: formData.contactPerson,
@@ -190,20 +192,46 @@ export const AddNodeDialog = ({
             </div>
             <div className="flex flex-col">
               <label className="text-sm font-medium">
-                {nodeType === "Root"
-                  ? "Root ID"
-                  : nodeType === "Region"
-                    ? "Region ID"
-                    : "ID"}{" "}
+                {isTechnicalNode
+                  ? "Serial Number"
+                  : nodeType === "Root"
+                    ? "Root ID"
+                    : nodeType === "Region"
+                      ? "Region ID"
+                      : nodeType === "Business Hub"
+                        ? "Business Hub ID"
+                        : nodeType === "Service Center"
+                          ? "Service Center ID"
+                          : "ID"}{" "}
                 *
               </label>
-              <Input
-                name="id"
-                value={formData.id}
-                onChange={handleInputChange}
-                placeholder={`Enter ${nodeType === "Root" ? "Root" : nodeType === "Region" ? "Region" : ""} ID`}
-                className="mt-1 border-gray-300"
-              />
+              {isTechnicalNode ? (
+                <Input
+                  name="serialNo"
+                  value={formData.serialNo ?? ""}
+                  onChange={handleInputChange}
+                  placeholder="Enter Serial Number"
+                  className="mt-1 border-gray-300"
+                />
+              ) : (
+                <Input
+                  name="id"
+                  value={formData.id}
+                  onChange={handleInputChange}
+                  placeholder={`Enter ${
+                    nodeType === "Root"
+                      ? "Root"
+                      : nodeType === "Region"
+                        ? "Region"
+                        : nodeType === "Business Hub"
+                          ? "Business Hub"
+                          : nodeType === "Service Center"
+                            ? "Service Center"
+                            : ""
+                  } ID`}
+                  className="mt-1 border-gray-300"
+                />
+              )}
               {errors.id && (
                 <p className="mt-1 text-xs text-red-500">{errors.id}</p>
               )}
@@ -262,17 +290,7 @@ export const AddNodeDialog = ({
             </div>
           </div>
           {isTechnicalNode && (
-            <div className="grid grid-cols-3 gap-4">
-              <div className="flex flex-col">
-                <label className="text-sm font-medium">Asset ID *</label>
-                <Input
-                  name="assetId"
-                  value={formData.assetId}
-                  onChange={handleInputChange}
-                  placeholder="Enter Asset ID"
-                  className="mt-1 border-gray-300"
-                />
-              </div>
+            <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col">
                 <label className="text-sm font-medium">Status *</label>
                 <Select
