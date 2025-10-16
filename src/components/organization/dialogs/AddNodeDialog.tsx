@@ -43,7 +43,7 @@ export const AddNodeDialog = ({
 }: AddDialogProps) => {
   const [formData, setFormData] = useState<FormData>({
     name: "",
-    id: "",
+    regionId: "",
     serialNo: "",
     phoneNumber: "",
     email: "",
@@ -70,7 +70,7 @@ export const AddNodeDialog = ({
     if (isOpen) {
       const resetData: FormData = {
         name: "",
-        id: "",
+        regionId: "",
         serialNo: "",
         phoneNumber: "",
         email: "",
@@ -125,7 +125,7 @@ export const AddNodeDialog = ({
       if (isRegionBhubServiceCenter) {
         await createRegionBhubServiceCenter.mutateAsync({
           parentId,
-          regionId: formData.id,
+          regionId: formData.regionId,
           name: formData.name,
           phoneNo: formData.phoneNumber,
           email: formData.email,
@@ -215,8 +215,8 @@ export const AddNodeDialog = ({
                 />
               ) : (
                 <Input
-                  name="id"
-                  value={formData.id}
+                  name="regionId"
+                  value={formData.regionId}
                   onChange={handleInputChange}
                   placeholder={`Enter ${
                     nodeType === "Root"
@@ -232,8 +232,8 @@ export const AddNodeDialog = ({
                   className="mt-1 border-gray-300"
                 />
               )}
-              {errors.id && (
-                <p className="mt-1 text-xs text-red-500">{errors.id}</p>
+              {errors.regionId && (
+                <p className="mt-1 text-xs text-red-500">{errors.regionId}</p>
               )}
             </div>
           </div>

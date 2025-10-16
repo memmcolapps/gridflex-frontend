@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 
 export interface FormData {
   name: string;
-  id: string;
+  regionId: string;
   phoneNumber: string;
   email: string;
   contactPerson: string;
@@ -21,7 +21,8 @@ export interface FormData {
 export interface FormErrors {
   email: string;
   phoneNumber: string;
-  id: string;
+  regionId: string;
+  serialNo: string;
 }
 
 interface UseNodeFormValidationProps {
@@ -38,13 +39,19 @@ export const useNodeFormValidation = ({
   const [errors, setErrors] = useState<FormErrors>({
     email: "",
     phoneNumber: "",
-    id: "",
+    regionId: "",
+    serialNo: "",
   });
   const [isValid, setIsValid] = useState(false);
 
   const validateForm = useCallback(
     (data: FormData) => {
-      const newErrors: FormErrors = { email: "", phoneNumber: "", id: "" };
+      const newErrors: FormErrors = {
+        email: "",
+        phoneNumber: "",
+        regionId: "",
+        serialNo: "",
+      };
       let allFieldsValid = true;
 
       // Base required fields for all node types
@@ -63,7 +70,7 @@ export const useNodeFormValidation = ({
       if (isTechnicalNode) {
         requiredFields.push("status", "voltage", "serialNo");
       } else {
-        requiredFields.push("id");
+        requiredFields.push("regionId");
       }
 
       // Check for geolocation fields (longitude/latitude)
@@ -101,12 +108,16 @@ export const useNodeFormValidation = ({
           data.serialNo.trim() !== "" &&
           !idRegex.test(data.serialNo)
         ) {
-          newErrors.id = "Serial number must be alphanumeric";
+          newErrors.serialNo = "Serial number must be alphanumeric";
           allFieldsValid = false;
         }
       } else {
-        if (data.id && data.id.trim() !== "" && !idRegex.test(data.id)) {
-          newErrors.id = "ID must be alphanumeric";
+        if (
+          data.regionId &&
+          data.regionId.trim() !== "" &&
+          !idRegex.test(data.regionId)
+        ) {
+          newErrors.regionId = "Region ID must be alphanumeric";
           allFieldsValid = false;
         }
       }

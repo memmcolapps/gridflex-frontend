@@ -15,7 +15,7 @@ export const mapNodeInfoToFormData = (nodeInfo?: NodeInfo) => {
   if (!nodeInfo) {
     return {
       name: "",
-      id: "", // This will be serialNo or regionId/bhubId
+      regionId: "",
       phoneNumber: "",
       email: "",
       contactPerson: "",
@@ -31,7 +31,7 @@ export const mapNodeInfoToFormData = (nodeInfo?: NodeInfo) => {
   }
   return {
     name: nodeInfo.name ?? "",
-    id: nodeInfo.serialNo ?? nodeInfo.nodeId ?? "",
+    regionId: nodeInfo.regionId ?? "",
     phoneNumber: nodeInfo.phoneNo ?? "",
     email: nodeInfo.email ?? "",
     contactPerson: nodeInfo.contactPerson ?? "",
