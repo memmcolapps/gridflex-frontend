@@ -86,14 +86,13 @@ export const EditNodeDialog = ({
     if (!isValid) return;
 
     try {
-      // Determine which mutation to use based on node type
       const isRegionBhubServiceCenter = [
-        "Region",
-        "Business Hub",
-        "Service Center",
-      ].includes(nodeType);
-      const isTechnicalNode = ["Substation", "Feeder Line", "DSS"].includes(
-        nodeType,
+        "region",
+        "business hub",
+        "service center",
+      ].includes(nodeType.toLocaleLowerCase());
+      const isTechnicalNode = ["substation", "feeder line", "dss"].includes(
+        nodeType.toLocaleLowerCase(),
       );
 
       if (isRegionBhubServiceCenter) {
@@ -105,7 +104,7 @@ export const EditNodeDialog = ({
           email: formData.email,
           contactPerson: formData.contactPerson,
           address: formData.address,
-          type: nodeType,
+          type: nodeType.toLocaleLowerCase(),
         });
       } else if (isTechnicalNode) {
         await updateSubstationTransfomerFeeder.mutateAsync({
