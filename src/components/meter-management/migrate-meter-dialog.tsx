@@ -1,12 +1,14 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { MeterInventoryItem } from "@/types/meter-inventory";
-import { useMigrateMeter } from "@/hooks/use-assign-meter";
+import { type MigrateMeterPayload, useMigrateMeter } from "@/hooks/use-assign-meter";
 
 interface MigrateMeterDialogProps {
   isOpen: boolean;
@@ -45,13 +47,30 @@ export function MigrateMeterDialog({
 }: MigrateMeterDialogProps) {
   const migrateMeterMutation = useMigrateMeter();
 
+  // Determine the opposite category
+  const oppositeCategory = migrateCustomer?.category === "Prepaid" ? "Postpaid" : "Prepaid";
+
+  // Set the migrateToCategory when the dialog opens or migrateCustomer changes
+  useEffect(() => {
+    if (migrateCustomer?.category) {
+      setMigrateToCategory(migrateCustomer.category === "Prepaid" ? "Postpaid" : "Prepaid");
+    }
+  }, [migrateCustomer, setMigrateToCategory]);
+
   const handleConfirm = () => {
     if (!migrateCustomer?.id) return;
 
-    const payload = {
+    // Construct payload based on migration type
+    const payload: MigrateMeterPayload = {
       meterId: migrateCustomer.id,
       migrationFrom: migrateCustomer.category ?? "",
       meterCategory: migrateToCategory,
+      ...(migrateToCategory === "Prepaid" && {
+        debitPaymentMode: migrateDebitMop,
+        debitPaymentPlan: migrateDebitMop === "monthly" ? migrateDebitPaymentPlan : "",
+        creditPaymentMode: migrateCreditMop,
+        creditPaymentPlan: migrateCreditMop === "monthly" ? migrateCreditPaymentPlan : "",
+      }),
     };
 
     migrateMeterMutation.mutate(payload, {
@@ -60,6 +79,7 @@ export function MigrateMeterDialog({
       },
     });
   };
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="bg-white text-black h-fit w-lg">
@@ -74,7 +94,7 @@ export function MigrateMeterDialog({
                   Migrate from <span className="text-red-600">*</span>
                 </Label>
                 <Input
-                  value={migrateCustomer?.category ?? ""}
+                  value={migrateCustomer?.meterCategory ?? ""}
                   disabled
                   className="w-full h-10 bg-gray-100 text-gray-600 cursor-not-allowed border-gray-200 focus:ring-0"
                 />
@@ -86,7 +106,7 @@ export function MigrateMeterDialog({
                     <Label className="text-sm font-medium">
                       Mode of Payment <span className="text-red-600">*</span>
                     </Label>
-                    <Select onValueChange={setMigrateDebitMop} value={migrateDebitMop}>
+                    <Select onValueChange={setMigrateDebitMop} value={migrateDebitMop} disabled={migrateMeterMutation.isPending}>
                       <SelectTrigger className="w-full h-10 border-gray-200 focus:ring-[#161CCA]/50">
                         <SelectValue placeholder="Select mode of payment" />
                       </SelectTrigger>
@@ -101,7 +121,7 @@ export function MigrateMeterDialog({
                     <Label className="text-sm font-medium">Payment Plan</Label>
                     <Select
                       onValueChange={setMigrateDebitPaymentPlan}
-                      disabled={migrateDebitMop === "percentage" || migrateDebitMop === "one-off"}
+                      disabled={migrateDebitMop === "percentage" || migrateDebitMop === "one-off" || migrateMeterMutation.isPending}
                       value={migrateDebitPaymentPlan}
                     >
                       <SelectTrigger
@@ -127,13 +147,13 @@ export function MigrateMeterDialog({
                 <Label className="text-sm font-medium">
                   Migrate to <span className="text-red-600">*</span>
                 </Label>
-                <Select onValueChange={setMigrateToCategory} value={migrateToCategory}>
+                <Select onValueChange={setMigrateToCategory} value={migrateToCategory} disabled={migrateMeterMutation.isPending}>
                   <SelectTrigger className="w-full h-10 border-gray-200 focus:ring-[#161CCA]/50">
                     <SelectValue placeholder="Select meter category" />
                   </SelectTrigger>
                   <SelectContent>
-                    {migrateCustomer?.category === "Postpaid" && <SelectItem value="Prepaid">Prepaid</SelectItem>}
-                    {migrateCustomer?.category === "Prepaid" && <SelectItem value="Postpaid">Postpaid</SelectItem>}
+                    <SelectItem value="Prepaid">Prepaid</SelectItem>
+                    <SelectItem value="Postpaid">Postpaid</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -144,7 +164,7 @@ export function MigrateMeterDialog({
                     <Label className="text-sm font-medium">
                       Mode of Payment <span className="text-red-600">*</span>
                     </Label>
-                    <Select onValueChange={setMigrateCreditMop} value={migrateCreditMop}>
+                    <Select onValueChange={setMigrateCreditMop} value={migrateCreditMop} disabled={migrateMeterMutation.isPending}>
                       <SelectTrigger className="w-full h-10 border-gray-200 focus:ring-[#161CCA]/50">
                         <SelectValue placeholder="Select mode of payment" />
                       </SelectTrigger>
@@ -159,7 +179,7 @@ export function MigrateMeterDialog({
                     <Label className="text-sm font-medium">Payment Plan</Label>
                     <Select
                       onValueChange={setMigrateCreditPaymentPlan}
-                      disabled={migrateCreditMop === "percentage" || migrateCreditMop === "one-off"}
+                      disabled={migrateCreditMop === "percentage" || migrateCreditMop === "one-off" || migrateMeterMutation.isPending}
                       value={migrateCreditPaymentPlan}
                     >
                       <SelectTrigger
@@ -187,6 +207,7 @@ export function MigrateMeterDialog({
             variant="outline"
             onClick={() => onOpenChange(false)}
             className="border-[#161CCA] text-[#161CCA] hover:bg-[#161CCA]/10 h-10 px-4 cursor-pointer"
+            disabled={migrateMeterMutation.isPending}
           >
             Cancel
           </Button>

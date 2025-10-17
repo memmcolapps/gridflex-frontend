@@ -1599,7 +1599,7 @@ export default function MeterManagementPage() {
                 isOpen={isEditVirtualMeterOpen}
                 onOpenChange={setIsEditVirtualMeterOpen}
                 selectedCustomer={editMeter as VirtualMeterData}
-                setSelectedCustomer={(customer: VirtualMeterData | null) => setEditMeter(customer || undefined)}
+                setSelectedCustomer={(customer: VirtualMeterData | null) => setEditMeter(customer ?? undefined)}
                 accountNumber={accountNumber}
                 setAccountNumber={setAccountNumber}
                 cin={cin}

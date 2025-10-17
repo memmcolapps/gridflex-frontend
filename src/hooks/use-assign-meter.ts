@@ -44,6 +44,7 @@ const mapToFrontendMeter = (apiItem: MeterAPIItem, isVirtual: boolean): MeterInv
         category: apiItem.meterCategory,
         meterType: apiItem.meterType,
         status: apiItem.status,
+        meterStage: apiItem.meterStage,
     };
 
     if (isVirtual) {
@@ -72,7 +73,7 @@ const mapToFrontendMeter = (apiItem: MeterAPIItem, isVirtual: boolean): MeterInv
         meterType: apiItem.meterType,
         meterCategory: apiItem.meterCategory,
         status: apiItem.status,
-        meterStage: apiItem.status, // Pass status to meter stage
+        meterStage: apiItem.meterStage,
         simNumber: apiItem.simNumber,
         simNo: apiItem.simNumber,
         oldTariffIndex: apiItem.oldTariffIndex,
@@ -81,7 +82,6 @@ const mapToFrontendMeter = (apiItem: MeterAPIItem, isVirtual: boolean): MeterInv
         newSgc: apiItem.newSgc,
         oldKrn: apiItem.oldKrn,
         newKrn: apiItem.newKrn,
-        assignedStatus: apiItem.meterStage,
         manufacturer: apiItem.manufacturer,
         smartStatus: apiItem.meterType === 'SMART',
         smartMeterInfo: {
@@ -221,7 +221,7 @@ export const useDetachMeter = () => {
     >({
         mutationFn: detachMeter,
         onSuccess: (data, variables) => {
-            toast.success(`Meter ${variables.meterNumber} detached successfully!`);
+            toast.success(`Meter detached successfully!`);
             queryClient.invalidateQueries({ queryKey: ["meters"] });
         },
         onError: (error: Error) => {
@@ -285,5 +285,7 @@ export const useCreateVirtualMeter = () => {
         },
     });
 };
+
+
 
 export type { AssignMeterPayload, ChangeMeterStateParams, UpdateMeterPayload, MigrateMeterPayload, DetachMeterPayload };

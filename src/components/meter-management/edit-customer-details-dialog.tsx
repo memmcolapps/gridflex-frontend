@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -70,7 +71,7 @@ export function EditCustomerDetailsDialog({
 }: EditCustomerDetailsDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-white text-black h-fit">
+      <DialogContent className="bg-white text-black h-fit border-none">
         {/* {editCustomer?.category === "Prepaid" && <Progress value={progress} className="w-full mt-4" />} */}
         <DialogHeader>
           <DialogTitle>Edit Details</DialogTitle>
@@ -159,7 +160,7 @@ export function EditCustomerDetailsDialog({
               <Label>
                 Tariff<span className="text-red-700">*</span>
               </Label>
-                <Input
+              <Input
                 value={tariff}
                 onChange={(e) => setTariff(e.target.value)}
                 // placeholder="Enter CIN"
@@ -170,7 +171,7 @@ export function EditCustomerDetailsDialog({
               <Label>
                 Feeder Line<span className="text-red-700">*</span>
               </Label>
-               <Input
+              <Input
                 value={feeder}
                 onChange={(e) => setFeeder(e.target.value)}
                 // placeholder="Enter CIN"
@@ -181,7 +182,7 @@ export function EditCustomerDetailsDialog({
               <Label>
                 Distribution Substation (DSS)<span className="text-red-700">*</span>
               </Label>
-                <Input
+              <Input
                 value={dss}
                 onChange={(e) => setDss(e.target.value)}
                 // placeholder="Enter CIN"
@@ -198,8 +199,8 @@ export function EditCustomerDetailsDialog({
                 placeholder="Enter State"
                 className="border-gray-100 text-gray-600"
               />
-            
-               
+
+
             </div>
             <div className="space-y-2">
               <Label>
@@ -253,7 +254,7 @@ export function EditCustomerDetailsDialog({
                 : "bg-blue-200 text-white cursor-not-allowed"
             }
           >
-           Save
+            Save
           </Button>
         </DialogFooter>
       </DialogContent>

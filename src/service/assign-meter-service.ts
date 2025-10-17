@@ -188,7 +188,7 @@ export interface MigrateMeterPayload {
 }
 
 export interface DetachMeterPayload {
-    meterNumber: string;
+    meterId: string;
     reason: string;
 }
 
@@ -333,7 +333,7 @@ export async function migrateMeter(data: MigrateMeterPayload): Promise<{ respons
         const token = localStorage.getItem("auth_token");
         if (!token) throw new Error("Authentication token not found.");
 
-        const response = await axios.post(`${API_URL}/meter/service/migrate`, data, {
+        const response = await axios.patch(`${API_URL}/meter/service/migrate`, data, {
             headers: {
                 "Content-Type": "application/json",
                 custom: CUSTOM_HEADER,
@@ -350,12 +350,17 @@ export async function migrateMeter(data: MigrateMeterPayload): Promise<{ respons
     }
 }
 
-export async function detachMeter(data: DetachMeterPayload): Promise<{ responsecode: string; responsedesc: string }> {
+export async function detachMeter({ meterId, reason }: DetachMeterPayload): Promise<{ responsecode: string; responsedesc: string }> {
     try {
         const token = localStorage.getItem("auth_token");
         if (!token) throw new Error("Authentication token not found.");
 
-        const response = await axios.post(`${API_URL}/meter/service/detach`, data, {
+        const params = new URLSearchParams();
+        params.append("meterId", meterId);
+        params.append("reason", reason);
+
+        const response = await axios.post(`${API_URL}/meter/service/detach`, null, {
+            params,
             headers: {
                 "Content-Type": "application/json",
                 custom: CUSTOM_HEADER,

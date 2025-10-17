@@ -33,7 +33,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { useMeters } from "@/hooks/use-assign-meter";
+import { useMeters, useDetachMeter, useMigrateMeter } from "@/hooks/use-assign-meter";
 import { cn } from "@/lib/utils";
 import type { VirtualMeterData } from "@/types/meter";
 import type { MeterInventoryItem } from "@/types/meter-inventory";
@@ -120,6 +120,10 @@ export default function AssignMeterPage() {
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [isBulkUploadModalOpen, setIsBulkUploadModalOpen] = useState(false);
     const [isUploadImageModalOpen, setIsUploadImageModalOpen] = useState(false);
+
+    // Initialize useDetachMeter and useMigrateMeter hooks
+    const detachMeterMutation = useDetachMeter();
+    const migrateMeterMutation = useMigrateMeter();
 
     // Fetch meter data using the API
     const { data: metersData, isLoading } = useMeters({
@@ -269,7 +273,6 @@ export default function AssignMeterPage() {
 
     const handleEditDetails = (customer: MeterInventoryItem | VirtualMeterData) => {
         if ('meterManufacturer' in customer) {
-            // Actual meter
             setEditCustomer({
                 ...customer,
                 tariff: customer.tariff ?? "",
@@ -296,9 +299,6 @@ export default function AssignMeterPage() {
             setCreditPaymentPlan(customer.creditPaymentPlan ?? "");
             setProgress(50);
             setIsEditModalOpen(true);
-        } else {
-            // Virtual meter, perhaps open virtual edit dialog
-            // For now, do nothing or show message
         }
     };
 
@@ -332,7 +332,6 @@ export default function AssignMeterPage() {
                 setDebitPaymentPlan(editCustomer.debitPaymentPlan ?? "");
                 setCreditPaymentPlan(editCustomer.creditPaymentPlan ?? "");
                 setIsSetPaymentModalOpen(true);
-            } else {
             }
         }
     };
@@ -361,29 +360,32 @@ export default function AssignMeterPage() {
         if ('meterManufacturer' in customer) {
             setCustomerToDetach(customer);
             setIsDetachModalOpen(true);
-        } else {
         }
     };
 
     const handleProceedFromDetach = () => {
-        if (customerToDetach) {
-            setMeterData((prev) =>
-                prev.map((item) =>
-                    item.customerId === customerToDetach.customerId
-                        ? { ...item, meterStage: "Pending-detached" }
-                        : item
-                )
-            );
-        }
         setIsDetachModalOpen(false);
         setIsDetachConfirmModalOpen(true);
     };
 
     const handleConfirmDetach = () => {
-        if (customerToDetach) {
-            setIsDetachConfirmModalOpen(false);
-            setDetachReason("");
-            setCustomerToDetach(null);
+        if (customerToDetach?.id && detachReason) {
+            detachMeterMutation.mutate(
+                {
+                    meterId: customerToDetach.id as string,
+                    reason: detachReason,
+                },
+                {
+                    onSuccess: () => {
+                        setMeterData((prev) =>
+                            prev.filter((item) => item.id !== customerToDetach!.id)
+                        );
+                        setIsDetachConfirmModalOpen(false);
+                        setDetachReason("");
+                        setCustomerToDetach(null);
+                    },
+                }
+            );
         }
     };
 
@@ -402,38 +404,54 @@ export default function AssignMeterPage() {
             setMigrateCreditMop(customer.creditMop ?? "");
             setMigrateCreditPaymentPlan(customer.creditPaymentPlan ?? "");
             setIsMigrateModalOpen(true);
-        } else {
         }
     };
 
     const handleConfirmMigrate = () => {
-        if (!migrateCustomer?.customerId) {
+        if (!migrateCustomer?.customerId || !migrateCustomer.id) {
             return;
         }
-        setMeterData((prev) =>
-            prev.map((item) =>
-                item.customerId === migrateCustomer.customerId
-                    ? {
-                        ...item,
-                        meterStage: "Pending-migrated",
-                        category: migrateToCategory ?? item.category,
-                        ...(migrateToCategory === "Prepaid" && {
-                            debitMop: migrateDebitMop,
-                            debitPaymentPlan: migrateDebitMop === "monthly" ? migrateDebitPaymentPlan : "",
-                            creditMop: migrateCreditMop,
-                            creditPaymentPlan: migrateCreditMop === "monthly" ? migrateCreditPaymentPlan : "",
-                        }),
-                        ...(migrateToCategory === "Postpaid" && {
-                            debitMop: "",
-                            debitPaymentPlan: "",
-                            creditMop: "",
-                            creditPaymentPlan: "",
-                        }),
-                    }
-                    : item
-            )
+        migrateMeterMutation.mutate(
+            {
+                meterId: migrateCustomer.id,
+                migrationFrom: migrateCustomer.category ?? "Postpaid",
+                meterCategory: migrateToCategory,
+            },
+            {
+                onSuccess: () => {
+                    setMeterData((prev) =>
+                        prev.map((item) =>
+                            item.customerId === migrateCustomer.customerId
+                                ? {
+                                    ...item,
+                                    meterStage: "Pending-migrated",
+                                    category: migrateToCategory ?? item.category,
+                                    ...(migrateToCategory === "Prepaid" && {
+                                        debitMop: migrateDebitMop,
+                                        debitPaymentPlan: migrateDebitMop === "monthly" ? migrateDebitPaymentPlan : "",
+                                        creditMop: migrateCreditMop,
+                                        creditPaymentPlan: migrateCreditMop === "monthly" ? migrateCreditPaymentPlan : "",
+                                    }),
+                                    ...(migrateToCategory === "Postpaid" && {
+                                        debitMop: "",
+                                        debitPaymentPlan: "",
+                                        creditMop: "",
+                                        creditPaymentPlan: "",
+                                    }),
+                                }
+                                : item
+                        )
+                    );
+                    setIsMigrateModalOpen(false);
+                    setMigrateToCategory("");
+                    setMigrateDebitMop("");
+                    setMigrateDebitPaymentPlan("");
+                    setMigrateCreditMop("");
+                    setMigrateCreditPaymentPlan("");
+                    setMigrateCustomer(null);
+                },
+            }
         );
-        setIsMigrateModalOpen(false);
     };
 
     const handleSearchChange = (term: string) => {
@@ -556,26 +574,6 @@ export default function AssignMeterPage() {
                     title="Assigned Meter"
                     description="View assigned meters and migrate between postpaid and prepaid accounts"
                 />
-                {/* <div className="flex flex-col md:flex-row gap-2">
-                    <Button
-                        className="flex items-center gap-2 border font-medium border-[#161CCA] text-[#161CCA] w-full md:w-auto cursor-pointer"
-                        variant="outline"
-                        size="lg"
-                        onClick={() => setIsBulkUploadModalOpen(true)}
-                    >
-                        <CirclePlus size={14} strokeWidth={2.3} className="h-4 w-4" />
-                        <span className="text-sm md:text-base">Bulk Upload</span>
-                    </Button>
-                    <Button
-                        className="flex items-center gap-2 bg-[#161CCA] text-white font-medium w-full md:w-auto cursor-pointer"
-                        variant="secondary"
-                        size="lg"
-                        onClick={handleOpenCustomerIdModal}
-                    >
-                        <CirclePlus size={14} strokeWidth={2.3} className="h-4 w-4" />
-                        <span className="text-sm md:text-base">Assign Meter</span>
-                    </Button>
-                </div> */}
             </div>
             <div className="flex justify-between">
                 <div className="flex items-center gap-2 w-full md:w-auto mb-4">
@@ -709,10 +707,21 @@ export default function AssignMeterPage() {
                                     </TableCell>
                                     <TableCell>
                                         {(meter.meterStage ?? meter.status)?.toLowerCase().includes('pending') ? (
-                                            <div className="flex items-center justify-end gap-2">
-                                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-500"></div>
-                                                <span className="text-sm text-gray-500">Waiting for Approval</span>
-                                            </div>
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" className="h-8 w-8 p-0 cursor-pointer">
+                                                        <MoreVertical size={14} className="cursor-pointer" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end" className="whitespace-nowrap">
+                                                    <DropdownMenuItem>
+                                                        <div className="flex items-center justify-end gap-2">
+                                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-500"></div>
+                                                            <span className="text-sm text-gray-500">Waiting for Approval</span>
+                                                        </div>
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
                                         ) : (
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
@@ -929,6 +938,7 @@ export default function AssignMeterPage() {
                 setMigrateCreditPaymentPlan={setMigrateCreditPaymentPlan}
                 isMigrateFormComplete={isMigrateFormComplete}
                 onConfirm={handleConfirmMigrate}
+            // isSubmitting={migrateMeterMutation.isPending}
             />
             <DetachMeterDialog
                 isOpen={isDetachModalOpen}
@@ -937,14 +947,19 @@ export default function AssignMeterPage() {
                 setDetachReason={setDetachReason}
                 onProceed={handleProceedFromDetach}
                 onCancel={handleCancelDetach}
+                isSubmitting={detachMeterMutation.isPending}
             />
             <DetachConfirmationDialog
                 isOpen={isDetachConfirmModalOpen}
                 onOpenChange={setIsDetachConfirmModalOpen}
                 customerToDetach={customerToDetach}
                 onConfirm={handleConfirmDetach}
-                onCancel={() => setIsDetachConfirmModalOpen(false)}
-                isSubmitting={false}
+                onCancel={() => {
+                    setIsDetachConfirmModalOpen(false);
+                    setDetachReason("");
+                    setCustomerToDetach(null);
+                }}
+                isSubmitting={detachMeterMutation.isPending}
             />
             <BulkUploadDialog<MeterInventoryItem>
                 isOpen={isBulkUploadModalOpen}
