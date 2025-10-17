@@ -1,11 +1,10 @@
+/* eslint-disable @next/next/no-img-element */
 import type { FC } from "react";
 import { useState, useEffect, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { PlusIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import Image from "next/image";
 import { Input } from "../ui/input";
 
 interface UploadImageDialogProps {

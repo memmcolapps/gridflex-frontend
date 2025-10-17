@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox"; // Added Checkbox import
 import type { FC } from "react";
 import type { VirtualMeterData } from "@/types/meter";
+import { useTariff } from "@/hooks/use-tarrif";
 
 interface AddVirtualMeterDetailsDialogProps {
   isOpen: boolean;
@@ -76,17 +77,22 @@ const AddVirtualMeterDetailsDialog: FC<AddVirtualMeterDetailsDialogProps> = ({
   nigerianStates,
   customerTypes
 }) => {
+  const { tariffs, isLoading: tariffsLoading } = useTariff();
+
+  // Filter only approved tariffs
+  const approvedTariffs = tariffs.filter(tariff => tariff.approve_status === 'Approved');
+
   // Determine if the Fixed checkbox is selected
   const isFixedChecked = energyType === "Fixed";
 
   // Update isFormComplete to include new fields
   const updatedIsFormComplete =
     isFormComplete &&
-    (isFixedChecked ? fixedEnergy.trim() !== "" : true); // Require fixedEnergy only if Fixed is checked
+    (isFixedChecked ? fixedEnergy.trim() !== "" : true);
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="h-fit overflow-y-auto bg-white w-[800px]">
+      <DialogContent className="h-fit overflow-y-auto bg-white w-fit border-none text-black">
         <DialogHeader>
           <DialogTitle>Add Virtual Meter</DialogTitle>
           <DialogDescription>Fill all compulsory fields</DialogDescription>
@@ -202,14 +208,16 @@ const AddVirtualMeterDetailsDialog: FC<AddVirtualMeterDetailsDialogProps> = ({
               <Label>
                 Tariff <span className="text-red-500">*</span>
               </Label>
-              <Select onValueChange={setTariff}>
+              <Select onValueChange={setTariff} disabled={tariffsLoading}>
                 <SelectTrigger className="border border-gray-300 w-55">
                   <SelectValue placeholder="Select tariff" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Tariff A1">Tariff A1</SelectItem>
-                  <SelectItem value="Tariff A2">Tariff A2</SelectItem>
-                  <SelectItem value="Tariff B1">Tariff B1</SelectItem>
+                  {approvedTariffs.map((tariff) => (
+                    <SelectItem key={tariff.id} value={tariff.id}>
+                      {tariff.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

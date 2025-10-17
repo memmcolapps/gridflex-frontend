@@ -135,7 +135,7 @@ export default function AssignMeterPage() {
     const processedData = useMemo(() => {
         if (!metersData) return [];
         const allMeters = [...metersData.actualMeters, ...metersData.virtualMeters];
-        return allMeters.filter(meter => 'meterStage' in meter ? meter.meterStage === "Assigned" : meter.status === "Assigned");
+        return allMeters; // API already filters for assigned meters
     }, [metersData]);
 
     // Update meterData when processedData changes
@@ -693,51 +693,58 @@ export default function AssignMeterPage() {
                                             <span>{index + 1}</span>
                                         </div>
                                     </TableCell>
-                                    <TableCell>{meter.customerId}</TableCell>
-                                    <TableCell>{meter.meterNumber}</TableCell>
-                                    <TableCell>{meter.accountNumber}</TableCell>
-                                    <TableCell>{meter.cin}</TableCell>
-                                    <TableCell>{meter.category ?? 'N/A'}</TableCell>
-                                    <TableCell>{meter.debitMop}</TableCell>
-                                    <TableCell className="px-4 py-3 text-center">{meter.debitPaymentPlan}</TableCell>
-                                    <TableCell>{meter.creditMop}</TableCell>
-                                    <TableCell className="px-4 py-3 text-center">{meter.creditPaymentPlan}</TableCell>
+                                    <TableCell>{meter.customerId ?? '-'}</TableCell>
+                                    <TableCell>{meter.meterNumber ?? '-'}</TableCell>
+                                    <TableCell>{meter.accountNumber ?? '-'}</TableCell>
+                                    <TableCell>{meter.cin ?? '-'}</TableCell>
+                                    <TableCell>{meter.meterCategory ?? meter.category ?? '-'}</TableCell>
+                                    <TableCell>{meter.debitMop ?? '-'}</TableCell>
+                                    <TableCell className="px-4 py-3 text-center">{meter.debitPaymentPlan ?? '-'}</TableCell>
+                                    <TableCell>{meter.creditMop ?? '-'}</TableCell>
+                                    <TableCell className="px-4 py-3 text-center">{meter.creditPaymentPlan ?? '-'}</TableCell>
                                     <TableCell className="px-4 py-3 text-center">
-                                        <span className={cn("inline-block text-sm font-medium", getStatusStyle('meterStage' in meter ? meter.meterStage : meter.status))}>
-                                            {'meterStage' in meter ? meter.meterStage ?? "N/A" : meter.status ?? "N/A"}
+                                        <span className={cn("inline-block text-sm font-medium", getStatusStyle(meter.meterStage ?? meter.status))}>
+                                            {meter.meterStage ?? meter.status ?? "N/A"}
                                         </span>
                                     </TableCell>
                                     <TableCell>
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" className="h-8 w-8 p-0 cursor-pointer">
-                                                    <MoreVertical size={14} className="cursor-pointer" />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end" className="whitespace-nowrap">
-                                                <DropdownMenuItem
-                                                    onClick={() => handleEditDetails(meter)}
-                                                    className="flex items-center gap-2 cursor-pointer"
-                                                >
-                                                    <Pencil size={14} />
-                                                    Edit Details
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem
-                                                    onClick={() => handleDetachMeter(meter)}
-                                                    className="flex items-center gap-2 cursor-pointer"
-                                                >
-                                                    <Unlink size={14} />
-                                                    Detach Meter
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem
-                                                    onClick={() => handleMigrateMeter(meter)}
-                                                    className="flex items-center gap-2 cursor-pointer"
-                                                >
-                                                    <Navigation size={14} />
-                                                    Migrate Meter
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
+                                        {(meter.meterStage ?? meter.status)?.toLowerCase().includes('pending') ? (
+                                            <div className="flex items-center justify-end gap-2">
+                                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-500"></div>
+                                                <span className="text-sm text-gray-500">Waiting for Approval</span>
+                                            </div>
+                                        ) : (
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" className="h-8 w-8 p-0 cursor-pointer">
+                                                        <MoreVertical size={14} className="cursor-pointer" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end" className="whitespace-nowrap">
+                                                    <DropdownMenuItem
+                                                        onClick={() => handleEditDetails(meter)}
+                                                        className="flex items-center gap-2 cursor-pointer"
+                                                    >
+                                                        <Pencil size={14} />
+                                                        Edit Details
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem
+                                                        onClick={() => handleDetachMeter(meter)}
+                                                        className="flex items-center gap-2 cursor-pointer"
+                                                    >
+                                                        <Unlink size={14} />
+                                                        Detach Meter
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem
+                                                        onClick={() => handleMigrateMeter(meter)}
+                                                        className="flex items-center gap-2 cursor-pointer"
+                                                    >
+                                                        <Navigation size={14} />
+                                                        Migrate Meter
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        )}
                                     </TableCell>
                                 </TableRow>
                             ))}

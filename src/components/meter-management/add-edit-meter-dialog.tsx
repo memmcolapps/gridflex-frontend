@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import { useState, useEffect, JSXElementConstructor, Key, ReactElement, ReactNode, ReactPortal } from "react";
@@ -68,7 +69,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
         meterCategory: editMeter.meterCategory ?? "",
         meterClass: editMeter.meterClass ?? "",
         meterType: editMeter.meterType ?? "",
-        meterManufacturer: editMeter.meterManufacturer ?? "",
+        meterManufacturer: editMeter.meterManufacturer ?? editMeter.manufacturer?.id ?? "",
         oldSgc: editMeter.oldSgc ?? "",
         newSgc: editMeter.newSgc ?? "",
         oldKrn: editMeter.oldKrn ?? "",
@@ -468,7 +469,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                     className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.meterType ? "border-red-500" : ""
                       }`}
                   >
-                    <SelectValue placeholder="Select Meter Type" />
+                    <SelectValue>{formData.meterType || "Select Meter Type"}</SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Electricity">Electricity</SelectItem>
@@ -491,7 +492,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                     className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.meterCategory ? "border-red-500" : ""
                       }`}
                   >
-                    <SelectValue placeholder="Select Category" />
+                    <SelectValue>{formData.meterCategory || "Select Category"}</SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Prepaid">Prepaid</SelectItem>
@@ -513,7 +514,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                     className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.meterClass ? "border-red-500" : ""
                       }`}
                   >
-                    <SelectValue placeholder="Select Class" />
+                    <SelectValue>{formData.meterClass || "Select Class"}</SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="MD">MD</SelectItem>
@@ -536,7 +537,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                     className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.meterManufacturer ? "border-red-500" : ""
                       }`}
                   >
-                    <SelectValue placeholder="Select Manufacturer" />
+                    <SelectValue>{manufacturers?.find(m => m.id === formData.meterManufacturer)?.name ?? "Select Manufacturer"}</SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {manufacturers && manufacturers.length > 0 ? (

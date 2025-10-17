@@ -5,7 +5,8 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import type { MeterInventoryItem } from "@/types/meter-inventory"
+import type { MeterInventoryItem } from "@/types/meter-inventory";
+import { useMigrateMeter } from "@/hooks/use-assign-meter";
 
 interface MigrateMeterDialogProps {
   isOpen: boolean;
@@ -42,6 +43,23 @@ export function MigrateMeterDialog({
   isMigrateFormComplete,
   onConfirm,
 }: MigrateMeterDialogProps) {
+  const migrateMeterMutation = useMigrateMeter();
+
+  const handleConfirm = () => {
+    if (!migrateCustomer?.id) return;
+
+    const payload = {
+      meterId: migrateCustomer.id,
+      migrationFrom: migrateCustomer.category ?? "",
+      meterCategory: migrateToCategory,
+    };
+
+    migrateMeterMutation.mutate(payload, {
+      onSuccess: () => {
+        onConfirm();
+      },
+    });
+  };
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="bg-white text-black h-fit w-lg">
@@ -173,15 +191,15 @@ export function MigrateMeterDialog({
             Cancel
           </Button>
           <Button
-            onClick={onConfirm}
-            disabled={!isMigrateFormComplete}
+            onClick={handleConfirm}
+            disabled={!isMigrateFormComplete || migrateMeterMutation.isPending}
             className={
-              isMigrateFormComplete
+              isMigrateFormComplete && !migrateMeterMutation.isPending
                 ? "bg-[#161CCA] text-white hover:bg-[#161CCA]/90 h-10 px-4 cursor-pointer"
                 : "bg-blue-200 text-white cursor-not-allowed h-10 px-4"
             }
           >
-            Migrate
+            {migrateMeterMutation.isPending ? "Migrating..." : "Migrate"}
           </Button>
         </DialogFooter>
       </DialogContent>

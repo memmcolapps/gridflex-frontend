@@ -2,7 +2,7 @@
 
 import axios from "axios";
 import { env } from "@/env";
-import { handleApiError } from "error"; // Assuming this utility exists
+import { handleApiError } from "error";
 
 const API_URL = env.NEXT_PUBLIC_BASE_URL;
 const CUSTOM_HEADER = env.NEXT_PUBLIC_CUSTOM_HEADER;
@@ -28,7 +28,7 @@ export interface MeterAPIItem {
     id: string;
     meterNumber: string;
     simNumber: string;
-    type: "VIRTUAL" | "NON-VIRTUAL" | string; // Key field for separation
+    type: "VIRTUAL" | "NON-VIRTUAL" | string;
     meterCategory: string;
     meterClass: string;
     meterType: string;
@@ -42,6 +42,52 @@ export interface MeterAPIItem {
     oldTariffIndex: number;
     newTariffIndex: number;
     manufacturer: ManufacturerDetails;
+    customerId: string;
+    accountNumber: string;
+    cin: string;
+    tariff: string;
+    dss: string;
+    customer: {
+        id: string;
+        firstname: string;
+        lastname: string;
+        customerId: string;
+        phoneNumber: string;
+        state: string;
+        city: string;
+        streetName: string;
+        houseNo: string;
+    };
+    meterAssignLocation: {
+        state: string;
+        city: string;
+        streetName: string;
+        houseNo: string;
+    };
+    paymentMode: {
+        debitPaymentMode: string;
+        creditPaymentMode: string;
+        debitPaymentPlan: string;
+        creditPaymentPlan: string;
+    };
+    smartMeterInfo?: {
+        meterModel: string;
+        protocol: string;
+        authentication: string;
+        password: string;
+    };
+    mdMeterInfo?: {
+        ctRatioNum: number;
+        ctRatioDenom: number;
+        voltRatioNum: number;
+        voltRatioDenom: number;
+        multiplier: number;
+        meterRating: number;
+        initialReading: number;
+        dial: number;
+        latitude: string;
+        longitude: string;
+    };
     createdAt: string;
     updatedAt: string;
 }
@@ -102,11 +148,6 @@ export interface VirtualMeterPayload {
     consumptionType?: string;
 }
 
-// --- NEW ACTION PAYLOADS ---
-
-/**
- * Payload for POST /meter/service/cin/assign
- */
 export interface AssignMeterPayload {
     meterNumber: string;
     customerId: string;
@@ -125,23 +166,12 @@ export interface AssignMeterPayload {
     debitPaymentPlan: string;
 }
 
-/**
- * Payload for POST /meter/service/change-state
- */
-export interface ChangeMeterStatePayload {
-    meterNumber: string;
-    status: "Activate" | "Deactivate";
-}
-
-/**
- * Payload for POST /meter/service/update
- */
 export interface UpdateMeterPayload {
     meterNumber: string;
     meterClass: string;
     meterType: string;
     meterManufacturer: string;
-    meterCategory: string; // E.g., "Prepaid", "Postpaid"
+    meterCategory: string;
     oldSgc: string;
     newSgc: string;
     oldKrn: string;
@@ -151,32 +181,26 @@ export interface UpdateMeterPayload {
     simNumber: string;
 }
 
-/**
- * Payload for POST /meter/service/migrate
- */
 export interface MigrateMeterPayload {
-    meterNumber: string;
-    feeder: string;
-    dss: string;
-    tariff: string;
+    meterId: string;
+    migrationFrom: string;
+    meterCategory: string;
 }
 
-/**
- * Payload for POST /meter/service/detach
- */
 export interface DetachMeterPayload {
     meterNumber: string;
     reason: string;
 }
 
+// Updated interface for change-state parameters
+export interface ChangeMeterStateParams {
+    meterId: string;
+    status: boolean;
+    reason?: string;
+}
+
 // --- API Service Functions ---
 
-/**
- * Fetches a paginated, searchable, and sortable list of all meter data.
- * Endpoint: /meter/service/all
- * @param params - Pagination, search, and sort parameters.
- * @returns A promise resolving to the API response containing meter data.
- */
 export async function getMeters({
     page,
     pageSize,
@@ -224,12 +248,6 @@ export async function getMeters({
     }
 }
 
-/**
- * Saves or updates a meter.
- * Endpoint: POST /api/meters
- * @param meter - The meter data to save.
- * @returns A promise resolving to the API response.
- */
 export async function saveMeter(meter: object): Promise<{ responsecode: string; responsedesc: string }> {
     try {
         const token = localStorage.getItem("auth_token");
@@ -255,12 +273,6 @@ export async function saveMeter(meter: object): Promise<{ responsecode: string; 
     }
 }
 
-/**
- * Assigns a meter to a customer.
- * Endpoint: POST /meter/service/cin/assign (NEW ENDPOINT)
- * @param data - Assignment data.
- * @returns A promise resolving to the API response.
- */
 export async function assignMeter(data: AssignMeterPayload): Promise<{ responsecode: string; responsedesc: string }> {
     try {
         const token = localStorage.getItem("auth_token");
@@ -285,16 +297,21 @@ export async function assignMeter(data: AssignMeterPayload): Promise<{ responsec
     }
 }
 
-/**
- * Changes meter state (Activate/Deactivate).
- * Endpoint: POST /meter/service/change-state
- */
-export async function changeMeterState(data: ChangeMeterStatePayload): Promise<{ responsecode: string; responsedesc: string }> {
+// Updated changeMeterState to use query parameters
+export async function changeMeterState({ meterId, status, reason }: ChangeMeterStateParams): Promise<{ responsecode: string; responsedesc: string }> {
     try {
         const token = localStorage.getItem("auth_token");
         if (!token) throw new Error("Authentication token not found.");
 
-        const response = await axios.post(`${API_URL}/meter/service/change-state`, data, {
+        const params = new URLSearchParams();
+        params.append("meterId", meterId);
+        params.append("status", String(status));
+        if (reason) {
+            params.append("reason", reason);
+        }
+
+        const response = await axios.patch(`${API_URL}/meter/service/change-state`, null, {
+            params,
             headers: {
                 "Content-Type": "application/json",
                 custom: CUSTOM_HEADER,
@@ -303,7 +320,7 @@ export async function changeMeterState(data: ChangeMeterStatePayload): Promise<{
         });
 
         if (response.data.responsecode !== "000") {
-            throw new Error(response.data.responsedesc ?? `Failed to ${data.status.toLowerCase()} meter.`);
+            throw new Error(response.data.responsedesc ?? `Failed to ${status ? "activate" : "deactivate"} meter.`);
         }
         return response.data;
     } catch (error) {
@@ -311,10 +328,6 @@ export async function changeMeterState(data: ChangeMeterStatePayload): Promise<{
     }
 }
 
-/**
- * Migrates a meter.
- * Endpoint: POST /meter/service/migrate
- */
 export async function migrateMeter(data: MigrateMeterPayload): Promise<{ responsecode: string; responsedesc: string }> {
     try {
         const token = localStorage.getItem("auth_token");
@@ -337,10 +350,6 @@ export async function migrateMeter(data: MigrateMeterPayload): Promise<{ respons
     }
 }
 
-/**
- * Detaches a meter.
- * Endpoint: POST /meter/service/detach
- */
 export async function detachMeter(data: DetachMeterPayload): Promise<{ responsecode: string; responsedesc: string }> {
     try {
         const token = localStorage.getItem("auth_token");
@@ -363,12 +372,6 @@ export async function detachMeter(data: DetachMeterPayload): Promise<{ responsec
     }
 }
 
-/**
- * Bulk uploads meters.
- * Endpoint: POST /api/meters/bulk
- * @param data - Array of meter data.
- * @returns A promise resolving to the API response.
- */
 export async function bulkUploadMeters(data: object[]): Promise<{ responsecode: string; responsedesc: string }> {
     try {
         const token = localStorage.getItem("auth_token");
@@ -394,13 +397,6 @@ export async function bulkUploadMeters(data: object[]): Promise<{ responsecode: 
     }
 }
 
-/**
- * Saves a virtual meter.
- * Endpoint: PUT /api/virtual-meters/{id}
- * @param id - The virtual meter ID.
- * @param meter - The meter data.
- * @returns A promise resolving to the API response.
- */
 export async function saveVirtualMeter(id: string, meter: VirtualMeterPayload): Promise<{ responsecode: string; responsedesc: string }> {
     try {
         const token = localStorage.getItem("auth_token");
@@ -426,12 +422,6 @@ export async function saveVirtualMeter(id: string, meter: VirtualMeterPayload): 
     }
 }
 
-/**
- * Deactivates a physical meter.
- * Endpoint: POST /api/meters/{id}/deactivate
- * @param id - The meter ID.
- * @returns A promise resolving to the API response.
- */
 export async function deactivatePhysicalMeter(id: string): Promise<{ responsecode: string; responsedesc: string }> {
     try {
         const token = localStorage.getItem("auth_token");
@@ -457,12 +447,6 @@ export async function deactivatePhysicalMeter(id: string): Promise<{ responsecod
     }
 }
 
-/**
- * Creates a virtual meter.
- * Endpoint: POST /api/virtual-meters
- * @param meter - The meter data.
- * @returns A promise resolving to the API response.
- */
 export async function createVirtualMeter(meter: VirtualMeterPayload): Promise<{ responsecode: string; responsedesc: string }> {
     try {
         const token = localStorage.getItem("auth_token");

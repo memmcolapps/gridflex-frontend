@@ -19,7 +19,7 @@ import {
     type AssignData,
     type VirtualMeterPayload,
     type AssignMeterPayload,
-    type ChangeMeterStatePayload,
+    type ChangeMeterStateParams, // Updated
     type UpdateMeterPayload,
     type MigrateMeterPayload,
     type DetachMeterPayload,
@@ -37,12 +37,7 @@ export interface UseMetersParams {
     type?: string;
 }
 
-// --- Helper Function for Data Transformation ---
-
 const mapToFrontendMeter = (apiItem: MeterAPIItem, isVirtual: boolean): MeterInventoryItem | VirtualMeterData => {
-    // This function maps the MeterAPIItem fields to your frontend structure
-    // (MeterInventoryItem or VirtualMeterData).
-
     const baseData = {
         id: apiItem.id,
         meterNumber: apiItem.meterNumber,
@@ -54,7 +49,6 @@ const mapToFrontendMeter = (apiItem: MeterAPIItem, isVirtual: boolean): MeterInv
     if (isVirtual) {
         return {
             ...baseData,
-            // Map virtual-specific fields
             assignedStatus: apiItem.meterStage,
             customerId: 'VIRTUAL',
             accountNumber: 'VIRTUAL-' + apiItem.meterNumber,
@@ -64,6 +58,7 @@ const mapToFrontendMeter = (apiItem: MeterAPIItem, isVirtual: boolean): MeterInv
             city: apiItem.manufacturer?.city || 'N/A', streetName: apiItem.manufacturer?.street || 'N/A',
             houseNo: 'N/A', image: null, consumptionType: 'Non-MD',
             category: apiItem.meterCategory,
+            meterCategory: apiItem.meterCategory,
             energyType: 'N/A',
             custoType: 'N/A',
         } as VirtualMeterData;
@@ -77,8 +72,9 @@ const mapToFrontendMeter = (apiItem: MeterAPIItem, isVirtual: boolean): MeterInv
         meterType: apiItem.meterType,
         meterCategory: apiItem.meterCategory,
         status: apiItem.status,
+        meterStage: apiItem.status, // Pass status to meter stage
         simNumber: apiItem.simNumber,
-        simNo: apiItem.simNumber, // duplicate for compatibility
+        simNo: apiItem.simNumber,
         oldTariffIndex: apiItem.oldTariffIndex,
         newTariffIndex: apiItem.newTariffIndex,
         oldSgc: apiItem.oldSgc,
@@ -86,42 +82,45 @@ const mapToFrontendMeter = (apiItem: MeterAPIItem, isVirtual: boolean): MeterInv
         oldKrn: apiItem.oldKrn,
         newKrn: apiItem.newKrn,
         assignedStatus: apiItem.meterStage,
-        meterStage: apiItem.meterStage,
         manufacturer: apiItem.manufacturer,
-        smartStatus: apiItem.meterType === 'SMART', // assume based on type
+        smartStatus: apiItem.meterType === 'SMART',
         smartMeterInfo: {
-            meterModel: 'N/A',
-            protocol: 'N/A',
-            authentication: 'N/A',
+            meterModel: apiItem.smartMeterInfo?.meterModel ?? 'N/A',
+            protocol: apiItem.smartMeterInfo?.protocol ?? 'N/A',
+            authentication: apiItem.smartMeterInfo?.authentication ?? 'N/A',
             password: 'N/A',
         },
+        customerId: apiItem.customerId,
+        accountNumber: apiItem.accountNumber,
+        cin: apiItem.cin,
+        tariff: apiItem.tariff,
+        dss: apiItem.dss,
+        debitMop: apiItem.paymentMode?.debitPaymentMode,
+        creditMop: apiItem.paymentMode?.creditPaymentMode,
+        debitPaymentPlan: apiItem.paymentMode?.debitPaymentPlan,
+        creditPaymentPlan: apiItem.paymentMode?.creditPaymentPlan,
+        state: apiItem.meterAssignLocation?.state ?? apiItem.customer?.state,
+        city: apiItem.meterAssignLocation?.city ?? apiItem.customer?.city,
+        streetName: apiItem.meterAssignLocation?.streetName ?? apiItem.customer?.streetName,
+        houseNo: apiItem.meterAssignLocation?.houseNo ?? apiItem.customer?.houseNo,
+        phone: apiItem.customer?.phoneNumber,
+        firstName: apiItem.customer?.firstname,
+        lastName: apiItem.customer?.lastname,
         createdAt: apiItem.createdAt,
         updatedAt: apiItem.updatedAt,
-        // optional fields omitted
     } as MeterInventoryItem;
 };
 
-// --- TanStack Query Hook ---
-
-/**
- * A hook to fetch, paginate, and categorize meter data into Actual and Virtual lists.
- * @param params - The parameters to control pagination, searching, and sorting.
- * @returns The query result object, with data transformed into { actualMeters, virtualMeters }.
- */
 export const useMeters = ({ page, pageSize, searchTerm, sortBy, sortDirection, type }: UseMetersParams) => {
-    // The query result type is explicitly defined to reflect the transformed output:
     return useQuery<
         MetersApiResponse,
         Error,
         { actualMeters: MeterInventoryItem[], virtualMeters: VirtualMeterData[], totalData: number }
     >({
-        // The query key ensures re-fetching happens only when these parameters change
         queryKey: ["meters", page, pageSize, searchTerm, sortBy, sortDirection, type],
         queryFn: () => getMeters({ page, pageSize, searchTerm, sortBy: sortBy ?? null, sortDirection: sortDirection ?? null, type }),
-        staleTime: 1000 * 60 * 5, // Data considered fresh for 5 minutes
+        staleTime: 1000 * 60 * 5,
         refetchOnWindowFocus: false,
-
-        // The select function separates the data into two lists based on the 'type' field
         select: (data) => {
             const virtualMeters: VirtualMeterData[] = [];
             const actualMeters: MeterInventoryItem[] = [];
@@ -142,8 +141,6 @@ export const useMeters = ({ page, pageSize, searchTerm, sortBy, sortDirection, t
     });
 };
 
-// --- Mutations ---
-
 export const useSaveMeter = () => {
     const queryClient = useQueryClient();
     return useMutation({
@@ -158,14 +155,12 @@ export const useSaveMeter = () => {
     });
 };
 
-
-// Hook for Meter Assignment (POST /meter/service/cin/assign)
 export const useAssignMeter = () => {
     const queryClient = useQueryClient();
     return useMutation<
         { responsecode: string; responsedesc: string },
         Error,
-        AssignMeterPayload // NEW signature
+        AssignMeterPayload
     >({
         mutationFn: assignMeter,
         onSuccess: () => {
@@ -178,26 +173,27 @@ export const useAssignMeter = () => {
     });
 };
 
-// Hook for Change Meter State (POST /meter/service/change-state)
+// Updated useChangeMeterState to use ChangeMeterStateParams
 export const useChangeMeterState = () => {
     const queryClient = useQueryClient();
     return useMutation<
         { responsecode: string; responsedesc: string },
         Error,
-        ChangeMeterStatePayload
+        ChangeMeterStateParams
     >({
         mutationFn: changeMeterState,
-        onSuccess: (data, variables) => {
-            toast.success(`Meter ${variables.meterNumber} ${variables.status.toLowerCase()}d successfully!`);
+        onSuccess: (_, variables) => {
+            const action = variables.status ? "activated" : "deactivated";
+            toast.success(`Meter ${variables.meterId} ${action} successfully!`);
             queryClient.invalidateQueries({ queryKey: ["meters"] });
         },
-        onError: (error: Error) => {
-            toast.error(`Failed to change meter state: ${error.message}`);
+        onError: (error: Error, variables) => {
+            const action = variables.status ? "activate" : "deactivate";
+            toast.error(`Failed to ${action} meter: ${error.message}`);
         },
     });
 };
 
-// Hook for Migrate Meter (POST /meter/service/migrate)
 export const useMigrateMeter = () => {
     const queryClient = useQueryClient();
     return useMutation<
@@ -207,7 +203,7 @@ export const useMigrateMeter = () => {
     >({
         mutationFn: migrateMeter,
         onSuccess: (data, variables) => {
-            toast.success(`Meter ${variables.meterNumber} migrated successfully!`);
+            toast.success(`Meter ${variables.meterId} migrated successfully!`);
             queryClient.invalidateQueries({ queryKey: ["meters"] });
         },
         onError: (error: Error) => {
@@ -216,7 +212,6 @@ export const useMigrateMeter = () => {
     });
 };
 
-// Hook for Detach Meter (POST /meter/service/detach)
 export const useDetachMeter = () => {
     const queryClient = useQueryClient();
     return useMutation<
@@ -291,4 +286,4 @@ export const useCreateVirtualMeter = () => {
     });
 };
 
-export type { AssignMeterPayload, ChangeMeterStatePayload, UpdateMeterPayload, MigrateMeterPayload, DetachMeterPayload };
+export type { AssignMeterPayload, ChangeMeterStateParams, UpdateMeterPayload, MigrateMeterPayload, DetachMeterPayload };

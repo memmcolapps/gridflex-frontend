@@ -16,6 +16,7 @@ import { useState, useMemo } from "react";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "../ui/command";
 
 type CustomerDisplay = {
   firstName?: string;
@@ -241,7 +242,7 @@ export function AssignMeterDialog({
   return (
     <>
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-white text-black h-fit">
+      <DialogContent className="bg-white text-black h-fit border-none">
         {/* {customer?.category === "Prepaid" && <Progress value={progress} className="w-full" />} */}
         <DialogHeader>
           <DialogTitle>Assign meter to customer</DialogTitle>
@@ -309,14 +310,14 @@ export function AssignMeterDialog({
                     disabled={metersLoading}
                   >
                     {meterNumber
-                      ? availableMeters.find((meter) => meter.meterNumber === meterNumber)?.meterNumber + " - " + (availableMeters.find((meter) => meter.meterNumber === meterNumber)?.category ?? 'N/A')
+                      ? availableMeters.find((meter) => meter.meterNumber === meterNumber)?.meterNumber + " - " + (availableMeters.find((meter) => meter.meterNumber === meterNumber)?.category)
                       : metersLoading ? "Loading meters..." : "Select meter number..."}
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" size={14}/>
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-full p-0">
-                  <Command>
-                    <CommandInput placeholder="Search meter number..." />
+                <PopoverContent className="w-full p-0 border-none">
+                  <Command className="bg-white border-none">
+                    <CommandInput placeholder="Search meter number..." className="border-none"/>
                     <CommandList>
                       <CommandEmpty>No meter found.</CommandEmpty>
                       <CommandGroup>
@@ -335,7 +336,7 @@ export function AssignMeterDialog({
                                 meterNumber === meter.meterNumber ? "opacity-100" : "opacity-0"
                               )}
                             />
-                            {meter.meterNumber} - {meter.category ?? 'N/A'}
+                            {meter.meterNumber}
                           </CommandItem>
                         ))}
                       </CommandGroup>
@@ -381,7 +382,7 @@ export function AssignMeterDialog({
                   <SelectValue placeholder="Select Tariff" />
                 </SelectTrigger>
                 <SelectContent>
-                  {tariffs.map((t) => (
+                  {tariffs.filter(t => t.approve_status === 'Approved').map((t) => (
                     <SelectItem key={t.id} value={t.id}>
                       {t.name}
                     </SelectItem>

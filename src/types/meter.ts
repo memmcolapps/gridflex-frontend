@@ -3,12 +3,14 @@ export interface VirtualMeterData {
   customerId: string;
   meterNumber: string;
   accountNumber: string;
-  feeder?: string; 
+  feeder?: string;
   dss?: string;
   category?: string;
+  meterCategory?: string; // Added for meter category
   cin?: string;
   tariff?: string;
   status?: string;
+  meterStage?: string; // Added for meter stage
   firstName?: string;
   lastName?: string;
   phone?: string;

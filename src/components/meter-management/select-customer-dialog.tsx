@@ -28,7 +28,7 @@ const SelectCustomerDialog: FC<SelectCustomerDialogProps> = ({
 }) => {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="h-fit overflow-y-auto bg-white">
+      <DialogContent className="h-fit overflow-y-auto bg-white border-none text-black max-h-[80vh]">
         <DialogHeader>
           <DialogTitle>Add Virtual Meter</DialogTitle>
           <DialogDescription>Select customer to assign a virtual meter</DialogDescription>
