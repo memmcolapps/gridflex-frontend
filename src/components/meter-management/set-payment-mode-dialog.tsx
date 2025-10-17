@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Progress } from "@/components/ui/progress";
 import type {MeterInventoryItem}  from "@/types/meter-inventory";
 
 interface SetPaymentModeDialogProps {
@@ -18,7 +17,6 @@ interface SetPaymentModeDialogProps {
   setDebitPaymentPlan: (value: string) => void;
   creditPaymentPlan: string;
   setCreditPaymentPlan: (value: string) => void;
-  progress: number;
   isPaymentFormComplete: boolean;
   editCustomer: MeterInventoryItem | null;
   onProceed: () => void;
@@ -35,7 +33,6 @@ export function SetPaymentModeDialog({
   setDebitPaymentPlan,
   creditPaymentPlan,
   setCreditPaymentPlan,
-  progress,
   isPaymentFormComplete,
   editCustomer,
   onProceed,

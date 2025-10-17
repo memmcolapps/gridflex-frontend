@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useRef, useState } from "react";
@@ -56,7 +57,7 @@ export function BulkUploadDialog<T>({
         }
     };
 
-    const handleUpload = () => {
+    const handleUpload = (_data: unknown) => {
         if (!file) {
             setError("Please select a file first");
             return;

@@ -184,7 +184,7 @@ export default function ViewVirtualMetersDialog({
             setTimeout(() => {
                 onClose();
             }, 1000);
-        } catch (error) {
+        } catch {
             toast.error("Failed to export data. Please try again.");
         } finally {
             setIsExporting(false);

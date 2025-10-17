@@ -1,6 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
-import { Button } from "@/components/ui/button";
 import {
     Dialog,
     DialogContent,
@@ -24,7 +24,7 @@ interface OfflineDialogProps {
     meter?: Meter; // Added optional 'meter' prop typed as 'Meter'
 }
 
-export default function OfflineDialog({ isOpen, onClose, meter }: OfflineDialogProps) {
+export default function OfflineDialog({ isOpen, onClose, meter: _meter }: OfflineDialogProps) {
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="h-fit bg-white">

@@ -517,7 +517,6 @@ export function AssignMeterDialog({
       setDebitPaymentPlan={setDebitPaymentPlan}
       creditPaymentPlan={creditPaymentPlan}
       setCreditPaymentPlan={setCreditPaymentPlan}
-      progress={progress}
       isPaymentFormComplete={isPaymentFormComplete}
       editCustomer={null}
       onProceed={handleProceedFromSetPayment}

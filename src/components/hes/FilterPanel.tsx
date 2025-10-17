@@ -39,11 +39,6 @@ type MeterId =
   | "62124027822";
 type ReadingKey = string;
 
-interface HierarchyOption {
-  value: string;
-  label: string;
-  icon: React.ComponentType<{ size?: number }>;
-}
 
 interface UnitOption {
   value: string;

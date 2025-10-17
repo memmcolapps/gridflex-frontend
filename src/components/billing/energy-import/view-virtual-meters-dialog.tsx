@@ -23,16 +23,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
+import { PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 
 interface EnergyImportData {
   id: number;
@@ -185,7 +179,7 @@ export default function ViewVirtualMetersDialog({
       setTimeout(() => {
         onClose();
       }, 1000);
-    } catch (error) {
+    } catch {
       toast.error("Failed to export data. Please try again.");
     } finally {
       setIsExporting(false);

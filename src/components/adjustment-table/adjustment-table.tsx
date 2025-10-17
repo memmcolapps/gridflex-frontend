@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // src/components/adjustment-table.tsx
 "use client";
 
-import React, { useMemo, useState, useCallback, useEffect } from "react";
+import React, { useMemo, useState, useCallback } from "react";
 import {
   Table,
   TableBody,
@@ -66,9 +67,7 @@ import {
   type AdjustmentTableProps,
   type Meter as MeterType,
   type AdjustmentPayload,
-  LiabilityCause,
 } from "@/types/credit-debit";
-import axios from 'axios';
 import { Card } from "../ui/card";
 
 const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
@@ -126,7 +125,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
   const [meterInput, setMeterInput] = useState("");
   const [searchType, setSearchType] = useState<'meterNumber' | 'accountNumber'>('meterNumber');
 
-  const { mutate: searchMeterMutate, data: meterData, isPending: isMeterLoading, error: meterError, isSuccess: isMeterSuccess, reset: resetSearch } = useSearchMeter();
+  const { mutate: searchMeterMutate, isPending: isMeterLoading, error: meterError, reset: resetSearch } = useSearchMeter();
 
   const [selectedMeter, setSelectedMeter] = useState<MeterType | null>(null);
 

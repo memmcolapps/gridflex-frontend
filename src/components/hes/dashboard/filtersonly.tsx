@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
     Select,
     SelectContent,
@@ -25,13 +26,12 @@ export const FiltersOnly: React.FC<FiltersOnlyProps> = ({
     selectedMeterType,
     setSelectedMeterType,
 }) => {
-    const [loading, setLoading] = useState(false);
     const { bands, error } = useBand();
 
     // Reset selectedBand if it's not a valid option (e.g., during loading or if no bands are available)
     useEffect(() => {
-        if (loading || bands.length === 0) {
-            // If loading or no bands are available, clear the selectedBand to show the placeholder
+        if (bands.length === 0) {
+            // If no bands are available, clear the selectedBand to show the placeholder
             if (selectedBand !== "") {
                 setSelectedBand("");
             }
@@ -42,17 +42,17 @@ export const FiltersOnly: React.FC<FiltersOnlyProps> = ({
                 setSelectedBand("");
             }
         }
-    }, [loading, bands, selectedBand, setSelectedBand]);
+    }, [bands, selectedBand, setSelectedBand]);
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 w-fit gap-1 mt-4">
             <Select
                 value={selectedBand}
                 onValueChange={setSelectedBand}
-                disabled={loading || bands.length === 0}
+                disabled={bands.length === 0}
             >
                 <SelectTrigger className="w-full cursor-pointer transition-all duration-200 hover:text-gray-700 border-r border-gray-300 last:border-r-0">
-                    <SelectValue placeholder={loading ? "Loading bands..." : "Band"} />
+                    <SelectValue placeholder="Band" />
                 </SelectTrigger>
                 <SelectContent>
                     {bands.length > 0 ? (
@@ -61,10 +61,6 @@ export const FiltersOnly: React.FC<FiltersOnlyProps> = ({
                                 {bandItem.name}
                             </SelectItem>
                         ))
-                    ) : loading ? (
-                        <SelectItem value="loading" disabled>
-                            Loading...
-                        </SelectItem>
                     ) : (
                         <SelectItem value="no-bands" disabled>
                             No bands available

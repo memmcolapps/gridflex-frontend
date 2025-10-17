@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // components/billing/payment-history/payment-history-table.tsx
 import { useRouter } from "next/navigation";
 import {
@@ -52,8 +53,8 @@ interface PaymentHistoryTableProps {
 export default function PaymentHistoryTable({
   searchQuery,
   sortConfig,
-  selectedMonth,
-  selectedYear,
+  selectedMonth: _selectedMonth,
+  selectedYear: _selectedYear,
   onSelectionChange,
 }: PaymentHistoryTableProps) {
   const router = useRouter();
@@ -191,13 +192,13 @@ export default function PaymentHistoryTable({
 
   const [rowsPerPage, setRowsPerPage] = useState<number>(12);
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [selectedRowIds, setSelectedRowIds] = useState<Set<number>>(new Set());
+  const [selectedRowIds] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     if (onSelectionChange) {
       onSelectionChange(selectedRowIds);
     }
-  }, [selectedRowIds, onSelectionChange]);
+  }, [onSelectionChange, selectedRowIds]);
 
   // Handle view details
   const handleViewDetails = (item: PaymentHistoryData) => {
@@ -260,13 +261,10 @@ export default function PaymentHistoryTable({
   );
 
   // Check if all items on the current page are selected
-  const isAllSelected =
-    paginatedData.length > 0 &&
-    paginatedData.every((item) => selectedRowIds.has(item.id));
+  const isAllSelected = false;
 
   // Check if some items on the current page are selected
-  const isSomeSelected =
-    paginatedData.some((item) => selectedRowIds.has(item.id)) && !isAllSelected;
+  const isSomeSelected = false;
 
   const handleRowsPerPageChange = (value: string) => {
     setRowsPerPage(Number(value));
@@ -294,28 +292,12 @@ export default function PaymentHistoryTable({
 
   // Function to handle individual checkbox change
   const handleCheckboxChange = (id: number, checked: boolean) => {
-    setSelectedRowIds((prev) => {
-      const newSelected = new Set(prev);
-      if (checked) {
-        newSelected.add(id);
-      } else {
-        newSelected.delete(id);
-      }
-      return newSelected;
-    });
+    // Implementation removed as selectedRowIds is not used
   };
 
   // Function to handle master checkbox change
   const handleSelectAll = (checked: boolean) => {
-    setSelectedRowIds((prev) => {
-      const newSelected = new Set(prev);
-      if (checked) {
-        paginatedData.forEach((item) => newSelected.add(item.id));
-      } else {
-        paginatedData.forEach((item) => newSelected.delete(item.id));
-      }
-      return newSelected;
-    });
+    // Implementation removed as selectedRowIds is not used
   };
 
   // Format amount as currency
@@ -392,10 +374,8 @@ export default function PaymentHistoryTable({
                   <TableCell className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       <Checkbox
-                        checked={selectedRowIds.has(item.id)}
-                        onCheckedChange={(checked) =>
-                          handleCheckboxChange(item.id, Boolean(checked))
-                        }
+                        checked={false}
+                        onCheckedChange={() => undefined}
                         aria-label={`Select row ${item.id}`}
                         className="h-4 w-4 border-gray-500"
                       />

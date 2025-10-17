@@ -904,7 +904,6 @@ export default function AssignMeterPage() {
                 setDebitPaymentPlan={setDebitPaymentPlan}
                 creditPaymentPlan={creditPaymentPlan}
                 setCreditPaymentPlan={setCreditPaymentPlan}
-                progress={progress}
                 isPaymentFormComplete={isPaymentFormComplete}
                 editCustomer={editCustomer}
                 onProceed={editCustomer ? handleConfirmEditFromSetPayment : handleProceedFromSetPayment}

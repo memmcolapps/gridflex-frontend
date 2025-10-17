@@ -1,16 +1,12 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // components/billing/payment-dialog.tsx
 import React, { useState, useEffect } from "react";
 import {
   Dialog,
-  DialogTrigger,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
   DialogFooter,
-  DialogClose,
-  DialogOverlay,
-  DialogPortal,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

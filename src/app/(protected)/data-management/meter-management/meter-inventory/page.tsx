@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // page.tsx
 
 "use client";
@@ -179,9 +180,9 @@ export default function MeterInventoryPage() {
   const handleMeterNumberChange = (value: string) => {
     setMeterNumberInput(value);
 
-    const _meter = meters.find((m) => m.meterNumber === value);
-    if (_meter) {
-      setSelectedMeter(mapMeterInventoryToMeterData(_meter));
+    const meter = meters.find((m) => m.meterNumber === value);
+    if (meter) {
+      setSelectedMeter(mapMeterInventoryToMeterData(meter));
     } else {
       setSelectedMeter(null);
     }

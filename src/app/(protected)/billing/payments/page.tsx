@@ -21,7 +21,7 @@ export default function PaymentHistoryPage() {
   const [sortConfig, setSortConfig] = useState<string>("");
   const [selectedMonth, setSelectedMonth] = useState<string>("July");
   const [selectedYear, setSelectedYear] = useState<string>("2025");
-  const [selectedRowIds, setSelectedRowIds] = useState<Set<number>>(new Set());
+  const [, setSelectedRowIds] = useState<Set<number>>(new Set());
 
    const [isDialogOpen, setIsDialogOpen] = useState(false);
 

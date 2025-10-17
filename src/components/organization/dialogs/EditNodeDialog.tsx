@@ -119,10 +119,10 @@ export const EditNodeDialog = ({
           contactPerson: formData.contactPerson,
           address: formData.address,
           status: formData.status === "Active",
-          voltage: formData.voltage || "",
-          latitude: formData.latitude || "",
-          longitude: formData.longitude || "",
-          description: formData.description || "",
+          voltage: formData.voltage ?? "",
+          latitude: formData.latitude ?? "",
+          longitude: formData.longitude ?? "",
+          description: formData.description ?? "",
         });
       }
 

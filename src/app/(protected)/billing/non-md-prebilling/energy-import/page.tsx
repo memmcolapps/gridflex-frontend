@@ -13,8 +13,6 @@ import {
 } from "@/components/ui/select";
 import {
   Search,
-  Upload,
-  Download,
   CirclePlus,
   SquareArrowOutUpRight,
 } from "lucide-react";

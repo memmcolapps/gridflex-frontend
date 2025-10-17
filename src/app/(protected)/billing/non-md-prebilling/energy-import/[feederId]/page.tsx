@@ -56,7 +56,7 @@ export default function FeederDetailsPage({ params }: FeederDetailsPageProps) {
   const [inputValue, setInputValue] = useState("");
   const [selectedMonth, setSelectedMonth] = useState<string>("June");
   const [selectedYear, setSelectedYear] = useState<string>("2025");
-  const [sortConfig, setSortConfig] = useState<string>("");
+  const [sortConfig] = useState<string>("");
   const [currentData, setCurrentData] = useState<FeederDetailsData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);

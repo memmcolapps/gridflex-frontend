@@ -9,10 +9,6 @@ import {
 } from "lucide-react";
 import React from "react";
 import { type NodeInfo } from "../../../service/organaization-service";
-import {
-  normalizeHierarchyType,
-  HIERARCHY_TYPES,
-} from "../../../utils/hierarchy-utils";
 
 export const mapNodeInfoToFormData = (nodeInfo?: NodeInfo) => {
   if (!nodeInfo) {

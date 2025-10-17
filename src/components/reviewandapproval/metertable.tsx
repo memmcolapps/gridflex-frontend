@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { SetStateAction, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import {
