@@ -105,23 +105,23 @@ const MeterTable = () => {
         }
     };
 
-  const handleConfirmAction = async () => {
-    if (selectedItem && confirmAction) {
-        try {
-            await reviewMutation.mutateAsync({
-                id: selectedItem.meterId.toString(),
-                approveStatus: confirmAction,
-            });
-            toast.success(`Meter ${confirmAction}d successfully!`);
-        } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
-            toast.error(errorMessage);
+    const handleConfirmAction = async () => {
+        if (selectedItem && confirmAction) {
+            try {
+                await reviewMutation.mutateAsync({
+                    id: selectedItem.meterId.toString(),
+                    approveStatus: confirmAction,
+                });
+                toast.success(`Meter ${confirmAction}d successfully!`);
+            } catch (error) {
+                const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+                toast.error(errorMessage);
+            }
         }
-    }
-    setIsConfirmOpen(false);
-    setConfirmAction(null);
-    setSelectedItem(null);
-};
+        setIsConfirmOpen(false);
+        setConfirmAction(null);
+        setSelectedItem(null);
+    };
 
     if (isLoading) return <div>Loading...</div>;
     if (isError) {
@@ -161,7 +161,7 @@ const MeterTable = () => {
                         <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">Class</TableHead>
                         <TableHead className="px-4 py-3 text-sm font-medium text-gray-900"> Type</TableHead>
                         <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">Category</TableHead>
-                        <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">Change Description</TableHead>                      
+                        <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">Change Description</TableHead>
                         <TableHead className="px-4 py-3 text-sm font-medium text-gray-900 text-right">Actions</TableHead>
                     </TableRow>
                 </TableHeader>
@@ -194,9 +194,15 @@ const MeterTable = () => {
                                 <TableCell className="px-4 py-3  text-sm text-gray-900">{item.meterClass}</TableCell>
                                 <TableCell className="px-4 py-3  text-sm text-gray-900">{item.meterType}</TableCell>
                                 <TableCell className="px-4 py-3  text-sm text-gray-900">{item.meterCategory}</TableCell>
-                                <TableCell className="px-4 py-3  text-sm text-[#161CCA]">
-                                    {(item.description)}
+                                <TableCell className="px-4 py-3 text-sm text-[#161CCA]">
+                                    {item.description
+                                        ?.split(' ')
+                                        .map((word, index) =>
+                                            index < 2 ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase() : word
+                                        )
+                                        .join(' ')}
                                 </TableCell>
+
                                 <TableCell className="px-4 py-3 text-right">
                                     <DropdownMenu
                                         open={dropdownOpenId === item.id}
