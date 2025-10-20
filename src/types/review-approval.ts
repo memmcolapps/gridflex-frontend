@@ -163,6 +163,8 @@ export interface MeterResponse {
 }
 
 export interface Meter {
+  address: string;
+  phoneNo: string;
   id: string;
   meterId: string;
   orgId: string;
@@ -179,6 +181,24 @@ export interface Meter {
     street: string;
     email: string;
     phoneNo: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+  customer: {
+    id: string;
+    orgId: string;
+    firstname: string;
+    lastname: string;
+    customerId: string;
+    nin: string;
+    phoneNumber: string;
+    email: string;
+    state: string;
+    city: string;
+    houseNo: string;
+    streetName: string;
+    status: string;
+    vat: string;
     createdAt: string;
     updatedAt: string;
   };

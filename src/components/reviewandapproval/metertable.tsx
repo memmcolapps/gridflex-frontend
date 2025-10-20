@@ -38,23 +38,6 @@ import { useMeters } from '@/hooks/use-ReviewApproval';
 import type { FetchParams } from '@/service/reviewapproval-service';
 import { toast } from 'sonner';
 
-/**
- * Utility function to capitalize all two-letter words in a string.
- * This is achieved using a regular expression that looks for whole words
- * of exactly two characters (\b\w{2}\b).
- * @param text T
- * @returns 
- */
-// const formatDescription = (text: string | null | undefined): string => {
-//     if (!text || typeof text !== 'string') {
-//         console.warn('Invalid description:', text);
-//         return ''; // Return empty string or handle as needed
-//     }
-//     return text
-//         .split(' ')
-//         .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-//         .join(' ');
-// };
 
 
 const MeterTable = () => {
@@ -178,8 +161,7 @@ const MeterTable = () => {
                         <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">Class</TableHead>
                         <TableHead className="px-4 py-3 text-sm font-medium text-gray-900"> Type</TableHead>
                         <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">Category</TableHead>
-                        <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">Change Description</TableHead>
-                        <TableHead className="px-4 py-3 text-sm font-medium text-gray-900 text-center">Approval Status</TableHead>
+                        <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">Change Description</TableHead>                      
                         <TableHead className="px-4 py-3 text-sm font-medium text-gray-900 text-right">Actions</TableHead>
                     </TableRow>
                 </TableHeader>
@@ -206,19 +188,14 @@ const MeterTable = () => {
                                         </span>
                                     </div>
                                 </TableCell>
-                                <TableCell className="px-4 py-3 w-[150px] text-sm text-gray-900">{item.meterNumber}</TableCell>
-                                <TableCell className="px-4 py-3 w-[150px] text-sm text-gray-900">{item.simNumber}</TableCell>
-                                <TableCell className="px-4 py-3 w-[100px] text-sm text-gray-900">{item.manufacturer.name}</TableCell>
-                                <TableCell className="px-4 py-3 w-[120px] text-sm text-gray-900">{item.meterClass}</TableCell>
-                                <TableCell className="px-4 py-3 w-[120px] text-sm text-gray-900">{item.meterType}</TableCell>
-                                <TableCell className="px-4 py-3 w-[100px] text-sm text-gray-900">{item.meterCategory}</TableCell>
-                                <TableCell className="px-4 py-3 w-[120px] text-sm text-[#161CCA]">
+                                <TableCell className="px-4 py-3  text-sm text-gray-900">{item.meterNumber}</TableCell>
+                                <TableCell className="px-4 py-3  text-sm text-gray-900">{item.simNumber}</TableCell>
+                                <TableCell className="px-4 py-3  text-sm text-gray-900">{item.manufacturer?.name}</TableCell>
+                                <TableCell className="px-4 py-3  text-sm text-gray-900">{item.meterClass}</TableCell>
+                                <TableCell className="px-4 py-3  text-sm text-gray-900">{item.meterType}</TableCell>
+                                <TableCell className="px-4 py-3  text-sm text-gray-900">{item.meterCategory}</TableCell>
+                                <TableCell className="px-4 py-3  text-sm text-[#161CCA]">
                                     {(item.description)}
-                                </TableCell>
-                                <TableCell className="px-4 py-3 text-center">
-                                    <span className="inline-block px-3 py-1 text-sm font-medium text-[#C86900] bg-[#FFF5EA] p-1 rounded-full">
-                                        {item.meterStage === 'pending-state' ? 'Pending' : item.meterStage}
-                                    </span>
                                 </TableCell>
                                 <TableCell className="px-4 py-3 text-right">
                                     <DropdownMenu

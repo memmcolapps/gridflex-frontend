@@ -85,7 +85,6 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
                             onClick={() => setShowDetails(!showDetails)}
 
                             className="text-[#161CCA] text-sm  text-left pl-2 cursor-pointer"
-
                         >
                             Details
                         </button>
@@ -153,37 +152,116 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
                         </span>
                     </DialogHeader>
                     <div className="flex flex-col gap-3 py-4 sm:py-6 w-150 h-fit">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="flex flex-col gap-3 space-y-6">
-                                <div className="flex items-center gap-4">
-                                    <div className="text-sm sm:text-base font-bold text-gray-900">
-                                        {selectedRow.meterNumber}
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-4">
-                                    <div className="w-[120px] text-sm sm:text-base font-bold text-gray-700 whitespace-nowrap">
-                                        Uploaded Image:
-                                    </div>
-                                </div>
+                        <div className="flex items-center gap-4 p-2">
+                            <div className="flex-1 text-sm sm:text-base font-bold text-gray-900">
+                                {selectedRow.meterNumber}
                             </div>
-                            <div className="flex flex-col gap-3 space-y-6">
-                                <div className="flex items-center gap-2">
-                                    <MoveRight className="text-gray-900 mr-2 scale-x-185" size={16} />
-                                    <div className="text-sm sm:text-base font-bold text-gray-700">
-                                        C-1234567890
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-4">
-                                    <div className="text-sm sm:text-base font-bold text-gray-900">
-                                        <Image
-                                            src="/images/mdj.jpg"
-                                            alt="C-1234567890"
-                                            className="object-cover w-100 h-50"
-                                        />
-                                    </div>
-                                </div>
+                            <div className="flex-1 flex items-center gap-2 text-sm sm:text-base font-bold text-gray-900">
+                                <MoveRight className="text-gray-900 mr-2 scale-x-185" size={16} />
+                                <span>{selectedRow.customerId ?? 'C-1234567890'}</span>
                             </div>
                         </div>
+
+                        {/* Details Toggle Button */}
+                        <button
+                            onClick={() => setShowDetails(!showDetails)}
+                            className="text-[#161CCA] text-sm text-left pl-2 cursor-pointer"
+                        >
+                            Details
+                        </button>
+
+                        {/* Expanded Details */}
+                        {showDetails && (
+                            <div className="text-sm text-gray-700 pl-1 animate-fadeIn space-y-2">
+                                <div className="flex items-center gap-4 p-2">
+                                    <div className="flex-1 font-bold text-gray-900">
+                                        <span className="font-medium">Customer Name:</span>
+                                    </div>
+                                    <div className="flex-1 font-bold text-gray-900">
+                                        {selectedRow.customer ? `${selectedRow.customer.firstname} ${selectedRow.customer.lastname}` : 'N/A'}
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-4 p-2">
+                                    <div className="flex-1 font-bold text-gray-900">
+                                        <span className="font-medium">Phone Number:</span>
+                                    </div>
+                                    <div className="flex-1 font-bold text-gray-900">
+                                        {selectedRow.customer.phoneNumber ?? 'N/A'}
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-4 p-2">
+                                    <div className="flex-1 font-bold text-gray-900">
+                                        <span className="font-medium">Address:</span>
+                                    </div>
+                                    <div className="flex-1 font-bold text-gray-900">
+                                        {selectedRow.customer.streetName ?? 'N/A'}
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-4 p-2">
+                                    <div className="flex-1 font-bold text-gray-900">
+                                        <span className="font-medium">Meter Manufacturer:</span>
+                                    </div>
+                                    <div className="flex-1 font-bold text-gray-900">
+                                        {selectedRow.manufacturer?.name ?? 'N/A'}
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-4 p-2">
+                                    <div className="flex-1 font-bold text-gray-900">
+                                        <span className="font-medium">Meter Class:</span>
+                                    </div>
+                                    <div className="flex-1 font-bold text-gray-900">
+                                        {selectedRow.meterClass ?? 'N/A'}
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-4 p-2">
+                                    <div className="flex-1 font-bold text-gray-900">
+                                        <span className="font-medium">Meter Type:</span>
+                                    </div>
+                                    <div className="flex-1 font-bold text-gray-900">
+                                        {selectedRow.meterType ?? 'N/A'}
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-4 p-2">
+                                    <div className="flex-1 font-bold text-gray-900">
+                                        <span className="font-medium">Meter Category:</span>
+                                    </div>
+                                    <div className="flex-1 font-bold text-gray-900">
+                                        {selectedRow.meterCategory ?? 'N/A'}
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-4 p-2">
+                                    <div className="flex-1 font-bold text-gray-900">
+                                        <span className="font-medium">Service Address:</span>
+                                    </div>
+                                    <div className="flex-1 font-bold text-gray-900">
+                                        {selectedRow.customer.streetName ?? 'N/A'}
+                                    </div>
+                                </div>
+
+                                {/* Uploaded Image */}
+                                {selectedRow.imageUrl && (
+                                    <div className="flex items-center gap-4 p-2">
+                                        <div className="font-bold text-gray-900">
+                                            <span className="font-medium">Uploaded Image:</span>
+                                        </div>
+                                        <Image
+                                            src={selectedRow.imageUrl}
+                                            alt={selectedRow.customerName ?? 'Meter Image'}
+                                            className="object-cover rounded-md w-[200px] h-[150px]"
+                                            width={200}
+                                            height={150}
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </>
             );
@@ -205,15 +283,15 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
                             { label: 'Meter Number:', value: selectedRow.meterNumber },
                             { label: 'SIM No.:', value: selectedRow.simNumber },
                             { label: 'Meter Type:', value: selectedRow.meterType },
-                            { label: 'Meter Manufacturer:', value: selectedRow.manufacturer?.name },
+                            { label: 'Meter Manufacturer:', value: selectedRow.manufacturer?.name},
                             { label: 'Meter Class:', value: selectedRow.meterClass },
-                            { label: 'Meter Category:', value: selectedRow.meterCategory },
+                            { label: 'Meter Category:', value: selectedRow.meterCategory},
                             { label: 'Old SGC:', value: selectedRow.oldSgc },
                             { label: 'New SGC:', value: selectedRow.newSgc },
                             { label: 'Old KRN:', value: selectedRow.oldKrn },
                             { label: 'New KRN:', value: selectedRow.newKrn },
-                            { label: 'Old Tariff Index:', value: selectedRow.oldTariffIndex },
-                            { label: 'New Tariff Index:', value: selectedRow.newTariffIndex },
+                            { label: 'Old Tariff Index:', value: selectedRow.oldTariffIndex},
+                            { label: 'New Tariff Index:', value: selectedRow.newTariffIndex},
                             { label: 'Reason:', value: selectedRow.reason },
                         ].map(({ label, value }) => (
                             <div key={label} className="flex items-center whitespace-nowrap">
