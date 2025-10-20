@@ -120,6 +120,7 @@ export const EditNodeDialog = ({
           latitude: formData.latitude ?? "",
           longitude: formData.longitude ?? "",
           description: formData.description ?? "",
+          type: nodeType.toLocaleLowerCase(),
         });
       }
 
@@ -190,8 +191,7 @@ export const EditNodeDialog = ({
                   name="regionId"
                   value={formData.regionId}
                   onChange={handleInputChange}
-                  placeholder={`Enter ${
-                    nodeType.toLowerCase() === "root"
+                  placeholder={`Enter ${nodeType.toLowerCase() === "root"
                       ? "Root"
                       : nodeType.toLowerCase() === "region"
                         ? "Region"
@@ -200,7 +200,7 @@ export const EditNodeDialog = ({
                           : nodeType.toLowerCase() === "service center"
                             ? "Service Center"
                             : ""
-                  } ID`}
+                    } ID`}
                   className="mt-1 border-gray-300"
                 />
               )}
@@ -307,29 +307,29 @@ export const EditNodeDialog = ({
           {(nodeType === "Substation" ||
             nodeType === "DSS" ||
             nodeType === "Feeder Line") && (
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col">
-                <label className="text-sm font-medium">Longitude *</label>
-                <Input
-                  name="longitude"
-                  value={formData.longitude}
-                  onChange={handleInputChange}
-                  placeholder="Enter Longitude"
-                  className="mt-1"
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col">
+                  <label className="text-sm font-medium">Longitude *</label>
+                  <Input
+                    name="longitude"
+                    value={formData.longitude}
+                    onChange={handleInputChange}
+                    placeholder="Enter Longitude"
+                    className="mt-1"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="text-sm font-medium">Latitude *</label>
+                  <Input
+                    name="latitude"
+                    value={formData.latitude}
+                    onChange={handleInputChange}
+                    placeholder="Enter Latitude"
+                    className="mt-1 border-gray-300"
+                  />
+                </div>
               </div>
-              <div className="flex flex-col">
-                <label className="text-sm font-medium">Latitude *</label>
-                <Input
-                  name="latitude"
-                  value={formData.latitude}
-                  onChange={handleInputChange}
-                  placeholder="Enter Latitude"
-                  className="mt-1 border-gray-300"
-                />
-              </div>
-            </div>
-          )}
+            )}
           {isTechnicalNode && (
             <div className="flex flex-col">
               <label className="text-sm font-medium">Description *</label>
@@ -367,7 +367,7 @@ export const EditNodeDialog = ({
             className="ml-2 bg-[rgba(22,28,202,1)] text-white"
           >
             {updateRegionBhubServiceCenter.isPending ||
-            updateSubstationTransfomerFeeder.isPending
+              updateSubstationTransfomerFeeder.isPending
               ? "Saving..."
               : "Save"}
           </Button>
