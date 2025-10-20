@@ -1,14 +1,16 @@
 import { ChartLine, Printer, Wallet, WalletCards } from "lucide-react";
 import { Card } from "../ui/card";
+import { useRouter } from "next/navigation";
 
 export function BillingReport(){
+    const router = useRouter()
     return(
-        <div>
+        <div className="text-nowrap">
                 <h3 className='text-3xl font-semibold text-gray-700 p-2'>
                     Billing Reports
                 </h3>
                 <div className='w-fit p-2 flex flex-row gap-5'>
-                    <Card className='w-90 shadow-none px-6 py-12 border border-gray-200 rounded-lg cursor-pointer'>
+                    <Card onClick={() => router.push('/customized-report/current-billing')} className='w-90 shadow-none px-6 py-12 border border-gray-200 rounded-lg cursor-pointer'>
                         <div className='flex flex-row gap-2 text-gray-700 font-semibold text-2xl'>
                             <WalletCards size={20} />
                             Current Billing Revenue
@@ -17,7 +19,7 @@ export function BillingReport(){
                             Track Billing Revenue
                         </h3>
                     </Card>
-                    <Card className='w-90 shadow-none px-6 py-12 border border-gray-200 rounded-lg cursor-pointer'>
+                    <Card onClick={() => router.push('/customized-report/payment-search')} className='w-90 shadow-none px-6 py-12 border border-gray-200 rounded-lg cursor-pointer'>
                         <div className='flex flex-row gap-2 text-gray-700 font-semibold text-2xl'>
                             <Wallet size={20} />
                             Payment Search
