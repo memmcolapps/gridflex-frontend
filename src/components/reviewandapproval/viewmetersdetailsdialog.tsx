@@ -32,6 +32,7 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
     const { user } = useAuth();
 
     const [showDetails, setShowDetails] = useState(false);
+    const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
 
 
     useEffect(() => {
@@ -43,7 +44,8 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
     const isMeterAllocated = selectedRow?.description === 'Meter Allocated';
     const isMeterAssigned = selectedRow?.description === 'Meter Assigned';
     const isMeterDeactivated = selectedRow?.description === 'Meter Deactivated';
-    const isMeterDetached = selectedRow?.description === 'Meter Detached';
+    const isMeterActivated = selectedRow?.description === 'Meter Activated';
+    const isMeterDetached = selectedRow?.description === 'Meter detached';
     const isMeterMigrated = selectedRow?.description === 'Meter Migrated';
     const isNewlyAdded = selectedRow?.description === 'Newly added';
     const isMeterEdited = selectedRow?.description === 'Meter edited';
@@ -142,131 +144,176 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
 
         if (isMeterAssigned) {
             return (
-                <>
-                    <DialogHeader>
-                        <DialogTitle className="text-left text-base sm:text-lg font-semibold text-gray-900 truncate">
-                            Meter Assigned
-                        </DialogTitle>
-                        <span className="text-gray-500 text-sm sm:text-base">
-                            Operator: {user?.business?.businessName?.toUpperCase() ?? 'BUSINESS NAME'}
-                        </span>
-                    </DialogHeader>
-                    <div className="flex flex-col gap-3 py-4 sm:py-6 w-150 h-fit">
-                        <div className="flex items-center gap-4 p-2">
-                            <div className="flex-1 text-sm sm:text-base font-bold text-gray-900">
-                                {selectedRow.meterNumber}
+                <Dialog open={isOpen} onOpenChange={onOpenChange}>
+                    <DialogContent className="w-fit lg:max-w-[1200px] bg-white text-black p-4 sm:p-6 rounded-lg shadow-lg overflow-hidden h-fit">
+                        {isImageDialogOpen ? (
+                            <div className="flex flex-col items-center justify-center w-full h-fit">
+                                <div
+                                    className="absolute top-4 left-4 flex items-center gap-2 cursor-pointer text-gray-600 text-base sm:text-lg font-light ml-2"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        console.log('Returning to details view');
+                                        setIsImageDialogOpen(false);
+                                    }}
+                                >
+                                    <MoveRight className="rotate-180" size={16} />
+                                    <span>Back</span>
+                                </div>
+                                <div className='mt-8 rounded-b-full'>
+                                    <Image
+                                        src="/images/mdj.jpg"
+                                        alt="Full Meter Image"
+                                        width={280}
+                                        height={200}
+                                        className="object-contain w-fit h-fit max-h-screen"
+                                    />
+                                </div>
+
                             </div>
-                            <div className="flex-1 flex items-center gap-2 text-sm sm:text-base font-bold text-gray-900">
-                                <MoveRight className="text-gray-900 mr-2 scale-x-185" size={16} />
-                                <span>{selectedRow.customerId ?? 'C-1234567890'}</span>
-                            </div>
-                        </div>
-
-                        {/* Details Toggle Button */}
-                        <button
-                            onClick={() => setShowDetails(!showDetails)}
-                            className="text-[#161CCA] text-sm text-left pl-2 cursor-pointer"
-                        >
-                            Details
-                        </button>
-
-                        {/* Expanded Details */}
-                        {showDetails && (
-                            <div className="text-sm text-gray-700 pl-1 animate-fadeIn space-y-2">
-                                <div className="flex items-center gap-4 p-2">
-                                    <div className="flex-1 font-bold text-gray-900">
-                                        <span className="font-medium">Customer Name:</span>
-                                    </div>
-                                    <div className="flex-1 font-bold text-gray-900">
-                                        {selectedRow.customer ? `${selectedRow.customer.firstname} ${selectedRow.customer.lastname}` : 'N/A'}
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center gap-4 p-2">
-                                    <div className="flex-1 font-bold text-gray-900">
-                                        <span className="font-medium">Phone Number:</span>
-                                    </div>
-                                    <div className="flex-1 font-bold text-gray-900">
-                                        {selectedRow.customer.phoneNumber ?? 'N/A'}
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center gap-4 p-2">
-                                    <div className="flex-1 font-bold text-gray-900">
-                                        <span className="font-medium">Address:</span>
-                                    </div>
-                                    <div className="flex-1 font-bold text-gray-900">
-                                        {selectedRow.customer.streetName ?? 'N/A'}
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center gap-4 p-2">
-                                    <div className="flex-1 font-bold text-gray-900">
-                                        <span className="font-medium">Meter Manufacturer:</span>
-                                    </div>
-                                    <div className="flex-1 font-bold text-gray-900">
-                                        {selectedRow.manufacturer?.name ?? 'N/A'}
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center gap-4 p-2">
-                                    <div className="flex-1 font-bold text-gray-900">
-                                        <span className="font-medium">Meter Class:</span>
-                                    </div>
-                                    <div className="flex-1 font-bold text-gray-900">
-                                        {selectedRow.meterClass ?? 'N/A'}
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center gap-4 p-2">
-                                    <div className="flex-1 font-bold text-gray-900">
-                                        <span className="font-medium">Meter Type:</span>
-                                    </div>
-                                    <div className="flex-1 font-bold text-gray-900">
-                                        {selectedRow.meterType ?? 'N/A'}
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center gap-4 p-2">
-                                    <div className="flex-1 font-bold text-gray-900">
-                                        <span className="font-medium">Meter Category:</span>
-                                    </div>
-                                    <div className="flex-1 font-bold text-gray-900">
-                                        {selectedRow.meterCategory ?? 'N/A'}
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center gap-4 p-2">
-                                    <div className="flex-1 font-bold text-gray-900">
-                                        <span className="font-medium">Service Address:</span>
-                                    </div>
-                                    <div className="flex-1 font-bold text-gray-900">
-                                        {selectedRow.customer.streetName ?? 'N/A'}
-                                    </div>
-                                </div>
-
-                                {/* Uploaded Image */}
-                                {selectedRow.imageUrl && (
+                        ) : (
+                            <>
+                                <DialogHeader>
+                                    <DialogTitle className="text-left text-base sm:text-lg font-semibold text-gray-900 truncate">
+                                        Meter Assigned
+                                    </DialogTitle>
+                                    <span className="text-gray-500 text-sm sm:text-base">
+                                        Operator: {user?.business?.businessName?.toUpperCase() ?? 'BUSINESS NAME'}
+                                    </span>
+                                </DialogHeader>
+                                <div className="flex flex-col gap-3 py-4 sm:py-6 w-150 h-fit">
                                     <div className="flex items-center gap-4 p-2">
-                                        <div className="font-bold text-gray-900">
-                                            <span className="font-medium">Uploaded Image:</span>
+                                        <div className="flex-1 text-sm sm:text-base font-bold text-gray-900">
+                                            {selectedRow.meterNumber}
                                         </div>
-                                        <Image
-                                            src={selectedRow.imageUrl}
-                                            alt={selectedRow.customerName ?? 'Meter Image'}
-                                            className="object-cover rounded-md w-[200px] h-[150px]"
-                                            width={200}
-                                            height={150}
-                                        />
+                                        <div className="flex-1 flex items-center gap-2 text-sm sm:text-base font-bold text-gray-900">
+                                            <MoveRight className="text-gray-900 mr-2 scale-x-185" size={16} />
+                                            <span>{selectedRow.customer.customerId}</span>
+                                        </div>
                                     </div>
-                                )}
-                            </div>
+                                    <button
+                                        onClick={() => setShowDetails(!showDetails)}
+                                        className="text-[#161CCA] text-sm text-left pl-2 cursor-pointer"
+                                    >
+                                        Details
+                                    </button>
+                                    {showDetails && (
+                                        <div className="text-sm text-gray-700 pl-1 animate-fadeIn space-y-2">
+                                            <div className="flex items-center gap-4 p-2">
+                                                <div className="flex-1 font-bold text-gray-900">
+                                                    <span className="font-medium">Customer Name:</span>
+                                                </div>
+                                                <div className="flex-1 font-bold text-gray-900">
+                                                    {selectedRow.customer
+                                                        ? `${selectedRow.customer.firstname} ${selectedRow.customer.lastname}`
+                                                        : 'N/A'}
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-4 p-2">
+                                                <div className="flex-1 font-bold text-gray-900">
+                                                    <span className="font-medium">Phone Number:</span>
+                                                </div>
+                                                <div className="flex-1 font-bold text-gray-900">
+                                                    {selectedRow.customer.phoneNumber ?? 'N/A'}
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-4 p-2">
+                                                <div className="flex-1 font-bold text-gray-900">
+                                                    <span className="font-medium">Address:</span>
+                                                </div>
+                                                <div className="flex-1 font-bold text-gray-900">
+                                                   {selectedRow.customer
+                                                ? `${selectedRow.customer.houseNo} ${selectedRow.customer.streetName}`
+                                                : 'N/A'}
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-4 p-2">
+                                                <div className="flex-1 font-bold text-gray-900">
+                                                    <span className="font-medium">Meter Manufacturer:</span>
+                                                </div>
+                                                <div className="flex-1 font-bold text-gray-900">
+                                                    {selectedRow.manufacturer?.name ?? 'N/A'}
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-4 p-2">
+                                                <div className="flex-1 font-bold text-gray-900">
+                                                    <span className="font-medium">Meter Class:</span>
+                                                </div>
+                                                <div className="flex-1 font-bold text-gray-900">
+                                                    {selectedRow.meterClass ?? 'N/A'}
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-4 p-2">
+                                                <div className="flex-1 font-bold text-gray-900">
+                                                    <span className="font-medium">Meter Type:</span>
+                                                </div>
+                                                <div className="flex-1 font-bold text-gray-900">
+                                                    {selectedRow.meterType ?? 'N/A'}
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-4 p-2">
+                                                <div className="flex-1 font-bold text-gray-900">
+                                                    <span className="font-medium">Meter Category:</span>
+                                                </div>
+                                                <div className="flex-1 font-bold text-gray-900">
+                                                    {selectedRow.meterCategory ?? 'N/A'}
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-4 p-2">
+                                                <div className="flex-1 font-bold text-gray-900">
+                                                    <span className="font-medium">Service Address:</span>
+                                                </div>
+                                                <div className="flex-1 font-bold text-gray-900">
+                                                     {selectedRow.meterAssignLocation
+                                                ? `${selectedRow.meterAssignLocation.houseNo} ${selectedRow.meterAssignLocation.streetName}`
+                                                : 'N/A'}
+                                                </div>
+                                            </div>
+                                            <div className="flex items-start gap-4 p-2">
+                                                <div className="flex-1 font-bold text-gray-900">
+                                                    <span className="font-medium">Uploaded Image:</span>
+                                                </div>
+                                                <div className="flex-1 font-bold text-gray-900">
+                                                    <Image
+                                                        src="/images/mdj.jpg"
+                                                        alt={selectedRow.customerName ?? 'Meter Image'}
+                                                        className="object-cover rounded-md w-[200px] h-[150px] cursor-pointer hover:opacity-90 transition"
+                                                        width={150}
+                                                        height={150}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            console.log('Switching to full image view');
+                                                            setIsImageDialogOpen(true);
+                                                        }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="flex justify-between gap-2 mt-4">
+                                    <Button
+                                        onClick={() => selectedRow && onReject(selectedRow)}
+                                        variant="outline"
+                                        className="border-red-500 text-red-500 bg-white hover:bg-red-50 hover:text-red-600 text-sm sm:text-base font-medium w-full sm:w-auto px-3 py-2 sm:px-4 sm:py-2 rounded-md transition-colors focus:ring-red-500/0"
+                                        disabled={!selectedRow}
+                                    >
+                                        Reject
+                                    </Button>
+                                    <Button
+                                        onClick={() => selectedRow && onApprove(selectedRow)}
+                                        variant="default"
+                                        className="bg-[#22C55E] text-white hover:bg-[#1ea34d] text-sm sm:text-base font-medium w-full sm:w-auto px-3 py-2 sm:px-4 sm:py-2 rounded-md transition-colors"
+                                        disabled={!selectedRow}
+                                    >
+                                        Approve
+                                    </Button>
+                                </div>
+                            </>
                         )}
-                    </div>
-                </>
+                    </DialogContent>
+                </Dialog>
             );
         }
-
         if (isMeterDeactivated) {
             return (
                 <>
@@ -283,16 +330,56 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
                             { label: 'Meter Number:', value: selectedRow.meterNumber },
                             { label: 'SIM No.:', value: selectedRow.simNumber },
                             { label: 'Meter Type:', value: selectedRow.meterType },
-                            { label: 'Meter Manufacturer:', value: selectedRow.manufacturer?.name},
+                            { label: 'Meter Manufacturer:', value: selectedRow.oldMeterInfo.manufacturer.name },
                             { label: 'Meter Class:', value: selectedRow.meterClass },
-                            { label: 'Meter Category:', value: selectedRow.meterCategory},
+                            { label: 'Meter Category:', value: selectedRow.meterCategory },
                             { label: 'Old SGC:', value: selectedRow.oldSgc },
                             { label: 'New SGC:', value: selectedRow.newSgc },
                             { label: 'Old KRN:', value: selectedRow.oldKrn },
                             { label: 'New KRN:', value: selectedRow.newKrn },
-                            { label: 'Old Tariff Index:', value: selectedRow.oldTariffIndex},
-                            { label: 'New Tariff Index:', value: selectedRow.newTariffIndex},
+                            { label: 'Old Tariff Index:', value: selectedRow.oldTariffIndex },
+                            { label: 'New Tariff Index:', value: selectedRow.newTariffIndex },
                             { label: 'Reason:', value: selectedRow.reason },
+                        ].map(({ label, value }) => (
+                            <div key={label} className="flex items-center whitespace-nowrap">
+                                <div className="w-[120px] text-sm sm:text-base font-medium text-gray-700 whitespace-nowrap">
+                                    {label}
+                                </div>
+                                <div className="text-sm sm:text-base font-bold text-gray-900 ml-30">
+                                    {value}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </>
+            );
+        }
+
+        if (isMeterActivated) {
+            return (
+                <>
+                    <DialogHeader>
+                        <DialogTitle className="text-left text-base sm:text-lg font-semibold text-gray-900 truncate">
+                            Meter Activated
+                        </DialogTitle>
+                        <span className="text-gray-500 text-sm sm:text-base">
+                            Operator: {user?.business?.businessName?.toUpperCase() ?? 'BUSINESS NAME'}
+                        </span>
+                    </DialogHeader>
+                    <div className="flex flex-col gap-3 py-4 sm:py-6 w-[405px]">
+                        {[
+                            { label: 'Meter Number:', value: selectedRow.meterNumber },
+                            { label: 'SIM No.:', value: selectedRow.simNumber },
+                            { label: 'Meter Type:', value: selectedRow.meterType },
+                            { label: 'Meter Manufacturer:', value: selectedRow.oldMeterInfo.manufacturer.name },
+                            { label: 'Meter Class:', value: selectedRow.meterClass },
+                            { label: 'Meter Category:', value: selectedRow.meterCategory },
+                            { label: 'Old SGC:', value: selectedRow.oldSgc },
+                            { label: 'New SGC:', value: selectedRow.newSgc },
+                            { label: 'Old KRN:', value: selectedRow.oldKrn },
+                            { label: 'New KRN:', value: selectedRow.newKrn },
+                            { label: 'Old Tariff Index:', value: selectedRow.oldTariffIndex },
+                            { label: 'New Tariff Index:', value: selectedRow.newTariffIndex },
                         ].map(({ label, value }) => (
                             <div key={label} className="flex items-center whitespace-nowrap">
                                 <div className="w-[120px] text-sm sm:text-base font-medium text-gray-700 whitespace-nowrap">
@@ -310,69 +397,200 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
 
         if (isMeterDetached) {
             return (
-                <>
-                    <DialogHeader>
-                        <DialogTitle className="text-left text-base sm:text-lg font-semibold text-gray-900 truncate">
-                            Meter Detached
-                        </DialogTitle>
-                        <span className="text-gray-500 text-sm sm:text-base">
-                            Operator: {user?.business?.businessName?.toUpperCase() ?? 'BUSINESS NAME'}
-                        </span>
-                    </DialogHeader>
-                    <div className="flex flex-col gap-3 py-4 sm:py-6">
-                        <div className="flex items-start gap-4 w-150">
-                            <div className="flex-1 flex flex-col gap-3 p-2">
-                                <div className="text-sm sm:text-base font-bold text-gray-900">
-                                    {selectedRow.meterNumber ?? 'N/A'}
+                <Dialog open={isOpen} onOpenChange={onOpenChange}>
+                    <DialogContent className="w-fit lg:max-w-[1200px] bg-white text-black p-4 sm:p-6 rounded-lg shadow-lg overflow-hidden h-fit">
+                        <DialogHeader>
+                            <DialogTitle className="text-left text-base sm:text-lg font-semibold text-gray-900 truncate">
+                                Meter Detached
+                            </DialogTitle>
+                            <span className="text-gray-500 text-sm sm:text-base">
+                                Operator: {user?.business?.businessName?.toUpperCase() ?? 'BUSINESS NAME'}
+                            </span>
+                        </DialogHeader>
+
+                        <div className="flex flex-col gap-3 py-4 sm:py-6 w-150 h-fit">
+                            <div className="flex items-center gap-4 p-2">
+                                <div className="flex-1 text-sm sm:text-base font-bold text-gray-900">
+                                    {selectedRow.oldMeterInfo.customer.customerId}
                                 </div>
-                                <div className="text-sm sm:text-base font-medium text-gray-700">
-                                    Reason:
-                                </div>
-                            </div>
-                            <div className="flex-1 flex flex-col gap-3 p-2">
-                                <div className="flex items-center gap-2 text-sm sm:text-base text-gray-900">
-                                    <UnlinkIcon size={20} className="text-gray-700" />
-                                    <span className='font-bold'>C-122623669</span>
-                                </div>
-                                <div className="text-sm sm:text-base font-bold text-gray-900">
-                                    {selectedRow.reason}
+                                <div className="flex-1 flex items-center gap-2 text-sm sm:text-base font-bold text-gray-900">
+                                    <UnlinkIcon className="text-gray-900 mr-2" size={18} />
+                                    <span>{selectedRow.meterNumber}</span>
                                 </div>
                             </div>
+
+                            {/* Details Toggle Button */}
+                            <button
+                                onClick={() => setShowDetails(!showDetails)}
+                                className="text-[#161CCA] text-sm text-left pl-2 cursor-pointer"
+                            >
+                                Details
+                            </button>
+
+                            {/* Expanded Details */}
+                            {showDetails && (
+                                <div className="text-sm text-gray-700 pl-1 animate-fadeIn space-y-2">
+                                    <div className="flex items-center gap-4 p-2">
+                                        <div className="flex-1 font-bold text-gray-900">
+                                            <span className="font-medium">Customer Name:</span>
+                                        </div>
+                                        <div className="flex-1 font-bold text-gray-900">
+                                            {selectedRow.oldMeterInfo.customer
+                                                ? `${selectedRow.oldMeterInfo.customer.firstname} ${selectedRow.oldMeterInfo.customer.lastname}`
+                                                : 'N/A'}
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-4 p-2">
+                                        <div className="flex-1 font-bold text-gray-900">
+                                            <span className="font-medium">Phone Number:</span>
+                                        </div>
+                                        <div className="flex-1 font-bold text-gray-900">
+                                            {selectedRow.oldMeterInfo.customer?.phoneNumber ?? '08080287025'}
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-4 p-2">
+                                        <div className="flex-1 font-bold text-gray-900">
+                                            <span className="font-medium">Address:</span>
+                                        </div>
+                                        <div className="flex-1 font-bold text-gray-900">
+                                            {selectedRow.oldMeterInfo.customer
+                                                ? `${selectedRow.oldMeterInfo.customer.houseNo} ${selectedRow.oldMeterInfo.customer.streetName}`
+                                                : 'N/A'}
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-4 p-2">
+                                        <div className="flex-1 font-bold text-gray-900">
+                                            <span className="font-medium">Meter Manufacturer:</span>
+                                        </div>
+                                        <div className="flex-1 font-bold text-gray-900">
+                                            {selectedRow.oldMeterInfo.manufacturer?.name ?? 'Momas'}
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-4 p-2">
+                                        <div className="flex-1 font-bold text-gray-900">
+                                            <span className="font-medium">Meter Class:</span>
+                                        </div>
+                                        <div className="flex-1 font-bold text-gray-900">
+                                            {selectedRow.meterClass ?? 'Three Phase'}
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-4 p-2">
+                                        <div className="flex-1 font-bold text-gray-900">
+                                            <span className="font-medium">Meter Type:</span>
+                                        </div>
+                                        <div className="flex-1 font-bold text-gray-900">
+                                            {selectedRow.meterType ?? 'Electricity'}
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-4 p-2">
+                                        <div className="flex-1 font-bold text-gray-900">
+                                            <span className="font-medium">Meter Category:</span>
+                                        </div>
+                                        <div className="flex-1 font-bold text-gray-900">
+                                            {selectedRow.meterCategory ?? 'Prepaid'}
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-4 p-2">
+                                        <div className="flex-1 font-bold text-gray-900">
+                                            <span className="font-medium">Service Address:</span>
+                                        </div>
+                                        <div className="flex-1 font-bold text-gray-900">
+                                            {selectedRow.oldMeterInfo.meterAssignLocation
+                                                ? `${selectedRow.oldMeterInfo.meterAssignLocation.houseNo} ${selectedRow.oldMeterInfo.meterAssignLocation.streetName}`
+                                                : 'N/A'}
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-4 p-2">
+                                        <div className="flex-1 font-bold text-gray-900">
+                                            <span className="font-medium">Reason:</span>
+                                        </div>
+                                        <div className="flex-1 font-bold text-gray-900">
+                                            {selectedRow.reason ?? 'Burnt'}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
-                    </div>
-                </>
+
+                        <div className="flex justify-between gap-2 mt-4">
+                            <Button
+                                onClick={() => selectedRow && onReject(selectedRow)}
+                                variant="outline"
+                                className="border-red-500 text-red-500 bg-white hover:bg-red-50 hover:text-red-600 text-sm sm:text-base font-medium w-full sm:w-auto px-3 py-2 sm:px-4 sm:py-2 rounded-md transition-colors focus:ring-red-500/0"
+                                disabled={!selectedRow}
+                            >
+                                Reject
+                            </Button>
+                            <Button
+                                onClick={() => selectedRow && onApprove(selectedRow)}
+                                variant="default"
+                                className="bg-[#22C55E] text-white hover:bg-[#1ea34d] text-sm sm:text-base font-medium w-full sm:w-auto px-3 py-2 sm:px-4 sm:py-2 rounded-md transition-colors"
+                                disabled={!selectedRow}
+                            >
+                                Approve
+                            </Button>
+                        </div>
+                    </DialogContent>
+                </Dialog>
             );
         }
 
-        if (isMeterMigrated) {
-            const newCategory = selectedRow.meterCategory === 'Postpaid' ? 'Prepaid' : selectedRow.meterCategory === 'Prepaid' ? 'Postpaid' : 'N/A';
-            return (
-                <>
-                    <DialogHeader>
-                        <DialogTitle className="text-left text-base sm:text-lg font-semibold text-gray-900 truncate">
-                            Meter Migrated
-                        </DialogTitle>
-                        <span className="text-gray-500 text-sm sm:text-base">
-                            Operator: {user?.business?.businessName?.toUpperCase() ?? 'BUSINESS NAME'}
-                        </span>
-                    </DialogHeader>
-                    <div className="flex flex-col gap-6 py-4 sm:py-6 w-150">
-                        <div className="flex items-center gap-4 p-2">
-                            <div className="flex-1 text-sm sm:text-base text-gray-900">
-                                {selectedRow.meterNumber}
-                            </div>
-                            <div className="flex-1 text-sm sm:text-base font-bold text-gray-900">
-                                {selectedRow.meterCategory ?? 'N/A'}
-                            </div>
-                            <div className="flex-1 flex items-center gap-2 text-sm sm:text-base font-bold text-gray-900">
-                                <MoveRight className="text-gray-900 mr-2 scale-x-185" size={16} />
-                                <span>{newCategory}</span>
-                            </div>
-                        </div>
+      if (isMeterMigrated) {
+    const newCategory =
+        selectedRow.meterCategory === 'Postpaid'
+            ? 'Prepaid'
+            : selectedRow.meterCategory === 'Prepaid'
+            ? 'Postpaid'
+            : 'N/A';
+
+    return (
+        <>
+            <DialogHeader>
+                <DialogTitle className="text-left text-base sm:text-lg font-semibold text-gray-900 truncate">
+                    Meter Migrated
+                </DialogTitle>
+                <span className="text-gray-500 text-sm sm:text-base">
+                    Operator: {user?.business?.businessName?.toUpperCase() ?? 'BUSINESS NAME'}
+                </span>
+            </DialogHeader>
+
+            <div className="flex flex-col gap-4 py-4 sm:py-6 w-150">
+                {/* Header Row */}
+                <div className="flex items-start gap-4 p-2">
+                    <div className="flex-1" /> {/* Empty space to align */}
+                    <div className="flex-1 text-sm sm:text-base font-medium text-gray-700 text-left">
+                        From
                     </div>
-                </>
-            );
-        }
+                    <div className="flex-1 text-sm sm:text-base font-medium text-gray-700 text-left">
+                        To
+                    </div>
+                </div>
+
+                {/* Data Row */}
+                <div className="flex items-center gap-4 p-2">
+                    <div className="flex-1 text-sm sm:text-base text-black">
+                        {selectedRow.meterNumber}:
+                    </div>
+                    <div className="flex-1 text-sm sm:text-base font-bold text-gray-900">
+                        {selectedRow.meterCategory ?? 'N/A'}
+                    </div>
+                    <div className="flex-1 flex items-center gap-2 text-sm sm:text-base font-bold text-gray-900">
+                        <MoveRight className="text-gray-900 mr-1 scale-x-125" size={16} />
+                        <span>{newCategory}</span>
+                    </div>
+                </div>
+            </div>
+        </>
+    );
+}
 
         if (isNewlyAdded) {
             return (

@@ -189,7 +189,7 @@ export interface Meter {
     orgId: string;
     firstname: string;
     lastname: string;
-    customerId: string;
+    customerId?: string;
     nin: string;
     phoneNumber: string;
     email: string;
@@ -202,6 +202,17 @@ export interface Meter {
     createdAt: string;
     updatedAt: string;
   };
+   meterAssignLocation: {
+      id: string;
+      orgId: string;
+      meterId: string;
+      state: string;
+      city: string;
+      houseNo: string;
+      streetName: string;
+      createdAt: string;
+      updatedAt: string;
+    };
   oldMeterInfo: {
     id: string;
     orgId: string;
@@ -220,6 +231,17 @@ export interface Meter {
     newKrn: string;
     oldTariffIndex: string;
     newTariffIndex: string;
+    meterAssignLocation: {
+      id: string;
+      orgId: string;
+      meterId: string;
+      state: string;
+      city: string;
+      houseNo: string;
+      streetName: string;
+      createdAt: string;
+      updatedAt: string;
+    };
     manufacturer: {
       id: string;
       orgId: string;
@@ -231,6 +253,24 @@ export interface Meter {
       street: string;
       email: string;
       phoneNo: string;
+      createdAt: string;
+      updatedAt: string;
+    };
+    customer: {
+      id: string;
+      orgId: string;
+      firstname: string;
+      lastname: string;
+      customerId?: string;
+      nin: string;
+      phoneNumber: string;
+      email: string;
+      state: string;
+      city: string;
+      houseNo: string;
+      streetName: string;
+      status: string;
+      vat: string;
       createdAt: string;
       updatedAt: string;
     };
