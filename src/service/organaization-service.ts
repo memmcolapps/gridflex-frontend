@@ -100,7 +100,6 @@ export const createRegionBhubServiceCenter = async (
         },
       },
     );
-
     if (response.data.responsecode !== "000") {
       return {
         success: false,
