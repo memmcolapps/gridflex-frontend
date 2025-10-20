@@ -1155,7 +1155,7 @@ export default function MeterManagementPage() {
                                                                             <Eye size={14} />
                                                                             <span className="text-sm text-gray-700">View Details</span>
                                                                         </DropdownMenuItem>
-                                                                        {item.assignedStatus !== "Deactivated" && (
+                                                                        {item.status !== "Unassigned" && (
                                                                             <DropdownMenuItem
                                                                                 className="flex items-center gap-2 cursor-pointer"
                                                                                 onClick={(event) => {
@@ -1177,7 +1177,7 @@ export default function MeterManagementPage() {
                                                                                 setIsDeactivateDialogOpen(true);
                                                                             }}
                                                                         >
-                                                                            {item.assignedStatus === "Deactivated" ? (
+                                                                            {item.status === "Deactivated" ? (
                                                                                 <>
                                                                                     <CheckCircle size={14} />
                                                                                     <span className="text-sm text-gray-700">Activate</span>

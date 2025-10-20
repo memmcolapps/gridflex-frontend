@@ -185,6 +185,10 @@ export interface MigrateMeterPayload {
     meterId: string;
     migrationFrom: string;
     meterCategory: string;
+    debitPaymentMode?: string;
+    debitPaymentPlan?: string;
+    creditPaymentMode?: string;
+    creditPaymentPlan?: string;
 }
 
 export interface DetachMeterPayload {
@@ -306,7 +310,14 @@ export async function changeMeterState({ meterId, status, reason }: ChangeMeterS
         const params = new URLSearchParams();
         params.append("meterId", meterId);
         params.append("status", String(status));
-        if (reason) {
+        if (status) {
+            // For activation, pass empty string as reason
+            params.append("reason", "a");
+        } else {
+            // For deactivation, reason is required
+            if (!reason) {
+                throw new Error("Reason is required for deactivation.");
+            }
             params.append("reason", reason);
         }
 

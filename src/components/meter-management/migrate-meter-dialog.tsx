@@ -63,7 +63,7 @@ export function MigrateMeterDialog({
     // Construct payload based on migration type
     const payload: MigrateMeterPayload = {
       meterId: migrateCustomer.id,
-      migrationFrom: migrateCustomer.category ?? "",
+      migrationFrom: migrateCustomer.meterCategory ?? "",
       meterCategory: migrateToCategory,
       ...(migrateToCategory === "Prepaid" && {
         debitPaymentMode: migrateDebitMop,
