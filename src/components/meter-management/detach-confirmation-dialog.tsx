@@ -11,6 +11,7 @@ interface DetachConfirmationDialogProps {
     customerToDetach: MeterInventoryItem | null;
     onConfirm: () => void;
     onCancel: () => void;
+    isSubmitting: boolean;
 }
 
 export function DetachConfirmationDialog({
@@ -19,6 +20,7 @@ export function DetachConfirmationDialog({
     customerToDetach,
     onConfirm,
     onCancel,
+    isSubmitting,
 }: DetachConfirmationDialogProps) {
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -40,14 +42,16 @@ export function DetachConfirmationDialog({
                         variant="outline"
                         onClick={onCancel}
                         className="border border-[#F50202] text-[#F50202] cursor-pointer"
+                        disabled={isSubmitting}
                     >
                         Cancel
                     </Button>
                     <Button
                         onClick={onConfirm}
                         className="bg-[#F50202] text-white hover:bg-red-700 cursor-pointer"
+                        disabled={isSubmitting}
                     >
-                        Detach
+                        {isSubmitting ? "Detaching..." : "Detach"}
                     </Button>
                 </DialogFooter>
             </DialogContent>

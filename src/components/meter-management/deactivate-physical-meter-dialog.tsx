@@ -23,7 +23,7 @@ const DeactivatePhysicalMeterDialog: FC<DeactivatePhysicalMeterDialogProps> = ({
 }) => {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="h-fit overflow-y-auto bg-white" style={{ width: "500px", maxWidth: "none" }}>
+      <DialogContent className="h-fit overflow-y-auto bg-white border-none" style={{ width: "500px", maxWidth: "none" }}>
         <DialogHeader>
           <DialogTitle>Deactivate Physical Meter</DialogTitle>
           <DialogDescription>
@@ -53,7 +53,7 @@ const DeactivatePhysicalMeterDialog: FC<DeactivatePhysicalMeterDialogProps> = ({
             </Select>
           </div>
         </div>
-        <DialogFooter>
+        <DialogFooter className="flex justify-between">
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}

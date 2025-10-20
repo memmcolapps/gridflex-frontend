@@ -10,24 +10,29 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AlertTriangle } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useChangeMeterState } from "@/hooks/use-assign-meter";
+import { toast } from "sonner";
 
 interface DeactivateDialogProps {
     isOpen: boolean;
     onClose: () => void;
-    onDeactivate: (reason?: string) => void;
-    meterNumber: string;
+    meterId: string; // UUID for API call
+    meterNumber: string; // For display in UI
     action: "deactivate" | "activate";
 }
 
 export function DeactivateDialog({
     isOpen,
     onClose,
-    onDeactivate,
-    action,
+    meterId,
     meterNumber,
+    action,
 }: DeactivateDialogProps) {
     const [reason, setReason] = useState<string>("");
     const [isFinalConfirmOpen, setIsFinalConfirmOpen] = useState(false);
+
+    // Initialize hook
+    const changeMeterStateMutation = useChangeMeterState();
 
     const handleProceed = () => {
         if (action === "deactivate" && !reason.trim()) return;
@@ -35,10 +40,24 @@ export function DeactivateDialog({
     };
 
     const handleFinalConfirm = () => {
-        onDeactivate(action === "deactivate" ? reason : undefined);
-        setReason("");
-        setIsFinalConfirmOpen(false);
-        onClose();
+        changeMeterStateMutation.mutate(
+            {
+                meterId,
+                status: action === "activate",
+                reason: action === "deactivate" ? reason.trim() : undefined,
+            },
+            {
+                onSuccess: () => {
+                    toast.success(`Meter ${meterNumber} ${action === "activate" ? "activated" : "deactivated"} successfully!`);
+                    setReason("");
+                    setIsFinalConfirmOpen(false);
+                    onClose();
+                },
+                onError: (error) => {
+                    toast.error(`Failed to ${action === "activate" ? "activate" : "deactivate"} meter: ${error.message}`);
+                },
+            }
+        );
     };
 
     const handleClose = () => {
@@ -73,7 +92,7 @@ export function DeactivateDialog({
             : "text-[#F50202] bg-red-100 p-3 rounded-full mt-4";
     };
 
-    // Auto-open confirm dialog if action is activate
+    // Auto-open confirm dialog for activation
     useEffect(() => {
         if (isOpen && action === "activate") {
             setIsFinalConfirmOpen(true);
@@ -114,8 +133,8 @@ export function DeactivateDialog({
                             </Button>
                             <Button
                                 className={`${!reason.trim()
-                                        ? "bg-opacity-30 cursor-not-allowed"
-                                        : `${getColorScheme("bg")} text-white ${getHoverBg()}`
+                                    ? "bg-opacity-30 cursor-not-allowed"
+                                    : `${getColorScheme("bg")} text-white ${getHoverBg()}`
                                     }`}
                                 onClick={handleProceed}
                                 disabled={!reason.trim()}
@@ -129,7 +148,7 @@ export function DeactivateDialog({
 
             {/* Confirmation Dialog (both activate & deactivate) */}
             {isFinalConfirmOpen && (
-                <Dialog open onOpenChange={(open) => setIsFinalConfirmOpen(open)}>
+                <Dialog open onOpenChange={(open) => !open && setIsFinalConfirmOpen(false)}>
                     <DialogContent className="sm:max-w-[350px] h-fit bg-white rounded-lg p-6">
                         <DialogHeader className="pb-3">
                             <div className="flex flex-col gap-2">
@@ -157,6 +176,7 @@ export function DeactivateDialog({
                             <Button
                                 className={`${getColorScheme("bg")} text-white ${getHoverBg()}`}
                                 onClick={handleFinalConfirm}
+                                disabled={changeMeterStateMutation.isPending}
                             >
                                 {action === "deactivate" ? "Deactivate" : "Activate"}
                             </Button>

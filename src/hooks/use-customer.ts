@@ -6,6 +6,7 @@ import {
     addCustomer,
     updateCustomer,
     blockCustomer,
+    fetchCustomerRecord,
 } from "../service/customer-service";
 import {
     type Customer,
@@ -14,6 +15,7 @@ import {
     type UpdateCustomerPayload,
     type BlockCustomerPayload,
 } from "@/types/customer-types";
+import type { FetchCustomerResponse } from "@/service/customer-service";
 
 export interface UseCustomersParams {
     page: number;
@@ -72,5 +74,21 @@ export const useBlockCustomer = () => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["customers"] });
         },
+    });
+};
+
+/**
+ * Hook to fetch a customer record by ID using TanStack Query.
+ * The query is disabled if no customerId is provided, making it an on-demand fetch.
+ * @param customerId The ID to search for.
+ * @returns The query result object.
+ */
+export const useCustomerRecordQuery = (customerId: string) => {
+    return useQuery<FetchCustomerResponse, Error>({
+        queryKey: ["customerRecord", customerId],
+        queryFn: () => fetchCustomerRecord(customerId),
+        enabled: !!customerId,
+        staleTime: 1000 * 60 * 5,
+        refetchOnWindowFocus: false,
     });
 };

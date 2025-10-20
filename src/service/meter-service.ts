@@ -300,7 +300,7 @@ export async function createMeter(
     if (response.data.responsecode !== "000") {
       return {
         success: false,
-        error: response.data.responsedesc || "Failed to create meter",
+        error: response.data.responsedesc ?? "Failed to create meter",
       };
     }
 
@@ -336,7 +336,7 @@ export async function updateMeter(
     if (response.data.responsecode !== "000") {
       return {
         success: false,
-        error: response.data.responsedesc || "Failed to update meter",
+        error: response.data.responsedesc ?? "Failed to update meter",
       };
     }
 

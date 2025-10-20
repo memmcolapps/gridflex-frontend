@@ -12,6 +12,7 @@ interface DetachMeterDialogProps {
   setDetachReason: (value: string) => void;
   onProceed: () => void;
   onCancel: () => void;
+  isSubmitting: boolean;
 }
 
 export function DetachMeterDialog({
@@ -21,6 +22,7 @@ export function DetachMeterDialog({
   setDetachReason,
   onProceed,
   onCancel,
+  isSubmitting,
 }: DetachMeterDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -37,6 +39,7 @@ export function DetachMeterDialog({
               value={detachReason}
               onChange={(e) => setDetachReason(e.target.value)}
               placeholder="Enter reason for detaching meter"
+              disabled={isSubmitting}
             />
           </div>
         </div>
@@ -45,19 +48,20 @@ export function DetachMeterDialog({
             variant="outline"
             onClick={onCancel}
             className="border-[#F50202] text-[#F50202] bg-white cursor-pointer"
+            disabled={isSubmitting}
           >
             Cancel
           </Button>
           <Button
             onClick={onProceed}
-            disabled={!detachReason.trim()}
+            disabled={!detachReason.trim() || isSubmitting}
             className={
-              detachReason.trim()
+              detachReason.trim() && !isSubmitting
                 ? "bg-[#F50202] text-white cursor-pointer"
                 : "bg-red-200 text-white cursor-not-allowed"
             }
           >
-            Detach
+            {isSubmitting ? "Processing..." : "Proceed"}
           </Button>
         </DialogFooter>
       </DialogContent>

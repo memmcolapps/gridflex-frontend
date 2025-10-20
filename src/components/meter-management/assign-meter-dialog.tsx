@@ -1,10 +1,5 @@
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -16,13 +11,32 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { VirtualMeterData } from "@/types/meter";
-import type { MeterData } from "@/types/meter";
-import { MeterInventoryItem } from "@/types/meter-inventory";
+import type { MeterInventoryItem } from "@/types/meter-inventory";
+import type { Customer } from "@/types/customer-types";
+import { useTariff } from "@/hooks/use-tarrif";
+import { useMeters, useAssignMeter } from "@/hooks/use-assign-meter";
+import UploadImageDialog from "./upload-image-dialog";
+import { ConfirmationModalDialog } from "./confirmation-modal-dialog";
+import { SetPaymentModeDialog } from "./set-payment-mode-dialog";
+import { useState, useMemo } from "react";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "../ui/command";
+
+type CustomerDisplay = {
+  firstName?: string;
+  firstname?: string;
+  lastName?: string;
+  lastname?: string;
+  phone?: string;
+  phoneNumber?: string;
+};
 
 interface AssignMeterDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  selectedCustomer: MeterInventoryItem | VirtualMeterData | null;
+  customer: Customer | MeterInventoryItem | VirtualMeterData | null;
   meterNumber: string;
   setMeterNumber: (value: string) => void;
   cin: string;
@@ -52,12 +66,13 @@ interface AssignMeterDialogProps {
   onProceed: () => void;
   isFormComplete: boolean;
   progress: number;
+  onConfirmAssignment?: () => void;
 }
 
 export function AssignMeterDialog({
   isOpen,
   onOpenChange,
-  selectedCustomer,
+  customer,
   meterNumber,
   setMeterNumber,
   cin,
@@ -85,18 +100,156 @@ export function AssignMeterDialog({
   onProceed,
   isFormComplete,
   // progress,
+  onConfirmAssignment,
 }: AssignMeterDialogProps) {
-  // Type guard to check if selectedCustomer is MeterData
-  const isMeterData = (
-    customer: MeterInventoryItem | VirtualMeterData,
-  ): customer is MeterInventoryItem => {
-    return "approvedStatus" in customer && "class" in customer;
+  const { tariffs, isLoading: tariffsLoading } = useTariff();
+
+  // Fetch available meters for dropdown
+  const { data: metersData, isLoading: metersLoading } = useMeters({
+    page: 1,
+    pageSize: 1000,
+    searchTerm: "",
+    sortBy: null,
+    sortDirection: null,
+    type: "allocated", // Filter for allocated meters only
+  });
+
+  // Mutation for assigning meter
+  const assignMeterMutation = useAssignMeter();
+
+  // Get available meters as array
+  const availableMeters = useMemo(() => {
+    if (!metersData) return [];
+    return [...metersData.actualMeters, ...metersData.virtualMeters];
+  }, [metersData]);
+
+  // State for dialogs
+  const [isUploadImageOpen, setIsUploadImageOpen] = useState(false);
+  const [isConfirmImageOpen, setIsConfirmImageOpen] = useState(false);
+  const [isSetPaymentModalOpen, setIsSetPaymentModalOpen] = useState(false);
+  const [isDeactivateModalOpen, setIsDeactivateModalOpen] = useState(false);
+  const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
+  const [uploadedImage, setUploadedImage] = useState<File | null>(null);
+  const [debitMop, setDebitMop] = useState("");
+  const [creditMop, setCreditMop] = useState("");
+  const [debitPaymentPlan, setDebitPaymentPlan] = useState("");
+  const [creditPaymentPlan, setCreditPaymentPlan] = useState("");
+  const [progress, setProgress] = useState(50);
+  const [open, setOpen] = useState(false);
+
+  // Type guard to check if customer is MeterInventoryItem
+  const isMeterInventoryItem = (customer: Customer | MeterInventoryItem | VirtualMeterData): customer is MeterInventoryItem => {
+    return "meterManufacturer" in customer;
   };
 
+  // Handle proceed from assign dialog
+  const handleProceedFromAssign = () => {
+    console.log('Proceeding from assign dialog, customer:', customer); // Debug log
+    onOpenChange(false); // Close the assign dialog
+    setIsUploadImageOpen(true);
+  };
+
+  // Handle proceed from upload image
+  const handleProceedFromUploadImage = (image: File | null) => {
+    console.log('Upload image proceed, image:', image); // Debug log
+    setUploadedImage(image);
+    setIsUploadImageOpen(false);
+    setIsConfirmImageOpen(true);
+    setProgress(70);
+  };
+
+  // Handle proceed from confirm image
+  const handleProceedFromConfirmImage = () => {
+    setIsConfirmImageOpen(false);
+
+    // Get the selected meter's category from the available meters
+    const selectedMeter = availableMeters.find(meter => meter.meterNumber === meterNumber);
+    const meterCategory = selectedMeter?.category ?? (selectedMeter && 'meterCategory' in selectedMeter ? selectedMeter.meterCategory : null);
+
+    console.log('Selected meter:', selectedMeter, 'Meter category:', meterCategory); // Debug log
+
+    if (meterCategory && meterCategory.toLowerCase() === "prepaid") {
+      setIsSetPaymentModalOpen(true);
+      setProgress(80);
+    } else if (meterCategory && meterCategory.toLowerCase() === "postpaid") {
+      // For postpaid, skip set payment mode and go directly to deactivate
+      setIsDeactivateModalOpen(true);
+      setProgress(80);
+    } else {
+      console.log('No valid category found, defaulting to confirmation modal');
+      setIsConfirmationModalOpen(true);
+      setProgress(100);
+    }
+  };
+
+  // Handle proceed from set payment
+  const handleProceedFromSetPayment = () => {
+    setIsSetPaymentModalOpen(false);
+    // For prepaid customers, after setting payment mode, go to deactivate
+    setIsDeactivateModalOpen(true);
+    setProgress(90);
+  };
+
+  // Handle proceed from deactivate
+  const handleProceedFromDeactivate = () => {
+    setIsDeactivateModalOpen(false);
+    setIsConfirmationModalOpen(true);
+    setProgress(100);
+  };
+
+  // Handle confirm assignment
+  const handleConfirmAssignment = async () => {
+    setIsConfirmationModalOpen(false);
+
+    // Get the selected meter for additional data
+    const selectedMeter = availableMeters.find(meter => meter.meterNumber === meterNumber);
+
+    // Prepare the payload with all collected data matching the AssignMeterPayload interface
+    const assignmentPayload = {
+      meterNumber,
+      customerId: customer?.customerId ?? '',
+      tariffId: tariff, // Assuming tariff is the ID
+      dssAssetId: dss, // Assuming dss is the asset ID
+      feederAssetId: feeder, // Assuming feeder is the asset ID
+      cin,
+      accountNumber,
+      state,
+      city,
+      houseNo,
+      streetName,
+      creditPaymentMode: creditMop,
+      debitPaymentMode: debitMop,
+      creditPaymentPlan,
+      debitPaymentPlan,
+    };
+
+    console.log('Assignment payload:', assignmentPayload);
+
+    try {
+      // Use the mutation to assign the meter
+      await assignMeterMutation.mutateAsync(assignmentPayload);
+      console.log('Meter assigned successfully');
+      if (onConfirmAssignment) {
+        onConfirmAssignment();
+      }
+    } catch (error) {
+      console.error('Error assigning meter:', error);
+      // Error handling is done by the mutation hook (toast notifications)
+    }
+  };
+
+  // Handle cancel confirmation
+  const handleCancelConfirmation = () => {
+    setIsConfirmationModalOpen(false);
+  };
+
+  const isPaymentFormComplete = debitMop !== "" && creditMop !== "";
+
   return (
+    <>
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="h-fit bg-white text-black">
-        {/* {selectedCustomer?.category === "Prepaid" && <Progress value={progress} className="w-full" />} */}
+      <DialogContent className="bg-white text-black h-fit border-none">
+        {/* {customer?.category === "Prepaid" && <Progress value={progress} className="w-full" />} */}
         <DialogHeader>
           <DialogTitle>Assign meter to customer</DialogTitle>
           <p className="text-sm">Fill all compulsory fields</p>
@@ -109,13 +262,10 @@ export function AssignMeterDialog({
                 <span className="text-red-700">*</span>
               </Label>
               <Input
-                value={selectedCustomer?.customerId ?? ""}
+                value={customer?.customerId ?? ""}
+
                 readOnly
-                placeholder={
-                  selectedCustomer && isMeterData(selectedCustomer)
-                    ? "Enter Meter ID"
-                    : "Enter Customer ID"
-                }
+                placeholder={customer && isMeterInventoryItem(customer) ? "Enter Meter ID" : "Enter Customer ID"}
                 className="border-gray-200 text-gray-600"
               />
             </div>
@@ -124,7 +274,7 @@ export function AssignMeterDialog({
                 First Name<span className="text-red-700">*</span>
               </Label>
               <Input
-                value={selectedCustomer?.firstName ?? ""}
+                value={(customer as CustomerDisplay)?.firstName ?? (customer as CustomerDisplay)?.firstname ?? ""}
                 readOnly
                 placeholder="Enter First Name"
                 className="border-gray-200 text-gray-600"
@@ -135,7 +285,7 @@ export function AssignMeterDialog({
                 Last Name<span className="text-red-700">*</span>
               </Label>
               <Input
-                value={selectedCustomer?.lastName ?? ""}
+                value={(customer as CustomerDisplay)?.lastName ?? (customer as CustomerDisplay)?.lastname ?? ""}
                 readOnly
                 placeholder="Enter Last Name"
                 className="border-gray-200 text-gray-600"
@@ -146,7 +296,7 @@ export function AssignMeterDialog({
                 Phone Number<span className="text-red-700">*</span>
               </Label>
               <Input
-                value={selectedCustomer?.phone ?? ""}
+                value={(customer as CustomerDisplay)?.phone ?? (customer as CustomerDisplay)?.phoneNumber ?? ""}
                 readOnly
                 placeholder="Enter Phone Number"
                 className="border-gray-200 text-gray-600"
@@ -156,14 +306,52 @@ export function AssignMeterDialog({
               <Label>
                 Meter Number<span className="text-red-700">*</span>
               </Label>
-              <Input
-                value={meterNumber}
-                onChange={(e) => setMeterNumber(e.target.value)}
-                placeholder="Enter Meter Number"
-                className="border-gray-200 text-gray-600"
-              />
+              <Popover open={open} onOpenChange={setOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={open}
+                    className="w-full justify-between border-gray-200 text-gray-600"
+                    disabled={metersLoading}
+                  >
+                    {meterNumber
+                      ? availableMeters.find((meter) => meter.meterNumber === meterNumber)?.meterNumber + " - " + (availableMeters.find((meter) => meter.meterNumber === meterNumber)?.category)
+                      : metersLoading ? "Loading meters..." : "Select meter number..."}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" size={14}/>
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-0 border-none">
+                  <Command className="bg-white border-none">
+                    <CommandInput placeholder="Search meter number..." className="border-none"/>
+                    <CommandList>
+                      <CommandEmpty>No meter found.</CommandEmpty>
+                      <CommandGroup>
+                        {availableMeters.map((meter) => (
+                          <CommandItem
+                            key={meter.id ?? meter.meterNumber}
+                            value={meter.meterNumber}
+                            onSelect={(currentValue) => {
+                              setMeterNumber(currentValue === meterNumber ? "" : currentValue);
+                              setOpen(false);
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                meterNumber === meter.meterNumber ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            {meter.meterNumber}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
-            {/* {selectedCustomer && !isMeterData(selectedCustomer) && ( */}
+            {/* {customer && !isMeterData(customer) && ( */}
 
             <div className="space-y-2">
               <Label>
@@ -185,6 +373,7 @@ export function AssignMeterDialog({
               <Input
                 value={accountNumber}
                 onChange={(e) => setAccountNumber(e.target.value)}
+                readOnly
                 placeholder="Enter Account Number"
                 className="border-gray-200 text-gray-600"
               />
@@ -194,12 +383,15 @@ export function AssignMeterDialog({
                 Tariff<span className="text-red-700">*</span>
               </Label>
               <Select onValueChange={setTariff} value={tariff}>
-                <SelectTrigger className="w-full border-gray-200 text-gray-600">
+                <SelectTrigger className="border-gray-200 text-gray-600 w-full">
                   <SelectValue placeholder="Select Tariff" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="tariff1">Tariff 1</SelectItem>
-                  <SelectItem value="tariff2">Tariff 2</SelectItem>
+                  {tariffs.filter(t => t.approve_status === 'Approved').map((t) => (
+                    <SelectItem key={t.id} value={t.id}>
+                      {t.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -231,7 +423,7 @@ export function AssignMeterDialog({
                 State<span className="text-red-700">*</span>
               </Label>
               <Select onValueChange={setState} value={state}>
-                <SelectTrigger className="w-full border-gray-100 text-gray-600">
+                <SelectTrigger className="border-gray-100 text-gray-600 w-full">
                   <SelectValue placeholder="Select State" />
                 </SelectTrigger>
                 <SelectContent>
@@ -246,6 +438,7 @@ export function AssignMeterDialog({
               </Label>
               <Input
                 value={city}
+                readOnly
                 onChange={(e) => setCity(e.target.value)}
                 placeholder="Enter City"
                 className="border-gray-100 text-gray-600"
@@ -257,6 +450,7 @@ export function AssignMeterDialog({
               </Label>
               <Input
                 value={streetName}
+                readOnly
                 onChange={(e) => setStreetName(e.target.value)}
                 placeholder="Enter Street Name"
                 className="border-gray-100 text-gray-600"
@@ -268,6 +462,7 @@ export function AssignMeterDialog({
               </Label>
               <Input
                 value={houseNo}
+                readOnly
                 onChange={(e) => setHouseNo(e.target.value)}
                 placeholder="Enter House No"
                 className="border-gray-100 text-gray-600"
@@ -284,12 +479,12 @@ export function AssignMeterDialog({
             Cancel
           </Button>
           <Button
-            onClick={onProceed}
+            onClick={handleProceedFromAssign}
             disabled={!isFormComplete}
             className={
               isFormComplete
-                ? "cursor-pointer bg-[#161CCA] text-white"
-                : "cursor-not-allowed bg-blue-200 text-white"
+                ? "bg-[#161CCA] text-white cursor-pointer"
+                : "bg-blue-200 text-white cursor-not-allowed"
             }
           >
             Proceed
@@ -297,5 +492,79 @@ export function AssignMeterDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+    {/* Upload Image Dialog */}
+    <UploadImageDialog
+      isOpen={isUploadImageOpen}
+      onOpenChange={setIsUploadImageOpen}
+      onProceed={handleProceedFromUploadImage}
+      onCancel={() => setIsUploadImageOpen(false)}
+    />
+
+    {/* Confirm Image Dialog - using the same UploadImageDialog for now */}
+    <UploadImageDialog
+      isOpen={isConfirmImageOpen}
+      onOpenChange={setIsConfirmImageOpen}
+      onProceed={handleProceedFromConfirmImage}
+      onCancel={() => setIsConfirmImageOpen(false)}
+      onConfirmImage={handleProceedFromConfirmImage}
+      title="Confirm Meter Image"
+      description="Please review the uploaded meter image and confirm to proceed with the assignment."
+    />
+
+    {/* Set Payment Mode Dialog */}
+    <SetPaymentModeDialog
+      isOpen={isSetPaymentModalOpen}
+      onOpenChange={setIsSetPaymentModalOpen}
+      debitMop={debitMop}
+      setDebitMop={setDebitMop}
+      creditMop={creditMop}
+      setCreditMop={setCreditMop}
+      debitPaymentPlan={debitPaymentPlan}
+      setDebitPaymentPlan={setDebitPaymentPlan}
+      creditPaymentPlan={creditPaymentPlan}
+      setCreditPaymentPlan={setCreditPaymentPlan}
+      isPaymentFormComplete={isPaymentFormComplete}
+      editCustomer={null}
+      onProceed={handleProceedFromSetPayment}
+    />
+
+    {/* Deactivate Dialog - placeholder for now */}
+    <Dialog open={isDeactivateModalOpen} onOpenChange={setIsDeactivateModalOpen}>
+      <DialogContent className="bg-white text-black h-fit">
+        <DialogHeader>
+          <DialogTitle>Deactivate Meter</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <p>Deactivate meter for customer</p>
+        </div>
+        <DialogFooter>
+          <Button
+            variant="outline"
+            onClick={() => setIsDeactivateModalOpen(false)}
+            className="border-[#161CCA] text-[#161CCA] cursor-pointer"
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleProceedFromDeactivate}
+            className="bg-[#161CCA] text-white cursor-pointer"
+          >
+            Proceed
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+
+    {/* Confirmation Modal Dialog */}
+    <ConfirmationModalDialog
+      isOpen={isConfirmationModalOpen}
+      onOpenChange={setIsConfirmationModalOpen}
+      selectedCustomer={customer}
+      onConfirm={handleConfirmAssignment}
+      onCancel={handleCancelConfirmation}
+      isSubmitting={false}
+    />
+    </>
   );
 }

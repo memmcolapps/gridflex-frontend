@@ -18,7 +18,7 @@ const VirtualMeterConfirmDialog: FC<VirtualMeterConfirmDialogProps> = ({
 }) => {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="h-fit bg-white w-md">
+      <DialogContent className="h-fit bg-white w-md border-none">
         <DialogHeader>
           <div className="flex justify-items-start mb-4">
             <div className="bg-blue-100 rounded-full p-3">

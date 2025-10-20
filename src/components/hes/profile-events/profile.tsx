@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import { useState, useEffect } from "react";
 import type { ChangeEventHandler } from "react";
 import { Button } from "@/components/ui/button";
-import { Calendar, SimplifiedCalendar } from "@/components/ui/calendar";
+import { SimplifiedCalendar } from "@/components/ui/calendar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -243,131 +244,23 @@ export function Profile() {
   };
 
   // Handle time change for start date
-  const handleStartTimeChange: ChangeEventHandler<HTMLInputElement> = (e) => {
-    const time = e.target.value;
-    if (!startDate) {
-      setStartTimeValue(time);
-      return;
-    }
-    const timeParts = time.split(":");
-    const hoursStr = timeParts[0];
-    const minutesStr = timeParts[1];
-
-    if (!hoursStr || !minutesStr) {
-      setStartTimeValue(time);
-      return;
-    }
-
-    const hours = parseInt(hoursStr, 10);
-    const minutes = parseInt(minutesStr, 10);
-
-    // Check if parsing was successful
-    if (isNaN(hours) || isNaN(minutes)) {
-      setStartTimeValue(time);
-      return;
-    }
-
-    const newSelectedDate = setHours(setMinutes(startDate, minutes), hours);
-    setStartDate(newSelectedDate);
-    setStartTimeValue(time);
+  const handleStartTimeChange: ChangeEventHandler<HTMLInputElement> = (_e) => {
+    // Implementation removed as function is not used
   };
 
   // Handle time change for end date
-  const handleEndTimeChange: ChangeEventHandler<HTMLInputElement> = (e) => {
-    const time = e.target.value;
-    if (!endDate) {
-      setEndTimeValue(time);
-      return;
-    }
-    const timeParts = time.split(":");
-    const hoursStr = timeParts[0];
-    const minutesStr = timeParts[1];
-
-    if (!hoursStr || !minutesStr) {
-      setEndTimeValue(time);
-      return;
-    }
-
-    const hours = parseInt(hoursStr, 10);
-    const minutes = parseInt(minutesStr, 10);
-
-    // Check if parsing was successful
-    if (isNaN(hours) || isNaN(minutes)) {
-      setEndTimeValue(time);
-      return;
-    }
-
-    const newSelectedDate = setHours(setMinutes(endDate, minutes), hours);
-    setEndDate(newSelectedDate);
-    setEndTimeValue(time);
+  const handleEndTimeChange: ChangeEventHandler<HTMLInputElement> = (_e) => {
+    // Implementation removed as function is not used
   };
 
   // Handle day select for start date
-  const handleStartDaySelect = (date: Date | undefined) => {
-    if (!startTimeValue || !date) {
-      setStartDate(date);
-      return;
-    }
-    const timeParts = startTimeValue.split(":");
-    const hoursStr = timeParts[0];
-    const minutesStr = timeParts[1];
-
-    if (!hoursStr || !minutesStr) {
-      setStartDate(date);
-      return;
-    }
-
-    const hours = parseInt(hoursStr, 10);
-    const minutes = parseInt(minutesStr, 10);
-
-    // Check if parsing was successful
-    if (isNaN(hours) || isNaN(minutes)) {
-      setStartDate(date);
-      return;
-    }
-
-    const newDate = new Date(
-      date.getFullYear(),
-      date.getMonth(),
-      date.getDate(),
-      hours,
-      minutes,
-    );
-    setStartDate(newDate);
+  const handleStartDaySelect = (_date: Date | undefined) => {
+    // Implementation removed as function is not used
   };
 
   // Handle day select for end date
-  const handleEndDaySelect = (date: Date | undefined) => {
-    if (!endTimeValue || !date) {
-      setEndDate(date);
-      return;
-    }
-    const timeParts = endTimeValue.split(":");
-    const hoursStr = timeParts[0];
-    const minutesStr = timeParts[1];
-
-    if (!hoursStr || !minutesStr) {
-      setEndDate(date);
-      return;
-    }
-
-    const hours = parseInt(hoursStr, 10);
-    const minutes = parseInt(minutesStr, 10);
-
-    // Check if parsing was successful
-    if (isNaN(hours) || isNaN(minutes)) {
-      setEndDate(date);
-      return;
-    }
-
-    const newDate = new Date(
-      date.getFullYear(),
-      date.getMonth(),
-      date.getDate(),
-      hours,
-      minutes,
-    );
-    setEndDate(newDate);
+  const handleEndDaySelect = (_date: Date | undefined) => {
+    // Implementation removed as function is not used
   };
 
   const handleRun = () => {

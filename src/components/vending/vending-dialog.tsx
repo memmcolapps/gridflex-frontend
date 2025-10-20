@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { Label } from "../ui/label";
 import TokenFormDialog from "./token-form-dialog";
+import { Send } from "lucide-react";
 
 export default function VendTokenDialog() {
     const [tokenType, setTokenType] = useState("");
@@ -29,6 +30,7 @@ export default function VendTokenDialog() {
                     variant="outline"
                     size="lg"
                 >
+                    <Send size={14} />
                     Vend Token
                 </Button>
             </DialogTrigger>

@@ -59,8 +59,8 @@ interface EnergyImportTableProps {
 export default function EnergyImportTable({
   searchQuery,
   sortConfig,
-  selectedMonth,
-  selectedYear,
+  selectedMonth: _selectedMonth,
+  selectedYear: _selectedYear,
   onSelectionChange,
 }: EnergyImportTableProps) {
   const router = useRouter();

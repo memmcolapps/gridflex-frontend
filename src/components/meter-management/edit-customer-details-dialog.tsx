@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -82,7 +83,7 @@ export function EditCustomerDetailsDialog({
 }: EditCustomerDetailsDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="h-fit bg-white text-black">
+      <DialogContent className="bg-white text-black h-fit border-none">
         {/* {editCustomer?.category === "Prepaid" && <Progress value={progress} className="w-full mt-4" />} */}
         <DialogHeader>
           <DialogTitle>Edit Details</DialogTitle>
@@ -212,6 +213,8 @@ export function EditCustomerDetailsDialog({
                 placeholder="Enter State"
                 className="border-gray-100 text-gray-600"
               />
+            
+               
             </div>
             <div className="space-y-2">
               <Label>

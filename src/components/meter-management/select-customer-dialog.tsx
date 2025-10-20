@@ -1,6 +1,8 @@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 import type { FC } from "react";
 
 interface SelectCustomerDialogProps {
@@ -10,6 +12,8 @@ interface SelectCustomerDialogProps {
   onCustomerIdChange: (value: string) => void;
   filteredCustomerIds: string[];
   onCustomerSelect: (customerId: string) => void;
+  onProceed: () => void;
+  isLoading: boolean;
 }
 
 const SelectCustomerDialog: FC<SelectCustomerDialogProps> = ({
@@ -19,10 +23,12 @@ const SelectCustomerDialog: FC<SelectCustomerDialogProps> = ({
   onCustomerIdChange,
   filteredCustomerIds,
   onCustomerSelect,
+  onProceed,
+  isLoading,
 }) => {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="h-fit overflow-y-auto bg-white">
+      <DialogContent className="h-fit overflow-y-auto bg-white border-none text-black max-h-[80vh]">
         <DialogHeader>
           <DialogTitle>Add Virtual Meter</DialogTitle>
           <DialogDescription>Select customer to assign a virtual meter</DialogDescription>
@@ -51,6 +57,20 @@ const SelectCustomerDialog: FC<SelectCustomerDialogProps> = ({
                 ))}
               </ul>
             )}
+          </div>
+          <div className="flex justify-end">
+            <Button
+              onClick={onProceed}
+              disabled={!customerIdInput || isLoading}
+              className="mt-4 cursor-pointer bg-[#162acc] text-white hover:bg-[#162acc] hover:text-white"
+              size={"lg"}
+            >
+              {isLoading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                "Proceed"
+              )}
+            </Button>
           </div>
         </div>
       </DialogContent>

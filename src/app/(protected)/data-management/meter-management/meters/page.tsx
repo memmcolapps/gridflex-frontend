@@ -1,286 +1,46 @@
-/* eslint-disable */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
-import { ContentHeader } from "@/components/ui/content-header";
+
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Card } from "@/components/ui/card";
-import {
-    CirclePlus,
-    SquareArrowOutUpRight,
-    MoreVertical,
-    Ban,
-    Pencil,
-    CheckCircle,
-    Eye,
-
-} from "lucide-react";
+import { CirclePlus, SquareArrowOutUpRight, MoreVertical, Ban, Pencil, CheckCircle, Eye } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { AddMeterDialog } from "@/components/meter-management/add-edit-meter-dialog";
-import { DeactivateDialog } from "@/components/meter-management/meter-dialogs";
 import { BulkUploadDialog } from "@/components/meter-management/bulk-upload";
-import { FilterControl, SearchControl, SortControl } from "@/components/search-control";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { FilterControl, SearchControl } from "@/components/search-control";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ViewMeterDetailsDialog } from "@/components/meter-management/view-meters-details-dialog";
-import { EditVirtualMeterDialog } from "@/components/meter-management/edit-virtual-meter-dialog";
-import VirtualMeterConfirmDialog from "@/components/meter-management/virtual-meter-confirm-dialog";
-import DeactivatePhysicalMeterDialog from "@/components/meter-management/deactivate-physical-meter-dialog";
-import AddVirtualMeterDetailsDialog from "@/components/meter-management/add-virtual-meter-dialog";
+import { ViewVirtualMeterDetailsDialog } from "@/components/meter-management/view-virtual-details-dialog";
+import { AssignMeterDialog } from "@/components/meter-management/assign-meter-dialog";
+import { DeactivateDialog } from "@/components/meter-management/meter-dialogs";
+import CustomerIdDialog from "@/components/meter-management/customer-id-dialog";
 import SelectCustomerDialog from "@/components/meter-management/select-customer-dialog";
+import AddVirtualMeterDetailsDialog from "@/components/meter-management/add-virtual-meter-dialog";
+import { ConfirmationModalDialog } from "@/components/meter-management/confirmation-modal-dialog";
+import { AddMeterDialog } from "@/components/meter-management/add-edit-meter-dialog";
+import DeactivatePhysicalMeterDialog from "@/components/meter-management/deactivate-physical-meter-dialog";
+import VirtualMeterConfirmDialog from "@/components/meter-management/virtual-meter-confirm-dialog";
 import type { VirtualMeterData } from "@/types/meter";
 import type { MeterInventoryItem } from "@/types/meter-inventory";
 import { getStatusStyle } from "@/components/status-style";
 import { cn } from "@/lib/utils";
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { AssignMeterDialog } from "@/components/meter-management/assign-meter-dialog";
-import CustomerIdDialog from "@/components/meter-management/customer-id-dialog";
-import { SetPaymentModeDialog } from "@/components/meter-management/set-payment-mode-dialog";
-import { DeactivateVirtualMeterDialog } from "@/components/meter-management/deactivate-virtual-meter-dialog";
-import { ConfirmationModalDialog } from "@/components/meter-management/confirmation-modal-dialog";
-import UploadImageDialog from "@/components/meter-management/upload-image-dialog";
-import ConfirmImageDialog from "@/components/meter-management/confirm-image-dialog";
-import { ViewVirtualMeterDetailsDialog } from "@/components/meter-management/view-virtual-details-dialog";
-
-
-
-const initialMeterData: MeterInventoryItem[] | (() => MeterInventoryItem[]) = [
-    // {
-    //     id: "MT-0001",
-    //     customerId: "C-0123456790",
-    //     meterNumber: "62010229441",
-    //     simNo: "SIM-0001",
-    //     class: "Single Phase",
-    //     category: "Prepaid",
-    //     meterType: "Electricity",
-    //     oldTariffIndex: 1,
-    //     newTariffIndex:2,
-    //     manufactureName: "Momas",
-    //     accountNumber: "20250129544",
-    //     oldSgc: "SGC-0001",
-    //     oldKrn: "KRN-0001",
-    //     newKrn: "KRN-1001",
-    //     newSgc: "SGC-1001",
-    //     tariff: "Residential",
-    //     assignedStatus: "Pending",
-    //     status: "InStock",
-    //     cin: "C0123456790",
-    //     firstName: "Shina",
-    //     lastName: "Tiger",
-    //     phone: "08098765343",
-    //     image: null,
-    // },
-    // {
-    //     id: "MT-0002",
-    //     customerId: "C-1234567891",
-    //     meterNumber: "62010229442",
-    //     simNo: "SIM-0002",
-    //     class: "Three Phase",
-    //     category: "Postpaid",
-    //     meterType: "Electricity",
-    //     oldTariffIndex: "1",
-    //     newTariffIndex: "2",
-    //     manufactureName: "Momas",
-    //     accountNumber: "20250129545",
-    //     oldSgc: "SGC-0002",
-    //     oldKrn: "KRN-0002",
-    //     newKrn: "KRN-1002",
-    //     newSgc: "SGC-1002",
-    //     tariff: "Residential",
-    //     assignedStatus: "Approved",
-    //     status: "Assigned",
-    //     cin: "C1234567891",
-    //     firstName: "Seun",
-    //     lastName: "Tope",
-    //     phone: "09043216161",
-    //     image: null,
-    // },
-    // {
-    //     id: "MT-0003",
-    //     customerId: "C-2345678902",
-    //     meterNumber: "62010229443",
-    //     simNo: "SIM-0003",
-    //     class: "MD",
-    //     category: "Prepaid",
-    //     meterType: "Electricity",
-    //     oldTariffIndex: "1",
-    //     newTariffIndex: "2",
-    //     manufactureName: "Momas",
-    //     accountNumber: "20250129546",
-    //     oldSgc: "SGC-0003",
-    //     oldKrn: "KRN-0003",
-    //     newKrn: "KRN-1003",
-    //     newSgc: "SGC-1003",
-    //     tariff: "Residential",
-    //     assignedStatus: "Pending",
-    //     status: "InStock",
-    //     cin: "C2345678902",
-    //     firstName: "",
-    //     lastName: "",
-    //     phone: "08098765343",
-    //     image: null,
-    // },
-    // {
-    //     id: "MT-0004",
-    //     customerId: "C-3456789013",
-    //     meterNumber: "62010229444",
-    //     simNo: "SIM-0004",
-    //     class: "Single Phase",
-    //     category: "Postpaid",
-    //     meterType: "Electricity",
-    //     oldTariffIndex: "1",
-    //     newTariffIndex: "2",
-    //     manufactureName: "Momas",
-    //     accountNumber: "20250129547",
-    //     oldSgc: "SGC-0004",
-    //     oldKrn: "KRN-0004",
-    //     newKrn: "KRN-1004",
-    //     newSgc: "SGC-1004",
-    //     tariff: "Residential",
-    //     assignedStatus: "Approved",
-    //     status: "Assigned",
-    //     cin: "C3456789013",
-    //     firstName: "",
-    //     lastName: "",
-    //     phone: "08098765343",
-    //     image: null,
-    // },
-    // {
-    //     id: "MT-0005",
-    //     customerId: "C-4567890124",
-    //     meterNumber: "62010229445",
-    //     simNo: "SIM-0005",
-    //     class: "Three Phase",
-    //     category: "Prepaid",
-    //     meterType: "Electricity",
-    //     oldTariffIndex: "1",
-    //     newTariffIndex: "2",
-    //     manufactureName: "Momas",
-    //     accountNumber: "20250129548",
-    //     oldSgc: "SGC-0005",
-    //     oldKrn: "KRN-0005",
-    //     newKrn: "KRN-1005",
-    //     newSgc: "SGC-1005",
-    //     tariff: "Residential",
-    //     assignedStatus: "Pending",
-    //     status: "InStock",
-    //     cin: "C4567890124",
-    //     firstName: "",
-    //     lastName: "",
-    //     phone: "08098765343",
-    //     image: null,
-    // },
-    // {
-    //     id: "MT-0006",
-    //     customerId: "C-5678901235",
-    //     meterNumber: "62010229446",
-    //     simNo: "SIM-0006",
-    //     class: "MD",
-    //     category: "Postpaid",
-    //     meterType: "Electricity",
-    //     oldTariffIndex: "1",
-    //     newTariffIndex: "2",
-    //     manufactureName: "Momas",
-    //     accountNumber: "20250129549",
-    //     oldSgc: "SGC-0006",
-    //     oldKrn: "KRN-0006",
-    //     newKrn: "KRN-1006",
-    //     newSgc: "SGC-1006",
-    //     tariff: "Residential",
-    //     assignedStatus: "Approved",
-    //     status: "Assigned",
-    //     cin: "C5678901235",
-    //     firstName: "",
-    //     lastName: "",
-    //     phone: "08098765343",
-    //     image: null,
-    // },
-    // {
-    //     id: "MT-0007",
-    //     customerId: "C-6678901236",
-    //     meterNumber: "62010229446",
-    //     simNo: "SIM-0007",
-    //     class: "Single Phase",
-    //     category: "Postpaid",
-    //     meterType: "Electricity",
-    //     oldTariffIndex: "1",
-    //     newTariffIndex: "2",
-    //     manufactureName: "Momas",
-    //     accountNumber: "20250179549",
-    //     oldSgc: "SGC-0007",
-    //     oldKrn: "KRN-0007",
-    //     newKrn: "KRN-1007",
-    //     newSgc: "SGC-1007",
-    //     tariff: "Residential",
-    //     assignedStatus: "Approved",
-    //     status: "Assigned",
-    //     cin: "C5678901235",
-    //     firstName: "",
-    //     lastName: "",
-    //     phone: "08098765343",
-    //     image: null,
-    // },
-    // {
-    //     id: "MT-0008",
-    //     customerId: "C-7678901235",
-    //     meterNumber: "62010229446",
-    //     simNo: "SIM-0008",
-    //     class: "Three Phase",
-    //     category: "Postpaid",
-    //     meterType: "Electricity",
-    //     oldTariffIndex: "1",
-    //     newTariffIndex: "2",
-    //     manufactureName: "Momas",
-    //     accountNumber: "20250129559",
-    //     oldSgc: "SGC-0008",
-    //     oldKrn: "KRN-0008",
-    //     newKrn: "KRN-1008",
-    //     newSgc: "SGC-1008",
-    //     tariff: "Residential",
-    //     assignedStatus: "Approved",
-    //     status: "Assigned",
-    //     cin: "C5678901235",
-    //     firstName: "",
-    //     lastName: "",
-    //     phone: "08098765343",
-    //     image: null,
-    // },
-    // {
-    //     id: "MT-0009",
-    //     customerId: "C-8678901235",
-    //     meterNumber: "62010229446",
-    //     simNo: "SIM-0009",
-    //     class: "MD",
-    //     category: "Postpaid",
-    //     meterType: "Electricity",
-    //     oldTariffIndex: "1",
-    //     newTariffIndex: "2",
-    //     manufactureName: "Momas",
-    //     accountNumber: "20250129249",
-    //     oldSgc: "SGC-0009",
-    //     oldKrn: "KRN-0009",
-    //     newKrn: "KRN-1009",
-    //     newSgc: "SGC-1009",
-    //     tariff: "Residential",
-    //     assignedStatus: "Approved",
-    //     status: "Assigned",
-    //     cin: "C5678901235",
-    //     firstName: "",
-    //     lastName: "",
-    //     phone: "08098765343",
-    //     image: null,
-    // },
-];
-
+import { useMeters, useAssignMeter, useChangeMeterState } from "@/hooks/use-assign-meter";
+import { useCustomerRecordQuery } from "@/hooks/use-customer";
+import type { AssignMeterPayload } from "@/service/assign-meter-service";
 
 export default function MeterManagementPage() {
-    const [searchTerm, setSearchTerm] = useState<string>("");
+    const [searchTerm, setSearchTerm] = useState("");
     const [selectedTariffs, setSelectedTariffs] = useState<string[]>([]);
-    const [currentPage, setCurrentPage] = useState<number>(1);
-    const [rowsPerPage, setRowsPerPage] = useState<number>(10);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+    const [isAddMeterDialogOpen, setIsAddMeterDialogOpen] = useState(false);
     const [isBulkUploadDialogOpen, setIsBulkUploadDialogOpen] = useState(false);
     const [editMeter, setEditMeter] = useState<MeterInventoryItem | VirtualMeterData | undefined>(undefined);
     const [isDeactivateDialogOpen, setIsDeactivateDialogOpen] = useState(false);
@@ -292,12 +52,10 @@ export default function MeterManagementPage() {
         direction: "asc" | "desc";
     }>({ key: null, direction: "asc" });
     const [processedData, setProcessedData] = useState<(MeterInventoryItem | VirtualMeterData)[]>([]);
-
-    // Add Virtual Meter flow states
     const [isAddVirtualMeterOpen, setIsAddVirtualMeterOpen] = useState(false);
     const [isDeactivatePhysicalOpen, setIsDeactivatePhysicalOpen] = useState(false);
     const [isVirtualConfirmOpen, setIsVirtualConfirmOpen] = useState(false);
-    const [selectedPhysicalMeter, setSelectedPhysicalMeter] = useState<string>("");
+    const [selectedPhysicalMeter, setSelectedPhysicalMeter] = useState("");
     const [customerIdInput, setCustomerIdInput] = useState("");
     const [filteredCustomerIds, setFilteredCustomerIds] = useState<string[]>([]);
     const [selectedCustomer, setSelectedCustomer] = useState<VirtualMeterData | null>(null);
@@ -316,7 +74,8 @@ export default function MeterManagementPage() {
     const [isViewDetailsOpen, setIsViewDetailsOpen] = useState(false);
     const [viewMeter, setViewMeter] = useState<MeterInventoryItem | null>(null);
     const [isCustomerIdModalOpen, setIsCustomerIdModalOpen] = useState(false);
-    const [meterData, setMeterData] = useState<MeterInventoryItem[]>(initialMeterData);
+    const [meterData, setMeterData] = useState<MeterInventoryItem[]>([]);
+    const [virtualData, setVirtualData] = useState<VirtualMeterData[]>([]);
     const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
     const [progress, setProgress] = useState(50);
     const [meterNumber, setMeterNumber] = useState("");
@@ -328,56 +87,31 @@ export default function MeterManagementPage() {
     const [isSetPaymentModalOpen, setIsSetPaymentModalOpen] = useState(false);
     const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
     const [category, setCategory] = useState("");
-    const [phone, setPhone] = useState<string>("");
-    const [editCustomer] = useState<MeterInventoryItem | null>(null);
+    const [phone, setPhone] = useState("");
     const [isUploadImageOpen, setIsUploadImageOpen] = useState(false);
-    const [isConfirmImageOpen, setIsConfirmImageOpen] = useState(false);
     const [uploadedImage, setUploadedImage] = useState<File | null>(null);
     const [viewVirtualMeter, setViewVirtualMeter] = useState<VirtualMeterData | null>(null);
     const [isViewActualDetailsOpen, setIsViewActualDetailsOpen] = useState(false);
     const [isViewVirtualDetailsOpen, setIsViewVirtualDetailsOpen] = useState(false);
+    const [isSelectVirtualCustomerOpen, setIsSelectVirtualCustomerOpen] = useState(false);
+    const [virtualCustomerIdInput, setVirtualCustomerIdInput] = useState("");
+    const [filteredVirtualCustomerIds, setFilteredVirtualCustomerIds] = useState<string[]>([]);
+    const [selectedVirtualCustomer, setSelectedVirtualCustomer] = useState<VirtualMeterData | null>(null);
 
-    // interface MeterData {
-    //     customerId?: string;
-    //     id: string;
-    //     meterNumber: string;
-    //     simNo: string;
-    //     class: string;
-    //     category: string;
-    //     meterType: string;
-    //     oldTariffIndex: string;
-    //     newTariffIndex: string;
-    //     manufactureName: string;
-    //     accountNumber: string;
-    //     oldSgc: string;
-    //     oldKrn: string;
-    //     newKrn: string;
-    //     newSgc: string;
-    //     tariff: string;
-    //     assignedStatus: string;
-    //     status: string;
-    //     // Add address fields to match VirtualMeterData
-    //     feeder?: string;
-    //     dss?: string;
-    //     cin?: string;
-    //     firstName?: string;
-    //     lastName?: string;
-    //     phone?: string;
-    //     state?: string;
-    //     city?: string;
-    //     streetName?: string;
-    //     houseNo?: string;
-    //     // Add missing properties to match imported MeterData
-    //     debitMop?: string;
-    //     debitPaymentPlan?: string;
-    //     creditMop?: string;
-    //     creditPaymentPlan?: string;
-    //     approvedStatus?: string;
-    //     Image?: File | null;
-    //     smartMeter?: string
-    // }
+    const { data: metersData, isLoading, isError } = useMeters({
+        page: currentPage,
+        pageSize: rowsPerPage,
+        searchTerm,
+        sortDirection: sortConfig.direction,
+        type: activeTab === "actual" ? "allocated" : "virtual",
+    });
 
-    // Remove local VirtualMeterData interface, use imported one
+
+    const { data: customerRecordData, isLoading: isCustomerRecordLoading } = useCustomerRecordQuery(customerIdInput);
+    const { data: virtualCustomerRecordData, isLoading: isVirtualCustomerRecordLoading } = useCustomerRecordQuery(virtualCustomerIdInput);
+
+    const assignMeterMutation = useAssignMeter();
+    const changeStateMutation = useChangeMeterState();
 
     const handleOpenCustomerIdModal = () => {
         setCustomerIdInput("");
@@ -385,35 +119,31 @@ export default function MeterManagementPage() {
         setIsCustomerIdModalOpen(true);
     };
 
-
     const handleCustomerIdChange = (value: string) => {
-        console.log("handleCustomerIdChange called with value:", value);
         setCustomerIdInput(value);
         if (value.trim() === "") {
             setFilteredCustomerIds([]);
         } else {
+            const currentData = activeTab === "actual" ? (metersData?.actualMeters ?? []) : (metersData?.virtualMeters ?? []);
             const filtered = Array.from(
                 new Set(
-                    (activeTab === "actual" ? meterData : virtualData)
-                        .filter((customer) =>
-                            customer.customerId
-                                ? customer.customerId.toLowerCase().includes(value.toLowerCase())
-                                : false
-                        )
-                        .map((customer) => customer.customerId as string)
+                    currentData
+                        .filter((customer) => customer.customerId?.toLowerCase().includes(value.toLowerCase()))
+                        .map((customer) => customer.customerId)
+                        .filter((id): id is string => id != null)
                 )
-            );
-            console.log("Filtered unique customer IDs:", filtered);
+            ) as string[];
             setFilteredCustomerIds(filtered);
         }
     };
 
     const handleCustomerIdSelect = (customerId: string) => {
-        const customer = meterData.find((item) => item.customerId === customerId);
-        if (customer && customer.customerId) {
+        const currentData = activeTab === "actual" ? (metersData?.actualMeters ?? []) : (metersData?.virtualMeters ?? []);
+        const customer = currentData.find((item) => item.customerId === customerId);
+        if (customer?.customerId) {
             setSelectedCustomer({
-                // id: customer.id ?? "",
-                customerId: customer.customerId, // Ensure customerId is a string
+                id: customer.customerId,
+                customerId: customer.customerId,
                 meterNumber: "",
                 cin: "",
                 accountNumber: "",
@@ -429,9 +159,9 @@ export default function MeterManagementPage() {
                 lastName: customer.lastName ?? "",
                 phone: customer.phone ?? "",
                 image: null,
-                consumptionType: "Non-MD", // Required by VirtualMeterData
+                consumptionType: "Non-MD",
                 category: customer.category ?? "",
-            } as VirtualMeterData);
+            });
             setCustomerIdInput(customerId);
             setFilteredCustomerIds([]);
             setIsCustomerIdModalOpen(false);
@@ -458,71 +188,121 @@ export default function MeterManagementPage() {
             setEnergyType("");
             setFixedEnergy("");
             setCategory(customer.category ?? "");
-        } else {
-            console.log("Customer not found or invalid customerId for ID:", customerId);
-            alert("Customer not found or no valid customer ID. Please select a valid customer ID.");
         }
     };
 
     const handleProceedFromAssign = () => {
-        setSelectedCustomer((prev) => {
-            if (!prev?.customerId) {
-                console.error("No valid customer selected or customerId is missing");
-                alert("Please select a valid customer before proceeding.");
-                return prev; // Return unchanged state to avoid errors
-            }
+        if (!selectedCustomer?.customerId) return;
 
-            const updatedCustomer: VirtualMeterData = {
-                ...prev,
-                meterNumber,
-                cin,
-                accountNumber,
-                tariff,
-                feeder,
-                dss,
-                state,
-                city,
-                streetName,
-                houseNo,
-                category: category ?? prev?.category ?? "",
-                consumptionType: prev?.consumptionType ?? "Non-MD", // Required by VirtualMeterData
-                // Include optional fields if needed
-                phone: prev?.phone ?? "",
-                firstName: prev?.firstName ?? "",
-                lastName: prev?.lastName ?? "",
-                image: prev?.image ?? null,
-                status: prev?.status ?? "Assigned",
-            };
-            setIsAssignModalOpen(false);
-            setIsUploadImageOpen(true);
-            setProgress(60);
-            return updatedCustomer;
+        const assignPayload = {
+            meterNumber,
+            customerId: selectedCustomer.customerId,
+            tariffId: tariff,
+            dssAssetId: dss,
+            feederAssetId: feeder,
+            cin,
+            accountNumber,
+            state,
+            city,
+            houseNo,
+            streetName,
+            creditPaymentMode: debitMop,
+            debitPaymentMode: creditMop,
+            creditPaymentPlan: debitPaymentPlan,
+            debitPaymentPlan: creditPaymentPlan,
+        };
+
+        assignMeterMutation.mutate(assignPayload, {
+            onSuccess: () => {
+                setIsAssignModalOpen(false);
+                setIsUploadImageOpen(true);
+                setProgress(60);
+                setMeterNumber("");
+                setCin("");
+                setAccountNumber("");
+                setTariff("");
+                setFeeder("");
+                setDss("");
+                setState("");
+                setCity("");
+                setStreetName("");
+                setHouseNo("");
+                setDebitMop("");
+                setCreditMop("");
+                setDebitPaymentPlan("");
+                setCreditPaymentPlan("");
+                setSelectedCustomer(null);
+            },
         });
+    };
+
+    const handleProceedFromCustomerIdDialog = () => {
+        if (!customerIdInput.trim()) return;
+
+        if (customerRecordData) {
+            const customer = customerRecordData.customer;
+            setSelectedCustomer({
+                id: customer.customerId,
+                customerId: customer.customerId,
+                meterNumber: "",
+                cin: customerRecordData.GeneratedVirtualMeterNo || "",
+                accountNumber: customerRecordData.GeneratedAccountNumber || "",
+                tariff: "",
+                feeder: "",
+                dss: "",
+                state: customer.state || "",
+                city: customer.city || "",
+                streetName: customer.streetName || "",
+                houseNo: customer.houseNo || "",
+                status: "Assigned",
+                firstName: customer.firstname || "",
+                lastName: customer.lastname || "",
+                phone: customer.phoneNumber || "",
+                image: null,
+                consumptionType: "Non-MD",
+                category: "",
+            });
+            setCustomerIdInput(customer.customerId);
+            setFilteredCustomerIds([]);
+            setIsCustomerIdModalOpen(false);
+            setIsAssignModalOpen(true);
+            setProgress(50);
+            setMeterNumber("");
+            setCin("");
+            setAccountNumber(customerRecordData.GeneratedAccountNumber || "");
+            setTariff("");
+            setFeeder("");
+            setDss("");
+            setState(customer.state || "");
+            setCity(customer.city || "");
+            setStreetName(customer.streetName || "");
+            setHouseNo(customer.houseNo || "");
+            setDebitMop("");
+            setCreditMop("");
+            setDebitPaymentPlan("");
+            setCreditPaymentPlan("");
+            setIsAddVirtualMeterOpen(false);
+            setIsDeactivatePhysicalOpen(false);
+            setIsVirtualConfirmOpen(false);
+            setSelectedPhysicalMeter("");
+            setEnergyType("");
+            setFixedEnergy("");
+            setCategory("");
+        }
     };
 
     const handleProceedFromUploadImage = (image: File | null) => {
         setUploadedImage(image);
         setSelectedCustomer((prev) => (prev ? { ...prev, image } : prev));
         setIsUploadImageOpen(false);
-        setIsConfirmImageOpen(true);
-        setProgress(70);
+        setIsDeactivateModalOpen(true);
+        setProgress(80);
     };
 
-    const handleProceedFromConfirmImage = () => {
-        setIsConfirmImageOpen(false);
-        if (selectedCustomer?.category === "Prepaid") {
-            setIsSetPaymentModalOpen(true);
-            setProgress(80);
-        } else if (selectedCustomer?.category === "Postpaid") {
-            setIsDeactivateModalOpen(true);
-            setProgress(80);
-        }
-    };
 
     const isPaymentFormComplete = debitMop !== "" && creditMop !== "";
 
     const handleProceedFromSetPayment = () => {
-        console.log("handleProceedFromSetPayment: selectedCustomer.category =", selectedCustomer?.category);
         setIsSetPaymentModalOpen(false);
         if (selectedCustomer?.category === "Prepaid") {
             setIsDeactivateModalOpen(true);
@@ -533,15 +313,13 @@ export default function MeterManagementPage() {
         }
     };
 
-    const handleProceedFromDeactivate = () => {
-        setIsDeactivateModalOpen(false);
+    const handleProceedFromDeactivateVirtual = () => {
         setIsConfirmationModalOpen(true);
         setProgress(100);
     };
 
     const handleConfirmAssignment = () => {
         setIsConfirmationModalOpen(false);
-        alert(`Meter assigned successfully for ${(selectedCustomer?.category ?? "").toLowerCase()} customer!`);
     };
 
     const handleCancelConfirmation = () => {
@@ -549,10 +327,10 @@ export default function MeterManagementPage() {
     };
 
     const handleConfirmEditFromSetPayment = () => {
-        if (editCustomer) {
+        if (editMeter && "customerId" in editMeter) {
             setMeterData((prev) =>
                 prev.map((item) =>
-                    item.customerId === editCustomer.customerId
+                    item.customerId === editMeter.customerId
                         ? {
                             ...item,
                             debitMop: debitMop ?? item.debitMop,
@@ -564,15 +342,14 @@ export default function MeterManagementPage() {
                         : item
                 )
             );
-            setIsSetPaymentModalOpen(false);
-            alert(`Details and payment mode updated successfully for prepaid customer ${editCustomer.customerId}!`);
         }
+        setIsSetPaymentModalOpen(false);
     };
+
     const actualFilterSections = [
         {
             title: "Status",
             options: [
-
                 { id: "assigned", label: "Assigned" },
                 { id: "unassigned", label: "Unassigned" },
             ],
@@ -597,431 +374,6 @@ export default function MeterManagementPage() {
         },
     ];
 
-
-    const meters = [
-        { id: "PM-0159000000302-1", number: "0159000000302", address: "5, Glorious Orimerumnu, Obafemi Owode, Ogun State" },
-        { id: "PM-0159000000302-2", number: "0159000000303", address: "6, Glorious Orimerumnu, Obafemi Owode, Ogun State" },
-        { id: "PM-0159000000302-3", number: "0159000000304", address: "7, Glorious Orimerumnu, Obafemi Owode, Ogun State" },
-    ];
-
-    const [data, setData] = useState<MeterInventoryItem[]>([
-        // {
-        //     id: "MT-1001",
-        //     meterNumber: "64533729273",
-        //     meterType: "Electricity",
-        //     oldTariffIndex: 1,
-        //     newTariffIndex: 2,
-        //     simNo: "SIM-895623",
-        //     oldSgc: "999962",
-        //     newSgc: "600094",
-        //     oldKrn: "900009",
-        //     newKrn: "900876",
-        //     manufactureName: "Momas",
-        //     class: "MD",
-        //     category: "Prepaid",
-        //     accountNumber: "001/654321",
-        //     tariff: "Residential",
-        //     assignedStatus: "Deactivated",
-        //     status: "Assigned",
-        //     customerId: undefined,
-        //     smartMeter: 'Smart',
-        //     meterStage: "Pending-assigned"
-        // },
-
-        // {
-        //     id: "MT-1002",
-        //     meterNumber: "64533729273",
-        //     meterType: "Electricity",
-        //     oldTariffIndex: "1",
-        //     newTariffIndex: "2",
-        //     simNo: "SIM-895623",
-        //     oldSgc: "999962",
-        //     newSgc: "600094",
-        //     oldKrn: "900009",
-        //     newKrn: "906544",
-        //     manufactureName: "MOMAS",
-        //     class: "MD",
-        //     category: "Postpaid",
-        //     accountNumber: "001/654321",
-        //     tariff: "Residential",
-        //     assignedStatus: "Deactivated",
-        //     status: "Assigned",
-        //     customerId: undefined,
-        //     smartMeter: 'Smart',
-        //     meterStage: "Pending-assigned"
-        // },
-        // {
-        //     id: "MT-1003",
-        //     meterNumber: "64533729273",
-        //     meterType: "Electricity",
-        //     oldTariffIndex: "1",
-        //     newTariffIndex: "2",
-        //     simNo: "SIM-895623",
-        //     oldSgc: "999962",
-        //     newSgc: "600094",
-        //     oldKrn: "900876",
-        //     newKrn: "987654",
-        //     manufactureName: "MOMAS",
-        //     class: "MD",
-        //     category: "Prepaid",
-        //     accountNumber: "001/654321",
-        //     tariff: "Residential",
-        //     assignedStatus: "Active",
-        //     status: "Unassigned",
-        //     customerId: undefined,
-        //     meterStage: "Unassigned"
-        // },
-
-        // {
-        //     id: "MT-1004",
-        //     meterNumber: "64533729273",
-        //     meterType: "Electricity",
-        //     oldTariffIndex: "1",
-        //     newTariffIndex: "2",
-        //     simNo: "SIM-895623",
-        //     oldSgc: "999962",
-        //     newSgc: "600094",
-        //     oldKrn: "",
-        //     newKrn: "",
-        //     manufactureName: "MOMAS",
-        //     class: "MD",
-        //     category: "Prepaid",
-        //     accountNumber: "001/654321",
-        //     tariff: "Residential",
-        //     assignedStatus: "Active",
-        //     status: "Unassigned",
-        //     customerId: undefined,
-        //     meterStage: "Unassigned"
-        // },
-
-        // {
-        //     id: "MT-1005",
-        //     meterNumber: "64533729273",
-        //     meterType: "Electricity",
-        //     oldTariffIndex: "1",
-        //     newTariffIndex: "2",
-        //     simNo: "SIM-895623",
-        //     oldSgc: "999962",
-        //     newSgc: "600094",
-        //     oldKrn: "908765",
-        //     newKrn: "609865",
-        //     manufactureName: "MOMAS",
-        //     class: "MD",
-        //     category: "Prepaid",
-        //     accountNumber: "001/654321",
-        //     tariff: "Residential",
-        //     assignedStatus: "Active",
-        //     status: "Assigned",
-        //     customerId: undefined,
-        //     meterStage: "Unassigned"
-        // },
-        // {
-        //     id: "MT-1006",
-        //     meterNumber: "64533729273",
-        //     meterType: "Electricity",
-        //     oldTariffIndex: "1",
-        //     newTariffIndex: "2",
-        //     simNo: "SIM-895623",
-        //     oldSgc: "999962",
-        //     newSgc: "600094",
-        //     oldKrn: "986543",
-        //     newKrn: "900865",
-        //     manufactureName: "MOMAS",
-        //     class: "MD",
-        //     category: "Postpaid",
-        //     accountNumber: "001/654321",
-        //     tariff: "Residential",
-        //     assignedStatus: "Deactivated",
-        //     status: "Assigned",
-        //     customerId: undefined,
-        //     meterStage: "Unassigned"
-        // },
-        // {
-        //     id: "MT-1007",
-        //     meterNumber: "64533729273",
-        //     meterType: "Electricity",
-        //     oldTariffIndex: "1",
-        //     newTariffIndex: "2",
-        //     simNo: "SIM-895623",
-        //     oldSgc: "999962",
-        //     newSgc: "600094",
-        //     oldKrn: "908766",
-        //     newKrn: "908765",
-        //     manufactureName: "MOMAS",
-        //     class: "MD",
-        //     category: "Prepaid",
-        //     accountNumber: "001/654321",
-        //     tariff: "Residential",
-        //     assignedStatus: "Active",
-        //     status: "Assigned",
-        //     customerId: undefined,
-        //     meterStage: "Unassigned"
-        // },
-        // {
-        //     id: "MT-1008",
-        //     meterNumber: "64533729273",
-        //     meterType: "Electricity",
-        //     oldTariffIndex: "1",
-        //     newTariffIndex: "2",
-        //     simNo: "SIM-895623",
-        //     oldSgc: "999962",
-        //     newSgc: "600094",
-        //     oldKrn: "898790",
-        //     newKrn: "998866",
-        //     manufactureName: "MOMAS",
-        //     class: "MD",
-        //     category: "Prepaid",
-        //     accountNumber: "001/654321",
-        //     tariff: "Residential",
-        //     assignedStatus: "Active",
-        //     status: "Unassigned",
-        //     customerId: undefined,
-        //      meterStage:"Assigned"
-        // },
-        // {
-        //     id: "MT-1009",
-        //     meterNumber: "64533729273",
-        //     meterType: "Electricity",
-        //     oldTariffIndex: "1",
-        //     newTariffIndex: "2",
-        //     simNo: "SIM-895623",
-        //     oldSgc: "999962",
-        //     newSgc: "600094",
-        //     oldKrn: "909878",
-        //     newKrn: "998888",
-        //     manufactureName: "MOMAS",
-        //     class: "MD",
-        //     category: "Prepaid",
-        //     accountNumber: "001/654321",
-        //     tariff: "Residential",
-        //     assignedStatus: "Pending",
-        //     status: "Unassigned",
-        //     customerId: undefined,
-        //     meterStage: "Assigned",
-
-        // },
-        // {
-        //     id: "MT-1018",
-        //     meterNumber: "64533729273",
-        //     meterType: "Electricity",
-        //     oldTariffIndex: "1",
-        //     newTariffIndex: "2",
-        //     simNo: "SIM-895623",
-        //     oldSgc: "999962",
-        //     newSgc: "600094",
-        //     oldKrn: "898790",
-        //     newKrn: "998866",
-        //     manufactureName: "MOMAS",
-        //     class: "MD",
-        //     category: "Prepaid",
-        //     accountNumber: "001/654321",
-        //     tariff: "Residential",
-        //     assignedStatus: "Pending",
-        //     status: "Unassigned",
-        //     customerId: undefined,
-        //     meterStage: "Assigned"
-        // },
-        // {
-        //     id: "MT-1019",
-        //     meterNumber: "64533729273",
-        //     meterType: "Electricity",
-        //     oldTariffIndex: "1",
-        //     newTariffIndex: "2",
-        //     simNo: "SIM-895623",
-        //     oldSgc: "999962",
-        //     newSgc: "600094",
-        //     oldKrn: "909878",
-        //     newKrn: "998765",
-        //     manufactureName: "MOMAS",
-        //     class: "MD",
-        //     category: "Prepaid",
-        //     accountNumber: "001/654321",
-        //     tariff: "Residential",
-        //     assignedStatus: "Pending",
-        //     status: "Unassigned",
-        //     customerId: undefined,
-        //     meterStage: "Assigned"
-        // },
-    ]);
-
-    const [virtualData, setVirtualData] = useState<VirtualMeterData[]>([
-        {
-            id: "VM-001",
-            customerId: "C-65443359001",
-            meterNumber: "V-65433729273",
-            accountNumber: "00288778123456",
-            feeder: "Ijeun",
-            dss: "Ijeun",
-            cin: "1234556778",
-            tariff: "Tariff A1",
-            status: "Assigned",
-            firstName: "John",
-            lastName: "Doe",
-            phone: "08012345678",
-            state: "Lagos",
-            city: "Lagos",
-            custoType: "Residential",
-            streetName: "olaiya",
-            houseNo: "28",
-            image: null, // Optional, for image upload
-            consumptionType: 'Non-MD',
-            energyType: 'Fixed',
-            fixedEnergy: '200Kwh' // Optional, for fixed energy
-        },
-        {
-            id: "VM-002",
-            customerId: "C-65443359002",
-            meterNumber: "V-65433729274",
-            accountNumber: "00288778123457",
-            feeder: "Ijeun",
-            dss: "Ijeun",
-            cin: "1234556779",
-            tariff: "Tariff A1",
-            status: "Assigned",
-            firstName: "Jane",
-            lastName: "Smith",
-            phone: "08087654321",
-            state: "lagos",
-            city: "Lagos",
-            streetName: "olaiya",
-            houseNo: "28",
-            image: null,
-            consumptionType: 'Non-MD',
-            energyType: 'Fixed',
-            fixedEnergy: '200Kwh'
-        },
-        {
-            id: "VM-003",
-            customerId: "C-65443359003",
-            meterNumber: "V-65433729275",
-            accountNumber: "00288778123458",
-            feeder: "Ijeun",
-            dss: "Ijeun",
-            cin: "1234556780",
-            tariff: "Tariff A1",
-            status: "Deactivated",
-            firstName: "Alice",
-            lastName: "Johnson",
-            phone: "08055555555",
-            state: "lagos",
-            city: "Lagos",
-            streetName: "olaiya",
-            houseNo: "28",
-            image: null,
-            consumptionType: 'Non-MD',
-            energyType: 'Fixed',
-            fixedEnergy: '200Kwh'
-        },
-        {
-            id: "VM-004",
-            customerId: "C-65443359001",
-            meterNumber: "V-65433729276",
-            accountNumber: "00288778123459",
-            feeder: "Ijeun",
-            dss: "Ijeun",
-            cin: "1234556781",
-            tariff: "Tariff A1",
-            status: "Assigned",
-            firstName: "John",
-            lastName: "Doe",
-            phone: "08012345678",
-            state: "Lagos",
-            city: "Lagos",
-            streetName: "olaiya",
-            houseNo: "28",
-            image: null,
-            consumptionType: 'Non-MD',
-            energyType: 'Fixed',
-            fixedEnergy: '200Kwh'
-        },
-        {
-            id: "VM-005",
-            customerId: "C-65443359002",
-            meterNumber: "V-65433729277",
-            accountNumber: "00288778123460",
-            feeder: "Ijeun",
-            dss: "Ijeun",
-            cin: "1234556782",
-            tariff: "Tariff A1",
-            status: "Assigned",
-            firstName: "Jane",
-            lastName: "Smith",
-            phone: "08087654321",
-            state: "lagos",
-            city: "Lagos",
-            streetName: "olaiya",
-            houseNo: "28",
-            image: null,
-            consumptionType: 'Non-MD',
-            energyType: 'Fixed',
-            fixedEnergy: '200Kwh'
-        },
-        {
-            id: "VM-006",
-            customerId: "C-65443359003",
-            meterNumber: "V-65433729278",
-            accountNumber: "00288778123461",
-            feeder: "Ijeun",
-            dss: "Ijeun",
-            cin: "1234556783",
-            tariff: "Tariff A1",
-            status: "Deactivated",
-            firstName: "Alice",
-            lastName: "Johnson",
-            phone: "08055555555",
-            state: "lagos",
-            city: "Lagos",
-            streetName: "olaiya",
-            houseNo: "28",
-            image: null,
-            consumptionType: 'Non-MD',
-            energyType: 'Fixed',
-            fixedEnergy: '200Kwh'
-        },
-        {
-            id: "VM-007",
-            customerId: "C-65443359001",
-            meterNumber: "V-65433729279",
-            accountNumber: "00288778123462",
-            feeder: "Ijeun",
-            dss: "Ijeun",
-            cin: "1234556784",
-            tariff: "Tariff A1",
-            status: "Assigned",
-            firstName: "John",
-            lastName: "Doe",
-            phone: "08012345678",
-            state: "Lagos",
-            city: "Lagos",
-            streetName: "olaiya",
-            houseNo: "28",
-            image: null,
-            consumptionType: 'Non-MD',
-            energyType: 'Fixed',
-            fixedEnergy: '200Kwh'
-        },
-        {
-            id: "VM-008",
-            customerId: "C-65443359002",
-            meterNumber: "V-65433729280",
-            accountNumber: "00288778123463",
-            feeder: "Ijeun",
-            dss: "Ijeun",
-            cin: "1234556785",
-            tariff: "Tariff A1",
-            status: "Deactivated",
-            firstName: "Jane",
-            lastName: "Smith",
-            phone: "08087654321",
-            state: "Lagos",
-            city: "Lagos",
-            streetName: "olaiya",
-            houseNo: "28",
-            image: null,
-            consumptionType: 'Non-MD'
-        },
-    ]);
-
     const nigerianStates = [
         "Abia", "Adamawa", "Akwa Ibom", "Anambra", "Bauchi", "Bayelsa",
         "Benue", "Borno", "Cross River", "Delta", "Ebonyi", "Edo",
@@ -1031,10 +383,8 @@ export default function MeterManagementPage() {
         "Oyo", "Plateau", "Rivers", "Sokoto", "Taraba", "Yobe", "Zamfara",
     ];
 
-    const customerTypes =
-        ["Non-MD", "MD"]
+    const customerTypes = ["Non-MD", "MD"];
 
-    // NEW: Initialize form fields for Edit Virtual Meter dialog
     useEffect(() => {
         if (editMeter && "customerId" in editMeter && isEditVirtualMeterOpen) {
             const virtualMeter = editMeter as VirtualMeterData;
@@ -1050,8 +400,10 @@ export default function MeterManagementPage() {
     }, [editMeter, isEditVirtualMeterOpen]);
 
     useEffect(() => {
-        setProcessedData(activeTab === "actual" ? data : virtualData);
-    }, [data, virtualData, activeTab]);
+        const actualMeters = metersData?.actualMeters ?? [];
+        const virtualMeters = metersData?.virtualMeters ?? [];
+        setProcessedData(activeTab === "actual" ? actualMeters : virtualMeters);
+    }, [metersData, activeTab]);
 
     const handleSearchChange = (term: string) => {
         setSearchTerm(term);
@@ -1060,29 +412,22 @@ export default function MeterManagementPage() {
 
     const handleSortChange = () => {
         const sortKey: keyof MeterInventoryItem | keyof VirtualMeterData = sortConfig.key ?? (activeTab === "actual" ? "meterNumber" : "meterNumber");
-        const newDirection = sortConfig.direction === "asc" ? "desc" : "asc";
+        const newDirection: "asc" | "desc" = sortConfig.direction === "asc" ? "desc" : "asc";
         setSortConfig({ key: sortKey, direction: newDirection });
         applyFiltersAndSort(searchTerm, sortKey, newDirection);
     };
-
-    useEffect(() => {
-        applyFiltersAndSort(searchTerm, sortConfig.key, sortConfig.direction);
-    }, [data, virtualData, activeTab, activeFilters, searchTerm, sortConfig.key, sortConfig.direction]);
 
     const applyFiltersAndSort = (
         term: string,
         sortBy: keyof MeterInventoryItem | keyof VirtualMeterData | null,
         direction: "asc" | "desc"
     ) => {
-        let results: (MeterInventoryItem | VirtualMeterData)[] = activeTab === "actual" ? data : virtualData;
+        let results: (MeterInventoryItem | VirtualMeterData)[] = activeTab === "actual" ? (metersData?.actualMeters ?? []) : (metersData?.virtualMeters ?? []);
 
-        // Apply filters
         if (Object.keys(activeFilters).length > 0) {
             results = results.filter((item) => {
                 if (activeTab === "actual") {
                     const meter = item as MeterInventoryItem;
-
-                    // Status filter: Match if no status filters are selected or any selected status matches
                     const statusFilters = [
                         { id: "assigned", value: activeFilters.assigned, status: "Assigned" },
                         { id: "deactivated", value: activeFilters.deactivated, status: "Unassigned" },
@@ -1091,7 +436,6 @@ export default function MeterManagementPage() {
                         statusFilters.every((f) => !f.value) ||
                         statusFilters.some((filter) => filter.value && meter.status === filter.status);
 
-                    // Class filter: Match if no class filters are selected or any selected class matches
                     const classFilters = [
                         { id: "singlePhase", value: activeFilters.singlePhase, class: "Single phase" },
                         { id: "threePhase", value: activeFilters.threePhase, class: "Three Phase" },
@@ -1104,8 +448,6 @@ export default function MeterManagementPage() {
                     return statusMatch && classMatch;
                 } else {
                     const meter = item as VirtualMeterData;
-
-                    // Virtual meter status filter
                     const statusFilters = [
                         { id: "active", value: activeFilters.assigned, status: "Active" },
                         { id: "deactivated", value: activeFilters.deactivated, status: "Deactivated" },
@@ -1118,7 +460,6 @@ export default function MeterManagementPage() {
             });
         }
 
-        // Apply search
         if (term.trim() !== "") {
             results = results.filter((item) =>
                 activeTab === "actual"
@@ -1138,7 +479,6 @@ export default function MeterManagementPage() {
             );
         }
 
-        // Apply sorting
         if (sortBy) {
             results = [...results].sort((a, b) => {
                 let aValue: string | undefined;
@@ -1166,27 +506,27 @@ export default function MeterManagementPage() {
         setProcessedData(results);
     };
 
-    const toggleSelection = (customerId: string) => {
+    const toggleSelection = (id: string) => {
         setSelectedTariffs(
-            selectedTariffs.includes(customerId)
-                ? selectedTariffs.filter((selectedId) => selectedId !== customerId)
-                : [...selectedTariffs, customerId]
+            selectedTariffs.includes(id)
+                ? selectedTariffs.filter((selectedId) => selectedId !== id)
+                : [...selectedTariffs, id]
         );
     };
 
     const toggleSelectAll = () => {
-        const currentData = activeTab === "actual" ? data : virtualData;
+        const currentData = activeTab === "actual" ? (metersData?.actualMeters ?? []) : (metersData?.virtualMeters ?? []);
         if (selectedTariffs.length === currentData.length) {
             setSelectedTariffs([]);
         } else {
-            setSelectedTariffs(currentData.map((item) => item.customerId || item.customerId) as string[]);
+            setSelectedTariffs(currentData.map((item) => item.id ?? item.customerId) as string[]);
         }
     };
 
     const handleSaveMeter = (updatedMeter: MeterInventoryItem | VirtualMeterData) => {
         if (editMeter) {
-            if (activeTab === "actual" && "manufactureName" in updatedMeter) {
-                setData((prev) =>
+            if (activeTab === "actual" && "manufacturer" in updatedMeter) {
+                setMeterData((prev) =>
                     prev.map((meter) => (meter.customerId === updatedMeter.customerId ? updatedMeter as MeterInventoryItem : meter))
                 );
             } else if (activeTab === "virtual" && "customerId" in updatedMeter) {
@@ -1196,63 +536,13 @@ export default function MeterManagementPage() {
             }
             setEditMeter(undefined);
         } else {
-            if (activeTab === "actual" && "manufactureName" in updatedMeter) {
-                setData((prev) => [...prev, updatedMeter as MeterInventoryItem]);
+            if (activeTab === "actual" && "manufacturer" in updatedMeter) {
+                setMeterData((prev) => [...prev, updatedMeter as MeterInventoryItem]);
             } else if (activeTab === "virtual" && "customerId" in updatedMeter) {
                 setVirtualData((prev) => [...prev, updatedMeter as VirtualMeterData]);
             }
         }
     };
-
-    const handleSaveMeterForActual = (meter: MeterInventoryItem) => {
-        handleSaveMeter(meter);
-    };
-
-
-    const handleActivate = () => {
-        if (selectedMeter) {
-            if (activeTab === "actual" && "manufactureName" in selectedMeter) {
-                setData((prev) =>
-                    prev.map((meter) =>
-                        meter.customerId === selectedMeter.customerId
-                            ? { ...meter, assignedStatus: "Active", reason: undefined }
-                            : meter
-                    )
-                );
-            } else if (activeTab === "virtual" && "customerId" in selectedMeter) {
-                setVirtualData((prev) =>
-                    prev.map((meter) =>
-                        meter.id === selectedMeter.customerId ? { ...meter, status: "Assigned", reason: undefined } : meter
-                    )
-                );
-            }
-            setIsDeactivateDialogOpen(false);
-            setSelectedMeter(null);
-        }
-    };
-
-    const handleDeactivate = (reason?: string) => {
-        if (selectedMeter) {
-            if (activeTab === "actual" && "manufactureName" in selectedMeter) {
-                setData((prev) =>
-                    prev.map((meter) =>
-                        meter.customerId === selectedMeter.customerId
-                            ? { ...meter, assignedStatus: "Deactivated", reason }
-                            : meter
-                    )
-                );
-            } else if (activeTab === "virtual" && "customerId" in selectedMeter) {
-                setVirtualData((prev) =>
-                    prev.map((meter) =>
-                        meter.id === selectedMeter.customerId ? { ...meter, status: "Deactivated", reason } : meter
-                    )
-                );
-            }
-            setIsDeactivateDialogOpen(false); // Close DeactivateDialog
-            setSelectedMeter(null);
-        }
-    };
-
 
     const handleAssign = (data: {
         firstName: string;
@@ -1267,8 +557,8 @@ export default function MeterManagementPage() {
         houseNo: string;
     }) => {
         if (selectedMeter) {
-            if (activeTab === "actual" && "manufactureName" in selectedMeter) {
-                setData((prev) =>
+            if (activeTab === "actual" && "manufacturer" in selectedMeter) {
+                setMeterData((prev) =>
                     prev.map((meter) =>
                         meter.customerId === selectedMeter.customerId ? { ...meter, status: "Assigned", ...data } : meter
                     )
@@ -1283,16 +573,14 @@ export default function MeterManagementPage() {
         }
     };
 
-
     const handleBulkUpload = (newData: (MeterInventoryItem | VirtualMeterData)[]) => {
         if (activeTab === "actual") {
-            setData((prev) => [...prev, ...(newData.filter((item) => "manufactureName" in item) as MeterInventoryItem[])]);
+            setMeterData((prev) => [...prev, ...(newData.filter((item) => "manufacturer" in item) as MeterInventoryItem[])]);
         } else {
             setVirtualData((prev) => [...prev, ...(newData.filter((item) => "customerId" in item) as VirtualMeterData[])]);
         }
     };
 
-    // MODIFIED: Handle saving edited virtual meter
     const handleSaveVirtualMeter = () => {
         if (editMeter && "customerId" in editMeter && typeof editMeter.customerId === "string") {
             const virtualMeter = editMeter as VirtualMeterData;
@@ -1315,7 +603,6 @@ export default function MeterManagementPage() {
                 houseNo,
                 image: virtualMeter.image ?? null,
                 consumptionType: virtualMeter.consumptionType ?? "Non-MD",
-                // Include optional fields if required by VirtualMeterData
                 energyType: virtualMeter.energyType ?? "",
                 fixedEnergy: virtualMeter.fixedEnergy ?? "",
             };
@@ -1325,7 +612,6 @@ export default function MeterManagementPage() {
             setIsEditVirtualMeterOpen(false);
             setEditMeter(undefined);
             setSelectedMeter(null);
-            // Reset form fields
             setAccountNumber("");
             setCin("");
             setTariff("");
@@ -1334,42 +620,132 @@ export default function MeterManagementPage() {
             setCity("");
             setStreetName("");
             setHouseNo("");
-        } else {
-            console.error("Invalid editMeter: Must be VirtualMeterData with a valid customerId");
-            alert("Cannot save meter: Invalid or missing customer data.");
         }
     };
 
     const handleOpenAddVirtualMeter = () => {
-        setCustomerIdInput("");
-        setFilteredCustomerIds([]);
-        setSelectedCustomer(null);
+        setVirtualCustomerIdInput("");
+        setFilteredVirtualCustomerIds([]);
+        setSelectedVirtualCustomer(null);
         setSelectedPhysicalMeter("");
-        setIsAddVirtualMeterOpen(true);
+        setIsSelectVirtualCustomerOpen(true);
     };
 
-    // const handleCustomerIdChange = (value: string) => {
-    //     setCustomerIdInput(value);
-    //     if (value.trim() === "") {
-    //         setFilteredCustomerIds([]);
-    //     } else {
-    //         const uniqueCustomerIds = Array.from(
-    //             new Set(
-    //                 virtualData
-    //                     .filter((item) => item.customerId?.toLowerCase().includes(value.toLowerCase()))
-    //                     .map((item) => item.customerId)
-    //             )
-    //         );
-    //         setFilteredCustomerIds(uniqueCustomerIds.filter((id): id is string => id != null));
-    //     }
-    // };
+    const handleVirtualCustomerIdChange = (value: string) => {
+        setVirtualCustomerIdInput(value);
+        if (value.trim() === "") {
+            setFilteredVirtualCustomerIds([]);
+        } else {
+            const currentData = metersData?.virtualMeters ?? [];
+            const filtered = Array.from(
+                new Set(
+                    currentData
+                        .filter((customer) => customer.customerId?.toLowerCase().includes(value.toLowerCase()))
+                        .map((customer) => customer.customerId)
+                        .filter((id): id is string => id != null)
+                )
+            ) as string[];
+            setFilteredVirtualCustomerIds(filtered);
+        }
+    };
+
+    const handleVirtualCustomerIdSelect = (customerId: string) => {
+        const currentData = metersData?.virtualMeters ?? [];
+        const customer = currentData.find((item) => item.customerId === customerId);
+        if (customer?.customerId) {
+            setSelectedVirtualCustomer({
+                id: customer.customerId,
+                customerId: customer.customerId,
+                meterNumber: "",
+                cin: "",
+                accountNumber: "",
+                tariff: "",
+                feeder: "",
+                dss: "",
+                state: "",
+                city: "",
+                streetName: "",
+                houseNo: "",
+                status: "Assigned",
+                firstName: customer.firstName ?? "",
+                lastName: customer.lastName ?? "",
+                phone: customer.phone ?? "",
+                image: null,
+                consumptionType: "Non-MD",
+                category: customer.category ?? "",
+            });
+            setVirtualCustomerIdInput(customerId);
+            setFilteredVirtualCustomerIds([]);
+            setIsSelectVirtualCustomerOpen(false);
+            setIsAddVirtualMeterOpen(true);
+            setProgress(50);
+            setAccountNumber("");
+            setCin("");
+            setTariff("");
+            setFeeder("");
+            setDss("");
+            setState("");
+            setCity("");
+            setStreetName("");
+            setHouseNo("");
+            setEnergyType("");
+            setFixedEnergy("");
+            setCategory(customer.category ?? "");
+        }
+    };
+
+    const handleProceedFromVirtualCustomerIdDialog = () => {
+        if (!virtualCustomerIdInput.trim()) return;
+
+        if (virtualCustomerRecordData) {
+            const customer = virtualCustomerRecordData.customer;
+            setSelectedVirtualCustomer({
+                id: customer.customerId,
+                customerId: customer.customerId,
+                meterNumber: "",
+                cin: virtualCustomerRecordData.GeneratedVirtualMeterNo || "",
+                accountNumber: virtualCustomerRecordData.GeneratedAccountNumber || "",
+                tariff: "",
+                feeder: "",
+                dss: "",
+                state: customer.state || "",
+                city: customer.city || "",
+                streetName: customer.streetName || "",
+                houseNo: customer.houseNo || "",
+                status: "Assigned",
+                firstName: customer.firstname || "",
+                lastName: customer.lastname || "",
+                phone: customer.phoneNumber || "",
+                image: null,
+                consumptionType: "Non-MD",
+                category: "",
+            });
+            setVirtualCustomerIdInput(customer.customerId);
+            setFilteredVirtualCustomerIds([]);
+            setIsSelectVirtualCustomerOpen(false);
+            setIsAddVirtualMeterOpen(true);
+            setProgress(50);
+            setAccountNumber(virtualCustomerRecordData.GeneratedAccountNumber || "");
+            setCin("");
+            setTariff("");
+            setFeeder("");
+            setDss("");
+            setState(customer.state || "");
+            setCity(customer.city || "");
+            setStreetName(customer.streetName || "");
+            setHouseNo(customer.houseNo || "");
+            setEnergyType("");
+            setFixedEnergy("");
+            setCategory("");
+        }
+    };
+
     const handleCustomerSelect = (customerId: string) => {
-        console.log("handleCustomerSelect called with customerId:", customerId);
-        const customer = virtualData.find((c) => c.customerId === customerId);
-        if (customer) {
-            console.log("Found customer:", customer);
+        const currentData = metersData?.virtualMeters ?? [];
+        const customer = currentData.find((c) => c.customerId === customerId);
+        if (customer?.customerId) {
             setSelectedCustomer({
-                id: "",
+                id: customer.customerId,
                 customerId: customer.customerId,
                 meterNumber: "",
                 accountNumber: "",
@@ -1385,18 +761,16 @@ export default function MeterManagementPage() {
                 city: customer.city ?? "",
                 streetName: customer.streetName ?? "",
                 houseNo: customer.houseNo ?? "",
-                category: customer.category ?? "", // Use category
+                category: customer.category ?? "",
             });
             setCustomerIdInput(customerId);
             setFilteredCustomerIds([]);
-            setIsAddVirtualMeterOpen(false); // Close SelectCustomerDialog
-            // Reset actual meter-specific states
+            setIsAddVirtualMeterOpen(false);
             setIsCustomerIdModalOpen(false);
             setIsAssignModalOpen(false);
             setIsSetPaymentModalOpen(false);
             setIsDeactivateModalOpen(false);
             setIsConfirmationModalOpen(false);
-            // Reset form fields
             setAccountNumber("");
             setCin("");
             setFeeder("");
@@ -1410,95 +784,76 @@ export default function MeterManagementPage() {
             setFixedEnergy("");
             setCategory("");
             setPhone("");
-            console.log("AddVirtualMeterDetailsDialog should open with selectedCustomer:", {
-                selectedCustomer: {
-                    id: "",
-                    customerId: customer.customerId,
-                    meterNumber: "",
-                    accountNumber: "",
-                    feeder: "",
-                    dss: "",
-                    cin: "",
-                    tariff: "",
-                    status: "Assigned",
-                    firstName: customer.firstName ?? "",
-                    lastName: customer.lastName ?? "",
-                    phone: customer.phone ?? "",
-                    state: customer.state ?? "",
-                    city: customer.city ?? "",
-                    streetName: customer.streetName ?? "",
-                    houseNo: customer.houseNo ?? "",
-                    category: customer.category ?? "",
-                },
-                activeTab,
-                isAddVirtualMeterOpen: false,
-                isDeactivatePhysicalOpen,
-                isVirtualConfirmOpen,
-            });
-        } else {
-            console.log("Customer not found for ID:", customerId);
-            alert("Customer not found. Please select a valid customer ID.");
         }
     };
+
     const handleProceedToDeactivate = () => {
         setIsAddVirtualMeterOpen(false);
-        setIsDeactivatePhysicalOpen(true)
-        // setIsVirtualConfirmOpen(false)
+        setIsDeactivatePhysicalOpen(true);
     };
 
     const handleDeactivationComplete = () => {
         if (selectedPhysicalMeter) {
-            console.log("Deactivating physical meter:", selectedPhysicalMeter);
-            // Optionally update the physical meter status in data
-            setData((prev) =>
+            setMeterData((prev) =>
                 prev.map((meter) =>
                     meter.customerId === selectedPhysicalMeter ? { ...meter, status: "Deactivated" } : meter
                 )
             );
         }
-        setIsDeactivatePhysicalOpen(false); // Close DeactivatePhysicalMeterDialog
-        setIsVirtualConfirmOpen(true); // Open VirtualMeterConfirmDialog
+        setIsDeactivatePhysicalOpen(false);
+        setIsVirtualConfirmOpen(true);
     };
 
     const handleConfirmVirtualMeter = () => {
-        if (selectedCustomer) {
-            const newVirtualMeter: VirtualMeterData = {
-                id: `VM-${virtualData.length + 1000}`,
-                customerId: selectedCustomer.customerId,
-                meterNumber: `V-${Math.floor(100000000 + Math.random() * 900000000)}`,
-                accountNumber,
-                feeder: feeder,
-                dss,
+        if (selectedVirtualCustomer) {
+            // Close the current dialog and open deactivate physical meter dialog
+            setIsAddVirtualMeterOpen(false);
+            setIsDeactivatePhysicalOpen(true);
+        }
+    };
+
+    const handleConfirmVirtualMeterCreation = () => {
+        if (selectedVirtualCustomer) {
+            // Use the GeneratedVirtualMeterNo from customer record as meterNumber
+            const meterNumber = virtualCustomerRecordData?.GeneratedVirtualMeterNo ?? "";
+
+            const virtualMeterPayload: AssignMeterPayload = {
+                meterNumber,
+                customerId: selectedVirtualCustomer.customerId,
+                tariffId: tariff,
+                dssAssetId: dss,
+                feederAssetId: feeder,
                 cin,
-                tariff,
-                status: "Assigned",
-                firstName: selectedCustomer.firstName ?? "",
-                lastName: selectedCustomer.lastName ?? "",
-                phone: selectedCustomer.phone ?? "",
-                state: state ?? selectedCustomer.state,
-                city: city ?? selectedCustomer.city,
-                streetName: streetName ?? selectedCustomer.streetName,
-                houseNo: houseNo ?? selectedCustomer.houseNo,
-                category: category ?? "",
+                accountNumber,
+                state,
+                city,
+                houseNo,
+                streetName,
+                creditPaymentMode: "",
+                debitPaymentMode: "",
+                creditPaymentPlan: "",
+                debitPaymentPlan: "",
             };
 
-            setVirtualData((prev) => [...prev, newVirtualMeter]);
-            setIsVirtualConfirmOpen(false);
-            setSelectedCustomer(null);
-            setIsDeactivatePhysicalOpen(false);
-            // Reset form fields
-            setAccountNumber("");
-            setCin("");
-            setFeeder("");
-            setDss("");
-            setTariff("");
-            setState("");
-            setCity("");
-            setStreetName("");
-            setHouseNo("");
-            setEnergyType("");
-            setFixedEnergy("");
-            setCategory("");
+            assignMeterMutation.mutate(virtualMeterPayload, {
+                onSuccess: () => {
+                    setIsVirtualConfirmOpen(false);
+                    setSelectedVirtualCustomer(null);
+                    // Reset all form fields
+                    setAccountNumber("");
+                    setCin("");
+                    setTariff("");
+                    setFeeder("");
+                    setDss("");
+                    setState("");
+                    setCity("");
+                    setStreetName("");
+                    setHouseNo("");
+                    setEnergyType("");
+                    setFixedEnergy("");
+                    setCategory("");
+                },
+            });
         }
     };
 
@@ -1514,26 +869,6 @@ export default function MeterManagementPage() {
         streetName.trim() !== "" &&
         houseNo.trim() !== "" &&
         selectedCustomer?.phone?.trim() !== "";
-    // category.trim() !== "";
-
-    // Update useEffect for debugging
-    useEffect(() => {
-        console.log("Form State:", {
-            isFormComplete,
-            meterNumber,
-            cin,
-            accountNumber,
-            tariff,
-            feeder,
-            dss,
-            state,
-            city,
-            streetName,
-            houseNo,
-            phone: selectedCustomer?.phone,
-            // category,
-        });
-    }, [isFormComplete, meterNumber, cin, accountNumber, tariff, feeder, dss, state, city, streetName, houseNo, selectedCustomer]);
 
     const isVirtualFormComplete =
         cin.trim() !== "" &&
@@ -1548,21 +883,21 @@ export default function MeterManagementPage() {
         customerTypes.length > 0 &&
         selectedCustomer?.phone?.trim() !== "";
 
-    const totalPages = Math.ceil((activeTab === "actual" ? data.length : virtualData.length) / rowsPerPage);
+    const totalPages = Math.ceil((activeTab === "actual" ? (metersData?.actualMeters?.length ?? 0) : (metersData?.virtualMeters?.length ?? 0)) / rowsPerPage);
     const paginatedData = processedData.slice(
         (currentPage - 1) * rowsPerPage,
         currentPage * rowsPerPage
     );
 
-    const changeTab = (tab: "actual" | "virtual") => {
+    const changeTab = (value: string) => {
+        const tab = value as "actual" | "virtual";
         setActiveTab(tab);
         setSelectedTariffs([]);
         setCurrentPage(1);
-        setActiveFilters({}); // Reset filters when switching tabs
-        setSelectedCustomer(null); // Reset selectedCustomer to avoid dialog conflicts
-        setCustomerIdInput(""); // Reset customer ID input
-        setFilteredCustomerIds([]); // Reset filtered customer IDs
-        // Reset form fields to prevent stale data
+        setActiveFilters({});
+        setSelectedCustomer(null);
+        setCustomerIdInput("");
+        setFilteredCustomerIds([]);
         setAccountNumber("");
         setCin("");
         setFeeder("");
@@ -1574,8 +909,7 @@ export default function MeterManagementPage() {
         setHouseNo("");
         setEnergyType("");
         setFixedEnergy("");
-        setCategory(""); // Reset customerType
-        // Reset dialog states
+        setCategory("");
         setIsCustomerIdModalOpen(false);
         setIsAssignModalOpen(false);
         setIsSetPaymentModalOpen(false);
@@ -1585,21 +919,13 @@ export default function MeterManagementPage() {
         setIsDeactivatePhysicalOpen(false);
         setIsVirtualConfirmOpen(false);
         setSelectedPhysicalMeter("");
+        setIsAddMeterDialogOpen(false);
     };
-
-    // const handleRowClick = (item: MeterData, event: React.MouseEvent<HTMLTableRowElement>) => {
-    //     if ((event.target as HTMLElement).closest('input[type="checkbox"], button')) {
-    //         return;
-    //     }
-    //     setViewMeter(item);
-    //     setIsViewDetailsOpen(true);
-    // };
 
     const handleRowsPerPageChange = (value: string) => {
         setRowsPerPage(Number(value));
         setCurrentPage(1);
     };
-
 
     const handlePrevious = () => {
         setCurrentPage((prev) => Math.max(prev - 1, 1));
@@ -1609,13 +935,21 @@ export default function MeterManagementPage() {
         setCurrentPage((prev) => Math.min(prev + 1, totalPages));
     };
 
+    // Helper function to check if meter is in pending state
+    const isPendingState = (status: string) => {
+        return [
+            "pending-activated",
+            "pending-deactivated",
+            "pending-assign",
+        ].includes(status.toLowerCase());
+    };
+
     return (
         <div className="p-6 h-screen overflow-x-hidden bg-transparent">
             <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4 bg-transparent">
-                <ContentHeader
-                    title="Meters"
-                    description="Manage and Access All Meter Records."
-                />
+                <div className="flex items-center justify-between mb-6">
+                    <h1 className="text-3xl font-bold">Meter Management</h1>
+                </div>
                 <div className="flex flex-col md:flex-row gap-2 bg-transparent">
                     <Button
                         className="flex items-center gap-2 border font-medium border-[#161CCA] text-[#161CCA] w-full md:w-auto cursor-pointer"
@@ -1652,7 +986,7 @@ export default function MeterManagementPage() {
             </div>
 
             <Card className="p-4 mb-4 border-none shadow-none bg-transparent">
-                <Tabs value={activeTab} onValueChange={(v) => changeTab(v as "actual" | "virtual")}>
+                <Tabs value={activeTab} onValueChange={changeTab}>
                     <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
                         <TabsList style={{ border: "2px solid #161CCA" }} className="h-12">
                             <TabsTrigger
@@ -1681,10 +1015,6 @@ export default function MeterManagementPage() {
                                 onApply={(filters) => setActiveFilters(filters)}
                                 onReset={() => setActiveFilters({})}
                             />
-                            <SortControl
-                                onSortChange={handleSortChange}
-                                currentSort={sortConfig.key ? `${sortConfig.key} (${sortConfig.direction})` : ""}
-                            />
                             <Button
                                 variant="outline"
                                 size="lg"
@@ -1704,15 +1034,8 @@ export default function MeterManagementPage() {
                                             <div className="flex items-center gap-2">
                                                 <Checkbox
                                                     className="h-4 w-4 border-gray-500"
-
-                                                    checked={selectedTariffs.length === data.length && data.length > 0}
-                                                    onCheckedChange={(checked) => {
-                                                        if (checked) {
-                                                            setSelectedTariffs(data.map(item => item.customerId) as string[]);
-                                                        } else {
-                                                            setSelectedTariffs([]);
-                                                        }
-                                                    }}
+                                                    checked={selectedTariffs.length === (metersData?.actualMeters?.length ?? 0) && (metersData?.actualMeters?.length ?? 0) > 0}
+                                                    onCheckedChange={toggleSelectAll}
                                                 />
                                                 <span className="text-sm font-medium text-gray-900">S/N</span>
                                             </div>
@@ -1724,33 +1047,65 @@ export default function MeterManagementPage() {
                                         <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">Manufacturer</TableHead>
                                         <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">Class</TableHead>
                                         <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">Category</TableHead>
-                                        <TableHead className="px-4 py-3 text-sm font-medium text-gray-900 text-center">Meter Stage</TableHead>
-                                        <TableHead className="px-4 py-3 text-sm font-medium text-gray-900 text-left">Activation Status</TableHead>
+                                        <TableHead className="px-4 py-3 text-sm font-medium text-gray-900 text-center">Activation Status</TableHead>
+                                        <TableHead className="px-4 py-3 text-sm font-medium text-gray-900 text-left">Meter Stage</TableHead>
                                         <TableHead className="px-4 py-3 text-sm font-medium text-gray-900 text-right">Actions</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {data.length === 0 ? (
+                                    {isLoading ? (
                                         <TableRow>
-                                            <TableCell colSpan={11} className="h-24 text-center text-sm text-gray-500">
-                                                No data available
+                                            <TableCell colSpan={11} className="h-24 text-center">
+                                                <div className="flex items-center justify-center gap-2">
+                                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900"></div>
+                                                    <span className="text-sm text-gray-500">Loading meters...</span>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : isError ? (
+                                        <TableRow>
+                                            <TableCell colSpan={11} className="h-24 text-center">
+                                                <div className="flex flex-col items-center justify-center gap-2">
+                                                    <div className="text-red-500">
+                                                        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                                                        </svg>
+                                                    </div>
+                                                    <span className="text-sm text-gray-500">Failed to load meters</span>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : (metersData?.actualMeters?.length ?? 0) === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={11} className="h-24 text-center">
+                                                <div className="flex flex-col items-center justify-center gap-2">
+                                                    <div className="text-gray-400">
+                                                        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                        </svg>
+                                                    </div>
+                                                    <span className="text-sm text-gray-500">No meters available</span>
+                                                </div>
                                             </TableCell>
                                         </TableRow>
                                     ) : (
                                         paginatedData.map((item, index) =>
-                                            "manufactureName" in item ? (
+                                            "manufacturer" in item ? (
                                                 <TableRow
-                                                    key={item.customerId}
-                                                    className="hover:bg-gray-50 cursor-pointer"
-                                                // onClick={(event) => handleRowClick(item, event)}
+                                                    key={item.id ?? item.customerId ?? `actual-${index}`}
+                                                    className={cn(
+                                                        "hover:bg-gray-50 cursor-pointer",
+                                                        isPendingState(item.assignedStatus ?? item.status ?? "") ? "bg-gray-100 opacity-50" : ""
+                                                    )}
                                                 >
                                                     <TableCell className="px-4 py-3">
                                                         <div className="flex items-center gap-2">
                                                             <Checkbox
                                                                 className="h-4 w-4 border-gray-500"
                                                                 id={`select-${item.customerId}`}
-                                                                checked={selectedTariffs.includes(item.meterNumber)}
-                                                                onCheckedChange={() => toggleSelection(item.meterNumber)}
+                                                                checked={selectedTariffs.includes(item.id ?? item.customerId ?? "")}
+                                                                onCheckedChange={() => toggleSelection(item.id ?? item.customerId ?? "")}
+                                                                disabled={isPendingState(item.assignedStatus ?? item.status ?? "")}
                                                             />
                                                             <span className="text-sm text-gray-900">
                                                                 {index + 1 + (currentPage - 1) * rowsPerPage}
@@ -1758,22 +1113,22 @@ export default function MeterManagementPage() {
                                                         </div>
                                                     </TableCell>
                                                     <TableCell className="px-4 py-3 text-sm text-gray-900">{item.meterNumber}</TableCell>
-                                                    {/* <TableCell className="px-4 py-3 text-sm text-gray-900">{item.simNo}</TableCell>
+                                                    <TableCell className="px-4 py-3 text-sm text-gray-900">{item.simNumber}</TableCell>
                                                     <TableCell className="px-4 py-3 text-sm text-gray-900">{item.oldSgc}</TableCell>
                                                     <TableCell className="px-4 py-3 text-sm text-gray-900">{item.newSgc}</TableCell>
-                                                    <TableCell className="px-4 py-3 text-sm text-gray-900">{item.manufactureName}</TableCell>
-                                                    <TableCell className="px-4 py-3 text-sm text-gray-900">{item.class}</TableCell> */}
-                                                    <TableCell className="px-4 py-3 text-sm text-gray-900">{item.category}</TableCell>
+                                                    <TableCell className="px-4 py-3 text-sm text-gray-900">{item.manufacturer?.name}</TableCell>
+                                                    <TableCell className="px-4 py-3 text-sm text-gray-900">{item.meterClass}</TableCell>
+                                                    <TableCell className="px-4 py-3 text-sm text-gray-900">{item.meterCategory}</TableCell>
                                                     <TableCell className="px-4 py-3 text-center">
-                                                        {/* <span className={cn("inline-block text-sm font-medium", getStatusStyle(item.meterStage))}>
-                                                            {item.meterStage}
-                                                        </span> */}
-                                                    </TableCell>
-                                                    {/* <TableCell className="px-4 py-3">
-                                                        <span className={cn("inline-block text-sm font-medium", getStatusStyle(item.assignedStatus))}>
-                                                            {item.assignedStatus}
+                                                        <span className={cn("inline-block text-sm font-medium", getStatusStyle(item.status))}>
+                                                            {item.status}
                                                         </span>
-                                                    </TableCell> */}
+                                                    </TableCell>
+                                                    <TableCell className="px-4 py-3">
+                                                        <span className={cn("inline-block text-sm font-medium", getStatusStyle(item.meterStage))}>
+                                                            {item.meterStage}
+                                                        </span>
+                                                    </TableCell>
                                                     <TableCell className="px-4 py-3 text-right">
                                                         <DropdownMenu>
                                                             <DropdownMenuTrigger asChild>
@@ -1782,50 +1137,60 @@ export default function MeterManagementPage() {
                                                                 </Button>
                                                             </DropdownMenuTrigger>
                                                             <DropdownMenuContent align="end" className="w-fit bg-white shadow-lg">
-                                                                <DropdownMenuItem
-                                                                    className="flex items-center gap-2 cursor-pointer"
-                                                                    onClick={(event) => {
-                                                                        event.stopPropagation();
-                                                                        setViewMeter(item as MeterInventoryItem);
-                                                                        setIsViewActualDetailsOpen(true); // Updated to use actual-specific state
-                                                                    }}
-                                                                >
-                                                                    <Eye size={14} />
-                                                                    <span className="text-sm text-gray-700">View Details</span>
-                                                                </DropdownMenuItem>
-                                                                <DropdownMenuItem
-                                                                    className="flex items-center gap-2 cursor-pointer"
-                                                                    onClick={(event) => {
-                                                                        event.stopPropagation();
-                                                                        setSelectedMeter(item);
-                                                                        setEditMeter(item);
-                                                                        setIsAddDialogOpen(true);
-                                                                    }}
-                                                                >
-                                                                    <Pencil size={14} />
-                                                                    <span className="text-sm text-gray-700">Edit Meter</span>
-                                                                </DropdownMenuItem>
-                                                                <DropdownMenuItem
-                                                                    className="flex items-center gap-2 cursor-pointer"
-                                                                    onClick={(event) => {
-                                                                        event.stopPropagation();
-                                                                        console.log("Selected Meter for Actual:", item);
-                                                                        setSelectedMeter(item);
-                                                                        setIsDeactivateDialogOpen(true);
-                                                                    }}
-                                                                >
-                                                                    {item.assignedStatus === "Deactivated" ? (
-                                                                        <>
-                                                                            <CheckCircle size={14} />
-                                                                            <span className="text-sm text-gray-700">Activate</span>
-                                                                        </>
-                                                                    ) : (
-                                                                        <>
-                                                                            <Ban size={14} />
-                                                                            <span className="text-sm text-gray-700">Deactivate</span>
-                                                                        </>
-                                                                    )}
-                                                                </DropdownMenuItem>
+                                                                {isPendingState(item.assignedStatus ?? item.status ?? "") ? (
+                                                                    <DropdownMenuItem disabled className="flex items-center gap-2">
+                                                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-500"></div>
+                                                                        <span className="text-sm text-gray-500">Waiting for Approval</span>
+                                                                    </DropdownMenuItem>
+                                                                ) : (
+                                                                    <>
+                                                                        <DropdownMenuItem
+                                                                            className="flex items-center gap-2 cursor-pointer"
+                                                                            onClick={(event) => {
+                                                                                event.stopPropagation();
+                                                                                setViewMeter(item as MeterInventoryItem);
+                                                                                setIsViewActualDetailsOpen(true);
+                                                                            }}
+                                                                        >
+                                                                            <Eye size={14} />
+                                                                            <span className="text-sm text-gray-700">View Details</span>
+                                                                        </DropdownMenuItem>
+                                                                        {item.status !== "Unassigned" && (
+                                                                            <DropdownMenuItem
+                                                                                className="flex items-center gap-2 cursor-pointer"
+                                                                                onClick={(event) => {
+                                                                                    event.stopPropagation();
+                                                                                    setSelectedMeter(item);
+                                                                                    setEditMeter(item as MeterInventoryItem);
+                                                                                    setIsAddMeterDialogOpen(true);
+                                                                                }}
+                                                                            >
+                                                                                <Pencil size={14} />
+                                                                                <span className="text-sm text-gray-700">Edit Meter</span>
+                                                                            </DropdownMenuItem>
+                                                                        )}
+                                                                        <DropdownMenuItem
+                                                                            className="flex items-center gap-2 cursor-pointer"
+                                                                            onClick={(event) => {
+                                                                                event.stopPropagation();
+                                                                                setSelectedMeter(item);
+                                                                                setIsDeactivateDialogOpen(true);
+                                                                            }}
+                                                                        >
+                                                                            {item.status === "Deactivated" ? (
+                                                                                <>
+                                                                                    <CheckCircle size={14} />
+                                                                                    <span className="text-sm text-gray-700">Activate</span>
+                                                                                </>
+                                                                            ) : (
+                                                                                <>
+                                                                                    <Ban size={14} />
+                                                                                    <span className="text-sm text-gray-700">Deactivate</span>
+                                                                                </>
+                                                                            )}
+                                                                        </DropdownMenuItem>
+                                                                    </>
+                                                                )}
                                                             </DropdownMenuContent>
                                                         </DropdownMenu>
                                                     </TableCell>
@@ -1848,7 +1213,7 @@ export default function MeterManagementPage() {
                                                     <Checkbox
                                                         className="h-4 w-4 border-gray-500"
                                                         id="select-all-virtual"
-                                                        checked={virtualData.length > 0 && selectedTariffs.length === virtualData.length}
+                                                        checked={(metersData?.virtualMeters?.length ?? 0) > 0 && selectedTariffs.length === (metersData?.virtualMeters?.length ?? 0)}
                                                         onCheckedChange={toggleSelectAll}
                                                     />
                                                     <Label htmlFor="select-all-virtual" className="text-sm font-semibold text-gray-700">
@@ -1886,23 +1251,59 @@ export default function MeterManagementPage() {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {virtualData.length === 0 ? (
+                                        {isLoading ? (
                                             <TableRow>
-                                                <TableCell colSpan={10} className="h-24 text-center text-sm text-gray-500">
-                                                    No virtual meter available
+                                                <TableCell colSpan={10} className="h-24 text-center">
+                                                    <div className="flex items-center justify-center gap-2">
+                                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900"></div>
+                                                        <span className="text-sm text-gray-500">Loading virtual meters...</span>
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        ) : isError ? (
+                                            <TableRow>
+                                                <TableCell colSpan={10} className="h-24 text-center">
+                                                    <div className="flex flex-col items-center justify-center gap-2">
+                                                        <div className="text-red-500">
+                                                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                                                            </svg>
+                                                        </div>
+                                                        <span className="text-sm text-gray-500">Failed to load virtual meters</span>
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        ) : (metersData?.virtualMeters?.length ?? 0) === 0 ? (
+                                            <TableRow>
+                                                <TableCell colSpan={10} className="h-24 text-center">
+                                                    <div className="flex flex-col items-center justify-center gap-2">
+                                                        <div className="text-gray-400">
+                                                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                            </svg>
+                                                        </div>
+                                                        <span className="text-sm text-gray-500">No virtual meters available</span>
+                                                    </div>
                                                 </TableCell>
                                             </TableRow>
                                         ) : (
                                             paginatedData.map((item, index) =>
                                                 "customerId" in item ? (
-                                                    <TableRow key={item.customerId} className="hover:bg-gray-50">
+                                                    <TableRow
+                                                        key={item.id ?? item.customerId ?? `virtual-${index}`}
+                                                        className={cn(
+                                                            "hover:bg-gray-50",
+                                                            isPendingState(item.status ?? "") ? "bg-gray-100 opacity-50" : ""
+                                                        )}
+                                                    >
                                                         <TableCell className="px-4 py-3">
                                                             <div className="flex items-center gap-2">
                                                                 <Checkbox
                                                                     className="h-4 w-4 border-gray-500"
                                                                     id={`select-${item.customerId}`}
-                                                                    checked={selectedTariffs.includes(item.meterNumber)}
-                                                                    onCheckedChange={() => toggleSelection(item.meterNumber)}
+                                                                    checked={selectedTariffs.includes(item.id ?? item.customerId ?? "")}
+                                                                    onCheckedChange={() => toggleSelection(item.id ?? item.customerId ?? "")}
+                                                                    disabled={isPendingState(item.status ?? "")}
                                                                 />
                                                                 <span className="text-sm text-gray-900">
                                                                     {index + 1 + (currentPage - 1) * rowsPerPage}
@@ -1919,7 +1320,7 @@ export default function MeterManagementPage() {
                                                             {item.accountNumber}
                                                         </TableCell>
                                                         <TableCell className="px-4 py-3 text-sm text-gray-900 break-words">
-                                                            {/* {item.feeder} */}
+                                                            {(item as any).feeder ?? ''}
                                                         </TableCell>
                                                         <TableCell className="px-4 py-3 text-sm text-gray-900 break-words">
                                                             {item.dss}
@@ -1943,50 +1344,60 @@ export default function MeterManagementPage() {
                                                                     </Button>
                                                                 </DropdownMenuTrigger>
                                                                 <DropdownMenuContent align="end" className="w-fit bg-white shadow-lg">
-                                                                    <DropdownMenuItem
-                                                                        className="flex items-center gap-2 cursor-pointer"
-                                                                        onClick={(event) => {
-                                                                            event.stopPropagation();
-                                                                            setViewVirtualMeter(item as VirtualMeterData);
-                                                                            setIsViewVirtualDetailsOpen(true); // Updated to use virtual-specific state
-                                                                        }}
-                                                                    >
-                                                                        <Eye size={14} />
-                                                                        <span className="text-sm text-gray-700">View Details</span>
-                                                                    </DropdownMenuItem>
-                                                                    <DropdownMenuItem
-                                                                        className="flex items-center gap-2 cursor-pointer"
-                                                                        onClick={(event) => {
-                                                                            event.stopPropagation();
-                                                                            setSelectedMeter(item);
-                                                                            setEditMeter(item);
-                                                                            setIsEditVirtualMeterOpen(true);
-                                                                        }}
-                                                                    >
-                                                                        <Pencil size={14} />
-                                                                        <span className="text-sm text-gray-700">Edit Meter</span>
-                                                                    </DropdownMenuItem>
-
-                                                                    <DropdownMenuItem
-                                                                        className="flex items-center gap-2 cursor-pointer"
-                                                                        onClick={(event) => {
-                                                                            event.stopPropagation();
-                                                                            setSelectedMeter(item);
-                                                                            setIsDeactivateDialogOpen(true);
-                                                                        }}
-                                                                    >
-                                                                        {item.status === "Deactivated" ? (
-                                                                            <>
-                                                                                <CheckCircle size={14} />
-                                                                                <span className="text-sm text-gray-700">Activate</span>
-                                                                            </>
-                                                                        ) : (
-                                                                            <>
-                                                                                <Ban size={14} />
-                                                                                <span className="text-sm text-gray-700">Deactivate</span>
-                                                                            </>
-                                                                        )}
-                                                                    </DropdownMenuItem>
+                                                                    {isPendingState(item.status ?? "") ? (
+                                                                        <DropdownMenuItem disabled className="flex items-center gap-2">
+                                                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-500"></div>
+                                                                            <span className="text-sm text-gray-500">Waiting for Approval</span>
+                                                                        </DropdownMenuItem>
+                                                                    ) : (
+                                                                        <>
+                                                                            <DropdownMenuItem
+                                                                                className="flex items-center gap-2 cursor-pointer"
+                                                                                onClick={(event) => {
+                                                                                    event.stopPropagation();
+                                                                                    setViewVirtualMeter(item as VirtualMeterData);
+                                                                                    setIsViewVirtualDetailsOpen(true);
+                                                                                }}
+                                                                            >
+                                                                                <Eye size={14} />
+                                                                                <span className="text-sm text-gray-700">View Details</span>
+                                                                            </DropdownMenuItem>
+                                                                            {item.status !== "Deactivated" && (
+                                                                                <DropdownMenuItem
+                                                                                    className="flex items-center gap-2 cursor-pointer"
+                                                                                    onClick={(event) => {
+                                                                                        event.stopPropagation();
+                                                                                        setSelectedMeter(item);
+                                                                                        setEditMeter(item);
+                                                                                        setIsEditVirtualMeterOpen(true);
+                                                                                    }}
+                                                                                >
+                                                                                    <Pencil size={14} />
+                                                                                    <span className="text-sm text-gray-700">Edit Meter</span>
+                                                                                </DropdownMenuItem>
+                                                                            )}
+                                                                            <DropdownMenuItem
+                                                                                className="flex items-center gap-2 cursor-pointer"
+                                                                                onClick={(event) => {
+                                                                                    event.stopPropagation();
+                                                                                    setSelectedMeter(item);
+                                                                                    setIsDeactivateDialogOpen(true);
+                                                                                }}
+                                                                            >
+                                                                                {item.status === "Deactivated" ? (
+                                                                                    <>
+                                                                                        <CheckCircle size={14} />
+                                                                                        <span className="text-sm text-gray-700">Activate</span>
+                                                                                    </>
+                                                                                ) : (
+                                                                                    <>
+                                                                                        <Ban size={14} />
+                                                                                        <span className="text-sm text-gray-700">Deactivate</span>
+                                                                                    </>
+                                                                                )}
+                                                                            </DropdownMenuItem>
+                                                                        </>
+                                                                    )}
                                                                 </DropdownMenuContent>
                                                             </DropdownMenu>
                                                         </TableCell>
@@ -2031,7 +1442,7 @@ export default function MeterManagementPage() {
                     <PaginationItem>
                         <PaginationPrevious
                             href="#"
-                            onClick={e => {
+                            onClick={(e) => {
                                 e.preventDefault();
                                 handlePrevious();
                             }}
@@ -2041,7 +1452,7 @@ export default function MeterManagementPage() {
                     <PaginationItem>
                         <PaginationNext
                             href="#"
-                            onClick={e => {
+                            onClick={(e) => {
                                 e.preventDefault();
                                 handleNext();
                             }}
@@ -2051,7 +1462,6 @@ export default function MeterManagementPage() {
                 </PaginationContent>
             </Pagination>
 
-
             <CustomerIdDialog
                 isOpen={isCustomerIdModalOpen}
                 onOpenChange={setIsCustomerIdModalOpen}
@@ -2059,11 +1469,23 @@ export default function MeterManagementPage() {
                 onCustomerIdChange={handleCustomerIdChange}
                 filteredCustomerIds={filteredCustomerIds}
                 onCustomerSelect={handleCustomerIdSelect}
+                onProceed={handleProceedFromCustomerIdDialog}
+                isLoading={isCustomerRecordLoading}
+            />
+            <SelectCustomerDialog
+                isOpen={isSelectVirtualCustomerOpen}
+                onOpenChange={setIsSelectVirtualCustomerOpen}
+                customerIdInput={virtualCustomerIdInput}
+                onCustomerIdChange={handleVirtualCustomerIdChange}
+                filteredCustomerIds={filteredVirtualCustomerIds}
+                onCustomerSelect={handleVirtualCustomerIdSelect}
+                onProceed={handleProceedFromVirtualCustomerIdDialog}
+                isLoading={isVirtualCustomerRecordLoading}
             />
             <AssignMeterDialog
                 isOpen={isAssignModalOpen}
                 onOpenChange={setIsAssignModalOpen}
-                selectedCustomer={selectedCustomer}
+                customer={selectedCustomer}
                 meterNumber={meterNumber}
                 setMeterNumber={setMeterNumber}
                 cin={cin}
@@ -2091,202 +1513,9 @@ export default function MeterManagementPage() {
                 progress={progress}
                 phone={phone}
                 setPhone={setPhone}
+                onConfirmAssignment={handleConfirmAssignment}
             />
-            <UploadImageDialog
-                isOpen={isUploadImageOpen}
-                onOpenChange={(open) => {
-                    setIsUploadImageOpen(open);
-                    if (!open) setUploadedImage(null);
-                }}
-                onProceed={handleProceedFromUploadImage}
-                onCancel={() => setIsUploadImageOpen(false)}
-            />
-            <ConfirmImageDialog
-                isOpen={isConfirmImageOpen}
-                onOpenChange={(open) => {
-                    setIsConfirmImageOpen(open);
-                    if (!open) setUploadedImage(null);
-                }}
-                image={uploadedImage}
-                onProceed={handleProceedFromConfirmImage}
-                onCancel={() => setIsConfirmImageOpen(false)}
-            />
-
-            <SelectCustomerDialog
-                isOpen={isAddVirtualMeterOpen}
-                onOpenChange={setIsAddVirtualMeterOpen}
-                customerIdInput={customerIdInput}
-                onCustomerIdChange={handleCustomerIdChange}
-                filteredCustomerIds={filteredCustomerIds}
-                onCustomerSelect={handleCustomerSelect}
-            />
-
-            <AddVirtualMeterDetailsDialog
-                isOpen={
-                    activeTab === "virtual" &&
-                    !isAddVirtualMeterOpen &&
-                    selectedCustomer !== null &&
-                    !isDeactivatePhysicalOpen &&
-                    !isVirtualConfirmOpen
-                }
-                onOpenChange={(open) => {
-                    if (!open) {
-                        setSelectedCustomer(null);
-                    }
-                }}
-                selectedCustomer={selectedCustomer}
-                setSelectedCustomer={setSelectedCustomer}
-                accountNumber={accountNumber}
-                setAccountNumber={setAccountNumber}
-                cin={cin}
-                setCin={setCin}
-                feeder={feeder}
-                setFeeder={setFeeder}
-                dss={dss}
-                setDss={setDss}
-                tariff={tariff}
-                setTariff={setTariff}
-                state={state}
-                setState={setState}
-                city={city}
-                setCity={setCity}
-                streetName={streetName}
-                setStreetName={setStreetName}
-                houseNo={houseNo}
-                setHouseNo={setHouseNo}
-                energyType={energyType}
-                setEnergyType={setEnergyType}
-                fixedEnergy={fixedEnergy}
-                setFixedEnergy={setFixedEnergy}
-                onProceed={handleProceedToDeactivate}
-                isFormComplete={isVirtualFormComplete}
-                nigerianStates={nigerianStates}
-                customerTypes={customerTypes}
-            />
-
-            <DeactivatePhysicalMeterDialog
-                isOpen={isDeactivatePhysicalOpen}
-                onOpenChange={(open) => {
-                    setIsDeactivatePhysicalOpen(open);
-                    if (!open) {
-                        setSelectedPhysicalMeter(""); // Reset selected meter when closing
-                    }
-                }}
-                onProceed={handleDeactivationComplete} // Use new handler
-                onMeterSelect={setSelectedPhysicalMeter}
-                meters={meters}
-                address="5, Glorious Orimerumnu, Obafemi Owode, Ogun State"
-            />
-
-            <VirtualMeterConfirmDialog
-                isOpen={isVirtualConfirmOpen}
-                onOpenChange={setIsVirtualConfirmOpen}
-                customerId={selectedCustomer?.customerId}
-                onConfirm={handleConfirmVirtualMeter}
-            />
-
-            <EditVirtualMeterDialog
-                isOpen={isEditVirtualMeterOpen}
-                onClose={() => {
-                    setIsEditVirtualMeterOpen(false);
-                    setEditMeter(undefined);
-                    setSelectedMeter(null);
-                }}
-                onSave={handleSaveVirtualMeter}
-                meter={
-                    editMeter && "customerId" in editMeter && typeof editMeter.customerId === "string"
-                        ? {
-                            // id: editMeter.id,
-                            customerId: editMeter.customerId,
-                            meterNumber: editMeter.meterNumber ?? "",
-                            accountNumber: editMeter.accountNumber ?? "",
-                            // feederLine: editMeter.feeder ?? "",
-                            dss: editMeter.dss ?? "",
-                            cin: editMeter.cin ?? "",
-                            tariff: editMeter.tariff ?? "",
-                            status: editMeter.status ?? "Assigned",
-                            firstName: editMeter.firstName ?? "",
-                            lastName: editMeter.lastName ?? "",
-                            phone: editMeter.phone ?? "",
-                            state: editMeter.state ?? "",
-                            city: editMeter.city ?? "",
-                            streetName: editMeter.streetName ?? "",
-                            houseNo: editMeter.houseNo ?? "",
-                            custoType: (editMeter as VirtualMeterData).custoType ?? "",
-                            energyType: (editMeter as VirtualMeterData).energyType ?? "",
-                            fixedEnergy: (editMeter as VirtualMeterData).fixedEnergy ?? "",
-                        } as VirtualMeterData
-                        : null
-                }
-            />
-
-            <AddMeterDialog
-                isOpen={isAddDialogOpen}
-                onClose={() => {
-                    setIsAddDialogOpen(false);
-                    setEditMeter(undefined);
-                    setSelectedMeter(null);
-                }}
-                onSaveMeter={handleSaveMeterForActual}
-                editMeter={
-                    activeTab === "actual" && editMeter && "manufactureName" in editMeter
-                        ? editMeter as MeterInventoryItem
-                        : undefined
-                }
-            />
-
-            <SetPaymentModeDialog
-                isOpen={isSetPaymentModalOpen}
-                onOpenChange={setIsSetPaymentModalOpen}
-                debitMop={debitMop}
-                setDebitMop={setDebitMop}
-                creditMop={creditMop}
-                setCreditMop={setCreditMop}
-                debitPaymentPlan={debitPaymentPlan}
-                setDebitPaymentPlan={setDebitPaymentPlan}
-                creditPaymentPlan={creditPaymentPlan}
-                setCreditPaymentPlan={setCreditPaymentPlan}
-                progress={progress}
-                isPaymentFormComplete={isPaymentFormComplete}
-                editCustomer={editCustomer}
-                onProceed={editCustomer ? handleConfirmEditFromSetPayment : handleProceedFromSetPayment}
-            />
-
-            <DeactivateDialog
-                isOpen={isDeactivateDialogOpen}
-                onClose={() => setIsDeactivateDialogOpen(false)}
-                onDeactivate={
-                    selectedMeter
-                        ? activeTab === "actual" && "manufactureName" in selectedMeter
-                            ? selectedMeter.assignedStatus === "Deactivated"
-                                ? handleActivate
-                                : handleDeactivate
-                            : selectedMeter.status === "Deactivated"
-                                ? handleActivate
-                                : handleDeactivate
-                        : handleDeactivate // Fallback for null selectedMeter
-                }
-                meterNumber={selectedMeter?.meterNumber ?? ""}
-                action={
-                    selectedMeter
-                        ? activeTab === "actual" && "manufactureName" in selectedMeter
-                            ? selectedMeter.assignedStatus === "Deactivated"
-                                ? "activate"
-                                : "deactivate"
-                            : selectedMeter.status === "Deactivated"
-                                ? "activate"
-                                : "deactivate"
-                        : "deactivate" // Fallback for null selectedMeter
-                }
-            />
-
-            <DeactivateVirtualMeterDialog
-                isOpen={isDeactivateModalOpen}
-                onOpenChange={setIsDeactivateModalOpen}
-                onProceed={handleProceedFromDeactivate}
-            />
-
-            <BulkUploadDialog<MeterInventoryItem >
+            <BulkUploadDialog
                 isOpen={isBulkUploadDialogOpen}
                 onClose={() => setIsBulkUploadDialogOpen(false)}
                 onSave={handleBulkUpload}
@@ -2333,6 +1562,112 @@ export default function MeterManagementPage() {
                 selectedCustomer={selectedCustomer}
                 onConfirm={handleConfirmAssignment}
                 onCancel={handleCancelConfirmation}
+                isSubmitting={false}
+            />
+            <DeactivateDialog
+                isOpen={isDeactivateDialogOpen}
+                onClose={() => {
+                    setIsDeactivateDialogOpen(false);
+                    setSelectedMeter(null);
+                }}
+                meterId={selectedMeter?.id ?? ""}
+                meterNumber={selectedMeter?.meterNumber ?? ""}
+                action={selectedMeter && (selectedMeter.assignedStatus === "Deactivated" || selectedMeter.status === "Deactivated") ? "activate" : "deactivate"}
+            />
+            <AddMeterDialog
+                isOpen={isAddMeterDialogOpen}
+                onClose={() => setIsAddMeterDialogOpen(false)}
+                onSaveMeter={handleSaveMeter}
+                editMeter={editMeter as MeterInventoryItem}
+            />
+            <DeactivatePhysicalMeterDialog
+                isOpen={isDeactivatePhysicalOpen}
+                onOpenChange={setIsDeactivatePhysicalOpen}
+                onProceed={handleDeactivationComplete}
+                onMeterSelect={(meterId) => setSelectedPhysicalMeter(meterId)}
+                meters={meterData.filter(meter =>
+                    meter.customerId === selectedVirtualCustomer?.customerId &&
+                    meter.status === "Assigned"
+                ).map(meter => ({
+                    id: meter.customerId ?? "",
+                    number: meter.meterNumber,
+                    address: `${meter.state}, ${meter.city}, ${meter.streetName} ${meter.houseNo}`
+                }))}
+                address={`${selectedVirtualCustomer?.state}, ${selectedVirtualCustomer?.city}, ${selectedVirtualCustomer?.streetName} ${selectedVirtualCustomer?.houseNo}`}
+            />
+            <AddVirtualMeterDetailsDialog
+                isOpen={isEditVirtualMeterOpen}
+                onOpenChange={setIsEditVirtualMeterOpen}
+                selectedCustomer={editMeter as VirtualMeterData}
+                setSelectedCustomer={(customer: VirtualMeterData | null) => setEditMeter(customer ?? undefined)}
+                accountNumber={accountNumber}
+                setAccountNumber={setAccountNumber}
+                cin={cin}
+                setCin={setCin}
+                feeder={feeder}
+                setFeeder={setFeeder}
+                dss={dss}
+                setDss={setDss}
+                tariff={tariff}
+                setTariff={setTariff}
+                state={state}
+                setState={setState}
+                city={city}
+                setCity={setCity}
+                streetName={streetName}
+                setStreetName={setStreetName}
+                houseNo={houseNo}
+                setHouseNo={setHouseNo}
+                energyType={energyType}
+                setEnergyType={setEnergyType}
+                custoType={category}
+                setCustomerType={setCategory}
+                fixedEnergy={fixedEnergy}
+                setFixedEnergy={setFixedEnergy}
+                onProceed={handleSaveVirtualMeter}
+                isFormComplete={isVirtualFormComplete}
+                nigerianStates={nigerianStates}
+                customerTypes={customerTypes}
+            />
+            <VirtualMeterConfirmDialog
+                isOpen={isVirtualConfirmOpen}
+                onOpenChange={setIsVirtualConfirmOpen}
+                customerId={selectedVirtualCustomer?.customerId}
+                onConfirm={handleConfirmVirtualMeterCreation}
+            />
+            <AddVirtualMeterDetailsDialog
+                isOpen={isAddVirtualMeterOpen}
+                onOpenChange={setIsAddVirtualMeterOpen}
+                selectedCustomer={selectedVirtualCustomer}
+                setSelectedCustomer={setSelectedVirtualCustomer}
+                accountNumber={accountNumber}
+                setAccountNumber={setAccountNumber}
+                cin={cin}
+                setCin={setCin}
+                feeder={feeder}
+                setFeeder={setFeeder}
+                dss={dss}
+                setDss={setDss}
+                tariff={tariff}
+                setTariff={setTariff}
+                state={state}
+                setState={setState}
+                city={city}
+                setCity={setCity}
+                streetName={streetName}
+                setStreetName={setStreetName}
+                houseNo={houseNo}
+                setHouseNo={setHouseNo}
+                energyType={energyType}
+                setEnergyType={setEnergyType}
+                custoType={category}
+                setCustomerType={setCategory}
+                fixedEnergy={fixedEnergy}
+                setFixedEnergy={setFixedEnergy}
+                onProceed={handleConfirmVirtualMeter}
+                isFormComplete={isVirtualFormComplete}
+                nigerianStates={nigerianStates}
+                customerTypes={customerTypes}
             />
         </div>
     );

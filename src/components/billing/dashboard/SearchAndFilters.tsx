@@ -1,4 +1,3 @@
-import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -7,6 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Search } from "lucide-react";
 
 interface SearchAndFiltersProps {
   searchTerm: string;
@@ -27,7 +27,7 @@ export const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({
 }) => {
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-      {/* <div className="relative">
+      <div className="relative">
         <Search
           size={10}
           strokeWidth={2.75}
@@ -41,7 +41,7 @@ export const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({
           placeholder="Search by meter no., account no., ..."
           className="rounded-md border-gray-300 pl-10 focus:border-blue-500 focus:ring-blue-500 md:w-[300px]"
         />
-      </div> */}
+      </div>
       <div className="grid grid-cols-2 gap-3">
         <Select
           value={selectedModeOfPayment}

@@ -1,11 +1,4 @@
 // components/billing/energy-import/feeder-details-table.tsx
-import { MoreVertical } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   Pagination,
   PaginationContent,
@@ -13,7 +6,6 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -54,13 +46,13 @@ interface FeederDetailsTableProps {
 }
 
 export default function FeederDetailsTable({
-  feederId,
-  searchQuery,
-  sortConfig,
-  selectedMonth,
-  selectedYear,
+  feederId: _feederId,
+  searchQuery: _searchQuery,
+  sortConfig: _sortConfig,
+  selectedMonth: _selectedMonth,
+  selectedYear: _selectedYear,
   onDataChange,
-  onApply,
+  onApply: _onApply,
 }: FeederDetailsTableProps) {
   // Sample data - in real app, this would come from API based on feederId
   const initialData: FeederDetailsData[] = [
@@ -119,19 +111,19 @@ export default function FeederDetailsTable({
   // Filter data based on search query
   const filteredData = data.filter((item) => {
     const searchMatch =
-      searchQuery === "" ||
-      item.tariffType.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      _searchQuery === "" ||
+      item.tariffType.toLowerCase().includes(_searchQuery.toLowerCase()) ||
       item.previousConsumption
         .toLowerCase()
-        .includes(searchQuery.toLowerCase()) ||
-      item.totalConsumption.toLowerCase().includes(searchQuery.toLowerCase());
+        .includes(_searchQuery.toLowerCase()) ||
+      item.totalConsumption.toLowerCase().includes(_searchQuery.toLowerCase());
     return searchMatch;
   });
 
   // Sort data based on sortConfig
   const sortedData = [...filteredData].sort((a, b) => {
-    if (!sortConfig) return 0;
-    const [key, direction] = sortConfig.split(":");
+    if (!_sortConfig) return 0;
+    const [key, direction] = _sortConfig.split(":");
     const multiplier = direction === "desc" ? -1 : 1;
 
     if (key === "tariffType") {
