@@ -109,7 +109,7 @@ export const OrganizationNode = ({
                   Hub
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => openAddDialog("Service Centre")}
+                  onClick={() => openAddDialog("Service Center")}
                 >
                   <Wrench size={14} className="mr-2 text-gray-700" /> Service
                   Centre
@@ -121,9 +121,7 @@ export const OrganizationNode = ({
                 <DropdownMenuItem onClick={() => openAddDialog("Feeder Line")}>
                   <Zap size={14} className="mr-2 text-gray-700" /> Feeder Line
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => openAddDialog("Distribution Substation (DSS)")}
-                >
+                <DropdownMenuItem onClick={() => openAddDialog("DSS")}>
                   <Lightbulb size={14} className="mr-2 text-gray-700" />{" "}
                   Distribution Substation (DSS)
                 </DropdownMenuItem>

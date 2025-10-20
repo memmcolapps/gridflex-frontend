@@ -3,7 +3,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { VirtualMeterData } from "@/types/meter";
 import type { MeterInventoryItem } from "@/types/meter-inventory";
 import type { Customer } from "@/types/customer-types";
@@ -359,7 +365,6 @@ export function AssignMeterDialog({
               />
             </div>
 
-
             {/* )} */}
             <div className="space-y-2">
               <Label>
@@ -377,7 +382,7 @@ export function AssignMeterDialog({
               <Label>
                 Tariff<span className="text-red-700">*</span>
               </Label>
-              <Select onValueChange={setTariff} value={tariff} disabled={tariffsLoading}>
+              <Select onValueChange={setTariff} value={tariff}>
                 <SelectTrigger className="border-gray-200 text-gray-600 w-full">
                   <SelectValue placeholder="Select Tariff" />
                 </SelectTrigger>
@@ -404,7 +409,7 @@ export function AssignMeterDialog({
             </div>
             <div className="space-y-2">
               <Label>
-                Distribution Substation (DSS)<span className="text-red-700">*</span>
+                DSS<span className="text-red-700">*</span>
               </Label>
               <Input
                 value={dss}
@@ -417,13 +422,15 @@ export function AssignMeterDialog({
               <Label>
                 State<span className="text-red-700">*</span>
               </Label>
-              <Input
-                value={state}
-                onChange={(e) => setState(e.target.value)}
-                readOnly
-                placeholder="Enter City"
-                className="border-gray-100 text-gray-600"
-              />
+              <Select onValueChange={setState} value={state}>
+                <SelectTrigger className="border-gray-100 text-gray-600 w-full">
+                  <SelectValue placeholder="Select State" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="state1">State 1</SelectItem>
+                  <SelectItem value="state2">State 2</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label>
@@ -467,7 +474,7 @@ export function AssignMeterDialog({
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="border-[#161CCA] text-[#161CCA] cursor-pointer"
+            className="cursor-pointer border-[#161CCA] text-[#161CCA]"
           >
             Cancel
           </Button>
@@ -477,7 +484,7 @@ export function AssignMeterDialog({
             className={
               isFormComplete
                 ? "bg-[#161CCA] text-white cursor-pointer"
-                : "bg-[#161CCA] text-white cursor-not-allowed"
+                : "bg-blue-200 text-white cursor-not-allowed"
             }
           >
             Proceed

@@ -9,12 +9,13 @@ import {
 } from "lucide-react";
 import React from "react";
 import { type NodeInfo } from "../../../service/organaization-service";
+import { normalizeHierarchyType } from "../../../utils/hierarchy-utils";
 
 export const mapNodeInfoToFormData = (nodeInfo?: NodeInfo) => {
   if (!nodeInfo) {
     return {
       name: "",
-      id: "", // This will be serialNo or regionId/bhubId
+      regionId: "",
       phoneNumber: "",
       email: "",
       contactPerson: "",
@@ -30,7 +31,7 @@ export const mapNodeInfoToFormData = (nodeInfo?: NodeInfo) => {
   }
   return {
     name: nodeInfo.name ?? "",
-    id: nodeInfo.serialNo ?? nodeInfo.nodeId ?? "",
+    regionId: nodeInfo.regionId ?? "",
     phoneNumber: nodeInfo.phoneNo ?? "",
     email: nodeInfo.email ?? "",
     contactPerson: nodeInfo.contactPerson ?? "",
@@ -51,23 +52,31 @@ export const mapNodeInfoToFormData = (nodeInfo?: NodeInfo) => {
 };
 
 export const renderNodeIcon = (nodeTypeString?: string): React.ReactNode => {
-  const type = nodeTypeString?.toLowerCase(); // Standardize to lowercase for comparison
-  switch (type) {
-    case "root":
-      return <Building2 size={14} className="text-gray-600" />;
+  if (!nodeTypeString) return null;
+
+  const normalizedType = normalizeHierarchyType(nodeTypeString);
+
+  switch (normalizedType) {
     case "region":
       return <Grid2X2 size={14} className="text-gray-600" />;
-    case "business hub":
+    case "businesshub":
       return <Building size={14} className="text-gray-600" />;
-    case "service centre":
+    case "servicecenter":
       return <Wrench size={14} className="text-gray-600" />;
     case "substation":
       return <Database size={14} className="text-gray-600" />;
-    case "feeder line":
+    case "feederline":
       return <Zap size={14} className="text-gray-600" />;
-    case "transformer":
+    case "dss":
       return <Lightbulb size={14} className="text-gray-600" />;
     default:
+      const type = nodeTypeString.toLowerCase();
+      if (type === "root") {
+        return <Building2 size={14} className="text-gray-600" />;
+      }
+      if (type === "transformer") {
+        return <Lightbulb size={14} className="text-gray-600" />;
+      }
       return null;
   }
 };

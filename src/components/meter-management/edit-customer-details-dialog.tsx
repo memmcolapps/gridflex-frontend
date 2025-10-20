@@ -2,10 +2,22 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import type { MeterInventoryItem } from "@/types/meter-inventory";
 interface EditCustomerDetailsDialogProps {
@@ -88,7 +100,7 @@ export function EditCustomerDetailsDialog({
                 readOnly
                 disabled
                 placeholder="Enter Customer ID"
-                className="border-gray-200 text-gray-600 bg-gray-100 cursor-not-allowed"
+                className="cursor-not-allowed border-gray-200 bg-gray-100 text-gray-600"
               />
             </div>
             <div className="space-y-2">
@@ -137,7 +149,9 @@ export function EditCustomerDetailsDialog({
               />
             </div>
             <div className="space-y-2">
-              <Label>CIN<span className="text-red-700">*</span></Label>
+              <Label>
+                CIN<span className="text-red-700">*</span>
+              </Label>
               <Input
                 value={cin}
                 onChange={(e) => setCin(e.target.value)}
@@ -180,7 +194,7 @@ export function EditCustomerDetailsDialog({
             </div>
             <div className="space-y-2">
               <Label>
-                Distribution Substation (DSS)<span className="text-red-700">*</span>
+                DSS<span className="text-red-700">*</span>
               </Label>
               <Input
                 value={dss}
@@ -199,8 +213,8 @@ export function EditCustomerDetailsDialog({
                 placeholder="Enter State"
                 className="border-gray-100 text-gray-600"
               />
-
-
+            
+               
             </div>
             <div className="space-y-2">
               <Label>
@@ -241,7 +255,7 @@ export function EditCustomerDetailsDialog({
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="border-[#161CCA] text-[#161CCA] cursor-pointer"
+            className="cursor-pointer border-[#161CCA] text-[#161CCA]"
           >
             Cancel
           </Button>
@@ -250,8 +264,8 @@ export function EditCustomerDetailsDialog({
             disabled={editCustomer ? false : !isFormComplete}
             className={
               editCustomer || isFormComplete
-                ? "bg-[#161CCA] text-white cursor-pointer"
-                : "bg-blue-200 text-white cursor-not-allowed"
+                ? "cursor-pointer bg-[#161CCA] text-white"
+                : "cursor-not-allowed bg-blue-200 text-white"
             }
           >
             Save

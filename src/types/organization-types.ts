@@ -55,4 +55,5 @@ export interface UpdateSubstationTransfomerFeederPayload {
   latitude: string;
   longitude: string;
   description: string;
+  type: string;
 }

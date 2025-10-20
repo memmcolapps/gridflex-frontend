@@ -43,7 +43,8 @@ export const AddNodeDialog = ({
 }: AddDialogProps) => {
   const [formData, setFormData] = useState<FormData>({
     name: "",
-    id: "",
+    regionId: "",
+    serialNo: "",
     phoneNumber: "",
     email: "",
     contactPerson: "",
@@ -69,7 +70,8 @@ export const AddNodeDialog = ({
     if (isOpen) {
       const resetData: FormData = {
         name: "",
-        id: "",
+        regionId: "",
+        serialNo: "",
         phoneNumber: "",
         email: "",
         contactPerson: "",
@@ -114,18 +116,16 @@ export const AddNodeDialog = ({
       const isRegionBhubServiceCenter = [
         "Region",
         "Business Hub",
-        "Service Centre",
+        "Service Center",
       ].includes(nodeType);
-      const isTechnicalNode = [
-        "Substation",
-        "Feeder Line",
-        "Distribution Substation (DSS)",
-      ].includes(nodeType);
+      const isTechnicalNode = ["Substation", "Feeder Line", "DSS"].includes(
+        nodeType,
+      );
 
       if (isRegionBhubServiceCenter) {
         await createRegionBhubServiceCenter.mutateAsync({
           parentId,
-          regionId: formData.id,
+          regionId: formData.regionId,
           name: formData.name,
           phoneNo: formData.phoneNumber,
           email: formData.email,
@@ -137,7 +137,7 @@ export const AddNodeDialog = ({
         await createSubstationTransfomerFeeder.mutateAsync({
           parentId,
           name: formData.name,
-          serialNo: formData.assetId,
+          serialNo: formData.serialNo ?? "",
           phoneNo: formData.phoneNumber,
           email: formData.email,
           contactPerson: formData.contactPerson,
@@ -161,11 +161,9 @@ export const AddNodeDialog = ({
     }
   };
 
-  const isTechnicalNode = [
-    "Substation",
-    "Feeder Line",
-    "Distribution Substation (DSS)",
-  ].includes(nodeType);
+  const isTechnicalNode = ["Substation", "Feeder Line", "DSS"].includes(
+    nodeType,
+  );
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -194,22 +192,48 @@ export const AddNodeDialog = ({
             </div>
             <div className="flex flex-col">
               <label className="text-sm font-medium">
-                {nodeType === "Root"
-                  ? "Root ID"
-                  : nodeType === "Region"
-                    ? "Region ID"
-                    : "ID"}{" "}
+                {isTechnicalNode
+                  ? "Serial Number"
+                  : nodeType === "Root"
+                    ? "Root ID"
+                    : nodeType === "Region"
+                      ? "Region ID"
+                      : nodeType === "Business Hub"
+                        ? "Business Hub ID"
+                        : nodeType === "Service Center"
+                          ? "Service Center ID"
+                          : "ID"}{" "}
                 *
               </label>
-              <Input
-                name="id"
-                value={formData.id}
-                onChange={handleInputChange}
-                placeholder={`Enter ${nodeType === "Root" ? "Root" : nodeType === "Region" ? "Region" : ""} ID`}
-                className="mt-1 border-gray-300"
-              />
-              {errors.id && (
-                <p className="mt-1 text-xs text-red-500">{errors.id}</p>
+              {isTechnicalNode ? (
+                <Input
+                  name="serialNo"
+                  value={formData.serialNo ?? ""}
+                  onChange={handleInputChange}
+                  placeholder="Enter Serial Number"
+                  className="mt-1 border-gray-300"
+                />
+              ) : (
+                <Input
+                  name="regionId"
+                  value={formData.regionId}
+                  onChange={handleInputChange}
+                  placeholder={`Enter ${
+                    nodeType === "Root"
+                      ? "Root"
+                      : nodeType === "Region"
+                        ? "Region"
+                        : nodeType === "Business Hub"
+                          ? "Business Hub"
+                          : nodeType === "Service Center"
+                            ? "Service Center"
+                            : ""
+                  } ID`}
+                  className="mt-1 border-gray-300"
+                />
+              )}
+              {errors.regionId && (
+                <p className="mt-1 text-xs text-red-500">{errors.regionId}</p>
               )}
             </div>
           </div>
@@ -266,17 +290,7 @@ export const AddNodeDialog = ({
             </div>
           </div>
           {isTechnicalNode && (
-            <div className="grid grid-cols-3 gap-4">
-              <div className="flex flex-col">
-                <label className="text-sm font-medium">Asset ID *</label>
-                <Input
-                  name="assetId"
-                  value={formData.assetId}
-                  onChange={handleInputChange}
-                  placeholder="Enter Asset ID"
-                  className="mt-1 border-gray-300"
-                />
-              </div>
+            <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col">
                 <label className="text-sm font-medium">Status *</label>
                 <Select
@@ -319,7 +333,7 @@ export const AddNodeDialog = ({
             </div>
           )}
           {(nodeType === "Substation" ||
-            nodeType === "Distribution Substation (DSS)" ||
+            nodeType === "DSS" ||
             nodeType === "Feeder Line") && (
             <div className="grid gap-4">
               <div className="grid grid-cols-2 gap-4">

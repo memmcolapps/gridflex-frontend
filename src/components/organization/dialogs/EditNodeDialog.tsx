@@ -86,34 +86,31 @@ export const EditNodeDialog = ({
     if (!isValid) return;
 
     try {
-      // Determine which mutation to use based on node type
       const isRegionBhubServiceCenter = [
-        "Region",
-        "Business Hub",
-        "Service Centre",
-      ].includes(nodeType);
-      const isTechnicalNode = [
-        "Substation",
-        "Feeder Line",
-        "Distribution Substation (DSS)",
-      ].includes(nodeType);
+        "region",
+        "business hub",
+        "service center",
+      ].includes(nodeType.toLocaleLowerCase());
+      const isTechnicalNode = ["substation", "feeder line", "dss"].includes(
+        nodeType.toLocaleLowerCase(),
+      );
 
       if (isRegionBhubServiceCenter) {
         await updateRegionBhubServiceCenter.mutateAsync({
           nodeId,
-          regionId: formData.id,
+          regionId: formData.regionId,
           name: formData.name,
           phoneNo: formData.phoneNumber,
           email: formData.email,
           contactPerson: formData.contactPerson,
           address: formData.address,
-          type: nodeType,
+          type: nodeType.toLocaleLowerCase(),
         });
       } else if (isTechnicalNode) {
         await updateSubstationTransfomerFeeder.mutateAsync({
           nodeId,
           name: formData.name,
-          serialNo: formData.assetId,
+          serialNo: formData.serialNo ?? "",
           phoneNo: formData.phoneNumber,
           email: formData.email,
           contactPerson: formData.contactPerson,
@@ -123,6 +120,7 @@ export const EditNodeDialog = ({
           latitude: formData.latitude ?? "",
           longitude: formData.longitude ?? "",
           description: formData.description ?? "",
+          type: nodeType.toLocaleLowerCase(),
         });
       }
 
@@ -136,11 +134,9 @@ export const EditNodeDialog = ({
     }
   };
 
-  const isTechnicalNode = [
-    "Substation",
-    "Feeder Line",
-    "Distribution Substation (DSS)",
-  ].includes(nodeType);
+  const isTechnicalNode = ["Substation", "Feeder Line", "DSS"].includes(
+    nodeType,
+  );
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -152,9 +148,9 @@ export const EditNodeDialog = ({
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col">
               <label className="text-sm font-medium">
-                {nodeType === "Root"
+                {nodeType.toLowerCase() === "root"
                   ? "Root Name"
-                  : nodeType === "Region"
+                  : nodeType.toLowerCase() === "region"
                     ? "Region Name"
                     : `${nodeType} Name`}{" "}
                 *
@@ -169,22 +165,47 @@ export const EditNodeDialog = ({
             </div>
             <div className="flex flex-col">
               <label className="text-sm font-medium">
-                {nodeType === "Root"
-                  ? "Root ID"
-                  : nodeType === "Region"
-                    ? "Region ID"
-                    : "ID"}{" "}
+                {isTechnicalNode
+                  ? "Serial Number"
+                  : nodeType.toLowerCase() === "root"
+                    ? "Root ID"
+                    : nodeType.toLowerCase() === "region"
+                      ? "Region ID"
+                      : nodeType.toLowerCase() === "business hub"
+                        ? "Business Hub ID"
+                        : nodeType.toLowerCase() === "service center"
+                          ? "Service Center ID"
+                          : "ID"}{" "}
                 *
               </label>
-              <Input
-                name="id"
-                value={formData.id}
-                onChange={handleInputChange}
-                placeholder={`Enter ${nodeType === "Root" ? "Root" : nodeType === "Region" ? "Region" : ""} ID`}
-                className="mt-1 border-gray-300"
-              />
-              {errors.id && (
-                <p className="mt-1 text-xs text-red-500">{errors.id}</p>
+              {isTechnicalNode ? (
+                <Input
+                  name="serialNo"
+                  value={formData.serialNo ?? ""}
+                  onChange={handleInputChange}
+                  placeholder="Enter Serial Number"
+                  className="mt-1 border-gray-300"
+                />
+              ) : (
+                <Input
+                  name="regionId"
+                  value={formData.regionId}
+                  onChange={handleInputChange}
+                  placeholder={`Enter ${nodeType.toLowerCase() === "root"
+                      ? "Root"
+                      : nodeType.toLowerCase() === "region"
+                        ? "Region"
+                        : nodeType.toLowerCase() === "business hub"
+                          ? "Business Hub"
+                          : nodeType.toLowerCase() === "service center"
+                            ? "Service Center"
+                            : ""
+                    } ID`}
+                  className="mt-1 border-gray-300"
+                />
+              )}
+              {errors.regionId && (
+                <p className="mt-1 text-xs text-red-500">{errors.regionId}</p>
               )}
             </div>
           </div>
@@ -241,17 +262,7 @@ export const EditNodeDialog = ({
             </div>
           </div>
           {isTechnicalNode && (
-            <div className="grid grid-cols-3 gap-4">
-              <div className="flex flex-col">
-                <label className="text-sm font-medium">Asset ID *</label>
-                <Input
-                  name="assetId"
-                  value={formData.assetId}
-                  onChange={handleInputChange}
-                  placeholder="Enter Asset ID"
-                  className="mt-1 border-gray-300"
-                />
-              </div>
+            <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col">
                 <label className="text-sm font-medium">Status *</label>
                 <Select
@@ -294,30 +305,31 @@ export const EditNodeDialog = ({
             </div>
           )}
           {(nodeType === "Substation" ||
-            nodeType === "Distribution Substation (DSS)") && (
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col">
-                <label className="text-sm font-medium">Longitude *</label>
-                <Input
-                  name="longitude"
-                  value={formData.longitude}
-                  onChange={handleInputChange}
-                  placeholder="Enter Longitude"
-                  className="mt-1"
-                />
+            nodeType === "DSS" ||
+            nodeType === "Feeder Line") && (
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col">
+                  <label className="text-sm font-medium">Longitude *</label>
+                  <Input
+                    name="longitude"
+                    value={formData.longitude}
+                    onChange={handleInputChange}
+                    placeholder="Enter Longitude"
+                    className="mt-1"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label className="text-sm font-medium">Latitude *</label>
+                  <Input
+                    name="latitude"
+                    value={formData.latitude}
+                    onChange={handleInputChange}
+                    placeholder="Enter Latitude"
+                    className="mt-1 border-gray-300"
+                  />
+                </div>
               </div>
-              <div className="flex flex-col">
-                <label className="text-sm font-medium">Latitude *</label>
-                <Input
-                  name="latitude"
-                  value={formData.latitude}
-                  onChange={handleInputChange}
-                  placeholder="Enter Latitude"
-                  className="mt-1 border-gray-300"
-                />
-              </div>
-            </div>
-          )}
+            )}
           {isTechnicalNode && (
             <div className="flex flex-col">
               <label className="text-sm font-medium">Description *</label>
@@ -355,7 +367,7 @@ export const EditNodeDialog = ({
             className="ml-2 bg-[rgba(22,28,202,1)] text-white"
           >
             {updateRegionBhubServiceCenter.isPending ||
-            updateSubstationTransfomerFeeder.isPending
+              updateSubstationTransfomerFeeder.isPending
               ? "Saving..."
               : "Save"}
           </Button>
