@@ -40,7 +40,7 @@ export function getHierarchyDisplayLabel(hierarchyType: HierarchyType): string {
     case HIERARCHY_TYPES.FEEDER_LINE:
       return "Feeder Line";
     case HIERARCHY_TYPES.DISTRIBUTION_SUBSTATION:
-      return "Distribution Substation (DSS)";
+      return "DSS";
     default:
       return hierarchyType;
   }
