@@ -35,7 +35,7 @@ export const MetersInstalledChart = () => {
     const currentData = dataByType[activeChart];
 
     return (
-        <Card className="w-full max-w-[1000px] border-none bg-transparent shadow-xs border-gray-100">
+        <Card className="w-full max-w-full border-none bg-transparent shadow-xs border-gray-100">
             <CardHeader className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
                 <CardTitle>Meters Assigned Over Time</CardTitle>
                 <div className="flex gap-2">

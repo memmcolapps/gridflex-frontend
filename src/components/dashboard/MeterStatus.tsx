@@ -14,7 +14,7 @@ export const MeterStatus = () => {
     }));
 
     return (
-        <Card className="w-full max-w-[500px] border-none bg-transparent shadow-sm rounded-lg border-gray-100">
+        <Card className="w-full max-w-full border-none bg-transparent shadow-sm rounded-lg border-gray-100">
             <CardHeader>
                 <CardTitle>Meter Status</CardTitle>
             </CardHeader>

@@ -62,8 +62,8 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-transparent p-6">
-      <div className="max-w-screen-2xl space-y-6 bg-transparent">
+    <div className="min-h-screen bg-transparent px-4 sm:px-6 lg:px-8 py-6">
+      <div className="w-full space-y-6 bg-transparent">
         <div className="flex items-start justify-between bg-transparent">
           <ContentHeader
             title="Overview"
@@ -96,10 +96,12 @@ export default function DashboardPage() {
           <MetersInstalledChart />
         </section>
 
-        <section>
-          <div className="grid grid-cols-1 gap-6 bg-transparent pt-6 md:grid-cols-2">
-            <ManufacturerDistribution />
-            <MeterStatus />
+        <section className="px-4">
+          <div className="w-full">
+            <div className="grid grid-cols-1 gap-6 bg-transparent pt-6 md:grid-cols-2">
+              <ManufacturerDistribution />
+              <MeterStatus />
+            </div>
           </div>
         </section>
       </div>
