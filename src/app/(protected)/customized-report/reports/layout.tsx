@@ -16,6 +16,7 @@ import {
   Building2,
   Check,
   ChevronDown,
+  CirclePlus,
   Cylinder,
   Grid2x2,
   Lightbulb,
@@ -37,6 +38,8 @@ import CustomizedTransaction from "./customized-transactions";
 import CustomizedPerUnit from "./customized-per-unit";
 import CustomizedPerMeter from "./customized-per-meter";
 import CustomizedPerVending from "./customized-vend";
+import { Spinner } from "@/components/ui/spinner";
+import { Progress } from "@/components/ui/progress";
 
 const FILTER = [{ accord: "opt 1" }, { accord: "opt 2" }, { accord: "opt 3" }];
 const options = [
@@ -52,6 +55,28 @@ export default function ReportsLayout() {
   const [reportType, setReportType] = useState<string | null>(null);
   const [generateBy, setGenerateBy] = useState("Region");
   const [unit, setUnit] = useState("Select All");
+  const [loading, setLoading] = useState(false)
+  const [showTable, setShowTable] = useState(false)
+  const [progress, setProgress] = useState(0)
+
+  const handleGenerate = () => {
+    setLoading(true)
+    setShowTable(false)
+
+    let value = 0;
+    const interval = setInterval(() => {
+      value += 10;
+      setProgress(value)
+
+      if (value >= 100) {
+        clearInterval(interval)
+        setTimeout(() => {
+          setLoading(false)
+          setShowTable(true)
+        }, 500)
+      }
+    }, 200)
+  }
 
   const renderReportTable = () => {
     switch (reportType) {
@@ -151,10 +176,9 @@ export default function ReportsLayout() {
                     <span>{option}</span>
 
                     <div
-                      className={`flex h-5 w-5 items-center justify-center rounded-lg border transition-colors ${
-                        reportType === option
-                          ? "border-green-500 bg-green-500"
-                          : "border-gray-400"
+                      className={`flex h-5 w-5 items-center justify-center rounded-lg border transition-colors ${reportType === option
+                        ? "border-green-500 bg-green-500"
+                        : "border-gray-400"
                         }`}
                     >
                       {reportType === option && (
@@ -224,10 +248,9 @@ export default function ReportsLayout() {
                   >
                     <span>{option}</span>
                     <div
-                      className={`flex h-5 w-5 items-center justify-center rounded-lg border transition-colors ${
-                        unit === option
-                          ? "border-green-500 bg-green-500"
-                          : "border-gray-400"
+                      className={`flex h-5 w-5 items-center justify-center rounded-lg border transition-colors ${unit === option
+                        ? "border-green-500 bg-green-500"
+                        : "border-gray-400"
                         }`}
                     >
                       {unit === option && (
@@ -247,10 +270,12 @@ export default function ReportsLayout() {
 
         {/* Generate Button */}
         <Button
+          onClick={handleGenerate}
           className="text-md mt-6 ml-4 cursor-pointer border-none bg-[#161CCA] px-10 py-6 font-medium text-white"
           variant="secondary"
           size="lg"
         >
+          <CirclePlus size={13} color="#fff" strokeWidth={1.5} />
           Generate Report
         </Button>
       </Card>
@@ -312,7 +337,26 @@ export default function ReportsLayout() {
 
 
       {/* Render report table here */}
-      {renderReportTable()}
+      {loading && (
+        <div className="mt-4 flex flex-col items-center justify-center">
+          <Card className="p-10 bg-white border-none w-[50%]">
+            <p className="text-sm mt-2 text-center text-gray-500">
+              {progress}%
+            </p>
+            <div className="flex justify-center items-center">
+              <Spinner />
+
+            </div>
+            <Progress value={progress} className="w-full rounded-full" />
+            <p className="text-sm mt-2 text-center text-gray-500">
+              Processing...
+            </p>
+          </Card>
+        </div>
+      )}
+      {!loading && showTable && (
+        renderReportTable()
+      )}
     </div>
   );
 }
