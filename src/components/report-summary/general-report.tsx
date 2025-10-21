@@ -19,7 +19,7 @@ export function GeneralReport() {
                         By Location or Meter Type
                     </h3>
                 </Card>
-                <Card className='w-90 shadow-none px-8 py-12 border border-gray-200 rounded-lg cursor-pointer'>
+                <Card onClick={() => router.push('/customized-report/daily-sales')} className='w-90 shadow-none px-8 py-12 border border-gray-200 rounded-lg cursor-pointer'>
                     <div className='flex flex-row gap-2 items-center text-gray-700 font-semibold text-2xl'>
                         <WalletMinimal size={20} />
                         Daily Sales
@@ -28,7 +28,7 @@ export function GeneralReport() {
                         Summary Of Daily Vending
                     </h3>
                 </Card>
-                <Card className='w-90 shadow-none px-8 py-12 border border-gray-200 rounded-lg cursor-pointer'>
+                <Card onClick={() => router.push('/customized-report/operator-report')} className='w-90 shadow-none px-8 py-12 border border-gray-200 rounded-lg cursor-pointer'>
                     <div className='flex flex-row gap-2 items-center text-gray-700 font-semibold text-2xl'>
                         <Users size={20} />
                         Operator Report

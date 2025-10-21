@@ -155,7 +155,7 @@ export default function ReportsLayout() {
                         reportType === option
                           ? "border-green-500 bg-green-500"
                           : "border-gray-400"
-                      }`}
+                        }`}
                     >
                       {reportType === option && (
                         <Check
@@ -228,7 +228,7 @@ export default function ReportsLayout() {
                         unit === option
                           ? "border-green-500 bg-green-500"
                           : "border-gray-400"
-                      }`}
+                        }`}
                     >
                       {unit === option && (
                         <Check
@@ -247,7 +247,7 @@ export default function ReportsLayout() {
 
         {/* Generate Button */}
         <Button
-          className="text-md mt-6 ml-4 cursor-pointer border-none bg-[#161CCA] px-10 py-4 font-medium text-white"
+          className="text-md mt-6 ml-4 cursor-pointer border-none bg-[#161CCA] px-10 py-6 font-medium text-white"
           variant="secondary"
           size="lg"
         >
@@ -256,25 +256,24 @@ export default function ReportsLayout() {
       </Card>
 
       {/* Filters below */}
-      <Card className="mt-4 flex w-full flex-row justify-between rounded-lg border border-gray-200 px-5 py-0 shadow-none">
-        <div className="mt-6 mb-6 flex items-center justify-between overflow-visible">
-          <div className="flex gap-4 overflow-visible">
-            <div className="flex items-center gap-2">
-              <div className="relative w-full lg:w-[300px]">
-                <Search
-                  size={14}
-                  className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400"
-                />
-                <Input
-                  type="text"
-                  placeholder="Search..."
-                  className="w-full border-gray-300 pl-10 text-sm focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50 lg:text-base"
-                />
-              </div>
-            </div>
+      <Card className="mt-4 flex w-full flex-row items-center justify-between rounded-lg border border-gray-200 px-5 py-4 shadow-none">
+        <div className="flex w-[480px] items-center gap-4">
+          <div className="relative flex-1">
+            <Search
+              size={14}
+              className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-gray-400"
+            />
+            <Input
+              type="text"
+              placeholder="Search..."
+              className="w-full border-gray-300 pl-10 text-sm focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50 lg:text-base"
+            />
+          </div>
 
+          {/* Filter Select */}
+          <div className="w-[90px]">
             <Select>
-              <SelectTrigger className="flex h-10 w-full justify-center [&>svg]:hidden">
+              <SelectTrigger className="h-10 w-full justify-center bg-transparent [&>svg]:hidden">
                 <div className="flex items-center gap-2">
                   <ListFilter size={14} strokeWidth={1.5} />
                   <SelectValue placeholder="Filter" />
@@ -288,9 +287,12 @@ export default function ReportsLayout() {
                 ))}
               </SelectContent>
             </Select>
+          </div>
 
+          {/* Sort Select */}
+          <div className="w-[90px]">
             <Select>
-              <SelectTrigger className="flex h-10 w-full justify-center bg-transparent [&>svg]:hidden">
+              <SelectTrigger className="h-10 w-full justify-center bg-transparent [&>svg]:hidden">
                 <div className="flex items-center gap-2">
                   <ArrowUpDown size={14} strokeWidth={1.5} />
                   <SelectValue placeholder="Sort" />
@@ -307,6 +309,7 @@ export default function ReportsLayout() {
           </div>
         </div>
       </Card>
+
 
       {/* Render report table here */}
       {renderReportTable()}
