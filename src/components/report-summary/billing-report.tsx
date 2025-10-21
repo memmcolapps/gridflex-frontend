@@ -28,7 +28,7 @@ export function BillingReport(){
                             Search Payment By Customer
                         </h3>
                     </Card>
-                    <Card className='w-90 shadow-none px-6 py-12  border border-gray-200 rounded-lg cursor-pointer'>
+                    <Card onClick={() => router.push('/customized-report/adjustment-details')} className='w-90 shadow-none px-6 py-12  border border-gray-200 rounded-lg cursor-pointer'>
                         <div className='flex flex-row gap-2 text-gray-700 font-semibold text-2xl'>
                             <ChartLine size={20} />
                             Adjustment Details
@@ -37,7 +37,7 @@ export function BillingReport(){
                             View Billing Adjustments
                         </h3>
                     </Card>
-                    <Card className='w-90 shadow-none px-6 py-12  border border-gray-200 rounded-lg cursor-pointer'>
+                    <Card onClick={() => router.push('/customized-report/unprinted-bills')} className='w-90 shadow-none px-6 py-12  border border-gray-200 rounded-lg cursor-pointer'>
                         <div className='flex flex-row gap-2 text-gray-700 font-semibold text-2xl'>
                             <Printer size={20} />
                             Unprinted Bills
