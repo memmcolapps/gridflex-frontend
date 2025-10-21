@@ -10,7 +10,7 @@ import {
   updateGroupPermission,
   updateGroupPermissionField,
 } from "@/service/user-service";
-import { type OrganizationAccessPayload } from "@/types/group-permission-user";
+import { type OrganizationAccessPayload, type UpdateGroupPermissionPayload } from "@/types/group-permission-user";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { type CreateUserPayload } from "@/types/users-groups";
@@ -47,7 +47,7 @@ export const useUpdateGroupPermission = () => {
       payload,
     }: {
       groupId: string;
-      payload: OrganizationAccessPayload;
+      payload: UpdateGroupPermissionPayload;
     }) => {
       const response = await updateGroupPermission(groupId, payload);
       if ("success" in response && !response.success) {

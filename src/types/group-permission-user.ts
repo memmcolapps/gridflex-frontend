@@ -1,15 +1,18 @@
 interface SubModule {
+  id: string;
   name: string;
   access: boolean;
 }
 
 interface Module {
+  id: string;
   name: string;
   access: boolean;
   subModules: SubModule[];
 }
 
 interface Permission {
+  id: string;
   view: boolean;
   edit: boolean;
   approve: boolean;
@@ -17,7 +20,7 @@ interface Permission {
 }
 
 export interface OrganizationAccessPayload {
-  orgId?: string;
+  id: string;
   groupTitle: string;
   modules: Module[];
   permission: Permission;
