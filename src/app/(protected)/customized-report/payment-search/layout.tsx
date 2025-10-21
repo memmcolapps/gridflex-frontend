@@ -46,8 +46,8 @@ const options = [
 ];
 
 export default function CurrentBillingSales() {
-    const [generateBy, setGenerateBy] = useState("Select");
-    const [unit, setUnit] = useState("Select");
+    const [generateBy, setGenerateBy] = useState("Region");
+    const [unit, setUnit] = useState("Select All");
     const [showTable, setShowTable] = useState(false)
 
     return (

@@ -33,7 +33,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import UnprintedTable from "./unprinted-table";
+import MonthlyReportTable from "./monthly-table";
 
 const FILTER = [{ accord: "opt 1" }, { accord: "opt 2" }, { accord: "opt 3" }];
 const options = [
@@ -45,7 +45,7 @@ const options = [
     { label: "Distribution Substation (DSS)", icon: Lightbulb },
 ];
 
-export default function UnprintedBillsSales() {
+export default function FeederReport() {
     const [generateBy, setGenerateBy] = useState("Region");
     const [unit, setUnit] = useState("Select All");
     const [showTable, setShowTable] = useState(false)
@@ -232,15 +232,9 @@ export default function UnprintedBillsSales() {
                         </Select>
                     </div>
                 </div>
-                {showTable && (
-                    <div>
-                        <div className="text-xs text-gray-400">Total Bill Amount :</div>
-                        <div className="text-3xl">730,000</div>
-                    </div>
-                )}
             </Card>
             {showTable && (
-                <UnprintedTable />
+                <MonthlyReportTable />
             )}
         </div>
     );

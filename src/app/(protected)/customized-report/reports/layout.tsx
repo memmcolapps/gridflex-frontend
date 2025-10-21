@@ -50,8 +50,8 @@ const options = [
 
 export default function ReportsLayout() {
   const [reportType, setReportType] = useState<string | null>(null);
-  const [generateBy, setGenerateBy] = useState("Select");
-  const [unit, setUnit] = useState("Select");
+  const [generateBy, setGenerateBy] = useState("Region");
+  const [unit, setUnit] = useState("Select All");
 
   const renderReportTable = () => {
     switch (reportType) {
