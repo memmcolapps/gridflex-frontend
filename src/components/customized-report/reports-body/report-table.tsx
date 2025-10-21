@@ -15,7 +15,7 @@ interface ReportTableProps {
 export default function ReportTable({ headers, children }: ReportTableProps) {
   return (
     <Table>
-      <TableHeader className="bg-gray-50">
+      <TableHeader className="bg-gray-50 h-14">
         {headers}
       </TableHeader>
       <TableBody>{children}</TableBody>

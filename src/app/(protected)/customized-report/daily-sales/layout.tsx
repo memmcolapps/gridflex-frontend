@@ -214,7 +214,7 @@ export default function DailySales() {
                     </div>
 
                     {/* Sort Select */}
-                    <div className="w-[90px]">
+                    <div className="w-[70px]">
                         <Select>
                             <SelectTrigger className="h-10 w-full justify-center bg-transparent [&>svg]:hidden">
                                 <div className="flex items-center gap-2">

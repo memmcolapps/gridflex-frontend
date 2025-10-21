@@ -33,7 +33,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import OperatorReportTable from "./operator-table";
+import PaymentTable from "./payment-table";
 
 const FILTER = [{ accord: "opt 1" }, { accord: "opt 2" }, { accord: "opt 3" }];
 const options = [
@@ -45,7 +45,7 @@ const options = [
     { label: "Distribution Substation (DSS)", icon: Lightbulb },
 ];
 
-export default function DailySales() {
+export default function CurrentBillingSales() {
     const [generateBy, setGenerateBy] = useState("Select");
     const [unit, setUnit] = useState("Select");
     const [showTable, setShowTable] = useState(false)
@@ -232,9 +232,15 @@ export default function DailySales() {
                         </Select>
                     </div>
                 </div>
+                {showTable && (
+                    <div>
+                        <div className="text-xs text-gray-400">Total Amount :</div>
+                        <div className="text-3xl">730,000</div>
+                    </div>
+                )}
             </Card>
             {showTable && (
-                <OperatorReportTable/>
+                <PaymentTable />
             )}
         </div>
     );
