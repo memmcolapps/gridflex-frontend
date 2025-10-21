@@ -1,19 +1,21 @@
 import { useState, useRef, useEffect } from "react";
 import { Folder, KeyRound, Repeat, TrendingUp, Zap } from "lucide-react";
 import { Card } from "../ui/card";
+import { useRouter } from "next/navigation";
 
 export function MeteringTechnicalReport() {
     const [isDragging, setIsDragging] = useState(false);
     const [startX, setStartX] = useState(0);
     const [scrollLeft, setScrollLeft] = useState(0);
     const carouselRef = useRef<HTMLDivElement | null>(null);
+    const router = useRouter()
 
     const cards = [
-        { icon: Zap, title: "Feeder Report", subtitle: "Overview of Feeders" },
-        { icon: Folder, title: "Monthly ASCII Report", subtitle: "Monthly Data Export" },
-        { icon: KeyRound, title: "New Application Setup", subtitle: "Setup And Applications" },
-        { icon: TrendingUp, title: "Consumption Report", subtitle: "Consumption Energy Usage" },
-        { icon: Repeat, title: "Feeder to DSS Mapping", subtitle: "Mapping Of Feeders TO DSS" },
+        { icon: Zap, title: "Feeder Report", subtitle: "Overview of Feeders" , href: '/customized-report/feeder-report'},
+        { icon: Folder, title: "Monthly ASCII Report", subtitle: "Monthly Data Export", href: '/customized-report/monthly-report' },
+        { icon: KeyRound, title: "New Application Setup", subtitle: "Setup And Applications" , href: '/customized-report/setup'},
+        { icon: TrendingUp, title: "Consumption Report", subtitle: "Consumption Energy Usage" , href: '/customized-report/energy-usage'},
+        { icon: Repeat, title: "Feeder to DSS Mapping", subtitle: "Mapping Of Feeders TO DSS", href: '/customized-report/feeder-mapping' },
     ];
 
     const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -99,6 +101,7 @@ export function MeteringTechnicalReport() {
                 >
                     {cards.map((card, index) => (
                         <Card
+                            onClick={() => router.push(`${card.href}`)}
                             key={index}
                             className="w-90 px-6 shadow-none py-12 border border-gray-200 rounded-lg cursor-pointer flex-shrink-0 snap-start"
                         >
