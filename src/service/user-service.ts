@@ -30,9 +30,10 @@ export interface GroupPermission {
     orgId: string;
   };
   modules: Array<{
+    id: string;
     name: string;
     access: boolean;
-    subModules: Array<{ name: string; access: boolean }>;
+    subModules: Array<{ id: string; name: string; access: boolean }>;
   }>;
 }
 
@@ -110,7 +111,7 @@ export async function updateGroupPermission(
   try {
     const token = localStorage.getItem("auth_token");
     const response = await axios.put<GroupPermissionResponse>(
-      `${API_URL}/user/service/update/group-permission/${groupId}`,
+      `${API_URL}/user/service/update/group-permission`,
       payload,
       {
         headers: {
