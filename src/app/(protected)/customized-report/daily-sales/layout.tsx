@@ -34,6 +34,8 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import DailySalesTable from "./daily-table";
+import { Spinner } from "@/components/ui/spinner";
+import { Progress } from "@/components/ui/progress";
 
 const FILTER = [{ accord: "opt 1" }, { accord: "opt 2" }, { accord: "opt 3" }];
 const options = [
@@ -48,8 +50,28 @@ const options = [
 export default function DailySales() {
     const [generateBy, setGenerateBy] = useState("Region");
     const [unit, setUnit] = useState("Select All");
+    const [loading, setLoading] = useState(false)
     const [showTable, setShowTable] = useState(false)
+    const [progress, setProgress] = useState(0)
 
+    const handleGenerate = () => {
+        setLoading(true)
+        setShowTable(false)
+
+        let value = 0;
+        const interval = setInterval(() => {
+            value += 10;
+            setProgress(value)
+
+            if (value >= 100) {
+                clearInterval(interval)
+                setTimeout(() => {
+                    setLoading(false)
+                    setShowTable(true)
+                }, 500)
+            }
+        }, 200)
+    }
     return (
         <div className="overflow-hidden p-6">
             {/* Page Header */}
@@ -169,7 +191,7 @@ export default function DailySales() {
 
                 {/* Generate Button */}
                 <Button
-                    onClick={() => setShowTable(true)}
+                    onClick={handleGenerate}
                     className="text-md mt-6 ml-4 cursor-pointer border-none bg-[#161CCA] px-10 py-6 font-medium text-white"
                     variant="secondary"
                     size="lg"
@@ -233,7 +255,24 @@ export default function DailySales() {
                     </div>
                 </div>
             </Card>
-            {showTable && (
+            {loading && (
+                <div className="mt-4 flex flex-col items-center justify-center">
+                    <Card className="p-10 bg-white border-none w-[50%]">
+                        <p className="text-sm mt-2 text-center text-gray-500">
+                            {progress}%
+                        </p>
+                        <div className="flex justify-center items-center">
+                        <Spinner />
+
+                        </div>
+                        <Progress value={progress} className="w-full rounded-full" />
+                        <p className="text-sm mt-2 text-center text-gray-500">
+                            Processing...
+                        </p>
+                    </Card>
+                </div>
+            )}
+            {!loading && showTable && (
                 <DailySalesTable />
             )}
         </div>
