@@ -45,17 +45,23 @@ interface GroupPermission {
   id: string;
   groupTitle: string;
   permissions: {
+    id: string;
     view: boolean;
     edit: boolean;
     approve: boolean;
     disable: boolean;
   };
   modules: Array<{
+    id: string;
     name: string;
     access: boolean;
-    subModules: Array<{ name: string; access: boolean }>;
+    subModules: Array<{ id: string; name: string; access: boolean }>;
   }>;
 }
+
+const generateId = () => {
+  return Math.random().toString(36).substr(2, 9);
+};
 
 const transformModuleAccessToModules = (moduleAccessArray: string[]) => {
   const dataManagementModules = [
@@ -86,41 +92,45 @@ const transformModuleAccessToModules = (moduleAccessArray: string[]) => {
   if (moduleAccessArray.includes("all-access")) {
     return [
       {
+        id: generateId(),
         name: "Data Management",
         access: true,
         subModules: [
-          { name: "Organization", access: true },
-          { name: "Meter Management", access: true },
-          { name: "Customer Management", access: true },
-          { name: "Tariff", access: true },
-          { name: "Band Management", access: true },
-          { name: "Review and Approval", access: true },
-          { name: "Debt Management", access: true },
+          { id: generateId(), name: "Organization", access: true },
+          { id: generateId(), name: "Meter Management", access: true },
+          { id: generateId(), name: "Customer Management", access: true },
+          { id: generateId(), name: "Tariff", access: true },
+          { id: generateId(), name: "Band Management", access: true },
+          { id: generateId(), name: "Review and Approval", access: true },
+          { id: generateId(), name: "Debt Management", access: true },
         ],
       },
-      { name: "Billing", access: true, subModules: [] },
-      { name: "Vending", access: true, subModules: [] },
-      { name: "HES", access: true, subModules: [] },
-      { name: "User Management", access: true, subModules: [] },
-      { name: "Dashboard", access: true, subModules: [] },
+      { id: generateId(), name: "Billing", access: true, subModules: [] },
+      { id: generateId(), name: "Vending", access: true, subModules: [] },
+      { id: generateId(), name: "HES", access: true, subModules: [] },
+      { id: generateId(), name: "User Management", access: true, subModules: [] },
+      { id: generateId(), name: "Dashboard", access: true, subModules: [] },
     ];
   }
 
   const modules: Array<{
+    id: string;
     name: string;
     access: boolean;
-    subModules: Array<{ name: string; access: boolean }>;
+    subModules: Array<{ id: string; name: string; access: boolean }>;
   }> = [];
-  const dataManagementSubModules: Array<{ name: string; access: boolean }> = [];
+  const dataManagementSubModules: Array<{ id: string; name: string; access: boolean }> = [];
 
   moduleAccessArray.forEach((moduleAccess) => {
     if (dataManagementModules.includes(moduleAccess)) {
       dataManagementSubModules.push({
+        id: generateId(),
         name: moduleNames[moduleAccess] ?? "Unknown Module",
         access: true,
       });
     } else {
       modules.push({
+        id: generateId(),
         name: moduleNames[moduleAccess] ?? moduleAccess,
         access: true,
         subModules: [],
@@ -130,6 +140,7 @@ const transformModuleAccessToModules = (moduleAccessArray: string[]) => {
 
   if (dataManagementSubModules.length > 0) {
     modules.unshift({
+      id: generateId(),
       name: "Data Management",
       access: true,
       subModules: dataManagementSubModules,
@@ -141,6 +152,7 @@ const transformModuleAccessToModules = (moduleAccessArray: string[]) => {
 
 const transformAccessLevelsToPermissions = (accessLevels: string[]) => {
   return {
+    id: generateId(),
     view: accessLevels.includes("view-only"),
     edit: accessLevels.includes("edit-only"),
     approve: accessLevels.includes("approve-only"),
@@ -229,9 +241,9 @@ export default function GroupPermissionManagement() {
 
       createPermissionGroup(
         {
+          id: generateId(),
           groupTitle: newGroup.groupTitle,
           permission: permissions,
-          orgId: user?.orgId ?? "",
           modules,
         },
         {
@@ -255,8 +267,9 @@ export default function GroupPermissionManagement() {
     permissionType: keyof GroupPermission["permissions"],
     value: boolean,
   ) => {
+    if (permissionType === "id") return; // Don't update id
     updatePermissionField(
-      { groupId, permissionType, value },
+      { groupId, permissionType: permissionType as "view" | "edit" | "approve" | "disable", value },
       {
         onSuccess: () => {
           toast.success("Permission updated successfully");
@@ -274,6 +287,32 @@ export default function GroupPermissionManagement() {
     setEditDialogOpen(true);
   };
 
+  const updateModulesAccess = (existingModules: GroupPermission["modules"], newModuleAccess: string[]) => {
+    const newModules = transformModuleAccessToModules(newModuleAccess);
+    // For update, we need to preserve existing ids if possible, but since the form doesn't provide ids, we'll generate new ones
+    // But to match existing structure, we should try to preserve ids where names match
+    return newModules.map(newMod => {
+      const existing = existingModules.find(ex => ex.name === newMod.name);
+      if (existing) {
+        return {
+          ...newMod,
+          id: existing.id,
+          subModules: newMod.subModules.map(sub => {
+            const existingSub = existing.subModules.find(es => es.name === sub.name);
+            return existingSub ? { ...sub, id: existingSub.id } : sub;
+          })
+        };
+      }
+      return newMod;
+    });
+  };
+
+  const updatePermissions = (existingPermissions: GroupPermission["permissions"], newAccessLevels: string[]) => {
+    const newPermissions = transformAccessLevelsToPermissions(newAccessLevels);
+    // Preserve existing id
+    return { ...newPermissions, id: existingPermissions.id };
+  };
+
   const handleUpdateGroupPermission = async (data: {
     id: string;
     groupTitle: string;
@@ -281,13 +320,20 @@ export default function GroupPermissionManagement() {
     accessLevel: string[];
   }) => {
     try {
-      const permissions = transformAccessLevelsToPermissions(data.accessLevel);
-      const modules = transformModuleAccessToModules(data.moduleAccess);
+      // Find the existing group to get current ids
+      const existingGroup = groupPermissions.find(g => g.id === data.id);
+      if (!existingGroup) {
+        toast.error("Group not found");
+        return;
+      }
+
+      const permissions = updatePermissions(existingGroup.permissions, data.accessLevel);
+      const modules = updateModulesAccess(existingGroup.modules, data.moduleAccess);
 
       const payload = {
+        id: data.id,
         groupTitle: data.groupTitle,
         permission: permissions,
-        orgId: user?.orgId ?? "",
         modules,
       };
 

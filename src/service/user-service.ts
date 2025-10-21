@@ -1,7 +1,7 @@
 import axios from "axios";
 import { env } from "@/env";
 import { handleApiError } from "error";
-import { type OrganizationAccessPayload } from "@/types/group-permission-user";
+import { type OrganizationAccessPayload, type UpdateGroupPermissionPayload } from "@/types/group-permission-user";
 import {
   type CreateUserPayload,
   type GetUsersApiResponse,
@@ -30,9 +30,10 @@ export interface GroupPermission {
     orgId: string;
   };
   modules: Array<{
+    id: string;
     name: string;
     access: boolean;
-    subModules: Array<{ name: string; access: boolean }>;
+    subModules: Array<{ id: string; name: string; access: boolean }>;
   }>;
 }
 
@@ -105,12 +106,12 @@ export async function createGroupPermission(
 
 export async function updateGroupPermission(
   groupId: string,
-  payload: OrganizationAccessPayload,
+  payload: UpdateGroupPermissionPayload,
 ): Promise<{ success: true } | { success: false; error: string }> {
   try {
     const token = localStorage.getItem("auth_token");
     const response = await axios.put<GroupPermissionResponse>(
-      `${API_URL}/user/service/update/group-permission/${groupId}`,
+      `${API_URL}/user/service/update/group-permission`,
       payload,
       {
         headers: {
@@ -146,7 +147,7 @@ export async function updateGroupPermissionField(
   try {
     const token = localStorage.getItem("auth_token");
     const response = await axios.patch<GroupPermissionResponse>(
-      `${API_URL}/user/service/update/group-permission/${groupId}/permission`,
+      `${API_URL}/user/service/update/group-permission`,
       {
         permissionType,
         value,
@@ -299,7 +300,7 @@ export async function editUser(
 ): Promise<{ success: true } | { success: false; error: string }> {
   try {
     const token = localStorage.getItem("auth_token");
-    const response = await axios.put(`${API_URL}/user/service/update`, user, {
+    const response = await axios.put(`${API_URL}/user/service/group/update`, user, {
       headers: {
         "Content-Type": "application/json",
         custom: CUSTOM_HEADER,
