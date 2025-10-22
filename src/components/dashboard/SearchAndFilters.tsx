@@ -14,8 +14,8 @@ interface SearchAndFiltersProps {
   setSelectedBand: (band: string) => void;
   selectedYear: string;
   setSelectedYear: (year: string) => void;
-  selectedMeterType: string;
-  setSelectedMeterType: (type: string) => void;
+  selectedMeterCategory: string;
+  setSelectedMeterCategory: (category: string) => void;
 }
 
 export const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({
@@ -23,8 +23,8 @@ export const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({
   setSelectedBand,
   selectedYear,
   setSelectedYear,
-  selectedMeterType,
-  setSelectedMeterType,
+  selectedMeterCategory,
+  setSelectedMeterCategory,
 }) => {
   const [loading] = useState(false);
   const { bands } = useBand();
@@ -94,16 +94,15 @@ export const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({
             ))}
           </SelectContent>
         </Select>
-        <Select value={selectedMeterType} onValueChange={setSelectedMeterType}>
+        <Select value={selectedMeterCategory} onValueChange={setSelectedMeterCategory}>
           <SelectTrigger className="w-full cursor-pointer">
-            <SelectValue placeholder="Meter Type">
-              {selectedMeterType}
+            <SelectValue placeholder="Meter Category">
+              {selectedMeterCategory}
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="Prepaid">Prepaid</SelectItem>
             <SelectItem value="Postpaid">Postpaid</SelectItem>
-            <SelectItem value="Smart">Smart</SelectItem>
           </SelectContent>
         </Select>
       </div>

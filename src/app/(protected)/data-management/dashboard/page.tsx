@@ -16,7 +16,7 @@ import { EditCompleteProfileModal } from "@/components/profile/editcompleteprofi
 export default function DashboardPage() {
   const [selectedBand, setSelectedBand] = useState("Band");
   const [selectedYear, setSelectedYear] = useState("Year");
-  const [selectedMeterType, setSelectedMeterType] = useState("Meter Type");
+  const [selectedMeterCategory, setSelectedMeterCategory] = useState("Meter Category");
   const [showCompleteProfileModal, setShowCompleteProfileModal] =
     useState(false);
   const [showEditCompleteProfileModal, setShowEditCompleteProfileModal] =
@@ -37,7 +37,7 @@ export default function DashboardPage() {
   const filters = {
     band: selectedBand,
     year: selectedYear,
-    meterType: selectedMeterType,
+    meterCategory: selectedMeterCategory,
   };
   const { data: dashboardData, error, isLoading } = useDashboard(filters);
 
@@ -66,6 +66,106 @@ export default function DashboardPage() {
     setShowCompleteProfileModal(false);
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-transparent px-4 sm:px-6 lg:px-8 py-6">
+        <div className="w-full space-y-6 bg-transparent">
+          <div className="flex items-start justify-between bg-transparent">
+            <ContentHeader
+              title="Overview"
+              description="General overview of Data Management Dashboard"
+            />
+          </div>
+
+          {/* Loading Skeleton for Filters */}
+          <section>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+                <div className="h-10 bg-gray-200 rounded-md animate-pulse"></div>
+                <div className="h-10 bg-gray-200 rounded-md animate-pulse"></div>
+                <div className="h-10 bg-gray-200 rounded-md animate-pulse"></div>
+              </div>
+            </div>
+          </section>
+
+          {/* Loading Skeleton for Status Cards */}
+          <section>
+            <div className="grid h-40 w-full grid-cols-1 gap-4 bg-transparent sm:grid-cols-2 md:grid-cols-4">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div className="h-4 bg-gray-200 rounded animate-pulse w-24"></div>
+                    <div className="h-8 w-8 bg-gray-200 rounded-full animate-pulse"></div>
+                  </div>
+                  <div className="mt-4">
+                    <div className="h-8 bg-gray-200 rounded animate-pulse w-16"></div>
+                    <div className="h-4 bg-gray-200 rounded animate-pulse w-12 mt-2"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Loading Skeleton for Chart */}
+          <section className="mt-10 rounded-lg bg-white pt-6 shadow-sm border border-gray-200">
+            <div className="px-6 mb-4">
+              <div className="h-6 bg-gray-200 rounded animate-pulse w-48"></div>
+            </div>
+            <div className="flex gap-2 mb-6 px-6">
+              <div className="h-8 bg-gray-200 rounded animate-pulse w-16"></div>
+              <div className="h-8 bg-gray-200 rounded animate-pulse w-16"></div>
+            </div>
+            <div className="h-[200px] bg-gray-100 rounded animate-pulse mx-6 mb-6"></div>
+          </section>
+
+          {/* Loading Skeleton for Bottom Section */}
+          <section className="px-4">
+            <div className="w-full">
+              <div className="grid grid-cols-1 gap-6 bg-transparent pt-6 md:grid-cols-2">
+                {/* Manufacturer Distribution Skeleton */}
+                <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+                  <div className="p-6">
+                    <div className="h-6 bg-gray-200 rounded animate-pulse w-40 mb-4"></div>
+                    <div className="space-y-3">
+                      {[1, 2, 3, 4, 5].map((i) => (
+                        <div key={i} className="flex items-center justify-between">
+                          <div className="flex items-center">
+                            <div className="h-3 w-3 bg-gray-200 rounded-full mr-2 animate-pulse"></div>
+                            <div className="h-4 bg-gray-200 rounded animate-pulse w-20"></div>
+                          </div>
+                          <div className="h-4 bg-gray-200 rounded animate-pulse w-8"></div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Meter Status Skeleton */}
+                <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+                  <div className="p-6">
+                    <div className="h-6 bg-gray-200 rounded animate-pulse w-24 mb-4"></div>
+                    <div className="flex flex-col md:flex-row gap-4">
+                      <div className="w-full md:w-1/2 space-y-3">
+                        {[1, 2, 3, 4].map((i) => (
+                          <div key={i} className="flex items-center">
+                            <div className="h-3 w-3 bg-gray-200 rounded-full mr-2 animate-pulse"></div>
+                            <div className="h-4 bg-gray-200 rounded animate-pulse w-16 flex-grow"></div>
+                            <div className="h-4 bg-gray-200 rounded animate-pulse w-8"></div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="w-full md:w-1/2 h-[200px] bg-gray-100 rounded animate-pulse"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-transparent px-4 sm:px-6 lg:px-8 py-6">
       <div className="w-full space-y-6 bg-transparent">
@@ -82,8 +182,8 @@ export default function DashboardPage() {
             setSelectedBand={setSelectedBand}
             selectedYear={selectedYear}
             setSelectedYear={setSelectedYear}
-            selectedMeterType={selectedMeterType}
-            setSelectedMeterType={setSelectedMeterType}
+            selectedMeterCategory={selectedMeterCategory}
+            setSelectedMeterCategory={setSelectedMeterCategory}
           />
         </section>
 

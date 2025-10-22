@@ -9,7 +9,7 @@ const CUSTOM_HEADER = env.NEXT_PUBLIC_CUSTOM_HEADER;
 export interface DashboardFilters {
   band?: string;
   year?: string;
-  meterType?: string;
+  meterCategory?: string;
 }
 
 export async function getDashboard(filters?: DashboardFilters): Promise<
@@ -25,8 +25,8 @@ export async function getDashboard(filters?: DashboardFilters): Promise<
     if (filters?.year && filters.year !== "Year") {
       params.append("year", filters.year);
     }
-    if (filters?.meterType && filters.meterType !== "Meter Type") {
-      params.append("meterType", filters.meterType);
+    if (filters?.meterCategory && filters.meterCategory !== "Meter Category") {
+      params.append("meterCategory", filters.meterCategory);
     }
 
     const queryString = params.toString();
