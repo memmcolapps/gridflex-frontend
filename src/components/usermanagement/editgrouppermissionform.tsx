@@ -15,15 +15,17 @@ interface GroupPermission {
   id: string;
   groupTitle: string;
   permissions: {
+    id: string;
     view: boolean;
     edit: boolean;
     approve: boolean;
     disable: boolean;
   };
   modules: Array<{
+    id: string;
     name: string;
     access: boolean;
-    subModules: Array<{ name: string; access: boolean }>;
+    subModules: Array<{ id: string; name: string; access: boolean }>;
   }>;
 }
 
@@ -48,7 +50,9 @@ export default function EditGroupPermissionForm({
 }: EditGroupPermissionFormProps) {
   const [groupTitle, setGroupTitle] = useState("");
   const [selectedModules, setSelectedModules] = useState<string[]>([]);
-  const [selectedAccessLevels, setSelectedAccessLevels] = useState<string[]>([]);
+  const [selectedAccessLevels, setSelectedAccessLevels] = useState<string[]>(
+    [],
+  );
   const [isModuleDropdownOpen, setIsModuleDropdownOpen] = useState(false);
   const [isAccessDropdownOpen, setIsAccessDropdownOpen] = useState(false);
   const [isDataManagementOpen, setIsDataManagementOpen] = useState(false);
@@ -110,25 +114,35 @@ export default function EditGroupPermissionForm({
   ];
 
   // Utility function to convert modules back to module access array
-  const convertModulesToModuleAccess = (modules: GroupPermission["modules"]): string[] => {
+  const convertModulesToModuleAccess = (
+    modules: GroupPermission["modules"],
+  ): string[] => {
     const moduleMap: Record<string, string> = {
-      "Organization": "organization",
+      Organization: "organization",
       "Meter Management": "meter-management",
       "Customer Management": "customer-management",
-      "Tariff": "tarrif",
+      Tariff: "tarrif",
       "Band Management": "band-management",
       "Review and Approval": "reviewandapproval",
       "Debt Management": "debt-management",
-      "Billing": "billing",
-      "Vending": "vending",
-      "HES": "hes",
+      Billing: "billing",
+      Vending: "vending",
+      HES: "hes",
       "User Management": "user-management",
-      "Dashboard": "dashboard",
+      Dashboard: "dashboard",
     };
 
     const accessArray: string[] = [];
     let hasAllDataManagementModules = true;
-    const dataManagementModules = ["organization", "meter-management", "customer-management", "tarrif", "band-management", "reviewandapproval", "debt-management"];
+    const dataManagementModules = [
+      "organization",
+      "meter-management",
+      "customer-management",
+      "tarrif",
+      "band-management",
+      "reviewandapproval",
+      "debt-management",
+    ];
     const foundDataManagementModules: string[] = [];
 
     modules.forEach((module) => {
@@ -149,12 +163,22 @@ export default function EditGroupPermissionForm({
     });
 
     // Check if all data management modules are present
-    hasAllDataManagementModules = dataManagementModules.every(dm => foundDataManagementModules.includes(dm));
-    
+    hasAllDataManagementModules = dataManagementModules.every((dm) =>
+      foundDataManagementModules.includes(dm),
+    );
+
     // Check if all modules are selected (for all-access)
-    const allNonDataManagementModules = ["billing", "vending", "hes", "user-management", "dashboard"];
-    const hasAllNonDataManagementModules = allNonDataManagementModules.every(module => accessArray.includes(module));
-    
+    const allNonDataManagementModules = [
+      "billing",
+      "vending",
+      "hes",
+      "user-management",
+      "dashboard",
+    ];
+    const hasAllNonDataManagementModules = allNonDataManagementModules.every(
+      (module) => accessArray.includes(module),
+    );
+
     if (hasAllDataManagementModules && hasAllNonDataManagementModules) {
       return ["all-access"];
     }
@@ -163,7 +187,9 @@ export default function EditGroupPermissionForm({
   };
 
   // Convert permissions back to access level array
-  const convertPermissionsToAccessLevel = (permissions: GroupPermission["permissions"]): string[] => {
+  const convertPermissionsToAccessLevel = (
+    permissions: GroupPermission["permissions"],
+  ): string[] => {
     const accessLevels: string[] = [];
     if (permissions.view) accessLevels.push("view-only");
     if (permissions.edit) accessLevels.push("edit-only");
@@ -177,7 +203,9 @@ export default function EditGroupPermissionForm({
     if (groupPermission && isOpen) {
       setGroupTitle(groupPermission.groupTitle);
       setSelectedModules(convertModulesToModuleAccess(groupPermission.modules));
-      setSelectedAccessLevels(convertPermissionsToAccessLevel(groupPermission.permissions));
+      setSelectedAccessLevels(
+        convertPermissionsToAccessLevel(groupPermission.permissions),
+      );
       setErrors({});
     }
   }, [groupPermission, isOpen]);

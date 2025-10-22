@@ -20,7 +20,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import GroupPermissionForm from "./grouppermissionform";
 import EditGroupPermissionForm from "./editgrouppermissionform";
-import { useAuth } from "@/context/auth-context";
 import {
   useCreateGroupPermission,
   useGroupPermissions,
@@ -59,10 +58,7 @@ interface GroupPermission {
   }>;
 }
 
-const generateId = () => {
-  return Math.random().toString(36).substr(2, 9);
-};
-
+// For CREATE operations only - backend generates the IDs
 const transformModuleAccessToModules = (moduleAccessArray: string[]) => {
   const dataManagementModules = [
     "organization",
@@ -92,40 +88,36 @@ const transformModuleAccessToModules = (moduleAccessArray: string[]) => {
   if (moduleAccessArray.includes("all-access")) {
     return [
       {
-        id: generateId(),
         name: "Data Management",
         access: true,
         subModules: [
-          { id: generateId(), name: "Organization", access: true },
-          { id: generateId(), name: "Meter Management", access: true },
-          { id: generateId(), name: "Customer Management", access: true },
-          { id: generateId(), name: "Tariff", access: true },
-          { id: generateId(), name: "Band Management", access: true },
-          { id: generateId(), name: "Review and Approval", access: true },
-          { id: generateId(), name: "Debt Management", access: true },
+          { name: "Organization", access: true },
+          { name: "Meter Management", access: true },
+          { name: "Customer Management", access: true },
+          { name: "Tariff", access: true },
+          { name: "Band Management", access: true },
+          { name: "Review and Approval", access: true },
+          { name: "Debt Management", access: true },
         ],
       },
-      { id: generateId(), name: "Billing", access: true, subModules: [] },
-      { id: generateId(), name: "Vending", access: true, subModules: [] },
-      { id: generateId(), name: "HES", access: true, subModules: [] },
+      { name: "Billing", access: true, subModules: [] },
+      { name: "Vending", access: true, subModules: [] },
+      { name: "HES", access: true, subModules: [] },
       {
-        id: generateId(),
         name: "User Management",
         access: true,
         subModules: [],
       },
-      { id: generateId(), name: "Dashboard", access: true, subModules: [] },
+      { name: "Dashboard", access: true, subModules: [] },
     ];
   }
 
   const modules: Array<{
-    id: string;
     name: string;
     access: boolean;
-    subModules: Array<{ id: string; name: string; access: boolean }>;
+    subModules: Array<{ name: string; access: boolean }>;
   }> = [];
   const dataManagementSubModules: Array<{
-    id: string;
     name: string;
     access: boolean;
   }> = [];
@@ -133,13 +125,11 @@ const transformModuleAccessToModules = (moduleAccessArray: string[]) => {
   moduleAccessArray.forEach((moduleAccess) => {
     if (dataManagementModules.includes(moduleAccess)) {
       dataManagementSubModules.push({
-        id: generateId(),
         name: moduleNames[moduleAccess] ?? "Unknown Module",
         access: true,
       });
     } else {
       modules.push({
-        id: generateId(),
         name: moduleNames[moduleAccess] ?? moduleAccess,
         access: true,
         subModules: [],
@@ -149,7 +139,6 @@ const transformModuleAccessToModules = (moduleAccessArray: string[]) => {
 
   if (dataManagementSubModules.length > 0) {
     modules.unshift({
-      id: generateId(),
       name: "Data Management",
       access: true,
       subModules: dataManagementSubModules,
@@ -161,7 +150,6 @@ const transformModuleAccessToModules = (moduleAccessArray: string[]) => {
 
 const transformAccessLevelsToPermissions = (accessLevels: string[]) => {
   return {
-    id: generateId(),
     view: accessLevels.includes("view-only"),
     edit: accessLevels.includes("edit-only"),
     approve: accessLevels.includes("approve-only"),
@@ -170,7 +158,6 @@ const transformAccessLevelsToPermissions = (accessLevels: string[]) => {
 };
 
 export default function GroupPermissionManagement() {
-  const { user } = useAuth();
   const { data: groupPermissions, isLoading, error } = useGroupPermissions();
   const { mutate: createPermissionGroup } = useCreateGroupPermission();
   const { mutate: updatePermissionGroup } = useUpdateGroupPermission();
@@ -303,38 +290,147 @@ export default function GroupPermissionManagement() {
     setEditDialogOpen(true);
   };
 
-  const updateModulesAccess = (
+  const updateModulesAccessForUpdate = (
     existingModules: GroupPermission["modules"],
     newModuleAccess: string[],
-  ) => {
-    const newModules = transformModuleAccessToModules(newModuleAccess);
-    // For update, we need to preserve existing ids if possible, but since the form doesn't provide ids, we'll generate new ones
-    // But to match existing structure, we should try to preserve ids where names match
-    return newModules.map((newMod) => {
-      const existing = existingModules.find((ex) => ex.name === newMod.name);
-      if (existing) {
-        return {
-          ...newMod,
-          id: existing.id,
-          subModules: newMod.subModules.map((sub) => {
-            const existingSub = existing.subModules.find(
-              (es) => es.name === sub.name,
-            );
-            return existingSub ? { ...sub, id: existingSub.id } : sub;
-          }),
-        };
+  ): GroupPermission["modules"] => {
+    // Build the desired module structure based on selected access
+    const dataManagementModules = [
+      "organization",
+      "meter-management",
+      "customer-management",
+      "tarrif",
+      "band-management",
+      "reviewandapproval",
+      "debt-management",
+    ];
+
+    const moduleNames: Record<string, string> = {
+      organization: "Organization",
+      "meter-management": "Meter Management",
+      "customer-management": "Customer Management",
+      tarrif: "Tariff",
+      "band-management": "Band Management",
+      reviewandapproval: "Review and Approval",
+      "debt-management": "Debt Management",
+      billing: "Billing",
+      vending: "Vending",
+      hes: "HES",
+      "user-management": "User Management",
+      dashboard: "Dashboard",
+    };
+
+    // If all-access is selected, return all modules with backend IDs
+    if (newModuleAccess.includes("all-access")) {
+      // Create structure for Data Management parent + all others
+      // ONLY include modules that exist in the backend data
+      const result: GroupPermission["modules"] = [];
+
+      // Find Data Management module from existing backend data
+      const existingDataManagement = existingModules.find(
+        (m) => m.name === "Data Management",
+      );
+
+      // Only add Data Management if it exists in backend data
+      if (existingDataManagement) {
+        result.push({
+          ...existingDataManagement,
+          access: true,
+        });
       }
-      return newMod;
+
+      // Add other modules - only those that exist in backend data
+      const otherModules = [
+        "billing",
+        "vending",
+        "hes",
+        "user-management",
+        "dashboard",
+      ];
+      for (const moduleKey of otherModules) {
+        const moduleName = moduleNames[moduleKey] ?? moduleKey;
+        const existing = existingModules.find((m) => m.name === moduleName);
+        if (existing) {
+          result.push({ ...existing, access: true });
+        }
+        // If not found in backend, skip it - don't generate ID
+      }
+
+      return result;
+    }
+
+    // For partial selections, build only the selected modules
+    const result: GroupPermission["modules"] = [];
+    const selectedDataManagementSubModules: string[] = [];
+
+    // Separate data management from other modules
+    newModuleAccess.forEach((moduleAccess) => {
+      if (dataManagementModules.includes(moduleAccess)) {
+        selectedDataManagementSubModules.push(moduleAccess);
+      }
     });
+
+    // Add Data Management module if it has selections
+    if (selectedDataManagementSubModules.length > 0) {
+      const existingDataManagement = existingModules.find(
+        (m) => m.name === "Data Management",
+      );
+
+      // Only add if it exists in backend data
+      if (existingDataManagement) {
+        const subModules: GroupPermission["modules"][0]["subModules"] = [];
+
+        selectedDataManagementSubModules.forEach((moduleAccess) => {
+          const moduleName = moduleNames[moduleAccess] ?? "Unknown Module";
+          const existingSub = existingDataManagement.subModules.find(
+            (s) => s.name === moduleName,
+          );
+
+          // Only add if found - never generate ID
+          if (existingSub) {
+            subModules.push({ ...existingSub, access: true });
+          }
+          // If not found in backend, skip it - don't generate ID
+        });
+
+        result.push({
+          ...existingDataManagement,
+          access: true,
+          subModules,
+        });
+      }
+      // If Data Management doesn't exist in backend, skip it entirely
+    }
+
+    // Add other selected modules
+    newModuleAccess.forEach((moduleAccess) => {
+      if (!dataManagementModules.includes(moduleAccess)) {
+        const moduleName = moduleNames[moduleAccess] ?? moduleAccess;
+        const existing = existingModules.find((m) => m.name === moduleName);
+
+        // Only add if found in backend data
+        if (existing) {
+          result.push({ ...existing, access: true });
+        }
+        // If not found in backend, skip it - don't generate ID
+      }
+    });
+
+    return result;
   };
 
-  const updatePermissions = (
+  const updatePermissionsForUpdate = (
     existingPermissions: GroupPermission["permissions"],
     newAccessLevels: string[],
-  ) => {
-    const newPermissions = transformAccessLevelsToPermissions(newAccessLevels);
-    // Preserve existing id
-    return { ...newPermissions, id: existingPermissions.id };
+  ): GroupPermission["permissions"] => {
+    // Always preserve the backend-provided ID
+    return {
+      id: existingPermissions.id,
+      view: newAccessLevels.includes("view-only"),
+      edit: newAccessLevels.includes("edit-only"),
+      approve: newAccessLevels.includes("approve-only"),
+      disable: newAccessLevels.includes("disable-only"),
+    };
   };
 
   const handleUpdateGroupPermission = async (data: {
@@ -344,22 +440,24 @@ export default function GroupPermissionManagement() {
     accessLevel: string[];
   }) => {
     try {
-      // Find the existing group to get current ids
+      // Find the existing group to preserve backend IDs
       const existingGroup = groupPermissions.find((g) => g.id === data.id);
       if (!existingGroup) {
         toast.error("Group not found");
         return;
       }
 
-      const permissions = updatePermissions(
+      // Use the new update functions that preserve backend IDs
+      const permissions = updatePermissionsForUpdate(
         existingGroup.permissions,
         data.accessLevel,
       );
-      const modules = updateModulesAccess(
+      const modules = updateModulesAccessForUpdate(
         existingGroup.modules,
         data.moduleAccess,
       );
 
+      // Build payload matching the backend sample exactly
       const payload = {
         id: data.id,
         groupTitle: data.groupTitle,
@@ -385,17 +483,6 @@ export default function GroupPermissionManagement() {
       toast.error("Error updating group permission");
     }
   };
-
-  // const handleDeleteGroup = async (groupId: string) => {
-  //   try {
-  //     // Simulate API call
-  //     await new Promise((resolve) => setTimeout(resolve, 500));
-
-  //     console.log(`Deleted group ${groupId}`);
-  //   } catch (err) {
-  //     console.error("Error deleting group:", err);
-  //   }
-  // };
 
   return (
     <div className="h-screen overflow-y-hidden text-black">
