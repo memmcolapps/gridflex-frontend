@@ -10,15 +10,23 @@ import {
     ResponsiveContainer,
 } from 'recharts';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { manufacturerData } from '@/lib/dashboardData';
+import { useDashboard } from '@/hooks/use-dashboard';
 
 export const ManufacturerDistribution = () => {
-    const chartData = manufacturerData.labels.map((label, index) => ({
-        name: label,
-        value: manufacturerData.series[index],
+    const { data: dashboardData } = useDashboard();
+
+    // Group manufacturers by name and count occurrences
+    const manufacturerCount = dashboardData?.manufacturers?.reduce((acc, manufacturer) => {
+        acc[manufacturer.name] = (acc[manufacturer.name] || 0) + 1;
+        return acc;
+    }, {} as Record<string, number>) || {};
+
+    const chartData = Object.entries(manufacturerCount).map(([name, count]) => ({
+        name,
+        value: count,
     }));
 
-    const total = manufacturerData.series.reduce((a, b) => a + b, 0);
+    const total = Object.values(manufacturerCount).reduce((a, b) => a + b, 0);
     const barColor = '#769FCD';
 
     return (

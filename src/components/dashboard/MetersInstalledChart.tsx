@@ -12,24 +12,20 @@ import {
 } from 'recharts';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { chartData } from '@/lib/dashboardData';
+import { useDashboard } from '@/hooks/use-dashboard';
 
 export const MetersInstalledChart = () => {
-    const [activeChart, setActiveChart] = useState<'monthly' | 'quarterly' | 'yearly'>('monthly');
+    const [activeChart, setActiveChart] = useState<'monthly'| 'yearly'>('monthly');
+    const { data: dashboardData } = useDashboard();
+
+    const apiMonthlyData = dashboardData?.installedOverMonths?.map(item => ({
+        month: item.month,
+        value: item.count,
+    })) || [];
 
     const dataByType = {
-        monthly: chartData,
-        quarterly: [
-            { month: 'Q1', value: 165 },
-            { month: 'Q2', value: 85 },
-            { month: 'Q3', value: 175 },
-            { month: 'Q4', value: 245 },
-        ],
-        yearly: [
-            { month: '2021', value: 600 },
-            { month: '2022', value: 650 },
-            { month: '2023', value: 670 },
-        ],
+        monthly: apiMonthlyData,
+        yearly: [], // No yearly data from API, can be removed or handled differently
     };
 
     const currentData = dataByType[activeChart];
@@ -47,15 +43,6 @@ export const MetersInstalledChart = () => {
                         onClick={() => setActiveChart('monthly')}
                     >
                         Monthly
-                    </Button>
-                    <Button
-                    className={`cursor-pointer ${
-                        activeChart ==='quarterly'? 'border border-gray-300 bg-gray-100' : 'border border-transparent hover:border-gray-100 hover:bg-gray-100'}`}
-                        variant={activeChart === 'quarterly' ? 'secondary' : 'ghost'}
-                        size="sm"
-                        onClick={() => setActiveChart('quarterly')}
-                    >
-                        Quarterly
                     </Button>
                     <Button
                     className={`cursor-pointer ${

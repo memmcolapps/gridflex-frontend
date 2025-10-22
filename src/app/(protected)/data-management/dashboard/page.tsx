@@ -9,12 +9,11 @@ import { SearchAndFilters } from "@/components/dashboard/SearchAndFilters";
 import { MetersInstalledChart } from "@/components/dashboard/MetersInstalledChart";
 import { ManufacturerDistribution } from "@/components/dashboard/ManufacturerDistribution";
 import { MeterStatus } from "@/components/dashboard/MeterStatus";
-import { statusCards } from "@/lib/dashboardData";
+import { useDashboard } from "@/hooks/use-dashboard";
 import { CompleteProfileModal } from "@/components/profile/completeprofilemodal";
 import { EditCompleteProfileModal } from "@/components/profile/editcompleteprofilemodal";
 
 export default function DashboardPage() {
-  const [searchTerm, setSearchTerm] = useState("");
   const [selectedBand, setSelectedBand] = useState("Band");
   const [selectedYear, setSelectedYear] = useState("Year");
   const [selectedMeterType, setSelectedMeterType] = useState("Meter Type");
@@ -35,6 +34,12 @@ export default function DashboardPage() {
   });
 
   const router = useRouter();
+  const filters = {
+    band: selectedBand,
+    year: selectedYear,
+    meterType: selectedMeterType,
+  };
+  const { data: dashboardData, error, isLoading } = useDashboard(filters);
 
   // Open "Complete Your Profile" modal on fresh login
   useEffect(() => {
@@ -73,8 +78,6 @@ export default function DashboardPage() {
 
         <section>
           <SearchAndFilters
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
             selectedBand={selectedBand}
             setSelectedBand={setSelectedBand}
             selectedYear={selectedYear}
@@ -86,9 +89,55 @@ export default function DashboardPage() {
 
         <section>
           <div className="grid h-40 w-full grid-cols-1 gap-4 bg-transparent sm:grid-cols-2 md:grid-cols-4">
-            {statusCards.map((card, index) => (
-              <StatusCard key={index} {...card} />
-            ))}
+            <StatusCard
+              title="Total Meters"
+              value={dashboardData?.cardData?.totalMeter?.toString() || "0"}
+              change="+11.01%"
+              changeColor="text-black"
+              bgColor="bg-[rgba(219,230,254,1)]"
+              borderColor="border-blue-100"
+              textColor="text-black"
+              icon="CircleCheckBig"
+              iconBgColor="bg-[rgba(191,211,254,1)]"
+              iconColor="text-[rgba(22,28,202,1)]"
+              url="/data-management/meter-management"
+            />
+            <StatusCard
+              title="Allocated"
+              value={dashboardData?.cardData?.allocated?.toString() || "0"}
+              change="-1.01%"
+              changeColor="text-black"
+              bgColor="bg-[rgb(254,246,195)]"
+              borderColor="border-yellow-100"
+              textColor="text-black"
+              icon="CircleAlert"
+              iconBgColor="bg-[rgba(254,231,138,1)]"
+              iconColor="text-[rgba(235,161,62,1)]"
+            />
+            <StatusCard
+              title="Assigned"
+              value={dashboardData?.cardData?.assigned?.toString() || "0"}
+              change="+2.20%"
+              changeColor="text-black"
+              bgColor="bg-emerald-100"
+              borderColor="border-green-100"
+              textColor="text-black"
+              icon="CircleCheckBig"
+              iconBgColor="bg-emerald-200"
+              iconColor="text-[rgba(34,197,94,1)]"
+            />
+            <StatusCard
+              title="Deactivated"
+              value={dashboardData?.cardData?.deactivated?.toString() || "0"}
+              change="-2.08%"
+              changeColor="text-black"
+              bgColor="bg-[rgb(216,219,223)]"
+              borderColor="border-gray-200"
+              textColor="text-black"
+              icon="CircleX"
+              iconBgColor="bg-[rgba(182,186,195,1)]"
+              iconColor="text-[rgb(37,39,44)]"
+            />
           </div>
         </section>
 

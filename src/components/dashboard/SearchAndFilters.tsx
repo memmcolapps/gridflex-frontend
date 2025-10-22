@@ -1,5 +1,3 @@
-import { Search } from "lucide-react";
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -9,10 +7,9 @@ import {
 } from "@/components/ui/select";
 import { useState, useEffect } from "react";
 import { useBand } from "@/hooks/use-band";
+import { useAuth } from "@/context/auth-context";
 
 interface SearchAndFiltersProps {
-  searchTerm?: string;
-  setSearchTerm?: (term: string) => void;
   selectedBand: string;
   setSelectedBand: (band: string) => void;
   selectedYear: string;
@@ -22,8 +19,6 @@ interface SearchAndFiltersProps {
 }
 
 export const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({
-  searchTerm,
-  setSearchTerm,
   selectedBand,
   setSelectedBand,
   selectedYear,
@@ -33,6 +28,12 @@ export const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({
 }) => {
   const [loading] = useState(false);
   const { bands } = useBand();
+  const { user } = useAuth();
+
+  // Generate years from user creation year to current year
+  const currentYear = new Date().getFullYear();
+  const userCreatedYear = user?.createdAt ? new Date(user.createdAt).getFullYear() : 2021;
+  const years = Array.from({ length: currentYear - userCreatedYear + 1 }, (_, i) => (userCreatedYear + i).toString());
 
   // Reset selectedBand if it's not a valid option (e.g., during loading or if no bands are available)
   useEffect(() => {
@@ -54,21 +55,6 @@ export const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({
 
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-      <div className="relative">
-        <Search
-          size={10}
-          strokeWidth={2.75}
-          className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-500"
-          aria-hidden="true"
-        />
-        <Input
-          type="text"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm?.(e.target.value)}
-          placeholder="Search by meter no., account no., ..."
-          className="rounded-md border-gray-300 pl-10 focus:border-blue-500 focus:ring-blue-500 md:w-[300px]"
-        />
-      </div>
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
         <Select
           value={selectedBand}
@@ -101,9 +87,11 @@ export const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({
             <SelectValue placeholder="Year">{selectedYear}</SelectValue>
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="2023">2023</SelectItem>
-            <SelectItem value="2022">2022</SelectItem>
-            <SelectItem value="2021">2021</SelectItem>
+            {years.map((year) => (
+              <SelectItem key={year} value={year}>
+                {year}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
         <Select value={selectedMeterType} onValueChange={setSelectedMeterType}>
