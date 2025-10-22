@@ -26,6 +26,24 @@ export interface OrganizationAccessPayload {
   permission: Permission;
 }
 
+export interface CreateGroupPermissionPayload {
+  groupTitle: string;
+  modules: {
+    name: string;
+    access: boolean;
+    subModules: {
+      name: string;
+      access: boolean;
+    }[];
+  }[];
+  permission: {
+    view: boolean;
+    edit: boolean;
+    approve: boolean;
+    disable: boolean;
+  };
+}
+
 export interface UpdateGroupPermissionPayload {
   id: string;
   groupTitle: string;

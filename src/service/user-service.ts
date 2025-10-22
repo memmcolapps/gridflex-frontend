@@ -1,7 +1,11 @@
 import axios from "axios";
 import { env } from "@/env";
 import { handleApiError } from "error";
-import { type OrganizationAccessPayload, type UpdateGroupPermissionPayload } from "@/types/group-permission-user";
+import {
+  CreateGroupPermissionPayload,
+  type OrganizationAccessPayload,
+  type UpdateGroupPermissionPayload,
+} from "@/types/group-permission-user";
 import {
   type CreateUserPayload,
   type GetUsersApiResponse,
@@ -71,7 +75,7 @@ export async function getGroupPermission(): Promise<
 }
 
 export async function createGroupPermission(
-  payload: OrganizationAccessPayload,
+  payload: CreateGroupPermissionPayload,
 ): Promise<{ success: true } | { success: false; error: string }> {
   try {
     const token = localStorage.getItem("auth_token");
@@ -300,13 +304,17 @@ export async function editUser(
 ): Promise<{ success: true } | { success: false; error: string }> {
   try {
     const token = localStorage.getItem("auth_token");
-    const response = await axios.put(`${API_URL}/user/service/group/update`, user, {
-      headers: {
-        "Content-Type": "application/json",
-        custom: CUSTOM_HEADER,
-        Authorization: `Bearer ${token}`,
+    const response = await axios.put(
+      `${API_URL}/user/service/group/update`,
+      user,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
       },
-    });
+    );
     if (response.data.responsecode !== "000") {
       return {
         success: false,
