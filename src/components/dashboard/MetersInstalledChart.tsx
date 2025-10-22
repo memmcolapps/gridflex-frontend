@@ -21,7 +21,7 @@ export const MetersInstalledChart = () => {
     const apiMonthlyData = dashboardData?.installedOverMonths?.map(item => ({
         month: item.month,
         value: item.count,
-    })) || [];
+    })) ?? [];
 
     const dataByType = {
         monthly: apiMonthlyData,

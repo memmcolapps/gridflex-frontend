@@ -8,7 +8,6 @@ import { OutstandingChart } from "@/components/billing/dashboard/OutstandingChar
 import { EnergyConsumedChart } from "@/components/billing/dashboard/EnergyConsumedChart";
 
 export default function BillingDashboardPage() {
-  const [searchTerm, setSearchTerm] = useState("");
   const [selectedModeOfPayment, setSelectedModeOfPayment] = useState("");
   const [selectedYear, setSelectedYear] = useState("");
 
@@ -24,8 +23,6 @@ export default function BillingDashboardPage() {
 
         <section>
           <SearchAndFilters
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
             selectedModeOfPayment={selectedModeOfPayment}
             setSelectedModeOfPayment={setSelectedModeOfPayment}
             selectedYear={selectedYear}

@@ -39,7 +39,7 @@ export default function DashboardPage() {
     year: selectedYear,
     meterCategory: selectedMeterCategory,
   };
-  const { data: dashboardData, error, isLoading } = useDashboard(filters);
+  const { data: dashboardData, isLoading } = useDashboard(filters);
 
   // Open "Complete Your Profile" modal on fresh login
   useEffect(() => {
@@ -191,7 +191,7 @@ export default function DashboardPage() {
           <div className="grid h-40 w-full grid-cols-1 gap-4 bg-transparent sm:grid-cols-2 md:grid-cols-4">
             <StatusCard
               title="Total Meters"
-              value={dashboardData?.cardData?.totalMeter?.toString() || "0"}
+              value={dashboardData?.cardData?.totalMeter?.toString() ?? "0"}
               change="+11.01%"
               changeColor="text-black"
               bgColor="bg-[rgba(219,230,254,1)]"
@@ -204,7 +204,7 @@ export default function DashboardPage() {
             />
             <StatusCard
               title="Allocated"
-              value={dashboardData?.cardData?.allocated?.toString() || "0"}
+              value={dashboardData?.cardData?.allocated?.toString() ?? "0"}
               change="-1.01%"
               changeColor="text-black"
               bgColor="bg-[rgb(254,246,195)]"
@@ -216,7 +216,7 @@ export default function DashboardPage() {
             />
             <StatusCard
               title="Assigned"
-              value={dashboardData?.cardData?.assigned?.toString() || "0"}
+              value={dashboardData?.cardData?.assigned?.toString() ?? "0"}
               change="+2.20%"
               changeColor="text-black"
               bgColor="bg-emerald-100"
@@ -228,7 +228,7 @@ export default function DashboardPage() {
             />
             <StatusCard
               title="Deactivated"
-              value={dashboardData?.cardData?.deactivated?.toString() || "0"}
+              value={dashboardData?.cardData?.deactivated?.toString() ?? "0"}
               change="-2.08%"
               changeColor="text-black"
               bgColor="bg-[rgb(216,219,223)]"

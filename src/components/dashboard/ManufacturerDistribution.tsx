@@ -19,7 +19,7 @@ export const ManufacturerDistribution = () => {
     const chartData = dashboardData?.manufacturers?.map((manufacturer) => ({
         name: manufacturer.name,
         value: manufacturer.totalMeters,
-    })) || [];
+    })) ?? [];
 
     const total = chartData.reduce((sum, item) => sum + item.value, 0);
     const barColor = '#769FCD';

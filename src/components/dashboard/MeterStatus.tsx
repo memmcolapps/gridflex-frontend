@@ -10,27 +10,27 @@ export const MeterStatus = () => {
     const chartData = [
         {
             name: "Assigned",
-            value: dashboardData?.cardData?.assigned || 0,
+            value: dashboardData?.cardData?.assigned ?? 0,
             color: "#10B981",
-            percentage: parseFloat(dashboardData?.percentData?.assigned || "0")
+            percentage: parseFloat(dashboardData?.percentData?.assigned ?? "0")
         },
         {
             name: "Inventory",
-            value: dashboardData?.cardData?.inventory || 0,
+            value: dashboardData?.cardData?.inventory ?? 0,
             color: "#1E4BAF",
-            percentage: parseFloat(dashboardData?.percentData?.inventory || "0")
+            percentage: parseFloat(dashboardData?.percentData?.inventory ?? "0")
         },
         {
             name: "Deactivated",
-            value: dashboardData?.cardData?.deactivated || 0,
+            value: dashboardData?.cardData?.deactivated ?? 0,
             color: "#B22222",
-            percentage: parseFloat(dashboardData?.percentData?.deactivated || "0")
+            percentage: parseFloat(dashboardData?.percentData?.deactivated ?? "0")
         },
         {
             name: "Allocated",
-            value: dashboardData?.cardData?.allocated || 0,
+            value: dashboardData?.cardData?.allocated ?? 0,
             color: "#FFB000",
-            percentage: parseFloat(dashboardData?.percentData?.allocated || "0")
+            percentage: parseFloat(dashboardData?.percentData?.allocated ?? "0")
         }
     ];
 

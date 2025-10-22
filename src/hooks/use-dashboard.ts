@@ -9,7 +9,7 @@ export const useDashboard = (filters?: DashboardFilters) => {
 
   return {
     data: data?.success ? data.data : null,
-    error: data?.success === false ? data.error : error?.message || null,
+    error: data?.success === false ? data.error : error?.message ?? null,
     isLoading,
   };
 };
