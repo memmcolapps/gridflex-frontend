@@ -25,14 +25,11 @@ export const MeterStatus = () => {
             value: dashboardData?.cardData?.deactivated ?? 0,
             color: "#B22222",
             percentage: parseFloat(dashboardData?.percentData?.deactivated ?? "0")
-        },
-        {
-            name: "Allocated",
-            value: dashboardData?.cardData?.allocated ?? 0,
-            color: "#FFB000",
-            percentage: parseFloat(dashboardData?.percentData?.allocated ?? "0")
         }
     ];
+
+    // Calculate total percentage from all items
+    const totalPercentage = chartData.reduce((sum, item) => sum + item.percentage, 0);
 
     return (
         <Card className="w-full max-w-full border-none bg-transparent shadow-sm rounded-lg border-gray-100">
@@ -57,7 +54,7 @@ export const MeterStatus = () => {
                         ))}
                         <div className="pt-3 mt-3 border-t border-gray-100 flex items-center">
                             <span className="text-sm font-medium text-gray-900">Total</span>
-                            <span className="ml-auto text-sm font-medium text-gray-900">100%</span>
+                            <span className="ml-auto text-sm font-medium text-gray-900">{totalPercentage.toFixed(1)}%</span>
                         </div>
                     </div>
 
