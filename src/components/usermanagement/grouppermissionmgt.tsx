@@ -108,7 +108,12 @@ const transformModuleAccessToModules = (moduleAccessArray: string[]) => {
       { id: generateId(), name: "Billing", access: true, subModules: [] },
       { id: generateId(), name: "Vending", access: true, subModules: [] },
       { id: generateId(), name: "HES", access: true, subModules: [] },
-      { id: generateId(), name: "User Management", access: true, subModules: [] },
+      {
+        id: generateId(),
+        name: "User Management",
+        access: true,
+        subModules: [],
+      },
       { id: generateId(), name: "Dashboard", access: true, subModules: [] },
     ];
   }
@@ -119,7 +124,11 @@ const transformModuleAccessToModules = (moduleAccessArray: string[]) => {
     access: boolean;
     subModules: Array<{ id: string; name: string; access: boolean }>;
   }> = [];
-  const dataManagementSubModules: Array<{ id: string; name: string; access: boolean }> = [];
+  const dataManagementSubModules: Array<{
+    id: string;
+    name: string;
+    access: boolean;
+  }> = [];
 
   moduleAccessArray.forEach((moduleAccess) => {
     if (dataManagementModules.includes(moduleAccess)) {
@@ -241,7 +250,6 @@ export default function GroupPermissionManagement() {
 
       createPermissionGroup(
         {
-          id: generateId(),
           groupTitle: newGroup.groupTitle,
           permission: permissions,
           modules,
@@ -269,7 +277,15 @@ export default function GroupPermissionManagement() {
   ) => {
     if (permissionType === "id") return; // Don't update id
     updatePermissionField(
-      { groupId, permissionType: permissionType as "view" | "edit" | "approve" | "disable", value },
+      {
+        groupId,
+        permissionType: permissionType as
+          | "view"
+          | "edit"
+          | "approve"
+          | "disable",
+        value,
+      },
       {
         onSuccess: () => {
           toast.success("Permission updated successfully");
@@ -287,27 +303,35 @@ export default function GroupPermissionManagement() {
     setEditDialogOpen(true);
   };
 
-  const updateModulesAccess = (existingModules: GroupPermission["modules"], newModuleAccess: string[]) => {
+  const updateModulesAccess = (
+    existingModules: GroupPermission["modules"],
+    newModuleAccess: string[],
+  ) => {
     const newModules = transformModuleAccessToModules(newModuleAccess);
     // For update, we need to preserve existing ids if possible, but since the form doesn't provide ids, we'll generate new ones
     // But to match existing structure, we should try to preserve ids where names match
-    return newModules.map(newMod => {
-      const existing = existingModules.find(ex => ex.name === newMod.name);
+    return newModules.map((newMod) => {
+      const existing = existingModules.find((ex) => ex.name === newMod.name);
       if (existing) {
         return {
           ...newMod,
           id: existing.id,
-          subModules: newMod.subModules.map(sub => {
-            const existingSub = existing.subModules.find(es => es.name === sub.name);
+          subModules: newMod.subModules.map((sub) => {
+            const existingSub = existing.subModules.find(
+              (es) => es.name === sub.name,
+            );
             return existingSub ? { ...sub, id: existingSub.id } : sub;
-          })
+          }),
         };
       }
       return newMod;
     });
   };
 
-  const updatePermissions = (existingPermissions: GroupPermission["permissions"], newAccessLevels: string[]) => {
+  const updatePermissions = (
+    existingPermissions: GroupPermission["permissions"],
+    newAccessLevels: string[],
+  ) => {
     const newPermissions = transformAccessLevelsToPermissions(newAccessLevels);
     // Preserve existing id
     return { ...newPermissions, id: existingPermissions.id };
@@ -321,14 +345,20 @@ export default function GroupPermissionManagement() {
   }) => {
     try {
       // Find the existing group to get current ids
-      const existingGroup = groupPermissions.find(g => g.id === data.id);
+      const existingGroup = groupPermissions.find((g) => g.id === data.id);
       if (!existingGroup) {
         toast.error("Group not found");
         return;
       }
 
-      const permissions = updatePermissions(existingGroup.permissions, data.accessLevel);
-      const modules = updateModulesAccess(existingGroup.modules, data.moduleAccess);
+      const permissions = updatePermissions(
+        existingGroup.permissions,
+        data.accessLevel,
+      );
+      const modules = updateModulesAccess(
+        existingGroup.modules,
+        data.moduleAccess,
+      );
 
       const payload = {
         id: data.id,
