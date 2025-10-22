@@ -1,11 +1,6 @@
 export interface Manufacturer {
-  orgId: string;
-  manufacturerId: string;
+  totalMeters: number;
   name: string;
-  contactPerson: string;
-  phoneNo: string;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export interface InstalledOverMonths {
