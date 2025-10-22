@@ -10,15 +10,18 @@ import {
     ResponsiveContainer,
 } from 'recharts';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { manufacturerData } from '@/lib/dashboardData';
+import { useDashboard } from '@/hooks/use-dashboard';
 
 export const ManufacturerDistribution = () => {
-    const chartData = manufacturerData.labels.map((label, index) => ({
-        name: label,
-        value: manufacturerData.series[index],
-    }));
+    const { data: dashboardData } = useDashboard();
 
-    const total = manufacturerData.series.reduce((a, b) => a + b, 0);
+    // Use the manufacturers data directly from API response
+    const chartData = dashboardData?.manufacturers?.map((manufacturer) => ({
+        name: manufacturer.name,
+        value: manufacturer.totalMeters,
+    })) ?? [];
+
+    const total = chartData.reduce((sum, item) => sum + item.value, 0);
     const barColor = '#769FCD';
 
     return (

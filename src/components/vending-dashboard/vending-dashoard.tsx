@@ -8,10 +8,9 @@ import { useState } from "react";
 import { SearchAndFilters } from "../dashboard/SearchAndFilters";
 
 export default function VendingDashboard() {
-    const [searchTerm, setSearchTerm] = useState('');
     const [selectedBand, setSelectedBand] = useState('Band');
     const [selectedYear, setSelectedYear] = useState('Year');
-    const [selectedMeterType, setSelectedMeterType] = useState('Meter Type');
+    const [selectedMeterCategory, setSelectedMeterCategory] = useState('Meter Category');
     return (
         <div className="min-h-screen">
             <div className="max-w-screen-2xl space-y-6">
@@ -23,15 +22,12 @@ export default function VendingDashboard() {
                 </div>
                 <section>
                     <SearchAndFilters
-                        searchTerm={searchTerm}
-                        setSearchTerm={setSearchTerm}
                         selectedBand={selectedBand}
                         setSelectedBand={setSelectedBand}
-                        selectedMeterType={selectedMeterType}
-                        setSelectedMeterType={setSelectedMeterType}
+                        selectedMeterCategory={selectedMeterCategory}
+                        setSelectedMeterCategory={setSelectedMeterCategory}
                         selectedYear={selectedYear}
                         setSelectedYear={setSelectedYear}
-
                     />
                 </section>
                 

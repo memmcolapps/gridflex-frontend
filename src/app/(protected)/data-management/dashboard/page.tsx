@@ -9,15 +9,14 @@ import { SearchAndFilters } from "@/components/dashboard/SearchAndFilters";
 import { MetersInstalledChart } from "@/components/dashboard/MetersInstalledChart";
 import { ManufacturerDistribution } from "@/components/dashboard/ManufacturerDistribution";
 import { MeterStatus } from "@/components/dashboard/MeterStatus";
-import { statusCards } from "@/lib/dashboardData";
+import { useDashboard } from "@/hooks/use-dashboard";
 import { CompleteProfileModal } from "@/components/profile/completeprofilemodal";
 import { EditCompleteProfileModal } from "@/components/profile/editcompleteprofilemodal";
 
 export default function DashboardPage() {
-  const [searchTerm, setSearchTerm] = useState("");
   const [selectedBand, setSelectedBand] = useState("Band");
   const [selectedYear, setSelectedYear] = useState("Year");
-  const [selectedMeterType, setSelectedMeterType] = useState("Meter Type");
+  const [selectedMeterCategory, setSelectedMeterCategory] = useState("Meter Category");
   const [showCompleteProfileModal, setShowCompleteProfileModal] =
     useState(false);
   const [showEditCompleteProfileModal, setShowEditCompleteProfileModal] =
@@ -35,6 +34,12 @@ export default function DashboardPage() {
   });
 
   const router = useRouter();
+  const filters = {
+    band: selectedBand,
+    year: selectedYear,
+    meterCategory: selectedMeterCategory,
+  };
+  const { data: dashboardData, isLoading } = useDashboard(filters);
 
   // Open "Complete Your Profile" modal on fresh login
   useEffect(() => {
@@ -61,9 +66,109 @@ export default function DashboardPage() {
     setShowCompleteProfileModal(false);
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-transparent px-4 sm:px-6 lg:px-8 py-6">
+        <div className="w-full space-y-6 bg-transparent">
+          <div className="flex items-start justify-between bg-transparent">
+            <ContentHeader
+              title="Overview"
+              description="General overview of Data Management Dashboard"
+            />
+          </div>
+
+          {/* Loading Skeleton for Filters */}
+          <section>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+                <div className="h-10 bg-gray-200 rounded-md animate-pulse"></div>
+                <div className="h-10 bg-gray-200 rounded-md animate-pulse"></div>
+                <div className="h-10 bg-gray-200 rounded-md animate-pulse"></div>
+              </div>
+            </div>
+          </section>
+
+          {/* Loading Skeleton for Status Cards */}
+          <section>
+            <div className="grid h-40 w-full grid-cols-1 gap-4 bg-transparent sm:grid-cols-2 md:grid-cols-4">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div className="h-4 bg-gray-200 rounded animate-pulse w-24"></div>
+                    <div className="h-8 w-8 bg-gray-200 rounded-full animate-pulse"></div>
+                  </div>
+                  <div className="mt-4">
+                    <div className="h-8 bg-gray-200 rounded animate-pulse w-16"></div>
+                    <div className="h-4 bg-gray-200 rounded animate-pulse w-12 mt-2"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Loading Skeleton for Chart */}
+          <section className="mt-10 rounded-lg bg-white pt-6 shadow-sm border border-gray-200">
+            <div className="px-6 mb-4">
+              <div className="h-6 bg-gray-200 rounded animate-pulse w-48"></div>
+            </div>
+            <div className="flex gap-2 mb-6 px-6">
+              <div className="h-8 bg-gray-200 rounded animate-pulse w-16"></div>
+              <div className="h-8 bg-gray-200 rounded animate-pulse w-16"></div>
+            </div>
+            <div className="h-[200px] bg-gray-100 rounded animate-pulse mx-6 mb-6"></div>
+          </section>
+
+          {/* Loading Skeleton for Bottom Section */}
+          <section className="px-4">
+            <div className="w-full">
+              <div className="grid grid-cols-1 gap-6 bg-transparent pt-6 md:grid-cols-2">
+                {/* Manufacturer Distribution Skeleton */}
+                <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+                  <div className="p-6">
+                    <div className="h-6 bg-gray-200 rounded animate-pulse w-40 mb-4"></div>
+                    <div className="space-y-3">
+                      {[1, 2, 3, 4, 5].map((i) => (
+                        <div key={i} className="flex items-center justify-between">
+                          <div className="flex items-center">
+                            <div className="h-3 w-3 bg-gray-200 rounded-full mr-2 animate-pulse"></div>
+                            <div className="h-4 bg-gray-200 rounded animate-pulse w-20"></div>
+                          </div>
+                          <div className="h-4 bg-gray-200 rounded animate-pulse w-8"></div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Meter Status Skeleton */}
+                <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+                  <div className="p-6">
+                    <div className="h-6 bg-gray-200 rounded animate-pulse w-24 mb-4"></div>
+                    <div className="flex flex-col md:flex-row gap-4">
+                      <div className="w-full md:w-1/2 space-y-3">
+                        {[1, 2, 3, 4].map((i) => (
+                          <div key={i} className="flex items-center">
+                            <div className="h-3 w-3 bg-gray-200 rounded-full mr-2 animate-pulse"></div>
+                            <div className="h-4 bg-gray-200 rounded animate-pulse w-16 flex-grow"></div>
+                            <div className="h-4 bg-gray-200 rounded animate-pulse w-8"></div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="w-full md:w-1/2 h-[200px] bg-gray-100 rounded animate-pulse"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-transparent p-6">
-      <div className="max-w-screen-2xl space-y-6 bg-transparent">
+    <div className="min-h-screen bg-transparent px-4 sm:px-6 lg:px-8 py-6">
+      <div className="w-full space-y-6 bg-transparent">
         <div className="flex items-start justify-between bg-transparent">
           <ContentHeader
             title="Overview"
@@ -73,22 +178,66 @@ export default function DashboardPage() {
 
         <section>
           <SearchAndFilters
-            searchTerm={searchTerm}
-            setSearchTerm={setSearchTerm}
             selectedBand={selectedBand}
             setSelectedBand={setSelectedBand}
             selectedYear={selectedYear}
             setSelectedYear={setSelectedYear}
-            selectedMeterType={selectedMeterType}
-            setSelectedMeterType={setSelectedMeterType}
+            selectedMeterCategory={selectedMeterCategory}
+            setSelectedMeterCategory={setSelectedMeterCategory}
           />
         </section>
 
         <section>
           <div className="grid h-40 w-full grid-cols-1 gap-4 bg-transparent sm:grid-cols-2 md:grid-cols-4">
-            {statusCards.map((card, index) => (
-              <StatusCard key={index} {...card} />
-            ))}
+            <StatusCard
+              title="Total Meters"
+              value={dashboardData?.cardData?.totalMeter?.toString() ?? "0"}
+              change="+11.01%"
+              changeColor="text-black"
+              bgColor="bg-[rgba(219,230,254,1)]"
+              borderColor="border-blue-100"
+              textColor="text-black"
+              icon="CircleCheckBig"
+              iconBgColor="bg-[rgba(191,211,254,1)]"
+              iconColor="text-[rgba(22,28,202,1)]"
+              url="/data-management/meter-management"
+            />
+            <StatusCard
+              title="Allocated"
+              value={dashboardData?.cardData?.allocated?.toString() ?? "0"}
+              change="-1.01%"
+              changeColor="text-black"
+              bgColor="bg-[rgb(254,246,195)]"
+              borderColor="border-yellow-100"
+              textColor="text-black"
+              icon="CircleAlert"
+              iconBgColor="bg-[rgba(254,231,138,1)]"
+              iconColor="text-[rgba(235,161,62,1)]"
+            />
+            <StatusCard
+              title="Assigned"
+              value={dashboardData?.cardData?.assigned?.toString() ?? "0"}
+              change="+2.20%"
+              changeColor="text-black"
+              bgColor="bg-emerald-100"
+              borderColor="border-green-100"
+              textColor="text-black"
+              icon="CircleCheckBig"
+              iconBgColor="bg-emerald-200"
+              iconColor="text-[rgba(34,197,94,1)]"
+            />
+            <StatusCard
+              title="Deactivated"
+              value={dashboardData?.cardData?.deactivated?.toString() ?? "0"}
+              change="-2.08%"
+              changeColor="text-black"
+              bgColor="bg-[rgb(216,219,223)]"
+              borderColor="border-gray-200"
+              textColor="text-black"
+              icon="CircleX"
+              iconBgColor="bg-[rgba(182,186,195,1)]"
+              iconColor="text-[rgb(37,39,44)]"
+            />
           </div>
         </section>
 
@@ -96,10 +245,12 @@ export default function DashboardPage() {
           <MetersInstalledChart />
         </section>
 
-        <section>
-          <div className="grid grid-cols-1 gap-6 bg-transparent pt-6 md:grid-cols-2">
-            <ManufacturerDistribution />
-            <MeterStatus />
+        <section className="px-4">
+          <div className="w-full">
+            <div className="grid grid-cols-1 gap-6 bg-transparent pt-6 md:grid-cols-2">
+              <ManufacturerDistribution />
+              <MeterStatus />
+            </div>
           </div>
         </section>
       </div>

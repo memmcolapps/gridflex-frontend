@@ -2,19 +2,37 @@
 
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { meterStatusData } from '@/lib/dashboardData';
+import { useDashboard } from '@/hooks/use-dashboard';
 
 export const MeterStatus = () => {
-    const total = meterStatusData.series.reduce((a, b) => a + b, 0);
-    const chartData = meterStatusData.labels.map((label, index) => ({
-        name: label,
-        value: meterStatusData.series[index],
-        color: meterStatusData.colors[index],
-        percentage: (((meterStatusData.series[index] ?? 0) / (total || 1)) * 100)
-    }));
+    const { data: dashboardData } = useDashboard();
+
+    const chartData = [
+        {
+            name: "Assigned",
+            value: dashboardData?.cardData?.assigned ?? 0,
+            color: "#10B981",
+            percentage: parseFloat(dashboardData?.percentData?.assigned ?? "0")
+        },
+        {
+            name: "Inventory",
+            value: dashboardData?.cardData?.inventory ?? 0,
+            color: "#1E4BAF",
+            percentage: parseFloat(dashboardData?.percentData?.inventory ?? "0")
+        },
+        {
+            name: "Deactivated",
+            value: dashboardData?.cardData?.deactivated ?? 0,
+            color: "#B22222",
+            percentage: parseFloat(dashboardData?.percentData?.deactivated ?? "0")
+        }
+    ];
+
+    // Calculate total percentage from all items
+    const totalPercentage = chartData.reduce((sum, item) => sum + item.percentage, 0);
 
     return (
-        <Card className="w-full max-w-[500px] border-none bg-transparent shadow-sm rounded-lg border-gray-100">
+        <Card className="w-full max-w-full border-none bg-transparent shadow-sm rounded-lg border-gray-100">
             <CardHeader>
                 <CardTitle>Meter Status</CardTitle>
             </CardHeader>
@@ -36,7 +54,7 @@ export const MeterStatus = () => {
                         ))}
                         <div className="pt-3 mt-3 border-t border-gray-100 flex items-center">
                             <span className="text-sm font-medium text-gray-900">Total</span>
-                            <span className="ml-auto text-sm font-medium text-gray-900">100%</span>
+                            <span className="ml-auto text-sm font-medium text-gray-900">{totalPercentage.toFixed(1)}%</span>
                         </div>
                     </div>
 
