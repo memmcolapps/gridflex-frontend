@@ -40,6 +40,7 @@ import CustomizedPerMeter from "./customized-per-meter";
 import CustomizedPerVending from "./customized-vend";
 import { Spinner } from "@/components/ui/spinner";
 import { Progress } from "@/components/ui/progress";
+import CustomReportTable from "../../frequently-used-reports/page";
 
 const FILTER = [{ accord: "opt 1" }, { accord: "opt 2" }, { accord: "opt 3" }];
 const options = [
@@ -58,6 +59,7 @@ export default function ReportsLayout() {
   const [loading, setLoading] = useState(false)
   const [showTable, setShowTable] = useState(false)
   const [progress, setProgress] = useState(0)
+  const [activeTab, setActiveTab] = useState<"frequent" | "custom">("frequent");
 
   const handleGenerate = () => {
     setLoading(true)
@@ -111,251 +113,268 @@ export default function ReportsLayout() {
 
       {/* Tabs */}
       <div className="flex flex-row justify-between">
-        <div className="flex cursor-pointer rounded-lg border border-[#161cca] p-1">
+        <div className='w-fit p-1 border border-[#161cca] rounded-lg cursor-pointer'>
           <Button
-            className="text-md cursor-pointer border-none bg-[#161CCA] py-4 font-medium text-white"
+            className={`${activeTab === "frequent"
+              ? "bg-[#161CCA] text-white"
+              : "text-gray-700 bg-transparent"
+              } border-none cursor-pointer font-medium text-md py-4`}
             variant="secondary"
             size="lg"
+            onClick={() => setActiveTab("frequent")}
           >
             Frequently Used Reports
           </Button>
+
           <Button
-            className="text-md cursor-pointer border-none py-4 font-medium text-gray-700"
+            className={`${activeTab === "custom"
+              ? "bg-[#161CCA] text-white"
+              : "text-gray-700 bg-transparent"
+              } border-none cursor-pointer font-medium text-md py-4`}
             variant="secondary"
             size="lg"
+            onClick={() => setActiveTab("custom")}
           >
             Customized Report
           </Button>
         </div>
       </div>
 
-      {/* Filters */}
-      <Card className="mt-10 flex w-full flex-row justify-between rounded-lg border border-gray-200 px-5 py-1 shadow-none">
-        <div className="w-full p-2">
-          <h4>
-            Start date <span className="text-red-500">*</span>
-          </h4>
-          <DatePicker placeHolder={"Select Date"} />
-        </div>
-
-        <h4 className="self-center">to</h4>
-
-        <div className="w-full p-2">
-          <h4>
-            End date <span className="text-red-500">*</span>
-          </h4>
-          <DatePicker placeHolder={"Select Date"} />
-        </div>
-
-        {/* Report Type */}
-        <div className="w-full p-2">
-          <h4>
-            Report Type <span className="text-red-500">*</span>
-          </h4>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button className="text-md mt-1 flex w-full cursor-pointer flex-row items-center justify-between border border-gray-300 px-4 py-4 font-medium text-gray-700">
-                {reportType ?? "Select"}
-                <ChevronDown size={14} />
-              </Button>
-            </DropdownMenuTrigger>
-
-            <DropdownMenuContent className="w-100 shadow-lg">
-              {[
-                "Customer Report",
-                "Customer Transaction Summary",
-                "Customer Population By Unit",
-                "Customer Population By Meter Type",
-                "Customer Vending Report",
-              ].map((option, index, arr) => (
-                <div key={option}>
-                  <DropdownMenuItem
-                    onClick={() => setReportType(option)}
-                    className="text-md flex cursor-pointer items-center justify-between py-3 font-medium"
-                  >
-                    <span>{option}</span>
-
-                    <div
-                      className={`flex h-5 w-5 items-center justify-center rounded-lg border transition-colors ${reportType === option
-                        ? "border-green-500 bg-green-500"
-                        : "border-gray-400"
-                        }`}
-                    >
-                      {reportType === option && (
-                        <Check
-                          className="text-white"
-                          size={10}
-                          strokeWidth={3}
-                        />
-                      )}
-                    </div>
-                  </DropdownMenuItem>
-                  {index < arr.length - 1 && (
-                    <hr className="my-1 border-gray-200" />
-                  )}
-                </div>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-
-        {/* Generate By */}
-        <div className="w-full p-2">
-          <h4>
-            Generate By <span className="text-red-500">*</span>
-          </h4>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button className="text-md mt-1 flex w-full cursor-pointer flex-row items-center justify-between border border-gray-300 px-4 py-4 font-medium text-gray-700">
-                {generateBy}
-                <ChevronDown size={14} />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-full space-y-2 p-3 shadow-lg">
-              {options.map(({ label, icon: Icon }) => (
-                <DropdownMenuItem
-                  key={label}
-                  onClick={() => setGenerateBy(label)}
-                  className="flex cursor-pointer items-center gap-3 text-sm font-medium hover:bg-gray-100"
-                >
-                  <Icon size={18} className="text-gray-600" />
-                  <span>{label}</span>
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-
-        {/* Unit */}
-        <div className="w-full p-2">
-          <h4>
-            Unit <span className="text-red-500">*</span>
-          </h4>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button className="text-md mt-1 flex w-full cursor-pointer flex-row items-center justify-between border border-gray-300 px-4 py-4 font-medium text-gray-700">
-                {unit}
-                <ChevronDown size={14} />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-90 p-3 shadow-lg">
-              {["All Region", "Molete", "Ojoo", "Ijeun", "Eko"].map(
-                (option) => (
-                  <DropdownMenuItem
-                    key={option}
-                    onClick={() => setUnit(option)}
-                    className="text-md flex cursor-pointer items-center justify-between py-3 font-medium"
-                  >
-                    <span>{option}</span>
-                    <div
-                      className={`flex h-5 w-5 items-center justify-center rounded-lg border transition-colors ${unit === option
-                        ? "border-green-500 bg-green-500"
-                        : "border-gray-400"
-                        }`}
-                    >
-                      {unit === option && (
-                        <Check
-                          className="text-white"
-                          size={10}
-                          strokeWidth={3}
-                        />
-                      )}
-                    </div>
-                  </DropdownMenuItem>
-                ),
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-
-        {/* Generate Button */}
-        <Button
-          onClick={handleGenerate}
-          className="text-md mt-6 ml-4 cursor-pointer border-none bg-[#161CCA] px-10 py-6 font-medium text-white"
-          variant="secondary"
-          size="lg"
-        >
-          <CirclePlus size={13} color="#fff" strokeWidth={1.5} />
-          Generate Report
-        </Button>
-      </Card>
-
-      {/* Filters below */}
-      <Card className="mt-4 flex w-full flex-row items-center justify-between rounded-lg border border-gray-200 px-5 py-4 shadow-none">
-        <div className="flex w-[480px] items-center gap-4">
-          <div className="relative flex-1">
-            <Search
-              size={14}
-              className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-gray-400"
-            />
-            <Input
-              type="text"
-              placeholder="Search..."
-              className="w-full border-gray-300 pl-10 text-sm focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50 lg:text-base"
-            />
-          </div>
-
-          {/* Filter Select */}
-          <div className="w-[90px]">
-            <Select>
-              <SelectTrigger className="h-10 w-full justify-center bg-transparent [&>svg]:hidden">
-                <div className="flex items-center gap-2">
-                  <ListFilter size={14} strokeWidth={1.5} />
-                  <SelectValue placeholder="Filter" />
-                </div>
-              </SelectTrigger>
-              <SelectContent>
-                {FILTER.map((accord, index) => (
-                  <SelectItem key={index} value={accord.accord}>
-                    {accord.accord}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Sort Select */}
-          <div className="w-[70px]">
-            <Select>
-              <SelectTrigger className="h-10 w-full justify-center bg-transparent [&>svg]:hidden">
-                <div className="flex items-center gap-2">
-                  <ArrowUpDown size={14} strokeWidth={1.5} />
-                  <SelectValue placeholder="Sort" />
-                </div>
-              </SelectTrigger>
-              <SelectContent>
-                {FILTER.map((accord, index) => (
-                  <SelectItem key={index} value={accord.accord}>
-                    {accord.accord}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      </Card>
-
-
-      {/* Render report table here */}
-      {loading && (
-        <div className="mt-4 flex flex-col items-center justify-center">
-          <Card className="p-10 bg-white border-none w-[50%]">
-            <p className="text-sm mt-2 text-center text-gray-500">
-              {progress}%
-            </p>
-            <div className="flex justify-center items-center">
-              <Spinner />
-
+      {activeTab === 'frequent' ? (
+        <div>
+          {/* Filters */}
+          <Card className="mt-10 flex w-full flex-row justify-between rounded-lg border border-gray-200 px-5 py-1 shadow-none">
+            <div className="w-full p-2">
+              <h4>
+                Start date <span className="text-red-500">*</span>
+              </h4>
+              <DatePicker placeHolder={"Select Date"} />
             </div>
-            <Progress value={progress} className="w-full rounded-full" />
-            <p className="text-sm mt-2 text-center text-gray-500">
-              Processing...
-            </p>
+
+            <h4 className="self-center">to</h4>
+
+            <div className="w-full p-2">
+              <h4>
+                End date <span className="text-red-500">*</span>
+              </h4>
+              <DatePicker placeHolder={"Select Date"} />
+            </div>
+
+            {/* Report Type */}
+            <div className="w-full p-2">
+              <h4>
+                Report Type <span className="text-red-500">*</span>
+              </h4>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button className="text-md mt-1 flex w-full cursor-pointer flex-row items-center justify-between border border-gray-300 px-4 py-4 font-medium text-gray-700">
+                    {reportType ?? "Select"}
+                    <ChevronDown size={14} />
+                  </Button>
+                </DropdownMenuTrigger>
+
+                <DropdownMenuContent className="w-100 shadow-lg">
+                  {[
+                    "Customer Report",
+                    "Customer Transaction Summary",
+                    "Customer Population By Unit",
+                    "Customer Population By Meter Type",
+                    "Customer Vending Report",
+                  ].map((option, index, arr) => (
+                    <div key={option}>
+                      <DropdownMenuItem
+                        onClick={() => setReportType(option)}
+                        className="text-md flex cursor-pointer items-center justify-between py-3 font-medium"
+                      >
+                        <span>{option}</span>
+
+                        <div
+                          className={`flex h-5 w-5 items-center justify-center rounded-lg border transition-colors ${reportType === option
+                            ? "border-green-500 bg-green-500"
+                            : "border-gray-400"
+                            }`}
+                        >
+                          {reportType === option && (
+                            <Check
+                              className="text-white"
+                              size={10}
+                              strokeWidth={3}
+                            />
+                          )}
+                        </div>
+                      </DropdownMenuItem>
+                      {index < arr.length - 1 && (
+                        <hr className="my-1 border-gray-200" />
+                      )}
+                    </div>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+
+            {/* Generate By */}
+            <div className="w-full p-2">
+              <h4>
+                Generate By <span className="text-red-500">*</span>
+              </h4>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button className="text-md mt-1 flex w-full cursor-pointer flex-row items-center justify-between border border-gray-300 px-4 py-4 font-medium text-gray-700">
+                    {generateBy}
+                    <ChevronDown size={14} />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-full space-y-2 p-3 shadow-lg">
+                  {options.map(({ label, icon: Icon }) => (
+                    <DropdownMenuItem
+                      key={label}
+                      onClick={() => setGenerateBy(label)}
+                      className="flex cursor-pointer items-center gap-3 text-sm font-medium hover:bg-gray-100"
+                    >
+                      <Icon size={18} className="text-gray-600" />
+                      <span>{label}</span>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+
+            {/* Unit */}
+            <div className="w-full p-2">
+              <h4>
+                Unit <span className="text-red-500">*</span>
+              </h4>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button className="text-md mt-1 flex w-full cursor-pointer flex-row items-center justify-between border border-gray-300 px-4 py-4 font-medium text-gray-700">
+                    {unit}
+                    <ChevronDown size={14} />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-90 p-3 shadow-lg">
+                  {["All Region", "Molete", "Ojoo", "Ijeun", "Eko"].map(
+                    (option) => (
+                      <DropdownMenuItem
+                        key={option}
+                        onClick={() => setUnit(option)}
+                        className="text-md flex cursor-pointer items-center justify-between py-3 font-medium"
+                      >
+                        <span>{option}</span>
+                        <div
+                          className={`flex h-5 w-5 items-center justify-center rounded-lg border transition-colors ${unit === option
+                            ? "border-green-500 bg-green-500"
+                            : "border-gray-400"
+                            }`}
+                        >
+                          {unit === option && (
+                            <Check
+                              className="text-white"
+                              size={10}
+                              strokeWidth={3}
+                            />
+                          )}
+                        </div>
+                      </DropdownMenuItem>
+                    ),
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+
+            {/* Generate Button */}
+            <Button
+              onClick={handleGenerate}
+              className="text-md mt-6 ml-4 cursor-pointer border-none bg-[#161CCA] px-10 py-6 font-medium text-white"
+              variant="secondary"
+              size="lg"
+            >
+              <CirclePlus size={13} color="#fff" strokeWidth={1.5} />
+              Generate Report
+            </Button>
           </Card>
+
+          {/* Filters below */}
+          <Card className="mt-4 flex w-full flex-row items-center justify-between rounded-lg border border-gray-200 px-5 py-4 shadow-none">
+            <div className="flex w-[480px] items-center gap-4">
+              <div className="relative flex-1">
+                <Search
+                  size={14}
+                  className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-gray-400"
+                />
+                <Input
+                  type="text"
+                  placeholder="Search..."
+                  className="w-full border-gray-300 pl-10 text-sm focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50 lg:text-base"
+                />
+              </div>
+
+              {/* Filter Select */}
+              <div className="w-[90px]">
+                <Select>
+                  <SelectTrigger className="h-10 w-full justify-center bg-transparent [&>svg]:hidden">
+                    <div className="flex items-center gap-2">
+                      <ListFilter size={14} strokeWidth={1.5} />
+                      <SelectValue placeholder="Filter" />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {FILTER.map((accord, index) => (
+                      <SelectItem key={index} value={accord.accord}>
+                        {accord.accord}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Sort Select */}
+              <div className="w-[70px]">
+                <Select>
+                  <SelectTrigger className="h-10 w-full justify-center bg-transparent [&>svg]:hidden">
+                    <div className="flex items-center gap-2">
+                      <ArrowUpDown size={14} strokeWidth={1.5} />
+                      <SelectValue placeholder="Sort" />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {FILTER.map((accord, index) => (
+                      <SelectItem key={index} value={accord.accord}>
+                        {accord.accord}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </Card>
+
+
+          {/* Render report table here */}
+          {loading && (
+            <div className="mt-4 flex flex-col items-center justify-center">
+              <Card className="p-10 bg-white border-none w-[50%]">
+                <p className="text-sm mt-2 text-center text-gray-500">
+                  {progress}%
+                </p>
+                <div className="flex justify-center items-center">
+                  <Spinner />
+
+                </div>
+                <Progress value={progress} className="w-full rounded-full" />
+                <p className="text-sm mt-2 text-center text-gray-500">
+                  Processing...
+                </p>
+              </Card>
+            </div>
+          )}
+          {!loading && showTable && (
+            renderReportTable()
+          )}
         </div>
-      )}
-      {!loading && showTable && (
-        renderReportTable()
+      ) : (
+        <div>
+          <CustomReportTable />
+        </div>
       )}
     </div>
   );
