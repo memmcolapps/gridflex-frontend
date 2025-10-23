@@ -1,7 +1,9 @@
+import CustomReportLayout from "./layout";
+
 export default function CustomReportTable(){
     return(
-        <div>
-            Hiee
+        <div className="py-10">
+            <CustomReportLayout/>
         </div>
     )
 }
