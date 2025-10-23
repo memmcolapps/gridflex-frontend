@@ -297,16 +297,21 @@ export default function MeterRemoteConfigPage() {
     };
 
     // Handle bulk upload save
-    const handleBulkUploadSave = (data: Meter[]) => {
-        setMeterData((prevData) => [
-            ...prevData,
-            ...data.map((item, index) => ({
-                ...item,
-                sN: (prevData.length + index + 1).toString().padStart(2, "0"),
-            })),
-        ]);
-        setCurrentPage(1);
-        setIsBulkUploadOpen(false);
+    const handleBulkUploadSave = (data: File | Meter[]) => {
+        if (data instanceof File) {
+            // Handle raw file if sendRawFile is true, but currently it's false
+            console.warn("Raw file received, but not handled");
+        } else {
+            setMeterData((prevData) => [
+                ...prevData,
+                ...data.map((item, index) => ({
+                    ...item,
+                    sN: (prevData.length + index + 1).toString().padStart(2, "0"),
+                })),
+            ]);
+            setCurrentPage(1);
+            setIsBulkUploadOpen(false);
+        }
     };
 
     // Apply search filter

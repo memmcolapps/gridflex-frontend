@@ -1,10 +1,9 @@
 import axios from "axios";
 import { env } from "@/env";
 import { handleApiError } from "error";
-import {
+import type {
   CreateGroupPermissionPayload,
-  type OrganizationAccessPayload,
-  type UpdateGroupPermissionPayload,
+  UpdateGroupPermissionPayload,
 } from "@/types/group-permission-user";
 import {
   type CreateUserPayload,

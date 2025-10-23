@@ -10,6 +10,7 @@ export const statusStyles: Record<string, string> = {
   successful: "bg-[#F0FDF5] text-[#17643C] py-2 px-3 rounded-full",
   inactive: "bg-[#FFF5EA] text-[#C86900] py-2 px-3 rounded-full",
   blocked: "bg-[#FBE9E9] text-[#F50202] py-2 px-3 rounded-full",
+  block: "bg-[#FBE9E9] text-[#F50202] py-2 px-3 rounded-full",
   failed: "bg-[#FBE9E9] text-[#F50202] py-2 px-3 rounded-full",
   default: "bg-gray-100 text-gray-800 py-2 px-3 rounded-full",
   offline: "text-[#F50202] bg-[#FBE9E9] py-2 px-2 rounded-full",

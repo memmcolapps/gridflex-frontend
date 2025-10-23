@@ -7,6 +7,9 @@ import {
     updateCustomer,
     blockCustomer,
     fetchCustomerRecord,
+    bulkUploadCustomers,
+    downloadCustomerCsvTemplate,
+    downloadCustomerExcelTemplate,
 } from "../service/customer-service";
 import {
     type Customer,
@@ -90,5 +93,39 @@ export const useCustomerRecordQuery = (customerId: string) => {
         enabled: !!customerId,
         staleTime: 1000 * 60 * 5,
         refetchOnWindowFocus: false,
+    });
+};
+
+/**
+ * A hook for bulk uploading customers.
+ * It returns a mutation object to be used in components.
+ */
+export const useBulkUploadCustomer = () => {
+    const queryClient = useQueryClient();
+    return useMutation<unknown, Error, File>({
+        mutationFn: bulkUploadCustomers,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["customers"] });
+        },
+    });
+};
+
+/**
+ * A hook for downloading customer CSV templates.
+ * It returns a mutation object to be used in components.
+ */
+export const useDownloadCustomerCsvTemplate = () => {
+    return useMutation<void, Error, void>({
+        mutationFn: downloadCustomerCsvTemplate,
+    });
+};
+
+/**
+ * A hook for downloading customer Excel templates.
+ * It returns a mutation object to be used in components.
+ */
+export const useDownloadCustomerExcelTemplate = () => {
+    return useMutation<void, Error, void>({
+        mutationFn: downloadCustomerExcelTemplate,
     });
 };
