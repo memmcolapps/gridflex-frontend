@@ -147,6 +147,7 @@ export const AddNodeDialog = ({
           latitude: formData.latitude ?? "",
           longitude: formData.longitude ?? "",
           description: formData.description ?? "",
+          assetId: formData.assetId ?? "",
           type: nodeType,
         });
       }
@@ -290,7 +291,17 @@ export const AddNodeDialog = ({
             </div>
           </div>
           {isTechnicalNode && (
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
+              <div className="flex flex-col">
+                <label className="text-sm font-medium">Asset ID *</label>
+                <Input
+                  name="assetId"
+                  value={formData.assetId}
+                  onChange={handleInputChange}
+                  placeholder="Enter Asset ID"
+                  className="mt-1 border-gray-300"
+                />
+              </div>
               <div className="flex flex-col">
                 <label className="text-sm font-medium">Status *</label>
                 <Select

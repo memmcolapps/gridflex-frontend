@@ -39,6 +39,7 @@ export interface CreateSubstationTransfomerFeederPayload {
   latitude: string;
   longitude: string;
   description: string;
+  assetId: string;
   type: string;
 }
 
@@ -55,5 +56,6 @@ export interface UpdateSubstationTransfomerFeederPayload {
   latitude: string;
   longitude: string;
   description: string;
+  assetId: string;
   type: string;
 }

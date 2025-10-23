@@ -36,30 +36,23 @@ import {
 } from "@/types/users-groups";
 import { toast } from "sonner";
 import { type EditUserPayload } from "@/service/user-service";
+import { formatDistanceToNow, format, parseISO } from "date-fns";
+
+const parseTimestamp = (timestamp: string): Date => {
+  // Convert format "2025-10-22 10:32:15.338908-05" to ISO 8601
+  // Replace space with T and fix timezone offset format
+  const normalized = timestamp
+    .replace(" ", "T")
+    .replace(/([+-]\d{2})$/, "$1:00"); // Add colon to timezone offset
+  return parseISO(normalized);
+};
 
 const formatLastActive = (date: Date) => {
-  const now = new Date();
-  const diffInMinutes = Math.floor(
-    (now.getTime() - date.getTime()) / (1000 * 60),
-  );
-
-  if (diffInMinutes < 1) return "Online";
-  if (diffInMinutes < 60)
-    return `${diffInMinutes} min${diffInMinutes !== 1 ? "s" : ""} ago`;
-
-  const diffInHours = Math.floor(diffInMinutes / 60);
-  if (diffInHours < 24)
-    return `${diffInHours} hr${diffInHours !== 1 ? "s" : ""} ago`;
-
-  const diffInDays = Math.floor(diffInHours / 24);
-  return `${diffInDays} day${diffInDays !== 1 ? "s" : ""} ago`;
+  return formatDistanceToNow(date, { addSuffix: true });
 };
 
 const formatDateAdded = (date: Date) => {
-  const day = date.getDate().toString().padStart(2, "0");
-  const month = (date.getMonth() + 1).toString().padStart(2, "0");
-  const year = date.getFullYear();
-  return `${day}-${month}-${year}`;
+  return format(date, "dd-MM-yyyy");
 };
 
 export default function UserManagement() {
@@ -372,23 +365,10 @@ export default function UserManagement() {
                   <TableCell>
                     <div className="flex items-center gap-2">
                       {formatLastActive(
-                        new Date(user.lastActive ?? new Date()),
-                      ) === "Online" && (
-                        <span className="h-2 w-2 rounded-full bg-green-500"></span>
+                        user.lastActive
+                          ? parseTimestamp(user.lastActive)
+                          : new Date(),
                       )}
-                      <span
-                        className={
-                          formatLastActive(
-                            new Date(user.lastActive ?? new Date()),
-                          ) === "Online"
-                            ? "text-green-600"
-                            : ""
-                        }
-                      >
-                        {formatLastActive(
-                          new Date(user.lastActive ?? new Date()),
-                        )}
-                      </span>
                     </div>
                   </TableCell>
                   <TableCell>
