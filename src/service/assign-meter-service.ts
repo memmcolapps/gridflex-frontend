@@ -164,6 +164,7 @@ export interface AssignMeterPayload {
     debitPaymentMode: string;
     creditPaymentPlan: string;
     debitPaymentPlan: string;
+    meterClass?: string;
 }
 
 export interface UpdateMeterPayload {

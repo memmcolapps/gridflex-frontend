@@ -7,6 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox"; // Added Checkbox import
 import type { FC } from "react";
 import type { VirtualMeterData } from "@/types/meter";
 import { useTariff } from "@/hooks/use-tarrif";
+import { useNigerianStates, useNigerianCities } from "@/hooks/use-location";
 
 interface AddVirtualMeterDetailsDialogProps {
   isOpen: boolean;
@@ -58,7 +59,7 @@ const AddVirtualMeterDetailsDialog: FC<AddVirtualMeterDetailsDialogProps> = ({
   setDss,
   // tariff,
   setTariff,
-  // state,
+  state,
   setState,
   city,
   setCity,
@@ -78,6 +79,12 @@ const AddVirtualMeterDetailsDialog: FC<AddVirtualMeterDetailsDialogProps> = ({
   customerTypes
 }) => {
   const { tariffs, isLoading: tariffsLoading } = useTariff();
+  const { data: states, isLoading: isLoadingStates, isError: isErrorStates } = useNigerianStates();
+  const {
+    data: cities,
+    isLoading: isLoadingCities,
+    isError: isErrorCities,
+  } = useNigerianCities(state);
 
   // Filter only approved tariffs
   const approvedTariffs = tariffs.filter(tariff => tariff.approve_status === 'Approved');
@@ -191,7 +198,12 @@ const AddVirtualMeterDetailsDialog: FC<AddVirtualMeterDetailsDialogProps> = ({
               <Label>
                 Customer Type <span className="text-red-500">*</span>
               </Label>
-              <Select onValueChange={setCustomerType}>
+              <Select onValueChange={(value) => {
+                setCustomerType?.(value);
+                // Pass meterClass as the selected customer type string
+                // The meterClass will be passed to the backend API
+                console.log('Selected meterClass:', value);
+              }}>
                 <SelectTrigger className="border border-gray-300 w-55">
                   <SelectValue placeholder="Select Customer Type" />
                 </SelectTrigger>
@@ -225,16 +237,30 @@ const AddVirtualMeterDetailsDialog: FC<AddVirtualMeterDetailsDialogProps> = ({
               <Label>
                 State <span className="text-red-500">*</span>
               </Label>
-              <Select onValueChange={setState}>
+              <Select
+                value={state}
+                onValueChange={(value) => {
+                  setState(value);
+                  setCity(""); // Reset city when state changes
+                }}
+              >
                 <SelectTrigger className="border border-gray-300 w-55">
-                  <SelectValue placeholder="Select state" />
+                  <SelectValue placeholder="Select State" />
                 </SelectTrigger>
                 <SelectContent>
-                  {nigerianStates.map((state) => (
-                    <SelectItem key={state} value={state}>
-                      {state}
-                    </SelectItem>
-                  ))}
+                  {isLoadingStates ? (
+                    <SelectItem value="loading" disabled>Loading states...</SelectItem>
+                  ) : isErrorStates ? (
+                    <SelectItem value="error-states" disabled>Error loading states</SelectItem>
+                  ) : states?.length === 0 ? (
+                    <SelectItem value="no-states-found" disabled>No states found</SelectItem>
+                  ) : (
+                    states?.map((stateItem) => (
+                      <SelectItem key={stateItem.id} value={stateItem.id}>
+                        {stateItem.name}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -242,12 +268,38 @@ const AddVirtualMeterDetailsDialog: FC<AddVirtualMeterDetailsDialogProps> = ({
               <Label>
                 City <span className="text-red-500">*</span>
               </Label>
-              <Input
+              <Select
                 value={city}
-                onChange={(e) => setCity(e.target.value)}
-                placeholder="Enter city"
-                className="border border-gray-300"
-              />
+                onValueChange={setCity}
+                disabled={!state || isLoadingCities}
+              >
+                <SelectTrigger className="border border-gray-300 w-55">
+                  <SelectValue
+                    placeholder={
+                      isLoadingCities
+                        ? "Loading cities..."
+                        : state
+                          ? "Select City"
+                          : "Select a state first"
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {isLoadingCities ? (
+                    <SelectItem value="loading" disabled>Loading cities...</SelectItem>
+                  ) : isErrorCities ? (
+                    <SelectItem value="error-cities" disabled>Error loading cities</SelectItem>
+                  ) : cities?.length === 0 && state ? (
+                    <SelectItem value="no-cities-found" disabled>No cities found for this state</SelectItem>
+                  ) : (
+                    cities?.map((cityItem) => (
+                      <SelectItem key={cityItem.id} value={cityItem.id}>
+                        {cityItem.name}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label>

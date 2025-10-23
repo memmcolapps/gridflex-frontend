@@ -250,10 +250,10 @@ export default function MeterManagementPage() {
                 tariff: "",
                 feeder: "",
                 dss: "",
-                state: customer.state || "",
-                city: customer.city || "",
-                streetName: customer.streetName || "",
-                houseNo: customer.houseNo || "",
+                state: "",
+                city: "",
+                streetName: "",
+                houseNo: "",
                 status: "Assigned",
                 firstName: customer.firstname || "",
                 lastName: customer.lastname || "",
@@ -273,10 +273,10 @@ export default function MeterManagementPage() {
             setTariff("");
             setFeeder("");
             setDss("");
-            setState(customer.state || "");
-            setCity(customer.city || "");
-            setStreetName(customer.streetName || "");
-            setHouseNo(customer.houseNo || "");
+            setState("");
+            setCity("");
+            setStreetName("");
+            setHouseNo("");
             setDebitMop("");
             setCreditMop("");
             setDebitPaymentPlan("");
@@ -713,10 +713,10 @@ export default function MeterManagementPage() {
                 tariff: "",
                 feeder: "",
                 dss: "",
-                state: customer.state || "",
-                city: customer.city || "",
-                streetName: customer.streetName || "",
-                houseNo: customer.houseNo || "",
+                state: "",
+                city: "",
+                streetName: "",
+                houseNo: "",
                 status: "Assigned",
                 firstName: customer.firstname || "",
                 lastName: customer.lastname || "",
@@ -735,10 +735,10 @@ export default function MeterManagementPage() {
             setTariff("");
             setFeeder("");
             setDss("");
-            setState(customer.state || "");
-            setCity(customer.city || "");
-            setStreetName(customer.streetName || "");
-            setHouseNo(customer.houseNo || "");
+            setState("");
+            setCity("");
+            setStreetName("");
+            setHouseNo("");
             setEnergyType("");
             setFixedEnergy("");
             setCategory("");
@@ -762,10 +762,10 @@ export default function MeterManagementPage() {
                 firstName: customer.firstName ?? "",
                 lastName: customer.lastName ?? "",
                 phone: customer.phone ?? "",
-                state: customer.state ?? "",
-                city: customer.city ?? "",
-                streetName: customer.streetName ?? "",
-                houseNo: customer.houseNo ?? "",
+                state: "",
+                city: "",
+                streetName: "",
+                houseNo: "",
                 category: customer.category ?? "",
             });
             setCustomerIdInput(customerId);
@@ -838,6 +838,7 @@ export default function MeterManagementPage() {
                 debitPaymentMode: "",
                 creditPaymentPlan: "",
                 debitPaymentPlan: "",
+                meterClass: category,
             };
 
             assignMeterMutation.mutate(virtualMeterPayload, {

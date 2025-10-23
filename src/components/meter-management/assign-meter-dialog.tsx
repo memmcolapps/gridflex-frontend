@@ -15,6 +15,7 @@ import type { MeterInventoryItem } from "@/types/meter-inventory";
 import type { Customer } from "@/types/customer-types";
 import { useTariff } from "@/hooks/use-tarrif";
 import { useMeters, useAssignMeter } from "@/hooks/use-assign-meter";
+import { useNigerianStates, useNigerianCities } from "@/hooks/use-location";
 import UploadImageDialog from "./upload-image-dialog";
 import { ConfirmationModalDialog } from "./confirmation-modal-dialog";
 import { SetPaymentModeDialog } from "./set-payment-mode-dialog";
@@ -103,6 +104,12 @@ export function AssignMeterDialog({
   onConfirmAssignment,
 }: AssignMeterDialogProps) {
   const { tariffs, isLoading: tariffsLoading } = useTariff();
+  const { data: states, isLoading: isLoadingStates, isError: isErrorStates } = useNigerianStates();
+  const {
+    data: cities,
+    isLoading: isLoadingCities,
+    isError: isErrorCities,
+  } = useNigerianCities(state);
 
   // Fetch available meters for dropdown
   const { data: metersData, isLoading: metersLoading } = useMeters({
@@ -213,8 +220,8 @@ export function AssignMeterDialog({
       feederAssetId: feeder, // Assuming feeder is the asset ID
       cin,
       accountNumber,
-      state,
-      city,
+      state: states?.find((s) => s.id === state)?.name ?? "",
+      city: cities?.find((c) => c.id === city)?.name ?? "",
       houseNo,
       streetName,
       creditPaymentMode: creditMop,
@@ -422,13 +429,30 @@ export function AssignMeterDialog({
               <Label>
                 State<span className="text-red-700">*</span>
               </Label>
-              <Select onValueChange={setState} value={state}>
+              <Select
+                value={state}
+                onValueChange={(value) => {
+                  setState(value);
+                  setCity(""); // Reset city when state changes
+                }}
+              >
                 <SelectTrigger className="border-gray-100 text-gray-600 w-full">
                   <SelectValue placeholder="Select State" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="state1">State 1</SelectItem>
-                  <SelectItem value="state2">State 2</SelectItem>
+                  {isLoadingStates ? (
+                    <SelectItem value="loading" disabled>Loading states...</SelectItem>
+                  ) : isErrorStates ? (
+                    <SelectItem value="error-states" disabled>Error loading states</SelectItem>
+                  ) : states?.length === 0 ? (
+                    <SelectItem value="no-states-found" disabled>No states found</SelectItem>
+                  ) : (
+                    states?.map((stateItem) => (
+                      <SelectItem key={stateItem.id} value={stateItem.id}>
+                        {stateItem.name}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -436,13 +460,39 @@ export function AssignMeterDialog({
               <Label>
                 City<span className="text-red-700">*</span>
               </Label>
-              <Input
+              <Select
                 value={city}
-                readOnly
-                onChange={(e) => setCity(e.target.value)}
-                placeholder="Enter City"
-                className="border-gray-100 text-gray-600"
-              />
+                onValueChange={setCity}
+                disabled={!state || isLoadingCities}
+              >
+                <SelectTrigger className="border-gray-100 text-gray-600 w-full">
+                  <SelectValue
+                    placeholder={
+                      isLoadingCities
+                        ? "Loading cities..."
+                        : state
+                          ? "Select City"
+                          : "Select a state first"
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent >
+                  
+                  {isLoadingCities ? (
+                    <SelectItem value="loading" disabled>Loading cities...</SelectItem>
+                  ) : isErrorCities ? (
+                    <SelectItem value="error-cities" disabled>Error loading cities</SelectItem>
+                  ) : cities?.length === 0 && state ? (
+                    <SelectItem value="no-cities-found" disabled>No cities found for this state</SelectItem>
+                  ) : (
+                    cities?.map((cityItem) => (
+                      <SelectItem key={cityItem.id} value={cityItem.id}>
+                        {cityItem.name}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label>
@@ -450,7 +500,6 @@ export function AssignMeterDialog({
               </Label>
               <Input
                 value={streetName}
-                readOnly
                 onChange={(e) => setStreetName(e.target.value)}
                 placeholder="Enter Street Name"
                 className="border-gray-100 text-gray-600"
@@ -462,7 +511,6 @@ export function AssignMeterDialog({
               </Label>
               <Input
                 value={houseNo}
-                readOnly
                 onChange={(e) => setHouseNo(e.target.value)}
                 placeholder="Enter House No"
                 className="border-gray-100 text-gray-600"
