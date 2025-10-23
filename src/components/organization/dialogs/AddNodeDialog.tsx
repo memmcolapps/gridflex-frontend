@@ -131,7 +131,7 @@ export const AddNodeDialog = ({
           email: formData.email,
           contactPerson: formData.contactPerson,
           address: formData.address,
-          type: nodeType,
+          type: nodeType.toLocaleLowerCase(),
         });
       } else if (isTechnicalNode) {
         await createSubstationTransfomerFeeder.mutateAsync({
@@ -148,7 +148,7 @@ export const AddNodeDialog = ({
           longitude: formData.longitude ?? "",
           description: formData.description ?? "",
           assetId: formData.assetId ?? "",
-          type: nodeType,
+          type: nodeType.toLocaleLowerCase(),
         });
       }
 
