@@ -124,7 +124,7 @@ export default function UnprintedBillsSales() {
                             <DatePicker placeHolder={"Select Date"} />
                         </div>
 
-                        <h4 className="self-center">to</h4>
+                        <h4 className="self-center">to </h4>
 
                         <div className="w-full p-2">
                             <h4>
