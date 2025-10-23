@@ -132,7 +132,7 @@ export default function CustomReportLayout() {
 
     return (
         <div className="overflow-hidden">
-            <div>
+            <div className="w-full max-w-[980px] mx-auto">
                 {/* Filters */}
                 <Card className="flex w-full flex-row justify-between rounded-lg border border-gray-200 px-5 py-1 shadow-none">
                     <div className="w-full p-2">
@@ -438,19 +438,21 @@ export default function CustomReportLayout() {
                     </div>
                 )}
                 {!loading && showTable && (
-                    <>
-                        {generateBy === 'Billing' ? (
-                            renderBillingTable()
-
-                        ) : generateBy === 'Vending' ? (
-                            renderPendingTable()
-                        ) : (
-                            <div className="p-6 text-center text-gray-500">
-                                No report available for this selection.
-                            </div>
-                        )}
-                    </>
+                    <div className="mt-6 max-w-full overflow-x-auto">
+                        <>
+                            {generateBy === 'Billing' ? (
+                                renderBillingTable()
+                            ) : generateBy === 'Vending' ? (
+                                renderPendingTable()
+                            ) : (
+                                <div className="p-6 text-center text-gray-500">
+                                    No report available for this selection.
+                                </div>
+                            )}
+                        </>
+                    </div>
                 )}
+
             </div>
 
         </div>
