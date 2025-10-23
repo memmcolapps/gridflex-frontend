@@ -135,7 +135,7 @@ export const EditNodeDialog = ({
     }
   };
 
-  const isTechnicalNode = ["Substation", "Feeder Line", "DSS"].includes(
+  const isTechnicalNode = ["substation", "feeder line", "dss"].includes(
     nodeType,
   );
 
@@ -316,9 +316,9 @@ export const EditNodeDialog = ({
               </div>
             </div>
           )}
-          {(nodeType === "Substation" ||
-            nodeType === "DSS" ||
-            nodeType === "Feeder Line") && (
+          {(nodeType === "substation" ||
+            nodeType === "dss" ||
+            nodeType === "feeder line") && (
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col">
                 <label className="text-sm font-medium">Longitude *</label>
