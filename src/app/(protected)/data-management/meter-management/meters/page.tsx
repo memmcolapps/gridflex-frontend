@@ -573,11 +573,16 @@ export default function MeterManagementPage() {
         }
     };
 
-    const handleBulkUpload = (newData: (MeterInventoryItem | VirtualMeterData)[]) => {
-        if (activeTab === "actual") {
-            setMeterData((prev) => [...prev, ...(newData.filter((item) => "manufacturer" in item) as MeterInventoryItem[])]);
+    const handleBulkUpload = (data: File | (MeterInventoryItem | VirtualMeterData)[]) => {
+        if (data instanceof File) {
+            // Handle raw file if sendRawFile is true, but currently it's false
+            console.warn("Raw file received, but not handled");
         } else {
-            setVirtualData((prev) => [...prev, ...(newData.filter((item) => "customerId" in item) as VirtualMeterData[])]);
+            if (activeTab === "actual") {
+                setMeterData((prev) => [...prev, ...(data.filter((item) => "manufacturer" in item) as MeterInventoryItem[])]);
+            } else {
+                setVirtualData((prev) => [...prev, ...(data.filter((item) => "customerId" in item) as VirtualMeterData[])]);
+            }
         }
     };
 

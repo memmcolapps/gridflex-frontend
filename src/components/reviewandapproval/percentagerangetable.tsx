@@ -126,7 +126,7 @@ const PercentageRangeTable = () => {
         toast.success(`Percentage range ${confirmAction}d successfully!`, {
           // description: `Percentage: ${selectedItem.percentage}, Code: ${selectedItem.code}`,
         });
-      } catch (error) {
+      } catch {
         toast.error(`Failed to ${confirmAction} percentage range.`, {
           // description: error instanceof Error ? error.message : 'An error occurred',
         });

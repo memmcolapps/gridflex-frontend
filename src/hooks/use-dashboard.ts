@@ -1,4 +1,5 @@
-import { getDashboard, DashboardFilters } from "@/service/dashboard-service";
+import type { DashboardFilters } from "@/service/dashboard-service";
+import { getDashboard } from "@/service/dashboard-service";
 import { useQuery } from "@tanstack/react-query";
 
 export const useDashboard = (filters?: DashboardFilters) => {

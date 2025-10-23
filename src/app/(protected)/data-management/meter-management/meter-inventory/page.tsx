@@ -170,8 +170,13 @@ export default function MeterInventoryPage() {
     setSelectedMeter(null);
   };
 
-  const handleSaveBulkAllocate = (data: MeterInventoryItem[]) => {
-    console.log("Saved data:", data);
+  const handleSaveBulkAllocate = (data: File | MeterInventoryItem[]) => {
+      if (data instanceof File) {
+          // Handle raw file if sendRawFile is true, but currently it's false
+          console.warn("Raw file received, but not handled");
+      } else {
+          console.log("Saved data:", data);
+      }
   };
 
   const isAllSelected = meters.length > 0 && selectedMeters.length === meters.length;
@@ -252,8 +257,13 @@ export default function MeterInventoryPage() {
     });
   };
 
-  const handleBulkUpload = (_newData: MeterInventoryItem[]) => {
-    refetch();
+  const handleBulkUpload = (data: File | MeterInventoryItem[]) => {
+      if (data instanceof File) {
+          // Handle raw file if sendRawFile is true, but currently it's false
+          console.warn("Raw file received, but not handled");
+      } else {
+          refetch();
+      }
   };
 
   const handleSearchChange = (term: string) => {

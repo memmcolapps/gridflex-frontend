@@ -550,8 +550,13 @@ export default function AssignMeterPage() {
             (migrateDebitMop !== "monthly" || migrateDebitPaymentPlan !== "") &&
             (migrateCreditMop !== "monthly" || migrateCreditPaymentPlan !== ""));
 
-    const handleBulkUploadSave = (data: MeterInventoryItem[]) => {
-        setMeterData((prev) => [...prev, ...data]);
+    const handleBulkUploadSave = (data: File | MeterInventoryItem[]) => {
+        if (data instanceof File) {
+            // Handle raw file if sendRawFile is true, but currently it's false
+            console.warn("Raw file received, but not handled");
+        } else {
+            setMeterData((prev) => [...prev, ...data]);
+        }
     };
 
     const handleRowsPerPageChange = (value: string) => {

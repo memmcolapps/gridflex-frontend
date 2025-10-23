@@ -12,7 +12,6 @@ import { BulkUploadDialog } from "@/components/meter-management/bulk-upload";
 import { useBulkUploadCustomer, useDownloadCustomerCsvTemplate, useDownloadCustomerExcelTemplate } from "@/hooks/use-customer";
 import { type Customer } from "@/types/customer-types";
 import { toast } from "sonner";
-import { DownloadIcon } from "lucide-react";
 import {
     Dialog,
     DialogContent,
@@ -65,10 +64,11 @@ export default function CustomerManagement() {
     const handleBulkUpload = (data: unknown) => {
         if (data instanceof File) {
             bulkUploadMutation.mutate(data, {
-                onSuccess: (response: any) => {
+                onSuccess: (response: unknown) => {
+                    const res = response as { responsedesc?: string };
                     setIsBulkUploadDialogOpen(false);
                     setIsTemplateDropdownOpen(false);
-                    toast.success(response?.responsedesc || "Bulk upload successful");
+                    toast.success(res?.responsedesc ?? "Bulk upload successful");
                 },
                 onError: (error) => {
                     console.error("Bulk upload failed:", error);
@@ -86,9 +86,10 @@ export default function CustomerManagement() {
             onSuccess: () => {
                 toast.success("CSV template downloaded successfully");
             },
-            onError: (error: any) => {
+            onError: (error: unknown) => {
+                const err = error as { message?: string };
                 console.error("CSV template download failed:", error);
-                toast.error(error?.message || "Failed to download CSV template");
+                toast.error(err?.message ?? "Failed to download CSV template");
             },
         });
     };
@@ -98,9 +99,10 @@ export default function CustomerManagement() {
             onSuccess: () => {
                 toast.success("Excel template downloaded successfully");
             },
-            onError: (error: any) => {
+            onError: (error: unknown) => {
+                const err = error as { message?: string };
                 console.error("Excel template download failed:", error);
-                toast.error(error?.message || "Failed to download Excel template");
+                toast.error(err?.message ?? "Failed to download Excel template");
             },
         });
     };
