@@ -84,7 +84,7 @@ export default function CustomerTable({
         setCurrentPage(1);
     };
 
-    const colSpan = 10;
+    const colSpan = 9;
 
     const renderTableBody = () => {
         if (isLoading) {
@@ -128,7 +128,6 @@ export default function CustomerTable({
 
         return customers.map((customer: Customer, index: number) => {
             // Add a console.log here to inspect the customer object
-            console.log("Rendering customer:", customer);
 
             return (
                 <TableRow
@@ -148,10 +147,9 @@ export default function CustomerTable({
                     <TableCell className="text-center">{customer.streetName}</TableCell>
                     <TableCell className="text-center">{customer.city}</TableCell>
                     <TableCell className="text-center">{customer.state}</TableCell>
-                    <TableCell className="text-center">{customer.meterNumber ?? "N/A"}</TableCell>
                     <TableCell className="text-center">
-                        <span className={getStatusStyle(customer.status ? "Active" : "Inactive")}>
-                            {customer.status ? "Active" : "Inactive"}
+                        <span className={getStatusStyle(customer.status.toString())}>
+                            {customer.status.toString()}
                         </span>
                     </TableCell>
                     <TableCell onClick={(e) => e.stopPropagation()}>
@@ -230,9 +228,6 @@ export default function CustomerTable({
                             </TableHead>
                             <TableHead onClick={() => requestSort("state")} className="text-center">
                                 State
-                            </TableHead>
-                            <TableHead onClick={() => requestSort("meterNumber")} className="text-center">
-                                Meter Number
                             </TableHead>
                             <TableHead onClick={() => requestSort("status")} className="text-center">
                                 Status

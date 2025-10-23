@@ -9,9 +9,21 @@ import BlockCustomerDialog from "./block-customer-dialog";
 import MeterDetailsDialog from "./meter-details-dialog";
 import { ContentHeader } from "@/components/ui/content-header";
 import { BulkUploadDialog } from "@/components/meter-management/bulk-upload";
+import { useBulkUploadCustomer, useDownloadCustomerCsvTemplate, useDownloadCustomerExcelTemplate } from "@/hooks/use-customer";
 import { type Customer } from "@/types/customer-types";
+import { toast } from "sonner";
+import { DownloadIcon } from "lucide-react";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function CustomerManagement() {
+    const bulkUploadMutation = useBulkUploadCustomer();
+    const downloadCsvTemplateMutation = useDownloadCustomerCsvTemplate();
+    const downloadExcelTemplateMutation = useDownloadCustomerExcelTemplate();
 
     const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -24,6 +36,7 @@ export default function CustomerManagement() {
     const [isMeterDialogOpen, setIsMeterDialogOpen] = useState(false);
     const [selectedMeterCustomer, setSelectedMeterCustomer] = useState<Customer | null>(null);
     const [isBulkUploadDialogOpen, setIsBulkUploadDialogOpen] = useState(false);
+    const [isTemplateDropdownOpen, setIsTemplateDropdownOpen] = useState(false);
 
     const handleBlockCustomer = (customer: Customer) => {
         setCustomerToBlock(customer);
@@ -49,8 +62,47 @@ export default function CustomerManagement() {
         }
     };
 
-    const handleBulkUpload = (_data: unknown) => {
-        setIsBulkUploadDialogOpen(false);
+    const handleBulkUpload = (data: unknown) => {
+        if (data instanceof File) {
+            bulkUploadMutation.mutate(data, {
+                onSuccess: (response: any) => {
+                    setIsBulkUploadDialogOpen(false);
+                    setIsTemplateDropdownOpen(false);
+                    toast.success(response?.responsedesc || "Bulk upload successful");
+                },
+                onError: (error) => {
+                    console.error("Bulk upload failed:", error);
+                    toast.error(error?.message || "Bulk upload failed");
+                },
+            });
+        } else {
+            setIsBulkUploadDialogOpen(false);
+            setIsTemplateDropdownOpen(false);
+        }
+    };
+
+    const handleDownloadCsvTemplate = () => {
+        downloadCsvTemplateMutation.mutate(undefined, {
+            onSuccess: () => {
+                toast.success("CSV template downloaded successfully");
+            },
+            onError: (error: any) => {
+                console.error("CSV template download failed:", error);
+                toast.error(error?.message || "Failed to download CSV template");
+            },
+        });
+    };
+
+    const handleDownloadExcelTemplate = () => {
+        downloadExcelTemplateMutation.mutate(undefined, {
+            onSuccess: () => {
+                toast.success("Excel template downloaded successfully");
+            },
+            onError: (error: any) => {
+                console.error("Excel template download failed:", error);
+                toast.error(error?.message || "Failed to download Excel template");
+            },
+        });
     };
 
     return (
@@ -149,19 +201,57 @@ export default function CustomerManagement() {
                     isOpen={isBulkUploadDialogOpen}
                     onClose={() => setIsBulkUploadDialogOpen(false)}
                     onSave={handleBulkUpload}
-                    title="Bulk Upload readings"
-                    requiredColumns={[
-                        "Customer ID",
-                        "First Name",
-                        "Last Name",
-                        "Phone Number",
-                        "Address",
-                        "City",
-                        "State",
-                        "Operator",
-                    ]}
-                    templateUrl="/templates/readingSheet-template.xlsx"
+                    title="Bulk Upload Customers"
+                    sendRawFile={true}
+                    templateUrl="#"
+                    onTemplateClick={() => {
+                        setIsBulkUploadDialogOpen(false);
+                        setIsTemplateDropdownOpen(true);
+                    }}
                 />
+
+                {/* Template Selection Dialog */}
+                <Dialog open={isTemplateDropdownOpen} onOpenChange={(open) => {
+                    setIsTemplateDropdownOpen(open);
+                    if (!open) {
+                        // Close all other dialogs when template dialog closes
+                        setIsBulkUploadDialogOpen(false);
+                        setIsEditDialogOpen(false);
+                        setIsBlockDialogOpen(false);
+                        setIsConfirmBlockDialogOpen(false);
+                        setIsViewDialogOpen(false);
+                        setIsMeterDialogOpen(false);
+                    }
+                }}>
+                    <DialogContent className="max-w-sm bg-white h-fit">
+                        <DialogHeader>
+                            <DialogTitle>Select Template Format</DialogTitle>
+                        </DialogHeader>
+                        <div className="space-y-3">
+                            <Button
+                                onClick={() => {
+                                    handleDownloadCsvTemplate();
+                                    setIsTemplateDropdownOpen(false);
+                                }}
+                                className="w-full bg-[#161CCA] hover:bg-[#121eb3] text-white"
+                                disabled={downloadCsvTemplateMutation.isPending || downloadExcelTemplateMutation.isPending}
+                            >
+                                {(downloadCsvTemplateMutation.isPending || downloadExcelTemplateMutation.isPending) ? "Downloading..." : "Download CSV Template"}
+                            </Button>
+                            <Button
+                                onClick={() => {
+                                    handleDownloadExcelTemplate();
+                                    setIsTemplateDropdownOpen(false);
+                                }}
+                                variant="outline"
+                                className="w-full border-[#161CCA] text-[#161CCA] hover:bg-[#161CCA] hover:text-white"
+                                disabled={downloadCsvTemplateMutation.isPending || downloadExcelTemplateMutation.isPending}
+                            >
+                                {(downloadCsvTemplateMutation.isPending || downloadExcelTemplateMutation.isPending) ? "Downloading..." : "Download Excel Template"}
+                            </Button>
+                        </div>
+                    </DialogContent>
+                </Dialog>
             </div>
         </div>
     );

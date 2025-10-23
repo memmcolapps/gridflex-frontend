@@ -245,7 +245,7 @@ export default function DashboardPage() {
           <MetersInstalledChart />
         </section>
 
-        <section className="px-4">
+        <section>
           <div className="w-full">
             <div className="grid grid-cols-1 gap-6 bg-transparent pt-6 md:grid-cols-2">
               <ManufacturerDistribution />

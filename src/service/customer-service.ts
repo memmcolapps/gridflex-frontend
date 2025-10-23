@@ -170,6 +170,92 @@ export async function blockCustomer({ customerId, reason }: BlockCustomerPayload
         throw new Error(handleApiError(error));
     }
 }
+
+export async function bulkUploadCustomers(file: File): Promise<CustomerMutationResponse> {
+    try {
+        const token = localStorage.getItem("auth_token");
+        if (!token) {
+            throw new Error("Authentication token not found.");
+        }
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const response = await axios.post(`${API_URL}/customer/service/bulk-upload`, formData, {
+            headers: {
+                "Content-Type": "multipart/form-data",
+                custom: CUSTOM_HEADER,
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        if (response.data.responsecode !== "000") {
+            throw new Error(response.data.responsedesc ?? "Failed to bulk upload customers.");
+        }
+
+        return response.data;
+    } catch (error) {
+        throw new Error(handleApiError(error));
+    }
+}
+
+export async function downloadCustomerCsvTemplate(): Promise<void> {
+    try {
+        const token = localStorage.getItem("auth_token");
+        if (!token) {
+            throw new Error("Authentication token not found.");
+        }
+
+        const response = await axios.get(`${API_URL}/customer/service/download/template/csv`, {
+            responseType: "blob",
+            headers: {
+                custom: CUSTOM_HEADER,
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        // Create a blob link to download the file
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", "customer_template.csv");
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+    } catch (error) {
+        throw new Error(handleApiError(error));
+    }
+}
+
+export async function downloadCustomerExcelTemplate(): Promise<void> {
+    try {
+        const token = localStorage.getItem("auth_token");
+        if (!token) {
+            throw new Error("Authentication token not found.");
+        }
+
+        const response = await axios.get(`${API_URL}/customer/service/download/template/excel`, {
+            responseType: "blob",
+            headers: {
+                custom: CUSTOM_HEADER,
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        // Create a blob link to download the file
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", "customer_template.xlsx");
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+    } catch (error) {
+        throw new Error(handleApiError(error));
+    }
+}
 /**
  * Fetches a single customer record by customer ID.
  * Endpoint: /api/meter/service/customer?customerId={id}

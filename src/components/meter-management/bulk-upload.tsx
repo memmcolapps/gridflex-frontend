@@ -8,6 +8,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { UploadIcon } from "lucide-react";
 import * as XLSX from "xlsx";
@@ -15,12 +16,14 @@ import * as XLSX from "xlsx";
 interface BulkUploadDialogProps<T> {
     isOpen: boolean;
     onClose: () => void;
-    onSave: (data: T[]) => void;
+    onSave: (data: T[] | File) => void;
     title?: string;
     description?: string;
-    requiredColumns: string[];
+    requiredColumns?: string[];
     templateUrl?: string;
     maxFileSizeMb?: number;
+    sendRawFile?: boolean;
+    onTemplateClick?: () => void;
 }
 
 export function BulkUploadDialog<T>({
@@ -29,9 +32,11 @@ export function BulkUploadDialog<T>({
     onSave,
     title = "Upload File",
     description = "Click the link to download the required document format. Please ensure your file follows the structure before uploading.",
-    requiredColumns,
+    requiredColumns = [],
     templateUrl = "/template.xlsx",
     maxFileSizeMb = 10,
+    sendRawFile = false,
+    onTemplateClick,
 }: BulkUploadDialogProps<T>) {
     const [file, setFile] = useState<File | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -60,6 +65,12 @@ export function BulkUploadDialog<T>({
     const handleUpload = (_data: unknown) => {
         if (!file) {
             setError("Please select a file first");
+            return;
+        }
+
+        if (sendRawFile) {
+            onSave(file);
+            onClose();
             return;
         }
 
@@ -118,9 +129,12 @@ export function BulkUploadDialog<T>({
                                 <span key={index}>{part}</span>
                             ) : (
                                 <React.Fragment key={index}>
-                                    <a href={templateUrl} className="text-[#161CCA] font-medium" download>
+                                    <button
+                                        onClick={onTemplateClick}
+                                        className="text-[#161CCA] font-medium hover:underline cursor-pointer"
+                                    >
                                         link to download
-                                    </a>
+                                    </button>
                                     {part}
                                 </React.Fragment>
                             )
@@ -150,6 +164,18 @@ export function BulkUploadDialog<T>({
                         onChange={handleFileChange}
                         className="hidden"
                     />
+
+                    {file && (
+                        <div className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
+                            <span className="text-sm text-gray-700 truncate">{file.name}</span>
+                            <Button
+                                onClick={handleUpload}
+                                className="bg-[#161CCA] hover:bg-[#121eb3] text-white"
+                            >
+                                Proceed
+                            </Button>
+                        </div>
+                    )}
 
                     {error && <p className="text-sm text-red-600">{error}</p>}
                 </div>
