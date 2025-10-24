@@ -15,6 +15,7 @@ import { queryClient } from "@/lib/queryClient";
 
 // Centralized types
 import { type UserInfo } from "@/types/user-info";
+import { getFirstAccessiblePath } from "@/utils/permissions";
 
 // Type for the login API response
 interface LoginResponseData {
@@ -78,7 +79,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
         setUser(user_info);
         setIsAuthenticated(true);
-        router.push("/data-management/dashboard");
+        const redirectPath = getFirstAccessiblePath(user_info);
+        router.push(redirectPath);
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to login";

@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/auth-context";
+import { getFirstAccessiblePath } from "@/utils/permissions";
 
 export default function HomePage() {
   const { user, isLoading } = useAuth();
@@ -16,7 +17,8 @@ export default function HomePage() {
 
     if (!isLoading) {
       if (user) {
-        router.push("/data-management/dashboard");
+        const redirectPath = getFirstAccessiblePath(user);
+        router.push(redirectPath);
       } else {
         router.push("/login");
       }
