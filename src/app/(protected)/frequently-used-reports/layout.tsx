@@ -28,20 +28,27 @@ import {
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { Progress } from "@/components/ui/progress";
-import AllReport from "./all-reports-table";
-import CustomerInfoTable from "./customer-info-table";
-import MeterInfoTable from "./meter-info-table";
-import PaymentHistoryTable from "./payment-history-table";
-import AdjustmentBalance from "./adjustment-table";
-import EnergyConsumedTable from "./energy-consumed-table";
-import OutstandingBalance from "./outstand-balance-table";
-import TariffDetails from "./tariff-details";
+import AllReport from "./billing-table/all-reports-table";
+import CustomerInfoTable from "./billing-table/customer-info-table";
+import MeterInfoTable from "./billing-table/meter-info-table";
+import PaymentHistoryTable from "./billing-table/payment-history-table";
+import AdjustmentBalance from "./billing-table/adjustment-table";
+import EnergyConsumedTable from "./billing-table/energy-consumed-table";
+import OutstandingBalance from "./billing-table/outstand-balance-table";
+import TariffDetails from "./billing-table/tariff-details";
+import AllPendingReport from "./pending-table/all-vending";
+import PendingCustomerInfoTable from "./pending-table/customer-info";
+import PendingMeterInfoTable from "./billing-table/meter-info-table";
+import PendingTariffDetails from "./pending-table/tariff-details";
+import PendingAdjustmentBalance from "./pending-table/adjustment-balance";
+import TokenDetailsReport from "./pending-table/token-details";
+import VendingHistoryTable from "./pending-table/vending-history";
 
 const EXPORT = [{ accord: "CSV" }, { accord: "XLSX" }, { accord: "PDF" }];
 const FILTER = [{ accord: "opt 1" }, { accord: "opt 2" }, { accord: "opt 3" }];
 const options = [
     { label: 'Billing' },
-    { label: 'Pending' }
+    { label: 'Vending' }
 ];
 
 export default function CustomReportLayout() {
@@ -98,24 +105,22 @@ export default function CustomReportLayout() {
         }
     };
 
-    const renderVendingTable = () => {
+    const renderPendingTable = () => {
         switch (reportType) {
             case "Select All":
-                return <AllReport />;
+                return <AllPendingReport />;
             case "Customer Information ":
-                return <CustomerInfoTable />;
+                return <PendingCustomerInfoTable />;
             case "Meter Information":
-                return <MeterInfoTable />;
-            case "Payment History":
-                return <PaymentHistoryTable />;
-            case "Energy Consumed":
-                return <EnergyConsumedTable />;
+                return <PendingMeterInfoTable />;
             case "Adjustment Balance":
-                return <AdjustmentBalance />;
-            case "New Outstanding Balance":
-                return <OutstandingBalance />;
-            case "Tariff":
-                return <TariffDetails />;
+                return <PendingAdjustmentBalance />;
+            case "Tariff Details":
+                return <PendingTariffDetails />;
+            case "Token Details":
+                return <TokenDetailsReport />;
+            case 'Vending History':
+                return <VendingHistoryTable />
             default:
                 return (
                     <div className="mt-10 text-center text-gray-500">
@@ -127,7 +132,7 @@ export default function CustomReportLayout() {
 
     return (
         <div className="overflow-hidden">
-            <div>
+            <div className="w-full max-w-[980px] mx-auto">
                 {/* Filters */}
                 <Card className="flex w-full flex-row justify-between rounded-lg border border-gray-200 px-5 py-1 shadow-none">
                     <div className="w-full p-2">
@@ -221,59 +226,114 @@ export default function CustomReportLayout() {
                     </div>
 
                     {/* Report */}
-                    <div className="w-full p-2">
-                        <h4>
-                            Report <span className="text-red-500">*</span>
-                        </h4>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button className="text-md mt-1 flex w-full cursor-pointer flex-row items-center justify-between border border-gray-300 px-4 py-4 font-medium text-gray-700">
-                                    {reportType ?? "Select"}
-                                    <ChevronDown size={14} />
-                                </Button>
-                            </DropdownMenuTrigger>
+                    {generateBy === 'Billing' ? (
+                        <div className="w-full p-2">
+                            <h4>
+                                Report <span className="text-red-500">*</span>
+                            </h4>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button className="text-md mt-1 flex w-full cursor-pointer flex-row items-center justify-between border border-gray-300 px-4 py-4 font-medium text-gray-700">
+                                        {reportType ?? "Select"}
+                                        <ChevronDown size={14} />
+                                    </Button>
+                                </DropdownMenuTrigger>
 
-                            <DropdownMenuContent className="w-100 py-4 shadow-lg">
-                                {[
-                                    'Select All',
-                                    "Customer Information ",
-                                    "Meter Information",
-                                    "Payment History",
-                                    "Energy Consumed",
-                                    "Adjustment Balance",
-                                    'New Outstanding Balance',
-                                    'Tariff',
-                                ].map((option, index, arr) => (
-                                    <div key={option}>
-                                        <DropdownMenuItem
-                                            onClick={() => setReportType(option)}
-                                            className="text-md flex cursor-pointer items-center justify-between py-3 font-medium"
-                                        >
-                                            <span className=" ml-4">{option}</span>
-
-                                            <div
-                                                className={`flex h-5 w-5 items-center justify-center rounded-lg border transition-colors ${reportType === option
-                                                    ? "border-green-500 bg-green-500"
-                                                    : "border-gray-400"
-                                                    }`}
+                                <DropdownMenuContent className="w-100 py-4 shadow-lg">
+                                    {[
+                                        'Select All',
+                                        "Customer Information ",
+                                        "Meter Information",
+                                        "Payment History",
+                                        "Energy Consumed",
+                                        "Adjustment Balance",
+                                        'New Outstanding Balance',
+                                        'Tariff',
+                                    ].map((option, index, arr) => (
+                                        <div key={option}>
+                                            <DropdownMenuItem
+                                                onClick={() => setReportType(option)}
+                                                className="text-md flex cursor-pointer items-center justify-between py-3 font-medium"
                                             >
-                                                {reportType === option && (
-                                                    <Check
-                                                        className="text-white"
-                                                        size={10}
-                                                        strokeWidth={3}
-                                                    />
-                                                )}
-                                            </div>
-                                        </DropdownMenuItem>
-                                        {index < arr.length - 1 && (
-                                            <hr className="my-1 border-gray-200" />
-                                        )}
-                                    </div>
-                                ))}
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div>
+                                                <span className=" ml-4">{option}</span>
+
+                                                <div
+                                                    className={`flex h-5 w-5 items-center justify-center rounded-lg border transition-colors ${reportType === option
+                                                        ? "border-green-500 bg-green-500"
+                                                        : "border-gray-400"
+                                                        }`}
+                                                >
+                                                    {reportType === option && (
+                                                        <Check
+                                                            className="text-white"
+                                                            size={10}
+                                                            strokeWidth={3}
+                                                        />
+                                                    )}
+                                                </div>
+                                            </DropdownMenuItem>
+                                            {index < arr.length - 1 && (
+                                                <hr className="my-1 border-gray-200" />
+                                            )}
+                                        </div>
+                                    ))}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+                    ) : (
+                        <div className="w-full p-2">
+                            <h4>
+                                Report <span className="text-red-500">*</span>
+                            </h4>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button className="text-md mt-1 flex w-full cursor-pointer flex-row items-center justify-between border border-gray-300 px-4 py-4 font-medium text-gray-700">
+                                        {reportType ?? "Select"}
+                                        <ChevronDown size={14} />
+                                    </Button>
+                                </DropdownMenuTrigger>
+
+                                <DropdownMenuContent className="w-100 py-4 shadow-lg">
+                                    {[
+                                        'Select All',
+                                        "Customer Information ",
+                                        "Meter Information",
+                                        "Adjustment Balance",
+                                        'Tariff Details',
+                                        'Vending History',
+                                    ].map((option, index, arr) => (
+                                        <div key={option}>
+                                            <DropdownMenuItem
+                                                onClick={() => setReportType(option)}
+                                                className="text-md flex cursor-pointer items-center justify-between py-3 font-medium"
+                                            >
+                                                <span className=" ml-4">{option}</span>
+
+                                                <div
+                                                    className={`flex h-5 w-5 items-center justify-center rounded-lg border transition-colors ${reportType === option
+                                                        ? "border-green-500 bg-green-500"
+                                                        : "border-gray-400"
+                                                        }`}
+                                                >
+                                                    {reportType === option && (
+                                                        <Check
+                                                            className="text-white"
+                                                            size={10}
+                                                            strokeWidth={3}
+                                                        />
+                                                    )}
+                                                </div>
+                                            </DropdownMenuItem>
+                                            {index < arr.length - 1 && (
+                                                <hr className="my-1 border-gray-200" />
+                                            )}
+                                        </div>
+                                    ))}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+                    )}
+
 
                     {/* Generate Button */}
                     <Button
@@ -378,19 +438,21 @@ export default function CustomReportLayout() {
                     </div>
                 )}
                 {!loading && showTable && (
-                    <>
-                        {generateBy === 'Billing' ? (
-                            renderBillingTable()
-
-                        ) : generateBy === 'Vending' ? (
-                            renderVendingTable()
-                        ) : (
-                            <div className="p-6 text-center text-gray-500">
-                                No report available for this selection.
-                            </div>
-                        )}
-                    </>
+                    <div className="mt-6 max-w-full overflow-x-auto">
+                        <>
+                            {generateBy === 'Billing' ? (
+                                renderBillingTable()
+                            ) : generateBy === 'Vending' ? (
+                                renderPendingTable()
+                            ) : (
+                                <div className="p-6 text-center text-gray-500">
+                                    No report available for this selection.
+                                </div>
+                            )}
+                        </>
+                    </div>
                 )}
+
             </div>
 
         </div>
