@@ -191,7 +191,7 @@ const MeterTable = () => {
                                 </TableCell>
                                 <TableCell className="px-4 py-3  text-sm text-gray-900">{item.meterNumber}</TableCell>
                                 <TableCell className="px-4 py-3  text-sm text-gray-900">{item.simNumber}</TableCell>
-                                <TableCell className="px-4 py-3  text-sm text-gray-900">{item.oldMeterInfo.manufacturer?.name || 'N/A'}</TableCell>
+                                <TableCell className="px-4 py-3  text-sm text-gray-900">{item.oldMeterInfo.manufacturer?.name}</TableCell>
                                 <TableCell className="px-4 py-3  text-sm text-gray-900">{item.meterClass}</TableCell>
                                 <TableCell className="px-4 py-3  text-sm text-gray-900">{item.meterType}</TableCell>
                                 <TableCell className="px-4 py-3  text-sm text-gray-900">{item.meterCategory}</TableCell>

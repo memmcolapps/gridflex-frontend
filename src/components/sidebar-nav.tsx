@@ -108,7 +108,7 @@ const navItems: NavItemProps[] = [
         ],
       },
       {
-        title: "Review & Approval",
+        title: "Review and Approval",
         href: "/data-management/reviewandapproval",
       },
     ],
@@ -297,17 +297,57 @@ export function SidebarNav() {
 
       return user.groups.modules.some((module) => {
         const normalizedApiModuleName = normalizeModuleName(module.name);
+
         return (
           normalizedApiModuleName === normalizedModuleName && module.access
         );
       });
     };
 
-    return navItems.filter((item) => {
-      if (item.title === "Audit Log") return true;
+    const hasSubModuleAccess = (
+      parentModuleName: string,
+      subModuleName: string,
+    ): boolean => {
+      if (!user?.groups?.modules) return false;
 
-      return hasModuleAccess(item.title);
-    });
+      const normalizedParentModuleName = normalizeModuleName(parentModuleName);
+      const normalizedSubModuleName = normalizeModuleName(subModuleName);
+
+      const parentModule = user.groups.modules.find(
+        (module) =>
+          normalizeModuleName(module.name) === normalizedParentModuleName &&
+          module.access,
+      );
+
+      if (!parentModule) return false;
+
+      return parentModule.subModules.some(
+        (subModule) =>
+          normalizeModuleName(subModule.name) === normalizedSubModuleName &&
+          subModule.access,
+      );
+    };
+
+    return navItems
+      .filter((item) => {
+        if (item.title === "Audit Log") return true;
+
+        return hasModuleAccess(item.title);
+      })
+      .map((item) => {
+        // For Data Management, filter submenu items based on submodule access
+        if (item.title === "Data Management" && item.submenuItems) {
+          return {
+            ...item,
+            submenuItems: item.submenuItems.filter((subItem) => {
+              // Filter submenu items based on submodule access
+              return hasSubModuleAccess("Data Management", subItem.title);
+            }),
+          };
+        }
+
+        return item;
+      });
   }, [user]);
 
   return (
