@@ -35,7 +35,7 @@ export const OutstandingChart = () => {
     const currentData = dataByType[activeChart];
 
     return (
-      <Card className="w-full max-w-[1000px] border-none border-gray-100 bg-transparent shadow-xs">
+      <Card className="w-full max-w-full border-none border-gray-100 bg-transparent shadow-xs">
         <CardHeader className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
           <CardTitle>Outstanding Over Time (Amount)</CardTitle>
           <div className="flex gap-2">

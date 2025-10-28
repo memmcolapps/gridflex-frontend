@@ -236,9 +236,9 @@ export default function CustomerManagement() {
                                     setIsTemplateDropdownOpen(false);
                                 }}
                                 className="w-full bg-[#161CCA] hover:bg-[#121eb3] text-white"
-                                disabled={downloadCsvTemplateMutation.isPending || downloadExcelTemplateMutation.isPending}
+                                disabled={downloadCsvTemplateMutation.isPending}
                             >
-                                {(downloadCsvTemplateMutation.isPending || downloadExcelTemplateMutation.isPending) ? "Downloading..." : "Download CSV Template"}
+                                {downloadCsvTemplateMutation.isPending ? "Downloading..." : "Download CSV Template"}
                             </Button>
                             <Button
                                 onClick={() => {
@@ -247,9 +247,9 @@ export default function CustomerManagement() {
                                 }}
                                 variant="outline"
                                 className="w-full border-[#161CCA] text-[#161CCA] hover:bg-[#161CCA] hover:text-white"
-                                disabled={downloadCsvTemplateMutation.isPending || downloadExcelTemplateMutation.isPending}
+                                disabled={downloadExcelTemplateMutation.isPending}
                             >
-                                {(downloadCsvTemplateMutation.isPending || downloadExcelTemplateMutation.isPending) ? "Downloading..." : "Download Excel Template"}
+                                {downloadExcelTemplateMutation.isPending ? "Downloading..." : "Download Excel Template"}
                             </Button>
                         </div>
                     </DialogContent>
