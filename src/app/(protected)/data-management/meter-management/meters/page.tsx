@@ -1237,7 +1237,7 @@ export default function MeterManagementPage() {
                                                 Account Number
                                             </TableHead>
                                             <TableHead className="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-normal">
-                                                Feeder
+                                                Category
                                             </TableHead>
                                             <TableHead className="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-normal">
                                                 DSS
@@ -1326,16 +1326,16 @@ export default function MeterManagementPage() {
                                                             {item.accountNumber}
                                                         </TableCell>
                                                         <TableCell className="px-4 py-3 text-sm text-gray-900 break-words">
-                                                            {(item as any).feeder ?? ''}
+                                                            {item.meterCategory}
                                                         </TableCell>
                                                         <TableCell className="px-4 py-3 text-sm text-gray-900 break-words">
-                                                            {item.dss}
+                                                            {item.dssInfo?.name ?? item.dss}
                                                         </TableCell>
                                                         <TableCell className="px-4 py-3 text-sm text-gray-900 break-words">
                                                             {item.cin}
                                                         </TableCell>
                                                         <TableCell className="px-4 py-3 text-sm text-gray-900 break-words">
-                                                            {item.tariff}
+                                                            {(item as any).tariffInfo?.name ?? item.tariff}
                                                         </TableCell>
                                                         <TableCell className="px-4 py-3 text-center">
                                                             <span className={cn("inline-block text-sm font-medium", getStatusStyle(item.status))}>

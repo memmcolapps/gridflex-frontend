@@ -75,7 +75,7 @@ const AddVirtualMeterDetailsDialog: FC<AddVirtualMeterDetailsDialogProps> = ({
   setFixedEnergy,
   onProceed,
   isFormComplete,
-  nigerianStates,
+  nigerianStates: _nigerianStates,
   customerTypes
 }) => {
   const { tariffs, isLoading: tariffsLoading } = useTariff();
