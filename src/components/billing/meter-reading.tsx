@@ -65,7 +65,7 @@ export default function MeterReadings({ searchQuery, sortConfig, selectedMonth, 
 
     const [sortBy, sortDirection] = sortConfig ? sortConfig.split(':') : [null, null];
 
-    const { data: meterReadingsData, isLoading, error } = useMeterReadings({
+    const { data: meterReadingsData } = useMeterReadings({
         searchTerm: searchQuery,
         sortBy: sortBy as keyof MeterReading | null,
         sortDirection: sortDirection as "asc" | "desc" | null,
@@ -74,30 +74,13 @@ export default function MeterReadings({ searchQuery, sortConfig, selectedMonth, 
         selectedYear,
     });
 
-    const data = meterReadingsData?.meterReadings || [];
-    const totalData = meterReadingsData?.totalData || 0;
-
-    // Helper function to parse DD-MM-YYYY date format
-    const parseDate = (dateStr: string): Date => {
-        const parts = dateStr.split('-');
-        const day = Number(parts[0]);
-        const month = Number(parts[1]);
-        const year = Number(parts[2]);
-
-        const safeDay = isNaN(day) ? 1 : day;
-        const safeMonth = isNaN(month) ? 1 : month;
-        const safeYear = isNaN(year) ? new Date().getFullYear() : year;
-
-        return new Date(safeYear, safeMonth - 1, safeDay);
-    };
+    const data = meterReadingsData?.meterReadings ?? [];
+    const totalData = meterReadingsData?.totalData ?? 0;
 
     // Since filtering and sorting is now handled by the API, we use the data directly
-    const filteredData = data; // API already filters
-    const sortedData = data; // API already sorts
-
     const totalPages = Math.ceil(totalData / rowsPerPage);
 
-    const paginatedData = sortedData.slice(
+    const paginatedData = data.slice(
         (currentPage - 1) * rowsPerPage,
         currentPage * rowsPerPage
     );

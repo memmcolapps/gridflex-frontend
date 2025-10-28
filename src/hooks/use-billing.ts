@@ -5,7 +5,6 @@ import {
     getMeterReadings,
     type MeterReadingsApiResponse,
     type MeterReadingItem,
-    type GetMeterReadingsParams,
 } from "../service/billing-service";
 
 export interface UseMeterReadingsParams {
