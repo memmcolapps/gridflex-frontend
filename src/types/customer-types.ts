@@ -20,6 +20,43 @@ export interface Customer {
     meterNumber: string | null;
     createdAt: string;
     updatedAt: string;
+    meter?: Array<{
+        id: string;
+        nodeId?: string;
+        meterNumber: string;
+        accountNumber: string;
+        simNumber?: string;
+        cin?: string;
+        tariff?: string;
+        type: string;
+        dss?: string;
+        meterCategory: string;
+        meterClass: string;
+        meterType: string;
+        meterStage: string;
+        status: string;
+        smartStatus: boolean;
+        customerId: string;
+        oldSgc: string;
+        newSgc: string;
+        oldKrn: string;
+        newKrn: string;
+        oldTariffIndex: number;
+        newTariffIndex: number;
+        meterAssignLocation?: {
+            id: string;
+            orgId: string;
+            meterId: string;
+            state: string;
+            city: string;
+            houseNo: string;
+            streetName: string;
+            createdAt: string;
+            updatedAt: string;
+        };
+        createdAt: string;
+        updatedAt: string;
+    }>;
 }
 
 export interface CustomersApiResponse {

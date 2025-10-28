@@ -15,6 +15,45 @@ export interface ManufacturerDetails {
 }
 
 export interface MeterInventoryItem {
+  dssInfo?: {
+    nodeId: string;
+    parentId: string;
+    assetId: string;
+    name: string;
+    type: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+  tariffInfo?: {
+    id: string;
+    name: string;
+    org_id: string;
+    tariff_type: string;
+    effective_date: string;
+    tariff_rate: string;
+    band_id: string;
+    approve_status: string;
+    band: {
+      id: string;
+      orgId: string;
+      name: string;
+      hour: string;
+      approveStatus: string;
+      createdAt: string;
+      updatedAt: string;
+    };
+    created_at: string;
+    updated_at: string;
+  };
+  feederInfo?: {
+    nodeId: string;
+    parentId: string;
+    assetId: string;
+    name: string;
+    type: string;
+    createdAt: string;
+    updatedAt: string;
+  };
   id?: string;
   meterNumber: string;
   meterManufacturer: string;

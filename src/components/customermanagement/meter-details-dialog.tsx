@@ -4,33 +4,25 @@ import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Label } from "@/components/ui/label";
 import { type Customer } from "@/types/customer-types";
+
 interface MeterDetailsDialogProps {
     isOpen: boolean;
     onOpenChange: (open: boolean) => void;
-    
+
         customer: Customer | null;
 }
 
 export default function MeterDetailsDialog({ isOpen, onOpenChange, customer }: MeterDetailsDialogProps) {
     if (!customer) return null;
 
-    // Placeholder meter data; replace with actual data fetching logic
-    const meterData = [
-        { accountNumber: "620102123", meterNumber: "V-201021223", category: "Post paid", feeder: "ljeun", dss: "ljeun", status: "Active" },
-        { accountNumber: "620102123", meterNumber: "V-201021223", category: "Post Paid", feeder: "ljeun", dss: "ljeun", status: "Active" },
-        { accountNumber: "620102123", meterNumber: "620102123", category: "Post Paid", feeder: "ljeun", dss: "ljeun", status: "Active" },
-        { accountNumber: "620102123", meterNumber: "620102123", category: "Prepaid", feeder: "ljeun", dss: "ljeun", status: "Active" },
-        { accountNumber: "620102123", meterNumber: "620102123", category: "Prepaid", feeder: "ljeun", dss: "ljeun", status: "Deactivated" },
-        { accountNumber: "620102123", meterNumber: "620102123", category: "Post Paid", feeder: "ljeun", dss: "ljeun", status: "Active" },
-        { accountNumber: "620102123", meterNumber: "620102123", category: "-----", feeder: "-----", dss: "-----", status: "Active" },
-    ];
+    const meterData = customer.meter || [];
 
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
-            <DialogContent className="bg-white w-full min-w-[500px] h-fit p-6 rounded-lg">
+            <DialogContent className="bg-white w-full min-w-fit border-none max-w-fit h-fit max-h-full p-6 rounded-lg overflow-hidden">
                 <DialogHeader>
-                    <DialogTitle className="text-lg font-semibold flex items-center justify-between mt-8 -mb-4">
-                        {customer.firstName} {customer.lastName}
+                    <DialogTitle className="text-lg font-semibold flex items-center justify-between mt-8 -mb-8">
+                        {customer.firstname} {customer.lastname}
                         <div>
                             <Label className="text-sm font-medium text-gray-900 mt-2">
                                 Total Number of meters
@@ -43,41 +35,43 @@ export default function MeterDetailsDialog({ isOpen, onOpenChange, customer }: M
                     <DialogClose className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 cursor-pointer" />
                 </DialogHeader>
                 <div className="mt-4">
-                    <p className="text-sm text-gray-600">C-{customer.accountNumber}</p>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Account Number</TableHead>
-                                <TableHead>Meter Number</TableHead>
-                                <TableHead>Meter Category</TableHead>
-                                <TableHead>Feeder Line</TableHead>
-                                <TableHead>DSS</TableHead>
-                                <TableHead className="flex gap-1 items-center">Status</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {meterData.map((meter, index) => (
-                                <TableRow key={index}>
-                                    <TableCell>{meter.accountNumber}</TableCell>
-                                    <TableCell>{meter.meterNumber}</TableCell>
-                                    <TableCell>{meter.category}</TableCell>
-                                    <TableCell>{meter.feeder}</TableCell>
-                                    <TableCell>{meter.dss}</TableCell>
-                                    <TableCell>
-                                        <span
-                                            className={
-                                                meter.status === "Active"
-                                                    ? "text-[#059E40] bg-[#E9FBF0] rounded-full px-1.5 py-1.5"
-                                                    : "text-[#F50202] bg-[#FBE9E9] rounded-full px-1.5 py-1.5"
-                                            }
-                                        >
-                                            {meter.status}
-                                        </span>
-                                    </TableCell>
+                    <p className="text-sm text-gray-600">C-{customer.customerId}</p>
+                    <div className="w-fit mt-4 overflow-x-auto max-h-fit overflow-y-auto border border-gray-200 rounded">
+                        <Table className="min-w-fit w-fit">
+                            <TableHeader className="bg-gray-50 sticky top-0">
+                                <TableRow>
+                                    <TableHead className="whitespace-nowrap font-medium">Account Number</TableHead>
+                                    <TableHead className="whitespace-nowrap font-medium">Meter Number</TableHead>
+                                    <TableHead className="whitespace-nowrap font-medium">Meter Category</TableHead>
+                                    <TableHead className="whitespace-nowrap font-medium">Feeder Line</TableHead>
+                                    <TableHead className="whitespace-nowrap font-medium">DSS</TableHead>
+                                    <TableHead className="whitespace-nowrap font-medium">Status</TableHead>
                                 </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                            </TableHeader>
+                            <TableBody>
+                                {meterData.map((meter, index) => (
+                                    <TableRow key={meter.id} className="hover:bg-gray-50">
+                                        <TableCell className="whitespace-nowrap">{meter.accountNumber}</TableCell>
+                                        <TableCell className="whitespace-nowrap">{meter.meterNumber}</TableCell>
+                                        <TableCell className="whitespace-nowrap">{meter.meterCategory}</TableCell>
+                                        <TableCell className="whitespace-nowrap">{(meter as any).feederInfo?.name || 'N/A'}</TableCell>
+                                        <TableCell className="whitespace-nowrap">{(meter as any).dssInfo?.name || 'N/A'}</TableCell>
+                                        <TableCell className="whitespace-nowrap">
+                                            <span
+                                                className={
+                                                    meter.status === "Active"
+                                                        ? "text-[#059E40] bg-[#E9FBF0] rounded-full px-1.5 py-1.5"
+                                                        : "text-[#F50202] bg-[#FBE9E9] rounded-full px-1.5 py-1.5"
+                                                }
+                                            >
+                                                {meter.status}
+                                            </span>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
                     <DialogFooter className="flex justify-between mt-4">
                         <Button
                             variant="outline"
