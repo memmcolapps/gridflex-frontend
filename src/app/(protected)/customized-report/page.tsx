@@ -51,19 +51,19 @@ const CustomizedReportPage = () => {
 
             <div className="mt-10">
                 {activeTab === "frequent" ? (
-                    <>
+                    <div className="w-full sm:max-w-full md:max-w-[980px] lg:max-w-[1440px]">
                         <div className="mt-10">
                             <GeneralReport />
                         </div>
                         <div className="mt-10">
                             <BillingReport />
                         </div>
-                        <div className="mt-10">
+                        <div className="mt-10 overflow-x-auto scrollbar-hide">
                             <MeteringTechnicalReport />
                         </div>
-                    </>
+                    </div>
                 ) : (
-                    <div className="mt-10">
+                    <div>
                         <CustomReportTable />
                     </div>
                 )}
