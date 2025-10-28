@@ -15,7 +15,7 @@ interface MeterDetailsDialogProps {
 export default function MeterDetailsDialog({ isOpen, onOpenChange, customer }: MeterDetailsDialogProps) {
     if (!customer) return null;
 
-    const meterData = customer.meter || [];
+    const meterData = customer.meter ?? [];
 
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -49,13 +49,13 @@ export default function MeterDetailsDialog({ isOpen, onOpenChange, customer }: M
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {meterData.map((meter, index) => (
+                                {meterData.map((meter, _index) => (
                                     <TableRow key={meter.id} className="hover:bg-gray-50">
                                         <TableCell className="whitespace-nowrap">{meter.accountNumber}</TableCell>
                                         <TableCell className="whitespace-nowrap">{meter.meterNumber}</TableCell>
                                         <TableCell className="whitespace-nowrap">{meter.meterCategory}</TableCell>
-                                        <TableCell className="whitespace-nowrap">{(meter as any).feederInfo?.name || 'N/A'}</TableCell>
-                                        <TableCell className="whitespace-nowrap">{(meter as any).dssInfo?.name || 'N/A'}</TableCell>
+                                        <TableCell className="whitespace-nowrap">{meter.feederInfo?.name ?? 'N/A'}</TableCell>
+                                        <TableCell className="whitespace-nowrap">{meter.dssInfo?.name ?? 'N/A'}</TableCell>
                                         <TableCell className="whitespace-nowrap">
                                             <span
                                                 className={

@@ -1329,13 +1329,13 @@ export default function MeterManagementPage() {
                                                             {item.meterCategory}
                                                         </TableCell>
                                                         <TableCell className="px-4 py-3 text-sm text-gray-900 break-words">
-                                                            {item.dssInfo?.name || item.dss}
+                                                            {item.dssInfo?.name ?? item.dss}
                                                         </TableCell>
                                                         <TableCell className="px-4 py-3 text-sm text-gray-900 break-words">
                                                             {item.cin}
                                                         </TableCell>
                                                         <TableCell className="px-4 py-3 text-sm text-gray-900 break-words">
-                                                            {(item as any).tariffInfo?.name || item.tariff}
+                                                            {(item as any).tariffInfo?.name ?? item.tariff}
                                                         </TableCell>
                                                         <TableCell className="px-4 py-3 text-center">
                                                             <span className={cn("inline-block text-sm font-medium", getStatusStyle(item.status))}>
