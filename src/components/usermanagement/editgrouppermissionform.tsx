@@ -63,7 +63,6 @@ export default function EditGroupPermissionForm({
   }>({});
 
   const moduleAccessOptions = [
-    { value: "all-access", label: "All Access", group: null },
     { value: "dashboard", label: "Dashboard", group: "Data Management" },
     {
       value: "organization",
@@ -133,16 +132,6 @@ export default function EditGroupPermissionForm({
     };
 
     const accessArray: string[] = [];
-    let hasAllDataManagementModules = true;
-    const dataManagementModules = [
-      "organization",
-      "meter-management",
-      "customer-management",
-      "tarrif",
-      "band-management",
-      "reviewandapproval",
-      "debt-management",
-    ];
     const foundDataManagementModules: string[] = [];
 
     modules.forEach((module) => {
@@ -161,27 +150,6 @@ export default function EditGroupPermissionForm({
         }
       }
     });
-
-    // Check if all data management modules are present
-    hasAllDataManagementModules = dataManagementModules.every((dm) =>
-      foundDataManagementModules.includes(dm),
-    );
-
-    // Check if all modules are selected (for all-access)
-    const allNonDataManagementModules = [
-      "billing",
-      "vending",
-      "hes",
-      "user-management",
-      "dashboard",
-    ];
-    const hasAllNonDataManagementModules = allNonDataManagementModules.every(
-      (module) => accessArray.includes(module),
-    );
-
-    if (hasAllDataManagementModules && hasAllNonDataManagementModules) {
-      return ["all-access"];
-    }
 
     return accessArray;
   };

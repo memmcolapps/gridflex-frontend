@@ -44,7 +44,6 @@ export default function GroupPermissionForm({
   }>({});
 
   const moduleAccessOptions = [
-    { value: "all-access", label: "All Access", group: null },
     { value: "dashboard", label: "Dashboard", group: "Data Management" },
     {
       value: "organization",
@@ -95,18 +94,10 @@ export default function GroupPermissionForm({
   ];
 
   const handleModuleSelection = (value: string) => {
-    if (value === "all-access") {
-      setSelectedModules(["all-access"]);
+    if (selectedModules.includes(value)) {
+      setSelectedModules(selectedModules.filter((item) => item !== value));
     } else {
-      const newSelection = selectedModules.filter(
-        (item) => item !== "all-access",
-      );
-
-      if (selectedModules.includes(value)) {
-        setSelectedModules(newSelection.filter((item) => item !== value));
-      } else {
-        setSelectedModules([...newSelection, value]);
-      }
+      setSelectedModules([...selectedModules, value]);
     }
 
     // Clear module access error when selection is made
