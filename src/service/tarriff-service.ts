@@ -231,11 +231,9 @@ export interface UpdateTariffPayload {
   band_id?: string;
 }
 
-export interface ExportTariffParams {
-  // Add parameters as needed based on backend requirements
-}
+export type ExportTariffParams = Record<string, never>;
 
-export interface ExportTariffResponse extends Blob {}
+export type ExportTariffResponse = Blob;
 
 export async function updateTariff(
   tariff: UpdateTariffPayload,

@@ -6,10 +6,11 @@ import {
   changeTariffApprovalStatus,
   updateTariff,
   exportTariff,
-  type TariffPayload,
-  type UpdateTariffPayload,
-  type ExportTariffParams,
-  type ExportTariffResponse,
+} from "../service/tarriff-service";
+import type {
+  TariffPayload,
+  UpdateTariffPayload,
+  ExportTariffParams,
 } from "../service/tarriff-service";
 import { useAuth } from "../context/auth-context";
 import { queryClient } from "@/lib/queryClient";

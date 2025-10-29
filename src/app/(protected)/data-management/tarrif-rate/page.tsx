@@ -113,9 +113,9 @@ export default function TariffManagementPage() {
       window.URL.revokeObjectURL(url);
 
       toast.success("Tariff export downloaded successfully!");
-    } catch (error: any) {
-      const errorMessage = error?.response?.data?.responsedesc ||
-                         error?.message ||
+    } catch (error: unknown) {
+      const errorMessage = (error as { response?: { data?: { responsedesc?: string } }; message?: string })?.response?.data?.responsedesc ??
+                         (error as { message?: string })?.message ??
                          "Failed to export tariff data. Please try again.";
       toast.error(errorMessage);
       console.error("Export error:", error);

@@ -16,7 +16,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { useCreateMeterReading, useMeterReadings } from "@/hooks/use-billing";
+import { useCreateMeterReading } from "@/hooks/use-billing";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -52,7 +52,7 @@ export default function AddReadingDialog({ open, onClose, meterClass }: AddReadi
             "July", "August", "September", "October", "November", "December"
         ];
         const monthIndex = parseInt(formData.month) - 1;
-        const fullMonthName = monthNames[monthIndex] || formData.month; // Fallback to original if invalid
+        const fullMonthName = monthNames[monthIndex] ?? formData.month; // Fallback to original if invalid
 
         const payload = {
             meterNumber: formData.meterNo,
@@ -63,7 +63,7 @@ export default function AddReadingDialog({ open, onClose, meterClass }: AddReadi
         };
 
         try {
-            const response = await createMeterReadingMutation.mutateAsync(payload);
+            await createMeterReadingMutation.mutateAsync(payload);
             toast.success("Meter reading added successfully!");
 
             // Invalidate and refetch meter readings queries
@@ -77,10 +77,10 @@ export default function AddReadingDialog({ open, onClose, meterClass }: AddReadi
                 presentReadings: "",
             });
             onClose();
-        } catch (error: any) {
+        } catch (error: unknown) {
             // Extract error message from backend response
-            const errorMessage = error?.response?.data?.responsedesc ||
-                               error?.message ||
+            const errorMessage = (error as { response?: { data?: { responsedesc?: string } }; message?: string })?.response?.data?.responsedesc ??
+                               (error as { message?: string })?.message ??
                                "Failed to add meter reading. Please try again.";
             toast.error(errorMessage);
             console.error("Error adding meter reading:", error);

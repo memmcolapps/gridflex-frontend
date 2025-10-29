@@ -33,7 +33,7 @@ export interface CreateMeterReadingPayload {
 export interface CreateMeterReadingResponse {
     responsecode: "000" | string;
     responsedesc: string;
-    responsedata?: any;
+    responsedata?: Record<string, unknown>;
 }
 
 export interface GenerateReadingParams {

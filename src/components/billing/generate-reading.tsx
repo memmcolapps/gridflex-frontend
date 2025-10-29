@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/table";
 import { useGenerateReading } from "@/hooks/use-billing";
 import { toast } from "sonner";
-import { GeneratedReadingItem } from "@/service/billing-service";
+import type { GeneratedReadingItem } from "@/service/billing-service";
 
 interface GenerateReadingSheetProps {
     open: boolean;
@@ -79,9 +79,9 @@ export default function GenerateReadingSheet({ open, onClose, meterClass }: Gene
             setGeneratedData(response.responsedata || []);
             toast.success("Reading sheet generated successfully!");
             setStep(3);
-        } catch (error: any) {
-            const errorMessage = error?.response?.data?.responsedesc ||
-                               error?.message ||
+        } catch (error: unknown) {
+            const errorMessage = (error as { response?: { data?: { responsedesc?: string } }; message?: string })?.response?.data?.responsedesc ??
+                               (error as { message?: string })?.message ??
                                "Failed to generate reading sheet. Please try again.";
             toast.error(errorMessage);
             console.error("Error generating reading sheet:", error);

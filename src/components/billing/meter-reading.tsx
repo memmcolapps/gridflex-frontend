@@ -70,19 +70,19 @@ export default function MeterReadings({ searchQuery, sortConfig, selectedMonth, 
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [selectedRowIds, setSelectedRowIds] = useState<Set<string>>(new Set()); // New state for selected row IDs
 
-    const [sortBy, sortDirection] = sortConfig ? sortConfig.split(':') : [null, null];
+    const [sortBy, sortDirection] = sortConfig ? sortConfig.split(':') : [null, null] as [string | null, string | null];
 
     const { data: meterReadingsData, isLoading, error } = useMeterReadings({
         searchTerm: searchQuery,
-        sortBy: sortBy as keyof MeterReading | null,
-        sortDirection: sortDirection as "asc" | "desc" | null,
+        sortBy: sortBy as keyof MeterReading ?? null,
+        sortDirection: sortDirection as "asc" | "desc" ?? null,
         meterClass,
         selectedMonth,
         selectedYear,
     });
 
-    const data = meterReadingsData?.meterReadings || [];
-    const totalData = meterReadingsData?.totalData || 0;
+    const data = meterReadingsData?.meterReadings ?? [];
+    const totalData = meterReadingsData?.totalData ?? 0;
 
     // Debug logging - remove after debugging
     // console.log("Meter Readings Data:", meterReadingsData);
