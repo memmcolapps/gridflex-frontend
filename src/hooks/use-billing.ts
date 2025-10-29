@@ -1,10 +1,16 @@
 // hooks/use-billing.ts
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import {
     getMeterReadings,
+    createMeterReading,
+    generateReading,
     type MeterReadingsApiResponse,
     type MeterReadingItem,
+    type CreateMeterReadingPayload,
+    type CreateMeterReadingResponse,
+    type GenerateReadingParams,
+    type GenerateReadingResponse,
 } from "../service/billing-service";
 
 export interface UseMeterReadingsParams {
@@ -41,8 +47,20 @@ export const useMeterReadings = ({
         staleTime: 1000 * 60 * 5,
         refetchOnWindowFocus: false,
         select: (data) => ({
-            meterReadings: data.responsedata.data,
-            totalData: data.responsedata.totalData,
+            meterReadings: data.responsedata?.messages || [],
+            totalData: data.responsedata?.totalCount || 0,
         }),
+    });
+};
+
+export const useCreateMeterReading = () => {
+    return useMutation<CreateMeterReadingResponse, Error, CreateMeterReadingPayload>({
+        mutationFn: createMeterReading,
+    });
+};
+
+export const useGenerateReading = () => {
+    return useMutation<GenerateReadingResponse, Error, GenerateReadingParams>({
+        mutationFn: generateReading,
     });
 };

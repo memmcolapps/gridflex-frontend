@@ -8,15 +8,16 @@ import {
 import { Label } from "@/components/ui/label";
 
 interface MeterReading {
-    id: number;
-    meterNo: string;
-    feederLine: string;
-    tariffType: string;
-    larDate: string;
-    lastReading: number;
+    meterNumber: string;
     readingType: string;
-    readingDate: string;
-    currentReadings: number;
+    lastReading: number;
+    currentReading: number;
+    currentReadingDate: string;
+    lastReadingDate: string;
+    createdAt: string;
+    updatedAt: string;
+    tariffType: string;
+    name: string;
 }
 
 interface ViewMeterReadingDetailsProps {
@@ -35,11 +36,11 @@ export default function ViewMeterReadingDetails({ open, onClose, data }: ViewMet
                 <div className="grid gap-4 py-4 text-sm">
                     <div className="grid grid-cols-2 items-center gap-2">
                         <Label className="font-semibold">Meter No.:</Label>
-                        <span>{data.meterNo}</span>
+                        <span>{data.meterNumber}</span>
                     </div>
                     <div className="grid grid-cols-2 items-center gap-2">
                         <Label className="font-semibold">Feeder Line:</Label>
-                        <span>{data.feederLine}</span>
+                        <span>{data.name}</span>
                     </div>
                     <div className="grid grid-cols-2 items-center gap-2">
                         <Label className="font-semibold">Tariff Type:</Label>
@@ -47,7 +48,7 @@ export default function ViewMeterReadingDetails({ open, onClose, data }: ViewMet
                     </div>
                     <div className="grid grid-cols-2 items-center gap-2">
                         <Label className="font-semibold">Last Actual Reading Date:</Label>
-                        <span>{data.larDate}</span>
+                        <span>{data.lastReadingDate}</span>
                     </div>
                     <div className="grid grid-cols-2 items-center gap-2">
                         <Label className="font-semibold">Last Actual Reading:</Label>
@@ -59,11 +60,11 @@ export default function ViewMeterReadingDetails({ open, onClose, data }: ViewMet
                     </div>
                     <div className="grid grid-cols-2 items-center gap-2">
                         <Label className="font-semibold">Reading Date:</Label>
-                        <span>{data.readingDate}</span>
+                        <span>{data.currentReadingDate}</span>
                     </div>
                     <div className="grid grid-cols-2 items-center gap-2">
                         <Label className="font-semibold">Current Readings:</Label>
-                        <span>{data.currentReadings}</span>
+                        <span>{data.currentReading}</span>
                     </div>
                 </div>
             </DialogContent>

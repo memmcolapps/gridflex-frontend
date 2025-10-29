@@ -182,14 +182,15 @@ export default function ReadingSheetPage() {
                         sortConfig={sortConfig}
                         selectedMonth={selectedMonth}
                         selectedYear={selectedYear}
-                        meterClass="non-md"
+                        meterClass="Non-MD"
                     />
                 )}
             </div>
-            <AddReadingDialog open={isAddDialogOpen} onClose={() => setIsAddDialogOpen(false)} />
+            <AddReadingDialog open={isAddDialogOpen} onClose={() => setIsAddDialogOpen(false)} meterClass="Non-MD" />
             <GenerateReadingSheet
                 open={isGenerateDialogOpen}
                 onClose={() => setIsGenerateDialogOpen(false)}
+                meterClass="Non-MD"
             />
             <BulkUploadDialog
                 isOpen={isBulkUploadDialogOpen}

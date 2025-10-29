@@ -231,6 +231,12 @@ export interface UpdateTariffPayload {
   band_id?: string;
 }
 
+export interface ExportTariffParams {
+  // Add parameters as needed based on backend requirements
+}
+
+export interface ExportTariffResponse extends Blob {}
+
 export async function updateTariff(
   tariff: UpdateTariffPayload,
 ): Promise<{ success: true } | { success: false; error: string }> {
@@ -263,5 +269,47 @@ export async function updateTariff(
       success: false,
       error: handleApiError(error),
     };
+  }
+}
+export async function exportTariff(params: ExportTariffParams = {}): Promise<Blob> {
+  try {
+    const token = localStorage.getItem("auth_token");
+    if (!token) {
+      throw new Error("Authentication token not found.");
+    }
+
+    // Convert params to URLSearchParams for GET request
+    const searchParams = new URLSearchParams();
+    // Add any parameters as needed
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        searchParams.append(key, String(value));
+      }
+    });
+
+    const url = searchParams.toString()
+      ? `${API_URL}/tariff/service/export?${searchParams.toString()}`
+      : `${API_URL}/tariff/service/export`;
+
+    const response = await axios.get(url, {
+      headers: {
+        "Content-Type": "application/json",
+        custom: CUSTOM_HEADER,
+        Authorization: `Bearer ${token}`,
+      },
+      responseType: 'blob', // Important for file downloads
+    });
+
+    // For file downloads, we don't check responsecode in the same way
+    // The response will be a blob containing the Excel file
+    // Check if the response is actually a blob (successful file download)
+    if (response.data instanceof Blob) {
+      return response.data;
+    } else {
+      // If it's not a blob, it might be an error response
+      throw new Error('Failed to download file');
+    }
+  } catch (error) {
+    throw new Error(handleApiError(error));
   }
 }
