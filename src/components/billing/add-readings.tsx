@@ -16,13 +16,17 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { useCreateMeterReading } from "@/hooks/use-billing";
+import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface AddReadingDialogProps {
     open: boolean;
     onClose: () => void;
+    meterClass: string;
 }
 
-export default function AddReadingDialog({ open, onClose }: AddReadingDialogProps) {
+export default function AddReadingDialog({ open, onClose, meterClass }: AddReadingDialogProps) {
     const [formData, setFormData] = useState({
         meterNo: "",
         month: "",
@@ -31,15 +35,56 @@ export default function AddReadingDialog({ open, onClose }: AddReadingDialogProp
         presentReadings: "",
     });
 
+    const queryClient = useQueryClient();
+    const createMeterReadingMutation = useCreateMeterReading();
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        console.log("Added reading:", formData);
-        onClose();
+
+        // Convert numeric month to full month name
+        const monthNames = [
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+        ];
+        const monthIndex = parseInt(formData.month) - 1;
+        const fullMonthName = monthNames[monthIndex] ?? formData.month; // Fallback to original if invalid
+
+        const payload = {
+            meterNumber: formData.meterNo,
+            billMonth: fullMonthName,
+            billYear: formData.year,
+            currentReading: formData.presentReadings,
+            meterClass,
+        };
+
+        try {
+            await createMeterReadingMutation.mutateAsync(payload);
+            toast.success("Meter reading added successfully!");
+
+            // Invalidate and refetch meter readings queries
+            queryClient.invalidateQueries({ queryKey: ["meterReadings"] });
+
+            setFormData({
+                meterNo: "",
+                month: "",
+                year: "",
+                readingType: "",
+                presentReadings: "",
+            });
+            onClose();
+        } catch (error: unknown) {
+            // Extract error message from backend response
+            const errorMessage = (error as { response?: { data?: { responsedesc?: string } }; message?: string })?.response?.data?.responsedesc ??
+                               (error as { message?: string })?.message ??
+                               "Failed to add meter reading. Please try again.";
+            toast.error(errorMessage);
+            console.error("Error adding meter reading:", error);
+        }
     };
 
     return (
@@ -170,10 +215,11 @@ export default function AddReadingDialog({ open, onClose }: AddReadingDialogProp
                                 !formData.month ||
                                 !formData.year ||
                                 !formData.readingType ||
-                                !formData.presentReadings
+                                !formData.presentReadings ||
+                                createMeterReadingMutation.isPending
                             }
                         >
-                            Proceed
+                            {createMeterReadingMutation.isPending ? "Adding..." : "Proceed"}
                         </Button>
                     </DialogFooter>
                 </form>

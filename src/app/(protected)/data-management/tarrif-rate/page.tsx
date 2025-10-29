@@ -41,7 +41,7 @@ import {
 import React, { useState } from "react";
 import { toast } from "sonner";
 import { useBand } from "@/hooks/use-band";
-import { useCreateTariff, useTariff } from "@/hooks/use-tarrif";
+import { useCreateTariff, useTariff, useExportTariff } from "@/hooks/use-tarrif";
 
 export default function TariffManagementPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -62,6 +62,7 @@ export default function TariffManagementPage() {
   const { bands, isLoading: bandsLoading, error: bandsError } = useBand();
   const { tariffs, isLoading, error: tariffError } = useTariff();
   const { mutate: createTariff } = useCreateTariff();
+  const { mutate: exportTariffMutation, isPending: isExporting } = useExportTariff();
 
   const handleInputChange = (field: string, value: string | Date | null) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -94,6 +95,30 @@ export default function TariffManagementPage() {
     } catch (error) {
       console.error("Bulk approve error:", error);
       toast.error("Failed to bulk approve tariffs");
+    }
+  };
+
+  const handleExport = async () => {
+    try {
+      const blob = await exportTariffMutation({});
+
+      // Create a download link for the Excel file
+      const url = window.URL.createObjectURL(blob!);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `tariff_export_${new Date().toISOString().split('T')[0]}.xlsx`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      toast.success("Tariff export downloaded successfully!");
+    } catch (error: unknown) {
+      const errorMessage = (error as { response?: { data?: { responsedesc?: string } }; message?: string })?.response?.data?.responsedesc ??
+                         (error as { message?: string })?.message ??
+                         "Failed to export tariff data. Please try again.";
+      toast.error(errorMessage);
+      console.error("Export error:", error);
     }
   };
 
@@ -429,9 +454,11 @@ export default function TariffManagementPage() {
             <Button
               variant="outline"
               className="flex items-center gap-2 border-gray-300 text-gray-700 hover:bg-gray-50"
+              onClick={handleExport}
+              disabled={isExporting}
             >
               <SquareArrowOutUpRight size={14} />
-              Export
+              {isExporting ? "Exporting..." : "Export"}
             </Button>
           </div>
         </div>

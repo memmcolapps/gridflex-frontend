@@ -4,9 +4,13 @@ import {
   createTariff,
   changeTariffStatus,
   changeTariffApprovalStatus,
-  type TariffPayload,
-  type UpdateTariffPayload,
   updateTariff,
+  exportTariff,
+} from "../service/tarriff-service";
+import type {
+  TariffPayload,
+  UpdateTariffPayload,
+  ExportTariffParams,
 } from "../service/tarriff-service";
 import { useAuth } from "../context/auth-context";
 import { queryClient } from "@/lib/queryClient";
@@ -108,5 +112,11 @@ export const useUpdateTariff = () => {
         queryKey: ["tariffs"],
       });
     },
+  });
+};
+
+export const useExportTariff = () => {
+  return useMutation<Blob, Error, ExportTariffParams>({
+    mutationFn: exportTariff,
   });
 };

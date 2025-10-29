@@ -24,22 +24,29 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
+import { useGenerateReading } from "@/hooks/use-billing";
+import { toast } from "sonner";
+import type { GeneratedReadingItem } from "@/service/billing-service";
 
 interface GenerateReadingSheetProps {
     open: boolean;
     onClose: () => void;
+    meterClass: string;
 }
 
-export default function GenerateReadingSheet({ open, onClose }: GenerateReadingSheetProps) {
+export default function GenerateReadingSheet({ open, onClose, meterClass }: GenerateReadingSheetProps) {
     const [step, setStep] = useState(1);
     const [filterType, setFilterType] = useState("");
     const [filterId, setFilterId] = useState("");
+    const [generatedData, setGeneratedData] = useState<GeneratedReadingItem[]>([]);
+    const generateReadingMutation = useGenerateReading();
 
     useEffect(() => {
         if (!open) {
             setStep(1);
             setFilterType("");
             setFilterId("");
+            setGeneratedData([]);
         }
     }, [open]);
 
@@ -48,9 +55,37 @@ export default function GenerateReadingSheet({ open, onClose }: GenerateReadingS
         setStep(2);
     };
 
-    const handleSecondProceed = (e: React.FormEvent) => {
+    const handleSecondProceed = async (e: React.FormEvent) => {
         e.preventDefault();
-        setStep(3);
+
+        // Determine the type based on filterType
+        let type = "";
+        if (filterType === "feederLine") {
+            type = "feeder line";
+        } else if (filterType === "serviceCenter") {
+            type = "service center";
+        } else if (filterType === "businessHub") {
+            type = "business hub";
+        }
+
+        const params = {
+            assetId: filterId,
+            type,
+            meterClass,
+        };
+
+        try {
+            const response = await generateReadingMutation.mutateAsync(params);
+            setGeneratedData(response.responsedata || []);
+            toast.success("Reading sheet generated successfully!");
+            setStep(3);
+        } catch (error: unknown) {
+            const errorMessage = (error as { response?: { data?: { responsedesc?: string } }; message?: string })?.response?.data?.responsedesc ??
+                               (error as { message?: string })?.message ??
+                               "Failed to generate reading sheet. Please try again.";
+            toast.error(errorMessage);
+            console.error("Error generating reading sheet:", error);
+        }
     };
 
     const handleBack = () => {
@@ -62,6 +97,7 @@ export default function GenerateReadingSheet({ open, onClose }: GenerateReadingS
         setStep(1);
         setFilterType("");
         setFilterId("");
+        setGeneratedData([]);
         onClose();
     };
 
@@ -154,11 +190,11 @@ export default function GenerateReadingSheet({ open, onClose }: GenerateReadingS
                                 </Button>
                                 <Button
                                     type="submit"
-                                    disabled={!filterId}
+                                    disabled={!filterId || generateReadingMutation.isPending}
                                     className="bg-[#161CCA] text-white cursor-pointer"
                                     size={"lg"}
                                 >
-                                    Proceed
+                                    {generateReadingMutation.isPending ? "Generating..." : "Proceed"}
                                 </Button>
                             </DialogFooter>
                         </form>
@@ -177,7 +213,7 @@ export default function GenerateReadingSheet({ open, onClose }: GenerateReadingS
                                 </h3>
                                 <span className="text-gray-800 font-semibold">Total No of Meters
                                     <h1 className="text-3xl font-bold text-gray-800">
-                                        9050
+                                        {generatedData.length}
                                     </h1>
                                 </span>
                             </div>
@@ -193,21 +229,29 @@ export default function GenerateReadingSheet({ open, onClose }: GenerateReadingS
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {[...Array(10)].map((_, index) => (
-                                        <TableRow key={index}>
-                                            <TableCell>{index + 1}</TableCell>
-                                            <TableCell>62010223</TableCell>
-                                            <TableCell>jeun</TableCell>
-                                            <TableCell>jeun</TableCell>
-                                            <TableCell>5, Glorious Omemuru, Obafemi Owode State</TableCell>
-                                            <TableCell>
-                                                <Input
-                                                    className="w-fit text-sm border-gray-300"
-                                                    disabled
-                                                />
+                                    {generatedData.length > 0 ? (
+                                        generatedData.map((item, index) => (
+                                            <TableRow key={item.meterNumber}>
+                                                <TableCell>{index + 1}</TableCell>
+                                                <TableCell>{item.meterNumber}</TableCell>
+                                                <TableCell>{item.feederName}</TableCell>
+                                                <TableCell>{item.dssName}</TableCell>
+                                                <TableCell>{item.address}</TableCell>
+                                                <TableCell>
+                                                    <Input
+                                                        className="w-fit text-sm border-gray-300"
+                                                        disabled
+                                                    />
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    ) : (
+                                        <TableRow>
+                                            <TableCell colSpan={9} className="text-center py-8 text-gray-500">
+                                                No meter readings found for the selected criteria
                                             </TableCell>
                                         </TableRow>
-                                    ))}
+                                    )}
                                 </TableBody>
                             </Table>
                         </div>
