@@ -27,6 +27,10 @@ import { AddNodeDialog } from "./dialogs/AddNodeDialog";
 import { EditNodeDialog } from "./dialogs/EditNodeDialog";
 import { mapNodeInfoToFormData, renderNodeIcon } from "./utils/nodeUtils";
 import type { FormData } from "./hooks/useNodeFormValidation";
+import {
+  matchNodeTypeToHierarchy,
+  getHierarchyDisplayLabel,
+} from "../../utils/hierarchy-utils";
 
 interface OrganizationNodeProps {
   node: Node;
@@ -72,6 +76,12 @@ export const OrganizationNode = ({
 
   const displayName = node.nodeInfo?.name ?? node.name;
   const displayNodeType = node.nodeInfo?.type ?? node.name;
+
+  const getNormalizedDisplayType = (type?: string): string => {
+    if (!type) return "Node";
+    const matched = matchNodeTypeToHierarchy(type);
+    return matched ? getHierarchyDisplayLabel(matched) : type;
+  };
 
   return (
     <Card className="border-none">
@@ -154,7 +164,7 @@ export const OrganizationNode = ({
           isOpen={isEditDialogOpen}
           onClose={() => setIsEditDialogOpen(false)}
           onSave={handleEditNode}
-          nodeType={displayNodeType ?? "Node"}
+          nodeType={getNormalizedDisplayType(displayNodeType)}
           initialData={nodeDataForEdit}
           nodeId={
             node.nodeInfo?.nodeId ??

@@ -55,13 +55,7 @@ export const useNodeFormValidation = ({
       let allFieldsValid = true;
 
       // Base required fields for all node types
-      const requiredFields: (keyof FormData)[] = [
-        "name",
-        "phoneNumber",
-        "email",
-        "contactPerson",
-        "address",
-      ];
+      const requiredFields: (keyof FormData)[] = ["name"];
 
       // Check for technical node specific fields
       const isTechnicalNode = ["Substation", "Feeder Line", "DSS"].includes(
@@ -71,11 +65,6 @@ export const useNodeFormValidation = ({
         requiredFields.push("status", "voltage", "serialNo");
       } else {
         requiredFields.push("regionId");
-      }
-
-      // Check for geolocation fields (longitude/latitude)
-      if (["Substation", "DSS", "Feeder Line"].includes(nodeType)) {
-        requiredFields.push("longitude", "latitude");
       }
 
       requiredFields.forEach((field) => {
@@ -88,14 +77,22 @@ export const useNodeFormValidation = ({
 
       // Email validation
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (data.email && !emailRegex.test(data.email)) {
+      if (
+        data.email &&
+        data.email.trim() !== "" &&
+        !emailRegex.test(data.email)
+      ) {
         newErrors.email = "Invalid email format";
         allFieldsValid = false;
       }
 
       // Phone number validation
       const phoneRegex = /^\+?[0-9]{10,}$/;
-      if (data.phoneNumber && !phoneRegex.test(data.phoneNumber)) {
+      if (
+        data.phoneNumber &&
+        data.phoneNumber.trim() !== "" &&
+        !phoneRegex.test(data.phoneNumber)
+      ) {
         newErrors.phoneNumber = "Phone number must be at least 10 digits";
         allFieldsValid = false;
       }

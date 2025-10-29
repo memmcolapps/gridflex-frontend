@@ -240,7 +240,9 @@ export const AddNodeDialog = ({
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col">
-              <label className="text-sm font-medium">Phone Number *</label>
+              <label className="text-sm font-medium">
+                Contact Person Phone Number
+              </label>
               <Input
                 name="phoneNumber"
                 value={formData.phoneNumber}
@@ -255,7 +257,9 @@ export const AddNodeDialog = ({
               )}
             </div>
             <div className="flex flex-col">
-              <label className="text-sm font-medium">Email *</label>
+              <label className="text-sm font-medium">
+                Contact Person Email
+              </label>
               <Input
                 name="email"
                 value={formData.email}
@@ -270,7 +274,7 @@ export const AddNodeDialog = ({
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col">
-              <label className="text-sm font-medium">Contact Person *</label>
+              <label className="text-sm font-medium">Contact Person Name</label>
               <Input
                 name="contactPerson"
                 value={formData.contactPerson}
@@ -280,7 +284,9 @@ export const AddNodeDialog = ({
               />
             </div>
             <div className="flex flex-col">
-              <label className="text-sm font-medium">Address *</label>
+              <label className="text-sm font-medium">
+                Contact Person Address
+              </label>
               <Input
                 name="address"
                 value={formData.address}
@@ -349,7 +355,7 @@ export const AddNodeDialog = ({
             <div className="grid gap-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col">
-                  <label className="text-sm font-medium">Longitude *</label>
+                  <label className="text-sm font-medium">Longitude</label>
                   <Input
                     name="longitude"
                     value={formData.longitude}
@@ -359,7 +365,7 @@ export const AddNodeDialog = ({
                   />
                 </div>
                 <div className="flex flex-col">
-                  <label className="text-sm font-medium">Latitude *</label>
+                  <label className="text-sm font-medium">Latitude</label>
                   <Input
                     name="latitude"
                     value={formData.latitude}
