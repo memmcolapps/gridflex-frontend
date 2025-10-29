@@ -57,11 +57,16 @@ import { getStatusStyle } from "@/components/status-style";
 import { useMeterInventory, useBusinessHubs, useAllocateMeter } from "@/hooks/use-meter";
 import type { MeterInventoryFilters, BusinessHub } from "@/types/meter-inventory";
 import { useAuth } from '@/context/auth-context';
+import { useBulkUploadMeters, useDownloadMeterCsvTemplate, useDownloadMeterExcelTemplate } from "@/hooks/use-meter-bulk";
+import { toast } from "sonner";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 
-// Placeholder for toast utility
-const toast = (props: { title: string, description?: string, variant?: 'default' | 'destructive' }) => {
-  console.log(`[TOAST] ${props.title}: ${props.description ?? ''} (Variant: ${props.variant})`);
-};
+// Toast utility is now imported from sonner
 
 
 const filterSections = [
@@ -113,6 +118,7 @@ export default function MeterInventoryPage() {
   const [selectedHubId, setSelectedHubId] = useState<string>("");
   const [hubSearchTerm, setHubSearchTerm] = useState<string>(""); // <-- added for select search
   const [isBulkUploadDialogOpen, setIsBulkUploadDialogOpen] = useState(false);
+  const [isTemplateDropdownOpen, setIsTemplateDropdownOpen] = useState(false);
   const [meterNumberInput, setMeterNumberInput] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [isAddMeterDialogOpen, setIsAddMeterDialogOpen] = useState(false);
@@ -123,6 +129,10 @@ export default function MeterInventoryPage() {
     key: keyof MeterInventoryItem | null;
     direction: "asc" | "desc";
   }>({ key: "dateAdded", direction: "desc" });
+
+  const bulkUploadMutation = useBulkUploadMeters();
+  const downloadCsvTemplateMutation = useDownloadMeterCsvTemplate();
+  const downloadExcelTemplateMutation = useDownloadMeterExcelTemplate();
 
   const filters: MeterInventoryFilters = useMemo(() => ({
     page: currentPage - 1,
@@ -201,40 +211,24 @@ export default function MeterInventoryPage() {
     const regionId = selectedHubId;
 
     if (!meterNumber) {
-      toast({
-        title: "Allocation Failed",
-        description: "Please enter a Meter Number.",
-        variant: 'destructive'
-      });
+      toast.error("Please enter a Meter Number.");
       return;
     }
 
     // Validation: Ensure meter number matches an existing meter
     if (!selectedMeter || selectedMeter.meterNumber !== meterNumber) {
-      toast({
-        title: "Allocation Failed",
-        description: "The entered Meter Number is invalid or not found in the current inventory. Please ensure exact match.",
-        variant: 'destructive'
-      });
+      toast.error("The entered Meter Number is invalid or not found in the current inventory. Please ensure exact match.");
       return;
     }
 
     if (!regionId) {
-      toast({
-        title: "Allocation Failed",
-        description: "Please select an Organization ID.",
-        variant: 'destructive'
-      });
+      toast.error("Please select an Organization ID.");
       return;
     }
     // Call the mutation
     allocate({ meterNumber, regionId }, {
       onSuccess: () => {
-        toast({
-          title: "Allocation Successful",
-          description: `Meter ${meterNumber} allocated to hub ${regionId}.`,
-          variant: 'default'
-        });
+        toast.success(`Meter ${meterNumber} allocated to hub ${regionId}.`);
         // Reset fields on success
         setSelectedHubId("");
         setMeterNumberInput("");
@@ -247,23 +241,57 @@ export default function MeterInventoryPage() {
           ? `API Error: ${err.message}`
           : err.message || "An unknown error occurred during allocation.";
 
-        toast({
-          title: "Allocation Error",
-          description: errorDescription,
-          variant: 'destructive',
-        });
+        toast.error(errorDescription);
       }
 
     });
   };
 
-  const handleBulkUpload = (data: File | MeterInventoryItem[]) => {
+  const handleBulkUpload = (data: unknown) => {
       if (data instanceof File) {
-          // Handle raw file if sendRawFile is true, but currently it's false
-          console.warn("Raw file received, but not handled");
+          bulkUploadMutation.mutate(data, {
+              onSuccess: (response: unknown) => {
+                  const res = response as { responsedesc?: string };
+                  setIsBulkUploadDialogOpen(false);
+                  setIsTemplateDropdownOpen(false);
+                  toast.success(res?.responsedesc ?? "Bulk upload successful");
+                  refetch();
+              },
+              onError: (error) => {
+                  console.error("Bulk upload failed:", error);
+                  toast.error(error?.message || "Bulk upload failed");
+              },
+          });
       } else {
-          refetch();
+          setIsBulkUploadDialogOpen(false);
+          setIsTemplateDropdownOpen(false);
       }
+  };
+
+  const handleDownloadCsvTemplate = () => {
+      downloadCsvTemplateMutation.mutate(undefined, {
+          onSuccess: () => {
+              toast.success("CSV template downloaded successfully");
+          },
+          onError: (error: unknown) => {
+              const err = error as { message?: string };
+              console.error("CSV template download failed:", error);
+              toast.error(err?.message ?? "Failed to download CSV template");
+          },
+      });
+  };
+
+  const handleDownloadExcelTemplate = () => {
+      downloadExcelTemplateMutation.mutate(undefined, {
+          onSuccess: () => {
+              toast.success("Excel template downloaded successfully");
+          },
+          onError: (error: unknown) => {
+              const err = error as { message?: string };
+              console.error("Excel template download failed:", error);
+              toast.error(err?.message ?? "Failed to download Excel template");
+          },
+      });
   };
 
   const handleSearchChange = (term: string) => {
@@ -697,6 +725,12 @@ export default function MeterInventoryPage() {
         onClose={() => setIsBulkUploadDialogOpen(false)}
         onSave={handleBulkUpload}
         title="Bulk Upload Meters"
+        sendRawFile={true}
+        templateUrl="#"
+        onTemplateClick={() => {
+          setIsBulkUploadDialogOpen(false);
+          setIsTemplateDropdownOpen(true);
+        }}
         requiredColumns={[
           "id",
           "meterNumber",
@@ -708,8 +742,47 @@ export default function MeterInventoryPage() {
           "dateAdded",
           "status",
         ]}
-        templateUrl="/templates/meter-template.xlsx"
       />
+
+      {/* Template Selection Dialog */}
+      <Dialog open={isTemplateDropdownOpen} onOpenChange={(open) => {
+        setIsTemplateDropdownOpen(open);
+        if (!open) {
+          // Close all other dialogs when template dialog closes
+          setIsBulkUploadDialogOpen(false);
+          setIsAddMeterDialogOpen(false);
+          setViewInfoDialogOpen(false);
+        }
+      }}>
+        <DialogContent className="max-w-sm bg-white h-fit">
+          <DialogHeader>
+            <DialogTitle>Select Template Format</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Button
+              onClick={() => {
+                handleDownloadCsvTemplate();
+                setIsTemplateDropdownOpen(false);
+              }}
+              className="w-full bg-[#161CCA] hover:bg-[#121eb3] text-white"
+              disabled={downloadCsvTemplateMutation.isPending}
+            >
+              {downloadCsvTemplateMutation.isPending ? "Downloading..." : "Download CSV Template"}
+            </Button>
+            <Button
+              onClick={() => {
+                handleDownloadExcelTemplate();
+                setIsTemplateDropdownOpen(false);
+              }}
+              variant="outline"
+              className="w-full border-[#161CCA] text-[#161CCA] hover:bg-[#161CCA] hover:text-white"
+              disabled={downloadExcelTemplateMutation.isPending}
+            >
+              {downloadExcelTemplateMutation.isPending ? "Downloading..." : "Download Excel Template"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <AddMeterDialog
         isOpen={isAddMeterDialogOpen}
