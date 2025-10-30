@@ -8,6 +8,8 @@ import type {
   GenerateCreditTokenResponse,
   CalculateCreditTokenResponse,
   VendingTransaction,
+  VendingDashboardResponse,
+  VendingDashboardPayload,
 } from "@/types/vending";
 
 const API_URL = env.NEXT_PUBLIC_BASE_URL;
@@ -470,6 +472,56 @@ export async function calculateCreditToken(payload: {
     };
   } catch (error) {
     console.error("Calculate credit token error:", error);
+    return {
+      success: false,
+      error: handleApiError(error),
+    };
+  }
+}
+
+export async function getVendingDashboardData(
+  payload?: VendingDashboardPayload,
+): Promise<
+  | { success: true; data: VendingDashboardResponse["responsedata"] }
+  | { success: false; error: string }
+> {
+  try {
+    const token = localStorage.getItem("auth_token");
+    if (!token) {
+      return {
+        success: false,
+        error: "Authorization token not found",
+      };
+    }
+
+    const params = new URLSearchParams();
+    if (payload?.band) params.append("band", payload.band);
+    if (payload?.year) params.append("year", payload.year);
+    if (payload?.meterCategory) params.append("meterCategory", payload.meterCategory);
+
+    const response = await axios.get<VendingDashboardResponse>(
+      `${API_URL}/dashboard/service/vending?${params.toString()}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    if (response.data.responsecode !== "000") {
+      return {
+        success: false,
+        error: response.data.responsedesc || "Failed to fetch dashboard data",
+      };
+    }
+
+    return {
+      success: true,
+      data: response.data.responsedata,
+    };
+  } catch (error) {
     return {
       success: false,
       error: handleApiError(error),

@@ -1,9 +1,9 @@
 // use-vending.ts
 
 import { queryClient } from "@/lib/queryClient";
-import { generateCreditToken, printToken, calculateCreditToken, generateKCTToken, generateClearTamperToken, generateClearCreditToken, generateKCTAndClearTamperToken, generateCompensationToken } from "@/service/vending-service";
-import type { GenerateCreditTokenPayload, PrintTokenPayload, GenerateKCTPayload, GenerateClearTamperPayload, GenerateClearCreditPayload, GenerateKCTAndClearTamperPayload, GenerateCompensationPayload } from "@/types/vending";
-import { useMutation } from "@tanstack/react-query";
+import { generateCreditToken, printToken, calculateCreditToken, generateKCTToken, generateClearTamperToken, generateClearCreditToken, generateKCTAndClearTamperToken, generateCompensationToken, getVendingDashboardData } from "@/service/vending-service";
+import type { GenerateCreditTokenPayload, PrintTokenPayload, GenerateKCTPayload, GenerateClearTamperPayload, GenerateClearCreditPayload, GenerateKCTAndClearTamperPayload, GenerateCompensationPayload, VendingDashboardPayload } from "@/types/vending";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 export const useGenerateCreditToken = () => {
@@ -149,5 +149,20 @@ export const useGenerateCompensationToken = () => {
     onError: (error) => {
       toast.error(error.message || "Failed to generate Compensation token");
     },
+  });
+};
+
+export const useVendingDashboard = (payload?: VendingDashboardPayload) => {
+  return useQuery({
+    queryKey: ["vending-dashboard", payload],
+    queryFn: async () => {
+      const response = await getVendingDashboardData(payload);
+      if (!response.success) {
+        throw new Error(response.error);
+      }
+      return response.data;
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
   });
 };

@@ -1,22 +1,18 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { PieChart, Pie, Cell, Tooltip } from "recharts";
 import React from "react";
+import type { TokenDistribution, TransactionStatus } from "@/types/vending";
+
 interface CustomTooltipPayload {
   name: string;
   value: number;
   fill: string;
 }
 
-// Data for Token Distribution (ensure values sum to 100 for true percentages)
-const tokenData = [
-  { name: "Credit Token", value: 30 },
-  { name: "Key Change Token", value: 20 },
-  { name: "Clear Tamper Token", value: 15 },
-  { name: "Cancellation Token", value: 10 },
-  { name: "Compensation Token", value: 10 },
-  { name: "Clear Credit Token", value: 10 },
-  { name: "Arrears Payment Token", value: 5 },
-];
+interface TokenTransactionChartsProps {
+  tokenDistribution?: TokenDistribution;
+  transactionStatus?: TransactionStatus;
+}
 
 const tokenColors = [
   "#166533", // Green
@@ -26,13 +22,6 @@ const tokenColors = [
   "#A50F0F", // Red
   "#626471", // Medium Gray
   "#84919D", // Light Gray
-];
-
-// Data for Transaction Status (Adjusted to sum to 100%)
-const statusData = [
-  { name: "Successful Transaction", value: 85 },
-  { name: "Failed Transaction", value: 10 },
-  { name: "Pending Transaction", value: 5 },
 ];
 
 const statusColors = [
@@ -68,7 +57,23 @@ const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: { payl
   return null;
 };
 
-export default function TokenTransactionCharts() {
+export default function TokenTransactionCharts({ tokenDistribution, transactionStatus }: TokenTransactionChartsProps) {
+  // Transform token distribution data
+  const tokenData = tokenDistribution ? [
+    { name: "KCT Token", value: parseFloat(tokenDistribution.kctToken) },
+    { name: "Credit Token", value: parseFloat(tokenDistribution.creditToken) },
+    { name: "Clear Credit Token", value: parseFloat(tokenDistribution.clearCreditToken) },
+    { name: "KCT Clear Tamper Token", value: parseFloat(tokenDistribution.kctClearTamperToken) },
+    { name: "Compensation Token", value: parseFloat(tokenDistribution.compensationToken) },
+    { name: "Clear Tamper Token", value: parseFloat(tokenDistribution.clearTamperToken) },
+  ].filter(item => item.value > 0) : [];
+
+  // Transform transaction status data
+  const statusData = transactionStatus ? [
+    { name: "Successful Transaction", value: transactionStatus.success },
+    { name: "Failed Transaction", value: transactionStatus.failed },
+    { name: "Pending Transaction", value: transactionStatus.pending },
+  ].filter(item => item.value > 0) : [];
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-fit items-center w-full">
       {/* Token Distribution Card */}
@@ -84,7 +89,7 @@ export default function TokenTransactionCharts() {
                     className="w-4 h-4 inline-block rounded-full flex-shrink-0"
                     style={{ backgroundColor: tokenColors[index % tokenColors.length] }}
                   ></span>
-                  <span className="whitespace-nowrap">{entry.name}: {entry.value}%</span>
+                  <span className="whitespace-nowrap">{entry.name}: {entry.value}</span>
                 </div>
               ))}
             </div>
@@ -149,7 +154,7 @@ export default function TokenTransactionCharts() {
                     className="w-4 h-4 inline-block rounded-full flex-shrink-0"
                     style={{ backgroundColor: statusColors[index % statusColors.length] }}
                   ></span>
-                  <span className="whitespace-nowrap">{entry.name}: {entry.value}%</span>
+                  <span className="whitespace-nowrap">{entry.name}: {entry.value}</span>
                 </div>
               ))}
             </div>

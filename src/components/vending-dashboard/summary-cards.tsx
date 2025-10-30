@@ -7,47 +7,61 @@ import {
   HandCoins,
   BadgePercent,
 } from "lucide-react";
+import type { CardData } from "@/types/vending";
 
-const summaryData = [
-  {
-    title: "Total Sum Of Transaction",
-    value: "1,000,000",
-    change: "+11.01%",
-    previous: "900,000",
-    changeIcon: <TrendingUpIcon size={14} className="text-black" />,
-    icon: <Banknote size={18} className="text-[#172A54] bg-[#BFD3FE] rounded-full p-2" />,
-    color: "bg-[#DBE6FE] text-blue-800 border border-[#DBE6FE]",
-  },
-  {
-    title: "Total Sum Of Units",
-    value: "500,000",
-    change: "-2.20%",
-    previous: "488,000",
-    changeIcon: <TrendingUpIcon size={14} className="text-black" />,
-    icon: <Zap size={18} className="text-[#052E14] bg-[#86EFAD] rounded-full p-2" />,
-    color: "bg-[#DCFCE8] text-green-800 border border-[#DCFCE8]",
-  },
-  {
-    title: "Total Sum Of Profit",
-    value: "396,000",
-    change: "-1.01%",
-    previous: "400,000",
-    changeIcon: <TrendingDownIcon size={14} className="text-black" />,
-    icon: <HandCoins size={18} className="bg-[#FEE78A] text-[#423606] rounded-full p-2" />,
-    color: "bg-[#FEF2C3] text-yellow-800 border border-[#FEF2C3]",
-  },
-  {
-    title: "Total Sum Of VAT",
-    value: "44,000",
-    change: "-2.08%",
-    previous: "12,000",
-    changeIcon: <TrendingUpIcon size={14} className="text-black" />,
-    icon: <BadgePercent size={18} className="bg-[#FECACA] rounded-full p-2 text-[#450A0A]" />,
-    color: "bg-[#FEE2E2] text-red-800 border border-[#FEE2E2]",
-  },
-];
+interface SummaryCardsProps {
+  cardData?: CardData;
+}
 
-export default function SummaryCards() {
+const calculateChange = (current: number, previous: number) => {
+  if (previous === 0) return { change: "0.00%", isPositive: true };
+  const changeValue = ((current - previous) / previous) * 100;
+  const change = `${changeValue >= 0 ? "+" : ""}${changeValue.toFixed(2)}%`;
+  return { change, isPositive: changeValue >= 0 };
+};
+
+const formatValue = (value: number) => value.toLocaleString();
+const formatPrevious = (value: number) => value.toLocaleString();
+
+export default function SummaryCards({ cardData }: SummaryCardsProps) {
+  const summaryData = [
+    {
+      title: "Total Sum Of Transaction",
+      value: formatValue(cardData?.transactionSum ?? 0),
+      change: calculateChange(cardData?.transactionSum ?? 0, cardData?.previousTransactionSum ?? 0).change,
+      previous: formatPrevious(cardData?.previousTransactionSum ?? 0),
+      changeIcon: <TrendingUpIcon size={14} className="text-black" />,
+      icon: <Banknote size={18} className="text-[#172A54] bg-[#BFD3FE] rounded-full p-2" />,
+      color: "bg-[#DBE6FE] text-blue-800 border border-[#DBE6FE]",
+    },
+    {
+      title: "Total Sum Of Units",
+      value: formatValue(cardData?.unitCostSum ?? 0),
+      change: calculateChange(cardData?.unitCostSum ?? 0, cardData?.previousUnitCostSum ?? 0).change,
+      previous: formatPrevious(cardData?.previousUnitCostSum ?? 0),
+      changeIcon: <TrendingUpIcon size={14} className="text-black" />,
+      icon: <Zap size={18} className="text-[#052E14] bg-[#86EFAD] rounded-full p-2" />,
+      color: "bg-[#DCFCE8] text-green-800 border border-[#DCFCE8]",
+    },
+    {
+      title: "Total Sum Of Profit",
+      value: formatValue(cardData?.totalProfit ?? 0),
+      change: calculateChange(cardData?.totalProfit ?? 0, cardData?.previousTotalProfit ?? 0).change,
+      previous: formatPrevious(cardData?.previousTotalProfit ?? 0),
+      changeIcon: <TrendingDownIcon size={14} className="text-black" />,
+      icon: <HandCoins size={18} className="bg-[#FEE78A] text-[#423606] rounded-full p-2" />,
+      color: "bg-[#FEF2C3] text-yellow-800 border border-[#FEF2C3]",
+    },
+    {
+      title: "Total Sum Of VAT",
+      value: formatValue(cardData?.vatAmountSum ?? 0),
+      change: calculateChange(cardData?.vatAmountSum ?? 0, cardData?.previousVatAmountSum ?? 0).change,
+      previous: formatPrevious(cardData?.previousVatAmountSum ?? 0),
+      changeIcon: <TrendingUpIcon size={14} className="text-black" />,
+      icon: <BadgePercent size={18} className="bg-[#FECACA] rounded-full p-2 text-[#450A0A]" />,
+      color: "bg-[#FEE2E2] text-red-800 border border-[#FEE2E2]",
+    },
+  ];
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {summaryData.map((item, idx) => (
