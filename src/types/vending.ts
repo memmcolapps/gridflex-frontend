@@ -188,3 +188,56 @@ export interface GenerateCompensationResponse {
   responsedesc: string;
   responsedata: VendingTransaction;
 }
+
+export interface CardData {
+  totalProfit: number;
+  unitCostSum: number;
+  vatAmountSum: number;
+  transactionSum: number;
+  previousVatAmountSum: number;
+  previousTotalProfit: number;
+  previousUnitCostSum: number;
+  previousTransactionSum: number;
+}
+
+export interface TokenDistribution {
+  kctToken: string;
+  creditToken: string;
+  clearCreditToken: string;
+  kctClearTamperToken: string;
+  compensationToken: string;
+  clearTamperToken: string;
+}
+
+export interface TransactionStatus {
+  pending: number;
+  failed: number;
+  success: number;
+}
+
+export interface TransactionOverMonth {
+  transactionSum: number;
+  month: string;
+  year: number;
+  vatAmountSum: number;
+  unitCostSum: number;
+}
+
+export interface VendingDashboardData {
+  cardData: CardData;
+  tokenDistribution: TokenDistribution;
+  transactionStatus: TransactionStatus;
+  transactionOverMonths: TransactionOverMonth[];
+}
+
+export interface VendingDashboardResponse {
+  responsecode: string;
+  responsedesc: string;
+  responsedata: VendingDashboardData;
+}
+
+export interface VendingDashboardPayload {
+  band?: string;
+  year?: string;
+  meterCategory?: string;
+}

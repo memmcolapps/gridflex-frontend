@@ -1,6 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import type { RectangleProps } from "recharts";
+import type { TransactionOverMonth } from "@/types/vending";
 
 const RoundedBar = (props: RectangleProps) => {
   const { x, y, width, height, fill } = props;
@@ -18,22 +19,17 @@ const RoundedBar = (props: RectangleProps) => {
   );
 };
 
-const monthlyData = [
-  { month: "JAN", amount: 180, unit: 160, vat: 90 },
-  { month: "FEB", amount: 130, unit: 60, vat: 30 },
-  { month: "MAR", amount: 150, unit: 90, vat: 45 },
-  { month: "APR", amount: 150, unit: 90, vat: 65 },
-  { month: "MAY", amount: 180, unit: 110, vat: 80 },
-  { month: "JUN", amount: 160, unit: 100, vat: 40 },
-  { month: "JUL", amount: 170, unit: 120, vat: 60 },
-  { month: "AUG", amount: 170, unit: 90, vat: 30 },
-  { month: "SEP", amount: 150, unit: 50, vat: 10 },
-  { month: "OCT", amount: 60, unit: 70, vat: 80 },
-  { month: "NOV", amount: 150, unit: 60, vat: 20 },
-  { month: "DEC", amount: 170, unit: 70, vat: 30 },
-];
+interface MonthlyTransactionChartProps {
+  transactionOverMonths?: TransactionOverMonth[];
+}
 
-export default function MonthlyTransactionChart() {
+export default function MonthlyTransactionChart({ transactionOverMonths }: MonthlyTransactionChartProps) {
+  const monthlyData = transactionOverMonths?.map(item => ({
+    month: item.month.substring(0, 3).toUpperCase(),
+    amount: item.transactionSum,
+    unit: item.unitCostSum,
+    vat: item.vatAmountSum,
+  })) || [];
   return (
     <Card className="rounded-2xl shadow-sm mt-4 border border-gray-200 w-full">
       <CardContent className="p-4">
@@ -58,7 +54,7 @@ export default function MonthlyTransactionChart() {
         <ResponsiveContainer width="100%" height={300}>
             <BarChart data={monthlyData} barCategoryGap={12} barGap={4}>
             <XAxis dataKey="month" />
-            <YAxis domain={[0, 180]} ticks={[0, 20, 40, 60, 80, 100, 120, 140, 160, 180]} />
+            <YAxis domain={[0, 'dataMax + 20']} ticks={Array.from({ length: 10 }, (_, i) => i * 20)} />
             <Tooltip />
             <Bar dataKey="amount" fill="#1E4BAF" name="Amount Paid" shape={<RoundedBar />} barSize={13} />
             <Bar dataKey="unit" fill="#166533" name="Cost Of Unit" shape={<RoundedBar />} barSize={13} />
