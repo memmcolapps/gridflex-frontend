@@ -291,7 +291,7 @@ export default function CurrentBillingSales() {
                     )}
                 </div>
             ) : (
-                <div>
+                <div className="py-10">
                     <CustomReportTable />
                 </div>
             )}
