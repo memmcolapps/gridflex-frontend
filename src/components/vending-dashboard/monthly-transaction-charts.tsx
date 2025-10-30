@@ -29,7 +29,7 @@ export default function MonthlyTransactionChart({ transactionOverMonths }: Month
     amount: item.transactionSum,
     unit: item.unitCostSum,
     vat: item.vatAmountSum,
-  })) || [];
+  })) ?? [];
   return (
     <Card className="rounded-2xl shadow-sm mt-4 border border-gray-200 w-full">
       <CardContent className="p-4">

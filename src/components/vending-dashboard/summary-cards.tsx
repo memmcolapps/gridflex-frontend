@@ -20,40 +20,43 @@ const calculateChange = (current: number, previous: number) => {
   return { change, isPositive: changeValue >= 0 };
 };
 
+const formatValue = (value: number) => value.toLocaleString();
+const formatPrevious = (value: number) => value.toLocaleString();
+
 export default function SummaryCards({ cardData }: SummaryCardsProps) {
   const summaryData = [
     {
       title: "Total Sum Of Transaction",
-      value: cardData?.transactionSum?.toLocaleString() || "0",
-      change: calculateChange(cardData?.transactionSum || 0, cardData?.previousTransactionSum || 0).change,
-      previous: (cardData?.previousTransactionSum || 0).toLocaleString(),
+      value: formatValue(cardData?.transactionSum ?? 0),
+      change: calculateChange(cardData?.transactionSum ?? 0, cardData?.previousTransactionSum ?? 0).change,
+      previous: formatPrevious(cardData?.previousTransactionSum ?? 0),
       changeIcon: <TrendingUpIcon size={14} className="text-black" />,
       icon: <Banknote size={18} className="text-[#172A54] bg-[#BFD3FE] rounded-full p-2" />,
       color: "bg-[#DBE6FE] text-blue-800 border border-[#DBE6FE]",
     },
     {
       title: "Total Sum Of Units",
-      value: (cardData?.unitCostSum || 0).toLocaleString(),
-      change: calculateChange(cardData?.unitCostSum || 0, cardData?.previousUnitCostSum || 0).change,
-      previous: (cardData?.previousUnitCostSum || 0).toLocaleString(),
+      value: formatValue(cardData?.unitCostSum ?? 0),
+      change: calculateChange(cardData?.unitCostSum ?? 0, cardData?.previousUnitCostSum ?? 0).change,
+      previous: formatPrevious(cardData?.previousUnitCostSum ?? 0),
       changeIcon: <TrendingUpIcon size={14} className="text-black" />,
       icon: <Zap size={18} className="text-[#052E14] bg-[#86EFAD] rounded-full p-2" />,
       color: "bg-[#DCFCE8] text-green-800 border border-[#DCFCE8]",
     },
     {
       title: "Total Sum Of Profit",
-      value: (cardData?.totalProfit || 0).toLocaleString(),
-      change: calculateChange(cardData?.totalProfit || 0, cardData?.previousTotalProfit || 0).change,
-      previous: (cardData?.previousTotalProfit || 0).toLocaleString(),
+      value: formatValue(cardData?.totalProfit ?? 0),
+      change: calculateChange(cardData?.totalProfit ?? 0, cardData?.previousTotalProfit ?? 0).change,
+      previous: formatPrevious(cardData?.previousTotalProfit ?? 0),
       changeIcon: <TrendingDownIcon size={14} className="text-black" />,
       icon: <HandCoins size={18} className="bg-[#FEE78A] text-[#423606] rounded-full p-2" />,
       color: "bg-[#FEF2C3] text-yellow-800 border border-[#FEF2C3]",
     },
     {
       title: "Total Sum Of VAT",
-      value: (cardData?.vatAmountSum || 0).toLocaleString(),
-      change: calculateChange(cardData?.vatAmountSum || 0, cardData?.previousVatAmountSum || 0).change,
-      previous: (cardData?.previousVatAmountSum || 0).toLocaleString(),
+      value: formatValue(cardData?.vatAmountSum ?? 0),
+      change: calculateChange(cardData?.vatAmountSum ?? 0, cardData?.previousVatAmountSum ?? 0).change,
+      previous: formatPrevious(cardData?.previousVatAmountSum ?? 0),
       changeIcon: <TrendingUpIcon size={14} className="text-black" />,
       icon: <BadgePercent size={18} className="bg-[#FECACA] rounded-full p-2 text-[#450A0A]" />,
       color: "bg-[#FEE2E2] text-red-800 border border-[#FEE2E2]",
