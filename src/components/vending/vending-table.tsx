@@ -37,22 +37,22 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { useVendingTransactions, usePrintToken } from "@/hooks/use-vending";
+import { PrintTokenPayload, VendingTransaction } from "@/types/vending";
+import { toast } from "sonner";
 
 const VendingTable = () => {
-    const transactions = [
-        { sn: "01", accountNumber: "0159046127", meterNumber: "6201023", tokenType: "Credit Token", tariff: "Tariff A1", amount: "100,000", unitCost: "830.65", vat: "1595.35", units: "780.0", status: "Pending" },
-        { sn: "02", accountNumber: "0159046127", meterNumber: "6201023", tokenType: "KCT", tariff: "Tariff A1", amount: "0", unitCost: "0", vat: "0", units: "0", status: "Pending" },
-        { sn: "03", accountNumber: "0159046127", meterNumber: "6201023", tokenType: "Credit Token", tariff: "Tariff A1", amount: "100,000", unitCost: "830.65", vat: "1595.35", units: "780.0", status: "Pending" },
-        { sn: "04", accountNumber: "0159046127", meterNumber: "6201023", tokenType: "Clear Tamper", tariff: "Tariff A1", amount: "0", unitCost: "0", vat: "0", units: "0", status: "Failed" },
-        { sn: "05", accountNumber: "0159046127", meterNumber: "6201023", tokenType: "Credit Token", tariff: "Tariff A1", amount: "100,000", unitCost: "830.65", vat: "1595.35", units: "780.0", status: "Successful" },
-        { sn: "06", accountNumber: "0159046127", meterNumber: "6201023", tokenType: "Clear Credit", tariff: "Tariff A1", amount: "0", unitCost: "0", vat: "0", units: "0", status: "Failed" },
-        { sn: "07", accountNumber: "0159046127", meterNumber: "6201023", tokenType: "KCT/Clear Tam", tariff: "Tariff A1", amount: "0", unitCost: "0", vat: "0", units: "0", status: "Successful" },
-        { sn: "08", accountNumber: "0159046127", meterNumber: "6201023", tokenType: "Compensation", tariff: "Tariff A1", amount: "100,000", unitCost: "830.65", vat: "1595.35", units: "780.0", status: "Successful" },
-        { sn: "09", accountNumber: "0159046127", meterNumber: "6201023", tokenType: "Credit Token", tariff: "Tariff A1", amount: "0", unitCost: "0", vat: "0", units: "0", status: "Successful" },
-        { sn: "10", accountNumber: "0159046127", meterNumber: "6201023", tokenType: "Credit Token", tariff: "Tariff A1", amount: "100,000", unitCost: "830.65", vat: "1595.35", units: "780.0", status: "Successful" },
-        { sn: "11", accountNumber: "0159046127", meterNumber: "6201023", tokenType: "Credit Token", tariff: "Tariff A1", amount: "100,000", unitCost: "830.65", vat: "1595.35", units: "780.0", status: "Failed" },
-        { sn: "12", accountNumber: "0159046127", meterNumber: "6201023", tokenType: "Credit Token", tariff: "Tariff A1", amount: "100,000", unitCost: "830.65", vat: "1595.35", units: "780.0", status: "Successful" },
-    ];
+    const [rowsPerPage, setRowsPerPage] = useState<number>(10);
+    const [currentPage, setCurrentPage] = useState<number>(1);
+
+    const { data: transactionsData, isLoading, error } = useVendingTransactions({
+        page: currentPage - 1, // API uses 0-based indexing
+        size: rowsPerPage,
+    });
+
+    const transactions = transactionsData?.messages ?? [];
+    const totalPages = transactionsData?.totalPages ?? 1;
+    const totalCount = transactionsData?.totalCount ?? 0;
 
     const getStatusColor = (status: string) => {
         switch (status) {
@@ -67,30 +67,11 @@ const VendingTable = () => {
         }
     };
 
-    // Define the transaction type
-    type Transaction = {
-        sn: string;
-        accountNumber: string;
-        meterNumber: string;
-        tokenType: string;
-        tariff: string;
-        amount: string;
-        unitCost: string;
-        vat: string;
-        units: string;
-        status: string;
-    };
+    // State to manage the selected transaction for reprint
+    const [selectedTransaction, setSelectedTransaction] = useState<VendingTransaction | null>(null);
+    const [showTokenDialog, setShowTokenDialog] = useState(false);
 
-    // State to manage pagination
-    const [rowsPerPage, setRowsPerPage] = useState<number>(10);
-    const [currentPage, setCurrentPage] = useState<number>(1);
-
-    // Calculate total pages and paginated data
-    const totalPages = Math.ceil(transactions.length / rowsPerPage);
-    const paginatedTransactions = transactions.slice(
-        (currentPage - 1) * rowsPerPage,
-        currentPage * rowsPerPage
-    );
+    const printTokenMutation = usePrintToken();
 
     // Handle pagination controls
     const handlePrevious = () => {
@@ -106,11 +87,7 @@ const VendingTable = () => {
         setCurrentPage(1);
     };
 
-    // State to manage the selected transaction for reprint
-    const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
-    const [showTokenDialog, setShowTokenDialog] = useState(false);
-
-    const handleReprintToken = (transaction: Transaction) => {
+    const handleReprintToken = (transaction: VendingTransaction) => {
         setSelectedTransaction(transaction);
         setShowTokenDialog(true);
     };
@@ -147,48 +124,68 @@ const VendingTable = () => {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {paginatedTransactions.map((transaction) => (
-                            <TableRow key={transaction.sn}>
-                                <TableCell>{(currentPage - 1) * rowsPerPage + transactions.indexOf(transaction) + 1}</TableCell>
-                                <TableCell>{transaction.accountNumber}</TableCell>
-                                <TableCell>{transaction.meterNumber}</TableCell>
-                                <TableCell>{transaction.tokenType}</TableCell>
-                                <TableCell>{transaction.tariff}</TableCell>
-                                <TableCell>{transaction.amount}</TableCell>
-                                <TableCell>{transaction.unitCost}</TableCell>
-                                <TableCell>{transaction.vat}</TableCell>
-                                <TableCell>{transaction.units}</TableCell>
-                                <TableCell>
-                                    <span
-                                        className={`px-2 py-1 rounded-full ${getStatusColor(transaction.status)}`}
-                                    >
-                                        {transaction.status}
-                                    </span>
-                                </TableCell>
-                                <TableCell>
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="ring-gray-200/20 hover:bg-gray-100 focus:bg-gray-100 cursor-pointer"
-                                            >
-                                                <EllipsisVertical size={14} />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end">
-                                            <DropdownMenuItem
-                                                className="flex items-center gap-2 cursor-pointer"
-                                                onClick={() => handleReprintToken(transaction)}
-                                            >
-                                                <Printer size= {14} />
-                                                Reprint Token
-                                            </DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
+                        {isLoading ? (
+                            <TableRow>
+                                <TableCell colSpan={11} className="text-center py-8">
+                                    Loading transactions...
                                 </TableCell>
                             </TableRow>
-                        ))}
+                        ) : error ? (
+                            <TableRow>
+                                <TableCell colSpan={11} className="text-center py-8 text-red-600">
+                                    Error loading transactions
+                                </TableCell>
+                            </TableRow>
+                        ) : transactions.length === 0 ? (
+                            <TableRow>
+                                <TableCell colSpan={11} className="text-center py-8">
+                                    No transactions found
+                                </TableCell>
+                            </TableRow>
+                        ) : (
+                            transactions.map((transaction, index) => (
+                                <TableRow key={transaction.transactionId}>
+                                    <TableCell>{(currentPage - 1) * rowsPerPage + index + 1}</TableCell>
+                                    <TableCell>{transaction.meterAccountNumber}</TableCell>
+                                    <TableCell>{transaction.meterNumber}</TableCell>
+                                    <TableCell>{transaction.tokenType}</TableCell>
+                                    <TableCell>{transaction.tariffName}</TableCell>
+                                    <TableCell>{transaction.initialAmount}</TableCell>
+                                    <TableCell>{transaction.unitCost}</TableCell>
+                                    <TableCell>{transaction.vatAmount}</TableCell>
+                                    <TableCell>{transaction.unit}</TableCell>
+                                    <TableCell>
+                                        <span
+                                            className={`px-2 py-1 rounded-full ${getStatusColor(transaction.status)}`}
+                                        >
+                                            {transaction.status}
+                                        </span>
+                                    </TableCell>
+                                    <TableCell>
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="ring-gray-200/20 hover:bg-gray-100 focus:bg-gray-100 cursor-pointer"
+                                                >
+                                                    <EllipsisVertical size={14} />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end">
+                                                <DropdownMenuItem
+                                                    className="flex items-center gap-2 cursor-pointer"
+                                                    onClick={() => handleReprintToken(transaction)}
+                                                >
+                                                    <Printer size={14} />
+                                                    Reprint Token
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        )}
                     </TableBody>
                 </Table>
             </Card>
@@ -252,7 +249,7 @@ const VendingTable = () => {
                     <div className="grid gap-6 py-4">
                         <div className="grid grid-cols-2 gap-4">
                             <p>Customer Name:</p>
-                            <p>Ugorji Eucharia E</p>
+                            <p>{selectedTransaction?.customerFullname ?? "N/A"}</p>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <p>Meter Number:</p>
@@ -260,74 +257,90 @@ const VendingTable = () => {
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <p>Account No:</p>
-                            <p>{selectedTransaction?.accountNumber ?? "01231459845"}</p>
+                            <p>{selectedTransaction?.meterAccountNumber ?? "01231459845"}</p>
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            <p>Credit Type:</p>
-                            <p>0</p>
-                        </div>
+                        {selectedTransaction?.tokenType === "credit-token" && (
+                            <>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <p>Tariff:</p>
+                                    <p>{selectedTransaction?.tariffName ?? "N/A"}</p>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <p>Tariff Rate:</p>
+                                    <p>₦{selectedTransaction?.tariffRate ?? "N/A"}</p>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <p>Amount Tendered:</p>
+                                    <p>₦{selectedTransaction?.initialAmount ?? "N/A"}</p>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <p>Units:</p>
+                                    <p>{selectedTransaction?.unit ?? "N/A"}</p>
+                                </div>
+                            </>
+                        )}
                         <div className="grid grid-cols-2 gap-4">
                             <p>Operator:</p>
-                            <p>Margaret</p>
+                            <p>{selectedTransaction?.userFullname ?? "N/A"}</p>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <p>Transaction date:</p>
-                            <p>2025-06-25 12:52 PM WAT</p>
+                            <p>{selectedTransaction?.createdAt ? new Date(selectedTransaction.createdAt).toLocaleString() : "N/A"}</p>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <p>Receipt No:</p>
-                            <p>{selectedTransaction?.sn ? `12${selectedTransaction.sn}` : "12711"}</p>
+                            <p>{selectedTransaction?.receiptNo ?? "12711"}</p>
                         </div>
-                        {selectedTransaction?.tokenType === "Credit Token" && (
+                        {selectedTransaction?.tokenType === "credit-token" && (
                             <div className="grid grid-cols-2 gap-4">
                                 <p>Credit Token:</p>
-                                <p>1021 1255 0556 6336 66955</p>
+                                <p>{selectedTransaction.token}</p>
                             </div>
                         )}
-                        {selectedTransaction?.tokenType === "KCT" && (
+                        {selectedTransaction?.tokenType === "kct" && (
                             <>
                                 <div className="grid grid-cols-2 gap-4">
                                     <p>KCT 1:</p>
-                                    <p>4804 1025 0126 8956 7865</p>
+                                    <p>{selectedTransaction.kct1}</p>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <p>KCT 2:</p>
-                                    <p>4804 1025 0126 8956 7865</p>
+                                    <p>{selectedTransaction.kct2}</p>
                                 </div>
                             </>
                         )}
-                        {selectedTransaction?.tokenType === "Clear Tamper" && (
+                        {selectedTransaction?.tokenType === "clear-tamper" && (
                             <div className="grid grid-cols-2 gap-4">
                                 <p>Clear Tamper:</p>
-                                <p>1021 1255 0556 6336 6695</p>
+                                <p>{selectedTransaction.token}</p>
                             </div>
                         )}
-                        {selectedTransaction?.tokenType === "Clear Credit" && (
+                        {selectedTransaction?.tokenType === "clear-credit" && (
                             <div className="grid grid-cols-2 gap-4">
                                 <p>Clear Credit:</p>
-                                <p>1021 1255 0556 6336 6700</p>
+                                <p>{selectedTransaction.token}</p>
                             </div>
                         )}
-                        {selectedTransaction?.tokenType === "KCT/Clear Tam" && (
+                        {selectedTransaction?.tokenType === "kct-clear-tamper" && (
                             <>
                                 <div className="grid grid-cols-2 gap-4">
                                     <p>Clear Tamper:</p>
-                                    <p>1021 1255 0556 6336 6695</p>
+                                    <p>{selectedTransaction.token}</p>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <p>KCT 1:</p>
-                                    <p>4804 1025 0126 8956 7865</p>
+                                    <p>{selectedTransaction.kct1}</p>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <p>KCT 2:</p>
-                                    <p>4804 1025 0126 8956 7865</p>
+                                    <p>{selectedTransaction.kct2}</p>
                                 </div>
                             </>
                         )}
-                        {selectedTransaction?.tokenType === "Compensation" && (
+                        {selectedTransaction?.tokenType === "compensation" && (
                             <div className="grid grid-cols-2 gap-4">
                                 <p>Compensation Token:</p>
-                                <p>9001 2345 6789 0123 4567</p>
+                                <p>{selectedTransaction.token}</p>
                             </div>
                         )}
                     </div>
@@ -336,72 +349,250 @@ const VendingTable = () => {
                             variant="outline"
                             size="lg"
                             className="bg-[#161CCA] text-white cursor-pointer"
-                            onClick={() => {
-                                const printWindow = window.open('', '_blank', 'width=800,height=600');
-                                if (printWindow) {
-                                    printWindow.document.write(`
-                                        <html>
+                            onClick={async () => {
+                                if (selectedTransaction) {
+                                    try {
+                                        const payload = {
+                                            id: selectedTransaction.transactionId ?? (selectedTransaction as VendingTransaction).id,
+                                            tokenType: selectedTransaction.tokenType,
+                                        } as PrintTokenPayload;
+                                        await printTokenMutation.mutateAsync(payload);
+
+                                        // Create HTML content for printing (formatted like a receipt)
+                                        const printContent = `
+                                            <html>
                                             <head>
                                                 <title>Token Receipt</title>
                                                 <style>
-                                                    body { font-family: Arial, sans-serif; padding: 20px; }
-                                                    h2 { color: gray; text-align: center; }
-                                                    table { width: 100%; border-collapse: collapse; margin: 10px 0; }
-                                                    td { padding: 8px; border: 1px solid #ddd; }
-                                                    .token-label { font-weight: bold; }
-                                                    .token-value { font-size: 1.2em; letter-spacing: 2px; }
-                                                    .footer { text-align: center; margin-top: 20px; }
+                                                    body {
+                                                        font-family: 'Courier New', monospace;
+                                                        margin: 0;
+                                                        padding: 20px;
+                                                        background: white;
+                                                        font-size: 12px;
+                                                        line-height: 1.4;
+                                                    }
+                                                    .receipt {
+                                                        max-width: 400px;
+                                                        margin: 0 auto;
+                                                        border: 1px solid #000;
+                                                        padding: 15px;
+                                                    }
+                                                    .header {
+                                                        text-align: center;
+                                                        border-bottom: 1px solid #000;
+                                                        padding-bottom: 10px;
+                                                        margin-bottom: 15px;
+                                                    }
+                                                    .company-name {
+                                                        font-size: 18px;
+                                                        font-weight: bold;
+                                                        margin-bottom: 5px;
+                                                        color: #000;
+                                                    }
+                                                    .receipt-title {
+                                                        font-size: 14px;
+                                                        margin-bottom: 5px;
+                                                        color: #000;
+                                                    }
+                                                    .info-row {
+                                                        display: flex;
+                                                        justify-content: space-between;
+                                                        margin-bottom: 5px;
+                                                        padding: 2px 0;
+                                                    }
+                                                    .label {
+                                                        font-weight: bold;
+                                                        min-width: 140px;
+                                                    }
+                                                    .value {
+                                                        text-align: right;
+                                                        flex: 1;
+                                                    }
+                                                    .amount-section {
+                                                        border-top: 1px solid #000;
+                                                        border-bottom: 1px solid #000;
+                                                        margin: 15px 0;
+                                                        padding: 10px 0;
+                                                    }
+                                                    .token-section {
+                                                        border-top: 1px solid #000;
+                                                        margin-top: 15px;
+                                                        padding-top: 10px;
+                                                        text-align: center;
+                                                    }
+                                                    .token-label {
+                                                        font-weight: bold;
+                                                        margin-bottom: 5px;
+                                                    }
+                                                    .token-value {
+                                                        font-size: 14px;
+                                                        font-weight: bolder;
+                                                        letter-spacing: 2px;
+                                                        word-break: break-all;
+                                                        margin-bottom: 10px;
+                                                        color: #000;
+                                                    }
+                                                    .footer {
+                                                        border-top: 1px solid #000;
+                                                        margin-top: 15px;
+                                                        padding-top: 10px;
+                                                        text-align: center;
+                                                        font-size: 10px;
+                                                    }
                                                 </style>
                                             </head>
                                             <body>
-                                                <h2>Token Receipt</h2>
-                                                <table>
-                                                    <tr><td>Customer Name:</td><td>Ugorji Eucharia E</td></tr>
-                                                    <tr><td>Address:</td><td>No 707 Ukuta Close UNN, Nsukka Enugu</td></tr>
-                                                    <tr><td>Account No:</td><td>${selectedTransaction?.accountNumber ?? "01-2646945654"}</td></tr>
-                                                    <tr><td>Meter No:</td><td>${selectedTransaction?.meterNumber ?? "6242016739"}</td></tr>
-                                                    <tr><td>Operator ID:</td><td>Margaret</td></tr>
-                                                    <tr><td>Trans Date:</td><td>2025-06-25 12:52 PM WAT</td></tr>
-                                                    <tr><td>Receipt No:</td><td>${selectedTransaction?.sn ? `12${selectedTransaction.sn}` : "12711"}</td></tr>
-                                                </table>
-                                                ${selectedTransaction?.tokenType === "Credit Token" ? `
-                                                    <div class="token-label">Credit Token:</div>
-                                                    <div class="token-value">1021 1255 0556 6336 66955</div>
-                                                ` : selectedTransaction?.tokenType === "KCT" ? `
-                                                    <div class="token-label">KCT 1:</div>
-                                                    <div class="token-value">4804 1025 0126 8956 7865</div>
-                                                    <div class="token-label">KCT 2:</div>
-                                                    <div class="token-value">4804 1025 0126 8956 7865</div>
-                                                    <div class="footer">Thank you for your patronage.</div>
-                                                ` : selectedTransaction?.tokenType === "Clear Tamper" ? `
-                                                    <div class="token-label">Clear Tamper:</div>
-                                                    <div class="token-value">1021 1255 0556 6336 6695</div>
-                                                ` : selectedTransaction?.tokenType === "Clear Credit" ? `
-                                                    <div class="token-label">Clear Credit:</div>
-                                                    <div class="token-value">1021 1255 0556 6336 6700</div>
-                                                ` : selectedTransaction?.tokenType === "KCT/Clear Tam" ? `
-                                                    <div class="token-label">Clear Tamper:</div>
-                                                    <div class="token-value">1021 1255 0556 6336 6695</div>
-                                                    <div class="token-label">KCT 1:</div>
-                                                    <div class="token-value">4804 1025 0126 8956 7865</div>
-                                                    <div class="token-label">KCT 2:</div>
-                                                    <div class="token-value">4804 1025 0126 8956 7865</div>
-                                                    <div class="footer">Thank you for your patronage.</div>
-                                                ` : `
-                                                    <div class="token-label">Compensation Token:</div>
-                                                    <div class="token-value">9001 2345 6789 0123 4567</div>
-                                                `}
+                                                <div class="receipt">
+                                                    <div class="header">
+                                                        <div class="company-name">TOKEN RECEIPT</div>
+                                                        <div>Customer Copy</div>
+                                                    </div>
+
+                                                    <div class="info-row">
+                                                        <span class="label">Customer Name:</span>
+                                                        <span class="value">${selectedTransaction?.customerFullname ?? 'N/A'}</span>
+                                                    </div>
+                                                    <div class="info-row">
+                                                        <span class="label">Meter Number:</span>
+                                                        <span class="value">${selectedTransaction?.meterNumber || 'N/A'}</span>
+                                                    </div>
+                                                    <div class="info-row">
+                                                        <span class="label">Account Number:</span>
+                                                        <span class="value">${selectedTransaction?.meterAccountNumber || 'N/A'}</span>
+                                                    </div>
+                                                    <div class="info-row">
+                                                        <span class="label">Address:</span>
+                                                        <span class="value">${selectedTransaction?.address || 'N/A'}</span>
+                                                    </div>
+                                                    ${selectedTransaction?.tokenType !== "kct" && selectedTransaction?.tokenType !== "clear-tamper" && selectedTransaction?.tokenType !== "clear-credit" && selectedTransaction?.tokenType !== "kct-clear-tamper" ? `
+                                                    <div class="info-row">
+                                                        <span class="label">Tariff:</span>
+                                                        <span class="value">${selectedTransaction?.tariffName || 'N/A'}</span>
+                                                    </div>
+                                                    <div class="info-row">
+                                                        <span class="label">Tariff Rate:</span>
+                                                        <span class="value">₦${selectedTransaction?.tariffRate || 'N/A'}</span>
+                                                    </div>
+                                                    ` : ''}
+                                                    <div class="info-row">
+                                                        <span class="label">Operator:</span>
+                                                        <span class="value">${selectedTransaction?.userFullname || 'N/A'}</span>
+                                                    </div>
+                                                    <div class="info-row">
+                                                        <span class="label">Transaction Date:</span>
+                                                        <span class="value">${selectedTransaction?.createdAt ? new Date(selectedTransaction.createdAt).toLocaleDateString() : 'N/A'}</span>
+                                                    </div>
+                                                    <div class="info-row">
+                                                        <span class="label">Time:</span>
+                                                        <span class="value">${selectedTransaction?.createdAt ? new Date(selectedTransaction.createdAt).toLocaleTimeString() : 'N/A'}</span>
+                                                    </div>
+                                                    <div class="info-row">
+                                                        <span class="label">Receipt Number:</span>
+                                                        <span class="value">${selectedTransaction?.receiptNo || 'N/A'}</span>
+                                                    </div>
+                                                    ${selectedTransaction?.tokenType === "compensation" ? `
+                                                    <div class="info-row">
+                                                        <span class="label">Units:</span>
+                                                        <span class="value">${selectedTransaction?.unit || 'N/A'}</span>
+                                                    </div>
+                                                    <div class="info-row">
+                                                        <span class="label">Costs of Unit:</span>
+                                                        <span class="value">₦${selectedTransaction?.unitCost?.toLocaleString() || 'N/A'}</span>
+                                                    </div>
+                                                    ` : ''}
+
+                                                    ${selectedTransaction?.tokenType === "credit-token" ? `
+                                                    <div class="amount-section">
+                                                        <div class="info-row">
+                                                            <span class="label">Amount Tendered:</span>
+                                                            <span class="value">₦${selectedTransaction?.initialAmount?.toLocaleString() || 'N/A'}</span>
+                                                        </div>
+                                                        <div class="info-row">
+                                                            <span class="label">VAT (${selectedTransaction?.vatAmount ? ((selectedTransaction.vatAmount / selectedTransaction.initialAmount) * 100).toFixed(1) : 'N/A'}%):</span>
+                                                            <span class="value">₦${selectedTransaction?.vatAmount?.toLocaleString() || 'N/A'}</span>
+                                                        </div>
+                                                        <div class="info-row">
+                                                            <span class="label">Units Purchased:</span>
+                                                            <span class="value">${selectedTransaction?.unit?.toLocaleString() || 'N/A'}</span>
+                                                        </div>
+                                                        <div class="info-row">
+                                                            <span class="label"> Cost of Unit:</span>
+                                                            <span class="value">₦${selectedTransaction?.unitCost?.toLocaleString() || 'N/A'}</span>
+                                                        </div>
+                                                        <div class="info-row">
+                                                            <span class="label"><strong>Total Amount:</strong></span>
+                                                            <span class="value"><strong>₦${selectedTransaction?.finalAmount?.toLocaleString() || 'N/A'}</strong></span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="token-section">
+                                                        <div class="token-label">CREDIT TOKEN</div>
+                                                        <div class="token-value">${selectedTransaction?.token || 'N/A'}</div>
+                                                    </div>
+                                                    ` : selectedTransaction?.tokenType === "kct" ? `
+                                                    <div class="token-section">
+                                                        <div class="token-label">KCT TOKENS</div>
+                                                        <div class="token-value">${selectedTransaction?.kct1 ?? 'N/A'}</div>
+                                                        <div class="token-value" style="margin-top: 10px;">${selectedTransaction?.kct2 ?? 'N/A'}</div>
+                                                    </div>
+                                                    ` : selectedTransaction?.tokenType === "clear-tamper" ? `
+                                                    <div class="token-section">
+                                                        <div class="token-label">CLEAR TAMPER TOKEN</div>
+                                                        <div class="token-value">${selectedTransaction?.token || 'N/A'}</div>
+                                                    </div>
+                                                    ` : selectedTransaction?.tokenType === "clear-credit" ? `
+                                                    <div class="token-section">
+                                                        <div class="token-label">CLEAR CREDIT TOKEN</div>
+                                                        <div class="token-value">${selectedTransaction?.token || 'N/A'}</div>
+                                                    </div>
+                                                    ` : selectedTransaction?.tokenType === "kct-clear-tamper" ? `
+                                                    <div class="token-section">
+                                                        <div class="token-label">KCT AND CLEAR TAMPER TOKENS</div>
+                                                        <div class="token-value">${selectedTransaction?.token || 'N/A'}</div>
+                                                        <div class="token-value" style="margin-top: 10px;">${selectedTransaction?.token || 'N/A'}</div>
+                                                        <div class="token-value" style="margin-top: 10px;">${selectedTransaction?.token}</div>
+                                                    </div>
+                                                    ` : selectedTransaction?.tokenType === "compensation" ? `
+                                                    <div class="token-section">
+                                                        <div class="token-label">COMPENSATION TOKEN</div>
+                                                        <div class="token-value">${selectedTransaction?.token || 'N/A'}</div>
+                                                    </div>
+                                                    ` : ''}
+
+                                                    <div class="footer">
+                                                        Thank you for your business!<br>
+                                                        Please keep this receipt for your records.<br>
+                                                        Powered by GridFlex
+                                                    </div>
+                                                </div>
                                             </body>
-                                        </html>
-                                    `);
-                                    printWindow.document.close();
-                                    printWindow.focus();
-                                    printWindow.print();
+                                            </html>
+                                        `;
+
+                                        const printWindow = window.open('', '_blank', 'width=800,height=600');
+                                        if (printWindow) {
+                                            printWindow.document.write(printContent);
+                                            printWindow.document.close();
+                                            printWindow.focus();
+
+                                            // Wait for content to load, then trigger print dialog
+                                            printWindow.onload = () => {
+                                                printWindow.print();
+                                            };
+                                            setShowTokenDialog(false);
+                                        } else {
+                                            console.error("Failed to open print window");
+                                        }
+                                        toast.success("Token printed successfully");
+                                    } catch (error) {
+                                        toast.error("Failed to print token");
+                                    }
                                 }
                                 setShowTokenDialog(false);
                             }}
+                            disabled={printTokenMutation.isPending}
                         >
-                            Print
+                            {printTokenMutation.isPending ? "Printing..." : "Print"}
                         </Button>
                     </div>
                 </DialogContent>
