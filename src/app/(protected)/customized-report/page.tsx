@@ -13,7 +13,7 @@ const CustomizedReportPage = () => {
     const [activeTab, setActiveTab] = useState<"frequent" | "custom">("frequent");
 
     return (
-        <div className="p-6 px-0 overflow-hidden sm:max-x- md:max-w-[990px] lg:max-w-[1200px] xl:max-w-[1400px] 2xl:max-w-[1600px] mx-auto">
+        <div className="p-6 px-0 max-w-full overflow-hidden sm:max-x- md:max-w-[990px] lg:max-w-[1200px] xl:max-w-[1400px] 2xl:max-w-[1600px] mx-auto">
             <div className="flex justify-between items-center mb-4">
                 <ContentHeader
                     title="Report Summary"
