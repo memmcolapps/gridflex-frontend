@@ -51,26 +51,27 @@ export default function ProtectedLayout({
           </div>
         </div>
 
-        <div className="hidden w-full md:flex">
-          <div className="w-80 flex-shrink-0">
-            <SidebarNav />
-          </div>
-          <div className="flex flex-1 flex-col">
-            <Navbar />
-            <main
-              className="flex-1 px-8"
-              style={{
-                backgroundImage: `url('/images/bgframe.jpg')`,
-                backgroundPosition: "center",
-                backgroundRepeat: "no-repeat",
-                backgroundSize: "500px",
-                backgroundAttachment: "fixed",
-              }}
-            >
-              {children}
-            </main>
-          </div>
-        </div>
+        <div className="hidden w-full md:flex overflow-hidden">
+  <div className="w-80 flex-shrink-0">
+    <SidebarNav />
+  </div>
+  <div className="flex flex-1 flex-col overflow-hidden">
+    <Navbar />
+    <main
+      className="flex-1 pl-8 overflow-x-hidden"
+      style={{
+        backgroundImage: `url('/images/bgframe.jpg')`,
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        backgroundSize: "500px",
+        backgroundAttachment: "fixed",
+      }}
+    >
+      {children}
+    </main>
+  </div>
+</div>
+
       </div>
     </SidebarProvider>
   );
