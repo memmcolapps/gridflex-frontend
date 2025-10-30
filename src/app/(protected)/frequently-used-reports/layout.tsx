@@ -131,8 +131,8 @@ export default function CustomReportLayout() {
     };
 
     return (
-        <div className="overflow-hidden mt-10">
-            <div className="w-full sm:max-w-full md:max-w-[980px] lg:max-w-[1440px] mx-auto">
+        <div>
+            <div>
                 {/* Filters */}
                 <Card className="flex w-full flex-row justify-between rounded-lg border border-gray-200 px-5 py-1 shadow-none">
                     <div className="w-full p-2">
@@ -438,8 +438,8 @@ export default function CustomReportLayout() {
                     </div>
                 )}
                 {!loading && showTable && (
-                    <div className="mt-6 overflow-x-auto scrollbar-hide">
-                        <>
+                    <div className="mt-6">
+                        <div className="">
                             {generateBy === 'Billing' ? (
                                 renderBillingTable()
                             ) : generateBy === 'Vending' ? (
@@ -449,7 +449,7 @@ export default function CustomReportLayout() {
                                     No report available for this selection.
                                 </div>
                             )}
-                        </>
+                        </div>
                     </div>
                 )}
 
