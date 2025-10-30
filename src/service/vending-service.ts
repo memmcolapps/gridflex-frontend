@@ -10,6 +10,7 @@ import type {
   VendingTransaction,
   VendingDashboardResponse,
   VendingDashboardPayload,
+  PrintTokenPayload,
 } from "@/types/vending";
 
 const API_URL = env.NEXT_PUBLIC_BASE_URL;
@@ -376,8 +377,7 @@ export interface PrintTokenResponse {
 }
 
 export async function printToken(
-  id: string,
-  tokenType: string,
+  payload: PrintTokenPayload,
 ): Promise<
   | { success: true; data: PrintTokenResponse["responsedata"] }
   | { success: false; error: string }
@@ -391,11 +391,11 @@ export async function printToken(
       };
     }
 
-    console.log("Service making API call with params:", { id, tokenType });
+    console.log("Service making API call with payload:", payload);
     const response = await axios.get(
       `${API_URL}/vending/service/generate/token/print`,
       {
-        params: { id, tokenType },
+        params: { id: payload.id, tokenType: payload.tokenType },
         headers: {
           custom: CUSTOM_HEADER,
           Authorization: `Bearer ${token}`,
@@ -472,6 +472,67 @@ export async function calculateCreditToken(payload: {
     };
   } catch (error) {
     console.error("Calculate credit token error:", error);
+    return {
+      success: false,
+      error: handleApiError(error),
+    };
+  }
+}
+
+export interface GetVendingTransactionsResponse {
+  responsecode: string;
+  responsedesc: string;
+  responsedata: {
+    size: number;
+    totalPages: number;
+    messages: VendingTransaction[];
+    page: number;
+    totalCount: number;
+  };
+}
+
+export async function getVendingTransactions(
+  payload?: { page?: number; size?: number },
+): Promise<
+  | { success: true; data: GetVendingTransactionsResponse["responsedata"] }
+  | { success: false; error: string }
+> {
+  try {
+    const token = localStorage.getItem("auth_token");
+    if (!token) {
+      return {
+        success: false,
+        error: "Authorization token not found",
+      };
+    }
+
+    const params = new URLSearchParams();
+    if (payload?.page !== undefined) params.append("page", payload.page.toString());
+    if (payload?.size !== undefined) params.append("size", payload.size.toString());
+
+    const response = await axios.get<GetVendingTransactionsResponse>(
+      `${API_URL}/vending/service/generate/token/all?${params.toString()}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    if (response.data.responsecode !== "000") {
+      return {
+        success: false,
+        error: response.data.responsedesc || "Failed to fetch transactions",
+      };
+    }
+
+    return {
+      success: true,
+      data: response.data.responsedata,
+    };
+  } catch (error) {
     return {
       success: false,
       error: handleApiError(error),

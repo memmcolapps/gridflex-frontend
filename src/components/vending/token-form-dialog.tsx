@@ -18,7 +18,7 @@ import {
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { useGenerateCreditToken, usePrintToken, useCalculateCreditToken, useGenerateKCTToken, useGenerateClearTamperToken, useGenerateClearCreditToken, useGenerateKCTAndClearTamperToken, useGenerateCompensationToken } from "@/hooks/use-vending";
-import type { VendingTransaction, CalculateCreditTokenResponse } from "@/types/vending";
+import type { VendingTransaction, CalculateCreditTokenResponse, PrintTokenPayload } from "@/types/vending";
 
 interface TokenFormDialogProps {
     tokenType: string;
@@ -208,6 +208,246 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
             setShowTokenDialog(true);
             setShowReceipt(false);
             setIsFormDialogOpen(false);
+        }
+    };
+
+    const handleReprintToken = async () => {
+        if (generatedTokenData?.transactionId) {
+            try {
+                const result = await printTokenMutation.mutateAsync({
+                    id: generatedTokenData.transactionId,
+                    tokenType: "credit-token",
+                });
+                console.log("Print token result:", result);
+
+                // Create HTML content for printing (formatted like a receipt)
+                const printContent = `
+                    <html>
+                    <head>
+                        <title>Token Receipt</title>
+                        <style>
+                            body {
+                                font-family: 'Courier New', monospace;
+                                margin: 0;
+                                padding: 20px;
+                                background: white;
+                                font-size: 12px;
+                                line-height: 1.4;
+                            }
+                            .receipt {
+                                max-width: 400px;
+                                margin: 0 auto;
+                                border: 1px solid #000;
+                                padding: 15px;
+                            }
+                            .header {
+                                text-align: center;
+                                border-bottom: 1px solid #000;
+                                padding-bottom: 10px;
+                                margin-bottom: 15px;
+                            }
+                            .company-name {
+                                font-size: 18px;
+                                font-weight: bold;
+                                margin-bottom: 5px;
+                                color: #000;
+                            }
+                            .receipt-title {
+                                font-size: 14px;
+                                margin-bottom: 5px;
+                                color: #000;
+                            }
+                            .info-row {
+                                display: flex;
+                                justify-content: space-between;
+                                margin-bottom: 5px;
+                                padding: 2px 0;
+                            }
+                            .label {
+                                font-weight: bold;
+                                min-width: 140px;
+                            }
+                            .value {
+                                text-align: right;
+                                flex: 1;
+                            }
+                            .amount-section {
+                                border-top: 1px solid #000;
+                                border-bottom: 1px solid #000;
+                                margin: 15px 0;
+                                padding: 10px 0;
+                            }
+                            .token-section {
+                                border-top: 1px solid #000;
+                                margin-top: 15px;
+                                padding-top: 10px;
+                                text-align: center;
+                            }
+                            .token-label {
+                                font-weight: bold;
+                                margin-bottom: 5px;
+                            }
+                            .token-value {
+                                font-size: 14px;
+                                font-weight: bolder;
+                                letter-spacing: 2px;
+                                word-break: break-all;
+                                margin-bottom: 10px;
+                                color: #000;
+                            }
+                            .footer {
+                                border-top: 1px solid #000;
+                                margin-top: 15px;
+                                padding-top: 10px;
+                                text-align: center;
+                                font-size: 10px;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="receipt">
+                            <div class="header">
+                                <div class="company-name">TOKEN RECEIPT</div>
+                                <div>Customer Copy</div>
+                            </div>
+
+                            <div class="info-row">
+                                <span class="label">Customer Name:</span>
+                                <span class="value">${generatedTokenData?.customerFullname ?? 'N/A'}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Meter Number:</span>
+                                <span class="value">${generatedTokenData?.meterNumber || 'N/A'}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Account Number:</span>
+                                <span class="value">${generatedTokenData?.meterAccountNumber || 'N/A'}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Address:</span>
+                                <span class="value">${generatedTokenData?.address || 'N/A'}</span>
+                            </div>
+                            ${tokenType !== "kct" && tokenType !== "clearTamper" && tokenType !== "clearCredit" && tokenType !== "kctAndClearTamper" ? `
+                            <div class="info-row">
+                                <span class="label">Tariff:</span>
+                                <span class="value">${generatedTokenData?.tariffName || 'N/A'}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Tariff Rate:</span>
+                                <span class="value">₦${generatedTokenData?.tariffRate || 'N/A'}</span>
+                            </div>
+                            ` : ''}
+                            <div class="info-row">
+                                <span class="label">Operator:</span>
+                                <span class="value">${generatedTokenData?.userFullname || 'N/A'}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Transaction Date:</span>
+                                <span class="value">${generatedTokenData?.createdAt ? new Date(generatedTokenData.createdAt).toLocaleDateString() : 'N/A'}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Time:</span>
+                                <span class="value">${generatedTokenData?.createdAt ? new Date(generatedTokenData.createdAt).toLocaleTimeString() : 'N/A'}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Receipt Number:</span>
+                                <span class="value">${generatedTokenData?.receiptNo || 'N/A'}</span>
+                            </div>
+                            ${tokenType === "compensation" ? `
+                            <div class="info-row">
+                                <span class="label">Units:</span>
+                                <span class="value">${generatedTokenData?.unit || 'N/A'}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="label">Costs of Unit:</span>
+                                <span class="value">₦${generatedTokenData?.unitCost?.toLocaleString() || 'N/A'}</span>
+                            </div>
+                            ` : ''}
+
+                            ${tokenType === "creditToken" ? `
+                            <div class="amount-section">
+                                <div class="info-row">
+                                    <span class="label">Amount Tendered:</span>
+                                    <span class="value">₦${generatedTokenData?.initialAmount?.toLocaleString() || 'N/A'}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="label">VAT (${generatedTokenData?.vatAmount ? ((generatedTokenData.vatAmount / generatedTokenData.initialAmount) * 100).toFixed(1) : 'N/A'}%):</span>
+                                    <span class="value">₦${generatedTokenData?.vatAmount?.toLocaleString() || 'N/A'}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="label">Units Purchased:</span>
+                                    <span class="value">${generatedTokenData?.unit?.toLocaleString() || 'N/A'}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="label"> Cost of Unit:</span>
+                                    <span class="value">₦${generatedTokenData?.unitCost?.toLocaleString() || 'N/A'}</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="label"><strong>Total Amount:</strong></span>
+                                    <span class="value"><strong>₦${generatedTokenData?.finalAmount?.toLocaleString() || 'N/A'}</strong></span>
+                                </div>
+                            </div>
+                            <div class="token-section">
+                                <div class="token-label">CREDIT TOKEN</div>
+                                <div class="token-value">${generatedTokenData?.token || 'N/A'}</div>
+                            </div>
+                            ` : tokenType === "kct" ? `
+                            <div class="token-section">
+                                <div class="token-label">KCT TOKENS</div>
+                                <div class="token-value">${generatedTokenData?.kct1 ?? 'N/A'}</div>
+                                <div class="token-value" style="margin-top: 10px;">${generatedTokenData?.kct2 ?? 'N/A'}</div>
+                            </div>
+                            ` : tokenType === "clearTamper" ? `
+                            <div class="token-section">
+                                <div class="token-label">CLEAR TAMPER TOKEN</div>
+                                <div class="token-value">${generatedTokenData?.token || 'N/A'}</div>
+                            </div>
+                            ` : tokenType === "clearCredit" ? `
+                            <div class="token-section">
+                                <div class="token-label">CLEAR CREDIT TOKEN</div>
+                                <div class="token-value">${generatedTokenData?.token || 'N/A'}</div>
+                            </div>
+                            ` : tokenType === "kctAndClearTamper" ? `
+                            <div class="token-section">
+                                <div class="token-label">KCT AND CLEAR TAMPER TOKENS</div>
+                                <div class="token-value">${generatedTokenData?.token || 'N/A'}</div>
+                                <div class="token-value" style="margin-top: 10px;">${generatedTokenData?.token || 'N/A'}</div>
+                                <div class="token-value" style="margin-top: 10px;">${generatedTokenData?.token}</div>
+                            </div>
+                            ` : tokenType === "compensation" ? `
+                            <div class="token-section">
+                                <div class="token-label">COMPENSATION TOKEN</div>
+                                <div class="token-value">${generatedTokenData?.token || 'N/A'}</div>
+                            </div>
+                            ` : ''}
+
+                            <div class="footer">
+                                Thank you for your business!<br>
+                                Please keep this receipt for your records.<br>
+                                Powered by GridFlex
+                            </div>
+                        </div>
+                    </body>
+                    </html>
+                `;
+
+                const printWindow = window.open('', '_blank', 'width=800,height=600');
+                if (printWindow) {
+                    printWindow.document.write(printContent);
+                    printWindow.document.close();
+                    printWindow.focus();
+
+                    // Wait for content to load, then trigger print dialog
+                    printWindow.onload = () => {
+                        printWindow.print();
+                    };
+                } else {
+                    console.error("Failed to open print window");
+                }
+                setShowTokenDialog(false);
+            } catch (error) {
+                console.error("Failed to reprint token:", error);
+            }
         }
     };
 
@@ -579,249 +819,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                             variant="default"
                             size="lg"
                             className="bg-[#161CCA] text-white cursor-pointer"
-                            onClick={async () => {
-                                console.log("Print button clicked, generatedTokenData:", generatedTokenData);
-                                if (generatedTokenData?.transactionId) {
-                                    console.log("Calling print token API with transactionId:", generatedTokenData.transactionId);
-                                    try {
-                                        const result = await printTokenMutation.mutateAsync({
-                                            id: generatedTokenData.transactionId,
-                                            tokenType: "credit-token",
-                                        });
-                                        console.log("Print token result:", result);
-
-                                        // Create HTML content for printing (formatted like a receipt)
-                                        const printContent = `
-                                            <html>
-                                            <head>
-                                                <title>Token Receipt</title>
-                                                <style>
-                                                    body {
-                                                        font-family: 'Courier New', monospace;
-                                                        margin: 0;
-                                                        padding: 20px;
-                                                        background: white;
-                                                        font-size: 12px;
-                                                        line-height: 1.4;
-                                                    }
-                                                    .receipt {
-                                                        max-width: 400px;
-                                                        margin: 0 auto;
-                                                        border: 1px solid #000;
-                                                        padding: 15px;
-                                                    }
-                                                    .header {
-                                                        text-align: center;
-                                                        border-bottom: 1px solid #000;
-                                                        padding-bottom: 10px;
-                                                        margin-bottom: 15px;
-                                                    }
-                                                    .company-name {
-                                                        font-size: 18px;
-                                                        font-weight: bold;
-                                                        margin-bottom: 5px;
-                                                        color: #000;
-                                                    }
-                                                    .receipt-title {
-                                                        font-size: 14px;
-                                                        margin-bottom: 5px;
-                                                        color: #000;
-                                                    }
-                                                    .info-row {
-                                                        display: flex;
-                                                        justify-content: space-between;
-                                                        margin-bottom: 5px;
-                                                        padding: 2px 0;
-                                                    }
-                                                    .label {
-                                                        font-weight: bold;
-                                                        min-width: 140px;
-                                                    }
-                                                    .value {
-                                                        text-align: right;
-                                                        flex: 1;
-                                                    }
-                                                    .amount-section {
-                                                        border-top: 1px solid #000;
-                                                        border-bottom: 1px solid #000;
-                                                        margin: 15px 0;
-                                                        padding: 10px 0;
-                                                    }
-                                                    .token-section {
-                                                        border-top: 1px solid #000;
-                                                        margin-top: 15px;
-                                                        padding-top: 10px;
-                                                        text-align: center;
-                                                    }
-                                                    .token-label {
-                                                        font-weight: bold;
-                                                        margin-bottom: 5px;
-                                                    }
-                                                    .token-value {
-                                                        font-size: 14px;
-                                                        font-weight: bolder;
-                                                        letter-spacing: 2px;
-                                                        word-break: break-all;
-                                                        margin-bottom: 10px;
-                                                        color: #000;
-                                                    }
-                                                    .footer {
-                                                        border-top: 1px solid #000;
-                                                        margin-top: 15px;
-                                                        padding-top: 10px;
-                                                        text-align: center;
-                                                        font-size: 10px;
-                                                    }
-                                                </style>
-                                            </head>
-                                            <body>
-                                                <div class="receipt">
-                                                    <div class="header">
-                                                        <div class="company-name">TOKEN RECEIPT</div>
-                                                        <div>Customer Copy</div>
-                                                    </div>
-
-                                                    <div class="info-row">
-                                                        <span class="label">Customer Name:</span>
-                                                        <span class="value">${generatedTokenData?.customerFullname ?? 'N/A'}</span>
-                                                    </div>
-                                                    <div class="info-row">
-                                                        <span class="label">Meter Number:</span>
-                                                        <span class="value">${generatedTokenData?.meterNumber || 'N/A'}</span>
-                                                    </div>
-                                                    <div class="info-row">
-                                                        <span class="label">Account Number:</span>
-                                                        <span class="value">${generatedTokenData?.meterAccountNumber || 'N/A'}</span>
-                                                    </div>
-                                                    <div class="info-row">
-                                                        <span class="label">Address:</span>
-                                                        <span class="value">${generatedTokenData?.address || 'N/A'}</span>
-                                                    </div>
-                                                    ${tokenType !== "kct" && tokenType !== "clearTamper" && tokenType !== "clearCredit" && tokenType !== "kctAndClearTamper" ? `
-                                                    <div class="info-row">
-                                                        <span class="label">Tariff:</span>
-                                                        <span class="value">${generatedTokenData?.tariffName || 'N/A'}</span>
-                                                    </div>
-                                                    <div class="info-row">
-                                                        <span class="label">Tariff Rate:</span>
-                                                        <span class="value">₦${generatedTokenData?.tariffRate || 'N/A'}</span>
-                                                    </div>
-                                                    ` : ''}
-                                                    <div class="info-row">
-                                                        <span class="label">Operator:</span>
-                                                        <span class="value">${generatedTokenData?.userFullname || 'N/A'}</span>
-                                                    </div>
-                                                    <div class="info-row">
-                                                        <span class="label">Transaction Date:</span>
-                                                        <span class="value">${generatedTokenData?.createdAt ? new Date(generatedTokenData.createdAt).toLocaleDateString() : 'N/A'}</span>
-                                                    </div>
-                                                    <div class="info-row">
-                                                        <span class="label">Time:</span>
-                                                        <span class="value">${generatedTokenData?.createdAt ? new Date(generatedTokenData.createdAt).toLocaleTimeString() : 'N/A'}</span>
-                                                    </div>
-                                                    <div class="info-row">
-                                                        <span class="label">Receipt Number:</span>
-                                                        <span class="value">${generatedTokenData?.receiptNo || 'N/A'}</span>
-                                                    </div>
-                                                    ${tokenType === "compensation" ? `
-                                                    <div class="info-row">
-                                                        <span class="label">Units:</span>
-                                                        <span class="value">${generatedTokenData?.unit || 'N/A'}</span>
-                                                    </div>
-                                                    <div class="info-row">
-                                                        <span class="label">Costs of Unit:</span>
-                                                        <span class="value">₦${generatedTokenData?.unitCost?.toLocaleString() || 'N/A'}</span>
-                                                    </div>
-                                                    ` : ''}
-
-                                                    ${tokenType === "creditToken" ? `
-                                                    <div class="amount-section">
-                                                        <div class="info-row">
-                                                            <span class="label">Amount Tendered:</span>
-                                                            <span class="value">₦${generatedTokenData?.initialAmount?.toLocaleString() || 'N/A'}</span>
-                                                        </div>
-                                                        <div class="info-row">
-                                                            <span class="label">VAT (${generatedTokenData?.vatAmount ? ((generatedTokenData.vatAmount / generatedTokenData.initialAmount) * 100).toFixed(1) : 'N/A'}%):</span>
-                                                            <span class="value">₦${generatedTokenData?.vatAmount?.toLocaleString() || 'N/A'}</span>
-                                                        </div>
-                                                        <div class="info-row">
-                                                            <span class="label">Units Purchased:</span>
-                                                            <span class="value">${generatedTokenData?.unit?.toLocaleString() || 'N/A'}</span>
-                                                        </div>
-                                                        <div class="info-row">
-                                                            <span class="label"> Cost of Unit:</span>
-                                                            <span class="value">₦${generatedTokenData?.unitCost?.toLocaleString() || 'N/A'}</span>
-                                                        </div>
-                                                        <div class="info-row">
-                                                            <span class="label"><strong>Total Amount:</strong></span>
-                                                            <span class="value"><strong>₦${generatedTokenData?.finalAmount?.toLocaleString() || 'N/A'}</strong></span>
-                                                        </div>
-                                                    </div>
-                                                    <div class="token-section">
-                                                        <div class="token-label">CREDIT TOKEN</div>
-                                                        <div class="token-value">${generatedTokenData?.token || 'N/A'}</div>
-                                                    </div>
-                                                    ` : tokenType === "kct" ? `
-                                                    <div class="token-section">
-                                                        <div class="token-label">KCT TOKENS</div>
-                                                        <div class="token-value">${generatedTokenData?.kct1 ?? 'N/A'}</div>
-                                                        <div class="token-value" style="margin-top: 10px;">${generatedTokenData?.kct2 ?? 'N/A'}</div>
-                                                    </div>
-                                                    ` : tokenType === "clearTamper" ? `
-                                                    <div class="token-section">
-                                                        <div class="token-label">CLEAR TAMPER TOKEN</div>
-                                                        <div class="token-value">${generatedTokenData?.token || 'N/A'}</div>
-                                                    </div>
-                                                    ` : tokenType === "clearCredit" ? `
-                                                    <div class="token-section">
-                                                        <div class="token-label">CLEAR CREDIT TOKEN</div>
-                                                        <div class="token-value">${generatedTokenData?.token || 'N/A'}</div>
-                                                    </div>
-                                                    ` : tokenType === "kctAndClearTamper" ? `
-                                                    <div class="token-section">
-                                                        <div class="token-label">KCT AND CLEAR TAMPER TOKENS</div>
-                                                        <div class="token-value">${generatedTokenData?.token || 'N/A'}</div>
-                                                        <div class="token-value" style="margin-top: 10px;">${generatedTokenData?.token || 'N/A'}</div>
-                                                        <div class="token-value" style="margin-top: 10px;">${generatedTokenData?.token}</div>
-                                                    </div>
-                                                    ` : tokenType === "compensation" ? `
-                                                    <div class="token-section">
-                                                        <div class="token-label">COMPENSATION TOKEN</div>
-                                                        <div class="token-value">${generatedTokenData?.token || 'N/A'}</div>
-                                                    </div>
-                                                    ` : ''}
-
-                                                    <div class="footer">
-                                                        Thank you for your business!<br>
-                                                        Please keep this receipt for your records.<br>
-                                                        Powered by GridFlex
-                                                    </div>
-                                                </div>
-                                            </body>
-                                            </html>
-                                        `;
-
-                                        const printWindow = window.open('', '_blank', 'width=800,height=600');
-                                        if (printWindow) {
-                                            printWindow.document.write(printContent);
-                                            printWindow.document.close();
-                                            printWindow.focus();
-
-                                            // Wait for content to load, then trigger print dialog
-                                            printWindow.onload = () => {
-                                                printWindow.print();
-                                            };
-                                        } else {
-                                            console.error("Failed to open print window");
-                                        }
-                                    } catch (error) {
-                                        console.error("Failed to print token:", error);
-                                    }
-                                } else {
-                                    console.error("No generatedTokenData.transactionId available for printing");
-                                }
-                                setShowTokenDialog(false);
-                            }}
+                            onClick={handleReprintToken}
                             disabled={printTokenMutation.isPending}
                         >
                             {printTokenMutation.isPending ? "Printing..." : "Print Token"}
