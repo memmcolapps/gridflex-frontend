@@ -13,7 +13,7 @@ const CustomizedReportPage = () => {
     const [activeTab, setActiveTab] = useState<"frequent" | "custom">("frequent");
 
     return (
-        <div className="p-6 overflow-hidden">
+        <div className="p-6 px-0 max-w-full overflow-hidden mx-auto">
             <div className="flex justify-between items-center mb-4">
                 <ContentHeader
                     title="Report Summary"
@@ -25,8 +25,8 @@ const CustomizedReportPage = () => {
                 <div className='w-fit p-1 border border-[#161cca] rounded-lg cursor-pointer'>
                     <Button
                         className={`${activeTab === "frequent"
-                                ? "bg-[#161CCA] text-white"
-                                : "text-gray-700 bg-transparent"
+                            ? "bg-[#161CCA] text-white"
+                            : "text-gray-700 bg-transparent"
                             } border-none cursor-pointer font-medium text-md py-4`}
                         variant="secondary"
                         size="lg"
@@ -37,8 +37,8 @@ const CustomizedReportPage = () => {
 
                     <Button
                         className={`${activeTab === "custom"
-                                ? "bg-[#161CCA] text-white"
-                                : "text-gray-700 bg-transparent"
+                            ? "bg-[#161CCA] text-white"
+                            : "text-gray-700 bg-transparent"
                             } border-none cursor-pointer font-medium text-md py-4`}
                         variant="secondary"
                         size="lg"
@@ -51,19 +51,19 @@ const CustomizedReportPage = () => {
 
             <div className="mt-10">
                 {activeTab === "frequent" ? (
-                    <>
+                    <div className="w-full sm:max-w-full md:max-w-[980px] lg:max-w-[1440px]">
                         <div className="mt-10">
                             <GeneralReport />
                         </div>
-                        <div className="mt-10">
+                        <div className="mt-10 overflow-x-auto ">
                             <BillingReport />
                         </div>
-                        <div className="mt-10">
+                        <div className="mt-10 overflow-x-auto scrollbar-hide">
                             <MeteringTechnicalReport />
                         </div>
-                    </>
+                    </div>
                 ) : (
-                    <div className="mt-10">
+                    <div>
                         <CustomReportTable />
                     </div>
                 )}

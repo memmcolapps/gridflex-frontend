@@ -291,7 +291,7 @@ export default function FeederReport() {
                     )}
                 </div>
             ) : (
-                <div>
+                <div className="py-10">
                     <CustomReportTable />
                 </div>
             )}
