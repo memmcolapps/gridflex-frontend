@@ -32,6 +32,7 @@ import { PaginationControls } from "@/components/ui/pagination-controls";
 import { useMeters, useAssignMeter, useChangeMeterState } from "@/hooks/use-assign-meter";
 import { useCustomerRecordQuery } from "@/hooks/use-customer";
 import type { AssignMeterPayload } from "@/service/assign-meter-service";
+import { LoadingAnimation } from "@/components/ui/loading-animation";
 
 export default function MeterManagementPage() {
     const [searchTerm, setSearchTerm] = useState("");
@@ -1250,11 +1251,8 @@ export default function MeterManagementPage() {
                                     <TableBody>
                                         {isLoading ? (
                                             <TableRow>
-                                                <TableCell colSpan={10} className="h-24 text-center">
-                                                    <div className="flex items-center justify-center gap-2">
-                                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-900"></div>
-                                                        <span className="text-sm text-gray-500">Loading virtual meters...</span>
-                                                    </div>
+                                                <TableCell colSpan={10} className="h-24 text-center py-8">
+                                                    <LoadingAnimation variant="spinner" message="Loading virtual meters..." size="md" />
                                                 </TableCell>
                                             </TableRow>
                                         ) : isError ? (

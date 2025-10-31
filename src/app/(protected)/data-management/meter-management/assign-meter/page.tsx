@@ -48,6 +48,7 @@ import {
     Unlink,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { LoadingAnimation } from "@/components/ui/loading-animation";
 
 // Define filter sections
 const filterSections = [
@@ -725,8 +726,7 @@ export default function AssignMeterPage() {
                                                 <DropdownMenuContent align="end" className="whitespace-nowrap">
                                                     <DropdownMenuItem>
                                                         <div className="flex items-center justify-end gap-2">
-                                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-500"></div>
-                                                            <span className="text-sm text-gray-500">Waiting for Approval</span>
+                                                            <LoadingAnimation variant="inline" message="Waiting for Approval" size="md" />
                                                         </div>
                                                     </DropdownMenuItem>
                                                 </DropdownMenuContent>
@@ -769,10 +769,7 @@ export default function AssignMeterPage() {
                             {isLoading && (
                                 <TableRow>
                                     <TableCell colSpan={12} className="h-16 text-center">
-                                        <div className="flex items-center justify-center gap-2">
-                                            <Loader2 size={20} className="animate-spin text-gray-500" />
-                                            <span className="text-gray-500 text-sm">Loading...</span>
-                                        </div>
+                                        <LoadingAnimation variant="inline" message="Loading..." size="md" />
                                     </TableCell>
                                 </TableRow>
                             )}

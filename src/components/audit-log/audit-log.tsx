@@ -12,6 +12,7 @@ import { AuditLogDetailsDialog } from "./audit-log-details";
 import { useAuditLogs } from "@/hooks/use-audit";
 import { type AuditLog } from "@/service/audit-log-service";
 import { PaginationControls } from "../ui/pagination-controls";
+import { LoadingAnimation } from "../ui/loading-animation";
 
 export function AuditLog() {
   const [selectedEntry, setSelectedEntry] = useState<AuditLog | null>(null);
@@ -67,8 +68,14 @@ export function AuditLog() {
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="py-8 text-center">
-                      Loading audit logs...
+                    <TableCell colSpan={6} className="py-16">
+                      <div className="flex min-h-64 items-center justify-center">
+                        <LoadingAnimation
+                          variant="spinner"
+                          message="Loading audit logs..."
+                          size="lg"
+                        />
+                      </div>
                     </TableCell>
                   </TableRow>
                 ) : isError ? (

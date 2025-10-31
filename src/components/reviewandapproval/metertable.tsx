@@ -38,7 +38,7 @@ import type { Meter } from '@/types/review-approval';
 import { useMeters } from '@/hooks/use-ReviewApproval';
 import type { FetchParams } from '@/service/reviewapproval-service';
 import { toast } from 'sonner';
-
+import { LoadingAnimation } from '@/components/ui/loading-animation';
 
 
 interface MeterTableProps {
@@ -129,7 +129,11 @@ const MeterTable = ({ selectedMeterNumbers, setSelectedMeterNumbers }: MeterTabl
         setSelectedItem(null);
     };
 
-    if (isLoading) return <div>Loading...</div>;
+    if (isLoading) return (
+        <div className="flex min-h-96 items-center justify-center">
+            <LoadingAnimation variant="spinner" message="Loading meters..." size="lg" />
+        </div>
+    );
     if (isError) {
         toast.error('Failed to fetch meters.', {
             // description: error instanceof Error ? error.message : 'An unknown error occurred',

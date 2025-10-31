@@ -25,6 +25,7 @@ import { toast } from "sonner";
 import { type Customer } from "@/types/customer-types";
 import { FilterControl, SearchControl, SortControl } from "../search-control";
 import { Card } from "../ui/card";
+import { LoadingAnimation } from "@/components/ui/loading-animation";
 
 interface CustomerTableProps {
   onEditCustomer: (customer: Customer) => void;
@@ -97,10 +98,7 @@ export default function CustomerTable({
         <TableRow>
           <TableCell colSpan={colSpan} className="h-24 text-center">
             <div className="flex flex-col items-center justify-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-              <p className="mt-2 text-sm text-gray-500">
-                Fetching customer data...
-              </p>
+              <LoadingAnimation variant="spinner" message="Fetching customer data..." size="md" />
             </div>
           </TableCell>
         </TableRow>

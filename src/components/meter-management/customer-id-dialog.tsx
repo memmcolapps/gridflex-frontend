@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "../ui/button";
 import { Loader2 } from "lucide-react";
+import { LoadingAnimation } from "@/components/ui/loading-animation";
 
 interface CustomerIdDialogProps {
   isOpen: boolean;
@@ -68,7 +69,7 @@ export default function CustomerIdDialog({
               size={"lg"}
             >
               {isLoading ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <LoadingAnimation variant="inline" size="sm" />
               ) : (
                 "Proceed"
               )}

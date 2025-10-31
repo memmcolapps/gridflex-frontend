@@ -9,6 +9,7 @@ import {
     TableRow,
 } from "@/components/ui/table";
 import { Card } from '../ui/card';
+import { LoadingAnimation } from '@/components/ui/loading-animation';
 
 interface MeterData {
     [key: string]: string;
@@ -177,8 +178,8 @@ export function DataTable({ data, reading, loading }: DataTableProps) {
                     <TableBody>
                         {loading ? (
                             <TableRow>
-                                <TableCell colSpan={columns.length} className="text-center py-6">
-                                    <RotateCw className="animate-spin h-6 w-6 mx-auto" />
+                                <TableCell colSpan={columns.length} className="text-center py-8">
+                                    <LoadingAnimation variant="spinner" message="Loading meter data..." size="md" />
                                 </TableCell>
                             </TableRow>
                         ) : (

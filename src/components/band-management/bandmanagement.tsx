@@ -60,6 +60,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { LoadingAnimation } from "@/components/ui/loading-animation";
 
 export default function BandManagement() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -287,8 +288,8 @@ export default function BandManagement() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center">
-                  Loading bands...
+                <TableCell colSpan={7} className="py-12">
+                  <LoadingAnimation variant="spinner" message="Loading bands..." size="md" />
                 </TableCell>
               </TableRow>
             ) : bands.length === 0 ? (

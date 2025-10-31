@@ -6,6 +6,7 @@ import { AlertTriangle, Loader2 } from "lucide-react"; // Import Loader2
 import type { Customer } from "@/types/customer-types";
 import type { MeterInventoryItem } from "@/types/meter-inventory";
 import type { VirtualMeterData } from "@/types/meter";
+import { LoadingAnimation } from "@/components/ui/loading-animation";
 
 interface ConfirmationModalDialogProps {
   isOpen: boolean;
@@ -62,7 +63,7 @@ export function ConfirmationModalDialog({
             disabled={isSubmitting} // Disable confirm while submitting
             className={`bg-[#161CCA] text-white hover:bg-[#161CCA]/90 cursor-pointer ${isSubmitting ? 'bg-gray-400 cursor-not-allowed' : ''}`}
           >
-            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isSubmitting && <LoadingAnimation variant="inline" size="sm" />}
             {isSubmitting ? 'Processing...' : actionButtonText}
           </Button>
         </DialogFooter>

@@ -25,6 +25,7 @@ import type { Band } from '@/types/review-approval';
 import { toast } from 'sonner';
 import { useBands } from '@/hooks/use-ReviewApproval';
 import type { FetchParams } from '@/service/reviewapproval-service';
+import { LoadingAnimation } from '@/components/ui/loading-animation';
 
 const BandTable = () => {
     const [fetchParams, setFetchParams] = useState<FetchParams>({
@@ -110,7 +111,11 @@ const BandTable = () => {
         setSelectedItem(null);
     };
 
-    if (isLoading) return <div>Loading...</div>;
+    if (isLoading) return (
+        <div className="flex min-h-96 items-center justify-center">
+            <LoadingAnimation variant="spinner" message="Loading bands..." size="lg" />
+        </div>
+    );
     if (isError) {
         toast.error('Failed to fetch bands.', {
             description: error instanceof Error ? error.message : 'An unknown error occurred',

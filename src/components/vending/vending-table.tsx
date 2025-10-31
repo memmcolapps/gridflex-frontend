@@ -27,6 +27,7 @@ import { PaginationControls } from "@/components/ui/pagination-controls";
 import { useVendingTransactions, usePrintToken } from "@/hooks/use-vending";
 import { type PrintTokenPayload, type VendingTransaction } from "@/types/vending";
 import { toast } from "sonner";
+import { LoadingAnimation } from "@/components/ui/loading-animation";
 
 const VendingTable = () => {
     const [rowsPerPage, setRowsPerPage] = useState<number>(10);
@@ -105,8 +106,8 @@ const VendingTable = () => {
                     <TableBody>
                         {isLoading ? (
                             <TableRow>
-                                <TableCell colSpan={11} className="text-center py-8">
-                                    Loading transactions...
+                                <TableCell colSpan={11} className="py-12">
+                                    <LoadingAnimation variant="spinner" message="Loading transactions..." size="md" />
                                 </TableCell>
                             </TableRow>
                         ) : error ? (

@@ -42,6 +42,7 @@ import React, { useState } from "react";
 import { toast } from "sonner";
 import { useBand } from "@/hooks/use-band";
 import { useCreateTariff, useTariff, useExportTariff } from "@/hooks/use-tarrif";
+import { LoadingAnimation } from "@/components/ui/loading-animation";
 
 export default function TariffManagementPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -465,11 +466,8 @@ export default function TariffManagementPage() {
 
         <div className="flex-1 rounded-lg border border-gray-200 bg-white shadow-sm">
           {isLoading ? (
-            <div className="flex items-center justify-center p-12">
-              <div className="flex flex-col items-center gap-3">
-                <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-                <p className="text-sm text-gray-600">Loading tariffs...</p>
-              </div>
+            <div className="flex min-h-96 items-center justify-center p-12">
+              <LoadingAnimation variant="spinner" message="Loading tariffs..." size="lg" />
             </div>
           ) : tariffError ? (
             <div className="flex items-center justify-center p-12">

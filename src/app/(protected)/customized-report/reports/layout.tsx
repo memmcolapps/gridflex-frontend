@@ -41,6 +41,7 @@ import CustomizedPerVending from "./customized-vend";
 import { Spinner } from "@/components/ui/spinner";
 import { Progress } from "@/components/ui/progress";
 import CustomReportTable from "../../frequently-used-reports/page";
+import { LoadingAnimation } from "@/components/ui/loading-animation";
 
 const FILTER = [{ accord: "opt 1" }, { accord: "opt 2" }, { accord: "opt 3" }];
 const options = [
@@ -351,20 +352,8 @@ export default function ReportsLayout() {
 
           {/* Render report table here */}
           {loading && (
-            <div className="mt-4 flex flex-col items-center justify-center">
-              <Card className="p-10 bg-white border-none w-[50%]">
-                <p className="text-sm mt-2 text-center text-gray-500">
-                  {progress}%
-                </p>
-                <div className="flex justify-center items-center">
-                  <Spinner />
-
-                </div>
-                <Progress value={progress} className="w-full rounded-full" />
-                <p className="text-sm mt-2 text-center text-gray-500">
-                  Processing...
-                </p>
-              </Card>
+            <div className="mt-8 flex min-h-80 items-center justify-center">
+              <LoadingAnimation variant="card" progress={progress} message="Processing..." />
             </div>
           )}
           {!loading && showTable && (

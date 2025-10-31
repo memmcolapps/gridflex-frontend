@@ -12,6 +12,7 @@ import { MeterStatus } from "@/components/dashboard/MeterStatus";
 import { useDashboard } from "@/hooks/use-dashboard";
 import { CompleteProfileModal } from "@/components/profile/completeprofilemodal";
 import { EditCompleteProfileModal } from "@/components/profile/editcompleteprofilemodal";
+import { LoadingAnimation } from "@/components/ui/loading-animation";
 
 export default function DashboardPage() {
   const [selectedBand, setSelectedBand] = useState("Band");

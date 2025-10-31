@@ -6,6 +6,7 @@ import { useAuth } from "@/context/auth-context";
 import { SidebarNav } from "@/components/sidebar-nav";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { Navbar } from "@/components/navbar";
+import { LoadingAnimation } from "@/components/ui/loading-animation";
 
 export default function ProtectedLayout({
   children,
@@ -24,7 +25,7 @@ export default function ProtectedLayout({
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="h-12 w-12 animate-spin rounded-full border-t-2 border-b-2 border-purple-500"></div>
+        <LoadingAnimation variant="spinner" message="Loading application..." size="lg" />
       </div>
     );
   }

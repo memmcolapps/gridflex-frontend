@@ -40,6 +40,7 @@ import { usePercentageRanges } from '@/hooks/use-ReviewApproval';
 import type { FetchParams } from '@/service/reviewapproval-service';
 import { toast } from 'sonner';
 import { PaginationControls } from "@/components/ui/pagination-controls";
+import { LoadingAnimation } from '@/components/ui/loading-animation';
 
 const PercentageRangeTable = () => {
   const [fetchParams, setFetchParams] = useState<FetchParams>({
@@ -136,7 +137,11 @@ const PercentageRangeTable = () => {
     setSelectedItem(null);
   };
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading) return (
+      <div className="flex min-h-96 items-center justify-center">
+          <LoadingAnimation variant="spinner" message="Loading percentage ranges..." size="lg" />
+      </div>
+  );
   if (isError) {
     toast.error('Failed to fetch percentage ranges.', {
       description: error instanceof Error ? error.message : 'An unknown error occurred',

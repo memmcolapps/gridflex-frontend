@@ -22,6 +22,7 @@ import FeederDetailsTable from "@/components/billing/energy-import/feeder-detail
 import { ConfirmationDialog } from "@/components/billing/energy-import/confirmation-dialog";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { LoadingAnimation } from "@/components/ui/loading-animation";
 
 interface FeederDetailsPageProps {
   params: Promise<{
@@ -372,10 +373,8 @@ export default function FeederDetailsPage({ params }: FeederDetailsPageProps) {
   // Show loading state while feeder info is being determined
   if (!feederInfo) {
     return (
-      <div className="p-6">
-        <div className="flex h-32 items-center justify-center">
-          <div className="text-lg">Loading feeder information...</div>
-        </div>
+      <div className="flex min-h-screen items-center justify-center p-6">
+        <LoadingAnimation variant="spinner" message="Loading feeder information..." size="lg" />
       </div>
     );
   }

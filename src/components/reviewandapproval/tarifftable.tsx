@@ -24,6 +24,7 @@ import type { Tariff } from '@/types/review-approval';
 import { toast } from 'sonner';
 import { useTariffs } from '@/hooks/use-ReviewApproval';
 import type{ FetchParams } from '@/service/reviewapproval-service';
+import { LoadingAnimation } from '@/components/ui/loading-animation';
 
 const TariffTable = () => {
   const [fetchParams, setFetchParams] = useState<FetchParams>({
@@ -103,7 +104,11 @@ const TariffTable = () => {
     setSelectedItem(null);
   };
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading) return (
+      <div className="flex min-h-96 items-center justify-center">
+          <LoadingAnimation variant="spinner" message="Loading tariffs..." size="lg" />
+      </div>
+  );
   if (isError) {
     toast.error('Failed to fetch tariffs.', {
       // description: error instanceof Error ? error.message : 'An unknown error occurred',

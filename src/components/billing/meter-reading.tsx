@@ -28,6 +28,7 @@ import {
 import ViewMeterReadingDetails from "./view-meter-reading-details";
 import { Checkbox } from "@/components/ui/checkbox"; // Import the Checkbox component
 import { useMeterReadings } from "@/hooks/use-billing";
+import { LoadingAnimation } from "@/components/ui/loading-animation";
 
 interface MeterReading {
     meterNumber: string;
@@ -181,10 +182,7 @@ export default function MeterReadings({ searchQuery, sortConfig, selectedMonth, 
                     <TableBody>
                         <TableRow>
                             <TableCell colSpan={11} className="text-center py-8">
-                                <div className="flex items-center justify-center">
-                                    <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-gray-900"></div>
-                                    <span className="ml-2">Loading meter readings...</span>
-                                </div>
+                                <LoadingAnimation />
                             </TableCell>
                         </TableRow>
                     </TableBody>
@@ -224,10 +222,7 @@ export default function MeterReadings({ searchQuery, sortConfig, selectedMonth, 
                     {isLoading ? (
                         <TableRow>
                             <TableCell colSpan={11} className="text-center py-8">
-                                <div className="flex items-center justify-center">
-                                    <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-gray-900"></div>
-                                    <span className="ml-2">Loading meter readings...</span>
-                                </div>
+                                <LoadingAnimation />
                             </TableCell>
                         </TableRow>
                     ) : error ? (

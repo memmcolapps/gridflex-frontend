@@ -39,6 +39,7 @@ import { toast } from 'sonner';
 import { useLiabilities } from '@/hooks/use-ReviewApproval';
 import type { FetchParams } from '@/service/reviewapproval-service';
 import { PaginationControls } from "@/components/ui/pagination-controls";
+import { LoadingAnimation } from '@/components/ui/loading-animation';
 
 const LiabilityCauseTable = () => {
   const [fetchParams, setFetchParams] = useState<FetchParams>({
@@ -124,7 +125,11 @@ const LiabilityCauseTable = () => {
     setSelectedItem(null);
   };
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading) return (
+      <div className="flex min-h-96 items-center justify-center">
+          <LoadingAnimation variant="spinner" message="Loading liability causes..." size="lg" />
+      </div>
+  );
   if (isError) {
     toast.error('Failed to fetch liability causes.', {
       description: error instanceof Error ? error.message : 'An unknown error occurred',

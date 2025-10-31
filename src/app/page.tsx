@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/auth-context";
 import { getFirstAccessiblePath } from "@/utils/permissions";
+import { LoadingAnimation } from "@/components/ui/loading-animation";
 
 export default function HomePage() {
   const { user, isLoading } = useAuth();
@@ -43,7 +44,7 @@ export default function HomePage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center">
-      <div className="h-12 w-12 animate-spin rounded-full border-t-2 border-b-2 border-purple-500"></div>
+      <LoadingAnimation variant="spinner" message="Loading your profile..." size="lg" />
     </div>
   );
 }

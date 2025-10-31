@@ -68,6 +68,7 @@ import {
     AlertDialogFooter,
 } from "@/components/ui/alert-dialog";
 import { CheckCircle, XCircle, AlertTriangle } from "lucide-react";
+import { LoadingAnimation } from "@/components/ui/loading-animation";
 
 // Toast utility is now imported from sonner
 
@@ -689,11 +690,8 @@ export default function MeterInventoryPage() {
           <TableBody>
             {isLoading && (
               <TableRow>
-                <TableCell colSpan={11} className="py-4 text-center">
-                  <div className="flex items-center justify-center gap-2 text-[#161CCA]">
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                    <span className="text-sm font-medium">Loading Meters...</span>
-                  </div>
+                <TableCell colSpan={11} className="py-8">
+                  <LoadingAnimation variant="spinner" message="Loading Meters..." size="md" />
                 </TableCell>
               </TableRow>
             )}

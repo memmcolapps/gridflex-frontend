@@ -38,6 +38,7 @@ import { toast } from "sonner";
 import { type EditUserPayload } from "@/service/user-service";
 import { formatDistanceToNow, format, parseISO } from "date-fns";
 import { PaginationControls } from "@/components/ui/pagination-controls";
+import { LoadingAnimation } from "@/components/ui/loading-animation";
 
 const parseTimestamp = (timestamp: string): Date => {
   // Convert format "2025-10-22 10:32:15.338908-05" to ISO 8601
@@ -179,7 +180,11 @@ export default function UserManagement() {
   };
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex min-h-96 items-center justify-center">
+        <LoadingAnimation variant="spinner" message="Loading users..." size="lg" />
+      </div>
+    );
   }
 
   return (
