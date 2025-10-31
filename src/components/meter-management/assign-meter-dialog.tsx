@@ -322,9 +322,7 @@ export function AssignMeterDialog({
                     className="w-full justify-between border-gray-200 text-gray-600"
                     disabled={metersLoading}
                   >
-                    {meterNumber
-                      ? availableMeters.find((meter) => meter.meterNumber === meterNumber)?.meterNumber + " - " + (availableMeters.find((meter) => meter.meterNumber === meterNumber)?.category)
-                      : metersLoading ? "Loading meters..." : "Select meter number..."}
+                    {meterNumber || (metersLoading ? "Loading meters..." : "Select meter number...")}
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" size={14}/>
                   </Button>
                 </PopoverTrigger>
