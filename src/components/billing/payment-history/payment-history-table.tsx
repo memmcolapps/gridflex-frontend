@@ -28,6 +28,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import ViewPaymentDetails from "./view-payment-details";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 
 interface PaymentHistoryData {
   id: number;
@@ -271,23 +272,17 @@ export default function PaymentHistoryTable({
     setCurrentPage(1);
   };
 
-  const handleRowClick = (
-    item: PaymentHistoryData,
-    event: React.MouseEvent<HTMLTableRowElement>,
-  ) => {
-    // Prevent row click when clicking checkbox
-    if ((event.target as HTMLElement).closest('input[type="checkbox"]')) {
-      return;
-    }
-    handleViewDetails(item);
-  };
-
   const handlePrevious = () => {
     setCurrentPage((prev) => Math.max(prev - 1, 1));
   };
 
   const handleNext = () => {
     setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+  };
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    setRowsPerPage(newPageSize);
+    setCurrentPage(1);
   };
 
   // Function to handle individual checkbox change
@@ -419,56 +414,13 @@ export default function PaymentHistoryTable({
         </Table>
       </div>
 
-      <Pagination className="mt-4 flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <span className="text-sm font-medium">Rows per page</span>
-          <Select
-            value={rowsPerPage.toString()}
-            onValueChange={handleRowsPerPageChange}
-          >
-            <SelectTrigger className="h-8 w-[70px]">
-              <SelectValue placeholder={rowsPerPage.toString()} />
-            </SelectTrigger>
-            <SelectContent
-              position="popper"
-              side="top"
-              align="center"
-              className="mb-1 ring-gray-50"
-            >
-              <SelectItem value="12">12</SelectItem>
-              <SelectItem value="24">24</SelectItem>
-              <SelectItem value="48">48</SelectItem>
-            </SelectContent>
-          </Select>
-          <span className="text-sm font-medium">
-            {(currentPage - 1) * rowsPerPage + 1}-
-            {Math.min(currentPage * rowsPerPage, sortedData.length)} of{" "}
-            {sortedData.length}
-          </span>
-        </div>
-        <PaginationContent>
-          <PaginationItem>
-            <PaginationPrevious
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                handlePrevious();
-              }}
-              aria-disabled={currentPage === 1}
-            />
-          </PaginationItem>
-          <PaginationItem>
-            <PaginationNext
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                handleNext();
-              }}
-              aria-disabled={currentPage === totalPages}
-            />
-          </PaginationItem>
-        </PaginationContent>
-      </Pagination>
+      <PaginationControls
+        currentPage={currentPage}
+        totalItems={sortedData.length}
+        pageSize={rowsPerPage}
+        onPageChange={setCurrentPage}
+        onPageSizeChange={handlePageSizeChange}
+      />
 
       {/* View Details Dialog */}
       {selectedItem && (

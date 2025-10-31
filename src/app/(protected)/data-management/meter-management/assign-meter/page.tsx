@@ -23,8 +23,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 import {
     Table,
     TableBody,
@@ -572,6 +571,11 @@ export default function AssignMeterPage() {
         setCurrentPage((prev) => Math.min(prev + 1, totalRows));
     };
 
+    const handlePageSizeChange = (newPageSize: number) => {
+        setRowsPerPage(newPageSize);
+        setCurrentPage(1);
+    };
+
     return (
         <div className="p-6 max-h-screen overflow-auto">
             <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
@@ -776,55 +780,13 @@ export default function AssignMeterPage() {
                     )}
                 </TableBody>
             </Table>
-            <Pagination className="mt-4 flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                    <span className="text-sm font-medium">Rows per page</span>
-                    <Select
-                        value={rowsPerPage.toString()}
-                        onValueChange={handleRowsPerPageChange}
-                    >
-                        <SelectTrigger className="h-8 w-[70px]">
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent
-                            position="popper"
-                            side="top"
-                            align="center"
-                            className="mb-1 ring-gray-50"
-                        >
-                            <SelectItem value="10">10</SelectItem>
-                            <SelectItem value="24">24</SelectItem>
-                            <SelectItem value="48">48</SelectItem>
-                        </SelectContent>
-                    </Select>
-                    <span className="text-sm font-medium">
-                        {(currentPage - 1) * rowsPerPage + 1}-
-                        {Math.min(currentPage * rowsPerPage, processedData.length)} of {processedData.length}
-                    </span>
-                </div>
-                <PaginationContent>
-                    <PaginationItem>
-                        <PaginationPrevious
-                            href="#"
-                            onClick={e => {
-                                e.preventDefault();
-                                handlePrevious();
-                            }}
-                            aria-disabled={currentPage === 1}
-                        />
-                    </PaginationItem>
-                    <PaginationItem>
-                        <PaginationNext
-                            href="#"
-                            onClick={e => {
-                                e.preventDefault();
-                                handleNext();
-                            }}
-                            aria-disabled={currentPage === totalRows}
-                        />
-                    </PaginationItem>
-                </PaginationContent>
-            </Pagination>
+            <PaginationControls
+                currentPage={currentPage}
+                totalItems={processedData.length}
+                pageSize={rowsPerPage}
+                onPageChange={setCurrentPage}
+                onPageSizeChange={handlePageSizeChange}
+            />
             <CustomerIdDialog
                 isOpen={isCustomerIdModalOpen}
                 onOpenChange={setIsCustomerIdModalOpen}

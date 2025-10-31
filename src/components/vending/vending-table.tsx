@@ -23,22 +23,9 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-import {
-    Pagination,
-    PaginationContent,
-    PaginationItem,
-    PaginationNext,
-    PaginationPrevious,
-} from "@/components/ui/pagination";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 import { useVendingTransactions, usePrintToken } from "@/hooks/use-vending";
-import { PrintTokenPayload, VendingTransaction } from "@/types/vending";
+import { type PrintTokenPayload, type VendingTransaction } from "@/types/vending";
 import { toast } from "sonner";
 
 const VendingTable = () => {
@@ -74,16 +61,8 @@ const VendingTable = () => {
     const printTokenMutation = usePrintToken();
 
     // Handle pagination controls
-    const handlePrevious = () => {
-        setCurrentPage((prev) => Math.max(prev - 1, 1));
-    };
-
-    const handleNext = () => {
-        setCurrentPage((prev) => Math.min(prev + 1, totalPages));
-    };
-
-    const handleRowsPerPageChange = (value: string) => {
-        setRowsPerPage(Number(value));
+    const handlePageSizeChange = (newPageSize: number) => {
+        setRowsPerPage(newPageSize);
         setCurrentPage(1);
     };
 
@@ -189,55 +168,13 @@ const VendingTable = () => {
                     </TableBody>
                 </Table>
             </Card>
-            <Pagination className="mt-4 flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                    <span className="text-sm font-medium">Rows per page</span>
-                    <Select
-                        value={rowsPerPage.toString()}
-                        onValueChange={handleRowsPerPageChange}
-                    >
-                        <SelectTrigger className="h-8 w-[70px]">
-                            <SelectValue placeholder={rowsPerPage.toString()} />
-                        </SelectTrigger>
-                        <SelectContent
-                            position="popper"
-                            side="top"
-                            align="center"
-                            className="mb-1 ring-gray-50"
-                        >
-                            <SelectItem value="10">10</SelectItem>
-                            <SelectItem value="24">24</SelectItem>
-                            <SelectItem value="48">48</SelectItem>
-                        </SelectContent>
-                    </Select>
-                    <span className="text-sm font-medium">
-                        {(currentPage - 1) * rowsPerPage + 1}-
-                        {Math.min(currentPage * rowsPerPage, transactions.length)} of {transactions.length}
-                    </span>
-                </div>
-                <PaginationContent>
-                    <PaginationItem>
-                        <PaginationPrevious
-                            href="#"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                handlePrevious();
-                            }}
-                            aria-disabled={currentPage === 1}
-                        />
-                    </PaginationItem>
-                    <PaginationItem>
-                        <PaginationNext
-                            href="#"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                handleNext();
-                            }}
-                            aria-disabled={currentPage === totalPages}
-                        />
-                    </PaginationItem>
-                </PaginationContent>
-            </Pagination>
+            <PaginationControls
+                currentPage={currentPage}
+                totalItems={totalCount}
+                pageSize={rowsPerPage}
+                onPageChange={setCurrentPage}
+                onPageSizeChange={handlePageSizeChange}
+            />
             {/* Token Details Dialog */}
             <Dialog open={showTokenDialog} onOpenChange={setShowTokenDialog}>
                 <DialogContent className="w-full h-fit bg-white">

@@ -5,13 +5,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-    Pagination,
-    PaginationContent,
-    PaginationItem,
-    PaginationNext,
-    PaginationPrevious,
-} from "@/components/ui/pagination";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 import { Button } from "@/components/ui/button";
 import {
     Table,
@@ -127,17 +121,9 @@ export default function MeterReadings({ searchQuery, sortConfig, selectedMonth, 
         setSelectedItem(null);
     };
 
-    const handleRowsPerPageChange = (value: string) => {
-        setRowsPerPage(Number(value));
+    const handlePageSizeChange = (newPageSize: number) => {
+        setRowsPerPage(newPageSize);
         setCurrentPage(1);
-    };
-
-    const handlePrevious = () => {
-        setCurrentPage((prev) => Math.max(prev - 1, 1));
-    };
-
-    const handleNext = () => {
-        setCurrentPage((prev) => Math.min(prev + 1, totalPages));
     };
 
     // Function to handle individual checkbox change
@@ -301,55 +287,13 @@ export default function MeterReadings({ searchQuery, sortConfig, selectedMonth, 
                     )}
                 </TableBody>
             </Table>
-            <Pagination className="mt-4 flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                    <span className="text-sm font-medium">Rows per page</span>
-                    <Select
-                        value={rowsPerPage.toString()}
-                        onValueChange={handleRowsPerPageChange}
-                    >
-                        <SelectTrigger className="h-8 w-[70px]">
-                            <SelectValue placeholder={rowsPerPage.toString()} />
-                        </SelectTrigger>
-                        <SelectContent
-                            position="popper"
-                            side="top"
-                            align="center"
-                            className="mb-1 ring-gray-50"
-                        >
-                            <SelectItem value="10">10</SelectItem>
-                            <SelectItem value="24">24</SelectItem>
-                            <SelectItem value="48">48</SelectItem>
-                        </SelectContent>
-                    </Select>
-                    <span className="text-sm font-medium">
-                        {(currentPage - 1) * rowsPerPage + 1}-
-                        {Math.min(currentPage * rowsPerPage, totalData)} of {totalData}
-                    </span>
-                </div>
-                <PaginationContent>
-                    <PaginationItem>
-                        <PaginationPrevious
-                            href="#"
-                            onClick={e => {
-                                e.preventDefault();
-                                handlePrevious();
-                            }}
-                            aria-disabled={currentPage === 1}
-                        />
-                    </PaginationItem>
-                    <PaginationItem>
-                        <PaginationNext
-                            href="#"
-                            onClick={e => {
-                                e.preventDefault();
-                                handleNext();
-                            }}
-                            aria-disabled={currentPage === totalPages}
-                        />
-                    </PaginationItem>
-                </PaginationContent>
-            </Pagination>
+            <PaginationControls
+                currentPage={currentPage}
+                totalItems={totalData}
+                pageSize={rowsPerPage}
+                onPageChange={setCurrentPage}
+                onPageSizeChange={handlePageSizeChange}
+            />
 
             {/* Edit Dialog */}
             {selectedItem && isEditDialogOpen && (

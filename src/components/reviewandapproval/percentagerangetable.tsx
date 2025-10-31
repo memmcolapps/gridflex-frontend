@@ -39,6 +39,7 @@ import type { PercentageRange } from '@/types/review-approval';
 import { usePercentageRanges } from '@/hooks/use-ReviewApproval';
 import type { FetchParams } from '@/service/reviewapproval-service';
 import { toast } from 'sonner';
+import { PaginationControls } from "@/components/ui/pagination-controls";
 
 const PercentageRangeTable = () => {
   const [fetchParams, setFetchParams] = useState<FetchParams>({
@@ -66,25 +67,23 @@ const PercentageRangeTable = () => {
   const totalPages = Math.ceil(totalData / fetchParams.pageSize);
 
   const handlePrevious = () => {
-    setFetchParams((prevParams) => ({
-      ...prevParams,
-      page: Math.max(prevParams.page - 1, 1)
-    }));
+    setFetchParams({ ...fetchParams, page: Math.max(fetchParams.page - 1, 1) });
   };
 
   const handleNext = () => {
-    setFetchParams((prevParams) => ({
-      ...prevParams,
-      page: Math.min(prevParams.page + 1, totalPages),
-    }));
+    setFetchParams({ ...fetchParams, page: Math.min(fetchParams.page + 1, totalPages) });
   };
 
   const handleRowsPerPageChange = (value: string) => {
-    setFetchParams((prevParams) => ({
-      ...prevParams,
-      pageSize: Number(value),
-      page: 1,
-    }));
+    setFetchParams({ ...fetchParams, pageSize: Number(value), page: 1 });
+  };
+
+  const handlePageChange = (page: number) => {
+    setFetchParams({ ...fetchParams, page });
+  };
+
+  const handlePageSizeChange = (pageSize: number) => {
+    setFetchParams({ ...fetchParams, pageSize, page: 1 });
   };
 
   const toggleSelection = (id: string) => {
@@ -257,50 +256,13 @@ const PercentageRangeTable = () => {
         </TableBody>
       </Table>
 
-      <Pagination className="mt-4 flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <span className="text-sm font-medium">Rows per page</span>
-          <Select
-            value={fetchParams.pageSize.toString()}
-            onValueChange={handleRowsPerPageChange}
-          >
-            <SelectTrigger className="h-8 w-[70px]">
-              <SelectValue placeholder={fetchParams.pageSize.toString()} />
-            </SelectTrigger>
-            <SelectContent position="popper" side="top" align="center" className="mb-1 ring-gray-50">
-              <SelectItem value="10">10</SelectItem>
-              <SelectItem value="24">24</SelectItem>
-              <SelectItem value="48">48</SelectItem>
-            </SelectContent>
-          </Select>
-          <span className="text-sm font-medium">
-            {(fetchParams.page - 1) * fetchParams.pageSize + 1}-
-            {Math.min(fetchParams.page * fetchParams.pageSize, totalData)} of {totalData}
-          </span>
-        </div>
-        <PaginationContent>
-          <PaginationItem>
-            <PaginationPrevious
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                handlePrevious();
-              }}
-              aria-disabled={fetchParams.page === 1}
-            />
-          </PaginationItem>
-          <PaginationItem>
-            <PaginationNext
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                handleNext();
-              }}
-              aria-disabled={fetchParams.page === totalPages}
-            />
-          </PaginationItem>
-        </PaginationContent>
-      </Pagination>
+      <PaginationControls
+        currentPage={fetchParams.page}
+        totalItems={totalData}
+        pageSize={fetchParams.pageSize}
+        onPageChange={handlePageChange}
+        onPageSizeChange={handlePageSizeChange}
+      />
 
       <ViewDetailsDialog
         isOpen={isModalOpen}

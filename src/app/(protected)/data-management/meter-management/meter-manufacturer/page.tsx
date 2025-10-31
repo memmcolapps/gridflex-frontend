@@ -36,13 +36,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { SearchControl, SortControl } from "@/components/search-control";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 import { type Manufacturer } from "@/types/meters-manufacturers";
 import {
   useCreateManufacturer,
@@ -693,13 +687,10 @@ export default function ManufacturersPage() {
     return results;
   };
 
-  const totalPages = Math.ceil(data.length / rowsPerPage);
   const paginatedData = data.slice(
     (currentPage - 1) * rowsPerPage,
     currentPage * rowsPerPage,
   );
-
-  const totalRows = data.length;
 
   const handleAddManufacturer = (
     newManufacturer: Omit<
@@ -743,17 +734,9 @@ export default function ManufacturersPage() {
     });
   };
 
-  const handleRowsPerPageChange = (value: string) => {
-    setRowsPerPage(Number(value));
+  const handlePageSizeChange = (newPageSize: number) => {
+    setRowsPerPage(newPageSize);
     setCurrentPage(1);
-  };
-
-  const handlePrevious = () => {
-    setCurrentPage((prev) => Math.max(prev - 1, 1));
-  };
-
-  const handleNext = () => {
-    setCurrentPage((prev) => Math.min(prev + 1, totalRows));
   };
 
   return (
@@ -898,55 +881,13 @@ export default function ManufacturersPage() {
       </Card>
 
       {/* Pagination */}
-      <Pagination className="mt-4 flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <span className="text-sm font-medium">Rows per page</span>
-          <Select
-            value={rowsPerPage.toString()}
-            onValueChange={handleRowsPerPageChange}
-          >
-            <SelectTrigger className="h-8 w-[70px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent
-              position="popper"
-              side="top"
-              align="center"
-              className="mb-1 ring-gray-50"
-            >
-              <SelectItem value="10">10</SelectItem>
-              <SelectItem value="24">24</SelectItem>
-              <SelectItem value="48">48</SelectItem>
-            </SelectContent>
-          </Select>
-          <span className="text-sm font-medium">
-            {(currentPage - 1) * rowsPerPage + 1}-
-            {Math.min(currentPage * rowsPerPage, data.length)} of {data.length}
-          </span>
-        </div>
-        <PaginationContent>
-          <PaginationItem>
-            <PaginationPrevious
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                handlePrevious();
-              }}
-              aria-disabled={currentPage === 1}
-            />
-          </PaginationItem>
-          <PaginationItem>
-            <PaginationNext
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                handleNext();
-              }}
-              aria-disabled={currentPage === totalPages}
-            />
-          </PaginationItem>
-        </PaginationContent>
-      </Pagination>
+      <PaginationControls
+        currentPage={currentPage}
+        totalItems={data.length}
+        pageSize={rowsPerPage}
+        onPageChange={setCurrentPage}
+        onPageSizeChange={handlePageSizeChange}
+      />
 
       {/* Add Manufacturer Dialog */}
       <AddManufacturerDialog

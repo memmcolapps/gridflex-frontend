@@ -48,6 +48,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 
 interface EventData {
   sn: number;
@@ -378,6 +379,11 @@ export function Events() {
     setCurrentPage((prev) => Math.min(prev + 1, totalPages));
   };
 
+  const handlePageSizeChange = (newPageSize: number) => {
+    setRowsPerPage(newPageSize);
+    setCurrentPage(1);
+  };
+
   return (
     <div className="space-y-6">
       {/* Filter Controls */}
@@ -687,54 +693,13 @@ export function Events() {
       </div>
 
       {/* Pagination */}
-      <Pagination className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <span className="text-sm font-medium">Rows per page</span>
-          <Select
-            value={rowsPerPage.toString()}
-            onValueChange={handleRowsPerPageChange}
-          >
-            <SelectTrigger className="h-8 w-[70px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent
-              position="popper"
-              side="top"
-              align="center"
-              className="mb-1 ring-gray-50"
-            >
-              <SelectItem value="10">10</SelectItem>
-              <SelectItem value="24">24</SelectItem>
-              <SelectItem value="48">48</SelectItem>
-            </SelectContent>
-          </Select>
-          <span className="text-sm font-medium">
-            {totalRows > 0 ? `${startRow}-${endRow} of ${totalRows}` : "0 of 0"}
-          </span>
-        </div>
-        <PaginationContent>
-          <PaginationItem>
-            <PaginationPrevious
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                handlePrevious();
-              }}
-              aria-disabled={currentPage === 1}
-            />
-          </PaginationItem>
-          <PaginationItem>
-            <PaginationNext
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                handleNext();
-              }}
-              aria-disabled={currentPage === totalPages || totalPages === 0}
-            />
-          </PaginationItem>
-        </PaginationContent>
-      </Pagination>
+      <PaginationControls
+        currentPage={currentPage}
+        totalItems={tableData.length}
+        pageSize={rowsPerPage}
+        onPageChange={setCurrentPage}
+        onPageSizeChange={handlePageSizeChange}
+      />
     </div>
   );
 }

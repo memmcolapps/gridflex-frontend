@@ -24,6 +24,7 @@ import {
     PaginationNext,
     PaginationPrevious,
 } from '@/components/ui/pagination';
+import { PaginationControls } from "@/components/ui/pagination-controls";
 
 const data = [
     {
@@ -311,6 +312,11 @@ export function DailyReportTable() {
         setCurrentPage((prev) => Math.min(prev + 1, totalPages));
     };
 
+    const handlePageSizeChange = (newPageSize: number) => {
+        setRowsPerPage(newPageSize);
+        setCurrentPage(1);
+    };
+
     const paginatedData = useMemo(() => {
         const startIndex = (currentPage - 1) * rowsPerPage;
         const endIndex = startIndex + rowsPerPage;
@@ -372,58 +378,13 @@ export function DailyReportTable() {
                 </TableBody>
             </Table>
             <div className="p-4">
-                <Pagination className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                        <span className="text-sm font-medium">Rows per page</span>
-                        <Select
-                            value={rowsPerPage.toString()}
-                            onValueChange={handleRowsPerPageChange}
-                        >
-                            <SelectTrigger className="h-8 w-fit focus:ring-gray-300/20 border-gray-300">
-                                <SelectValue placeholder={rowsPerPage.toString()} />
-                            </SelectTrigger>
-                            <SelectContent
-                                position="popper"
-                                side="top"
-                                align="center"
-                                className="mb-1 ring-gray-50"
-                            >
-                                <SelectItem value="10">10</SelectItem>
-                                <SelectItem value="24">24</SelectItem>
-                                <SelectItem value="48">48</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        <span className="text-sm font-medium text-muted-foreground">
-                            {Math.min(
-                                (currentPage - 1) * rowsPerPage + 1,
-                                totalItems
-                            )}-
-                            {Math.min(currentPage * rowsPerPage, totalItems)} of {totalItems}
-                        </span>
-                    </div>
-                    <PaginationContent>
-                        <PaginationItem>
-                            <PaginationPrevious
-                                href="#"
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    handlePrevious();
-                                }}
-                                aria-disabled={currentPage === 1}
-                            />
-                        </PaginationItem>
-                        <PaginationItem>
-                            <PaginationNext
-                                href="#"
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    handleNext();
-                                }}
-                                aria-disabled={currentPage === totalPages}
-                            />
-                        </PaginationItem>
-                    </PaginationContent>
-                </Pagination>
+                <PaginationControls
+                    currentPage={currentPage}
+                    totalItems={data.length}
+                    pageSize={rowsPerPage}
+                    onPageChange={setCurrentPage}
+                    onPageSizeChange={handlePageSizeChange}
+                />
             </div>
         </div>
     );

@@ -24,6 +24,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 
 interface BillingData {
     id: number;
@@ -113,6 +114,11 @@ export default function BillingTable({ searchQuery, sortConfig, selectedMonth, s
         setCurrentPage((prev) => Math.min(prev + 1, totalPages));
     };
 
+    const handlePageSizeChange = (newPageSize: number) => {
+        setRowsPerPage(newPageSize);
+        setCurrentPage(1);
+    };
+
     const handleCheckboxChange = (id: number, checked: boolean) => {
         setSelectedRowIds(prev => {
             const newSelected = new Set(prev);
@@ -194,55 +200,13 @@ export default function BillingTable({ searchQuery, sortConfig, selectedMonth, s
                 </Table>
             </div>
             <div className="mt-4">
-                <Pagination className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                        <div className="flex items-center space-x-2">
-                            <span className="text-sm font-medium text-gray-600">Rows per page</span>
-                            <Select
-                                value={rowsPerPage.toString()}
-                                onValueChange={handleRowsPerPageChange}
-                            >
-                                <SelectTrigger className="h-8 w-[70px] border-gray-300 focus:ring-0 focus:ring-offset-0">
-                                    <SelectValue placeholder={rowsPerPage.toString()} />
-                                </SelectTrigger>
-                                <SelectContent side="top" className="min-w-[70px]">
-                                    <SelectItem value="10">10</SelectItem>
-                                    <SelectItem value="24">24</SelectItem>
-                                    <SelectItem value="48">48</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <span className="text-sm font-medium text-gray-600">
-                            {(currentPage - 1) * rowsPerPage + 1}-
-                            {Math.min(currentPage * rowsPerPage, sortedData.length)} of{" "}
-                            {sortedData.length}
-                        </span>
-                    </div>
-                    <PaginationContent>
-                        <PaginationItem>
-                            <PaginationPrevious
-                                href="#"
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    handlePrevious();
-                                }}
-                                className=""
-                                aria-disabled={currentPage === 1}
-                            />
-                        </PaginationItem>
-                        <PaginationItem>
-                            <PaginationNext
-                                href="#"
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    handleNext();
-                                }}
-                                className=""
-                                aria-disabled={currentPage === totalPages}
-                            />
-                        </PaginationItem>
-                    </PaginationContent>
-                </Pagination>
+                <PaginationControls
+                    currentPage={currentPage}
+                    totalItems={sortedData.length}
+                    pageSize={rowsPerPage}
+                    onPageChange={setCurrentPage}
+                    onPageSizeChange={handlePageSizeChange}
+                />
             </div>
         </>
     );

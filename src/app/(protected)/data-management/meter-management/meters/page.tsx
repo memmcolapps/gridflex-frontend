@@ -28,8 +28,7 @@ import type { VirtualMeterData } from "@/types/meter";
 import type { MeterInventoryItem } from "@/types/meter-inventory";
 import { getStatusStyle } from "@/components/status-style";
 import { cn } from "@/lib/utils";
-import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 import { useMeters, useAssignMeter, useChangeMeterState } from "@/hooks/use-assign-meter";
 import { useCustomerRecordQuery } from "@/hooks/use-customer";
 import type { AssignMeterPayload } from "@/service/assign-meter-service";
@@ -928,17 +927,9 @@ export default function MeterManagementPage() {
         setIsAddMeterDialogOpen(false);
     };
 
-    const handleRowsPerPageChange = (value: string) => {
-        setRowsPerPage(Number(value));
+    const handlePageSizeChange = (newPageSize: number) => {
+        setRowsPerPage(newPageSize);
         setCurrentPage(1);
-    };
-
-    const handlePrevious = () => {
-        setCurrentPage((prev) => Math.max(prev - 1, 1));
-    };
-
-    const handleNext = () => {
-        setCurrentPage((prev) => Math.min(prev + 1, totalPages));
     };
 
     // Helper function to check if meter is in pending state
@@ -1418,55 +1409,13 @@ export default function MeterManagementPage() {
                     </TabsContent>
                 </Tabs>
             </Card>
-            <Pagination className="mt-4 flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                    <span className="text-sm font-medium">Rows per page</span>
-                    <Select
-                        value={rowsPerPage.toString()}
-                        onValueChange={handleRowsPerPageChange}
-                    >
-                        <SelectTrigger className="h-8 w-[70px]">
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent
-                            position="popper"
-                            side="top"
-                            align="center"
-                            className="mb-1 ring-gray-50"
-                        >
-                            <SelectItem value="10">10</SelectItem>
-                            <SelectItem value="24">24</SelectItem>
-                            <SelectItem value="48">48</SelectItem>
-                        </SelectContent>
-                    </Select>
-                    <span className="text-sm font-medium">
-                        {(currentPage - 1) * rowsPerPage + 1}-
-                        {Math.min(currentPage * rowsPerPage, processedData.length)} of {processedData.length}
-                    </span>
-                </div>
-                <PaginationContent>
-                    <PaginationItem>
-                        <PaginationPrevious
-                            href="#"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                handlePrevious();
-                            }}
-                            aria-disabled={currentPage === 1}
-                        />
-                    </PaginationItem>
-                    <PaginationItem>
-                        <PaginationNext
-                            href="#"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                handleNext();
-                            }}
-                            aria-disabled={currentPage === totalPages}
-                        />
-                    </PaginationItem>
-                </PaginationContent>
-            </Pagination>
+            <PaginationControls
+                currentPage={currentPage}
+                totalItems={processedData.length}
+                pageSize={rowsPerPage}
+                onPageChange={setCurrentPage}
+                onPageSizeChange={handlePageSizeChange}
+            />
 
             <CustomerIdDialog
                 isOpen={isCustomerIdModalOpen}

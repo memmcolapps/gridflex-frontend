@@ -11,6 +11,7 @@ import React, { useState } from "react";
 import { AuditLogDetailsDialog } from "./audit-log-details";
 import { useAuditLogs } from "@/hooks/use-audit";
 import { type AuditLog } from "@/service/audit-log-service";
+import { PaginationControls } from "../ui/pagination-controls";
 
 export function AuditLog() {
   const [selectedEntry, setSelectedEntry] = useState<AuditLog | null>(null);
@@ -33,6 +34,12 @@ export function AuditLog() {
     setSelectedEntry(entry);
     setIsDialogOpen(true);
   };
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    setRowsPerPage(newPageSize);
+    setCurrentPage(1);
+  };
+
   return (
     <div className="h-screen overflow-auto">
       <div className="flex h-full flex-col gap-4">
@@ -121,52 +128,15 @@ export function AuditLog() {
             entry={selectedEntry}
           />
         </div>
-        <div className="sticky bottom-0 z-10 mt-4 flex items-center justify-between border-t border-gray-200 bg-transparent px-4 py-3">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600">Rows per page</span>
-            <select
-              value={rowsPerPage}
-              onChange={(e) => {
-                const newRowsPerPage = Number(e.target.value);
-                setRowsPerPage(newRowsPerPage);
-                setCurrentPage(1); // Reset to first page when changing page size
-              }}
-              className="rounded-md border border-gray-300 px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            >
-              {[5, 10, 12, 20, 50].map((num) => (
-                <option key={num} value={num}>
-                  {num}
-                </option>
-              ))}
-            </select>
-            <span className="ml-4 text-sm text-gray-600">
-              {totalRows > 0
-                ? `${startIndex + 1}-${endIndex} of ${totalRows} rows`
-                : "0 rows"}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              disabled={currentPage === 1 || isLoading}
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              className="text-black-600 cursor-pointer rounded-md border border-gray-300 px-3 py-1 text-sm disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              Previous
-            </button>
-            <span className="text-sm text-gray-600">
-              Page {currentPage} of {totalPages || 1}
-            </span>
-            <button
-              disabled={
-                currentPage >= totalPages || isLoading || totalRows === 0
-              }
-              onClick={() => setCurrentPage((prev) => prev + 1)}
-              className="text-black-600 cursor-pointer rounded-md border border-gray-300 px-3 py-1 text-sm disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              Next
-            </button>
-          </div>
-        </div>
+        <PaginationControls
+          currentPage={currentPage}
+          totalItems={totalRows}
+          pageSize={rowsPerPage}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={handlePageSizeChange}
+          pageSizeOptions={[5, 10, 12, 20, 50]}
+          rowsPerPageLabel="Rows per page"
+        />
       </div>
     </div>
   );

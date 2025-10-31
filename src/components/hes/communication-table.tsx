@@ -19,6 +19,7 @@ import { toast } from 'sonner';
 import { Label } from '../ui/label';
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from '../ui/pagination';
 import { getStatusStyle } from '../status-style';
+import { PaginationControls } from '../ui/pagination-controls';
 
 interface RowData {
     sn: string;
@@ -103,6 +104,11 @@ export function CommunicationTable({ data }: CommunicationTableProps) {
 
     const handleNext = () => {
         setCurrentPage(prev => Math.min(totalPages, prev + 1));
+    };
+
+    const handlePageSizeChange = (newPageSize: number) => {
+        setRowsPerPage(newPageSize);
+        setCurrentPage(1);
     };
     // --- End of added pagination state and handlers ---
 
@@ -265,58 +271,13 @@ export function CommunicationTable({ data }: CommunicationTableProps) {
 
             {/* Pagination and row count controls */}
             <div className="p-4">
-                <Pagination className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                        <span className="text-sm font-medium">Rows per page</span>
-                        <Select
-                            value={rowsPerPage.toString()}
-                            onValueChange={handleRowsPerPageChange}
-                        >
-                            <SelectTrigger className="h-8 w-fit focus:ring-gray-300/20 border-gray-300">
-                                <SelectValue placeholder={rowsPerPage.toString()} />
-                            </SelectTrigger>
-                            <SelectContent
-                                position="popper"
-                                side="top"
-                                align="center"
-                                className="mb-1 ring-gray-50"
-                            >
-                                <SelectItem value="10">10</SelectItem>
-                                <SelectItem value="24">24</SelectItem>
-                                <SelectItem value="48">48</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        <span className="text-sm font-medium text-muted-foreground">
-                            {Math.min(
-                                (currentPage - 1) * rowsPerPage + 1,
-                                totalItems
-                            )}-
-                            {Math.min(currentPage * rowsPerPage, totalItems)} of {totalItems}
-                        </span>
-                    </div>
-                    <PaginationContent>
-                        <PaginationItem>
-                            <PaginationPrevious
-                                href="#"
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    handlePrevious();
-                                }}
-                                aria-disabled={currentPage === 1}
-                            />
-                        </PaginationItem>
-                        <PaginationItem>
-                            <PaginationNext
-                                href="#"
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    handleNext();
-                                }}
-                                aria-disabled={currentPage === totalPages}
-                            />
-                        </PaginationItem>
-                    </PaginationContent>
-                </Pagination>
+                <PaginationControls
+                    currentPage={currentPage}
+                    totalItems={totalItems}
+                    pageSize={rowsPerPage}
+                    onPageChange={setCurrentPage}
+                    onPageSizeChange={handlePageSizeChange}
+                />
             </div>
 
             {/* View Details Dialog */}

@@ -7,13 +7,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -35,6 +28,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import ViewEnergyImportDetails from "./view-energy-import-details";
 import ViewVirtualMetersDialog from "./view-virtual-meters-dialog";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 
 
 interface EnergyImportData {
@@ -257,8 +251,8 @@ export default function EnergyImportTable({
   const isSomeSelected =
     paginatedData.some((item) => selectedRowIds.has(item.id)) && !isAllSelected;
 
-  const handleRowsPerPageChange = (value: string) => {
-    setRowsPerPage(Number(value));
+  const handlePageSizeChange = (newPageSize: number) => {
+    setRowsPerPage(newPageSize);
     setCurrentPage(1);
   };
 
@@ -267,15 +261,22 @@ export default function EnergyImportTable({
     router.push(`/billing/non-md-prebilling/energy-import/${item.assetId}`);
   };
 
-  const handlePrevious = () => {
-    setCurrentPage((prev) => Math.max(prev - 1, 1));
+  // Handle select all checkbox
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      // Select all items on current page
+      const newSelected = new Set(selectedRowIds);
+      paginatedData.forEach((item) => newSelected.add(item.id));
+      setSelectedRowIds(newSelected);
+    } else {
+      // Deselect all items on current page
+      const newSelected = new Set(selectedRowIds);
+      paginatedData.forEach((item) => newSelected.delete(item.id));
+      setSelectedRowIds(newSelected);
+    }
   };
 
-  const handleNext = () => {
-    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
-  };
-
-  // Function to handle individual checkbox change
+  // Handle individual checkbox change
   const handleCheckboxChange = (id: number, checked: boolean) => {
     setSelectedRowIds((prev) => {
       const newSelected = new Set(prev);
@@ -283,19 +284,6 @@ export default function EnergyImportTable({
         newSelected.add(id);
       } else {
         newSelected.delete(id);
-      }
-      return newSelected;
-    });
-  };
-
-  // Function to handle master checkbox change (select/deselect all on current page)
-  const handleSelectAll = (checked: boolean) => {
-    setSelectedRowIds((prev) => {
-      const newSelected = new Set(prev);
-      if (checked) {
-        paginatedData.forEach((item) => newSelected.add(item.id));
-      } else {
-        paginatedData.forEach((item) => newSelected.delete(item.id));
       }
       return newSelected;
     });
@@ -422,56 +410,13 @@ export default function EnergyImportTable({
           })}
         </TableBody>
       </Table>
-      <Pagination className="mt-4 flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <span className="text-sm font-medium">Rows per page</span>
-          <Select
-            value={rowsPerPage.toString()}
-            onValueChange={handleRowsPerPageChange}
-          >
-            <SelectTrigger className="h-8 w-[70px]">
-              <SelectValue placeholder={rowsPerPage.toString()} />
-            </SelectTrigger>
-            <SelectContent
-              position="popper"
-              side="top"
-              align="center"
-              className="mb-1 ring-gray-50"
-            >
-              <SelectItem value="10">10</SelectItem>
-              <SelectItem value="24">24</SelectItem>
-              <SelectItem value="48">48</SelectItem>
-            </SelectContent>
-          </Select>
-          <span className="text-sm font-medium">
-            {(currentPage - 1) * rowsPerPage + 1}-
-            {Math.min(currentPage * rowsPerPage, sortedData.length)} of{" "}
-            {sortedData.length} rows
-          </span>
-        </div>
-        <PaginationContent>
-          <PaginationItem>
-            <PaginationPrevious
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                handlePrevious();
-              }}
-              aria-disabled={currentPage === 1}
-            />
-          </PaginationItem>
-          <PaginationItem>
-            <PaginationNext
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                handleNext();
-              }}
-              aria-disabled={currentPage === totalPages}
-            />
-          </PaginationItem>
-        </PaginationContent>
-      </Pagination>
+      <PaginationControls
+        currentPage={currentPage}
+        totalItems={sortedData.length}
+        pageSize={rowsPerPage}
+        onPageChange={setCurrentPage}
+        onPageSizeChange={handlePageSizeChange}
+      />
 
       {/* View Details Dialog */}
       {selectedItem && (

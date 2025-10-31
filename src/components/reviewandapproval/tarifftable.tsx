@@ -19,20 +19,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Ban, CheckCircle, EyeIcon, MoreVertical } from 'lucide-react';
 import ViewTariffDetailsDialog from '@/components/reviewandapproval/viewtariffdetailsdialog';
 import ConfirmDialog from '@/components/reviewandapproval/confirmapprovaldialog';
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationNext,
-  PaginationPrevious,
-} from '@/components/ui/pagination';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { PaginationControls } from '@/components/ui/pagination-controls';
 import type { Tariff } from '@/types/review-approval';
 import { toast } from 'sonner';
 import { useTariffs } from '@/hooks/use-ReviewApproval';
@@ -59,16 +46,12 @@ const TariffTable = () => {
   const totalCount = tariffs.length;
   const totalPages = Math.ceil(totalCount / fetchParams.pageSize);
 
-  const handlePrevious = () => {
-    setFetchParams({ ...fetchParams, page: Math.max(fetchParams.page - 1, 1) });
+  const handlePageChange = (page: number) => {
+    setFetchParams({ ...fetchParams, page });
   };
 
-  const handleNext = () => {
-    setFetchParams({ ...fetchParams, page: Math.min(fetchParams.page + 1, totalPages) });
-  };
-
-  const handleRowsPerPageChange = (value: string) => {
-    setFetchParams({ ...fetchParams, pageSize: Number(value), page: 1 });
+  const handlePageSizeChange = (pageSize: number) => {
+    setFetchParams({ ...fetchParams, pageSize, page: 1 });
   };
 
   const toggleSelection = (id: string) => {
@@ -245,50 +228,13 @@ const TariffTable = () => {
         </TableBody>
       </Table>
 
-      <Pagination className="mt-4 flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <span className="text-sm font-medium">Rows per page</span>
-          <Select
-            value={fetchParams.pageSize.toString()}
-            onValueChange={handleRowsPerPageChange}
-          >
-            <SelectTrigger className="h-8 w-[70px]">
-              <SelectValue placeholder={fetchParams.pageSize.toString()} />
-            </SelectTrigger>
-            <SelectContent position="popper" side="top" align="center" className="mb-1 ring-gray-50">
-              <SelectItem value="10">10</SelectItem>
-              <SelectItem value="24">24</SelectItem>
-              <SelectItem value="48">48</SelectItem>
-            </SelectContent>
-          </Select>
-          <span className="text-sm font-medium">
-            {(fetchParams.page - 1) * fetchParams.pageSize + 1}-
-            {Math.min(fetchParams.page * fetchParams.pageSize, totalCount)} of {totalCount}
-          </span>
-        </div>
-        <PaginationContent>
-          <PaginationItem>
-            <PaginationPrevious
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                handlePrevious();
-              }}
-              aria-disabled={fetchParams.page === 1}
-            />
-          </PaginationItem>
-          <PaginationItem>
-            <PaginationNext
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                handleNext();
-              }}
-              aria-disabled={fetchParams.page === totalPages}
-            />
-          </PaginationItem>
-        </PaginationContent>
-      </Pagination>
+      <PaginationControls
+        currentPage={fetchParams.page}
+        totalItems={totalCount}
+        pageSize={fetchParams.pageSize}
+        onPageChange={handlePageChange}
+        onPageSizeChange={handlePageSizeChange}
+      />
 
       <ViewTariffDetailsDialog
         isOpen={isModalOpen}
