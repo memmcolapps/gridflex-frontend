@@ -41,7 +41,12 @@ import { toast } from 'sonner';
 
 
 
-const MeterTable = () => {
+interface MeterTableProps {
+    selectedMeterNumbers: string[];
+    setSelectedMeterNumbers: React.Dispatch<React.SetStateAction<string[]>>;
+}
+
+const MeterTable = ({ selectedMeterNumbers, setSelectedMeterNumbers }: MeterTableProps) => {
     const [fetchParams, setFetchParams] = useState<FetchParams>({
         page: 1,
         pageSize: 10,
@@ -52,7 +57,7 @@ const MeterTable = () => {
     });
     const [selectedRow, setSelectedRow] = useState<Meter | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedItems, setSelectedItems] = useState<string[]>([]);
+    // Remove local selectedItems state since we're using selectedMeterNumbers from parent
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [confirmAction, setConfirmAction] = useState<'approve' | 'reject' | null>(null);
     const [selectedItem, setSelectedItem] = useState<Meter | null>(null);
@@ -74,9 +79,9 @@ const MeterTable = () => {
         setFetchParams({ ...fetchParams, pageSize: Number(value), page: 1 });
     };
 
-    const toggleSelection = (id: string) => {
-        setSelectedItems((prev) =>
-            prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    const toggleSelection = (meterNumber: string) => {
+        setSelectedMeterNumbers((prev) =>
+            prev.includes(meterNumber) ? prev.filter((item) => item !== meterNumber) : [...prev, meterNumber]
         );
     };
 
@@ -144,12 +149,12 @@ const MeterTable = () => {
                             <div className="flex items-center gap-2">
                                 <Checkbox
                                     className="h-4 w-4 border-gray-500"
-                                    checked={selectedItems.length === paginatedData.length && paginatedData.length > 0}
+                                    checked={selectedMeterNumbers.length === paginatedData.length && paginatedData.length > 0}
                                     onCheckedChange={(checked) => {
                                         if (checked) {
-                                            setSelectedItems(paginatedData.map((item) => item.id));
+                                            setSelectedMeterNumbers(paginatedData.map((item) => item.meterNumber));
                                         } else {
-                                            setSelectedItems([]);
+                                            setSelectedMeterNumbers([]);
                                         }
                                     }}
                                 />
@@ -181,8 +186,8 @@ const MeterTable = () => {
                                         <Checkbox
                                             className="h-4 w-4 border-gray-500"
                                             id={`select-${item.id}`}
-                                            checked={selectedItems.includes(item.id)}
-                                            onCheckedChange={() => toggleSelection(item.id)}
+                                            checked={selectedMeterNumbers.includes(item.meterNumber)}
+                                            onCheckedChange={() => toggleSelection(item.meterNumber)}
                                         />
                                         <span className="text-sm text-gray-900">
                                             {index + 1 + (fetchParams.page - 1) * fetchParams.pageSize}

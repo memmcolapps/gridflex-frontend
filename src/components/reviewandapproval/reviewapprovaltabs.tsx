@@ -11,12 +11,25 @@ import LiabilityCauseTable from "./liabilitycausetable";
 import BandTable from "./bandtable";
 import TariffTable from "./tarifftable";
 import MeterTable from "./metertable";
+import { useMeters } from "@/hooks/use-ReviewApproval";
+import { toast } from "sonner";
 
 export function ReviewApprovalTabs() {
     const [activeTab, setActiveTab] = useState("percentage");
     const [searchTerm, setSearchTerm] = useState("");
     const [sortConfig, setSortConfig] = useState({ key: '', direction: 'asc' });
     const [, setActiveFilters] = useState({});
+    const [selectedMeterNumbers, setSelectedMeterNumbers] = useState<string[]>([]);
+
+    // Use the useMeters hook to get the bulkApproveMutation
+    const { bulkApproveMutation } = useMeters({
+        page: 1,
+        pageSize: 10,
+        searchTerm: '',
+        sortBy: null,
+        sortDirection: null,
+        type: 'pending-state',
+    });
 
     const filterSections = [
         {
@@ -32,6 +45,28 @@ export function ReviewApprovalTabs() {
 
     const changeTab = (value: string) => {
         setActiveTab(value);
+        // Clear selected meter numbers when switching tabs
+        if (value !== "meter") {
+            setSelectedMeterNumbers([]);
+        }
+    };
+
+    const handleBulkApprove = async () => {
+        if (selectedMeterNumbers.length === 0) {
+            toast.error("Please select at least one meter to approve.");
+            return;
+        }
+
+        const meterNumbersPayload = selectedMeterNumbers.map(meterNumber => ({ meterNumber }));
+
+        try {
+            await bulkApproveMutation.mutateAsync(meterNumbersPayload);
+            toast.success(`Successfully approved ${selectedMeterNumbers.length} meter(s).`);
+            setSelectedMeterNumbers([]);
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+            toast.error(errorMessage);
+        }
     };
 
     const handleSortChange = (sortBy: string) => {
@@ -54,15 +89,20 @@ export function ReviewApprovalTabs() {
                     description="Check submissions and approve or reject meters"
                 />
                 <div className="flex flex-col md:flex-row gap-2">
-                    <Button
-                        className="flex items-center gap-2 border font-medium border-green-500 text-white w-full md:w-auto cursor-pointer bg-green-500 h-12"
-                        variant="outline"
-                        size="lg"
-
-                    >
-                        <Check size={18} strokeWidth={2.3} className="h-4 w-4" />
-                        <span className="text-sm md:text-base text-white">Bulk Approve</span>
-                    </Button>
+                    {activeTab === "meter" && (
+                        <Button
+                            className="flex items-center gap-2 border font-medium border-green-500 text-white w-full md:w-auto cursor-pointer bg-green-500 h-12"
+                            variant="outline"
+                            size="lg"
+                            onClick={handleBulkApprove}
+                            disabled={bulkApproveMutation.isPending}
+                        >
+                            <Check size={18} strokeWidth={2.3} className="h-4 w-4" />
+                            <span className="text-sm md:text-base text-white">
+                                {bulkApproveMutation.isPending ? "Approving..." : "Bulk Approve"}
+                            </span>
+                        </Button>
+                    )}
                     <Button
                         variant="outline"
                         size="lg"
@@ -142,7 +182,10 @@ export function ReviewApprovalTabs() {
                         <TariffTable />
                     </TabsContent>
                     <TabsContent value="meter" className="overflow-x-hidden">
-                        <MeterTable />
+                        <MeterTable
+                            selectedMeterNumbers={selectedMeterNumbers}
+                            setSelectedMeterNumbers={setSelectedMeterNumbers}
+                        />
                     </TabsContent>
                 </Tabs>
             </Card>

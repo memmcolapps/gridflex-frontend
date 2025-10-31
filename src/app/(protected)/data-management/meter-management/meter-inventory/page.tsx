@@ -57,7 +57,7 @@ import { getStatusStyle } from "@/components/status-style";
 import { useMeterInventory, useBusinessHubs, useAllocateMeter } from "@/hooks/use-meter";
 import type { MeterInventoryFilters, BusinessHub } from "@/types/meter-inventory";
 import { useAuth } from '@/context/auth-context';
-import { useBulkUploadMeters, useDownloadMeterCsvTemplate, useDownloadMeterExcelTemplate } from "@/hooks/use-meter-bulk";
+import { useBulkUploadMeters, useDownloadMeterCsvTemplate, useDownloadMeterExcelTemplate, useDownloadAllocateCsvTemplate, useDownloadAllocateExcelTemplate, useBulkAllocateMeters } from "@/hooks/use-meter-bulk";
 import { toast } from "sonner";
 import {
     Dialog,
@@ -135,6 +135,15 @@ export default function MeterInventoryPage() {
     totalRecords: number;
     failedRecords: string[];
   } | null>(null);
+  const [isBulkAllocateDialogOpen, setIsBulkAllocateDialogOpen] = useState(false);
+  const [isAllocateTemplateDropdownOpen, setIsAllocateTemplateDropdownOpen] = useState(false);
+  const [isAllocateResultDialogOpen, setIsAllocateResultDialogOpen] = useState(false);
+  const [allocateResult, setAllocateResult] = useState<{
+    successCount: number;
+    failedCount: number;
+    totalRecords: number;
+    failedRecords: string[];
+  } | null>(null);
   const [meterNumberInput, setMeterNumberInput] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [isAddMeterDialogOpen, setIsAddMeterDialogOpen] = useState(false);
@@ -149,6 +158,9 @@ export default function MeterInventoryPage() {
   const bulkUploadMutation = useBulkUploadMeters();
   const downloadCsvTemplateMutation = useDownloadMeterCsvTemplate();
   const downloadExcelTemplateMutation = useDownloadMeterExcelTemplate();
+  const bulkAllocateMutation = useBulkAllocateMeters();
+  const downloadAllocateCsvTemplateMutation = useDownloadAllocateCsvTemplate();
+  const downloadAllocateExcelTemplateMutation = useDownloadAllocateExcelTemplate();
 
   const filters: MeterInventoryFilters = useMemo(() => ({
     page: currentPage - 1,
@@ -198,10 +210,43 @@ export default function MeterInventoryPage() {
 
   const handleSaveBulkAllocate = (data: File | MeterInventoryItem[]) => {
       if (data instanceof File) {
-          // Handle raw file if sendRawFile is true, but currently it's false
-          console.warn("Raw file received, but not handled");
+          bulkAllocateMutation.mutate(data, {
+              onSuccess: (response: unknown) => {
+                  const res = response as {
+                      responsecode: string;
+                      responsedesc: string;
+                      responsedata: {
+                          totalRecords: number;
+                          failedCount: number;
+                          failedRecords: string[];
+                          successCount: number;
+                      };
+                  };
+
+                  setIsBulkAllocateDialogOpen(false);
+                  setIsAllocateTemplateDropdownOpen(false);
+
+                  // Store result for detailed dialog
+                  setAllocateResult(res.responsedata);
+                  setIsAllocateResultDialogOpen(true);
+
+                  // Show brief success toast if any succeeded
+                  if (res.responsedata.successCount > 0) {
+                      toast.success(`${res.responsedata.successCount} of ${res.responsedata.totalRecords} meters allocated successfully!`);
+                      refetch();
+                  }
+              },
+              onError: (error) => {
+                  console.error("Bulk allocate failed:", error);
+                  const err = error as { message?: string };
+                  toast.error(err?.message ?? "Bulk allocate failed");
+                  setIsBulkAllocateDialogOpen(false);
+                  setIsAllocateTemplateDropdownOpen(false);
+              },
+          });
       } else {
-          console.log("Saved data:", data);
+          setIsBulkAllocateDialogOpen(false);
+          setIsAllocateTemplateDropdownOpen(false);
       }
   };
 
@@ -327,6 +372,32 @@ export default function MeterInventoryPage() {
               const err = error as { message?: string };
               console.error("Excel template download failed:", error);
               toast.error(err?.message ?? "Failed to download Excel template");
+          },
+      });
+  };
+
+  const handleDownloadAllocateCsvTemplate = () => {
+      downloadAllocateCsvTemplateMutation.mutate(undefined, {
+          onSuccess: () => {
+              toast.success("Allocate CSV template downloaded successfully");
+          },
+          onError: (error: unknown) => {
+              const err = error as { message?: string };
+              console.error("Allocate CSV template download failed:", error);
+              toast.error(err?.message ?? "Failed to download allocate CSV template");
+          },
+      });
+  };
+
+  const handleDownloadAllocateExcelTemplate = () => {
+      downloadAllocateExcelTemplateMutation.mutate(undefined, {
+          onSuccess: () => {
+              toast.success("Allocate Excel template downloaded successfully");
+          },
+          onError: (error: unknown) => {
+              const err = error as { message?: string };
+              console.error("Allocate Excel template download failed:", error);
+              toast.error(err?.message ?? "Failed to download allocate Excel template");
           },
       });
   };
@@ -571,7 +642,7 @@ export default function MeterInventoryPage() {
             </Select>
           </div>
           <Button
-            onClick={() => setIsOpen(true)}
+            onClick={() => setIsBulkAllocateDialogOpen(true)}
             size="lg"
             className="mt-7 flex w-full cursor-pointer items-center gap-2 bg-green-500 px-6 py-3 text-white hover:bg-green-600 sm:w-auto"
           >
@@ -579,19 +650,19 @@ export default function MeterInventoryPage() {
             Bulk Allocate
           </Button>
           <BulkUploadDialog
-            isOpen={isOpen}
-            onClose={() => setIsOpen(false)}
+            isOpen={isBulkAllocateDialogOpen}
+            onClose={() => setIsBulkAllocateDialogOpen(false)}
             onSave={handleSaveBulkAllocate}
-            title="Upload File"
+            title="Bulk Allocate Meters"
+            sendRawFile={true}
+            templateUrl="#"
+            onTemplateClick={() => {
+              setIsBulkAllocateDialogOpen(false);
+              setIsAllocateTemplateDropdownOpen(true);
+            }}
             requiredColumns={[
               "meterNumber",
-              "simNo",
-              "oldSgc",
-              "newSgc",
-              "manufactureName",
-              "class",
-              "meterStage",
-              "category",
+              "regionId",
             ]}
           />
         </div>
@@ -821,6 +892,46 @@ export default function MeterInventoryPage() {
         </DialogContent>
       </Dialog>
 
+      {/* Allocate Template Selection Dialog */}
+      <Dialog open={isAllocateTemplateDropdownOpen} onOpenChange={(open) => {
+        setIsAllocateTemplateDropdownOpen(open);
+        if (!open) {
+          // Close all other dialogs when template dialog closes
+          setIsBulkAllocateDialogOpen(false);
+          setIsAddMeterDialogOpen(false);
+          setViewInfoDialogOpen(false);
+        }
+      }}>
+        <DialogContent className="max-w-sm bg-white h-fit">
+          <DialogHeader>
+            <DialogTitle>Select Allocate Template Format</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Button
+              onClick={() => {
+                handleDownloadAllocateCsvTemplate();
+                setIsAllocateTemplateDropdownOpen(false);
+              }}
+              className="w-full bg-[#161CCA] hover:bg-[#121eb3] text-white"
+              disabled={downloadAllocateCsvTemplateMutation.isPending}
+            >
+              {downloadAllocateCsvTemplateMutation.isPending ? "Downloading..." : "Download CSV Template"}
+            </Button>
+            <Button
+              onClick={() => {
+                handleDownloadAllocateExcelTemplate();
+                setIsAllocateTemplateDropdownOpen(false);
+              }}
+              variant="outline"
+              className="w-full border-[#161CCA] text-[#161CCA] hover:bg-[#161CCA] hover:text-white"
+              disabled={downloadAllocateExcelTemplateMutation.isPending}
+            >
+              {downloadAllocateExcelTemplateMutation.isPending ? "Downloading..." : "Download Excel Template"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Upload Result Dialog */}
       {uploadResult && (
         <AlertDialog open={isUploadResultDialogOpen} onOpenChange={setIsUploadResultDialogOpen}>
@@ -896,6 +1007,91 @@ export default function MeterInventoryPage() {
                 onClick={() => {
                   setIsUploadResultDialogOpen(false);
                   setUploadResult(null);
+                }}
+                className="bg-[#161CCA] hover:bg-[#121eb3] text-white"
+              >
+                Close
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
+
+      {/* Allocate Result Dialog */}
+      {allocateResult && (
+        <AlertDialog open={isAllocateResultDialogOpen} onOpenChange={setIsAllocateResultDialogOpen}>
+          <AlertDialogContent className="max-w-2xl max-h-[80vh] border-none overflow-y-auto">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center gap-2">
+                {allocateResult.successCount === allocateResult.totalRecords ? (
+                  <>
+                    <CheckCircle className="h-5 w-5 text-green-500" />
+                    Bulk Allocate Completed Successfully
+                  </>
+                ) : allocateResult.successCount === 0 ? (
+                  <>
+                    <XCircle className="h-5 w-5 text-red-500" />
+                    Bulk Allocate Failed
+                  </>
+                ) : (
+                  <>
+                    <AlertTriangle className="h-5 w-5 text-yellow-500" />
+                    Bulk Allocate Completed with Issues
+                  </>
+                )}
+              </AlertDialogTitle>
+              <AlertDialogDescription className="text-left">
+                <div className="space-y-4">
+                  <div className="grid grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-gray-900">{allocateResult.totalRecords}</div>
+                      <div className="text-sm text-gray-600">Total Records</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-green-600">{allocateResult.successCount}</div>
+                      <div className="text-sm text-gray-600">Successful</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-red-600">{allocateResult.failedCount}</div>
+                      <div className="text-sm text-gray-600">Failed</div>
+                    </div>
+                  </div>
+
+                  {allocateResult.successCount > 0 && (
+                    <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <div className="flex items-center gap-2 text-green-800">
+                        <CheckCircle className="h-4 w-4" />
+                        <span className="font-medium">Success</span>
+                      </div>
+                      <p className="text-sm text-green-700 mt-1">
+                        {allocateResult.successCount} meter{allocateResult.successCount !== 1 ? 's' : ''} allocated successfully.
+                      </p>
+                    </div>
+                  )}
+
+                  {allocateResult.failedCount > 0 && (
+                    <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                      <div className="flex items-center gap-2 text-red-800">
+                        <XCircle className="h-4 w-4" />
+                        <span className="font-medium">Failed Records</span>
+                      </div>
+                      <div className="mt-2 space-y-2 max-h-60 overflow-y-auto">
+                        {allocateResult.failedRecords.map((record, index) => (
+                          <div key={index} className="text-sm text-red-700 bg-red-100 p-2 rounded border-l-4 border-red-400">
+                            {record}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <Button
+                onClick={() => {
+                  setIsAllocateResultDialogOpen(false);
+                  setAllocateResult(null);
                 }}
                 className="bg-[#161CCA] hover:bg-[#121eb3] text-white"
               >

@@ -17,6 +17,7 @@ import {
   getMeter,
   reviewMeter,
 } from "@/service/reviewapproval-service";
+import { bulkApproveMeters } from "@/service/meter-bulk-service";
 import type {
   GetPercentageResponse,
   GetAllLiabilitiesResponse,
@@ -257,6 +258,11 @@ interface UseMetersResult {
     Error,
     ReviewPayload
   >;
+  bulkApproveMutation: UseMutationResult<
+    { responsecode: string; responsedesc: string },
+    Error,
+    { meterNumber: string }[]
+  >;
 }
 
 export const useMeters = (params: FetchParams): UseMetersResult => {
@@ -278,12 +284,24 @@ export const useMeters = (params: FetchParams): UseMetersResult => {
     },
   });
 
+  const bulkApproveMutation = useMutation<
+    { responsecode: string; responsedesc: string },
+    Error,
+    { meterNumber: string }[]
+  >({
+    mutationFn: (meterNumbers) => bulkApproveMeters(meterNumbers),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["meters"] });
+    },
+  });
+
   return {
     meters: data?.responsedata?.data ?? [],
     isLoading,
     isError,
     error,
     reviewMutation,
+    bulkApproveMutation,
   };
 };
 
