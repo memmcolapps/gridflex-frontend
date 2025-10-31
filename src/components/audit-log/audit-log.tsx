@@ -26,9 +26,6 @@ export function AuditLog() {
   );
 
   const totalRows = data?.totalData ?? 0;
-  const totalPages = Math.ceil(totalRows / rowsPerPage);
-  const startIndex = (currentPage - 1) * rowsPerPage;
-  const endIndex = Math.min(startIndex + rowsPerPage, totalRows);
 
   const handleRowClick = (entry: AuditLog) => {
     setSelectedEntry(entry);
@@ -134,7 +131,7 @@ export function AuditLog() {
           pageSize={rowsPerPage}
           onPageChange={setCurrentPage}
           onPageSizeChange={handlePageSizeChange}
-          pageSizeOptions={[5, 10, 12, 20, 50]}
+          pageSizeOptions={[10, 20, 30, 40, 50, 60, 70, 80, 90, 100]}
           rowsPerPageLabel="Rows per page"
         />
       </div>
