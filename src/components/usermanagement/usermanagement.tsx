@@ -37,6 +37,7 @@ import {
 import { toast } from "sonner";
 import { type EditUserPayload } from "@/service/user-service";
 import { formatDistanceToNow, format, parseISO } from "date-fns";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 
 const parseTimestamp = (timestamp: string): Date => {
   // Convert format "2025-10-22 10:32:15.338908-05" to ISO 8601
@@ -165,12 +166,17 @@ export default function UserManagement() {
       user.email.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
-  const [rowsPerPage, setRowsPerPage] = useState(12);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
   const totalRows = filteredUsers.length;
   const startIndex = (currentPage - 1) * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
   const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    setRowsPerPage(newPageSize);
+    setCurrentPage(1);
+  };
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -420,44 +426,15 @@ export default function UserManagement() {
             </TableBody>
           </Table>
         </div>
-        <div className="sticky bottom-0 z-10 mt-4 flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600">Rows per page</span>
-            <select
-              value={rowsPerPage}
-              onChange={(e) => {
-                setRowsPerPage(Number(e.target.value));
-                setCurrentPage(1);
-              }}
-              className="rounded-md border border-gray-300 px-2 py-1 text-sm focus:outline-none"
-            >
-              {[5, 10, 12, 20, 50].map((num) => (
-                <option key={num} value={num}>
-                  {num}
-                </option>
-              ))}
-            </select>
-          </div>
-          <span className="ml-4 text-sm text-gray-600">
-            {startIndex + 1}-{Math.min(endIndex, totalRows)} of {totalRows} rows
-          </span>
-
-          <div className="flex items-center gap-2">
-            <button
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              className="text-black-600 cursor-pointer rounded-md border border-gray-300 px-3 py-1 text-sm disabled:opacity-50"
-            >
-              Previous
-            </button>
-            <button
-              disabled={endIndex >= totalRows}
-              onClick={() => setCurrentPage((prev) => prev + 1)}
-              className="text-black-600 cursor-pointer rounded-md border border-gray-300 px-3 py-1 text-sm disabled:opacity-50"
-            >
-              Next
-            </button>
-          </div>
+        <div className="sticky bottom-0 z-10 mt-4 border-t border-gray-200 bg-white px-4 py-3">
+          <PaginationControls
+            currentPage={currentPage}
+            totalItems={totalRows}
+            pageSize={rowsPerPage}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={handlePageSizeChange}
+            rowsPerPageLabel="Rows per page"
+          />
         </div>
 
         {editingUser && (
