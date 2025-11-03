@@ -36,7 +36,7 @@ const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: { payl
     const data = payload[0];
 
     if (data?.payload) {
-      const itemColor = data.fill || data.payload.fill;
+      const itemColor = data.fill ?? data.payload.fill;
       return (
         <div
           style={{
