@@ -54,7 +54,7 @@ export default function MonthlyTransactionChart({ transactionOverMonths }: Month
         <ResponsiveContainer width="100%" height={300}>
             <BarChart data={monthlyData} barCategoryGap={12} barGap={4}>
             <XAxis dataKey="month" />
-            <YAxis domain={[0, 'dataMax + 20']} ticks={Array.from({ length: 10 }, (_, i) => i * 20)} />
+            <YAxis domain={[0, 'dataMax + 20']} />
             <Tooltip />
             <Bar dataKey="amount" fill="#1E4BAF" name="Amount Paid" shape={<RoundedBar />} barSize={13} />
             <Bar dataKey="unit" fill="#166533" name="Cost Of Unit" shape={<RoundedBar />} barSize={13} />

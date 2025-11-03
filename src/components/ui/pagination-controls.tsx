@@ -48,7 +48,6 @@ export function PaginationControls({
   const totalPages = Math.ceil(totalItems / pageSize) || 1;
   const isFirstPage = normalizedPage === 1;
   const isLastPage = normalizedPage === totalPages || totalPages === 0;
-
   const startIndex = totalItems > 0 ? (normalizedPage - 1) * pageSize + 1 : 0;
   const endIndex = Math.min(normalizedPage * pageSize, totalItems);
 
