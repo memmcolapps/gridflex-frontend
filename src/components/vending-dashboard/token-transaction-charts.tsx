@@ -50,7 +50,7 @@ const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: { payl
             opacity: 0.95,
           }}
         >
-          <p>{`${data.payload.name}: ${data.payload.displayValue || data.payload.value}%`}</p>
+          <p>{`${data.payload.name}: ${data.payload.displayValue ?? data.payload.value}%`}</p>
         </div>
       );
     }
