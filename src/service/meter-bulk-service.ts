@@ -153,6 +153,78 @@ export async function bulkAllocateMeters(file: File): Promise<{ responsecode: st
     }
 }
 
+export async function downloadAssignCsvTemplate(): Promise<Blob> {
+    try {
+        const token = localStorage.getItem("auth_token");
+        if (!token) {
+            throw new Error("Authentication token not found.");
+        }
+
+        const response = await axios.get(`${API_URL}/meter/service/download/assign/template/csv`, {
+            responseType: 'blob',
+            headers: {
+                "Content-Type": "application/json",
+                custom: CUSTOM_HEADER,
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        return response.data;
+    } catch (error) {
+        throw new Error(handleApiError(error));
+    }
+}
+
+export async function downloadAssignExcelTemplate(): Promise<Blob> {
+    try {
+        const token = localStorage.getItem("auth_token");
+        if (!token) {
+            throw new Error("Authentication token not found.");
+        }
+
+        const response = await axios.get(`${API_URL}/meter/service/download/assign/template/excel`, {
+            responseType: 'blob',
+            headers: {
+                "Content-Type": "application/json",
+                custom: CUSTOM_HEADER,
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        return response.data;
+    } catch (error) {
+        throw new Error(handleApiError(error));
+    }
+}
+
+export async function bulkAssignMeters(file: File): Promise<{ responsecode: string; responsedesc: string; responsedata: { totalRecords: number; failedCount: number; failedRecords: string[]; successCount: number; } }> {
+    try {
+        const token = localStorage.getItem("auth_token");
+        if (!token) {
+            throw new Error("Authentication token not found.");
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await axios.post(`${API_URL}/meter/service/bulk-assign`, formData, {
+            headers: {
+                "Content-Type": "multipart/form-data",
+                custom: CUSTOM_HEADER,
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        if (response.data.responsecode !== "000") {
+            throw new Error(response.data.responsedesc ?? "Failed to bulk assign meters.");
+        }
+
+        return response.data;
+    } catch (error) {
+        throw new Error(handleApiError(error));
+    }
+}
+
 export async function bulkApproveMeters(meterNumbers: { meterNumber: string }[]): Promise<{ responsecode: string; responsedesc: string }> {
     try {
         const token = localStorage.getItem("auth_token");
@@ -171,6 +243,50 @@ export async function bulkApproveMeters(meterNumbers: { meterNumber: string }[])
         if (response.data.responsecode !== "000") {
             throw new Error(response.data.responsedesc ?? "Failed to bulk approve meters.");
         }
+
+        return response.data;
+    } catch (error) {
+        throw new Error(handleApiError(error));
+    }
+}
+
+export async function exportActualMeters(): Promise<Blob> {
+    try {
+        const token = localStorage.getItem("auth_token");
+        if (!token) {
+            throw new Error("Authentication token not found.");
+        }
+
+        const response = await axios.get(`${API_URL}/meter/service/export`, {
+            responseType: 'blob',
+            headers: {
+                "Content-Type": "application/json",
+                custom: CUSTOM_HEADER,
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        return response.data;
+    } catch (error) {
+        throw new Error(handleApiError(error));
+    }
+}
+
+export async function exportVirtualMeters(): Promise<Blob> {
+    try {
+        const token = localStorage.getItem("auth_token");
+        if (!token) {
+            throw new Error("Authentication token not found.");
+        }
+
+        const response = await axios.get(`${API_URL}/meter/service/virtual/export`, {
+            responseType: 'blob',
+            headers: {
+                "Content-Type": "application/json",
+                custom: CUSTOM_HEADER,
+                Authorization: `Bearer ${token}`,
+            },
+        });
 
         return response.data;
     } catch (error) {

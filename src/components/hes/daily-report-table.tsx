@@ -293,7 +293,11 @@ const data = [
     },
 ];
 
-export function DailyReportTable() {
+interface DailyReportTableProps {
+    searchQuery?: string;
+}
+
+export function DailyReportTable({ searchQuery = "" }: DailyReportTableProps = {}) {
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const totalItems = data.length;
@@ -317,11 +321,24 @@ export function DailyReportTable() {
         setCurrentPage(1);
     };
 
+    // Filter data based on search query
+    const filteredData = useMemo(() => {
+        if (!searchQuery) return data;
+        const searchLower = searchQuery.toLowerCase();
+        return data.filter((item) =>
+            item.meterNo.toLowerCase().includes(searchLower) ||
+            item.region.toLowerCase().includes(searchLower) ||
+            item.businessUnit.toLowerCase().includes(searchLower) ||
+            item.serviceCenter.toLowerCase().includes(searchLower) ||
+            item.feeder.toLowerCase().includes(searchLower)
+        );
+    }, [data, searchQuery]);
+
     const paginatedData = useMemo(() => {
         const startIndex = (currentPage - 1) * rowsPerPage;
         const endIndex = startIndex + rowsPerPage;
-        return data.slice(startIndex, endIndex);
-    }, [data, currentPage, rowsPerPage]);
+        return filteredData.slice(startIndex, endIndex);
+    }, [filteredData, currentPage, rowsPerPage]);
 
     return (
         <div className="overflow-x-auto rounded-md w-full pt-5">
@@ -380,7 +397,7 @@ export function DailyReportTable() {
             <div className="p-4">
                 <PaginationControls
                     currentPage={currentPage}
-                    totalItems={data.length}
+                    totalItems={filteredData.length}
                     pageSize={rowsPerPage}
                     onPageChange={setCurrentPage}
                     onPageSizeChange={handlePageSizeChange}

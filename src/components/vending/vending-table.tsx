@@ -29,7 +29,11 @@ import { type PrintTokenPayload, type VendingTransaction } from "@/types/vending
 import { toast } from "sonner";
 import { LoadingAnimation } from "@/components/ui/loading-animation";
 
-const VendingTable = () => {
+interface VendingTableProps {
+    searchQuery?: string;
+}
+
+const VendingTable = ({ searchQuery = "" }: VendingTableProps = {}) => {
     const [rowsPerPage, setRowsPerPage] = useState<number>(10);
     const [currentPage, setCurrentPage] = useState<number>(1);
 
@@ -41,6 +45,25 @@ const VendingTable = () => {
     const transactions = transactionsData?.messages ?? [];
     const totalPages = transactionsData?.totalPages ?? 1;
     const totalCount = transactionsData?.totalCount ?? 0;
+
+    // Filter transactions based on search query (client-side filtering for now)
+    const filteredTransactions = transactions.filter((transaction) => {
+        if (!searchQuery) return true;
+        const searchLower = searchQuery.toLowerCase();
+        return (
+            transaction.meterAccountNumber?.toLowerCase().includes(searchLower) ||
+            transaction.meterNumber?.toLowerCase().includes(searchLower) ||
+            transaction.tokenType?.toLowerCase().includes(searchLower) ||
+            transaction.tariffName?.toLowerCase().includes(searchLower) ||
+            transaction.status?.toLowerCase().includes(searchLower)
+        );
+    });
+
+    // Apply pagination to filtered data
+    const paginatedTransactions = filteredTransactions.slice(
+        (currentPage - 1) * rowsPerPage,
+        currentPage * rowsPerPage
+    );
 
     const getStatusColor = (status: string) => {
         switch (status) {
@@ -123,7 +146,7 @@ const VendingTable = () => {
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            transactions.map((transaction, index) => (
+                            paginatedTransactions.map((transaction, index) => (
                                 <TableRow key={transaction.transactionId}>
                                     <TableCell>{(currentPage - 1) * rowsPerPage + index + 1}</TableCell>
                                     <TableCell>{transaction.meterAccountNumber}</TableCell>
@@ -171,7 +194,7 @@ const VendingTable = () => {
             </Card>
             <PaginationControls
                 currentPage={currentPage}
-                totalItems={totalCount}
+                totalItems={filteredTransactions.length}
                 pageSize={rowsPerPage}
                 onPageChange={setCurrentPage}
                 onPageSizeChange={handlePageSizeChange}

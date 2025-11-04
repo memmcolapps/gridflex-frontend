@@ -36,6 +36,7 @@ interface RowData {
 
 interface CommunicationTableProps {
     data: RowData[];
+    searchQuery?: string;
 }
 
 // Initial dummy data for the MD table
@@ -67,7 +68,7 @@ export const nonMdData: RowData[] = [
 ];
 
 // The rest of your component remains the same.
-export function CommunicationTable({ data }: CommunicationTableProps) {
+export function CommunicationTable({ data, searchQuery = "" }: CommunicationTableProps) {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [selectedRow, setSelectedRow] = useState<RowData | null>(null);
     const [selectedRows, setSelectedRows] = useState<string[]>([]);
@@ -78,6 +79,18 @@ export function CommunicationTable({ data }: CommunicationTableProps) {
         setTableData(data);
     }, [data]);
 
+    // Filter data based on search query
+    const filteredData = tableData.filter((item) => {
+        if (!searchQuery) return true;
+        const searchLower = searchQuery.toLowerCase();
+        return (
+            item.meterNo?.toLowerCase().includes(searchLower) ||
+            item.status?.toLowerCase().includes(searchLower) ||
+            (item.meterModel && item.meterModel.toLowerCase().includes(searchLower)) ||
+            (item.category && item.category.toLowerCase().includes(searchLower))
+        );
+    });
+
     const [isTokenDialogOpen, setIsTokenDialogOpen] = useState(false);
     const [token, setToken] = useState('');
     const [meterToTokenize, setMeterToTokenize] = useState<string | null>(null);
@@ -86,12 +99,12 @@ export function CommunicationTable({ data }: CommunicationTableProps) {
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(10);
 
-    const totalItems = tableData.length;
+    const totalItems = filteredData?.length ?? 0;
     const totalPages = Math.ceil(totalItems / rowsPerPage);
 
     const startIndex = (currentPage - 1) * rowsPerPage;
     const endIndex = startIndex + rowsPerPage;
-    const paginatedData = tableData.slice(startIndex, endIndex);
+    const paginatedData = filteredData?.slice(startIndex, endIndex) ?? [];
 
     const handleRowsPerPageChange = (value: string) => {
         setRowsPerPage(Number(value));
@@ -127,7 +140,7 @@ export function CommunicationTable({ data }: CommunicationTableProps) {
 
     const handleSelectAll = (isChecked: boolean) => {
         if (isChecked) {
-            const allSns = tableData.map(row => row.sn);
+            const allSns = filteredData?.map(row => row.sn) ?? [];
             setSelectedRows(allSns);
         } else {
             setSelectedRows([]);
@@ -176,7 +189,7 @@ export function CommunicationTable({ data }: CommunicationTableProps) {
                     <TableRow>
                         <TableHead className="w-10">
                             <Checkbox
-                                checked={selectedRows.length === tableData.length && tableData.length > 0}
+                                checked={selectedRows.length === (filteredData?.length ?? 0) && (filteredData?.length ?? 0) > 0}
                                 className='mr-2 cursor-pointer'
                                 onCheckedChange={(checked) => handleSelectAll(Boolean(checked))}
                             />

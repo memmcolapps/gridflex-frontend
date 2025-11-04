@@ -363,7 +363,7 @@ export default function PaymentHistoryTable({
               paginatedData.map((item, index) => (
                 <TableRow
                   key={item.id}
-                  onClick={(event) => handleRowClick(item, event)}
+                  onClick={() => handleViewDetails(item)}
                   className="cursor-pointer hover:bg-gray-50"
                 >
                   <TableCell className="px-4 py-3">
