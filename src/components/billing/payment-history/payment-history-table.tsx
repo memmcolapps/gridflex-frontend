@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 // components/billing/payment-history/payment-history-table.tsx
+import React from "react";
 import { useRouter } from "next/navigation";
 import {
   Pagination,
@@ -29,6 +30,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import ViewPaymentDetails from "./view-payment-details";
 import { PaginationControls } from "@/components/ui/pagination-controls";
+import { RowData } from "@tanstack/react-table";
 
 interface PaymentHistoryData {
   id: number;
@@ -272,6 +274,10 @@ export default function PaymentHistoryTable({
     setCurrentPage(1);
   };
 
+  const handleRowClick = (rowData: RowData) => {
+    console.log('Clicked Ohkay')
+  }
+
   const handlePrevious = () => {
     setCurrentPage((prev) => Math.max(prev - 1, 1));
   };
@@ -302,6 +308,16 @@ export default function PaymentHistoryTable({
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     }).format(amount);
+  };
+
+  const handleRowClick = (item: PaymentHistoryData, event: React.MouseEvent<HTMLTableRowElement>) => {
+    // Prevent row click when clicking on checkbox
+    if ((event.target as HTMLElement).closest('input[type="checkbox"]')) {
+      return;
+    }
+    
+    // Handle row click - for now just show details (similar to view button)
+    handleViewDetails(item);
   };
 
   return (

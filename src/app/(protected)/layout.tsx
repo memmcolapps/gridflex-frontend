@@ -59,7 +59,7 @@ export default function ProtectedLayout({
   <div className="flex flex-1 flex-col overflow-hidden">
     <Navbar />
     <main
-      className="flex-1 pl-8 overflow-x-hidden"
+      className="flex-1 px-8 overflow-x-hidden"
       style={{
         backgroundImage: `url('/images/bgframe.jpg')`,
         backgroundPosition: "center",

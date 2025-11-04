@@ -5,9 +5,8 @@ import {
     TableHead,
     TableCell,
 } from "@/components/ui/table";
-import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 
 export default function MonthlyReportTable() {
     const [selectedRows, setSelectedRows] = useState<number[]>([]);
@@ -23,7 +22,7 @@ export default function MonthlyReportTable() {
             readCode: '12,000',
             multiplier: '0',
             kw: '0',
-            meterNumber: '62123589561',            
+            meterNumber: '62123589561',
             address: 'ZONE B, BLOCK 2 & 3, OPP. AKINDAYOMI ESTATE, RING ROAD, RCCG REDEMPTION CITY, MOWE',
         },
         {
@@ -37,7 +36,7 @@ export default function MonthlyReportTable() {
             readCode: '12,000',
             multiplier: '0',
             kw: '0',
-            meterNumber: '62123589561',            
+            meterNumber: '62123589561',
             address: 'ZONE B, BLOCK 2 & 3, OPP. AKINDAYOMI ESTATE, RING ROAD, RCCG REDEMPTION CITY, MOWE',
         },
         {
@@ -51,7 +50,7 @@ export default function MonthlyReportTable() {
             readCode: '12,000',
             multiplier: '0',
             kw: '0',
-            meterNumber: '62123589561',            
+            meterNumber: '62123589561',
             address: 'ZONE B, BLOCK 2 & 3, OPP. AKINDAYOMI ESTATE, RING ROAD, RCCG REDEMPTION CITY, MOWE',
         },
         {
@@ -65,7 +64,7 @@ export default function MonthlyReportTable() {
             readCode: '12,000',
             multiplier: '0',
             kw: '0',
-            meterNumber: '62123589561',            
+            meterNumber: '62123589561',
             address: 'ZONE B, BLOCK 2 & 3, OPP. AKINDAYOMI ESTATE, RING ROAD, RCCG REDEMPTION CITY, MOWE',
         },
         {
@@ -79,7 +78,7 @@ export default function MonthlyReportTable() {
             readCode: '12,000',
             multiplier: '0',
             kw: '0',
-            meterNumber: '62123589561',            
+            meterNumber: '62123589561',
             address: 'ZONE B, BLOCK 2 & 3, OPP. AKINDAYOMI ESTATE, RING ROAD, RCCG REDEMPTION CITY, MOWE',
         },
         {
@@ -93,7 +92,7 @@ export default function MonthlyReportTable() {
             readCode: '12,000',
             multiplier: '0',
             kw: '0',
-            meterNumber: '62123589561',            
+            meterNumber: '62123589561',
             address: 'ZONE B, BLOCK 2 & 3, OPP. AKINDAYOMI ESTATE, RING ROAD, RCCG REDEMPTION CITY, MOWE',
         },
         {
@@ -107,7 +106,7 @@ export default function MonthlyReportTable() {
             readCode: '12,000',
             multiplier: '0',
             kw: '0',
-            meterNumber: '62123589561',            
+            meterNumber: '62123589561',
             address: 'ZONE B, BLOCK 2 & 3, OPP. AKINDAYOMI ESTATE, RING ROAD, RCCG REDEMPTION CITY, MOWE',
         },
         {
@@ -121,17 +120,25 @@ export default function MonthlyReportTable() {
             readCode: '12,000',
             multiplier: '0',
             kw: '0',
-            meterNumber: '62123589561',            
+            meterNumber: '62123589561',
             address: 'ZONE B, BLOCK 2 & 3, OPP. AKINDAYOMI ESTATE, RING ROAD, RCCG REDEMPTION CITY, MOWE',
         },
     ];
+
+    const [currentPage, setCurrentPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+
+    const handlePageSizeChange = (newPageSize: number) => {
+        setRowsPerPage(newPageSize);
+        setCurrentPage(0);
+    };
 
     const allSelected = selectedRows.length === CUSTOMER_POP.length;
 
     return (
         <DailyContainer title="Monthly ASCII Report">
-        <ReportTable
-            headers={
+            <ReportTable
+                headers={
                     <TableRow>
                         <TableHead>
                             <div className="flex items-center gap-6">
@@ -158,8 +165,8 @@ export default function MonthlyReportTable() {
                         <TableHead>Multiplier</TableHead>
                         <TableHead>KWH</TableHead>
                     </TableRow>
-            }
-        >
+                }
+            >
                 {CUSTOMER_POP.map((emp, index) => (
                     <TableRow key={emp.id}>
                         <TableCell className="flex flex-row gap-5 py-5">
@@ -180,7 +187,7 @@ export default function MonthlyReportTable() {
                         <TableCell>{emp.accountNumber}</TableCell>
                         <TableCell>{emp.firstName}</TableCell>
                         <TableCell>{emp.lastName}</TableCell>
-                        <TableCell>{emp.address.length > 20 ? `${emp.address.slice(0,20)}...` : emp.address}</TableCell>
+                        <TableCell>{emp.address.length > 20 ? `${emp.address.slice(0, 20)}...` : emp.address}</TableCell>
                         <TableCell>
                             {emp.meterNumber}
                         </TableCell>
@@ -191,40 +198,16 @@ export default function MonthlyReportTable() {
                         <TableCell>{emp.kw}</TableCell>
                     </TableRow>
                 ))}
-        </ReportTable>
-        <Pagination className="mt-4 flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                    <span className="text-sm font-medium">Rows per page</span>
+            </ReportTable>
+            <PaginationControls
+                currentPage={currentPage}
+                totalItems={CUSTOMER_POP.length}
+                pageSize={rowsPerPage}
+                onPageChange={setCurrentPage}
+                onPageSizeChange={handlePageSizeChange}
+                zeroBasedIndexing={true}
+            />
+        </DailyContainer>
 
-                    <Select>
-                        <SelectTrigger className="h-8 w-[70px]">
-                            <SelectValue placeholder="10" />
-                        </SelectTrigger>
-                        <SelectContent
-                            position="popper"
-                            side="top"
-                            align="center"
-                            className="mb-1 ring-gray-50"
-                        >
-                            <SelectItem value="10">10</SelectItem>
-                            <SelectItem value="24">24</SelectItem>
-                            <SelectItem value="48">48</SelectItem>
-                        </SelectContent>
-                    </Select>
-
-                    <span className="text-sm font-medium">1-10 of 75</span>
-                </div>
-
-                <PaginationContent>
-                    <PaginationItem>
-                        <PaginationPrevious href="#" />
-                    </PaginationItem>
-                    <PaginationItem>
-                        <PaginationNext href="#" />
-                    </PaginationItem>
-                </PaginationContent>
-            </Pagination>
-    </DailyContainer>
-      
     );
 }

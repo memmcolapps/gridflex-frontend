@@ -5,9 +5,8 @@ import {
     TableHead,
     TableCell,
 } from "@/components/ui/table";
-import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 
 export default function UnprintedTable() {
     const [selectedRows, setSelectedRows] = useState<number[]>([]);
@@ -18,7 +17,7 @@ export default function UnprintedTable() {
             date: '08 Sept, 10:15',
             accountNumber: '62123589561',
             firstName: 'Margaret',
-            lastName: 'Ademola',            
+            lastName: 'Ademola',
             address: 'ZONE B, BLOCK 2 & 3, OPP. AKINDAYOMI ESTATE, RING ROAD, RCCG REDEMPTION CITY, MOWE',
             amount: '30,000',
             month: 'September',
@@ -32,7 +31,7 @@ export default function UnprintedTable() {
             date: '08 Sept, 10:15',
             accountNumber: '62123589561',
             firstName: 'Margaret',
-            lastName: 'Ademola',            
+            lastName: 'Ademola',
             address: 'ZONE B, BLOCK 2 & 3, OPP. AKINDAYOMI ESTATE, RING ROAD, RCCG REDEMPTION CITY, MOWE',
             amount: '30,000',
             month: 'September',
@@ -46,7 +45,7 @@ export default function UnprintedTable() {
             date: '08 Sept, 10:15',
             accountNumber: '62123589561',
             firstName: 'Margaret',
-            lastName: 'Ademola',            
+            lastName: 'Ademola',
             address: 'ZONE B, BLOCK 2 & 3, OPP. AKINDAYOMI ESTATE, RING ROAD, RCCG REDEMPTION CITY, MOWE',
             amount: '30,000',
             month: 'September',
@@ -60,7 +59,7 @@ export default function UnprintedTable() {
             date: '08 Sept, 10:15',
             accountNumber: '62123589561',
             firstName: 'Margaret',
-            lastName: 'Ademola',            
+            lastName: 'Ademola',
             address: 'ZONE B, BLOCK 2 & 3, OPP. AKINDAYOMI ESTATE, RING ROAD, RCCG REDEMPTION CITY, MOWE',
             amount: '30,000',
             month: 'September',
@@ -74,7 +73,7 @@ export default function UnprintedTable() {
             date: '08 Sept, 10:15',
             accountNumber: '62123589561',
             firstName: 'Margaret',
-            lastName: 'Ademola',            
+            lastName: 'Ademola',
             address: 'ZONE B, BLOCK 2 & 3, OPP. AKINDAYOMI ESTATE, RING ROAD, RCCG REDEMPTION CITY, MOWE',
             amount: '30,000',
             month: 'September',
@@ -88,7 +87,7 @@ export default function UnprintedTable() {
             date: '08 Sept, 10:15',
             accountNumber: '62123589561',
             firstName: 'Margaret',
-            lastName: 'Ademola',            
+            lastName: 'Ademola',
             address: 'ZONE B, BLOCK 2 & 3, OPP. AKINDAYOMI ESTATE, RING ROAD, RCCG REDEMPTION CITY, MOWE',
             amount: '30,000',
             month: 'September',
@@ -102,7 +101,7 @@ export default function UnprintedTable() {
             date: '08 Sept, 10:15',
             accountNumber: '62123589561',
             firstName: 'Margaret',
-            lastName: 'Ademola',            
+            lastName: 'Ademola',
             address: 'ZONE B, BLOCK 2 & 3, OPP. AKINDAYOMI ESTATE, RING ROAD, RCCG REDEMPTION CITY, MOWE',
             amount: '30,000',
             month: 'September',
@@ -116,7 +115,7 @@ export default function UnprintedTable() {
             date: '08 Sept, 10:15',
             accountNumber: '62123589561',
             firstName: 'Margaret',
-            lastName: 'Ademola',            
+            lastName: 'Ademola',
             address: 'ZONE B, BLOCK 2 & 3, OPP. AKINDAYOMI ESTATE, RING ROAD, RCCG REDEMPTION CITY, MOWE',
             amount: '30,000',
             month: 'September',
@@ -130,7 +129,7 @@ export default function UnprintedTable() {
             date: '08 Sept, 10:15',
             accountNumber: '62123589561',
             firstName: 'Margaret',
-            lastName: 'Ademola',            
+            lastName: 'Ademola',
             address: 'ZONE B, BLOCK 2 & 3, OPP. AKINDAYOMI ESTATE, RING ROAD, RCCG REDEMPTION CITY, MOWE',
             amount: '30,000',
             month: 'September',
@@ -139,6 +138,15 @@ export default function UnprintedTable() {
             Dss: 'Ijeun'
         },
     ];
+
+    const [currentPage, setCurrentPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
+
+    const handlePageSizeChange = (newPageSize: number) => {
+        setRowsPerPage(newPageSize);
+        setCurrentPage(0);
+    };
+
 
     const allSelected = selectedRows.length === CUSTOMER_POP.length;
 
@@ -193,7 +201,7 @@ export default function UnprintedTable() {
                         <TableCell>{emp.accountNumber}</TableCell>
                         <TableCell>{emp.firstName}</TableCell>
                         <TableCell>{emp.lastName}</TableCell>
-                        <TableCell>{emp.address.length > 20 ? `${emp.address.slice(0,20)}...` : emp.address}</TableCell>
+                        <TableCell>{emp.address.length > 20 ? `${emp.address.slice(0, 20)}...` : emp.address}</TableCell>
                         <TableCell>{emp.feeder}</TableCell>
                         <TableCell>{emp.Dss}</TableCell>
                         <TableCell>{emp.tariff}</TableCell>
@@ -202,38 +210,14 @@ export default function UnprintedTable() {
                     </TableRow>
                 ))}
             </ReportTable>
-            <Pagination className="mt-4 flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                    <span className="text-sm font-medium">Rows per page</span>
-
-                    <Select>
-                        <SelectTrigger className="h-8 w-[70px]">
-                            <SelectValue placeholder="10" />
-                        </SelectTrigger>
-                        <SelectContent
-                            position="popper"
-                            side="top"
-                            align="center"
-                            className="mb-1 ring-gray-50"
-                        >
-                            <SelectItem value="10">10</SelectItem>
-                            <SelectItem value="24">24</SelectItem>
-                            <SelectItem value="48">48</SelectItem>
-                        </SelectContent>
-                    </Select>
-
-                    <span className="text-sm font-medium">1-10 of 75</span>
-                </div>
-
-                <PaginationContent>
-                    <PaginationItem>
-                        <PaginationPrevious href="#" />
-                    </PaginationItem>
-                    <PaginationItem>
-                        <PaginationNext href="#" />
-                    </PaginationItem>
-                </PaginationContent>
-            </Pagination>
+            <PaginationControls
+                currentPage={currentPage}
+                totalItems={CUSTOMER_POP.length}
+                pageSize={rowsPerPage}
+                onPageChange={setCurrentPage}
+                onPageSizeChange={handlePageSizeChange}
+                zeroBasedIndexing={true}
+            />
         </DailyContainer>
 
     );
