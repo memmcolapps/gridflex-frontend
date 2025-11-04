@@ -89,20 +89,18 @@ export function ReviewApprovalTabs() {
                     description="Check submissions and approve or reject meters"
                 />
                 <div className="flex flex-col md:flex-row gap-2">
-                    {activeTab === "meter" && (
-                        <Button
-                            className="flex items-center gap-2 border font-medium border-green-500 text-white w-full md:w-auto cursor-pointer bg-green-500 h-12"
-                            variant="outline"
-                            size="lg"
-                            onClick={handleBulkApprove}
-                            disabled={bulkApproveMutation.isPending}
-                        >
-                            <Check size={18} strokeWidth={2.3} className="h-4 w-4" />
-                            <span className="text-sm md:text-base text-white">
-                                {bulkApproveMutation.isPending ? "Approving..." : "Bulk Approve"}
-                            </span>
-                        </Button>
-                    )}
+                    <Button
+                        className="flex items-center gap-2 border font-medium border-green-500 text-white w-full md:w-auto cursor-pointer bg-green-500 h-12"
+                        variant="outline"
+                        size="lg"
+                        onClick={handleBulkApprove}
+                        disabled={bulkApproveMutation.isPending}
+                    >
+                        <Check size={18} strokeWidth={2.3} className="h-4 w-4" />
+                        <span className="text-sm md:text-base text-white">
+                            {bulkApproveMutation.isPending ? "Approving..." : "Bulk Approve"}
+                        </span>
+                    </Button>
                     <Button
                         variant="outline"
                         size="lg"
