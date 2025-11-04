@@ -274,9 +274,6 @@ export default function PaymentHistoryTable({
     setCurrentPage(1);
   };
 
-  const handleRowClick = (rowData: RowData) => {
-    console.log('Clicked Ohkay')
-  }
 
   const handlePrevious = () => {
     setCurrentPage((prev) => Math.max(prev - 1, 1));
