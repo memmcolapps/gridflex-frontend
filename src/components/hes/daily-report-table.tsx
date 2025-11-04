@@ -10,20 +10,6 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '../ui/select';
-import {
-    Pagination,
-    PaginationContent,
-    PaginationItem,
-    PaginationNext,
-    PaginationPrevious,
-} from '@/components/ui/pagination';
 import { PaginationControls } from "@/components/ui/pagination-controls";
 
 const data = [
@@ -300,21 +286,6 @@ interface DailyReportTableProps {
 export function DailyReportTable({ searchQuery = "" }: DailyReportTableProps = {}) {
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(10);
-    const totalItems = data.length;
-    const totalPages = Math.ceil(totalItems / rowsPerPage);
-
-    const handleRowsPerPageChange = (value: string) => {
-        setRowsPerPage(Number(value));
-        setCurrentPage(1);
-    };
-
-    const handlePrevious = () => {
-        setCurrentPage((prev) => Math.max(prev - 1, 1));
-    };
-
-    const handleNext = () => {
-        setCurrentPage((prev) => Math.min(prev + 1, totalPages));
-    };
 
     const handlePageSizeChange = (newPageSize: number) => {
         setRowsPerPage(newPageSize);

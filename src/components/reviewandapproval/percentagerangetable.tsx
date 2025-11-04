@@ -21,20 +21,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Ban, CheckCircle, EyeIcon, MoreVertical } from 'lucide-react';
 import ViewDetailsDialog from '@/components/reviewandapproval/viewpercentagedetailsdialog';
 import ConfirmDialog from '@/components/reviewandapproval/confirmapprovaldialog';
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationNext,
-  PaginationPrevious,
-} from '@/components/ui/pagination';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import type { PercentageRange } from '@/types/review-approval';
 import { usePercentageRanges } from '@/hooks/use-ReviewApproval';
 import type { FetchParams } from '@/service/reviewapproval-service';
@@ -65,19 +51,6 @@ const PercentageRangeTable = () => {
   const filteredPercentageRanges = percentageRanges.filter(item => item.approveStatus !== 'Approved');
 
   const totalData = filteredPercentageRanges.length;
-  const totalPages = Math.ceil(totalData / fetchParams.pageSize);
-
-  const handlePrevious = () => {
-    setFetchParams({ ...fetchParams, page: Math.max(fetchParams.page - 1, 1) });
-  };
-
-  const handleNext = () => {
-    setFetchParams({ ...fetchParams, page: Math.min(fetchParams.page + 1, totalPages) });
-  };
-
-  const handleRowsPerPageChange = (value: string) => {
-    setFetchParams({ ...fetchParams, pageSize: Number(value), page: 1 });
-  };
 
   const handlePageChange = (page: number) => {
     setFetchParams({ ...fetchParams, page });

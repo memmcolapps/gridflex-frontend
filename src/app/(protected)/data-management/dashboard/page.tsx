@@ -12,8 +12,6 @@ import { MeterStatus } from "@/components/dashboard/MeterStatus";
 import { useDashboard } from "@/hooks/use-dashboard";
 import { CompleteProfileModal } from "@/components/profile/completeprofilemodal";
 import { EditCompleteProfileModal } from "@/components/profile/editcompleteprofilemodal";
-import { LoadingAnimation } from "@/components/ui/loading-animation";
-
 export default function DashboardPage() {
   const [selectedBand, setSelectedBand] = useState("All Bands");
   const [selectedYear, setSelectedYear] = useState("All Years");
@@ -40,7 +38,6 @@ export default function DashboardPage() {
     year: selectedYear,
     meterCategory: selectedMeterCategory,
   };
-  const { data: dashboardData, isLoading } = useDashboard(); // For charts and other components
   const { data: statusCardData, isLoading: statusCardLoading } = useDashboard(filters); // For status cards only
 
   // Open "Complete Your Profile" modal on fresh login
@@ -68,7 +65,7 @@ export default function DashboardPage() {
     setShowCompleteProfileModal(false);
   };
 
-  if (isLoading) {
+  if (statusCardLoading) {
     return (
       <div className="min-h-screen bg-transparent px-4 sm:px-6 lg:px-8 py-6">
         <div className="w-full space-y-6 bg-transparent">

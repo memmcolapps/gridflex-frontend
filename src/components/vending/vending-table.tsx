@@ -37,14 +37,12 @@ const VendingTable = ({ searchQuery = "" }: VendingTableProps = {}) => {
     const [rowsPerPage, setRowsPerPage] = useState<number>(10);
     const [currentPage, setCurrentPage] = useState<number>(1);
 
-    const { data: transactionsData, isLoading, error } = useVendingTransactions({
+    const { data: transactionsData, isLoading } = useVendingTransactions({
         page: currentPage - 1, // API uses 0-based indexing
         size: rowsPerPage,
     });
 
     const transactions = transactionsData?.messages ?? [];
-    const totalPages = transactionsData?.totalPages ?? 1;
-    const totalCount = transactionsData?.totalCount ?? 0;
 
     // Filter transactions based on search query (client-side filtering for now)
     const filteredTransactions = transactions.filter((transaction) => {
@@ -131,12 +129,6 @@ const VendingTable = ({ searchQuery = "" }: VendingTableProps = {}) => {
                             <TableRow>
                                 <TableCell colSpan={11} className="py-12">
                                     <LoadingAnimation variant="spinner" message="Loading transactions..." size="md" />
-                                </TableCell>
-                            </TableRow>
-                        ) : error ? (
-                            <TableRow>
-                                <TableCell colSpan={11} className="text-center py-8 text-red-600">
-                                    Error loading transactions
                                 </TableCell>
                             </TableRow>
                         ) : transactions.length === 0 ? (
@@ -545,7 +537,7 @@ const VendingTable = ({ searchQuery = "" }: VendingTableProps = {}) => {
                                             console.error("Failed to open print window");
                                         }
                                         toast.success("Token printed successfully");
-                                    } catch (error) {
+                                    } catch {
                                         toast.error("Failed to print token");
                                     }
                                 }

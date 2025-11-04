@@ -125,7 +125,6 @@ export default function EnergyImportTable({
         return 0;
     });
 
-    const totalPages = Math.ceil(sortedData.length / rowsPerPage);
 
     const paginatedData = sortedData.slice(
         (currentPage - 1) * rowsPerPage,
