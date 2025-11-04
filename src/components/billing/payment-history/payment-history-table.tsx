@@ -29,6 +29,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import ViewPaymentDetails from "./view-payment-details";
 import { PaginationControls } from "@/components/ui/pagination-controls";
+import { RowData } from "@tanstack/react-table";
 
 interface PaymentHistoryData {
   id: number;
@@ -272,6 +273,10 @@ export default function PaymentHistoryTable({
     setCurrentPage(1);
   };
 
+  const handleRowClick = (rowData: RowData) => {
+    console.log('Clicked Ohkay')
+  }
+
   const handlePrevious = () => {
     setCurrentPage((prev) => Math.max(prev - 1, 1));
   };
@@ -363,7 +368,7 @@ export default function PaymentHistoryTable({
               paginatedData.map((item, index) => (
                 <TableRow
                   key={item.id}
-                  onClick={(event) => handleRowClick(item, event)}
+                  onClick={(event) => handleRowClick(item)}
                   className="cursor-pointer hover:bg-gray-50"
                 >
                   <TableCell className="px-4 py-3">
