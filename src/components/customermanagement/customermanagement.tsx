@@ -162,7 +162,7 @@ export default function CustomerManagement() {
                             <div className="flex items-center justify-center p-0.5">
                                 <PlusCircleIcon className="text-[#161CCA]" size={12} />
                             </div>
-                            <span>Bulk Upload</span>
+                            <span>Bulk Upload New Customer</span>
                         </Button>
                         <CustomerForm
                             mode="add"

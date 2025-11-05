@@ -7,7 +7,6 @@ import { ContentHeader } from "../ui/content-header";
 import { useState } from "react";
 import { SearchAndFilters } from "../dashboard/SearchAndFilters";
 import { useVendingDashboard } from "@/hooks/use-vending";
-import { Skeleton } from "@/components/ui/skeleton";
 
 export default function VendingDashboard() {
     const [selectedBand, setSelectedBand] = useState('Band');

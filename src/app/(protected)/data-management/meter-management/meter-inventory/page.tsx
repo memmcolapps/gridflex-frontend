@@ -490,7 +490,7 @@ export default function MeterInventoryPage() {
               onClick={() => setIsBulkUploadDialogOpen(true)}
             >
               <CirclePlus size={14} strokeWidth={2.3} className="h-4 w-4 text-[161CCA]" />
-              <span className="text-sm md:text-base">Bulk Upload</span>
+              <span className="text-sm md:text-base">Bulk Upload New Meters</span>
             </Button>
             <Button
               size="lg"

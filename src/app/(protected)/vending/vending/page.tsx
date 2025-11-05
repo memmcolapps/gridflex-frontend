@@ -1,10 +1,13 @@
+"use client";
 import { Button } from "@/components/ui/button";
 import { ContentHeader } from "@/components/ui/content-header";
 import VendTokenDialog from "@/components/vending/vending-dialog";
 import VendingTable from "@/components/vending/vending-table";
 import { ArrowUpDown, ListFilter, Search, SquareArrowOutUpRight } from "lucide-react";
+import { useState } from "react";
 
 export default function VendingPage() {
+    const [searchQuery, setSearchQuery] = useState("");
     return (
         <div className="p-6">
             {/* header */}
@@ -29,6 +32,8 @@ export default function VendingPage() {
                         <input
                             type="text"
                             placeholder="Search by name, cont..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
                             className="w-full flex-grow border-none text-sm text-[rgba(95,95,95,1)] placeholder-[rgba(95,95,95,1)] outline-none"
                         />
                     </div>
@@ -54,7 +59,7 @@ export default function VendingPage() {
                 </div>
             </div>
             {/* Table section */}
-            <VendingTable />
+            <VendingTable searchQuery={searchQuery} />
         </div>
     );
 }

@@ -29,18 +29,39 @@ import { type PrintTokenPayload, type VendingTransaction } from "@/types/vending
 import { toast } from "sonner";
 import { LoadingAnimation } from "@/components/ui/loading-animation";
 
-const VendingTable = () => {
+interface VendingTableProps {
+    searchQuery?: string;
+}
+
+const VendingTable = ({ searchQuery = "" }: VendingTableProps = {}) => {
     const [rowsPerPage, setRowsPerPage] = useState<number>(10);
     const [currentPage, setCurrentPage] = useState<number>(1);
 
-    const { data: transactionsData, isLoading, error } = useVendingTransactions({
+    const { data: transactionsData, isLoading } = useVendingTransactions({
         page: currentPage - 1, // API uses 0-based indexing
         size: rowsPerPage,
     });
 
     const transactions = transactionsData?.messages ?? [];
-    const totalPages = transactionsData?.totalPages ?? 1;
-    const totalCount = transactionsData?.totalCount ?? 0;
+
+    // Filter transactions based on search query (client-side filtering for now)
+    const filteredTransactions = transactions.filter((transaction) => {
+        if (!searchQuery) return true;
+        const searchLower = searchQuery.toLowerCase();
+        return (
+            transaction.meterAccountNumber?.toLowerCase().includes(searchLower) ||
+            transaction.meterNumber?.toLowerCase().includes(searchLower) ||
+            transaction.tokenType?.toLowerCase().includes(searchLower) ||
+            transaction.tariffName?.toLowerCase().includes(searchLower) ||
+            transaction.status?.toLowerCase().includes(searchLower)
+        );
+    });
+
+    // Apply pagination to filtered data
+    const paginatedTransactions = filteredTransactions.slice(
+        (currentPage - 1) * rowsPerPage,
+        currentPage * rowsPerPage
+    );
 
     const getStatusColor = (status: string) => {
         switch (status) {
@@ -110,12 +131,6 @@ const VendingTable = () => {
                                     <LoadingAnimation variant="spinner" message="Loading transactions..." size="md" />
                                 </TableCell>
                             </TableRow>
-                        ) : error ? (
-                            <TableRow>
-                                <TableCell colSpan={11} className="text-center py-8 text-red-600">
-                                    Error loading transactions
-                                </TableCell>
-                            </TableRow>
                         ) : transactions.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={11} className="text-center py-8">
@@ -123,7 +138,7 @@ const VendingTable = () => {
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            transactions.map((transaction, index) => (
+                            paginatedTransactions.map((transaction, index) => (
                                 <TableRow key={transaction.transactionId}>
                                     <TableCell>{(currentPage - 1) * rowsPerPage + index + 1}</TableCell>
                                     <TableCell>{transaction.meterAccountNumber}</TableCell>
@@ -171,7 +186,7 @@ const VendingTable = () => {
             </Card>
             <PaginationControls
                 currentPage={currentPage}
-                totalItems={totalCount}
+                totalItems={filteredTransactions.length}
                 pageSize={rowsPerPage}
                 onPageChange={setCurrentPage}
                 onPageSizeChange={handlePageSizeChange}
@@ -522,7 +537,7 @@ const VendingTable = () => {
                                             console.error("Failed to open print window");
                                         }
                                         toast.success("Token printed successfully");
-                                    } catch (error) {
+                                    } catch {
                                         toast.error("Failed to print token");
                                     }
                                 }

@@ -26,8 +26,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Spinner } from "@/components/ui/spinner";
-import { Progress } from "@/components/ui/progress";
 import AllReport from "./billing-table/all-reports-table";
 import CustomerInfoTable from "./billing-table/customer-info-table";
 import MeterInfoTable from "./billing-table/meter-info-table";

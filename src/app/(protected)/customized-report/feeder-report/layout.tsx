@@ -34,8 +34,6 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import FeederReportTable from "./feeder-table";
-import { Spinner } from "@/components/ui/spinner";
-import { Progress } from "@/components/ui/progress";
 import CustomReportTable from "../../frequently-used-reports/page";
 import { LoadingAnimation } from "@/components/ui/loading-animation";
 

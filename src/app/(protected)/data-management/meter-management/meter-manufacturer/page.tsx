@@ -37,12 +37,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { SearchControl, SortControl } from "@/components/search-control";
 import { PaginationControls } from "@/components/ui/pagination-controls";
+import { Label } from "@/components/ui/label";
 import { type Manufacturer } from "@/types/meters-manufacturers";
 import {
   useCreateManufacturer,
- useGetMeterManufactures,
+  useGetMeterManufactures,
   useUpdateManufacturer,
 } from "@/hooks/use-meter";
+import { useNigerianCities, useNigerianStates } from "@/hooks/use-location";
 import { toast } from "sonner";
 
 function AddManufacturerDialog({
@@ -60,35 +62,46 @@ function AddManufacturerDialog({
   ) => void;
   data: Manufacturer[];
 }) {
-  const [manufacturerName, setManufacturerName] = useState("");
-  const [manufacturerId, setManufacturerId] = useState("");
-  const [contactPerson, setContactPerson] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [state, setState] = useState("");
-  const [city, setCity] = useState("");
-  const [street, setStreet] = useState("");
-  const [houseNo, setHouseNo] = useState("");
+  const [formData, setFormData] = useState({
+    manufacturerName: "",
+    manufacturerId: "",
+    contactPerson: "",
+    phoneNumber: "",
+    state: "",
+    city: "",
+    street: "",
+    houseNo: "",
+  });
+
+  const { data: states, isLoading: isLoadingStates, isError: isErrorStates } = useNigerianStates();
+  const { data: cities, isLoading: isLoadingCities, isError: isErrorCities } = useNigerianCities(formData.state);
+
+  const handleChange = (value: string, field: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
 
   const clearForm = () => {
-    setManufacturerName("");
-    setManufacturerId("");
-    setContactPerson("");
-    setPhoneNumber("");
-    setState("");
-    setCity("");
-    setStreet("");
-    setHouseNo("");
+    setFormData({
+      manufacturerName: "",
+      manufacturerId: "",
+      contactPerson: "",
+      phoneNumber: "",
+      state: "",
+      city: "",
+      street: "",
+      houseNo: "",
+    });
   };
 
   const handleAdd = () => {
     const trimmedValues = {
-      manufacturerName: manufacturerName.trim(),
-      manufacturerId: manufacturerId.trim(),
-      contactPerson: contactPerson.trim(),
-      phoneNumber: phoneNumber.trim(),
-      city: city.trim(),
-      street: street.trim(),
-      houseNo: houseNo.trim(),
+      manufacturerName: formData.manufacturerName.trim(),
+      manufacturerId: formData.manufacturerId.trim(),
+      contactPerson: formData.contactPerson.trim(),
+      phoneNumber: formData.phoneNumber.trim(),
+      city: formData.city.trim(),
+      street: formData.street.trim(),
+      houseNo: formData.houseNo.trim(),
     };
 
     if (
@@ -96,6 +109,7 @@ function AddManufacturerDialog({
       !trimmedValues.manufacturerId ||
       !trimmedValues.contactPerson ||
       !trimmedValues.phoneNumber ||
+      !formData.state ||
       !trimmedValues.city ||
       !trimmedValues.street ||
       !trimmedValues.houseNo
@@ -106,6 +120,7 @@ function AddManufacturerDialog({
       if (!trimmedValues.manufacturerId) missingFields.push("Manufacturer ID");
       if (!trimmedValues.contactPerson) missingFields.push("Contact Person");
       if (!trimmedValues.phoneNumber) missingFields.push("Phone Number");
+      if (!formData.state) missingFields.push("State");
       if (!trimmedValues.city) missingFields.push("City");
       if (!trimmedValues.street) missingFields.push("Street Name");
       if (!trimmedValues.houseNo) missingFields.push("House Number");
@@ -131,7 +146,7 @@ function AddManufacturerDialog({
       manufacturerId: trimmedValues.manufacturerId,
       contactPerson: trimmedValues.contactPerson,
       phoneNo: trimmedValues.phoneNumber,
-      state: state,
+      state: formData.state,
       city: trimmedValues.city,
       street: trimmedValues.street,
       houseNo: trimmedValues.houseNo,
@@ -166,8 +181,8 @@ function AddManufacturerDialog({
               <Input
                 id="manufacturerName"
                 required
-                value={manufacturerName}
-                onChange={(e) => setManufacturerName(e.target.value)}
+                value={formData.manufacturerName}
+                onChange={(e) => handleChange(e.target.value, "manufacturerName")}
                 className="mt-1 h-9 w-full border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
               />
             </div>
@@ -185,8 +200,8 @@ function AddManufacturerDialog({
                 required
                 type="text"
                 placeholder="e.g. 123456"
-                value={manufacturerId}
-                onChange={(e) => setManufacturerId(e.target.value)}
+                value={formData.manufacturerId}
+                onChange={(e) => handleChange(e.target.value, "manufacturerId")}
                 className="mt-1 h-9 w-full border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
               />
             </div>
@@ -202,8 +217,8 @@ function AddManufacturerDialog({
               <Input
                 id="contactPerson"
                 required
-                value={contactPerson}
-                onChange={(e) => setContactPerson(e.target.value)}
+                value={formData.contactPerson}
+                onChange={(e) => handleChange(e.target.value, "contactPerson")}
                 className="mt-1 h-9 w-full border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
               />
             </div>
@@ -219,57 +234,78 @@ function AddManufacturerDialog({
               <Input
                 id="phoneNumber"
                 required
-                type="number"
+                type="text"
                 placeholder="e.g. 08012345678"
-                pattern="[0-9]*"
-                inputMode="numeric"
                 maxLength={11}
-                minLength={11}
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-                className="mt-1 h-9 w-full [appearance:textfield] border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-              />
-            </div>
-          </div>
-          <div className="space-y-4">
-            <div>
-              <label
-                htmlFor="state"
-                className="block text-xs font-medium text-gray-700"
-              >
-                State
-              </label>
-              <Select value={state} onValueChange={setState}>
-                <SelectTrigger className="mt-1 h-9 w-full border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50">
-                  <SelectValue placeholder="Select State" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Lagos" className="text-xs">
-                    Lagos
-                  </SelectItem>
-                  <SelectItem value="Ogun" className="text-xs">
-                    Ogun
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <div className="space-y-4">
-            <div>
-              <label
-                htmlFor="city"
-                className="block text-xs font-medium text-gray-700"
-              >
-                City <span className="text-red-500">*</span>
-              </label>
-              <Input
-                id="city"
-                required
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
+                value={formData.phoneNumber}
+                onChange={(e) => handleChange(e.target.value.replace(/\D/g, ''), "phoneNumber")}
                 className="mt-1 h-9 w-full border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
               />
             </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="state">State<span className="text-red-600">*</span></Label>
+            <Select
+              value={formData.state}
+              onValueChange={(value) => {
+                setFormData(prev => ({ ...prev, state: value, city: "" }));
+              }}
+            >
+              <SelectTrigger className="border-[rgba(228,231,236,1)] w-full">
+                <SelectValue placeholder="Select state" />
+              </SelectTrigger>
+              <SelectContent>
+                {isLoadingStates ? (
+                  <SelectItem value="loading" disabled>Loading states...</SelectItem>
+                ) : isErrorStates ? (
+                  <SelectItem value="error-states" disabled>Error loading states</SelectItem>
+                ) : states?.length === 0 ? (
+                  <SelectItem value="no-states-found" disabled>No states found</SelectItem>
+                ) : (
+                  states?.map((state) => (
+                    <SelectItem key={state.id} value={state.id}>
+                      {state.name}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2 w-full">
+            <Label htmlFor="city">City<span className="text-red-600">*</span></Label>
+            <Select
+              value={formData.city}
+              onValueChange={(value) => handleChange(value, "city")}
+              disabled={!formData.state || isLoadingCities}
+              required
+            >
+              <SelectTrigger id="city" className="w-full">
+                <SelectValue
+                  placeholder={
+                    isLoadingCities
+                      ? "Loading cities..."
+                      : formData.state
+                        ? "Select City"
+                        : "Select a state first"
+                  }
+                />
+              </SelectTrigger>
+              <SelectContent>
+                {isLoadingCities ? (
+                  <SelectItem value="loading" disabled>Loading cities...</SelectItem>
+                ) : isErrorCities ? (
+                  <SelectItem value="error-cities" disabled>Error loading cities</SelectItem>
+                ) : cities?.length === 0 && formData.state ? (
+                  <SelectItem value="no-cities-found" disabled>No cities found for this state</SelectItem>
+                ) : (
+                  cities?.map((city) => (
+                    <SelectItem key={city.id} value={city.id}>
+                      {city.name}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-4">
@@ -283,8 +319,8 @@ function AddManufacturerDialog({
               <Input
                 id="street"
                 required
-                value={street}
-                onChange={(e) => setStreet(e.target.value)}
+                value={formData.street}
+                onChange={(e) => handleChange(e.target.value, "street")}
                 className="mt-1 h-9 w-full border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
               />
             </div>
@@ -300,8 +336,8 @@ function AddManufacturerDialog({
               <Input
                 id="houseNo"
                 required
-                value={houseNo}
-                onChange={(e) => setHouseNo(e.target.value)}
+                value={formData.houseNo}
+                onChange={(e) => handleChange(e.target.value, "houseNo")}
                 className="mt-1 h-9 w-full [appearance:textfield] border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
               />
             </div>
@@ -345,49 +381,62 @@ function EditManufacturerDialog({
   ) => void;
   manufacturer: Manufacturer | null;
 }) {
-  const [manufacturerName, setManufacturerName] = useState("");
-  const [manufacturerId, setManufacturerId] = useState("");
-  const [contactPerson, setContactPerson] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [state, setState] = useState("");
-  const [city, setCity] = useState("");
-  const [street, setStreet] = useState("");
-  const [houseNo, setHouseNo] = useState("");
+  const [formData, setFormData] = useState({
+    manufacturerName: "",
+    manufacturerId: "",
+    contactPerson: "",
+    phoneNumber: "",
+    state: "",
+    city: "",
+    street: "",
+    houseNo: "",
+  });
+
+  const { data: states, isLoading: isLoadingStates, isError: isErrorStates } = useNigerianStates();
+  const { data: cities, isLoading: isLoadingCities, isError: isErrorCities } = useNigerianCities(formData.state);
+
+  const handleChange = (value: string, field: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
 
   useEffect(() => {
     if (manufacturer) {
-      setManufacturerName(manufacturer.name || "");
-      setManufacturerId(manufacturer.manufacturerId || "");
-      setContactPerson(manufacturer.contactPerson || "");
-      setPhoneNumber(manufacturer.phoneNo || "");
-      setState(manufacturer.state || "");
-      setCity(manufacturer.city || "");
-      setStreet(manufacturer.street || "");
-      setHouseNo(manufacturer.houseNo || "");
+      setFormData({
+        manufacturerName: manufacturer.name || "",
+        manufacturerId: manufacturer.manufacturerId || "",
+        contactPerson: manufacturer.contactPerson || "",
+        phoneNumber: manufacturer.phoneNo || "",
+        state: manufacturer.state || "",
+        city: manufacturer.city || "",
+        street: manufacturer.street || "",
+        houseNo: manufacturer.houseNo || "",
+      });
     }
   }, [manufacturer]);
 
   const clearForm = () => {
-    setManufacturerName("");
-    setManufacturerId("");
-    setContactPerson("");
-    setPhoneNumber("");
-    setState("");
-    setCity("");
-    setStreet("");
-    setHouseNo("");
+    setFormData({
+      manufacturerName: "",
+      manufacturerId: "",
+      contactPerson: "",
+      phoneNumber: "",
+      state: "",
+      city: "",
+      street: "",
+      houseNo: "",
+    });
   };
 
   const handleEdit = () => {
     // Trim all values and check all required fields
     const trimmedValues = {
-      manufacturerName: manufacturerName.trim(),
-      manufacturerId: manufacturerId.trim(),
-      contactPerson: contactPerson.trim(),
-      phoneNumber: phoneNumber.trim(),
-      city: city.trim(),
-      street: street.trim(),
-      houseNo: houseNo.trim(),
+      manufacturerName: formData.manufacturerName.trim(),
+      manufacturerId: formData.manufacturerId.trim(),
+      contactPerson: formData.contactPerson.trim(),
+      phoneNumber: formData.phoneNumber.trim(),
+      city: formData.city.trim(),
+      street: formData.street.trim(),
+      houseNo: formData.houseNo.trim(),
     };
 
     if (
@@ -395,6 +444,7 @@ function EditManufacturerDialog({
       !trimmedValues.manufacturerId ||
       !trimmedValues.contactPerson ||
       !trimmedValues.phoneNumber ||
+      !formData.state ||
       !trimmedValues.city ||
       !trimmedValues.street ||
       !trimmedValues.houseNo
@@ -421,7 +471,7 @@ function EditManufacturerDialog({
       manufacturerId: trimmedValues.manufacturerId,
       contactPerson: trimmedValues.contactPerson,
       phoneNo: trimmedValues.phoneNumber,
-      state: state,
+      state: formData.state,
       city: trimmedValues.city,
       street: trimmedValues.street,
       houseNo: trimmedValues.houseNo,
@@ -456,8 +506,8 @@ function EditManufacturerDialog({
               <Input
                 id="manufacturerName"
                 required
-                value={manufacturerName}
-                onChange={(e) => setManufacturerName(e.target.value)}
+                value={formData.manufacturerName}
+                onChange={(e) => handleChange(e.target.value, "manufacturerName")}
                 className="mt-1 h-9 w-full border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
               />
             </div>
@@ -475,8 +525,8 @@ function EditManufacturerDialog({
                 required
                 type="text"
                 placeholder="e.g. 123456"
-                value={manufacturerId}
-                onChange={(e) => setManufacturerId(e.target.value)}
+                value={formData.manufacturerId}
+                onChange={(e) => handleChange(e.target.value, "manufacturerId")}
                 className="mt-1 h-9 w-full border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
               />
             </div>
@@ -492,8 +542,8 @@ function EditManufacturerDialog({
               <Input
                 id="contactPerson"
                 required
-                value={contactPerson}
-                onChange={(e) => setContactPerson(e.target.value)}
+                value={formData.contactPerson}
+                onChange={(e) => handleChange(e.target.value, "contactPerson")}
                 className="mt-1 h-9 w-full border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
               />
             </div>
@@ -509,57 +559,78 @@ function EditManufacturerDialog({
               <Input
                 id="phoneNumber"
                 required
-                type="number"
+                type="text"
                 placeholder="e.g. 08012345678"
-                pattern="[0-9]*"
-                inputMode="numeric"
                 maxLength={11}
-                minLength={11}
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-                className="mt-1 h-9 w-full [appearance:textfield] border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-              />
-            </div>
-          </div>
-          <div className="space-y-4">
-            <div>
-              <label
-                htmlFor="state"
-                className="block text-xs font-medium text-gray-700"
-              >
-                State
-              </label>
-              <Select value={state} onValueChange={setState}>
-                <SelectTrigger className="mt-1 h-9 w-full border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50">
-                  <SelectValue placeholder="Select State" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Lagos" className="text-xs">
-                    Lagos
-                  </SelectItem>
-                  <SelectItem value="Ogun" className="text-xs">
-                    Ogun
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <div className="space-y-4">
-            <div>
-              <label
-                htmlFor="city"
-                className="block text-xs font-medium text-gray-700"
-              >
-                City <span className="text-red-500">*</span>
-              </label>
-              <Input
-                id="city"
-                required
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
+                value={formData.phoneNumber}
+                onChange={(e) => handleChange(e.target.value.replace(/\D/g, ''), "phoneNumber")}
                 className="mt-1 h-9 w-full border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
               />
             </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="state">State<span className="text-red-600">*</span></Label>
+            <Select
+              value={formData.state}
+              onValueChange={(value) => {
+                setFormData(prev => ({ ...prev, state: value, city: "" }));
+              }}
+            >
+              <SelectTrigger className="border-[rgba(228,231,236,1)] w-full">
+                <SelectValue placeholder="Select state" />
+              </SelectTrigger>
+              <SelectContent>
+                {isLoadingStates ? (
+                  <SelectItem value="loading" disabled>Loading states...</SelectItem>
+                ) : isErrorStates ? (
+                  <SelectItem value="error-states" disabled>Error loading states</SelectItem>
+                ) : states?.length === 0 ? (
+                  <SelectItem value="no-states-found" disabled>No states found</SelectItem>
+                ) : (
+                  states?.map((state) => (
+                    <SelectItem key={state.id} value={state.id}>
+                      {state.name}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2 w-full">
+            <Label htmlFor="city">City<span className="text-red-600">*</span></Label>
+            <Select
+              value={formData.city}
+              onValueChange={(value) => handleChange(value, "city")}
+              disabled={!formData.state || isLoadingCities}
+              required
+            >
+              <SelectTrigger id="city" className="w-full">
+                <SelectValue
+                  placeholder={
+                    isLoadingCities
+                      ? "Loading cities..."
+                      : formData.state
+                        ? "Select City"
+                        : "Select a state first"
+                  }
+                />
+              </SelectTrigger>
+              <SelectContent>
+                {isLoadingCities ? (
+                  <SelectItem value="loading" disabled>Loading cities...</SelectItem>
+                ) : isErrorCities ? (
+                  <SelectItem value="error-cities" disabled>Error loading cities</SelectItem>
+                ) : cities?.length === 0 && formData.state ? (
+                  <SelectItem value="no-cities-found" disabled>No cities found for this state</SelectItem>
+                ) : (
+                  cities?.map((city) => (
+                    <SelectItem key={city.id} value={city.id}>
+                      {city.name}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-4">
@@ -573,8 +644,8 @@ function EditManufacturerDialog({
               <Input
                 id="street"
                 required
-                value={street}
-                onChange={(e) => setStreet(e.target.value)}
+                value={formData.street}
+                onChange={(e) => handleChange(e.target.value, "street")}
                 className="mt-1 h-9 w-full border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
               />
             </div>
@@ -590,8 +661,8 @@ function EditManufacturerDialog({
               <Input
                 id="houseNo"
                 required
-                value={houseNo}
-                onChange={(e) => setHouseNo(e.target.value)}
+                value={formData.houseNo}
+                onChange={(e) => handleChange(e.target.value, "houseNo")}
                 className="mt-1 h-9 w-full [appearance:textfield] border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
               />
             </div>
@@ -611,13 +682,14 @@ function EditManufacturerDialog({
             size="lg"
             className="h-8 bg-[#161CCA] text-xs text-white hover:bg-[#161CCA]/90"
             disabled={
-              !manufacturerName.trim() ||
-              !manufacturerId.trim() ||
-              !contactPerson.trim() ||
-              !phoneNumber.trim() ||
-              !city.trim() ||
-              !street.trim() ||
-              !houseNo.trim()
+              !formData.manufacturerName.trim() ||
+              !formData.manufacturerId.trim() ||
+              !formData.contactPerson.trim() ||
+              !formData.phoneNumber.trim() ||
+              !formData.state.trim() ||
+              !formData.city.trim() ||
+              !formData.street.trim() ||
+              !formData.houseNo.trim()
             }
           >
             Save

@@ -65,6 +65,7 @@ export const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({
             <SelectValue placeholder={loading ? "Loading bands..." : "Band"} />
           </SelectTrigger>
           <SelectContent>
+            <SelectItem value="All Bands">All Bands</SelectItem>
             {bands.length > 0 ? (
               bands.map((bandItem) => (
                 <SelectItem key={bandItem.id} value={bandItem.name}>
@@ -87,6 +88,7 @@ export const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({
             <SelectValue placeholder="Year">{selectedYear}</SelectValue>
           </SelectTrigger>
           <SelectContent>
+            <SelectItem value="All Years">All Years</SelectItem>
             {years.map((year) => (
               <SelectItem key={year} value={year}>
                 {year}
@@ -101,6 +103,7 @@ export const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
+            <SelectItem value="All Categories">All Categories</SelectItem>
             <SelectItem value="Prepaid">Prepaid</SelectItem>
             <SelectItem value="Postpaid">Postpaid</SelectItem>
           </SelectContent>
