@@ -207,7 +207,7 @@ export async function bulkAssignMeters(file: File): Promise<{ responsecode: stri
         const formData = new FormData();
         formData.append('file', file);
 
-        const response = await axios.post(`${API_URL}/meter/service/bulk-assign`, formData, {
+        const response = await axios.put(`${API_URL}/meter/service/bulk-assign`, formData, {
             headers: {
                 "Content-Type": "multipart/form-data",
                 custom: CUSTOM_HEADER,
