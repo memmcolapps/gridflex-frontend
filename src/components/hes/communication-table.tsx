@@ -11,13 +11,11 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { BanIcon, CircleCheck, EllipsisVertical, SendIcon } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { Label } from '../ui/label';
-import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from '../ui/pagination';
 import { getStatusStyle } from '../status-style';
 import { PaginationControls } from '../ui/pagination-controls';
 
@@ -36,6 +34,7 @@ interface RowData {
 
 interface CommunicationTableProps {
     data: RowData[];
+    searchQuery?: string;
 }
 
 // Initial dummy data for the MD table
@@ -67,7 +66,7 @@ export const nonMdData: RowData[] = [
 ];
 
 // The rest of your component remains the same.
-export function CommunicationTable({ data }: CommunicationTableProps) {
+export function CommunicationTable({ data, searchQuery = "" }: CommunicationTableProps) {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [selectedRow, setSelectedRow] = useState<RowData | null>(null);
     const [selectedRows, setSelectedRows] = useState<string[]>([]);
@@ -78,6 +77,18 @@ export function CommunicationTable({ data }: CommunicationTableProps) {
         setTableData(data);
     }, [data]);
 
+    // Filter data based on search query
+    const filteredData = tableData.filter((item) => {
+        if (!searchQuery) return true;
+        const searchLower = searchQuery.toLowerCase();
+        return (
+            item.meterNo?.toLowerCase().includes(searchLower) ??
+            item.status?.toLowerCase().includes(searchLower) ??
+            item.meterModel?.toLowerCase().includes(searchLower) ??
+            item.category?.toLowerCase().includes(searchLower)
+        );
+    });
+
     const [isTokenDialogOpen, setIsTokenDialogOpen] = useState(false);
     const [token, setToken] = useState('');
     const [meterToTokenize, setMeterToTokenize] = useState<string | null>(null);
@@ -86,25 +97,12 @@ export function CommunicationTable({ data }: CommunicationTableProps) {
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(10);
 
-    const totalItems = tableData.length;
-    const totalPages = Math.ceil(totalItems / rowsPerPage);
+    const totalItems = filteredData.length;
+    const paginatedData = filteredData.slice(
+        (currentPage - 1) * rowsPerPage,
+        (currentPage - 1) * rowsPerPage + rowsPerPage
+    );
 
-    const startIndex = (currentPage - 1) * rowsPerPage;
-    const endIndex = startIndex + rowsPerPage;
-    const paginatedData = tableData.slice(startIndex, endIndex);
-
-    const handleRowsPerPageChange = (value: string) => {
-        setRowsPerPage(Number(value));
-        setCurrentPage(1); // Reset to the first page when rows per page changes
-    };
-
-    const handlePrevious = () => {
-        setCurrentPage(prev => Math.max(1, prev - 1));
-    };
-
-    const handleNext = () => {
-        setCurrentPage(prev => Math.min(totalPages, prev + 1));
-    };
 
     const handlePageSizeChange = (newPageSize: number) => {
         setRowsPerPage(newPageSize);
@@ -127,8 +125,7 @@ export function CommunicationTable({ data }: CommunicationTableProps) {
 
     const handleSelectAll = (isChecked: boolean) => {
         if (isChecked) {
-            const allSns = tableData.map(row => row.sn);
-            setSelectedRows(allSns);
+            setSelectedRows(paginatedData.map(row => row.sn));
         } else {
             setSelectedRows([]);
         }
@@ -166,8 +163,8 @@ export function CommunicationTable({ data }: CommunicationTableProps) {
         setIsTokenDialogOpen(false);
     };
 
-    const hasCategory = tableData.length > 0 && tableData[0]?.category !== undefined;
-    const hasMeterModel = tableData.length > 0 && tableData[0]?.meterModel !== undefined;
+    const hasCategory = tableData.length > 0 && tableData[0]?.category != null;
+    const hasMeterModel = tableData.length > 0 && tableData[0]?.meterModel != null;
 
     return (
         <div className="rounded-md">
@@ -176,9 +173,9 @@ export function CommunicationTable({ data }: CommunicationTableProps) {
                     <TableRow>
                         <TableHead className="w-10">
                             <Checkbox
-                                checked={selectedRows.length === tableData.length && tableData.length > 0}
+                                checked={selectedRows.length === paginatedData.length && paginatedData.length > 0}
                                 className='mr-2 cursor-pointer'
-                                onCheckedChange={(checked) => handleSelectAll(Boolean(checked))}
+                                onCheckedChange={handleSelectAll}
                             />
                         </TableHead>
                         <TableHead>S/N</TableHead>

@@ -19,13 +19,13 @@ export async function getDashboard(filters?: DashboardFilters): Promise<
     const token = localStorage.getItem("auth_token");
     const params = new URLSearchParams();
 
-    if (filters?.band && filters.band !== "Band") {
+    if (filters?.band && filters.band !== "Band" && filters.band !== "All Bands") {
       params.append("band", filters.band);
     }
-    if (filters?.year && filters.year !== "Year") {
+    if (filters?.year && filters.year !== "Year" && filters.year !== "All Years") {
       params.append("year", filters.year);
     }
-    if (filters?.meterCategory && filters.meterCategory !== "Meter Category") {
+    if (filters?.meterCategory && filters.meterCategory !== "Meter Category" && filters.meterCategory !== "All Categories") {
       params.append("meterCategory", filters.meterCategory);
     }
 

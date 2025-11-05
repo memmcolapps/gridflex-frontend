@@ -4,7 +4,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "../ui/button";
-import { Loader2 } from "lucide-react";
 import { LoadingAnimation } from "@/components/ui/loading-animation";
 
 interface CustomerIdDialogProps {

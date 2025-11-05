@@ -18,13 +18,6 @@ import {
 import { useState } from "react";
 import EditMeterReading from "./edit-reading";
 import { Card } from "../ui/card";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
 import ViewMeterReadingDetails from "./view-meter-reading-details";
 import { Checkbox } from "@/components/ui/checkbox"; // Import the Checkbox component
 import { useMeterReadings } from "@/hooks/use-billing";
@@ -86,8 +79,6 @@ export default function MeterReadings({ searchQuery, sortConfig, selectedMonth, 
     // console.log("Is loading:", isLoading);
     // console.log("Error:", error);
 
-    // Since filtering and sorting is now handled by the API, we use the data directly
-    const totalPages = Math.ceil(totalData / rowsPerPage);
 
     const paginatedData = data.slice(
         (currentPage - 1) * rowsPerPage,

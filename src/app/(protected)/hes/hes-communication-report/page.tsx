@@ -15,6 +15,7 @@ export default function CommunicationReportPage() {
     const [openDialog, setOpenDialog] = useState(false);
     const [reportType, setReportType] = useState<'daily' | 'monthly'>('daily');
     const [activeTab, setActiveTab] = useState('MD');
+    const [searchQuery, setSearchQuery] = useState('');
 
     const handleOpenDialog = (type: 'daily' | 'monthly') => {
         setReportType(type);
@@ -88,7 +89,11 @@ export default function CommunicationReportPage() {
             </Tabs>
             <div className='flex flex-row justify-between'>
                 <div className="flex flex-col md:flex-row gap-4 mb-4">
-                    <SearchControl placeholder="Search by meter no., account no..." />
+                    <SearchControl
+                        placeholder="Search by meter no., account no..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
                     <FilterControl />
                     <SortControl />
                 </div>
@@ -101,7 +106,7 @@ export default function CommunicationReportPage() {
                 </Button>
             </div>
             {/* Pass the selected data to the CommunicationTable component */}
-            <CommunicationTable data={tableData} />
+            <CommunicationTable data={tableData} searchQuery={searchQuery} />
             <DailyReportDialog
                 open={openDialog}
                 onOpenChange={setOpenDialog}

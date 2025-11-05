@@ -1,11 +1,4 @@
 import {
-    Pagination,
-    PaginationContent,
-    PaginationItem,
-    PaginationNext,
-    PaginationPrevious,
-} from "@/components/ui/pagination";
-import {
     Table,
     TableBody,
     TableCell,
@@ -15,13 +8,6 @@ import {
 } from "@/components/ui/table";
 import { useState } from "react";
 import { Card } from "../ui/card";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 
@@ -120,27 +106,12 @@ export default function MeterConsumptions({ searchQuery, sortConfig, selectedMon
         return 0;
     });
 
-    const totalPages = Math.ceil(sortedData.length / rowsPerPage);
-
     const paginatedData = sortedData.slice(
         (currentPage - 1) * rowsPerPage,
         currentPage * rowsPerPage
     );
 
     const isAllSelected = paginatedData.length > 0 && paginatedData.every(item => selectedRowIds.has(item.id));
-
-    const handleRowsPerPageChange = (value: string) => {
-        setRowsPerPage(Number(value));
-        setCurrentPage(1);
-    };
-
-    const handlePrevious = () => {
-        setCurrentPage((prev) => Math.max(prev - 1, 1));
-    };
-
-    const handleNext = () => {
-        setCurrentPage((prev) => Math.min(prev + 1, totalPages));
-    };
 
     const handlePageSizeChange = (newPageSize: number) => {
         setRowsPerPage(newPageSize);

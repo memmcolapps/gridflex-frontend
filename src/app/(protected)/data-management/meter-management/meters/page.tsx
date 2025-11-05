@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Card } from "@/components/ui/card";
-import { CirclePlus, SquareArrowOutUpRight, MoreVertical, Ban, Pencil, CheckCircle, Eye } from "lucide-react";
+import { CirclePlus, SquareArrowOutUpRight, MoreVertical, Ban, Pencil, CheckCircle, Eye, XCircle, AlertTriangle } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -33,6 +33,22 @@ import { useMeters, useAssignMeter, useChangeMeterState } from "@/hooks/use-assi
 import { useCustomerRecordQuery } from "@/hooks/use-customer";
 import type { AssignMeterPayload } from "@/service/assign-meter-service";
 import { LoadingAnimation } from "@/components/ui/loading-animation";
+import { useDownloadAssignCsvTemplate, useDownloadAssignExcelTemplate, useBulkAssignMeters, useExportActualMeters, useExportVirtualMeters } from "@/hooks/use-meter-bulk";
+import { toast } from "sonner";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import {
+    AlertDialog,
+    AlertDialogContent,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogDescription,
+    AlertDialogFooter,
+} from "@/components/ui/alert-dialog";
 
 export default function MeterManagementPage() {
     const [searchTerm, setSearchTerm] = useState("");
@@ -97,6 +113,15 @@ export default function MeterManagementPage() {
     const [virtualCustomerIdInput, setVirtualCustomerIdInput] = useState("");
     const [filteredVirtualCustomerIds, setFilteredVirtualCustomerIds] = useState<string[]>([]);
     const [selectedVirtualCustomer, setSelectedVirtualCustomer] = useState<VirtualMeterData | null>(null);
+    const [isBulkAssignDialogOpen, setIsBulkAssignDialogOpen] = useState(false);
+    const [isAssignTemplateDropdownOpen, setIsAssignTemplateDropdownOpen] = useState(false);
+    const [isAssignResultDialogOpen, setIsAssignResultDialogOpen] = useState(false);
+    const [assignResult, setAssignResult] = useState<{
+        successCount: number;
+        failedCount: number;
+        totalRecords: number;
+        failedRecords: string[];
+    } | null>(null);
 
     const { data: metersData, isLoading, isError } = useMeters({
         page: currentPage,
@@ -112,6 +137,11 @@ export default function MeterManagementPage() {
 
     const assignMeterMutation = useAssignMeter();
     const changeStateMutation = useChangeMeterState();
+    const bulkAssignMutation = useBulkAssignMeters();
+    const downloadAssignCsvTemplateMutation = useDownloadAssignCsvTemplate();
+    const downloadAssignExcelTemplateMutation = useDownloadAssignExcelTemplate();
+    const exportActualMetersMutation = useExportActualMeters();
+    const exportVirtualMetersMutation = useExportVirtualMeters();
 
     const handleOpenCustomerIdModal = () => {
         setCustomerIdInput("");
@@ -586,6 +616,75 @@ export default function MeterManagementPage() {
         }
     };
 
+    const handleBulkAssign = (data: File | (MeterInventoryItem | VirtualMeterData)[]) => {
+        if (data instanceof File) {
+            bulkAssignMutation.mutate(data, {
+                onSuccess: (response: unknown) => {
+                    const res = response as {
+                        responsecode: string;
+                        responsedesc: string;
+                        responsedata: {
+                            totalRecords: number;
+                            failedCount: number;
+                            failedRecords: string[];
+                            successCount: number;
+                        };
+                    };
+
+                    setIsBulkAssignDialogOpen(false);
+                    setIsAssignTemplateDropdownOpen(false);
+
+                    // Store result for detailed dialog
+                    setAssignResult(res.responsedata);
+                    setIsAssignResultDialogOpen(true);
+
+                    // Show brief success toast if any succeeded
+                    if (res.responsedata.successCount > 0) {
+                        toast.success(`${res.responsedata.successCount} of ${res.responsedata.totalRecords} meters assigned successfully!`);
+                        // Refetch data to update the table
+                        // You might need to add a refetch function here
+                    }
+                },
+                onError: (error) => {
+                    console.error("Bulk assign failed:", error);
+                    const err = error as { message?: string };
+                    toast.error(err?.message ?? "Bulk assign failed");
+                    setIsBulkAssignDialogOpen(false);
+                    setIsAssignTemplateDropdownOpen(false);
+                },
+            });
+        } else {
+            setIsBulkAssignDialogOpen(false);
+            setIsAssignTemplateDropdownOpen(false);
+        }
+    };
+
+    const handleDownloadAssignCsvTemplate = () => {
+        downloadAssignCsvTemplateMutation.mutate(undefined, {
+            onSuccess: () => {
+                toast.success("Assign CSV template downloaded successfully");
+            },
+            onError: (error: unknown) => {
+                const err = error as { message?: string };
+                console.error("Assign CSV template download failed:", error);
+                toast.error(err?.message ?? "Failed to download assign CSV template");
+            },
+        });
+    };
+
+    const handleDownloadAssignExcelTemplate = () => {
+        downloadAssignExcelTemplateMutation.mutate(undefined, {
+            onSuccess: () => {
+                toast.success("Assign Excel template downloaded successfully");
+            },
+            onError: (error: unknown) => {
+                const err = error as { message?: string };
+                console.error("Assign Excel template download failed:", error);
+                toast.error(err?.message ?? "Failed to download assign Excel template");
+            },
+        });
+    };
+
     const handleSaveVirtualMeter = () => {
         if (editMeter && "customerId" in editMeter && typeof editMeter.customerId === "string") {
             const virtualMeter = editMeter as VirtualMeterData;
@@ -953,10 +1052,10 @@ export default function MeterManagementPage() {
                         className="flex items-center gap-2 border font-medium border-[#161CCA] text-[#161CCA] w-full md:w-auto cursor-pointer"
                         variant="outline"
                         size="lg"
-                        onClick={() => setIsBulkUploadDialogOpen(true)}
+                        onClick={() => setIsBulkAssignDialogOpen(true)}
                     >
                         <CirclePlus size={14} strokeWidth={2.3} className="h-4 w-4" />
-                        <span className="text-sm md:text-base">Bulk Upload</span>
+                        <span className="text-sm md:text-base">Bulk Assign Meters</span>
                     </Button>
                     {activeTab === "actual" && (
                         <Button
@@ -1017,9 +1116,35 @@ export default function MeterManagementPage() {
                                 variant="outline"
                                 size="lg"
                                 className="gap-2 border border-[#161CCA] text-[#161CCA] font-medium w-full lg:w-auto cursor-pointer"
+                                onClick={() => {
+                                    if (activeTab === "actual") {
+                                        exportActualMetersMutation.mutate(undefined, {
+                                            onSuccess: () => {
+                                                toast.success("Actual meters exported successfully");
+                                            },
+                                            onError: (error) => {
+                                                console.error("Export failed:", error);
+                                                toast.error("Failed to export actual meters");
+                                            },
+                                        });
+                                    } else {
+                                        exportVirtualMetersMutation.mutate(undefined, {
+                                            onSuccess: () => {
+                                                toast.success("Virtual meters exported successfully");
+                                            },
+                                            onError: (error) => {
+                                                console.error("Export failed:", error);
+                                                toast.error("Failed to export virtual meters");
+                                            },
+                                        });
+                                    }
+                                }}
+                                disabled={exportActualMetersMutation.isPending || exportVirtualMetersMutation.isPending}
                             >
                                 <SquareArrowOutUpRight className="text-[#161CCA]" size={15} strokeWidth={2.3} />
-                                <span className="text-sm lg:text-base font-medium">Export</span>
+                                <span className="text-sm lg:text-base font-medium">
+                                    {exportActualMetersMutation.isPending || exportVirtualMetersMutation.isPending ? "Exporting..." : "Export"}
+                                </span>
                             </Button>
                         </div>
                     </div>
@@ -1493,6 +1618,158 @@ export default function MeterManagementPage() {
                 ]}
                 templateUrl="/templates/meter-template.xlsx"
             />
+            <BulkUploadDialog
+                isOpen={isBulkAssignDialogOpen}
+                onClose={() => setIsBulkAssignDialogOpen(false)}
+                onSave={handleBulkAssign}
+                title="Bulk Assign Meters"
+                sendRawFile={true}
+                templateUrl="#"
+                onTemplateClick={() => {
+                    setIsBulkAssignDialogOpen(false);
+                    setIsAssignTemplateDropdownOpen(true);
+                }}
+                requiredColumns={[
+                    "meterNumber",
+                    "customerId",
+                    "tariffId",
+                    "dssAssetId",
+                    "feederAssetId",
+                    "cin",
+                    "accountNumber",
+                    "state",
+                    "city",
+                    "houseNo",
+                    "streetName",
+                    "creditPaymentMode",
+                    "debitPaymentMode",
+                    "creditPaymentPlan",
+                    "debitPaymentPlan",
+                ]}
+            />
+
+            {/* Assign Template Selection Dialog */}
+            <Dialog open={isAssignTemplateDropdownOpen} onOpenChange={(open) => {
+                setIsAssignTemplateDropdownOpen(open);
+                if (!open) {
+                    // Close all other dialogs when template dialog closes
+                    setIsBulkAssignDialogOpen(false);
+                }
+            }}>
+                <DialogContent className="max-w-sm bg-white h-fit">
+                    <DialogHeader>
+                        <DialogTitle>Select Assign Template Format</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-3">
+                        <Button
+                            onClick={() => {
+                                handleDownloadAssignCsvTemplate();
+                                setIsAssignTemplateDropdownOpen(false);
+                            }}
+                            className="w-full bg-[#161CCA] hover:bg-[#121eb3] text-white"
+                            disabled={downloadAssignCsvTemplateMutation.isPending}
+                        >
+                            {downloadAssignCsvTemplateMutation.isPending ? "Downloading..." : "Download CSV Template"}
+                        </Button>
+                        <Button
+                            onClick={() => {
+                                handleDownloadAssignExcelTemplate();
+                                setIsAssignTemplateDropdownOpen(false);
+                            }}
+                            variant="outline"
+                            className="w-full border-[#161CCA] text-[#161CCA] hover:bg-[#161CCA] hover:text-white"
+                            disabled={downloadAssignExcelTemplateMutation.isPending}
+                        >
+                            {downloadAssignExcelTemplateMutation.isPending ? "Downloading..." : "Download Excel Template"}
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            {/* Assign Result Dialog */}
+            {assignResult && (
+                <AlertDialog open={isAssignResultDialogOpen} onOpenChange={setIsAssignResultDialogOpen}>
+                    <AlertDialogContent className="max-w-2xl max-h-[80vh] border-none overflow-y-auto">
+                        <AlertDialogHeader>
+                            <AlertDialogTitle className="flex items-center gap-2">
+                                {assignResult.successCount === assignResult.totalRecords ? (
+                                    <>
+                                        <CheckCircle className="h-5 w-5 text-green-500" />
+                                        Bulk Assign Completed Successfully
+                                    </>
+                                ) : assignResult.successCount === 0 ? (
+                                    <>
+                                        <XCircle className="h-5 w-5 text-red-500" />
+                                        Bulk Assign Failed
+                                    </>
+                                ) : (
+                                    <>
+                                        <AlertTriangle className="h-5 w-5 text-yellow-500" />
+                                        Bulk Assign Completed with Issues
+                                    </>
+                                )}
+                            </AlertDialogTitle>
+                            <AlertDialogDescription className="text-left">
+                                <div className="space-y-4">
+                                    <div className="grid grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg">
+                                        <div className="text-center">
+                                            <div className="text-2xl font-bold text-gray-900">{assignResult.totalRecords}</div>
+                                            <div className="text-sm text-gray-600">Total Records</div>
+                                        </div>
+                                        <div className="text-center">
+                                            <div className="text-2xl font-bold text-green-600">{assignResult.successCount}</div>
+                                            <div className="text-sm text-gray-600">Successful</div>
+                                        </div>
+                                        <div className="text-center">
+                                            <div className="text-2xl font-bold text-red-600">{assignResult.failedCount}</div>
+                                            <div className="text-sm text-gray-600">Failed</div>
+                                        </div>
+                                    </div>
+
+                                    {assignResult.successCount > 0 && (
+                                        <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                                            <div className="flex items-center gap-2 text-green-800">
+                                                <CheckCircle className="h-4 w-4" />
+                                                <span className="font-medium">Success</span>
+                                            </div>
+                                            <p className="text-sm text-green-700 mt-1">
+                                                {assignResult.successCount} meter{assignResult.successCount !== 1 ? 's' : ''} assigned successfully.
+                                            </p>
+                                        </div>
+                                    )}
+
+                                    {assignResult.failedCount > 0 && (
+                                        <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                                            <div className="flex items-center gap-2 text-red-800">
+                                                <XCircle className="h-4 w-4" />
+                                                <span className="font-medium">Failed Records</span>
+                                            </div>
+                                            <div className="mt-2 space-y-2 max-h-60 overflow-y-auto">
+                                                {assignResult.failedRecords.map((record, index) => (
+                                                    <div key={index} className="text-sm text-red-700 bg-red-100 p-2 rounded border-l-4 border-red-400">
+                                                        {record}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <Button
+                                onClick={() => {
+                                    setIsAssignResultDialogOpen(false);
+                                    setAssignResult(null);
+                                }}
+                                className="bg-[#161CCA] hover:bg-[#121eb3] text-white"
+                            >
+                                Close
+                            </Button>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+            )}
             <ViewMeterDetailsDialog
                 isOpen={isViewActualDetailsOpen}
                 onClose={() => {

@@ -45,7 +45,6 @@ const TariffTable = () => {
 
   const { tariffs, isLoading, isError, error, reviewMutation } = useTariffs(fetchParams);
   const totalCount = tariffs.length;
-  const totalPages = Math.ceil(totalCount / fetchParams.pageSize);
 
   const handlePageChange = (page: number) => {
     setFetchParams({ ...fetchParams, page });

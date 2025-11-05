@@ -13,7 +13,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useDashboard } from '@/hooks/use-dashboard';
 
 export const ManufacturerDistribution = () => {
-    const { data: dashboardData } = useDashboard();
+     const { data: dashboardData } = useDashboard(); // Uses unfiltered data
 
     // Use the manufacturers data directly from API response
     const chartData = dashboardData?.manufacturers?.map((manufacturer) => ({

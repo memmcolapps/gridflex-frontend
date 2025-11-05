@@ -1,6 +1,5 @@
 // use-vending.ts
 
-import { queryClient } from "@/lib/queryClient";
 import { generateCreditToken, printToken, calculateCreditToken, generateKCTToken, generateClearTamperToken, generateClearCreditToken, generateKCTAndClearTamperToken, generateCompensationToken, getVendingDashboardData, getVendingTransactions } from "@/service/vending-service";
 import type { GenerateCreditTokenPayload, PrintTokenPayload, GenerateKCTPayload, GenerateClearTamperPayload, GenerateClearCreditPayload, GenerateKCTAndClearTamperPayload, GenerateCompensationPayload, VendingDashboardPayload } from "@/types/vending";
 import { useMutation, useQuery } from "@tanstack/react-query";
