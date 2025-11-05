@@ -161,8 +161,25 @@ export function AssignMeterDialog({
     console.log('Upload image proceed, image:', image); // Debug log
     setUploadedImage(image);
     setIsUploadImageOpen(false);
-    setIsConfirmImageOpen(true);
-    setProgress(70);
+    
+    // Get the selected meter's category from the available meters
+    const selectedMeter = availableMeters.find(meter => meter.meterNumber === meterNumber);
+    const meterCategory = selectedMeter?.category ?? (selectedMeter && 'meterCategory' in selectedMeter ? selectedMeter.meterCategory : null);
+
+    console.log('Selected meter:', selectedMeter, 'Meter category:', meterCategory); // Debug log
+
+    if (meterCategory && meterCategory.toLowerCase() === "prepaid") {
+      setIsSetPaymentModalOpen(true);
+      setProgress(80);
+    } else if (meterCategory && meterCategory.toLowerCase() === "postpaid") {
+      // For postpaid, skip set payment mode and go directly to deactivate
+      setIsDeactivateModalOpen(true);
+      setProgress(80);
+    } else {
+      console.log('No valid category found, defaulting to confirmation modal');
+      setIsConfirmationModalOpen(true);
+      setProgress(100);
+    }
   };
 
   // Handle proceed from confirm image
@@ -579,7 +596,7 @@ export function AssignMeterDialog({
     <Dialog open={isDeactivateModalOpen} onOpenChange={setIsDeactivateModalOpen}>
       <DialogContent className="bg-white text-black h-fit">
         <DialogHeader>
-          <DialogTitle>Deactivate Meter</DialogTitle>
+          <DialogTitle>Deactivate Virtual Meter</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <p>Deactivate meter for customer</p>
