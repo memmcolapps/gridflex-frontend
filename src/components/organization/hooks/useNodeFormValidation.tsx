@@ -58,8 +58,8 @@ export const useNodeFormValidation = ({
       const requiredFields: (keyof FormData)[] = ["name"];
 
       // Check for technical node specific fields
-      const isTechnicalNode = ["Substation", "Feeder Line", "DSS"].includes(
-        nodeType,
+      const isTechnicalNode = ["substation", "feeder line", "dss"].includes(
+        nodeType.toLowerCase(),
       );
       if (isTechnicalNode) {
         requiredFields.push("status", "voltage", "serialNo");

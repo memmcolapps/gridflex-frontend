@@ -87,12 +87,12 @@ export const EditNodeDialog = ({
 
     try {
       const isRegionBhubServiceCenter = [
-        "Region",
-        "Business Hub",
-        "Service Center",
-      ].includes(nodeType);
-      const isTechnicalNode = ["Substation", "Feeder Line", "DSS"].includes(
-        nodeType,
+        "region",
+        "business hub",
+        "service center",
+      ].includes(nodeType.toLowerCase());
+      const isTechnicalNode = ["substation", "feeder line", "dss"].includes(
+        nodeType.toLowerCase(),
       );
 
       if (isRegionBhubServiceCenter) {
@@ -104,7 +104,7 @@ export const EditNodeDialog = ({
           email: formData.email,
           contactPerson: formData.contactPerson,
           address: formData.address,
-          type: nodeType.toLocaleLowerCase(),
+          type: nodeType.toLowerCase(),
         });
       } else if (isTechnicalNode) {
         await updateSubstationTransfomerFeeder.mutateAsync({
@@ -121,7 +121,7 @@ export const EditNodeDialog = ({
           longitude: formData.longitude ?? "",
           description: formData.description ?? "",
           assetId: formData.assetId ?? "",
-          type: nodeType.toLocaleLowerCase(),
+          type: nodeType.toLowerCase(),
         });
       }
 
@@ -135,15 +135,15 @@ export const EditNodeDialog = ({
     }
   };
 
-  const isTechnicalNode = ["Substation", "Feeder Line", "DSS"].includes(
-    nodeType,
+  const isTechnicalNode = ["substation", "feeder line", "dss"].includes(
+    nodeType.toLowerCase(),
   );
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="h-fit rounded-lg bg-white p-6 shadow-lg [&>button]:h-5 [&>button]:w-5 [&>button>svg]:h-5 [&>button>svg]:w-5">
         <DialogHeader>
-          <DialogTitle>Edit {nodeType}</DialogTitle>
+          <DialogTitle>Edit {nodeType.toLocaleUpperCase()}</DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-2 gap-4">
@@ -322,9 +322,9 @@ export const EditNodeDialog = ({
               </div>
             </div>
           )}
-          {(nodeType === "Substation" ||
-            nodeType === "DSS" ||
-            nodeType === "Feeder Line") && (
+          {(nodeType.toLowerCase() === "substation" ||
+            nodeType.toLowerCase() === "dss" ||
+            nodeType.toLowerCase() === "feeder line") && (
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col">
                 <label className="text-sm font-medium">Longitude</label>
