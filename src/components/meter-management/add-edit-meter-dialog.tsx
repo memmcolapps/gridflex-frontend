@@ -773,7 +773,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                   type="text"
                   value={formData.meterRating}
                   onChange={handleInputChange}
-                  placeholder="E.g., 100A"
+                  placeholder="E.g., 100"
                   className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.meterRating ? "border-red-500" : ""
                     }`}
                   required
