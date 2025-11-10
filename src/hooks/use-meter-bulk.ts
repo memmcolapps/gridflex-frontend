@@ -13,6 +13,9 @@ import {
     bulkAssignMeters,
     exportActualMeters,
     exportVirtualMeters,
+    downloadVirtualAssignCsvTemplate,
+    downloadVirtualAssignExcelTemplate,
+    bulkVirtualAssignMeters,
 } from "../service/meter-bulk-service";
 
 export const useDownloadMeterCsvTemplate = () => {
@@ -158,5 +161,43 @@ export const useExportVirtualMeters = () => {
             document.body.removeChild(link);
             window.URL.revokeObjectURL(url);
         },
+    });
+};
+
+export const useDownloadVirtualAssignCsvTemplate = () => {
+    return useMutation({
+        mutationFn: downloadVirtualAssignCsvTemplate,
+        onSuccess: (blob: Blob) => {
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'virtual-assign-template.csv';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        },
+    });
+};
+
+export const useDownloadVirtualAssignExcelTemplate = () => {
+    return useMutation({
+        mutationFn: downloadVirtualAssignExcelTemplate,
+        onSuccess: (blob: Blob) => {
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'virtual-assign-template.xlsx';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        },
+    });
+};
+
+export const useBulkVirtualAssignMeters = () => {
+    return useMutation({
+        mutationFn: bulkVirtualAssignMeters,
     });
 };
