@@ -33,7 +33,7 @@ import { useMeters, useAssignMeter, useChangeMeterState } from "@/hooks/use-assi
 import { useCustomerRecordQuery } from "@/hooks/use-customer";
 import type { AssignMeterPayload } from "@/service/assign-meter-service";
 import { LoadingAnimation } from "@/components/ui/loading-animation";
-import { useDownloadAssignCsvTemplate, useDownloadAssignExcelTemplate, useBulkAssignMeters, useExportActualMeters, useExportVirtualMeters } from "@/hooks/use-meter-bulk";
+import { useDownloadAssignCsvTemplate, useDownloadAssignExcelTemplate, useBulkAssignMeters, useExportActualMeters, useExportVirtualMeters, useDownloadVirtualAssignCsvTemplate, useDownloadVirtualAssignExcelTemplate, useBulkVirtualAssignMeters } from "@/hooks/use-meter-bulk";
 import { toast } from "sonner";
 import {
     Dialog,
@@ -140,6 +140,9 @@ export default function MeterManagementPage() {
     const bulkAssignMutation = useBulkAssignMeters();
     const downloadAssignCsvTemplateMutation = useDownloadAssignCsvTemplate();
     const downloadAssignExcelTemplateMutation = useDownloadAssignExcelTemplate();
+    const bulkVirtualAssignMutation = useBulkVirtualAssignMeters();
+    const downloadVirtualAssignCsvTemplateMutation = useDownloadVirtualAssignCsvTemplate();
+    const downloadVirtualAssignExcelTemplateMutation = useDownloadVirtualAssignExcelTemplate();
     const exportActualMetersMutation = useExportActualMeters();
     const exportVirtualMetersMutation = useExportVirtualMeters();
 
@@ -618,7 +621,8 @@ export default function MeterManagementPage() {
 
     const handleBulkAssign = (data: File | (MeterInventoryItem | VirtualMeterData)[]) => {
         if (data instanceof File) {
-            bulkAssignMutation.mutate(data, {
+            const mutation = activeTab === "actual" ? bulkAssignMutation : bulkVirtualAssignMutation;
+            mutation.mutate(data, {
                 onSuccess: (response: unknown) => {
                     const res = response as {
                         responsecode: string;
@@ -640,15 +644,15 @@ export default function MeterManagementPage() {
 
                     // Show brief success toast if any succeeded
                     if (res.responsedata.successCount > 0) {
-                        toast.success(`${res.responsedata.successCount} of ${res.responsedata.totalRecords} meters assigned successfully!`);
+                        toast.success(`${res.responsedata.successCount} of ${res.responsedata.totalRecords} ${activeTab === "actual" ? "meters assigned" : "virtual meters added"} successfully!`);
                         // Refetch data to update the table
                         // You might need to add a refetch function here
                     }
                 },
-                onError: (error) => {
+                onError: (error: unknown) => {
                     console.error("Bulk assign failed:", error);
                     const err = error as { message?: string };
-                    toast.error(err?.message ?? "Bulk assign failed");
+                    toast.error(err?.message ?? `Bulk ${activeTab === "actual" ? "assign" : "add virtual meters"} failed`);
                     setIsBulkAssignDialogOpen(false);
                     setIsAssignTemplateDropdownOpen(false);
                 },
@@ -660,27 +664,29 @@ export default function MeterManagementPage() {
     };
 
     const handleDownloadAssignCsvTemplate = () => {
-        downloadAssignCsvTemplateMutation.mutate(undefined, {
+        const mutation = activeTab === "actual" ? downloadAssignCsvTemplateMutation : downloadVirtualAssignCsvTemplateMutation;
+        mutation.mutate(undefined, {
             onSuccess: () => {
-                toast.success("Assign CSV template downloaded successfully");
+                toast.success(`${activeTab === "actual" ? "Assign" : "Virtual Assign"} CSV template downloaded successfully`);
             },
             onError: (error: unknown) => {
                 const err = error as { message?: string };
-                console.error("Assign CSV template download failed:", error);
-                toast.error(err?.message ?? "Failed to download assign CSV template");
+                console.error(`${activeTab === "actual" ? "Assign" : "Virtual Assign"} CSV template download failed:`, error);
+                toast.error(err?.message ?? `Failed to download ${activeTab === "actual" ? "assign" : "virtual assign"} CSV template`);
             },
         });
     };
 
     const handleDownloadAssignExcelTemplate = () => {
-        downloadAssignExcelTemplateMutation.mutate(undefined, {
+        const mutation = activeTab === "actual" ? downloadAssignExcelTemplateMutation : downloadVirtualAssignExcelTemplateMutation;
+        mutation.mutate(undefined, {
             onSuccess: () => {
-                toast.success("Assign Excel template downloaded successfully");
+                toast.success(`${activeTab === "actual" ? "Assign" : "Virtual Assign"} Excel template downloaded successfully`);
             },
             onError: (error: unknown) => {
                 const err = error as { message?: string };
-                console.error("Assign Excel template download failed:", error);
-                toast.error(err?.message ?? "Failed to download assign Excel template");
+                console.error(`${activeTab === "actual" ? "Assign" : "Virtual Assign"} Excel template download failed:`, error);
+                toast.error(err?.message ?? `Failed to download ${activeTab === "actual" ? "assign" : "virtual assign"} Excel template`);
             },
         });
     };
@@ -1055,7 +1061,9 @@ export default function MeterManagementPage() {
                         onClick={() => setIsBulkAssignDialogOpen(true)}
                     >
                         <CirclePlus size={14} strokeWidth={2.3} className="h-4 w-4" />
-                        <span className="text-sm md:text-base">Bulk Assign Meters</span>
+                        <span className="text-sm md:text-base">
+                            {activeTab === "actual" ? "Bulk Assign Meters" : "Bulk Add Virtual Meters"}
+                        </span>
                     </Button>
                     {activeTab === "actual" && (
                         <Button
@@ -1622,7 +1630,7 @@ export default function MeterManagementPage() {
                 isOpen={isBulkAssignDialogOpen}
                 onClose={() => setIsBulkAssignDialogOpen(false)}
                 onSave={handleBulkAssign}
-                title="Bulk Assign Meters"
+                title={activeTab === "actual" ? "Bulk Assign Meters" : "Bulk Add Virtual Meters"}
                 sendRawFile={true}
                 templateUrl="#"
                 onTemplateClick={() => {
