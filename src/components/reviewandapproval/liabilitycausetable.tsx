@@ -41,24 +41,28 @@ import type { FetchParams } from '@/service/reviewapproval-service';
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { LoadingAnimation } from '@/components/ui/loading-animation';
 
-const LiabilityCauseTable = () => {
-  const [fetchParams, setFetchParams] = useState<FetchParams>({
-    page: 1,
-    pageSize: 10,
-    searchTerm: '',
-    sortBy: null,
-    sortDirection: null,
-    type: 'pending-state',
-  });
-  const [selectedRow, setSelectedRow] = useState<Liability | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedItems, setSelectedItems] = useState<string[]>([]);
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const [confirmAction, setConfirmAction] = useState<'approve' | 'reject' | null>(null);
-  const [selectedItem, setSelectedItem] = useState<Liability | null>(null);
-  const [dropdownOpenId, setDropdownOpenId] = useState<string | null>(null);
+interface LiabilityCauseTableProps {
+  selectedLiabilityCauseNames: string[];
+  setSelectedLiabilityCauseNames: React.Dispatch<React.SetStateAction<string[]>>;
+}
 
-  const { liabilities, isLoading, isError, error, reviewMutation } = useLiabilities(fetchParams);
+const LiabilityCauseTable = ({ selectedLiabilityCauseNames, setSelectedLiabilityCauseNames }: LiabilityCauseTableProps) => {
+   const [fetchParams, setFetchParams] = useState<FetchParams>({
+     page: 1,
+     pageSize: 10,
+     searchTerm: '',
+     sortBy: null,
+     sortDirection: null,
+     type: 'pending-state',
+   });
+   const [selectedRow, setSelectedRow] = useState<Liability | null>(null);
+   const [isModalOpen, setIsModalOpen] = useState(false);
+   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+   const [confirmAction, setConfirmAction] = useState<'approve' | 'reject' | null>(null);
+   const [selectedItem, setSelectedItem] = useState<Liability | null>(null);
+   const [dropdownOpenId, setDropdownOpenId] = useState<string | null>(null);
+
+   const { liabilities, isLoading, isError, error, reviewMutation } = useLiabilities(fetchParams);
 
   // Filter out approved liabilities
   const filteredLiabilities = liabilities.filter(item => item.approveStatus !== 'Approved');
@@ -75,9 +79,9 @@ const LiabilityCauseTable = () => {
     setFetchParams({ ...fetchParams, pageSize, page: 1 });
   };
 
-  const toggleSelection = (id: string) => {
-    setSelectedItems((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+  const toggleSelection = (name: string) => {
+    setSelectedLiabilityCauseNames((prev) =>
+      prev.includes(name) ? prev.filter((item) => item !== name) : [...prev, name]
     );
   };
 
@@ -125,6 +129,7 @@ const LiabilityCauseTable = () => {
     setSelectedItem(null);
   };
 
+
   if (isLoading) return (
       <div className="flex min-h-96 items-center justify-center">
           <LoadingAnimation variant="spinner" message="Loading liability causes..." size="lg" />
@@ -151,12 +156,12 @@ const LiabilityCauseTable = () => {
               <div className="flex items-center gap-2">
                 <Checkbox
                   className="h-4 w-4 border-gray-500"
-                  checked={selectedItems.length === totalCount && totalCount > 0}
+                  checked={selectedLiabilityCauseNames.length === totalCount && totalCount > 0}
                   onCheckedChange={(checked) => {
                     if (checked) {
-                      setSelectedItems(filteredLiabilities.map((item) => item.id));
+                      setSelectedLiabilityCauseNames(filteredLiabilities.map((item) => item.name));
                     } else {
-                      setSelectedItems([]);
+                      setSelectedLiabilityCauseNames([]);
                     }
                   }}
                 />
@@ -185,8 +190,8 @@ const LiabilityCauseTable = () => {
             <Checkbox
               className="h-4 w-4 border-gray-500"
               id={`select-${item.id}`}
-              checked={selectedItems.includes(item.id)}
-              onCheckedChange={() => toggleSelection(item.id)}
+              checked={selectedLiabilityCauseNames.includes(item.name)}
+              onCheckedChange={() => toggleSelection(item.name)}
             />
             <span className="text-sm text-gray-900">
               {index + 1 + (fetchParams.page - 1) * fetchParams.pageSize}
@@ -268,6 +273,7 @@ const LiabilityCauseTable = () => {
         onConfirm={handleConfirmAction}
         selectedItem={selectedItem}
       />
+
     </Card>
   );
 };
