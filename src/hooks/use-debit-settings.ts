@@ -15,6 +15,7 @@ import {
     bulkApprovePercentageRanges,
 } from "@/service/debit-settings-service";
 import {
+    type ApiResponse,
     type LiabilityCause,
     type LiabilityCausePayload,
     type UpdatedLiabilityCausePayload,
@@ -129,7 +130,7 @@ export const useBulkApproveLiabilityCauses = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: (liabilityCauses: { name: string }[]) => bulkApproveLiabilityCauses(liabilityCauses),
-        onSuccess: (response: any) => {
+        onSuccess: (response: ApiResponse<{ successCount: number; failedCount: number; totalRecords: number; failedRecords: string[] }>) => {
             toast.success(`${response.responsedata.successCount} of ${response.responsedata.totalRecords} liability causes approved successfully!`);
             queryClient.invalidateQueries({ queryKey: ["liability"] });
         },
@@ -143,7 +144,7 @@ export const useBulkApprovePercentageRanges = () => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: (percentageRanges: { code: string }[]) => bulkApprovePercentageRanges(percentageRanges),
-        onSuccess: (response: any) => {
+        onSuccess: (response: ApiResponse<{ successCount: number; failedCount: number; totalRecords: number; failedRecords: string[] }>) => {
             toast.success(`${response.responsedata.successCount} of ${response.responsedata.totalRecords} percentage ranges approved successfully!`);
             queryClient.invalidateQueries({ queryKey: ["percentageRange"] });
         },
