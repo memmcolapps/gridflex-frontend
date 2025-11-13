@@ -63,7 +63,7 @@ export const usePercentageRanges = (
     GetPercentageResponse,
     Error
   >({
-    queryKey: ["percentageRanges", params],
+    queryKey: ["percentageRange", params],
     queryFn: () => getAllPercentageRanges(params),
   });
 
@@ -75,7 +75,7 @@ export const usePercentageRanges = (
     mutationFn: (payload) =>
       reviewPercentageRange(payload.id, payload.approveStatus),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["percentageRanges"] });
+      queryClient.invalidateQueries({ queryKey: ["percentageRange"] });
     },
   });
 
@@ -108,7 +108,7 @@ export const useLiabilities = (params: FetchParams): UseLiabilitiesResult => {
     GetAllLiabilitiesResponse,
     Error
   >({
-    queryKey: ["liabilities", params],
+    queryKey: ["liability", params],
     queryFn: () => getAllLiabilities(params),
   });
 
@@ -135,7 +135,7 @@ export const useLiabilities = (params: FetchParams): UseLiabilitiesResult => {
           },
         );
       } else {
-        queryClient.invalidateQueries({ queryKey: ["liabilities"] });
+        queryClient.invalidateQueries({ queryKey: ["liability"] });
       }
     },
   });
@@ -330,7 +330,7 @@ export const useSingleBand = (
   id: string,
 ): UseQueryResult<GetBandResponse, Error> => {
   return useQuery<GetBandResponse, Error>({
-    queryKey: ["band", id],
+    queryKey: ["bands", id],
     queryFn: () => getBand(id),
     enabled: !!id,
   });
@@ -340,7 +340,7 @@ export const useSingleTariff = (
   id: string,
 ): UseQueryResult<GetTariffResponse, Error> => {
   return useQuery<GetTariffResponse, Error>({
-    queryKey: ["tariff", id],
+    queryKey: ["tariffs", id],
     queryFn: () => getTariff(id),
     enabled: !!id,
   });
@@ -350,7 +350,7 @@ export const useSingleMeter = (
   id: string,
 ): UseQueryResult<MeterResponse, Error> => {
   return useQuery<MeterResponse, Error>({
-    queryKey: ["meter", id],
+    queryKey: ["meters", id],
     queryFn: () => getMeter(id),
     enabled: !!id,
   });
