@@ -187,3 +187,39 @@ export const changePercentageRangeStatus = async (id: string, status: boolean): 
         throw error;
     }
 };
+
+// Bulk approve for liability causes
+export const bulkApproveLiabilityCauses = async (liabilityCauses: { name: string }[]): Promise<ApiResponse<{ successCount: number; failedCount: number; totalRecords: number; failedRecords: string[] }>> => {
+    try {
+        axiosInstance.defaults.headers.common.Authorization = getAuthHeader();
+        const response = await axiosInstance.put<ApiResponse<{ successCount: number; failedCount: number; totalRecords: number; failedRecords: string[] }>>('/debt-setting/service/liability-cause/bulk-approve', liabilityCauses);
+        if (response.data?.responsecode !== "000") {
+            throw new Error(response.data?.responsedesc || "Failed to bulk approve liability causes.");
+        }
+        return response.data;
+    } catch (error) {
+        console.error('Error bulk approving liability causes:', error);
+        if (axios.isAxiosError(error) && error.response) {
+            throw new Error(error.response.data?.responsedesc ?? "Failed to bulk approve liability causes.");
+        }
+        throw error;
+    }
+};
+
+// Bulk approve for percentage ranges
+export const bulkApprovePercentageRanges = async (percentageRanges: { code: string }[]): Promise<ApiResponse<{ successCount: number; failedCount: number; totalRecords: number; failedRecords: string[] }>> => {
+    try {
+        axiosInstance.defaults.headers.common.Authorization = getAuthHeader();
+        const response = await axiosInstance.put<ApiResponse<{ successCount: number; failedCount: number; totalRecords: number; failedRecords: string[] }>>('/debt-setting/service/percentage-range/bulk-approve', percentageRanges);
+        if (response.data?.responsecode !== "000") {
+            throw new Error(response.data?.responsedesc || "Failed to bulk approve percentage ranges.");
+        }
+        return response.data;
+    } catch (error) {
+        console.error('Error bulk approving percentage ranges:', error);
+        if (axios.isAxiosError(error) && error.response) {
+            throw new Error(error.response.data?.responsedesc ?? "Failed to bulk approve percentage ranges.");
+        }
+        throw error;
+    }
+};

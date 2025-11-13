@@ -186,37 +186,73 @@ export async function deactivateBand(
 }
 
 export async function activateBand(
-  bandId: string,
+   bandId: string,
 ): Promise<{ success: true } | { success: false; error: string }> {
-  try {
-    const token = localStorage.getItem("auth_token");
+   try {
+      const token = localStorage.getItem("auth_token");
 
-    const response = await axios.patch<BandResponse>(
-      `${API_URL}/band/service/change-state?bandId=${bandId}&status=true`,
-      {},
-      {
-        headers: {
-          "Content-Type": "application/json",
-          custom: CUSTOM_HEADER,
-          Authorization: `Bearer ${token}`,
-        },
-      },
-    );
+      const response = await axios.patch<BandResponse>(
+         `${API_URL}/band/service/change-state?bandId=${bandId}&status=true`,
+         {},
+         {
+            headers: {
+               "Content-Type": "application/json",
+               custom: CUSTOM_HEADER,
+               Authorization: `Bearer ${token}`,
+            },
+         },
+      );
 
-    if (response.data.responsecode !== "000") {
+      if (response.data.responsecode !== "000") {
+         return {
+            success: false,
+            error: response.data.responsedesc || "Failed to activate band",
+         };
+      }
+
       return {
-        success: false,
-        error: response.data.responsedesc || "Failed to activate band",
+         success: true,
       };
-    }
+   } catch (error) {
+      return {
+         success: false,
+         error: handleApiError(error),
+      };
+   }
+}
 
-    return {
-      success: true,
-    };
-  } catch (error) {
-    return {
-      success: false,
-      error: handleApiError(error),
-    };
-  }
+export async function bulkApproveBands(
+   bands: { name: string }[],
+): Promise<BandResult> {
+   try {
+      const token = localStorage.getItem("auth_token");
+
+      const response = await axios.put<BandResponse>(
+         `${API_URL}/band/service/bulk-approve`,
+         bands,
+         {
+            headers: {
+               "Content-Type": "application/json",
+               custom: CUSTOM_HEADER,
+               Authorization: `Bearer ${token}`,
+            },
+         },
+      );
+
+      if (response.data.responsecode !== "000") {
+         return {
+            success: false,
+            error: response.data.responsedesc || "Failed to bulk approve bands",
+         };
+      }
+
+      return {
+         success: true,
+      };
+   } catch (error: unknown) {
+      return {
+         success: false,
+         error: handleApiError(error),
+      };
+   }
 }

@@ -56,7 +56,7 @@ export default function EditProfileModal({ isOpen, onClose, onOpenChangePassword
             ...formData,
         };
         mutate(payload, {
-            onSuccess: (response) => {
+            onSuccess: (_response) => {
                 // Update the auth context with the form data (since API doesn't return user data)
                 const updatedUserInfo = {
                     ...user!,

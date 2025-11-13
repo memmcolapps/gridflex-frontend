@@ -11,8 +11,11 @@ import {
     updatePercentageRange,
     changeLiabilityCauseStatus,
     changePercentageRangeStatus,
+    bulkApproveLiabilityCauses,
+    bulkApprovePercentageRanges,
 } from "@/service/debit-settings-service";
 import {
+    type ApiResponse,
     type LiabilityCause,
     type LiabilityCausePayload,
     type UpdatedLiabilityCausePayload,
@@ -116,6 +119,34 @@ export const useChangePercentageRangeStatus = () => {
         onSuccess: (response) => {
             toast.success(response.responsedesc ?? "Percentage range status updated successfully!");
             queryClient.invalidateQueries({ queryKey: ["percentage-ranges"] });
+        },
+        onError: (error) => {
+            toast.error(error.message);
+        },
+    });
+};
+
+export const useBulkApproveLiabilityCauses = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (liabilityCauses: { name: string }[]) => bulkApproveLiabilityCauses(liabilityCauses),
+        onSuccess: (response: ApiResponse<{ successCount: number; failedCount: number; totalRecords: number; failedRecords: string[] }>) => {
+            toast.success(`${response.responsedata.successCount} of ${response.responsedata.totalRecords} liability causes approved successfully!`);
+            queryClient.invalidateQueries({ queryKey: ["liability"] });
+        },
+        onError: (error) => {
+            toast.error(error.message);
+        },
+    });
+};
+
+export const useBulkApprovePercentageRanges = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (percentageRanges: { code: string }[]) => bulkApprovePercentageRanges(percentageRanges),
+        onSuccess: (response: ApiResponse<{ successCount: number; failedCount: number; totalRecords: number; failedRecords: string[] }>) => {
+            toast.success(`${response.responsedata.successCount} of ${response.responsedata.totalRecords} percentage ranges approved successfully!`);
+            queryClient.invalidateQueries({ queryKey: ["percentageRange"] });
         },
         onError: (error) => {
             toast.error(error.message);
