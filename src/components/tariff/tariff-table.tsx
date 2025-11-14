@@ -16,7 +16,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Ban, MoreVertical, Pencil, UserCheck } from "lucide-react";
+import { Ban, CircleCheck, MoreVertical, Pencil, UserCheck } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -303,29 +303,31 @@ export function TariffTable({
                       align="center"
                       className="cursor-pointer bg-white"
                     >
-                      <DropdownMenuItem
-                        onSelect={() => {
-                          handleEditTariff(tariff);
-                        }}
-                      >
-                        <div className="flex w-full items-center gap-2 p-2">
-                          <Pencil size={14} />
-                          <span className="cursor-pointer">Edit Tariff</span>
-                        </div>
-                      </DropdownMenuItem>
+                      {tariff.approve_status === "Approved" && (
+                        <DropdownMenuItem
+                          onSelect={() => {
+                            handleEditTariff(tariff);
+                          }}
+                        >
+                          <div className="flex w-full items-center gap-2 p-2">
+                            <Pencil size={14} />
+                            <span className="cursor-pointer">Edit Tariff</span>
+                          </div>
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuItem
                         onSelect={() => {
                           handleToggleTariffStatus(tariff);
                         }}
                       >
-                        <div className="flex w-full items-center gap-2 p-2">
-                          {tariff.status !== false ? (
+                        <div className="flex w-full items-center gap-2">
+                          {tariff.approve_status === "Approved" ? (
                             <Ban size={14} />
                           ) : (
-                            <UserCheck size={14} />
+                            <CircleCheck size={14} />
                           )}
                           <span>
-                            {tariff.status !== false
+                            {tariff.approve_status === "Approved"
                               ? "Deactivate"
                               : "Activate"}
                           </span>

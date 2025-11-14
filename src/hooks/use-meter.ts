@@ -81,7 +81,7 @@ export const useUpdateManufacturer = () => {
 // Meter inventory hooks
 export const useMeterInventory = (filters?: MeterInventoryFilters) => {
   const { data, error, isLoading, refetch, isError } = useQuery({
-    queryKey: ["meter-inventory", filters],
+    queryKey: ["meters", filters],
     queryFn: () => fetchMeterInventory(filters),
     placeholderData: (previousData) => previousData,
   });
@@ -131,7 +131,7 @@ export const useAllocateMeter = () => {
     onSuccess: () => {
       toast.success("Meter Allocated successfully");
       queryClient.invalidateQueries({
-        queryKey: ["meter-inventory"],
+        queryKey: ["meters"],
       });
     },
     onError: (error) => {
@@ -152,7 +152,7 @@ export const useCreateMeter = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["meter-inventory"],
+        queryKey: ["meters"],
       });
     },
   });
@@ -169,7 +169,7 @@ export const useUpdateMeter = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["meter-inventory"],
+        queryKey: ["meters"],
       });
     },
   });
