@@ -311,6 +311,10 @@ const VendingTable = ({ searchQuery = "" }: VendingTableProps = {}) => {
                                         } as PrintTokenPayload;
                                         await printTokenMutation.mutateAsync(payload);
 
+                                        // Get adjustment amounts
+                                        const creditAdjustmentAmount = selectedTransaction.creditAdjustment?.[0]?.amount || 0;
+                                        const debitAdjustmentAmount = selectedTransaction.debitAdjustment?.[0]?.amount || 0;
+
                                         // Create HTML content for printing (formatted like a receipt)
                                         const printContent = `
                                             <html>
@@ -353,6 +357,7 @@ const VendingTable = ({ searchQuery = "" }: VendingTableProps = {}) => {
                                                         justify-content: space-between;
                                                         margin-bottom: 5px;
                                                         padding: 2px 0;
+                                                      
                                                     }
                                                     .label {
                                                         font-weight: bold;
@@ -457,14 +462,26 @@ const VendingTable = ({ searchQuery = "" }: VendingTableProps = {}) => {
 
                                                     ${selectedTransaction?.tokenType === "credit-token" ? `
                                                     <div class="amount-section">
+                                                     <div class="info-row">
+                                                            <span class="label">Credit Adjustment:</span>
+                                                            <span class="value">₦${selectedTransaction.creditAdjustment?.[0]?.amount
+                                                }</span>
+                                                        </div>
+                                                        <div class="info-row">
+                                                            <span class="label">Debit Adjustment:</span>
+                                                            <span class="value">₦${selectedTransaction.debitAdjustment?.[0]?.amount
+                                                }</span>
+                                                        </div>
                                                         <div class="info-row">
                                                             <span class="label">Amount Tendered:</span>
                                                             <span class="value">₦${selectedTransaction?.initialAmount?.toLocaleString() || 'N/A'}</span>
                                                         </div>
+                                                         
                                                         <div class="info-row">
                                                             <span class="label">VAT (${selectedTransaction?.vatAmount ? ((selectedTransaction.vatAmount / selectedTransaction.initialAmount) * 100).toFixed(1) : 'N/A'}%):</span>
                                                             <span class="value">₦${selectedTransaction?.vatAmount?.toLocaleString() || 'N/A'}</span>
                                                         </div>
+                                                      
                                                         <div class="info-row">
                                                             <span class="label">Units Purchased:</span>
                                                             <span class="value">${selectedTransaction?.unit?.toLocaleString() || 'N/A'}</span>

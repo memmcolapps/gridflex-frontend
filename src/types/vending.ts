@@ -1,7 +1,32 @@
 // vending.ts
 
+export interface LiabilityCause {
+  id: string;
+  orgId: string;
+  name: string;
+  code: string;
+  approveStatus: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Adjustment {
+  id: string;
+  meterId: string;
+  liabilityCauseId: string;
+  amount: number;
+  balance: number;
+  status: string;
+  type: string;
+  orgId: string;
+  payment: any[];
+  liabilityCause: LiabilityCause;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface VendingTransaction {
-  id:string;
+  id: string;
   transactionId: string;
   customerId: string;
   customerFullname: string;
@@ -24,13 +49,42 @@ export interface VendingTransaction {
   bandHour: string;
   userId: string;
   userFullname: string;
-  debitAdjustment: [];
-  creditAdjustment: [];
+  debitAdjustment: [
+    {
+      id: string;
+      meterId: string;
+      liabilityCauseId: string;
+      amount: number;
+      balance: number;
+      status: string;
+      type: string;
+      orgId: string;
+      payment: any[];
+      liabilityCause: LiabilityCause;
+      createdAt: string;
+      updatedAt: string;
+    },
+  ];
+  creditAdjustment: [
+    {
+      id: string;
+      meterId: string;
+      liabilityCauseId: string;
+      amount: number;
+      balance: number;
+      status: string;
+      type: string;
+      orgId: string;
+      payment: any[];
+      liabilityCause: LiabilityCause;
+      createdAt: string;
+      updatedAt: string;
+    },
+  ];
   createdAt: string;
   updatedAt: string;
   initialAmount: number;
   finalAmount: number;
- 
 }
 
 export interface GenerateCreditTokenPayload {
