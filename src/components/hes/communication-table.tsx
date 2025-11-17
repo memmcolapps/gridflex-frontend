@@ -1,6 +1,6 @@
 // components/CommunicationTable.tsx
 "use client";
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import {
     Table,
     TableBody,
@@ -18,76 +18,18 @@ import { toast } from 'sonner';
 import { Label } from '../ui/label';
 import { getStatusStyle } from '../status-style';
 import { PaginationControls } from '../ui/pagination-controls';
-
-interface RowData {
-    sn: string;
-    meterNo: string;
-    meterModel?: string;
-    status: string;
-    lastSync: string;
-    tamperState: string;
-    tamperSync: string;
-    relayControl: 'Connected' | 'Disconnected';
-    relaySync: string;
-    category?: 'Prepaid' | 'PostPaid';
-}
+import { useAllCommunicationReports } from '@/hooks/use-reports';
+import { type CommunicationReportData } from '@/types/reports';
 
 interface CommunicationTableProps {
-    data: RowData[];
     searchQuery?: string;
+    activeTab?: 'MD' | 'Non-MD';
 }
 
-// Initial dummy data for the MD table
-export const mdData: RowData[] = [
-    { sn: '01', meterNo: '6212456987', meterModel: 'MMX 310-NG', status: 'Offline', lastSync: '1:32am', tamperState: 'No Tamper', tamperSync: '2:30am', relayControl: 'Disconnected', relaySync: '2:30am' },
-    { sn: '02', meterNo: '6212456987', meterModel: 'MMX 110-NG', status: 'Online', lastSync: '1:00am', tamperState: 'Tamper Detected', tamperSync: '1:32am', relayControl: 'Disconnected', relaySync: '1:32am' },
-    { sn: '03', meterNo: '6212456987', meterModel: 'MMX 110-NG', status: 'Offline', lastSync: '1:00am', tamperState: 'No Tamper', tamperSync: '1:00am', relayControl: 'Disconnected', relaySync: '1:00am' },
-    { sn: '04', meterNo: '6212456987', meterModel: 'MMX 110-NG', status: 'Online', lastSync: '1:00am', tamperState: 'No Tamper', tamperSync: '1:00am', relayControl: 'Connected', relaySync: '1:00am' },
-    { sn: '05', meterNo: '6212456987', meterModel: 'MMX 310-NG', status: 'Online', lastSync: '1:00am', tamperState: 'No Tamper', tamperSync: '1:00am', relayControl: 'Connected', relaySync: '1:00am' },
-    { sn: '06', meterNo: '6212456987', meterModel: 'MMX 110-NG', status: 'Offline', lastSync: '1:00am', tamperState: 'No Tamper', tamperSync: '1:00am', relayControl: 'Connected', relaySync: '1:00am' },
-    { sn: '07', meterNo: '6212456987', meterModel: 'MMX 110-NG', status: 'Online', lastSync: '1:00am', tamperState: 'No Tamper', tamperSync: '1:00am', relayControl: 'Connected', relaySync: '1:00am' },
-    { sn: '08', meterNo: '6212456987', meterModel: 'MMX 310-NG', status: 'Online', lastSync: '1:00am', tamperState: 'No Tamper', tamperSync: '1:00am', relayControl: 'Connected', relaySync: '1:00am' },
-    { sn: '09', meterNo: '6212456987', meterModel: 'MMX 110-NG', status: 'Online', lastSync: '1:00am', tamperState: 'No Tamper', tamperSync: '1:00am', relayControl: 'Connected', relaySync: '1:00am' },
-    { sn: '10', meterNo: '6212456987', meterModel: 'MMX 110-NG', status: 'Online', lastSync: '1:00am', tamperState: 'No Tamper', tamperSync: '1:00am', relayControl: 'Connected', relaySync: '1:00am' },
-];
-
-// New dummy data for the non-MD table
-export const nonMdData: RowData[] = [
-    { sn: '01', meterNo: '6212456987', category: 'Prepaid', status: 'Offline', lastSync: '1:32am', tamperState: 'No Tamper', tamperSync: '2:30am', relayControl: 'Disconnected', relaySync: '2:30am' },
-    { sn: '02', meterNo: '6212456987', category: 'PostPaid', status: 'Online', lastSync: '1:00am', tamperState: 'Tamper Detected', tamperSync: '1:32am', relayControl: 'Disconnected', relaySync: '1:32am' },
-    { sn: '03', meterNo: '6212456987', category: 'PostPaid', status: 'Offline', lastSync: '1:00am', tamperState: 'No Tamper', tamperSync: '1:00am', relayControl: 'Disconnected', relaySync: '1:00am' },
-    { sn: '04', meterNo: '6212456987', category: 'Prepaid', status: 'Online', lastSync: '1:00am', tamperState: 'No Tamper', tamperSync: '1:00am', relayControl: 'Connected', relaySync: '1:00am' },
-    { sn: '05', meterNo: '6212456987', category: 'PostPaid', status: 'Online', lastSync: '1:00am', tamperState: 'No Tamper', tamperSync: '1:00am', relayControl: 'Connected', relaySync: '1:00am' },
-    { sn: '06', meterNo: '6212456987', category: 'Prepaid', status: 'Offline', lastSync: '1:00am', tamperState: 'No Tamper', tamperSync: '1:00am', relayControl: 'Connected', relaySync: '1:00am' },
-    { sn: '07', meterNo: '6212456987', category: 'Prepaid', status: 'Online', lastSync: '1:00am', tamperState: 'No Tamper', tamperSync: '1:00am', relayControl: 'Connected', relaySync: '1:00am' },
-    { sn: '08', meterNo: '6212456987', category: 'PostPaid', status: 'Online', lastSync: '1:00am', tamperState: 'No Tamper', tamperSync: '1:00am', relayControl: 'Connected', relaySync: '1:00am' },
-    { sn: '09', meterNo: '6212456987', category: 'Prepaid', status: 'Online', lastSync: '1:00am', tamperState: 'No Tamper', tamperSync: '1:00am', relayControl: 'Connected', relaySync: '1:00am' },
-    { sn: '10', meterNo: '6212456987', category: 'PostPaid', status: 'Offline', lastSync: '1:00am', tamperState: 'No Tamper', tamperSync: '1:00am', relayControl: 'Connected', relaySync: '1:00am' },
-];
-
-// The rest of your component remains the same.
-export function CommunicationTable({ data, searchQuery = "" }: CommunicationTableProps) {
+export function CommunicationTable({ searchQuery = "", activeTab = 'MD' }: CommunicationTableProps) {
     const [dialogOpen, setDialogOpen] = useState(false);
-    const [selectedRow, setSelectedRow] = useState<RowData | null>(null);
+    const [selectedRow, setSelectedRow] = useState<CommunicationReportData | null>(null);
     const [selectedRows, setSelectedRows] = useState<string[]>([]);
-    const [tableData, setTableData] = useState<RowData[]>(data);
-
-    // This is important to update the table data when the `data` prop changes
-    useEffect(() => {
-        setTableData(data);
-    }, [data]);
-
-    // Filter data based on search query
-    const filteredData = tableData.filter((item) => {
-        if (!searchQuery) return true;
-        const searchLower = searchQuery.toLowerCase();
-        return (
-            item.meterNo?.toLowerCase().includes(searchLower) ??
-            item.status?.toLowerCase().includes(searchLower) ??
-            item.meterModel?.toLowerCase().includes(searchLower) ??
-            item.category?.toLowerCase().includes(searchLower)
-        );
-    });
 
     const [isTokenDialogOpen, setIsTokenDialogOpen] = useState(false);
     const [token, setToken] = useState('');
@@ -95,13 +37,23 @@ export function CommunicationTable({ data, searchQuery = "" }: CommunicationTabl
 
     // --- Start of added pagination state and handlers ---
     const [currentPage, setCurrentPage] = useState(1);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [rowsPerPage, setRowsPerPage] = useState(10)
+
+
+    const { data: communicationReport, isLoading } = useAllCommunicationReports({
+        type: activeTab,  
+        page: currentPage - 1,  
+        size: rowsPerPage,
+        search: searchQuery
+    });
+
+    const filteredData = useMemo(() => {
+        return communicationReport ?? [];
+    }, [communicationReport]);
 
     const totalItems = filteredData.length;
-    const paginatedData = filteredData.slice(
-        (currentPage - 1) * rowsPerPage,
-        (currentPage - 1) * rowsPerPage + rowsPerPage
-    );
+    const paginatedData = filteredData;
+
 
 
     const handlePageSizeChange = (newPageSize: number) => {
@@ -110,47 +62,37 @@ export function CommunicationTable({ data, searchQuery = "" }: CommunicationTabl
     };
     // --- End of added pagination state and handlers ---
 
-    const handleRowClick = (rowData: RowData) => {
+    const handleRowClick = (rowData: CommunicationReportData) => {
         setSelectedRow(rowData);
         setDialogOpen(true);
     };
 
-    const handleCheckboxChange = (sn: string, isChecked: boolean) => {
+    const handleCheckboxChange = (serialNumber: string, isChecked: boolean) => {
         if (isChecked) {
-            setSelectedRows(prev => [...prev, sn]);
+            setSelectedRows(prev => [...prev, serialNumber]);
         } else {
-            setSelectedRows(prev => prev.filter(rowSn => rowSn !== sn));
+            setSelectedRows(prev => prev.filter(sn => sn !== serialNumber));
         }
     };
 
     const handleSelectAll = (isChecked: boolean) => {
         if (isChecked) {
-            setSelectedRows(paginatedData.map(row => row.sn));
+            setSelectedRows(paginatedData.map(row => row.serialNumber ?? ''));
         } else {
             setSelectedRows([]);
         }
     };
 
-    const handleConnectRelay = (sn: string) => {
-        setTableData(prevData =>
-            prevData.map(row =>
-                row.sn === sn ? { ...row, relayControl: 'Connected' } : row
-            )
-        );
-        toast.success(`Successfully connected relay for meter ${sn}`);
+    const handleConnectRelay = (serialNumber: string) => {
+        toast.success(`Successfully connected relay for meter ${serialNumber}`);
     };
 
-    const handleDisconnectRelay = (sn: string) => {
-        setTableData(prevData =>
-            prevData.map(row =>
-                row.sn === sn ? { ...row, relayControl: 'Disconnected' } : row
-            )
-        );
-        toast.error(`Successfully disconnected relay for meter ${sn}`);
+    const handleDisconnectRelay = (serialNumber: string) => {
+        toast.error(`Successfully disconnected relay for meter ${serialNumber}`);
     };
 
-    const handleSendToken = (sn: string) => {
-        setMeterToTokenize(sn);
+    const handleSendToken = (serialNumber: string) => {
+        setMeterToTokenize(serialNumber);
         setIsTokenDialogOpen(true);
     };
 
@@ -163,8 +105,13 @@ export function CommunicationTable({ data, searchQuery = "" }: CommunicationTabl
         setIsTokenDialogOpen(false);
     };
 
-    const hasCategory = tableData.length > 0 && tableData[0]?.category != null;
-    const hasMeterModel = tableData.length > 0 && tableData[0]?.meterModel != null;
+    // Determine which columns to show based on the data structure
+    // const hasCategory = paginatedData.length > 0 && paginatedData[0]?.category != null;
+    const hasMeterModel = paginatedData.length > 0 && paginatedData[0]?.meterModel != null;
+
+    if (isLoading) {
+        return <div className="p-4 text-center">Loading...</div>;
+    }
 
     return (
         <div className="rounded-md">
@@ -180,7 +127,7 @@ export function CommunicationTable({ data, searchQuery = "" }: CommunicationTabl
                         </TableHead>
                         <TableHead>S/N</TableHead>
                         <TableHead>Meter No.</TableHead>
-                        {hasCategory && <TableHead>Category</TableHead>}
+                        {/* {hasCategory && <TableHead>Category</TableHead>} */}
                         {hasMeterModel && <TableHead>Meter Model</TableHead>}
                         <TableHead>Status</TableHead>
                         <TableHead>Last Sync</TableHead>
@@ -192,9 +139,9 @@ export function CommunicationTable({ data, searchQuery = "" }: CommunicationTabl
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {paginatedData.map((row) => (
+                    {paginatedData.map((row, index) => (
                         <TableRow
-                            key={row.sn}
+                            key={row.serialNumber}
                             onClick={(e) => {
                                 if ((e.target as HTMLElement).tagName !== 'INPUT' && (e.target as HTMLElement).tagName !== 'BUTTON') {
                                     handleRowClick(row);
@@ -204,14 +151,14 @@ export function CommunicationTable({ data, searchQuery = "" }: CommunicationTabl
                         >
                             <TableCell onClick={(e) => e.stopPropagation()}>
                                 <Checkbox
-                                    checked={selectedRows.includes(row.sn)}
+                                    checked={selectedRows.includes(row.serialNumber ?? '')}
                                     className='mr-2 cursor-pointer'
-                                    onCheckedChange={(checked) => handleCheckboxChange(row.sn, Boolean(checked))}
+                                    onCheckedChange={(checked) => handleCheckboxChange(row.serialNumber ?? '', Boolean(checked))}
                                 />
                             </TableCell>
-                            <TableCell>{row.sn}</TableCell>
+                            <TableCell>{(currentPage - 1) * rowsPerPage + index + 1}</TableCell>
                             <TableCell>{row.meterNo}</TableCell>
-                            {hasCategory && <TableCell>{row.category}</TableCell>}
+                            {/* {hasCategory && <TableCell>{row.category}</TableCell>} */}
                             {hasMeterModel && <TableCell>{row.meterModel}</TableCell>}
                             <TableCell>
                                 <span className={getStatusStyle(row.status)}>
@@ -238,7 +185,7 @@ export function CommunicationTable({ data, searchQuery = "" }: CommunicationTabl
                                         {row.relayControl === 'Disconnected' ? (
                                             <DropdownMenuItem
                                                 className="cursor-pointer"
-                                                onClick={() => handleConnectRelay(row.sn)}
+                                                onClick={() => handleConnectRelay(row.serialNumber ?? '')}
                                             >
                                                 <CircleCheck size={14} className="mr-2" /> Connect Relay
                                             </DropdownMenuItem>
@@ -246,13 +193,13 @@ export function CommunicationTable({ data, searchQuery = "" }: CommunicationTabl
                                             <>
                                                 <DropdownMenuItem
                                                     className="cursor-pointer"
-                                                    onClick={() => handleDisconnectRelay(row.sn)}
+                                                    onClick={() => handleDisconnectRelay(row.serialNumber ?? '')}
                                                 >
                                                     <BanIcon size={14} className="mr-2" /> Disconnect Relay
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem
                                                     className="cursor-pointer"
-                                                    onClick={() => handleSendToken(row.sn)}
+                                                    onClick={() => handleSendToken(row.serialNumber ?? '')}
                                                 >
                                                     <SendIcon size={14} className="mr-2" /> Send Token
                                                 </DropdownMenuItem>
@@ -289,12 +236,12 @@ export function CommunicationTable({ data, searchQuery = "" }: CommunicationTabl
                                 <Label className="font-semibold">Meter Number:</Label>
                                 <span>{selectedRow.meterNo}</span>
                             </div>
-                            {selectedRow.category && (
+                            {/* {selectedRow.category && (
                                 <div className="grid grid-cols-2 gap-2">
                                     <Label className="font-semibold">Category:</Label>
                                     <span>{selectedRow.category}</span>
                                 </div>
-                            )}
+                            )} */}
                             {selectedRow.meterModel && (
                                 <div className="grid grid-cols-2 gap-2">
                                     <Label className="font-semibold">Meter Model:</Label>

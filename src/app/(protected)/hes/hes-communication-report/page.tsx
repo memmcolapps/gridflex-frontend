@@ -1,7 +1,6 @@
 // app/communication-report/page.tsx
 "use client";
 import { CommunicationTable } from '@/components/hes/communication-table';
-import { mdData, nonMdData } from '@/components/hes/communication-table';
 import { DailyReportDialog } from '@/components/hes/daily-report-dialog';
 import { FilterControl, SearchControl, SortControl } from '@/components/search-control';
 import { Button } from '@/components/ui/button';
@@ -14,16 +13,13 @@ import { useState } from 'react';
 export default function CommunicationReportPage() {
     const [openDialog, setOpenDialog] = useState(false);
     const [reportType, setReportType] = useState<'daily' | 'monthly'>('daily');
-    const [activeTab, setActiveTab] = useState('MD');
+    const [activeTab, setActiveTab] = useState<'MD' | 'Non-MD'>('MD');
     const [searchQuery, setSearchQuery] = useState('');
 
     const handleOpenDialog = (type: 'daily' | 'monthly') => {
         setReportType(type);
         setOpenDialog(true);
     };
-
-    // Conditionally select the data based on the active tab
-    const tableData = activeTab === 'MD' ? mdData : nonMdData;
 
     return (
         <div className="p-6">
@@ -63,7 +59,7 @@ export default function CommunicationReportPage() {
                 </div>
             </div>
 
-            <Tabs defaultValue="MD" className="mb-4" onValueChange={setActiveTab}>
+            <Tabs defaultValue="MD" className="mb-4" onValueChange={(value) => setActiveTab(value as 'MD' | 'Non-MD')}>
                 <TabsList>
                     <TabsTrigger
                         value="MD"
@@ -106,7 +102,7 @@ export default function CommunicationReportPage() {
                 </Button>
             </div>
             {/* Pass the selected data to the CommunicationTable component */}
-            <CommunicationTable data={tableData} searchQuery={searchQuery} />
+            <CommunicationTable searchQuery={searchQuery} activeTab={activeTab} />
             <DailyReportDialog
                 open={openDialog}
                 onOpenChange={setOpenDialog}
