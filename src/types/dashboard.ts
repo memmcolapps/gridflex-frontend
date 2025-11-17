@@ -36,3 +36,46 @@ export interface DashboardApiResponse {
   responsedesc: string;
   responsedata: DashboardResponseData;
 }
+
+export interface MeterSummary {
+  totalSmartMeters: number;
+  online: number;
+  offline: number;
+  failedCommands: number;
+}
+
+export interface CommunicationLogs {
+  timeLabel: string;
+  value: number;
+}
+
+export interface ScheduleRate {
+  activeRate: number;
+  pausedRate: number;
+}
+
+export interface CommunicationReport {
+  serialNumber: string;
+  meterNo: string;
+  meterModel: string;
+  status: string;
+  lastSync: string;
+  tamperState: string;
+  tamperSync: string;
+  relayControl: string;
+  relaySync: string;
+}
+
+export interface HesResponseData {
+  meterSummary: MeterSummary;
+  communicationLogs: CommunicationLogs[]
+  schedulerRate: ScheduleRate
+  communicationReport: CommunicationReport[]
+
+}
+
+export interface HesDashboardApiResponse {
+  responsecode: string;
+  responsedesc?: string;
+  responsedata: HesResponseData
+}
