@@ -1,7 +1,7 @@
 import axios from "axios";
 import { env } from "@/env";
 import { handleApiError } from "@/utils/error-handler";
-import { type DashboardApiResponse } from "@/types/dashboard";
+import { type HesDashboardApiResponse, type DashboardApiResponse } from "@/types/dashboard";
 
 const API_URL = env.NEXT_PUBLIC_BASE_URL;
 const CUSTOM_HEADER = env.NEXT_PUBLIC_CUSTOM_HEADER;
@@ -45,6 +45,41 @@ export async function getDashboard(filters?: DashboardFilters): Promise<
         error: response.data.responsedesc ?? "Failed to fetch dashboard",
       };
     }
+    return {
+      success: true,
+      data: response.data.responsedata,
+    };
+  } catch (error) {
+    const apiError = handleApiError(error);
+    return {
+      success: false,
+      error: apiError.message,
+    };
+  }
+}
+
+export async function getHesDashboard(): Promise<
+  { success: true; data: HesDashboardApiResponse["responsedata"] } | { success: false; error: string }
+> {
+  try {
+    const token = localStorage.getItem("auth_token");
+    const url = `${API_URL}/hes/service/dashboard`;
+
+    const response = await axios.get<HesDashboardApiResponse>(url, {
+      headers: {
+        "Content-Type": "application/json",
+        custom: CUSTOM_HEADER,
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (response.data.responsecode !== "000") {
+      return {
+        success: false,
+        error: response.data.responsedesc ?? "Failed to fetch meter summary",
+      };
+    }
+
     return {
       success: true,
       data: response.data.responsedata,

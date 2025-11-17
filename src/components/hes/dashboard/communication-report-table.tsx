@@ -19,30 +19,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { CircleCheck, MoreVertical, Send } from "lucide-react";
 import SendTokenDialog from "@/components/hes/dashboard/send-token-dialog";
-
-interface MeterData {
-  sNo: string;
-  meterNo: string;
-  model: string;
-  status: string;
-  lastSync: string;
-  tamperState: string;
-  tamperSync: string;
-  relayControl: string;
-  relaySync: string;
-  actions: string[];
-}
+import { useHesDashboard } from "@/hooks/use-dashboard";
 
 const CommunicationReportTable = () => {
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   const [selectedMeter, setSelectedMeter] = useState<string | null>(null);
-
-  const data: MeterData[] = [
-    { sNo: "01", meterNo: "6212465987", model: "MMX 310-NG", status: "Offline", lastSync: "1 min ago", tamperState: "No Tamper", tamperSync: "2 hours ago", relayControl: "Disconnected", relaySync: "2 hours ago", actions: ["Connect Relay", "Send Token"] },
-    { sNo: "02", meterNo: "6212465987", model: "MMX 110-NG", status: "Online", lastSync: "2 hours ago", tamperState: "Tamper Detected", tamperSync: "3 hours ago", relayControl: "Disconnected", relaySync: "3 hours ago", actions: ["Connect Relay", "Send Token"] },
-    { sNo: "03", meterNo: "6212465987", model: "MMX 110-NG", status: "Offline", lastSync: "2 hours ago", tamperState: "No Tamper", tamperSync: "3 hours ago", relayControl: "Disconnected", relaySync: "3 hours ago", actions: ["Connect Relay", "Send Token"] },
-    { sNo: "04", meterNo: "6212465987", model: "MMX 110-NG", status: "Online", lastSync: "2 hours ago", tamperState: "No Tamper", tamperSync: "3 hours ago", relayControl: "Connected", relaySync: "3 hours ago", actions: ["Connect Relay", "Send Token"] },
-  ];
+  const { data: hesDashboardData } = useHesDashboard()
+  const tableData = hesDashboardData?.communicationReport
 
   const handleSendToken = (meterNo: string) => {
     setSelectedMeter(meterNo);
@@ -76,11 +59,11 @@ const CommunicationReportTable = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.map((row) => (
-              <TableRow key={row.sNo}>
-                <TableCell>{row.sNo}</TableCell>
+            {tableData?.map((row) => (
+              <TableRow key={row.serialNumber}>
+                <TableCell>{row.serialNumber}</TableCell>
                 <TableCell>{row.meterNo}</TableCell>
-                <TableCell>{row.model}</TableCell>
+                <TableCell>{row.meterModel}</TableCell>
                 <TableCell className="text-left w-[120px]">
                   <div className="flex items-center">
                     <span className={getStatusStyle(row.status)}>
@@ -88,22 +71,22 @@ const CommunicationReportTable = () => {
                     </span>
                   </div>
                 </TableCell>
-                <TableCell>{row.lastSync}</TableCell>
-                <TableCell>{row.tamperState}</TableCell>
-                <TableCell>{row.tamperSync}</TableCell>
+                <TableCell className="truncate">{row.lastSync}</TableCell>
+                <TableCell className="truncate">{row.tamperState}</TableCell>
+                <TableCell className="truncate">{row.tamperSync}</TableCell>
                 <TableCell className="w-[120px]">
-                  <div className="flex items-center">
+                  <div className="flex items-center truncate">
                     <span className={getStatusStyle(row.relayControl)}>
                       {row.relayControl}
                     </span>
                   </div>
                 </TableCell>
-                <TableCell>{row.relaySync}</TableCell>
+                <TableCell className="truncate">{row.relaySync}</TableCell>
                 <TableCell>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="default" size="sm" className="border-gray-200 focus:ring-gray-500/0 cursor-pointer">
-                        <MoreVertical size={16} className="text-gray-500 border-gray-200"/>
+                        <MoreVertical size={16} className="text-gray-500 border-gray-200" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="center" className="w-48 bg-white shadow-lg">

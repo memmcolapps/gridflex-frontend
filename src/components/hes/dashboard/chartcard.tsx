@@ -20,7 +20,8 @@ import type { Props as DefaultLegendContentProps } from "recharts/types/componen
 
 // Define types for the data structures
 interface LineData {
-  hour: string;
+  timeLabel?: string; 
+  hour?: string;       
   value: number;
 }
 
@@ -28,6 +29,11 @@ interface PieData {
   name: string;
   value: number;
   fill?: string;
+}
+
+interface ScheduleRate {
+  activeRate: number;
+  pausedRate: number;
 }
 
 // Sample data
@@ -47,11 +53,19 @@ const pieData: PieData[] = [
 
 const PIE_COLORS = ["#10B981", "#C86900"];
 
-interface ChartCardProps {
+interface LineChartProps {
   title: string;
-  chartType: "line" | "pie";
-  data?: LineData[] | PieData[];
+  chartType: "line";
+  data?: LineData[];
 }
+
+interface PieChartProps {
+  title: string;
+  chartType: "pie";
+  data?: PieData[] | ScheduleRate;
+}
+
+type ChartCardProps = LineChartProps | PieChartProps;
 
 // Define type for legend payload entries
 interface LegendPayload {
@@ -127,7 +141,18 @@ const renderCustomLegend = ({ payload }: DefaultLegendContentProps): React.React
 };
 
 const ChartCard = ({ title, chartType, data }: ChartCardProps) => {
-  const chartData = data ?? (chartType === "line" ? lineData : pieData);
+  const chartData = React.useMemo(() => {
+    if (data) {
+      if (chartType === "pie" && !Array.isArray(data) && "activeRate" in data) {
+        return [
+          { name: "Active Schedule", value: data.activeRate, fill: "#10B981" },
+          { name: "Paused Schedule", value: data.pausedRate, fill: "#C86900" },
+        ];
+      }
+      return data;
+    }
+    return chartType === "line" ? lineData : pieData;
+  }, [data, chartType]);
 
   return (
     <Card className="w-full p-4 bg-white shadow-sm rounded-lg mt-4 border border-gray-200">
@@ -173,7 +198,7 @@ const ChartCard = ({ title, chartType, data }: ChartCardProps) => {
                   paddingAngle={0}
                   dataKey="value"
                 >
-                  {(chartData as PieData[]).map((entry, index) => (
+                  {Array.isArray(chartData) && (chartData as PieData[]).map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.fill ?? PIE_COLORS[index % PIE_COLORS.length]} />
                   ))}
                 </Pie>
