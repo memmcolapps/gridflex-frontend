@@ -79,7 +79,7 @@ interface LegendPayload {
 const renderTooltip = ({ active, payload }: TooltipProps<number, string>) => {
   if (!active || !payload?.length || !payload[0]?.payload) return null;
   const data = payload[0].payload as PieData | LineData;
-  const label = "name" in data ? data.value : "timeLabel" in data ? data.timeLabel : "Unknown";
+  const label = "name" in data ? data.name : "timeLabel" in data ? data.timeLabel : "value" in data ? data.value : 'Unknown' ;
   const backgroundColor = "fill" in data ? data.fill : "#3b82f6";
 
   return (
