@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useDashboard } from '@/hooks/use-dashboard';
 
 export const MeterStatus = () => {
-    const { data: dashboardData } = useDashboard();
+     const { data: dashboardData } = useDashboard(); // Uses unfiltered data
 
     const chartData = [
         {

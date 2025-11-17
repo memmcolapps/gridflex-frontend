@@ -18,13 +18,6 @@ import {
 } from "@/components/ui/table";
 import { useEffect, useState, useMemo } from "react";
 import { Card } from "../../ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import ViewEnergyImportDetails from "./view-energy-import-details";
 import ViewVirtualMetersDialog from "./view-virtual-meters-dialog";
@@ -235,7 +228,6 @@ export default function EnergyImportTable({
     return 0;
   });
 
-  const totalPages = Math.ceil(sortedData.length / rowsPerPage);
 
   const paginatedData = sortedData.slice(
     (currentPage - 1) * rowsPerPage,

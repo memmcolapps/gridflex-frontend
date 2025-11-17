@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Eye, EyeOff } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/context/auth-context";
 import { useUpdateProfile } from "@/hooks/use-profile";
 import { toast } from "sonner";
@@ -17,7 +17,7 @@ interface EditProfileModalProps {
 }
 
 export default function EditProfileModal({ isOpen, onClose, onOpenChangePassword }: EditProfileModalProps) {
-    const { user } = useAuth();
+    const { user, updateUser } = useAuth();
     const { mutate, isPending } = useUpdateProfile();
     const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState<UpdateProfilePayload>({
@@ -27,6 +27,19 @@ export default function EditProfileModal({ isOpen, onClose, onOpenChangePassword
         email: user?.email ?? "",
         phoneNumber: user?.phoneNumber ?? "N/A",
     });
+
+    // Reset form data when modal opens or user changes
+    useEffect(() => {
+        if (user && isOpen) {
+            setFormData({
+                id: user.id ?? "",
+                firstname: user.firstname ?? "",
+                lastname: user.lastname ?? "",
+                email: user.email ?? "",
+                phoneNumber: user.phoneNumber ?? "N/A",
+            });
+        }
+    }, [user, isOpen]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { id, value } = e.target;
@@ -43,7 +56,16 @@ export default function EditProfileModal({ isOpen, onClose, onOpenChangePassword
             ...formData,
         };
         mutate(payload, {
-            onSuccess: () => {
+            onSuccess: (_response) => {
+                // Update the auth context with the form data (since API doesn't return user data)
+                const updatedUserInfo = {
+                    ...user!,
+                    firstname: formData.firstname,
+                    lastname: formData.lastname,
+                    email: formData.email,
+                    phoneNumber: formData.phoneNumber,
+                };
+                updateUser(updatedUserInfo);
                 onClose();
             },
         });
@@ -118,19 +140,20 @@ export default function EditProfileModal({ isOpen, onClose, onOpenChangePassword
                                 <Input
                                     id="password"
                                     type={showPassword ? "text" : "password"}
-                                    value="••••••••"
+                                    value={showPassword ? "password123" : "••••••••"}
                                     className="pr-10 border-[rgba(228,231,236,1)]"
                                     disabled
+                                    readOnly
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute inset-y-0 right-0 flex items-center pr-3"
+                                    className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700"
                                 >
                                     {showPassword ? (
-                                        <Eye className="text-gray-500" size={14} />
+                                        <Eye  size={14} />
                                     ) : (
-                                        <EyeOff className="text-gray-500" size={14} />
+                                        <EyeOff size={14} />
                                     )}
                                 </button>
                             </div>

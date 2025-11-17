@@ -28,7 +28,7 @@ export function DeactivateTariffDialog({
   onConfirm,
   isLoading = false,
 }: DeactivateTariffDialogProps) {
-  const isActive = tariff?.status !== false;
+  const isActive = tariff?.approve_status === "Approved";
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
@@ -45,7 +45,7 @@ export function DeactivateTariffDialog({
               className={`flex h-16 w-16 items-center justify-center rounded-full ${
                 isActive !== false
                   ? "bg-red-100 text-red-600"
-                  : "bg-green-100 text-green-600"
+                  : "bg-blue-100 text-blue-600"
               }`}
             >
               <AlertTriangle size={28} />
@@ -55,7 +55,7 @@ export function DeactivateTariffDialog({
           {/* Header content */}
           <AlertDialogHeader className="space-y-2 text-center">
             <AlertDialogTitle className="text-xl font-semibold text-gray-900">
-              {isActive !== false ? "Deactivate" : "Activate"} Band
+              {isActive !== false ? "Deactivate" : "Activate"} Tariff
             </AlertDialogTitle>
             <AlertDialogDescription className="text-sm text-gray-600">
               {isActive !== false
@@ -75,7 +75,7 @@ export function DeactivateTariffDialog({
               className={`flex-1 rounded-lg px-4 py-2.5 font-medium text-white transition-colors ${
                 isActive !== false
                   ? "bg-red-600 hover:bg-red-700"
-                  : "bg-green-600 hover:bg-green-700"
+                  : "bg-[#161CCA] hover:bg-[#121eb3]"
               } ${isLoading ? "cursor-not-allowed opacity-50" : ""}`}
             >
               {isLoading

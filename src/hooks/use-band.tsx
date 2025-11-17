@@ -1,11 +1,12 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
-  fetchBands,
-  createBand,
-  type Band,
-  updateBand,
-  deactivateBand,
-  activateBand,
+   fetchBands,
+   createBand,
+   type Band,
+   updateBand,
+   deactivateBand,
+   activateBand,
+   bulkApproveBands,
 } from "../service/band-service";
 import { useAuth } from "../context/auth-context";
 import { queryClient } from "@/lib/queryClient";
@@ -78,18 +79,35 @@ export const useDeactivateBand = () => {
 };
 
 export const useActivateBand = () => {
-  return useMutation({
-    mutationFn: async (bandId: string) => {
-      const response = await activateBand(bandId);
-      if ("success" in response && !response.success) {
-        throw new Error(response.error);
-      }
-      return response;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["bands"],
-      });
-    },
-  });
+   return useMutation({
+      mutationFn: async (bandId: string) => {
+         const response = await activateBand(bandId);
+         if ("success" in response && !response.success) {
+            throw new Error(response.error);
+         }
+         return response;
+      },
+      onSuccess: () => {
+         queryClient.invalidateQueries({
+            queryKey: ["bands"],
+         });
+      },
+   });
+};
+
+export const useBulkApproveBands = () => {
+   return useMutation({
+      mutationFn: async (bands: { name: string }[]) => {
+         const response = await bulkApproveBands(bands);
+         if ("success" in response && !response.success) {
+            throw new Error(response.error);
+         }
+         return response;
+      },
+      onSuccess: () => {
+         queryClient.invalidateQueries({
+            queryKey: ["bands"],
+         });
+      },
+   });
 };

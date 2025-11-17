@@ -27,7 +27,12 @@ import { useBands } from '@/hooks/use-ReviewApproval';
 import type { FetchParams } from '@/service/reviewapproval-service';
 import { LoadingAnimation } from '@/components/ui/loading-animation';
 
-const BandTable = () => {
+interface BandTableProps {
+    selectedBandNames: string[];
+    setSelectedBandNames: React.Dispatch<React.SetStateAction<string[]>>;
+}
+
+const BandTable = ({ selectedBandNames, setSelectedBandNames }: BandTableProps) => {
     const [fetchParams, setFetchParams] = useState<FetchParams>({
         page: 1,
         pageSize: 10,
@@ -38,7 +43,7 @@ const BandTable = () => {
     });
     const [selectedRow, setSelectedRow] = useState<Band | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedItems, setSelectedItems] = useState<string[]>([]);
+    // const [selectedItems, setSelectedItems] = useState<string[]>([]);
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [confirmAction, setConfirmAction] = useState<'approve' | 'reject' | null>(null);
     const [selectedItem, setSelectedItem] = useState<Band | null>(null);
@@ -61,9 +66,9 @@ const BandTable = () => {
         setFetchParams({ ...fetchParams, pageSize, page: 1 });
     };
 
-    const toggleSelection = (id: string) => {
-        setSelectedItems((prev) =>
-            prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    const toggleSelection = (name: string) => {
+        setSelectedBandNames((prev) =>
+            prev.includes(name) ? prev.filter((item) => item !== name) : [...prev, name]
         );
     };
 
@@ -137,12 +142,12 @@ const BandTable = () => {
                             <div className="flex items-center gap-2">
                                 <Checkbox
                                     className="h-4 w-4 border-gray-500"
-                                    checked={selectedItems.length === totalCount && totalCount > 0}
+                                    checked={selectedBandNames.length === totalCount && totalCount > 0}
                                     onCheckedChange={(checked) => {
                                         if (checked) {
-                                            setSelectedItems(filteredBands.map((item) => item.id));
+                                            setSelectedBandNames(filteredBands.map((item) => item.name));
                                         } else {
-                                            setSelectedItems([]);
+                                            setSelectedBandNames([]);
                                         }
                                     }}
                                 />
@@ -171,8 +176,8 @@ const BandTable = () => {
                                         <Checkbox
                                             className="h-4 w-4 border-gray-500"
                                             id={`select-${item.id}`}
-                                            checked={selectedItems.includes(item.id)}
-                                            onCheckedChange={() => toggleSelection(item.id)}
+                                            checked={selectedBandNames.includes(item.name)}
+                                            onCheckedChange={() => toggleSelection(item.name)}
                                         />
                                         <span className="text-sm text-gray-900">
                                             {index + 1 + (fetchParams.page - 1) * fetchParams.pageSize}

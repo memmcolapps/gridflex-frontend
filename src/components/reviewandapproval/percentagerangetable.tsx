@@ -21,20 +21,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Ban, CheckCircle, EyeIcon, MoreVertical } from 'lucide-react';
 import ViewDetailsDialog from '@/components/reviewandapproval/viewpercentagedetailsdialog';
 import ConfirmDialog from '@/components/reviewandapproval/confirmapprovaldialog';
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationNext,
-  PaginationPrevious,
-} from '@/components/ui/pagination';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import type { PercentageRange } from '@/types/review-approval';
 import { usePercentageRanges } from '@/hooks/use-ReviewApproval';
 import type { FetchParams } from '@/service/reviewapproval-service';
@@ -42,7 +28,12 @@ import { toast } from 'sonner';
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { LoadingAnimation } from '@/components/ui/loading-animation';
 
-const PercentageRangeTable = () => {
+interface PercentageRangeTableProps {
+  selectedPercentageRangeCodes: string[];
+  setSelectedPercentageRangeCodes: React.Dispatch<React.SetStateAction<string[]>>;
+}
+
+const PercentageRangeTable = ({ selectedPercentageRangeCodes, setSelectedPercentageRangeCodes }: PercentageRangeTableProps) => {
   const [fetchParams, setFetchParams] = useState<FetchParams>({
     page: 1,
     pageSize: 10,
@@ -53,7 +44,6 @@ const PercentageRangeTable = () => {
   });
   const [selectedRow, setSelectedRow] = useState<PercentageRange | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedTariffs, setSelectedTariffs] = useState<string[]>([]);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState<'approve' | 'reject' | null>(null);
   const [selectedItem, setSelectedItem] = useState<PercentageRange | null>(null);
@@ -65,19 +55,6 @@ const PercentageRangeTable = () => {
   const filteredPercentageRanges = percentageRanges.filter(item => item.approveStatus !== 'Approved');
 
   const totalData = filteredPercentageRanges.length;
-  const totalPages = Math.ceil(totalData / fetchParams.pageSize);
-
-  const handlePrevious = () => {
-    setFetchParams({ ...fetchParams, page: Math.max(fetchParams.page - 1, 1) });
-  };
-
-  const handleNext = () => {
-    setFetchParams({ ...fetchParams, page: Math.min(fetchParams.page + 1, totalPages) });
-  };
-
-  const handleRowsPerPageChange = (value: string) => {
-    setFetchParams({ ...fetchParams, pageSize: Number(value), page: 1 });
-  };
 
   const handlePageChange = (page: number) => {
     setFetchParams({ ...fetchParams, page });
@@ -87,9 +64,9 @@ const PercentageRangeTable = () => {
     setFetchParams({ ...fetchParams, pageSize, page: 1 });
   };
 
-  const toggleSelection = (id: string) => {
-    setSelectedTariffs((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+  const toggleSelection = (code: string) => {
+    setSelectedPercentageRangeCodes((prev) =>
+      prev.includes(code) ? prev.filter((item) => item !== code) : [...prev, code]
     );
   };
 
@@ -137,6 +114,7 @@ const PercentageRangeTable = () => {
     setSelectedItem(null);
   };
 
+
   if (isLoading) return (
       <div className="flex min-h-96 items-center justify-center">
           <LoadingAnimation variant="spinner" message="Loading percentage ranges..." size="lg" />
@@ -161,12 +139,12 @@ const PercentageRangeTable = () => {
               <div className="flex items-center gap-2">
                 <Checkbox
                   className="h-4 w-4 border-gray-500"
-                  checked={selectedTariffs.length === dataToDisplay.length && dataToDisplay.length > 0}
+                  checked={selectedPercentageRangeCodes.length === dataToDisplay.length && dataToDisplay.length > 0}
                   onCheckedChange={(checked) => {
                     if (checked) {
-                      setSelectedTariffs(filteredPercentageRanges.map((item) => item.id));
+                      setSelectedPercentageRangeCodes(filteredPercentageRanges.map((item) => item.code));
                     } else {
-                      setSelectedTariffs([]);
+                      setSelectedPercentageRangeCodes([]);
                     }
                   }}
                 />
@@ -197,8 +175,8 @@ const PercentageRangeTable = () => {
                     <Checkbox
                       className="h-4 w-4 border-gray-500"
                       id={`select-${item.id}`}
-                      checked={selectedTariffs.includes(item.id)}
-                      onCheckedChange={() => toggleSelection(item.id)}
+                      checked={selectedPercentageRangeCodes.includes(item.code)}
+                      onCheckedChange={() => toggleSelection(item.code)}
                     />
                     <span className="text-sm text-gray-900">
                       {index + 1 + (fetchParams.page - 1) * fetchParams.pageSize}
@@ -284,6 +262,7 @@ const PercentageRangeTable = () => {
         onConfirm={handleConfirmAction}
         selectedItem={selectedItem}
       />
+
     </Card>
   );
 };

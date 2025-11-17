@@ -311,3 +311,43 @@ export async function exportTariff(params: ExportTariffParams = {}): Promise<Blo
     throw new Error(handleApiError(error));
   }
 }
+
+export interface BulkApproveTariffPayload {
+  name: string;
+}
+
+export async function bulkApproveTariffs(
+  tariffs: BulkApproveTariffPayload[],
+): Promise<{ success: true } | { success: false; error: string }> {
+  try {
+    const token = localStorage.getItem("auth_token");
+
+    const response = await axios.put<TariffResponse>(
+      `${API_URL}/tariff/service/bulk-approve`,
+      tariffs,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    if (response.data.responsecode !== "000") {
+      return {
+        success: false,
+        error: response.data.responsedesc || "Failed to bulk approve tariffs",
+      };
+    }
+
+    return {
+      success: true,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: handleApiError(error),
+    };
+  }
+}

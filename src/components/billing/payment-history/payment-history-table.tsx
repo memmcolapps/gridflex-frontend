@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 // components/billing/payment-history/payment-history-table.tsx
+import React from "react";
 import { useRouter } from "next/navigation";
 import {
   Pagination,
@@ -273,9 +274,6 @@ export default function PaymentHistoryTable({
     setCurrentPage(1);
   };
 
-  const handleRowClick = (rowData: RowData) => {
-    console.log('Clicked Ohkay')
-  }
 
   const handlePrevious = () => {
     setCurrentPage((prev) => Math.max(prev - 1, 1));
@@ -307,6 +305,16 @@ export default function PaymentHistoryTable({
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     }).format(amount);
+  };
+
+  const handleRowClick = (item: PaymentHistoryData, event: React.MouseEvent<HTMLTableRowElement>) => {
+    // Prevent row click when clicking on checkbox
+    if ((event.target as HTMLElement).closest('input[type="checkbox"]')) {
+      return;
+    }
+    
+    // Handle row click - for now just show details (similar to view button)
+    handleViewDetails(item);
   };
 
   return (
@@ -368,7 +376,7 @@ export default function PaymentHistoryTable({
               paginatedData.map((item, index) => (
                 <TableRow
                   key={item.id}
-                  onClick={(event) => handleRowClick(item)}
+                  onClick={() => handleViewDetails(item)}
                   className="cursor-pointer hover:bg-gray-50"
                 >
                   <TableCell className="px-4 py-3">

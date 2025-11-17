@@ -20,6 +20,7 @@ import {
 import {
   AlertTriangle,
   Ban,
+  CircleCheck,
   MoreVertical,
   Pencil,
   PlusCircleIcon,
@@ -329,29 +330,31 @@ export default function BandManagement() {
                         align="center"
                         className="cursor-pointer bg-white"
                       >
-                        <DropdownMenuItem
-                          onSelect={() => {
-                            handleEditBand(band);
-                          }}
-                        >
-                          <div className="flex w-full items-center gap-2 p-2">
-                            <Pencil size={14} />
-                            <span className="cursor-pointer">Edit Band</span>
-                          </div>
-                        </DropdownMenuItem>
+                        {band.approveStatus === "Approved" && (
+                          <DropdownMenuItem
+                            onSelect={() => {
+                              handleEditBand(band);
+                            }}
+                          >
+                            <div className="flex w-full items-center gap-2 p-2">
+                              <Pencil size={14} />
+                              <span className="cursor-pointer">Edit Band</span>
+                            </div>
+                          </DropdownMenuItem>
+                        )}
                         <DropdownMenuItem
                           onSelect={() => {
                             handleToggleBandStatus(band);
                           }}
                         >
                           <div className="flex w-full items-center gap-2 p-2">
-                            {band.status !== false ? (
+                            {band.approveStatus === "Approved" ? (
                               <Ban size={14} />
                             ) : (
-                              <UserCheck size={14} />
+                              <CircleCheck size={14} />
                             )}
                             <span>
-                              {band.status !== false
+                              {band.approveStatus === "Approved"
                                 ? "Deactivate"
                                 : "Activate"}
                             </span>
@@ -444,9 +447,9 @@ export default function BandManagement() {
             <div className="">
               <div
                 className={`flex h-16 w-16 items-center justify-center rounded-full ${
-                  bandToToggle?.status !== false
+                  bandToToggle?.approveStatus === "Approved"
                     ? "bg-red-100 text-red-600"
-                    : "bg-green-100 text-green-600"
+                    : "bg-blue-100 text-blue-600"
                 }`}
               >
                 <AlertTriangle size={28} />
@@ -456,11 +459,11 @@ export default function BandManagement() {
             {/* Header content */}
             <AlertDialogHeader className="space-y-2 text-center">
               <AlertDialogTitle className="text-xl font-semibold text-gray-900">
-                {bandToToggle?.status !== false ? "Deactivate" : "Activate"}{" "}
+                {bandToToggle?.approveStatus === "Approved" ? "Deactivate" : "Activate"}{" "}
                 Band
               </AlertDialogTitle>
               <AlertDialogDescription className="text-sm text-gray-600">
-                {bandToToggle?.status !== false
+                {bandToToggle?.approveStatus === "Approved"
                   ? "Are you sure you want to deactivate this band? It will no longer be available for use."
                   : "Are you sure you want to activate this band? It will be available for use."}
               </AlertDialogDescription>
@@ -475,14 +478,14 @@ export default function BandManagement() {
                 onClick={confirmToggleBandStatus}
                 disabled={isDeactivating || isActivating}
                 className={`flex-1 rounded-lg px-4 py-2.5 font-medium text-white transition-colors ${
-                  bandToToggle?.status !== false
+                  bandToToggle?.approveStatus === "Approved"
                     ? "bg-red-600 hover:bg-red-700"
-                    : "bg-green-600 hover:bg-green-700"
+                    : "bg-[#161CCA] hover:bg-[#121eb3]"
                 } ${isDeactivating || isActivating ? "cursor-not-allowed opacity-50" : ""}`}
               >
                 {isDeactivating || isActivating
-                  ? `${bandToToggle?.status !== false ? "Deactivating" : "Activating"}...`
-                  : bandToToggle?.status !== false
+                  ? `${bandToToggle?.approveStatus === "Approved" ? "Deactivating" : "Activating"}...`
+                  : bandToToggle?.approveStatus === "Approved"
                     ? "Deactivate"
                     : "Activate"}
               </AlertDialogAction>

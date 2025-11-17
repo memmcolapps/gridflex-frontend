@@ -18,7 +18,7 @@ import {
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { useGenerateCreditToken, usePrintToken, useCalculateCreditToken, useGenerateKCTToken, useGenerateClearTamperToken, useGenerateClearCreditToken, useGenerateKCTAndClearTamperToken, useGenerateCompensationToken } from "@/hooks/use-vending";
-import type { VendingTransaction, CalculateCreditTokenResponse, PrintTokenPayload } from "@/types/vending";
+import type { VendingTransaction, CalculateCreditTokenResponse } from "@/types/vending";
 
 interface TokenFormDialogProps {
     tokenType: string;

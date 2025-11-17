@@ -38,8 +38,6 @@ import CustomizedTransaction from "./customized-transactions";
 import CustomizedPerUnit from "./customized-per-unit";
 import CustomizedPerMeter from "./customized-per-meter";
 import CustomizedPerVending from "./customized-vend";
-import { Spinner } from "@/components/ui/spinner";
-import { Progress } from "@/components/ui/progress";
 import CustomReportTable from "../../frequently-used-reports/page";
 import { LoadingAnimation } from "@/components/ui/loading-animation";
 

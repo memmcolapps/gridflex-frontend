@@ -47,7 +47,7 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
     const isMeterActivated = selectedRow?.description === 'Meter Activated';
     const isMeterDetached = selectedRow?.description === 'Meter detached';
     const isMeterMigrated = selectedRow?.description === 'Meter Migrated';
-    const isNewlyAdded = selectedRow?.description === 'Newly added';
+    const isNewlyAdded = selectedRow?.description === 'Newly Added';
     const isMeterEdited = selectedRow?.description === 'Meter edited';
 
     const renderContent = () => {

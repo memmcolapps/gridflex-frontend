@@ -6,11 +6,13 @@ import {
   changeTariffApprovalStatus,
   updateTariff,
   exportTariff,
+  bulkApproveTariffs,
 } from "../service/tarriff-service";
 import type {
   TariffPayload,
   UpdateTariffPayload,
   ExportTariffParams,
+  BulkApproveTariffPayload,
 } from "../service/tarriff-service";
 import { useAuth } from "../context/auth-context";
 import { queryClient } from "@/lib/queryClient";
@@ -118,5 +120,22 @@ export const useUpdateTariff = () => {
 export const useExportTariff = () => {
   return useMutation<Blob, Error, ExportTariffParams>({
     mutationFn: exportTariff,
+  });
+};
+
+export const useBulkApproveTariffs = () => {
+  return useMutation({
+    mutationFn: async (tariffs: BulkApproveTariffPayload[]) => {
+      const response = await bulkApproveTariffs(tariffs);
+      if ("success" in response && !response.success) {
+        throw new Error(response.error);
+      }
+      return response;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["tariffs"],
+      });
+    },
   });
 };

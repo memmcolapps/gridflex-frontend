@@ -15,8 +15,8 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useDashboard } from '@/hooks/use-dashboard';
 
 export const MetersInstalledChart = () => {
-    const [activeChart, setActiveChart] = useState<'monthly'| 'yearly'>('monthly');
-    const { data: dashboardData } = useDashboard();
+     const [activeChart, setActiveChart] = useState<'monthly'| 'yearly'>('monthly');
+     const { data: dashboardData } = useDashboard(); // Uses unfiltered data
 
     const apiMonthlyData = dashboardData?.installedOverMonths?.map(item => ({
         month: item.month,

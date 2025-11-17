@@ -148,14 +148,13 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
                                 onChange={handleInputChange}
                                 onBlur={handleBlur}
                                 className={`border-[rgba(228,231,236,1)] ${errors.newPassword ? "border-red-500" : ""}`}
-                                disabled={!isRunning}
                             />
                             <button
                                 type="button"
-                                className="absolute inset-y-0 right-0 flex items-center pr-3"
+                                className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700"
                                 onClick={() => setShowNewPassword(!showNewPassword)}
                             >
-                                {showNewPassword ? <Eye size={14} className="text-gray-500" /> : <EyeOff size={14} className="text-gray-500" />}
+                                {showNewPassword ? <Eye size={14}  /> : <EyeOff size={14}  />}
                             </button>
                         </div>
                         {errors.newPassword && <p className="text-red-500 text-sm">{errors.newPassword}</p>}
@@ -173,14 +172,13 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
                                 onChange={handleInputChange}
                                 onBlur={handleBlur}
                                 className={`border-[rgba(228,231,236,1)] ${errors.confirmPassword ? "border-red-500" : ""}`}
-                                disabled={!isRunning}
                             />
                             <button
                                 type="button"
-                                className="absolute inset-y-0 right-0 flex items-center pr-3"
+                                className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700"
                                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                             >
-                                {showConfirmPassword ? <Eye size={14} className="text-gray-500" /> : <EyeOff size={14} className="text-gray-500" />}
+                                {showConfirmPassword ? <Eye size={14}  /> : <EyeOff size={14} />}
                             </button>
                         </div>
                         {errors.confirmPassword && <p className="text-red-500 text-sm">{errors.confirmPassword}</p>}

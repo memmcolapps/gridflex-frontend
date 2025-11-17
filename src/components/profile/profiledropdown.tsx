@@ -26,7 +26,15 @@ export default function ProfileDropdown({
     isLoading,
     isError,
     error,
+    refetch,
   } = useUser(authUser?.id);
+
+  // Refetch user data when authUser changes (after profile updates)
+  useEffect(() => {
+    if (authUser) {
+      refetch();
+    }
+  }, [authUser, refetch]);
 
   if (isLoading) {
     return (

@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { AlertTriangle, Loader2 } from "lucide-react"; // Import Loader2
+import { AlertTriangle } from "lucide-react";
 import type { Customer } from "@/types/customer-types";
 import type { MeterInventoryItem } from "@/types/meter-inventory";
 import type { VirtualMeterData } from "@/types/meter";
