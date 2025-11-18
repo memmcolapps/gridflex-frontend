@@ -219,7 +219,7 @@ export function TariffTable({
 
   const confirmToggleTariffStatus = () => {
     if (statusDialog.tariff) {
-      const newStatus = statusDialog.tariff.status === false;
+      const newStatus = statusDialog.tariff.approve_status !== "Approved";
       handleActivateAndDeactivateTariff(statusDialog.tariff, newStatus);
     }
   };

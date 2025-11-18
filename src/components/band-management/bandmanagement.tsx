@@ -175,9 +175,9 @@ export default function BandManagement() {
 
   const confirmToggleBandStatus = () => {
     if (bandToToggle) {
-      const isActive = bandToToggle.status !== false;
+      const isApproved = bandToToggle.approveStatus === "Approved";
 
-      if (isActive) {
+      if (isApproved) {
         deactivateBand(bandToToggle.id!, {
           onSuccess: () => {
             toast.success("Band deactivated successfully");
