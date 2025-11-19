@@ -48,8 +48,8 @@ export default function RecentIncidents() {
                                 {incident.message}
                               </span>
                               <span className="text-gray-600">
-                                User: `{incident.user.firstname}{" "}
-                                {incident.user.lastname}`
+                                User: `{incident.user?.firstname}{" "}
+                                {incident.user?.lastname}`
                               </span>
                               {/* {incident?.organization && ( */}
                               <span className="text-gray-600">
