@@ -298,7 +298,7 @@ export async function exportTariff(
         custom: CUSTOM_HEADER,
         Authorization: `Bearer ${token}`,
       },
-      responseType: "blob", // Important for file downloads
+      responseType: "blob",
     });
 
     // For file downloads, we don't check responsecode in the same way
