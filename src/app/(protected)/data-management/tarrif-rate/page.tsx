@@ -41,11 +41,8 @@ import {
 import React, { useState } from "react";
 import { toast } from "sonner";
 import { useBand } from "@/hooks/use-band";
-import { useCreateTariff, useTariff } from "@/hooks/use-tarrif";
+import { useCreateTariff, useTariff, useExportTariff } from "@/hooks/use-tarrif";
 import { LoadingAnimation } from "@/components/ui/loading-animation";
-import axios from "axios";
-import { env } from "@/env";
-import { axiosInstance } from "@/lib/axios";
 
 export default function TariffManagementPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -66,7 +63,7 @@ export default function TariffManagementPage() {
   const { bands, isLoading: bandsLoading, error: bandsError } = useBand();
   const { tariffs, isLoading, error: tariffError } = useTariff();
   const { mutate: createTariff } = useCreateTariff();
-  const [isExporting, setIsExporting] = useState(false);
+  const { mutate: exportTariff, isPending: isExporting } = useExportTariff();
 
   const handleInputChange = (field: string, value: string | Date | null) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -102,52 +99,26 @@ export default function TariffManagementPage() {
     }
   };
 
-  const handleExport = async () => {
-    try {
-      setIsExporting(true);
-      const token = localStorage.getItem("auth_token");
-      if (!token) {
-        throw new Error("Authentication token not found.");
-      }
+  const handleExport = () => {
+    exportTariff({}, {
+      onSuccess: (blob) => {
+        // Create a download link for the Excel file
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `tariff_export_${new Date().toISOString().split("T")[0]}.xlsx`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
 
-      const response = await axiosInstance.get(
-        `${env.NEXT_PUBLIC_BASE_URL}/tariff/service/export`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            custom: env.NEXT_PUBLIC_CUSTOM_HEADER,
-            Authorization: `Bearer ${token}`,
-          },
-          responseType: "blob",
-        },
-      );
-
-      // Create a download link for the Excel file
-      const url = window.URL.createObjectURL(response.data);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `tariff_export_${new Date().toISOString().split("T")[0]}.xlsx`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-
-      toast.success("Tariff export downloaded successfully!");
-    } catch (error: unknown) {
-      const errorMessage =
-        (
-          error as {
-            response?: { data?: { responsedesc?: string } };
-            message?: string;
-          }
-        )?.response?.data?.responsedesc ??
-        (error as { message?: string })?.message ??
-        "Failed to export tariff data. Please try again.";
-      toast.error(errorMessage);
-      console.error("Export error:", error);
-    } finally {
-      setIsExporting(false);
-    }
+        toast.success("Tariff export downloaded successfully!");
+      },
+      onError: (error) => {
+        toast.error(error.message || "Failed to export tariff data. Please try again.");
+        console.error("Export error:", error);
+      },
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
