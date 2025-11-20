@@ -1,6 +1,7 @@
 import axios from "axios";
 import { env } from "@/env";
 import { handleApiError } from "error";
+import { axiosInstance } from "@/lib/axios";
 
 const API_URL = env.NEXT_PUBLIC_BASE_URL;
 const CUSTOM_HEADER = env.NEXT_PUBLIC_CUSTOM_HEADER;
@@ -42,7 +43,7 @@ export async function fetchAuditLogs(
     page = page ?? 0;
     size = size ?? 10;
 
-    const response = await axios.get<AuditLogListResponse>(
+    const response = await axiosInstance.get<AuditLogListResponse>(
       `${API_URL}/audit-log/service/all?page=${page}&size=${size}`,
       {
         headers: {

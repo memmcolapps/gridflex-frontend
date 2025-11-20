@@ -1,6 +1,7 @@
 import axios from "axios";
 import { env } from "@/env";
 import { handleApiError } from "error";
+import { axiosInstance } from "@/lib/axios";
 
 export interface Tariff {
   id: string;
@@ -73,7 +74,7 @@ export async function fetchTariffs(): Promise<
   try {
     const token = localStorage.getItem("auth_token");
 
-    const response = await axios.get<TariffListResponse>(
+    const response = await axiosInstance.get<TariffListResponse>(
       `${API_URL}/tariff/service/all`,
       {
         headers: {
@@ -108,7 +109,7 @@ export async function createTariff(
   try {
     const token = localStorage.getItem("auth_token");
 
-    const response = await axios.post<TariffResponse>(
+    const response = await axiosInstance.post<TariffResponse>(
       `${API_URL}/tariff/service/create`,
       tariff,
       {
@@ -145,7 +146,7 @@ export async function changeTariffStatus(
   try {
     const token = localStorage.getItem("auth_token");
 
-    const response = await axios.patch<StatusChangeResponse>(
+    const response = await axiosInstance.patch<StatusChangeResponse>(
       `${API_URL}/tariff/service/change-state`,
       null,
       {
@@ -189,7 +190,7 @@ export async function changeTariffApprovalStatus(
     formData.append("tariffId", tariffId.toString());
     formData.append("approvalStatus", approvalStatus.toLowerCase());
 
-    const response = await axios.patch<ApprovalStatusResponse>(
+    const response = await axiosInstance.patch<ApprovalStatusResponse>(
       `${API_URL}/tariff/service/change-state`,
       null,
       {
@@ -241,7 +242,7 @@ export async function updateTariff(
   try {
     const token = localStorage.getItem("auth_token");
 
-    const response = await axios.put<TariffResponse>(
+    const response = await axiosInstance.put<TariffResponse>(
       `${API_URL}/tariff/service/update`,
       tariff,
       {
@@ -269,7 +270,9 @@ export async function updateTariff(
     };
   }
 }
-export async function exportTariff(params: ExportTariffParams = {}): Promise<Blob> {
+export async function exportTariff(
+  params: ExportTariffParams = {},
+): Promise<Blob> {
   try {
     const token = localStorage.getItem("auth_token");
     if (!token) {
@@ -289,13 +292,13 @@ export async function exportTariff(params: ExportTariffParams = {}): Promise<Blo
       ? `${API_URL}/tariff/service/export?${searchParams.toString()}`
       : `${API_URL}/tariff/service/export`;
 
-    const response = await axios.get(url, {
+    const response = await axiosInstance.get(url, {
       headers: {
         "Content-Type": "application/json",
         custom: CUSTOM_HEADER,
         Authorization: `Bearer ${token}`,
       },
-      responseType: 'blob', // Important for file downloads
+      responseType: "blob", // Important for file downloads
     });
 
     // For file downloads, we don't check responsecode in the same way
@@ -305,7 +308,7 @@ export async function exportTariff(params: ExportTariffParams = {}): Promise<Blo
       return response.data;
     } else {
       // If it's not a blob, it might be an error response
-      throw new Error('Failed to download file');
+      throw new Error("Failed to download file");
     }
   } catch (error) {
     throw new Error(handleApiError(error));
@@ -322,7 +325,7 @@ export async function bulkApproveTariffs(
   try {
     const token = localStorage.getItem("auth_token");
 
-    const response = await axios.put<TariffResponse>(
+    const response = await axiosInstance.put<TariffResponse>(
       `${API_URL}/tariff/service/bulk-approve`,
       tariffs,
       {

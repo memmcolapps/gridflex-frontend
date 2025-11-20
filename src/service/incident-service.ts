@@ -1,3 +1,4 @@
+import { axiosInstance } from "@/lib/axios";
 import axios from "axios";
 import { handleApiError } from "error";
 
@@ -6,14 +7,14 @@ const API_URL = process.env.NEXT_PUBLIC_BASE_URL;
 export interface Org {
   businessName: string;
   createdAt: string;
-  updatedAt: string
+  updatedAt: string;
 }
 
 export interface Client {
   firstname: string;
   lastname: string;
   createdAt: string;
-  updatedAt: string
+  updatedAt: string;
 }
 
 export interface IncidentReport {
@@ -35,7 +36,6 @@ export interface Incident {
   user: Client;
 }
 
-
 export interface IncidentResponse {
   responsecode: string;
   responsedesc: string;
@@ -47,12 +47,11 @@ export interface IncidentMessage {
 }
 
 export const createMessage = async (
-  data: IncidentMessage
+  data: IncidentMessage,
 ): Promise<IncidentResponse> => {
-  
-    const token = localStorage.getItem("auth_token");
+  const token = localStorage.getItem("auth_token");
 
-  const response = await axios.post<IncidentResponse>(
+  const response = await axiosInstance.post<IncidentResponse>(
     `${API_URL}/audit-log/service/incident/report`,
     data,
     {
@@ -60,7 +59,7 @@ export const createMessage = async (
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-    }
+    },
   );
 
   return response.data;
@@ -68,22 +67,22 @@ export const createMessage = async (
 
 export const getIncidentReports = async (
   page?: number,
-  size?: number
+  size?: number,
 ): Promise<{
   success: boolean;
-  data?: IncidentReport['responsedata'];
+  data?: IncidentReport["responsedata"];
   error?: string;
 }> => {
   try {
     const token = localStorage.getItem("auth_token");
-    const response = await axios.get<IncidentReport>(
+    const response = await axiosInstance.get<IncidentReport>(
       `${API_URL}/audit-log/service/incident/report/get`,
       {
         params: { page, size },
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      }
+      },
     );
 
     if (response.data.responsecode !== "000") {
@@ -92,7 +91,7 @@ export const getIncidentReports = async (
 
     return {
       success: true,
-      data: response.data.responsedata
+      data: response.data.responsedata,
     };
   } catch (error: unknown) {
     const errorResult = handleApiError(error, "incidentReport");

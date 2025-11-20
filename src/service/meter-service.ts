@@ -21,6 +21,7 @@ import {
   type UpdateMeterPayload,
   type MeterApiResponse,
 } from "@/types/meter";
+import { axiosInstance } from "@/lib/axios";
 
 const API_URL = env.NEXT_PUBLIC_BASE_URL;
 const CUSTOM_HEADER = env.NEXT_PUBLIC_CUSTOM_HEADER;
@@ -46,7 +47,7 @@ export async function fetchManufacturers(): Promise<
   try {
     const token = localStorage.getItem("auth_token");
 
-    const response = await axios.get<GetManufacturersResponse>(
+    const response = await axiosInstance.get<GetManufacturersResponse>(
       `${API_URL}/manufacturer/service/all`,
       {
         headers: {
@@ -81,7 +82,7 @@ export async function createManufacturer(
   try {
     const token = localStorage.getItem("auth_token");
 
-    const response = await axios.post<ApiResponse>(
+    const response = await axiosInstance.post<ApiResponse>(
       `${API_URL}/manufacturer/service/create`,
       manufacturer,
       {
@@ -116,7 +117,7 @@ export async function updateManufacturer(
   try {
     const token = localStorage.getItem("auth_token");
 
-    const response = await axios.put<ApiResponse>(
+    const response = await axiosInstance.put<ApiResponse>(
       `${API_URL}/manufacturer/service/update`,
       manufacturer,
 
@@ -175,7 +176,7 @@ export async function fetchMeterInventory(
       params.append("createdAt", queryFilters.createdAt);
     params.append("type", "inventory");
 
-    const response = await axios.get<GetMeterInventoryResponse>(
+    const response = await axiosInstance.get<GetMeterInventoryResponse>(
       `${API_URL}/meter/service/all`,
       {
         params,
@@ -215,7 +216,7 @@ export async function fetchBusinessHubs(orgId: string): Promise<
   try {
     const token = localStorage.getItem("auth_token");
 
-    const response = await axios.get<BusinessHubsApiData>(
+    const response = await axiosInstance.get<BusinessHubsApiData>(
       `${API_URL}/node/service/businessHub`,
       {
         params: {
@@ -247,7 +248,6 @@ export async function fetchBusinessHubs(orgId: string): Promise<
   }
 }
 
-
 export async function allocateMeter(
   meterNumber: string,
   regionId: string,
@@ -255,7 +255,7 @@ export async function allocateMeter(
   try {
     const token = localStorage.getItem("auth_token");
 
-    const response = await axios.post<MeterApiResponse>(
+    const response = await axiosInstance.post<MeterApiResponse>(
       `${API_URL}/meter/service/allocate?meterNumber=${encodeURIComponent(meterNumber)}&regionId=${encodeURIComponent(regionId)}`,
       {}, // Empty body since backend expects params, not body
       {
@@ -285,7 +285,7 @@ export async function createMeter(
   try {
     const token = localStorage.getItem("auth_token");
 
-    const response = await axios.post<MeterApiResponse>(
+    const response = await axiosInstance.post<MeterApiResponse>(
       `${API_URL}/meter/service/create`,
       meter,
       {
@@ -321,7 +321,7 @@ export async function updateMeter(
   try {
     const token = localStorage.getItem("auth_token");
 
-    const response = await axios.put<MeterApiResponse>(
+    const response = await axiosInstance.put<MeterApiResponse>(
       `${API_URL}/meter/service/update`,
       meter,
       {

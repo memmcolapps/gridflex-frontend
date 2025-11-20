@@ -8,6 +8,7 @@ import type {
   UpdateRegionBhubServiceCenterPayload,
   UpdateSubstationTransfomerFeederPayload,
 } from "@/types/organization-types";
+import { axiosInstance } from "@/lib/axios";
 
 export interface NodeInfo {
   id: string;
@@ -55,7 +56,7 @@ export async function fetchOrganizationNodes(): Promise<
   try {
     const token = localStorage.getItem("auth_token");
 
-    const response = await axios.get<OrganizationResponse>(
+    const response = await axiosInstance.get<OrganizationResponse>(
       `${API_URL}/node/service/all`,
       {
         headers: {
@@ -90,7 +91,7 @@ export const createRegionBhubServiceCenter = async (
 ): Promise<{ success: boolean } | { success: boolean; error: string }> => {
   try {
     const token = localStorage.getItem("auth_token");
-    const response = await axios.post<CreateOrgResponse>(
+    const response = await axiosInstance.post<CreateOrgResponse>(
       `${API_URL}/node/service/create/node/region-bhub-service-center`,
       payload,
       {
@@ -123,7 +124,7 @@ export const updateRegionBhubServiceCenter = async (
 ): Promise<{ success: boolean } | { success: boolean; error: string }> => {
   try {
     const token = localStorage.getItem("auth_token");
-    const response = await axios.put<CreateOrgResponse>(
+    const response = await axiosInstance.put<CreateOrgResponse>(
       `${API_URL}/node/service/update/node/region-bhub-service-center`,
       payload,
       {
@@ -157,7 +158,7 @@ export const createSubstationTransfomerFeeder = async (
 ): Promise<{ success: boolean } | { success: boolean; error: string }> => {
   try {
     const token = localStorage.getItem("auth_token");
-    const response = await axios.post<CreateOrgResponse>(
+    const response = await axiosInstance.post<CreateOrgResponse>(
       `${API_URL}/node/service/create/node/substation-transformer-feeder-line`,
       payload,
       {
@@ -191,7 +192,7 @@ export const updateSubstationTransfomerFeeder = async (
 ): Promise<{ success: boolean } | { success: boolean; error: string }> => {
   try {
     const token = localStorage.getItem("auth_token");
-    const response = await axios.put<CreateOrgResponse>(
+    const response = await axiosInstance.put<CreateOrgResponse>(
       `${API_URL}/node/service/update/node/substation-transformer-feeder-line`,
       payload,
       {

@@ -15,13 +15,13 @@ interface LoginResponseData {
   user_info: UserInfo;
 }
 
-interface LogoutResponse{
+interface LogoutResponse {
   responsecode: string;
   responsedesc: string;
   responsedata: LogoutResponseData;
 }
 
-interface LogoutResponseData{
+interface LogoutResponseData {
   success?: boolean;
   message: string;
 }
@@ -63,7 +63,7 @@ export async function loginApi(
 
 export const logoutApi = async (
   token: string,
-  username: string
+  username: string,
 ): Promise<LogoutResponse> => {
   const formData = new FormData();
   formData.append("username", username);

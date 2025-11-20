@@ -1,6 +1,7 @@
 import axios from "axios";
 import { env } from "@/env";
 import { handleApiError } from "error";
+import { axiosInstance } from "@/lib/axios";
 
 export interface Band {
   id?: string;
@@ -33,7 +34,7 @@ export async function createBand(band: Omit<Band, "id">): Promise<BandResult> {
   try {
     const token = localStorage.getItem("auth_token");
 
-    const response = await axios.post<BandResponse>(
+    const response = await axiosInstance.post<BandResponse>(
       `${API_URL}/band/service/create`,
       {
         name: band.name,
@@ -72,7 +73,7 @@ export async function fetchBands(): Promise<
   try {
     const token = localStorage.getItem("auth_token");
 
-    const response = await axios.get<BandListResponse>(
+    const response = await axiosInstance.get<BandListResponse>(
       `${API_URL}/band/service/all`,
       {
         headers: {
@@ -108,7 +109,7 @@ export async function updateBand(
   try {
     const token = localStorage.getItem("auth_token");
 
-    const response = await axios.put<BandResponse>(
+    const response = await axiosInstance.put<BandResponse>(
       `${API_URL}/band/service/update`,
       {
         bandId: band.id,
@@ -148,7 +149,7 @@ export async function deactivateBand(
   try {
     const token = localStorage.getItem("auth_token");
 
-    const response = await axios.patch<BandResponse>(
+    const response = await axiosInstance.patch<BandResponse>(
       `${API_URL}/band/service/change-state?bandId=${bandId}&status=false`,
       {},
       {
@@ -186,73 +187,73 @@ export async function deactivateBand(
 }
 
 export async function activateBand(
-   bandId: string,
+  bandId: string,
 ): Promise<{ success: true } | { success: false; error: string }> {
-   try {
-      const token = localStorage.getItem("auth_token");
+  try {
+    const token = localStorage.getItem("auth_token");
 
-      const response = await axios.patch<BandResponse>(
-         `${API_URL}/band/service/change-state?bandId=${bandId}&status=true`,
-         {},
-         {
-            headers: {
-               "Content-Type": "application/json",
-               custom: CUSTOM_HEADER,
-               Authorization: `Bearer ${token}`,
-            },
-         },
-      );
+    const response = await axiosInstance.patch<BandResponse>(
+      `${API_URL}/band/service/change-state?bandId=${bandId}&status=true`,
+      {},
+      {
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
 
-      if (response.data.responsecode !== "000") {
-         return {
-            success: false,
-            error: response.data.responsedesc || "Failed to activate band",
-         };
-      }
-
+    if (response.data.responsecode !== "000") {
       return {
-         success: true,
+        success: false,
+        error: response.data.responsedesc || "Failed to activate band",
       };
-   } catch (error) {
-      return {
-         success: false,
-         error: handleApiError(error),
-      };
-   }
+    }
+
+    return {
+      success: true,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: handleApiError(error),
+    };
+  }
 }
 
 export async function bulkApproveBands(
-   bands: { name: string }[],
+  bands: { name: string }[],
 ): Promise<BandResult> {
-   try {
-      const token = localStorage.getItem("auth_token");
+  try {
+    const token = localStorage.getItem("auth_token");
 
-      const response = await axios.put<BandResponse>(
-         `${API_URL}/band/service/bulk-approve`,
-         bands,
-         {
-            headers: {
-               "Content-Type": "application/json",
-               custom: CUSTOM_HEADER,
-               Authorization: `Bearer ${token}`,
-            },
-         },
-      );
+    const response = await axiosInstance.put<BandResponse>(
+      `${API_URL}/band/service/bulk-approve`,
+      bands,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
 
-      if (response.data.responsecode !== "000") {
-         return {
-            success: false,
-            error: response.data.responsedesc || "Failed to bulk approve bands",
-         };
-      }
-
+    if (response.data.responsecode !== "000") {
       return {
-         success: true,
+        success: false,
+        error: response.data.responsedesc || "Failed to bulk approve bands",
       };
-   } catch (error: unknown) {
-      return {
-         success: false,
-         error: handleApiError(error),
-      };
-   }
+    }
+
+    return {
+      success: true,
+    };
+  } catch (error: unknown) {
+    return {
+      success: false,
+      error: handleApiError(error),
+    };
+  }
 }

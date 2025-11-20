@@ -10,6 +10,7 @@ import {
   type GetUsersApiResponse,
   type GetUsersResponseData,
 } from "@/types/users-groups";
+import { axiosInstance } from "@/lib/axios";
 
 const API_URL = env.NEXT_PUBLIC_BASE_URL;
 const CUSTOM_HEADER = env.NEXT_PUBLIC_CUSTOM_HEADER;
@@ -45,7 +46,7 @@ export async function getGroupPermission(): Promise<
 > {
   try {
     const token = localStorage.getItem("auth_token");
-    const response = await axios.get<GroupPermissionResponse>(
+    const response = await axiosInstance.get<GroupPermissionResponse>(
       `${API_URL}/user/service/groups`,
       {
         headers: {
@@ -78,7 +79,7 @@ export async function createGroupPermission(
 ): Promise<{ success: true } | { success: false; error: string }> {
   try {
     const token = localStorage.getItem("auth_token");
-    const response = await axios.post<GroupPermissionResponse>(
+    const response = await axiosInstance.post<GroupPermissionResponse>(
       `${API_URL}/user/service/create/group-permission`,
       payload,
       {
@@ -113,7 +114,7 @@ export async function updateGroupPermission(
 ): Promise<{ success: true } | { success: false; error: string }> {
   try {
     const token = localStorage.getItem("auth_token");
-    const response = await axios.put<GroupPermissionResponse>(
+    const response = await axiosInstance.put<GroupPermissionResponse>(
       `${API_URL}/user/service/update/group-permission`,
       payload,
       {
@@ -149,7 +150,7 @@ export async function updateGroupPermissionField(
 ): Promise<{ success: true } | { success: false; error: string }> {
   try {
     const token = localStorage.getItem("auth_token");
-    const response = await axios.patch<GroupPermissionResponse>(
+    const response = await axiosInstance.patch<GroupPermissionResponse>(
       `${API_URL}/user/service/update/group-permission`,
       {
         permissionType,
@@ -186,7 +187,7 @@ export async function deactivateOrActivateGroupPermission(
 ): Promise<{ success: true } | { success: false; error: string }> {
   try {
     const token = localStorage.getItem("auth_token");
-    const response = await axios.patch<GroupPermissionResponse>(
+    const response = await axiosInstance.patch<GroupPermissionResponse>(
       `${API_URL}/user/service/group/change-state?groupId=${groupId}&status=${status}`,
       {},
       {
@@ -230,7 +231,7 @@ export async function getUsers(): Promise<
 > {
   try {
     const token = localStorage.getItem("auth_token");
-    const response = await axios.get<GetUsersApiResponse>(
+    const response = await axiosInstance.get<GetUsersApiResponse>(
       `${API_URL}/user/service/all`,
       {
         headers: {
@@ -263,13 +264,17 @@ export async function createUser(
 ): Promise<{ success: true } | { success: false; error: string }> {
   try {
     const token = localStorage.getItem("auth_token");
-    const response = await axios.post(`${API_URL}/user/service/create`, user, {
-      headers: {
-        "Content-Type": "application/json",
-        custom: CUSTOM_HEADER,
-        Authorization: `Bearer ${token}`,
+    const response = await axiosInstance.post(
+      `${API_URL}/user/service/create`,
+      user,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
       },
-    });
+    );
     if (response.data.responsecode !== "000") {
       return {
         success: false,
@@ -303,7 +308,7 @@ export async function editUser(
 ): Promise<{ success: true } | { success: false; error: string }> {
   try {
     const token = localStorage.getItem("auth_token");
-    const response = await axios.put(
+    const response = await axiosInstance.put(
       `${API_URL}/user/service/group/update`,
       user,
       {
@@ -338,7 +343,7 @@ export async function activateOrDeactivateUser(
   try {
     const token = localStorage.getItem("auth_token");
 
-    const response = await axios.patch(
+    const response = await axiosInstance.patch(
       `${API_URL}/user/service/change-state`,
       { status, id: userId },
       {

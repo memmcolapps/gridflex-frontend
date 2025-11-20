@@ -12,6 +12,7 @@ import type {
   VendingDashboardPayload,
   PrintTokenPayload,
 } from "@/types/vending";
+import { axiosInstance } from "@/lib/axios";
 
 const API_URL = env.NEXT_PUBLIC_BASE_URL;
 const CUSTOM_HEADER = env.NEXT_PUBLIC_CUSTOM_HEADER;
@@ -30,7 +31,7 @@ export async function generateCreditToken(
         error: "Authorization token not found",
       };
     }
-    const response = await axios.post<GenerateCreditTokenResponse>(
+    const response = await axiosInstance.post<GenerateCreditTokenResponse>(
       `${API_URL}/vending/service/generate/token/credit`,
       payload,
       {
@@ -94,7 +95,7 @@ export async function generateKCTToken(
         error: "Authorization token not found",
       };
     }
-    const response = await axios.post<GenerateKCTResponse>(
+    const response = await axiosInstance.post<GenerateKCTResponse>(
       `${API_URL}/vending/service/generate/token/kct`,
       payload,
       {
@@ -152,7 +153,7 @@ export async function generateClearTamperToken(
         error: "Authorization token not found",
       };
     }
-    const response = await axios.post<GenerateClearTamperResponse>(
+    const response = await axiosInstance.post<GenerateClearTamperResponse>(
       `${API_URL}/vending/service/generate/token/clear-tamper`,
       payload,
       {
@@ -211,7 +212,7 @@ export async function generateClearCreditToken(
         error: "Authorization token not found",
       };
     }
-    const response = await axios.post<GenerateClearCreditResponse>(
+    const response = await axiosInstance.post<GenerateClearCreditResponse>(
       `${API_URL}/vending/service/generate/token/clear-credit`,
       payload,
       {
@@ -273,17 +274,18 @@ export async function generateKCTAndClearTamperToken(
       };
     }
     console.log("KCT and Clear Tamper API call payload:", payload);
-    const response = await axios.post<GenerateKCTAndClearTamperResponse>(
-      `${API_URL}/vending/service/generate/token/kct-clear-tamper`,
-      payload,
-      {
-        headers: {
-          "Content-Type": "application/json",
-          custom: CUSTOM_HEADER,
-          Authorization: `Bearer ${token}`,
+    const response =
+      await axiosInstance.post<GenerateKCTAndClearTamperResponse>(
+        `${API_URL}/vending/service/generate/token/kct-clear-tamper`,
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            custom: CUSTOM_HEADER,
+            Authorization: `Bearer ${token}`,
+          },
         },
-      },
-    );
+      );
     console.log("KCT and Clear Tamper API response:", response.data);
 
     if (response.data.responsecode !== "000") {
@@ -336,7 +338,7 @@ export async function generateCompensationToken(
         error: "Authorization token not found",
       };
     }
-    const response = await axios.post<GenerateCompensationResponse>(
+    const response = await axiosInstance.post<GenerateCompensationResponse>(
       `${API_URL}/vending/service/generate/token/compensation`,
       payload,
       {
@@ -392,7 +394,7 @@ export async function printToken(
     }
 
     console.log("Service making API call with payload:", payload);
-    const response = await axios.get(
+    const response = await axiosInstance.get(
       `${API_URL}/vending/service/generate/token/print`,
       {
         params: { id: payload.id, tokenType: payload.tokenType },
@@ -448,7 +450,7 @@ export async function calculateCreditToken(payload: {
       initialAmount: payload.initialAmount,
     };
 
-    const response = await axios.post<CalculateCreditTokenResponse>(
+    const response = await axiosInstance.post<CalculateCreditTokenResponse>(
       `${API_URL}/vending/service/generate/token/credit/calculate`,
       requestPayload,
       {
@@ -491,9 +493,10 @@ export interface GetVendingTransactionsResponse {
   };
 }
 
-export async function getVendingTransactions(
-  payload?: { page?: number; size?: number },
-): Promise<
+export async function getVendingTransactions(payload?: {
+  page?: number;
+  size?: number;
+}): Promise<
   | { success: true; data: GetVendingTransactionsResponse["responsedata"] }
   | { success: false; error: string }
 > {
@@ -507,10 +510,12 @@ export async function getVendingTransactions(
     }
 
     const params = new URLSearchParams();
-    if (payload?.page !== undefined) params.append("page", payload.page.toString());
-    if (payload?.size !== undefined) params.append("size", payload.size.toString());
+    if (payload?.page !== undefined)
+      params.append("page", payload.page.toString());
+    if (payload?.size !== undefined)
+      params.append("size", payload.size.toString());
 
-    const response = await axios.get<GetVendingTransactionsResponse>(
+    const response = await axiosInstance.get<GetVendingTransactionsResponse>(
       `${API_URL}/vending/service/generate/token/all?${params.toString()}`,
       {
         headers: {
@@ -558,9 +563,10 @@ export async function getVendingDashboardData(
     const params = new URLSearchParams();
     if (payload?.band) params.append("band", payload.band);
     if (payload?.year) params.append("year", payload.year);
-    if (payload?.meterCategory) params.append("meterCategory", payload.meterCategory);
+    if (payload?.meterCategory)
+      params.append("meterCategory", payload.meterCategory);
 
-    const response = await axios.get<VendingDashboardResponse>(
+    const response = await axiosInstance.get<VendingDashboardResponse>(
       `${API_URL}/dashboard/service/vending?${params.toString()}`,
       {
         headers: {

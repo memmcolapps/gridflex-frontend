@@ -45,6 +45,7 @@ import { useCreateTariff, useTariff } from "@/hooks/use-tarrif";
 import { LoadingAnimation } from "@/components/ui/loading-animation";
 import axios from "axios";
 import { env } from "@/env";
+import { axiosInstance } from "@/lib/axios";
 
 export default function TariffManagementPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -109,20 +110,23 @@ export default function TariffManagementPage() {
         throw new Error("Authentication token not found.");
       }
 
-      const response = await axios.get(`${env.NEXT_PUBLIC_BASE_URL}/tariff/service/export`, {
-        headers: {
-          "Content-Type": "application/json",
-          custom: env.NEXT_PUBLIC_CUSTOM_HEADER,
-          Authorization: `Bearer ${token}`,
+      const response = await axiosInstance.get(
+        `${env.NEXT_PUBLIC_BASE_URL}/tariff/service/export`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            custom: env.NEXT_PUBLIC_CUSTOM_HEADER,
+            Authorization: `Bearer ${token}`,
+          },
+          responseType: "blob",
         },
-        responseType: 'blob',
-      });
+      );
 
       // Create a download link for the Excel file
       const url = window.URL.createObjectURL(response.data);
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
-      link.download = `tariff_export_${new Date().toISOString().split('T')[0]}.xlsx`;
+      link.download = `tariff_export_${new Date().toISOString().split("T")[0]}.xlsx`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -130,9 +134,15 @@ export default function TariffManagementPage() {
 
       toast.success("Tariff export downloaded successfully!");
     } catch (error: unknown) {
-      const errorMessage = (error as { response?: { data?: { responsedesc?: string } }; message?: string })?.response?.data?.responsedesc ??
-                          (error as { message?: string })?.message ??
-                          "Failed to export tariff data. Please try again.";
+      const errorMessage =
+        (
+          error as {
+            response?: { data?: { responsedesc?: string } };
+            message?: string;
+          }
+        )?.response?.data?.responsedesc ??
+        (error as { message?: string })?.message ??
+        "Failed to export tariff data. Please try again.";
       toast.error(errorMessage);
       console.error("Export error:", error);
     } finally {
@@ -471,7 +481,7 @@ export default function TariffManagementPage() {
             )}
             <Button
               variant="outline"
-              className="flex items-center gap-2 border-green-500 cursor-pointer text-green-500 hover:bg-gray-50"
+              className="flex cursor-pointer items-center gap-2 border-green-500 text-green-500 hover:bg-gray-50"
               onClick={handleExport}
               disabled={isExporting}
             >
@@ -484,7 +494,11 @@ export default function TariffManagementPage() {
         <div className="flex-1 rounded-lg border border-gray-200 bg-white shadow-sm">
           {isLoading ? (
             <div className="flex min-h-96 items-center justify-center p-12">
-              <LoadingAnimation variant="spinner" message="Loading tariffs..." size="lg" />
+              <LoadingAnimation
+                variant="spinner"
+                message="Loading tariffs..."
+                size="lg"
+              />
             </div>
           ) : tariffError ? (
             <div className="flex items-center justify-center p-12">

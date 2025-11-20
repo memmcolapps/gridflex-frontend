@@ -1,7 +1,11 @@
 import axios from "axios";
 import { env } from "@/env";
 import { handleApiError } from "@/utils/error-handler";
-import { type HesDashboardApiResponse, type DashboardApiResponse } from "@/types/dashboard";
+import {
+  type HesDashboardApiResponse,
+  type DashboardApiResponse,
+} from "@/types/dashboard";
+import { axiosInstance } from "@/lib/axios";
 
 const API_URL = env.NEXT_PUBLIC_BASE_URL;
 const CUSTOM_HEADER = env.NEXT_PUBLIC_CUSTOM_HEADER;
@@ -12,27 +16,42 @@ export interface DashboardFilters {
   meterCategory?: string;
 }
 
-export async function getDashboard(filters?: DashboardFilters): Promise<
-  { success: true; data: DashboardApiResponse["responsedata"] } | { success: false; error: string }
+export async function getDashboard(
+  filters?: DashboardFilters,
+): Promise<
+  | { success: true; data: DashboardApiResponse["responsedata"] }
+  | { success: false; error: string }
 > {
   try {
     const token = localStorage.getItem("auth_token");
     const params = new URLSearchParams();
 
-    if (filters?.band && filters.band !== "Band" && filters.band !== "All Bands") {
+    if (
+      filters?.band &&
+      filters.band !== "Band" &&
+      filters.band !== "All Bands"
+    ) {
       params.append("band", filters.band);
     }
-    if (filters?.year && filters.year !== "Year" && filters.year !== "All Years") {
+    if (
+      filters?.year &&
+      filters.year !== "Year" &&
+      filters.year !== "All Years"
+    ) {
       params.append("year", filters.year);
     }
-    if (filters?.meterCategory && filters.meterCategory !== "Meter Category" && filters.meterCategory !== "All Categories") {
+    if (
+      filters?.meterCategory &&
+      filters.meterCategory !== "Meter Category" &&
+      filters.meterCategory !== "All Categories"
+    ) {
       params.append("meterCategory", filters.meterCategory);
     }
 
     const queryString = params.toString();
     const url = `${API_URL}/dashboard/service/data-management${queryString ? `?${queryString}` : ""}`;
 
-    const response = await axios.get<DashboardApiResponse>(url, {
+    const response = await axiosInstance.get<DashboardApiResponse>(url, {
       headers: {
         "Content-Type": "application/json",
         custom: CUSTOM_HEADER,
@@ -59,13 +78,14 @@ export async function getDashboard(filters?: DashboardFilters): Promise<
 }
 
 export async function getHesDashboard(): Promise<
-  { success: true; data: HesDashboardApiResponse["responsedata"] } | { success: false; error: string }
+  | { success: true; data: HesDashboardApiResponse["responsedata"] }
+  | { success: false; error: string }
 > {
   try {
     const token = localStorage.getItem("auth_token");
     const url = `${API_URL}/hes/service/dashboard`;
 
-    const response = await axios.get<HesDashboardApiResponse>(url, {
+    const response = await axiosInstance.get<HesDashboardApiResponse>(url, {
       headers: {
         "Content-Type": "application/json",
         custom: CUSTOM_HEADER,
