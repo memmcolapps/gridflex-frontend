@@ -19,32 +19,6 @@ const axiosInstance = axios.create({
   },
 });
 
-axiosInstance.interceptors.request.use((config) => {
-  if (config.data && typeof config.data === "object") {
-    config.data = trimObjectStrings(config.data);
-  }
-  return config;
-});
-
-const trimObjectStrings = (obj: any): any => {
-  if (typeof obj === "string") {
-    return obj.trim();
-  }
-
-  if (Array.isArray(obj)) {
-    return obj.map(trimObjectStrings);
-  }
-
-  if (obj !== null && typeof obj === "object") {
-    return Object.keys(obj).reduce((acc, key) => {
-      acc[key] = trimObjectStrings(obj[key]);
-      return acc;
-    }, {} as any);
-  }
-
-  return obj;
-};
-
 // Function to retrieve and set the authorization header
 const getAuthHeader = () => {
   const token = localStorage.getItem("auth_token");
