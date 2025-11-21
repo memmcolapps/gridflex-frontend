@@ -405,8 +405,12 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
     if (isProceedButtonEnabled) {
       searchMeterMutate({ searchTerm: meterInput, searchType }, {
         onSuccess: (data) => {
-          setSelectedMeter(data);
-          setDialogStep("fullForm");
+          if (data.success) {
+            setSelectedMeter(data.data);
+            setDialogStep("fullForm");
+          } else {
+            toast.error(data.error);
+          }
         },
         onError: (error) => {
           toast.error(error.message);
@@ -914,7 +918,6 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
               {selectedAdjustment?.liabilityCause?.code ?? 'N/A'}
             </p>
           </DialogHeader>
-          open={isNestedDialogOpen}
           <div className="overflow-x-hidden">
             <Table className="h-fit w-full">
               <TableHeader>

@@ -55,14 +55,14 @@ const AddPercentageRangeDialog = () => {
           amountEndRange: endRange,
         },
         {
-          onSuccess: (response) => {
+          onSuccess: (_response) => {
             setPercentage("");
             setPercentageCode("");
             setBand("");
             setAmountStartRange("");
             setAmountEndRange("");
             setOpen(false);
-            toast.success(response.responsedesc ?? "Percentage range created successfully!");
+            toast.success("Percentage range created successfully!");
           },
           onError: (error) => {
             toast.error(error.message);

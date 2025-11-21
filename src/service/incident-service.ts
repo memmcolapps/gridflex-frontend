@@ -1,5 +1,4 @@
 import { axiosInstance } from "@/lib/axios";
-import axios from "axios";
 import { handleApiError } from "error";
 
 const API_URL = process.env.NEXT_PUBLIC_BASE_URL;

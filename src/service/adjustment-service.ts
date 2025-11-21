@@ -8,48 +8,53 @@ import {
   type Meter,
   type LiabilityCause,
 } from "@/types/credit-debit";
-import axios from "axios";
+import { env } from "@/env";
+import { handleApiError } from "@/utils/error-handler";
+import { axiosInstance } from "@/lib/axios";
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
-
-const axiosInstance = axios.create({
-  baseURL: BASE_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
-
-// Function to retrieve and set the authorization header
-const getAuthHeader = () => {
-  const token = localStorage.getItem("auth_token");
-  if (!token) {
-    throw new Error("Authentication token not found.");
-  }
-  return `Bearer ${token}`;
-};
+const API_URL = env.NEXT_PUBLIC_BASE_URL;
+const CUSTOM_HEADER = env.NEXT_PUBLIC_CUSTOM_HEADER;
 
 // Function to fetch all adjustments by type (credit or debit)
 export const fetchAllAdjustments = async (
   type: "credit" | "debit",
-): Promise<Adjustment[]> => {
+): Promise<
+  { success: true; data: Adjustment[] } | { success: false; error: string }
+> => {
   try {
-    axiosInstance.defaults.headers.common.Authorization = getAuthHeader();
+    const token = localStorage.getItem("auth_token");
+
     const response = await axiosInstance.get<ApiResponse<any>>(
-      "/debit-credit-adjustment/service/all",
-      { params: { type } },
+      `${API_URL}/debit-credit-adjustment/service/all`,
+      {
+        params: { type },
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
     );
+
+    if (response.data?.responsecode !== "000") {
+      return {
+        success: false,
+        error: response.data?.responsedesc || "Failed to fetch adjustments.",
+      };
+    }
 
     // Correctly access the nested data array
     const adjustments = response.data?.responsedata?.data;
 
-    if (Array.isArray(adjustments)) {
-      return adjustments;
-    }
-
-    return [];
+    return {
+      success: true,
+      data: Array.isArray(adjustments) ? adjustments : [],
+    };
   } catch (error) {
-    console.error("Error fetching adjustments:", error);
-    throw error;
+    return {
+      success: false,
+      error: handleApiError(error).message,
+    };
   }
 };
 
@@ -57,78 +62,116 @@ export const fetchAllAdjustments = async (
 export const searchMeterByNumber = async (
   searchTerm: string,
   searchType: "meterNumber" | "accountNumber",
-): Promise<Meter> => {
+): Promise<
+  { success: true; data: Meter } | { success: false; error: string }
+> => {
   try {
-    axiosInstance.defaults.headers.common.Authorization = getAuthHeader();
+    const token = localStorage.getItem("auth_token");
 
     const params = { [searchType]: searchTerm };
 
     const response = await axiosInstance.get<ApiResponse<Meter>>(
-      "/meter/service/single",
+      `${API_URL}/meter/service/single`,
       {
         params,
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
       },
     );
 
     if (response.data?.responsecode !== "000" || !response.data?.responsedata) {
-      throw new Error(
-        response.data?.responsedesc || "Failed to fetch meter details.",
-      );
+      return {
+        success: false,
+        error: response.data?.responsedesc || "Failed to fetch meter details.",
+      };
     }
 
-    return response.data.responsedata;
+    return {
+      success: true,
+      data: response.data.responsedata,
+    };
   } catch (error) {
-    console.error("Error fetching single meter:", error);
-    if (axios.isAxiosError(error) && error.response) {
-      throw new Error(
-        error.response.data?.responsedesc ?? "Failed to fetch meter details.",
-      );
-    }
-    throw error;
+    return {
+      success: false,
+      error: handleApiError(error).message,
+    };
   }
 };
 
 // Function to fetch all liability causes
-export const fetchAllLiabilityCauses = async (): Promise<LiabilityCause[]> => {
+export const fetchAllLiabilityCauses = async (): Promise<
+  { success: true; data: LiabilityCause[] } | { success: false; error: string }
+> => {
   try {
-    axiosInstance.defaults.headers.common.Authorization = getAuthHeader();
+    const token = localStorage.getItem("auth_token");
+
     const response = await axiosInstance.get<ApiResponse<LiabilityCause[]>>(
-      "/debt-setting/service/liability-cause/all",
+      `${API_URL}/debt-setting/service/liability-cause/all`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
     );
 
     if (response.data?.responsecode !== "000" || !response.data?.responsedata) {
-      throw new Error(
-        response.data?.responsedesc || "Failed to fetch liability causes.",
-      );
+      return {
+        success: false,
+        error: response.data?.responsedesc || "Failed to fetch liability causes.",
+      };
     }
 
-    return response.data.responsedata;
+    return {
+      success: true,
+      data: response.data.responsedata,
+    };
   } catch (error) {
-    console.error("Error fetching liability causes:", error);
-    throw error;
+    return {
+      success: false,
+      error: handleApiError(error).message,
+    };
   }
 };
 
 // Function to create a debit or credit adjustment
 export const createAdjustment = async (
   payload: AdjustmentPayload,
-): Promise<AdjustmentMutationResponse> => {
+): Promise<{ success: true } | { success: false; error: string }> => {
   try {
-    axiosInstance.defaults.headers.common.Authorization = getAuthHeader();
+    const token = localStorage.getItem("auth_token");
+
     const response = await axiosInstance.post<AdjustmentMutationResponse>(
-      "/debit-credit-adjustment/service/create",
+      `${API_URL}/debit-credit-adjustment/service/create`,
       payload,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
     );
 
     if (response.data?.responsecode !== "000") {
-      throw new Error(
-        response.data?.responsedesc || "Failed to create adjustment.",
-      );
+      return {
+        success: false,
+        error: response.data?.responsedesc || "Failed to create adjustment.",
+      };
     }
-    return response.data;
+
+    return {
+      success: true,
+    };
   } catch (error) {
-    console.error("Error creating adjustment:", error);
-    throw error;
+    return {
+      success: false,
+      error: handleApiError(error).message,
+    };
   }
 };
 
@@ -136,26 +179,42 @@ export const createAdjustment = async (
 export const reconcileDebit = async (
   debitCreditAdjustmentId: string,
   amount: number,
-) => {
+): Promise<{ success: true; data: any } | { success: false; error: string }> => {
   try {
-    axiosInstance.defaults.headers.common.Authorization = getAuthHeader();
+    const token = localStorage.getItem("auth_token");
+
     // Corrected to use POST request with URL parameters
     const response = await axiosInstance.post(
-      "/debit-credit-adjustment/service/reconcile-dept",
+      `${API_URL}/debit-credit-adjustment/service/reconcile-dept`,
       null,
       {
         params: {
           debitCreditAdjustmentId,
           amount,
         },
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
       },
     );
-    return response.data;
-  } catch (error) {
-    if (axios.isAxiosError(error) && error.response) {
-      const errorMessage = error.response.data?.responsedesc ?? error.message;
-      throw new Error(errorMessage);
+
+    if (response.data?.responsecode !== "000") {
+      return {
+        success: false,
+        error: response.data?.responsedesc ?? "Failed to reconcile debit.",
+      };
     }
-    throw new Error("An unknown error occurred.");
+
+    return {
+      success: true,
+      data: response.data,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: handleApiError(error).message,
+    };
   }
 };
