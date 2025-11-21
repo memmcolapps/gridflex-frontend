@@ -19,11 +19,6 @@ import {
 } from "@/service/reviewapproval-service";
 import { bulkApproveMeters } from "@/service/meter-bulk-service";
 import type {
-  GetPercentageResponse,
-  GetAllLiabilitiesResponse,
-  GetBandResponse,
-  GetTariffResponse,
-  MeterResponse,
   PercentageRange,
   Liability,
   Band,
@@ -36,9 +31,6 @@ interface ReviewPayload {
   id: string;
   approveStatus: "approve" | "reject";
   reason?: string;
-}
-interface TariffResponseData {
-  data?: Tariff[];
 }
 
 // Hook for Percentage Ranges

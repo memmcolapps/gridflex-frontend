@@ -203,7 +203,7 @@ export const reconcileDebit = async (
     if (response.data?.responsecode !== "000") {
       return {
         success: false,
-        error: response.data?.responsedesc || "Failed to reconcile debit.",
+        error: response.data?.responsedesc ?? "Failed to reconcile debit.",
       };
     }
 

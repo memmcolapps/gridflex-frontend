@@ -14,7 +14,14 @@ import { toast } from "sonner";
 export const useAllAdjustments = (type: "credit" | "debit") => {
   return useQuery<Adjustment[]>({
     queryKey: ["adjustments", type],
-    queryFn: () => fetchAllAdjustments(type),
+    queryFn: async () => {
+      const result = await fetchAllAdjustments(type);
+      if (result.success) {
+        return result.data;
+      } else {
+        throw new Error(result.error);
+      }
+    },
   });
 };
 
@@ -27,8 +34,12 @@ export const useSearchMeter = () => {
       searchTerm: string;
       searchType: "meterNumber" | "accountNumber";
     }) => searchMeterByNumber(searchTerm, searchType),
-    onSuccess: () => {
-      toast.success("Meter Fetched Successfully!");
+    onSuccess: (response) => {
+      if (response.success) {
+        toast.success("Meter Fetched Successfully!");
+      } else {
+        toast.error(response.error);
+      }
     },
     onError: (error) => {
       toast.error(error.message);
@@ -41,10 +52,12 @@ export const useCreateAdjustment = () => {
   return useMutation({
     mutationFn: (payload: AdjustmentPayload) => createAdjustment(payload),
     onSuccess: (response) => {
-      toast.success(
-        response.responsedesc || "Adjustment created successfully!",
-      );
-      queryClient.invalidateQueries({ queryKey: ["adjustments"] });
+      if (response.success) {
+        toast.success("Adjustment created successfully!");
+        queryClient.invalidateQueries({ queryKey: ["adjustments"] });
+      } else {
+        toast.error(response.error);
+      }
     },
     onError: (error) => {
       toast.error(error.message);
@@ -62,9 +75,13 @@ export const useReconcileDebit = () => {
       debitCreditAdjustmentId: string;
       amount: number;
     }) => reconcileDebit(debitCreditAdjustmentId, amount),
-    onSuccess: () => {
-      toast.success("Debit reconciled successfully!");
-      queryClient.invalidateQueries({ queryKey: ["adjustments", "debit"] });
+    onSuccess: (response) => {
+      if (response.success) {
+        toast.success("Debit reconciled successfully!");
+        queryClient.invalidateQueries({ queryKey: ["adjustments", "debit"] });
+      } else {
+        toast.error(response.error);
+      }
     },
     onError: (error) => {
       toast.error(error.message);
@@ -75,6 +92,13 @@ export const useReconcileDebit = () => {
 export const useAllLiabilityCauses = () => {
   return useQuery({
     queryKey: ["liability-causes"],
-    queryFn: fetchAllLiabilityCauses,
+    queryFn: async () => {
+      const result = await fetchAllLiabilityCauses();
+      if (result.success) {
+        return result.data;
+      } else {
+        throw new Error(result.error);
+      }
+    },
   });
 };

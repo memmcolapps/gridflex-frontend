@@ -1,5 +1,4 @@
 // @/service/profile-service.ts
-import axios from "axios";
 import { env } from "@/env";
 import { handleApiError } from "error";
 import { axiosInstance } from "@/lib/axios";

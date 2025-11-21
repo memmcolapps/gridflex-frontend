@@ -25,7 +25,6 @@ import {
   Pencil,
   PlusCircleIcon,
   SearchIcon,
-  UserCheck,
   X,
 } from "lucide-react";
 import { type Band } from "@/service/band-service";

@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // src/services/location-service.ts
 
-import axios from "axios";
 import { type NigerianState, type NigerianCity } from "@/types/location";
 import { axiosInstance } from "@/lib/axios";
 

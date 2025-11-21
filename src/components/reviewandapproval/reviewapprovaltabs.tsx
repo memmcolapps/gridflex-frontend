@@ -161,9 +161,13 @@ export function ReviewApprovalTabs() {
 
             try {
                 const result = await bulkApprovePercentageRangesMutation.mutateAsync(percentageRangeCodesPayload);
-                setBulkApproveResult(result.responsedata);
-                setIsBulkApproveResultDialogOpen(true);
-                setSelectedPercentageRangeCodes([]);
+                if (result.success) {
+                    setBulkApproveResult(result.data);
+                    setIsBulkApproveResultDialogOpen(true);
+                    setSelectedPercentageRangeCodes([]);
+                } else {
+                    throw new Error(result.error);
+                }
             } catch (error) {
                 const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
                 toast.error(errorMessage);
@@ -178,9 +182,13 @@ export function ReviewApprovalTabs() {
 
             try {
                 const result = await bulkApproveLiabilityCausesMutation.mutateAsync(liabilityCauseNamesPayload);
-                setBulkApproveResult(result.responsedata);
-                setIsBulkApproveResultDialogOpen(true);
-                setSelectedLiabilityCauseNames([]);
+                if (result.success) {
+                    setBulkApproveResult(result.data);
+                    setIsBulkApproveResultDialogOpen(true);
+                    setSelectedLiabilityCauseNames([]);
+                } else {
+                    throw new Error(result.error);
+                }
             } catch (error) {
                 const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
                 toast.error(errorMessage);
