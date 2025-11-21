@@ -1,6 +1,5 @@
 // src/service/debt-settings-service.ts
 
-import axios from "axios";
 import { env } from "@/env";
 import { handleApiError } from "@/utils/error-handler";
 import { axiosInstance } from "@/lib/axios";
