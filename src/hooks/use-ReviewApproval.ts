@@ -48,7 +48,7 @@ interface UsePercentageRangesResult {
   isError: boolean;
   error: Error | null;
   reviewMutation: UseMutationResult<
-    GetPercentageResponse,
+    { success: true } | { success: false; error: string },
     Error,
     ReviewPayload
   >;
@@ -60,15 +60,22 @@ export const usePercentageRanges = (
   const queryClient = useQueryClient();
 
   const { data, isLoading, isError, error } = useQuery<
-    GetPercentageResponse,
+    PercentageRange[],
     Error
   >({
     queryKey: ["percentageRange", params],
-    queryFn: () => getAllPercentageRanges(params),
+    queryFn: async () => {
+      const result = await getAllPercentageRanges(params);
+      if (result.success) {
+        return result.data;
+      } else {
+        throw new Error(result.error);
+      }
+    },
   });
 
   const reviewMutation = useMutation<
-    GetPercentageResponse,
+    { success: true } | { success: false; error: string },
     Error,
     ReviewPayload
   >({
@@ -80,7 +87,7 @@ export const usePercentageRanges = (
   });
 
   return {
-    percentageRanges: data?.responsedata ?? [],
+    percentageRanges: data ?? [],
     isLoading,
     isError,
     error,
@@ -95,7 +102,7 @@ interface UseLiabilitiesResult {
   isError: boolean;
   error: Error | null;
   reviewMutation: UseMutationResult<
-    GetPercentageResponse,
+    { success: true } | { success: false; error: string },
     Error,
     ReviewPayload
   >;
@@ -105,15 +112,22 @@ export const useLiabilities = (params: FetchParams): UseLiabilitiesResult => {
   const queryClient = useQueryClient();
 
   const { data, isLoading, isError, error } = useQuery<
-    GetAllLiabilitiesResponse,
+    Liability[],
     Error
   >({
     queryKey: ["liability", params],
-    queryFn: () => getAllLiabilities(params),
+    queryFn: async () => {
+      const result = await getAllLiabilities(params);
+      if (result.success) {
+        return result.data;
+      } else {
+        throw new Error(result.error);
+      }
+    },
   });
 
   const reviewMutation = useMutation<
-    GetPercentageResponse,
+    { success: true } | { success: false; error: string },
     Error,
     ReviewPayload
   >({
@@ -122,14 +136,11 @@ export const useLiabilities = (params: FetchParams): UseLiabilitiesResult => {
       if (variables.approveStatus === "approve") {
         queryClient.setQueryData(
           ["liabilities", params],
-          (oldData: GetAllLiabilitiesResponse | undefined) => {
+          (oldData: Liability[] | undefined) => {
             if (oldData) {
-              return {
-                ...oldData,
-                responsedata: oldData.responsedata.filter(
-                  (item) => item.liabilityCauseId !== variables.id,
-                ),
-              };
+              return oldData.filter(
+                (item) => item.liabilityCauseId !== variables.id,
+              );
             }
             return oldData;
           },
@@ -141,7 +152,7 @@ export const useLiabilities = (params: FetchParams): UseLiabilitiesResult => {
   });
 
   return {
-    liabilities: data?.responsedata ?? [],
+    liabilities: data ?? [],
     isLoading,
     isError,
     error,
@@ -156,7 +167,7 @@ interface UseBandsResult {
   isError: boolean;
   error: Error | null;
   reviewMutation: UseMutationResult<
-    GetPercentageResponse,
+    { success: true } | { success: false; error: string },
     Error,
     ReviewPayload
   >;
@@ -165,13 +176,20 @@ interface UseBandsResult {
 export const useBands = (params: FetchParams): UseBandsResult => {
   const queryClient = useQueryClient();
 
-  const { data, isLoading, isError, error } = useQuery<GetBandResponse, Error>({
+  const { data, isLoading, isError, error } = useQuery<Band[], Error>({
     queryKey: ["bands", params],
-    queryFn: () => getAllBands(params),
+    queryFn: async () => {
+      const result = await getAllBands(params);
+      if (result.success) {
+        return result.data;
+      } else {
+        throw new Error(result.error);
+      }
+    },
   });
 
   const reviewMutation = useMutation<
-    GetPercentageResponse,
+    { success: true } | { success: false; error: string },
     Error,
     ReviewPayload
   >({
@@ -182,7 +200,7 @@ export const useBands = (params: FetchParams): UseBandsResult => {
   });
 
   return {
-    bands: data?.responsedata ?? [],
+    bands: data ?? [],
     isLoading,
     isError,
     error,
@@ -197,7 +215,7 @@ interface UseTariffsResult {
   isError: boolean;
   error: Error | null;
   reviewMutation: UseMutationResult<
-    GetPercentageResponse,
+    { success: true } | { success: false; error: string },
     Error,
     ReviewPayload
   >;
@@ -207,28 +225,22 @@ export const useTariffs = (params: FetchParams): UseTariffsResult => {
   const queryClient = useQueryClient();
 
   const { data, isLoading, isError, error } = useQuery<
-    GetTariffResponse,
+    Tariff[],
     Error
   >({
     queryKey: ["tariffs", params],
-    queryFn: () => getAllTariffs(params),
+    queryFn: async () => {
+      const result = await getAllTariffs(params);
+      if (result.success) {
+        return result.data;
+      } else {
+        throw new Error(result.error);
+      }
+    },
   });
 
-  // Ensure tariffs is always an array, handling different response structures
-  let tariffs: Tariff[] = [];
-  if (data?.responsedata) {
-    if (Array.isArray(data.responsedata)) {
-      tariffs = data.responsedata;
-    } else if (
-      typeof data.responsedata === "object" &&
-      Array.isArray((data.responsedata as TariffResponseData).data)
-    ) {
-      tariffs = (data.responsedata as TariffResponseData).data ?? [];
-    }
-  }
-
   const reviewMutation = useMutation<
-    GetPercentageResponse,
+    { success: true } | { success: false; error: string },
     Error,
     ReviewPayload
   >({
@@ -239,7 +251,7 @@ export const useTariffs = (params: FetchParams): UseTariffsResult => {
   });
 
   return {
-    tariffs,
+    tariffs: data ?? [],
     isLoading,
     isError,
     error,
@@ -254,7 +266,7 @@ interface UseMetersResult {
   isError: boolean;
   error: Error | null;
   reviewMutation: UseMutationResult<
-    GetPercentageResponse,
+    { success: true } | { success: false; error: string },
     Error,
     ReviewPayload
   >;
@@ -268,13 +280,23 @@ interface UseMetersResult {
 export const useMeters = (params: FetchParams): UseMetersResult => {
   const queryClient = useQueryClient();
 
-  const { data, isLoading, isError, error } = useQuery<MeterResponse, Error>({
+  const { data, isLoading, isError, error } = useQuery<
+    { data: Meter[]; totalData: number; page: number; size: number; totalPages: number },
+    Error
+  >({
     queryKey: ["meters", params],
-    queryFn: () => getAllMeters(params),
+    queryFn: async () => {
+      const result = await getAllMeters(params);
+      if (result.success) {
+        return result.data;
+      } else {
+        throw new Error(result.error);
+      }
+    },
   });
 
   const reviewMutation = useMutation<
-    GetPercentageResponse,
+    { success: true } | { success: false; error: string },
     Error,
     ReviewPayload
   >({
@@ -296,7 +318,7 @@ export const useMeters = (params: FetchParams): UseMetersResult => {
   });
 
   return {
-    meters: data?.responsedata?.data ?? [],
+    meters: data?.data ?? [],
     isLoading,
     isError,
     error,
@@ -308,50 +330,85 @@ export const useMeters = (params: FetchParams): UseMetersResult => {
 // Single item fetching hooks
 export const useSinglePercentageRange = (
   id: string,
-): UseQueryResult<GetPercentageResponse, Error> => {
-  return useQuery<GetPercentageResponse, Error>({
+): UseQueryResult<PercentageRange[], Error> => {
+  return useQuery<PercentageRange[], Error>({
     queryKey: ["percentageRange", id],
-    queryFn: () => getPercentageRange(id),
+    queryFn: async () => {
+      const result = await getPercentageRange(id);
+      if (result.success) {
+        return result.data;
+      } else {
+        throw new Error(result.error);
+      }
+    },
     enabled: !!id,
   });
 };
 
 export const useSingleLiability = (
   id: string,
-): UseQueryResult<GetAllLiabilitiesResponse, Error> => {
-  return useQuery<GetAllLiabilitiesResponse, Error>({
+): UseQueryResult<Liability[], Error> => {
+  return useQuery<Liability[], Error>({
     queryKey: ["liability", id],
-    queryFn: () => getLiability(id),
+    queryFn: async () => {
+      const result = await getLiability(id);
+      if (result.success) {
+        return result.data;
+      } else {
+        throw new Error(result.error);
+      }
+    },
     enabled: !!id,
   });
 };
 
 export const useSingleBand = (
   id: string,
-): UseQueryResult<GetBandResponse, Error> => {
-  return useQuery<GetBandResponse, Error>({
+): UseQueryResult<Band[], Error> => {
+  return useQuery<Band[], Error>({
     queryKey: ["bands", id],
-    queryFn: () => getBand(id),
+    queryFn: async () => {
+      const result = await getBand(id);
+      if (result.success) {
+        return result.data;
+      } else {
+        throw new Error(result.error);
+      }
+    },
     enabled: !!id,
   });
 };
 
 export const useSingleTariff = (
   id: string,
-): UseQueryResult<GetTariffResponse, Error> => {
-  return useQuery<GetTariffResponse, Error>({
+): UseQueryResult<Tariff[], Error> => {
+  return useQuery<Tariff[], Error>({
     queryKey: ["tariffs", id],
-    queryFn: () => getTariff(id),
+    queryFn: async () => {
+      const result = await getTariff(id);
+      if (result.success) {
+        return result.data;
+      } else {
+        throw new Error(result.error);
+      }
+    },
     enabled: !!id,
   });
 };
 
 export const useSingleMeter = (
   id: string,
-): UseQueryResult<MeterResponse, Error> => {
-  return useQuery<MeterResponse, Error>({
+): UseQueryResult<{ data: Meter[]; totalData: number; page: number; size: number; totalPages: number }, Error> => {
+  return useQuery<{ data: Meter[]; totalData: number; page: number; size: number; totalPages: number }, Error>({
     queryKey: ["meters", id],
-    queryFn: () => getMeter(id),
+    queryFn: async () => {
+      const result = await getMeter(id);
+      if (result.success) {
+        return result.data;
+      } else {
+        throw new Error(result.error);
+      }
+    },
     enabled: !!id,
   });
 };

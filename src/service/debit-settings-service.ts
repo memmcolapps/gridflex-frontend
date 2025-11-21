@@ -1,6 +1,9 @@
 // src/service/debt-settings-service.ts
 
 import axios from "axios";
+import { env } from "@/env";
+import { handleApiError } from "@/utils/error-handler";
+import { axiosInstance } from "@/lib/axios";
 import {
   type ApiResponse,
   type LiabilityCause,
@@ -11,100 +14,116 @@ import {
   type UpdatedPercentageRangePayload,
 } from "@/types/credit-debit";
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
-
-const axiosInstance = axios.create({
-  baseURL: BASE_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
-
-const getAuthHeader = () => {
-  const token = localStorage.getItem("auth_token");
-  if (!token) {
-    throw new Error("Authentication token not found.");
-  }
-  return `Bearer ${token}`;
-};
+const API_URL = env.NEXT_PUBLIC_BASE_URL;
+const CUSTOM_HEADER = env.NEXT_PUBLIC_CUSTOM_HEADER;
 
 // --- Liability Cause API Calls ---
 
-export const fetchAllLiabilityCauses = async (): Promise<LiabilityCause[]> => {
+export const fetchAllLiabilityCauses = async (): Promise<
+  { success: true; data: LiabilityCause[] } | { success: false; error: string }
+> => {
   try {
-    axiosInstance.defaults.headers.common.Authorization = getAuthHeader();
+    const token = localStorage.getItem("auth_token");
+
     const response = await axiosInstance.get<ApiResponse<LiabilityCause[]>>(
-      "/debt-setting/service/liability-cause/all",
+      `${API_URL}/debt-setting/service/liability-cause/all`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
     );
+
     if (response.data?.responsecode !== "000") {
-      throw new Error(
-        response.data?.responsedesc || "Failed to fetch liability causes.",
-      );
+      return {
+        success: false,
+        error: response.data?.responsedesc || "Failed to fetch liability causes.",
+      };
     }
-    return response.data.responsedata;
+
+    return {
+      success: true,
+      data: response.data.responsedata,
+    };
   } catch (error) {
-    console.error("Error fetching liability causes:", error);
-    if (axios.isAxiosError(error) && error.response) {
-      throw new Error(
-        error.response.data?.responsedesc ??
-          "Failed to fetch liability causes.",
-      );
-    }
-    throw error;
+    return {
+      success: false,
+      error: handleApiError(error).message,
+    };
   }
 };
 
 export const createLiabilityCause = async (
   payload: LiabilityCausePayload,
-): Promise<ApiResponse<LiabilityCause>> => {
+): Promise<{ success: true } | { success: false; error: string }> => {
   try {
-    axiosInstance.defaults.headers.common.Authorization = getAuthHeader();
+    const token = localStorage.getItem("auth_token");
+
     const response = await axiosInstance.post<ApiResponse<LiabilityCause>>(
-      "/debt-setting/service/liability-cause/create",
+      `${API_URL}/debt-setting/service/liability-cause/create`,
       payload,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
     );
+
     if (response.data?.responsecode !== "000") {
-      throw new Error(
-        response.data?.responsedesc || "Failed to create liability cause.",
-      );
+      return {
+        success: false,
+        error: response.data?.responsedesc || "Failed to create liability cause.",
+      };
     }
-    return response.data;
+
+    return {
+      success: true,
+    };
   } catch (error) {
-    console.error("Error creating liability cause:", error);
-    if (axios.isAxiosError(error) && error.response) {
-      throw new Error(
-        error.response.data?.responsedesc ??
-          "Failed to create liability cause.",
-      );
-    }
-    throw error;
+    return {
+      success: false,
+      error: handleApiError(error).message,
+    };
   }
 };
 
 export const updateLiabilityCause = async (
   payload: UpdatedLiabilityCausePayload,
-): Promise<ApiResponse<LiabilityCause>> => {
+): Promise<{ success: true } | { success: false; error: string }> => {
   try {
-    axiosInstance.defaults.headers.common.Authorization = getAuthHeader();
+    const token = localStorage.getItem("auth_token");
+
     const response = await axiosInstance.put<ApiResponse<LiabilityCause>>(
-      "/debt-setting/service/liability-cause/update",
+      `${API_URL}/debt-setting/service/liability-cause/update`,
       payload,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
     );
+
     if (response.data?.responsecode !== "000") {
-      throw new Error(
-        response.data?.responsedesc || "Failed to update liability cause.",
-      );
+      return {
+        success: false,
+        error: response.data?.responsedesc || "Failed to update liability cause.",
+      };
     }
-    return response.data;
+
+    return {
+      success: true,
+    };
   } catch (error) {
-    console.error("Error updating liability cause:", error);
-    if (axios.isAxiosError(error) && error.response) {
-      throw new Error(
-        error.response.data?.responsedesc ??
-          "Failed to update liability cause.",
-      );
-    }
-    throw error;
+    return {
+      success: false,
+      error: handleApiError(error).message,
+    };
   }
 };
 
@@ -112,120 +131,152 @@ export const updateLiabilityCause = async (
 export const changeLiabilityCauseStatus = async (
   id: string,
   status: boolean,
-): Promise<ApiResponse<LiabilityCause>> => {
+): Promise<{ success: true } | { success: false; error: string }> => {
   try {
-    axiosInstance.defaults.headers.common.Authorization = getAuthHeader();
+    const token = localStorage.getItem("auth_token");
+
     const response = await axiosInstance.patch<ApiResponse<LiabilityCause>>(
-      `/debt-setting/service/liability-cause/change-state`,
+      `${API_URL}/debt-setting/service/liability-cause/change-state`,
       null, // Body is null for parameters in URL
       {
         params: {
           liabilityCauseId: id,
           status: status,
         },
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
       },
     );
+
     if (response.data?.responsecode !== "000") {
-      throw new Error(
-        response.data?.responsedesc ||
+      return {
+        success: false,
+        error: response.data?.responsedesc ||
           `Failed to ${status ? "activate" : "deactivate"} liability cause.`,
-      );
+      };
     }
-    return response.data;
+
+    return {
+      success: true,
+    };
   } catch (error) {
-    console.error(
-      `Error ${status ? "activating" : "deactivating"} liability cause:`,
-      error,
-    );
-    if (axios.isAxiosError(error) && error.response) {
-      throw new Error(
-        error.response.data?.responsedesc ??
-          `Failed to ${status ? "activate" : "deactivate"} liability cause.`,
-      );
-    }
-    throw error;
+    return {
+      success: false,
+      error: handleApiError(error).message,
+    };
   }
 };
 
 // --- Percentage Range API Calls ---
 
 export const fetchAllPercentageRanges = async (): Promise<
-  PercentageRange[]
+  { success: true; data: PercentageRange[] } | { success: false; error: string }
 > => {
   try {
-    axiosInstance.defaults.headers.common.Authorization = getAuthHeader();
+    const token = localStorage.getItem("auth_token");
+
     const response = await axiosInstance.get<ApiResponse<PercentageRange[]>>(
-      "/debt-setting/service/percentage-range/all",
+      `${API_URL}/debt-setting/service/percentage-range/all`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
     );
+
     if (response.data?.responsecode !== "000") {
-      throw new Error(
-        response.data?.responsedesc || "Failed to fetch percentage ranges.",
-      );
+      return {
+        success: false,
+        error: response.data?.responsedesc || "Failed to fetch percentage ranges.",
+      };
     }
-    return response.data.responsedata;
+
+    return {
+      success: true,
+      data: response.data.responsedata,
+    };
   } catch (error) {
-    console.error("Error fetching percentage ranges:", error);
-    if (axios.isAxiosError(error) && error.response) {
-      throw new Error(
-        error.response.data?.responsedesc ??
-          "Failed to fetch percentage ranges.",
-      );
-    }
-    throw error;
+    return {
+      success: false,
+      error: handleApiError(error).message,
+    };
   }
 };
 
 export const createPercentageRange = async (
   payload: PercentageRangePayload,
-): Promise<ApiResponse<PercentageRange>> => {
+): Promise<{ success: true } | { success: false; error: string }> => {
   try {
-    axiosInstance.defaults.headers.common.Authorization = getAuthHeader();
+    const token = localStorage.getItem("auth_token");
+
     const response = await axiosInstance.post<ApiResponse<PercentageRange>>(
-      "/debt-setting/service/percentage-range/create",
+      `${API_URL}/debt-setting/service/percentage-range/create`,
       payload,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
     );
+
     if (response.data?.responsecode !== "000") {
-      throw new Error(
-        response.data?.responsedesc || "Failed to create percentage range.",
-      );
+      return {
+        success: false,
+        error: response.data?.responsedesc || "Failed to create percentage range.",
+      };
     }
-    return response.data;
+
+    return {
+      success: true,
+    };
   } catch (error) {
-    console.error("Error creating percentage range:", error);
-    if (axios.isAxiosError(error) && error.response) {
-      throw new Error(
-        error.response.data?.responsedesc ??
-          "Failed to create percentage range.",
-      );
-    }
-    throw error;
+    return {
+      success: false,
+      error: handleApiError(error).message,
+    };
   }
 };
 
 export const updatePercentageRange = async (
   payload: UpdatedPercentageRangePayload,
-): Promise<ApiResponse<PercentageRange>> => {
+): Promise<{ success: true } | { success: false; error: string }> => {
   try {
-    axiosInstance.defaults.headers.common.Authorization = getAuthHeader();
+    const token = localStorage.getItem("auth_token");
+
     const response = await axiosInstance.put<ApiResponse<PercentageRange>>(
-      "/debt-setting/service/percentage-range/update",
+      `${API_URL}/debt-setting/service/percentage-range/update`,
       payload,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
     );
+
     if (response.data?.responsecode !== "000") {
-      throw new Error(
-        response.data?.responsedesc || "Failed to update percentage range.",
-      );
+      return {
+        success: false,
+        error: response.data?.responsedesc || "Failed to update percentage range.",
+      };
     }
-    return response.data;
+
+    return {
+      success: true,
+    };
   } catch (error) {
-    console.error("Error updating percentage range:", error);
-    if (axios.isAxiosError(error) && error.response) {
-      throw new Error(
-        error.response.data?.responsedesc ??
-          "Failed to update percentage range.",
-      );
-    }
-    throw error;
+    return {
+      success: false,
+      error: handleApiError(error).message,
+    };
   }
 };
 
@@ -233,38 +284,42 @@ export const updatePercentageRange = async (
 export const changePercentageRangeStatus = async (
   id: string,
   status: boolean,
-): Promise<ApiResponse<PercentageRange>> => {
+): Promise<{ success: true } | { success: false; error: string }> => {
   try {
-    axiosInstance.defaults.headers.common.Authorization = getAuthHeader();
+    const token = localStorage.getItem("auth_token");
+
     const response = await axiosInstance.patch<ApiResponse<PercentageRange>>(
-      `/debt-setting/service/percentage-range/change-state`,
+      `${API_URL}/debt-setting/service/percentage-range/change-state`,
       null,
       {
         params: {
           percentageId: id,
           status: status,
         },
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
       },
     );
+
     if (response.data?.responsecode !== "000") {
-      throw new Error(
-        response.data?.responsedesc ||
+      return {
+        success: false,
+        error: response.data?.responsedesc ||
           `Failed to ${status ? "activate" : "deactivate"} percentage range.`,
-      );
+      };
     }
-    return response.data;
+
+    return {
+      success: true,
+    };
   } catch (error) {
-    console.error(
-      `Error ${status ? "activating" : "deactivating"} percentage range:`,
-      error,
-    );
-    if (axios.isAxiosError(error) && error.response) {
-      throw new Error(
-        error.response.data?.responsedesc ??
-          `Failed to ${status ? "activate" : "deactivate"} percentage range.`,
-      );
-    }
-    throw error;
+    return {
+      success: false,
+      error: handleApiError(error).message,
+    };
   }
 };
 
@@ -272,15 +327,11 @@ export const changePercentageRangeStatus = async (
 export const bulkApproveLiabilityCauses = async (
   liabilityCauses: { name: string }[],
 ): Promise<
-  ApiResponse<{
-    successCount: number;
-    failedCount: number;
-    totalRecords: number;
-    failedRecords: string[];
-  }>
+  { success: true; data: { successCount: number; failedCount: number; totalRecords: number; failedRecords: string[] } } | { success: false; error: string }
 > => {
   try {
-    axiosInstance.defaults.headers.common.Authorization = getAuthHeader();
+    const token = localStorage.getItem("auth_token");
+
     const response = await axiosInstance.put<
       ApiResponse<{
         successCount: number;
@@ -288,23 +339,31 @@ export const bulkApproveLiabilityCauses = async (
         totalRecords: number;
         failedRecords: string[];
       }>
-    >("/debt-setting/service/liability-cause/bulk-approve", liabilityCauses);
+    >(`${API_URL}/debt-setting/service/liability-cause/bulk-approve`, liabilityCauses, {
+      headers: {
+        "Content-Type": "application/json",
+        custom: CUSTOM_HEADER,
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
     if (response.data?.responsecode !== "000") {
-      throw new Error(
-        response.data?.responsedesc ||
+      return {
+        success: false,
+        error: response.data?.responsedesc ||
           "Failed to bulk approve liability causes.",
-      );
+      };
     }
-    return response.data;
+
+    return {
+      success: true,
+      data: response.data.responsedata,
+    };
   } catch (error) {
-    console.error("Error bulk approving liability causes:", error);
-    if (axios.isAxiosError(error) && error.response) {
-      throw new Error(
-        error.response.data?.responsedesc ??
-          "Failed to bulk approve liability causes.",
-      );
-    }
-    throw error;
+    return {
+      success: false,
+      error: handleApiError(error).message,
+    };
   }
 };
 
@@ -312,15 +371,11 @@ export const bulkApproveLiabilityCauses = async (
 export const bulkApprovePercentageRanges = async (
   percentageRanges: { code: string }[],
 ): Promise<
-  ApiResponse<{
-    successCount: number;
-    failedCount: number;
-    totalRecords: number;
-    failedRecords: string[];
-  }>
+  { success: true; data: { successCount: number; failedCount: number; totalRecords: number; failedRecords: string[] } } | { success: false; error: string }
 > => {
   try {
-    axiosInstance.defaults.headers.common.Authorization = getAuthHeader();
+    const token = localStorage.getItem("auth_token");
+
     const response = await axiosInstance.put<
       ApiResponse<{
         successCount: number;
@@ -328,22 +383,30 @@ export const bulkApprovePercentageRanges = async (
         totalRecords: number;
         failedRecords: string[];
       }>
-    >("/debt-setting/service/percentage-range/bulk-approve", percentageRanges);
+    >(`${API_URL}/debt-setting/service/percentage-range/bulk-approve`, percentageRanges, {
+      headers: {
+        "Content-Type": "application/json",
+        custom: CUSTOM_HEADER,
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
     if (response.data?.responsecode !== "000") {
-      throw new Error(
-        response.data?.responsedesc ||
+      return {
+        success: false,
+        error: response.data?.responsedesc ||
           "Failed to bulk approve percentage ranges.",
-      );
+      };
     }
-    return response.data;
+
+    return {
+      success: true,
+      data: response.data.responsedata,
+    };
   } catch (error) {
-    console.error("Error bulk approving percentage ranges:", error);
-    if (axios.isAxiosError(error) && error.response) {
-      throw new Error(
-        error.response.data?.responsedesc ??
-          "Failed to bulk approve percentage ranges.",
-      );
-    }
-    throw error;
+    return {
+      success: false,
+      error: handleApiError(error).message,
+    };
   }
 };
