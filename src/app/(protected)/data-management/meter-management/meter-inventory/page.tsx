@@ -251,7 +251,15 @@ export default function MeterInventoryPage() {
   const handleMeterNumberChange = (value: string) => {
     setMeterNumberInput(value);
 
-    const meter = meters.find((m) => m.meterNumber === value);
+    // Normalize the input value by removing extra spaces for matching
+    const normalizedValue = value.trim().replace(/\s+/g, ' ');
+    
+    const meter = meters.find((m) => {
+      // Normalize both the stored meter number and input for comparison
+      const normalizedMeterNumber = m.meterNumber.trim().replace(/\s+/g, ' ');
+      return normalizedMeterNumber === normalizedValue;
+    });
+    
     if (meter) {
       setSelectedMeter(mapMeterInventoryToMeterData(meter));
     } else {
@@ -262,7 +270,8 @@ export default function MeterInventoryPage() {
   const handleAllocate = () => {
     if (isAllocating) return;
 
-    const meterNumber = meterNumberInput.trim();
+    // Normalize the meter number input to handle spaces
+    const meterNumber = meterNumberInput.trim().replace(/\s+/g, ' ');
     // The API requires regionId, which is mapped from the selectedHubId (Business Hub Name)
     const regionId = selectedHubId;
 
@@ -271,9 +280,16 @@ export default function MeterInventoryPage() {
       return;
     }
 
-    // Validation: Ensure meter number matches an existing meter
-    if (!selectedMeter || selectedMeter.meterNumber !== meterNumber) {
-      toast.error("The entered Meter Number is invalid or not found in the current inventory. Please ensure exact match.");
+    // Validation: Ensure meter number matches an existing meter using normalized comparison
+    if (!selectedMeter) {
+      toast.error("The entered Meter Number is invalid or not found in the current inventory. Please ensure the meter number exists.");
+      return;
+    }
+
+    // Normalize the selected meter number for comparison
+    const normalizedSelectedMeterNumber = selectedMeter.meterNumber.trim().replace(/\s+/g, ' ');
+    if (normalizedSelectedMeterNumber !== meterNumber) {
+      toast.error("The entered Meter Number is invalid or not found in the current inventory. Please ensure the meter number exists.");
       return;
     }
 
