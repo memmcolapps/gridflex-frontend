@@ -109,7 +109,13 @@ export interface Band {
 export interface GetTariffResponse {
   responsecode: string;
   responsedesc: string;
-  responsedata: Tariff[];
+  responsedata: {
+    totalData: number;
+    data: Tariff[];
+    size: number;
+    totalPages: number;
+    page: number;
+  };
 }
 
 export interface Tariff {

@@ -48,8 +48,8 @@ const TariffTable = ({ selectedTariffNames, setSelectedTariffNames }: TariffTabl
   const [selectedItem, setSelectedItem] = useState<Tariff | null>(null);
   const [dropdownOpenId, setDropdownOpenId] = useState<string | null>(null);
 
-  const { tariffs, isLoading, isError, error, reviewMutation } = useTariffs(fetchParams);
-  const totalCount = tariffs.length;
+  const { tariffs, totalData, isLoading, isError, error, reviewMutation } = useTariffs(fetchParams);
+  const totalCount = totalData;
 
   const handlePageChange = (page: number) => {
     setFetchParams({ ...fetchParams, page });
@@ -120,11 +120,6 @@ const TariffTable = ({ selectedTariffNames, setSelectedTariffNames }: TariffTabl
     return <div>Error: {error?.message}</div>;
   }
 
-  const paginatedData = tariffs.slice(
-    (fetchParams.page - 1) * fetchParams.pageSize,
-    fetchParams.page * fetchParams.pageSize
-  );
-
   return (
     <Card className="border-none shadow-none bg-transparent overflow-x-auto min-h-[calc(100vh-300px)]">
       <Table className="table-auto w-full">
@@ -134,7 +129,7 @@ const TariffTable = ({ selectedTariffNames, setSelectedTariffNames }: TariffTabl
               <div className="flex items-center gap-2">
                 <Checkbox
                   className="h-4 w-4 border-gray-500"
-                  checked={selectedTariffNames.length === totalCount && totalCount > 0}
+                  checked={selectedTariffNames.length === tariffs.length && tariffs.length > 0}
                   onCheckedChange={(checked) => {
                     if (checked) {
                       setSelectedTariffNames(tariffs.map((item) => item.name));
@@ -158,14 +153,14 @@ const TariffTable = ({ selectedTariffNames, setSelectedTariffNames }: TariffTabl
           </TableRow>
         </TableHeader>
         <TableBody>
-          {paginatedData.length === 0 ? (
+          {tariffs.length === 0 ? (
             <TableRow>
               <TableCell colSpan={10} className="h-24 text-center text-sm text-gray-500">
                 No data available
               </TableCell>
             </TableRow>
           ) : (
-            paginatedData.map((item, index) => (
+            tariffs.map((item, index) => (
               <TableRow key={item.id} className="hover:bg-gray-50 cursor-pointer">
                 <TableCell className="px-4 py-3">
                   <div className="flex items-center gap-2">
