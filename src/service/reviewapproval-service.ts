@@ -447,7 +447,7 @@ export async function getAllTariffs({
   sortDirection,
   type = "pending-state",
 }: FetchParams): Promise<
-  { success: true; data: Tariff[] } | { success: false; error: string }
+  { success: true; data: { data: Tariff[]; totalData: number; page: number; size: number; totalPages: number } } | { success: false; error: string }
 > {
   try {
     const token = localStorage.getItem("auth_token");
@@ -498,7 +498,7 @@ export async function getAllTariffs({
 export async function getTariff(
   id: string,
 ): Promise<
-  { success: true; data: Tariff[] } | { success: false; error: string }
+  { success: true; data: { data: Tariff[]; totalData: number; page: number; size: number; totalPages: number } } | { success: false; error: string }
 > {
   try {
     const token = localStorage.getItem("auth_token");

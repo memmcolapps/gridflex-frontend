@@ -203,6 +203,7 @@ export const useBands = (params: FetchParams): UseBandsResult => {
 // Hook for Tariffs
 interface UseTariffsResult {
   tariffs: Tariff[];
+  totalData: number;
   isLoading: boolean;
   isError: boolean;
   error: Error | null;
@@ -217,7 +218,7 @@ export const useTariffs = (params: FetchParams): UseTariffsResult => {
   const queryClient = useQueryClient();
 
   const { data, isLoading, isError, error } = useQuery<
-    Tariff[],
+    { data: Tariff[]; totalData: number; page: number; size: number; totalPages: number },
     Error
   >({
     queryKey: ["tariffs", params],
@@ -243,7 +244,8 @@ export const useTariffs = (params: FetchParams): UseTariffsResult => {
   });
 
   return {
-    tariffs: data ?? [],
+    tariffs: data?.data ?? [],
+    totalData: data?.totalData ?? 0,
     isLoading,
     isError,
     error,
@@ -373,8 +375,8 @@ export const useSingleBand = (
 
 export const useSingleTariff = (
   id: string,
-): UseQueryResult<Tariff[], Error> => {
-  return useQuery<Tariff[], Error>({
+): UseQueryResult<{ data: Tariff[]; totalData: number; page: number; size: number; totalPages: number }, Error> => {
+  return useQuery<{ data: Tariff[]; totalData: number; page: number; size: number; totalPages: number }, Error>({
     queryKey: ["tariffs", id],
     queryFn: async () => {
       const result = await getTariff(id);
