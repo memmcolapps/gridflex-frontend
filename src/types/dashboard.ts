@@ -66,12 +66,23 @@ export interface CommunicationReport {
   relaySync: string;
 }
 
+export interface EventLog {
+  meterNumber: string;
+  meterModel: string;
+  eventTypeId: string;
+  eventTime: string;
+  eventName: string;
+  eventTypeName: string;
+  obisCode: string;
+  description: string;
+}
+
 export interface HesResponseData {
   meterSummary: MeterSummary;
-  communicationLogs: CommunicationLogs[]
-  schedulerRate: ScheduleRate
-  communicationReport: CommunicationReport[]
-
+  communicationLogs: CommunicationLogs[];
+  eventLogs: EventLog[];
+  schedulerRate: ScheduleRate;
+  communicationReport: CommunicationReport[];
 }
 
 export interface HesDashboardApiResponse {

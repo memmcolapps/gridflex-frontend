@@ -21,7 +21,7 @@ import type { Props as DefaultLegendContentProps } from "recharts/types/componen
 // Define types for the data structures
 interface LineData {
   timeLabel?: string; 
-  hour?: string;       
+  hour?: string;
   value: number;
 }
 
@@ -36,14 +36,13 @@ interface ScheduleRate {
   pausedRate: number;
 }
 
-// Sample data
 const lineData: LineData[] = [
   { hour: "4 hrs", value: 60 },
-  { hour: "8 hrs", value: 30 },
+  { hour: "8 hrs", value: 20 }, // Changed from 30 to 20
   { hour: "12 hrs", value: 40 },
-  { hour: "16 hrs", value: 35 },
-  { hour: "20 hrs", value: 30 },
-  { hour: "24 hrs", value: 80 },
+  { hour: "16 hrs", value: 55 }, // Changed from 35 to 55
+  { hour: "20 hrs", value: 40 }, // Changed from 30 to 40
+  { hour: "24 hrs", value: 90 }, // Changed from 80 to 90
 ];
 
 const pieData: PieData[] = [
@@ -79,7 +78,7 @@ interface LegendPayload {
 const renderTooltip = ({ active, payload }: TooltipProps<number, string>) => {
   if (!active || !payload?.length || !payload[0]?.payload) return null;
   const data = payload[0].payload as PieData | LineData;
-  const label = "name" in data ? data.name : "timeLabel" in data ? data.timeLabel : "value" in data ? data.value : 'Unknown' ;
+  const label = "name" in data ? data.name : "timeLabel" in data ? data.timeLabel : "hour" in data ? data.hour : 'Unknown' ;
   const backgroundColor = "fill" in data ? data.fill : "#3b82f6";
 
   return (
@@ -142,6 +141,7 @@ const renderCustomLegend = ({ payload }: DefaultLegendContentProps): React.React
 
 const ChartCard = ({ title, chartType, data }: ChartCardProps) => {
   const chartData = React.useMemo(() => {
+    // If external data is passed, use it. Otherwise, use the mock lineData/pieData.
     if (data) {
       if (chartType === "pie" && !Array.isArray(data) && "activeRate" in data) {
         return [
@@ -149,13 +149,17 @@ const ChartCard = ({ title, chartType, data }: ChartCardProps) => {
           { name: "Paused Schedule", value: data.pausedRate, fill: "#C86900" },
         ];
       }
+      // If data is an empty array, fall back to default data
+      if (Array.isArray(data) && data.length === 0) {
+        return chartType === "line" ? lineData : pieData;
+      }
       return data;
     }
-    return chartType === "line" ? lineData : pieData;
+    return chartType === "line" ? lineData : pieData; // Default to lineData
   }, [data, chartType]);
 
   return (
-    <Card className="w-full p-4 bg-white shadow-sm rounded-lg mt-4 border border-gray-200">
+    <Card className="w-full p-4 bg-white shadow-sm rounded-lg mt-4 border border-gray-200 h-85">
       <CardHeader>
         <CardTitle className="text-gray-800 font-semibold text-sm md:text-base lg:text-lg">
           {title}
@@ -170,7 +174,9 @@ const ChartCard = ({ title, chartType, data }: ChartCardProps) => {
                 margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" vertical={false} />
-                <XAxis dataKey="hour" stroke="#888" tick={{ fontSize: 12 }} interval="preserveStartEnd" />
+                {/* X-AXIS: Uses "hour" key from lineData to display 4 hrs, 8 hrs, etc. */}
+                <XAxis dataKey="hour" stroke="#888" tick={{ fontSize: 12}} interval="preserveStartEnd" />
+                {/* Y-AXIS: Domain is 0-100 */}
                 <YAxis
                   domain={[0, 100]}
                   ticks={[0, 20, 40, 60, 80, 100]}
