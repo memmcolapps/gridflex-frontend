@@ -159,7 +159,7 @@ export default function SetDateTimeDialog({ isOpen, onClose, meter }: SetDateTim
                         </div>
                     </div>
                 </div>
-                <DialogFooter>
+                <div className="flex justify-between">
                     <Button
                         variant="outline"
                         onClick={onClose}
@@ -169,14 +169,13 @@ export default function SetDateTimeDialog({ isOpen, onClose, meter }: SetDateTim
                     </Button>
                     <Button
                         onClick={handleSet}
-                        className={`bg-[#161CCA] text-white ${
-                            !isFormComplete ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
-                        }`}
+                        className={`bg-[#161CCA] text-white ${!isFormComplete ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+                            }`}
                         disabled={!isFormComplete}
                     >
                         Set
                     </Button>
-                </DialogFooter>
+                </div>
             </DialogContent>
         </Dialog>
     );

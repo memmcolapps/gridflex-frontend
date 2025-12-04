@@ -50,7 +50,8 @@ const SendTokenDialog = ({ isOpen, onClose, onSubmit }: SendTokenDialogProps) =>
                             />
                         </div>
                     </div>
-                    <DialogFooter className="flex justify-between">
+                    {/* <DialogFooter className="flex justify-between"> */}
+                    <div className="flex justify-between gap-2">
                         <Button
                             variant="outline"
                             onClick={onClose}
@@ -66,7 +67,8 @@ const SendTokenDialog = ({ isOpen, onClose, onSubmit }: SendTokenDialogProps) =>
                         >
                             Proceed
                         </Button>
-                    </DialogFooter>
+                    </div>
+                    {/* </DialogFooter> */}
                 </form>
             </DialogContent>
         </Dialog>

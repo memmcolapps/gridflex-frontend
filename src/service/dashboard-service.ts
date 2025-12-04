@@ -82,7 +82,7 @@ export async function getHesDashboard(): Promise<
 > {
   try {
     const token = localStorage.getItem("auth_token");
-    const url = `${API_URL}/hes/service/dashboard`;
+    const url = `${API_URL}/dashboard/service/hes`;
 
     const response = await axiosInstance.get<HesDashboardApiResponse>(url, {
       headers: {

@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { ContentHeader } from "@/components/ui/content-header";
-import { Eye, MoreVertical, Settings2 } from "lucide-react";
+import { Ban, Eye, MoreVertical, Send, Settings2 } from "lucide-react";
 import { useState } from "react";
 import {
     Table,
@@ -31,6 +31,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { FilterControl } from "@/components/search-control";
 import { ChevronDown } from "lucide-react";
 import OfflineDialog from "@/components/hes/controlsconfigs/meter-remote-config/offline-meter-dialog";
+import SendTokenDialog from "@/components/hes/dashboard/send-token-dialog";
 import type { Meter } from "@/types/meter";
 import { Card } from "@/components/ui/card";
 import {
@@ -50,7 +51,7 @@ import {
 import { BulkUploadDialog } from "@/components/meter-management/bulk-upload";
 
 // Define the possible dialog types
-type DialogType = "apn" | "ctvt" | "relay" | "datetime" | "ip" | "viewDetails";
+type DialogType = "apn" | "ctvt" | "relay" | "datetime" | "ip" | "viewDetails" | "sendToken" | "relayControl";
 
 // Define filter sections
 const filterSections = [
@@ -589,11 +590,10 @@ export default function MeterRemoteConfigPage() {
                                     <TableCell className="p-2 text-sm text-gray-800">{meter.model}</TableCell>
                                     <TableCell className="p-2 text-sm">
                                         <span
-                                            className={`px-2 py-1 rounded ${
-                                                meter.status === "Online"
+                                            className={`px-2 py-1 rounded ${meter.status === "Online"
                                                     ? "bg-[#E9FBF0] text-[#059E40] rounded-full"
                                                     : "bg-[#FBE9E9] text-[#F50202] rounded-full"
-                                            }`}
+                                                }`}
                                         >
                                             {meter.status}
                                         </span>
@@ -617,6 +617,29 @@ export default function MeterRemoteConfigPage() {
                                                         <span className="cursor-pointer">View Meter</span>
                                                     </div>
                                                 </DropdownMenuItem>
+                                                <DropdownMenuItem onSelect={() => {
+                                                    setSelectedMeter(meter);
+                                                    setDialogType("relayControl");
+                                                    setIsDialogOpen(true);
+                                                }}>
+                                                    <div className="flex items-center w-full gap-2">
+                                                        <Ban size={14} />
+                                                        <span className="cursor-pointer">
+                                                            {meter.status === "Online" ? "Disconnect Relay" : "Connect Relay"}
+                                                        </span>
+                                                    </div>
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem onSelect={() => {
+                                                    setSelectedMeter(meter);
+                                                    setDialogType("sendToken");
+                                                    setIsDialogOpen(true);
+                                                }}>
+                                                    <div className="flex items-center w-full gap-2">
+                                                        <Send size={14} />
+                                                        <span className="cursor-pointer">Send Token</span>
+                                                    </div>
+                                                </DropdownMenuItem>
+
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     </TableCell>
@@ -756,6 +779,57 @@ export default function MeterRemoteConfigPage() {
                     onClose={closeDialog}
                     meter={selectedMeter}
                 />
+            )}
+            {isDialogOpen && dialogType === "sendToken" && selectedMeter && (
+                <SendTokenDialog
+                    isOpen={true}
+                    onClose={closeDialog}
+                    onSubmit={(token) => {
+                        console.log("Sending token to meter:", selectedMeter.meterNumber, "Token:", token);
+                        closeDialog();
+                    }}
+                />
+            )}
+            {isDialogOpen && dialogType === "relayControl" && selectedMeter && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg p-6 w-[400px] max-w-[90vw]">
+                        <h3 className="text-lg font-semibold mb-4">
+                            {selectedMeter.status === "Online" ? "Disconnect Relay" : "Connect Relay"}
+                        </h3>
+                        <p className="text-gray-600 mb-4">
+                            {selectedMeter.status === "Online"
+                                ? "Are you sure you want to disconnect the relay for this meter?"
+                                : "Are you sure you want to connect the relay for this meter?"}
+                        </p>
+                        <p className="text-sm text-gray-500 mb-4">
+                            Meter: <span className="font-mono">{selectedMeter.meterNumber}</span>
+                        </p>
+                        <div className="flex gap-2 justify-end">
+                            <Button
+                                variant="outline"
+                                onClick={closeDialog}
+                                className="px-4 py-2"
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                onClick={() => {
+                                    // TODO: Implement relay control logic
+                                    console.log(
+                                        selectedMeter.status === "Online"
+                                            ? "Disconnecting relay for meter:"
+                                            : "Connecting relay for meter:",
+                                        selectedMeter.meterNumber
+                                    );
+                                    closeDialog();
+                                }}
+                                className="px-4 py-2 bg-[#161CCA] text-white hover:bg-[#161CCA]/90"
+                            >
+                                {selectedMeter.status === "Online" ? "Disconnect" : "Connect"}
+                            </Button>
+                        </div>
+                    </div>
+                </div>
             )}
             {showOfflineDialog && (
                 <OfflineDialog
