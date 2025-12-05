@@ -900,8 +900,8 @@ export default function AssignMeterPage() {
                 migrateCreditPaymentPlan={migrateCreditPaymentPlan}
                 setMigrateCreditPaymentPlan={setMigrateCreditPaymentPlan}
                 isMigrateFormComplete={isMigrateFormComplete}
+                isPending={migrateMeterMutation.isPending}
                 onConfirm={handleConfirmMigrate}
-            // isSubmitting={migrateMeterMutation.isPending}
             />
             <DetachMeterDialog
                 isOpen={isDetachModalOpen}

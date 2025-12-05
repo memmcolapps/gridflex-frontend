@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { MeterInventoryItem } from "@/types/meter-inventory";
-import { type MigrateMeterPayload, useMigrateMeter } from "@/hooks/use-assign-meter";
 
 interface MigrateMeterDialogProps {
   isOpen: boolean;
@@ -25,6 +24,7 @@ interface MigrateMeterDialogProps {
   migrateCreditPaymentPlan: string;
   setMigrateCreditPaymentPlan: (value: string) => void;
   isMigrateFormComplete: boolean;
+  isPending: boolean;
   onConfirm: () => void;
 }
 
@@ -43,9 +43,9 @@ export function MigrateMeterDialog({
   migrateCreditPaymentPlan,
   setMigrateCreditPaymentPlan,
   isMigrateFormComplete,
+  isPending,
   onConfirm,
 }: MigrateMeterDialogProps) {
-  const migrateMeterMutation = useMigrateMeter();
 
   // Determine the opposite category
   const oppositeCategory = migrateCustomer?.category === "Prepaid" ? "Postpaid" : "Prepaid";
@@ -58,26 +58,7 @@ export function MigrateMeterDialog({
   }, [migrateCustomer, setMigrateToCategory]);
 
   const handleConfirm = () => {
-    if (!migrateCustomer?.id) return;
-
-    // Construct payload based on migration type
-    const payload: MigrateMeterPayload = {
-      meterId: migrateCustomer.id,
-      migrationFrom: migrateCustomer.meterCategory ?? "",
-      meterCategory: migrateToCategory,
-      ...(migrateToCategory === "Prepaid" && {
-        debitPaymentMode: migrateDebitMop,
-        debitPaymentPlan: migrateDebitMop === "monthly" ? migrateDebitPaymentPlan : "",
-        creditPaymentMode: migrateCreditMop,
-        creditPaymentPlan: migrateCreditMop === "monthly" ? migrateCreditPaymentPlan : "",
-      }),
-    };
-
-    migrateMeterMutation.mutate(payload, {
-      onSuccess: () => {
-        onConfirm();
-      },
-    });
+    onConfirm();
   };
 
   return (
@@ -106,7 +87,7 @@ export function MigrateMeterDialog({
                     <Label className="text-sm font-medium">
                       Mode of Payment <span className="text-red-600">*</span>
                     </Label>
-                    <Select onValueChange={setMigrateDebitMop} value={migrateDebitMop} disabled={migrateMeterMutation.isPending}>
+                    <Select onValueChange={setMigrateDebitMop} value={migrateDebitMop} disabled={isPending}>
                       <SelectTrigger className="w-full h-10 border-gray-200 focus:ring-[#161CCA]/50">
                         <SelectValue placeholder="Select mode of payment" />
                       </SelectTrigger>
@@ -121,7 +102,7 @@ export function MigrateMeterDialog({
                     <Label className="text-sm font-medium">Payment Plan</Label>
                     <Select
                       onValueChange={setMigrateDebitPaymentPlan}
-                      disabled={migrateDebitMop === "percentage" || migrateDebitMop === "one-off" || migrateMeterMutation.isPending}
+                      disabled={migrateDebitMop === "percentage" || migrateDebitMop === "one-off" || isPending}
                       value={migrateDebitPaymentPlan}
                     >
                       <SelectTrigger
@@ -147,7 +128,7 @@ export function MigrateMeterDialog({
                 <Label className="text-sm font-medium">
                   Migrate to <span className="text-red-600">*</span>
                 </Label>
-                <Select onValueChange={setMigrateToCategory} value={migrateToCategory} disabled={migrateMeterMutation.isPending}>
+                <Select onValueChange={setMigrateToCategory} value={migrateToCategory} disabled={isPending}>
                   <SelectTrigger className="w-full h-10 border-gray-200 focus:ring-[#161CCA]/50">
                     <SelectValue placeholder="Select meter category" />
                   </SelectTrigger>
@@ -164,7 +145,7 @@ export function MigrateMeterDialog({
                     <Label className="text-sm font-medium">
                       Mode of Payment <span className="text-red-600">*</span>
                     </Label>
-                    <Select onValueChange={setMigrateCreditMop} value={migrateCreditMop} disabled={migrateMeterMutation.isPending}>
+                    <Select onValueChange={setMigrateCreditMop} value={migrateCreditMop} disabled={isPending}>
                       <SelectTrigger className="w-full h-10 border-gray-200 focus:ring-[#161CCA]/50">
                         <SelectValue placeholder="Select mode of payment" />
                       </SelectTrigger>
@@ -179,7 +160,7 @@ export function MigrateMeterDialog({
                     <Label className="text-sm font-medium">Payment Plan</Label>
                     <Select
                       onValueChange={setMigrateCreditPaymentPlan}
-                      disabled={migrateCreditMop === "percentage" || migrateCreditMop === "one-off" || migrateMeterMutation.isPending}
+                      disabled={migrateCreditMop === "percentage" || migrateCreditMop === "one-off" || isPending}
                       value={migrateCreditPaymentPlan}
                     >
                       <SelectTrigger
@@ -207,20 +188,20 @@ export function MigrateMeterDialog({
             variant="outline"
             onClick={() => onOpenChange(false)}
             className="border-[#161CCA] text-[#161CCA] hover:bg-[#161CCA]/10 h-10 px-4 cursor-pointer"
-            disabled={migrateMeterMutation.isPending}
+            disabled={isPending}
           >
             Cancel
           </Button>
           <Button
             onClick={handleConfirm}
-            disabled={!isMigrateFormComplete || migrateMeterMutation.isPending}
+            disabled={!isMigrateFormComplete || isPending}
             className={
-              isMigrateFormComplete && !migrateMeterMutation.isPending
+              isMigrateFormComplete && !isPending
                 ? "bg-[#161CCA] text-white hover:bg-[#161CCA]/90 h-10 px-4 cursor-pointer"
                 : "bg-blue-200 text-white cursor-not-allowed h-10 px-4"
             }
           >
-            {migrateMeterMutation.isPending ? "Migrating..." : "Migrate"}
+            {isPending ? "Migrating..." : "Migrate"}
           </Button>
         </DialogFooter>
       </DialogContent>
