@@ -49,9 +49,10 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { BulkUploadDialog } from "@/components/meter-management/bulk-upload";
+import { toast } from "sonner";
 
 // Define the possible dialog types
-type DialogType = "apn" | "ctvt" | "relay" | "datetime" | "ip" | "viewDetails" | "sendToken" | "relayControl";
+type DialogType = "apn" | "ctvt" | "relay" | "datetime" | "ip" | "viewDetails" | "sendToken";
 
 // Define filter sections
 const filterSections = [
@@ -618,9 +619,8 @@ export default function MeterRemoteConfigPage() {
                                                     </div>
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem onSelect={() => {
-                                                    setSelectedMeter(meter);
-                                                    setDialogType("relayControl");
-                                                    setIsDialogOpen(true);
+                                                    const action = meter.status === "Online" ? "disconnected" : "connected";
+                                                    toast.success(`Meter ${meter.meterNumber} relay ${action} successfully`);
                                                 }}>
                                                     <div className="flex items-center w-full gap-2">
                                                         <Ban size={14} />
@@ -789,47 +789,6 @@ export default function MeterRemoteConfigPage() {
                         closeDialog();
                     }}
                 />
-            )}
-            {isDialogOpen && dialogType === "relayControl" && selectedMeter && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg p-6 w-[400px] max-w-[90vw]">
-                        <h3 className="text-lg font-semibold mb-4">
-                            {selectedMeter.status === "Online" ? "Disconnect Relay" : "Connect Relay"}
-                        </h3>
-                        <p className="text-gray-600 mb-4">
-                            {selectedMeter.status === "Online"
-                                ? "Are you sure you want to disconnect the relay for this meter?"
-                                : "Are you sure you want to connect the relay for this meter?"}
-                        </p>
-                        <p className="text-sm text-gray-500 mb-4">
-                            Meter: <span className="font-mono">{selectedMeter.meterNumber}</span>
-                        </p>
-                        <div className="flex gap-2 justify-end">
-                            <Button
-                                variant="outline"
-                                onClick={closeDialog}
-                                className="px-4 py-2"
-                            >
-                                Cancel
-                            </Button>
-                            <Button
-                                onClick={() => {
-                                    // TODO: Implement relay control logic
-                                    console.log(
-                                        selectedMeter.status === "Online"
-                                            ? "Disconnecting relay for meter:"
-                                            : "Connecting relay for meter:",
-                                        selectedMeter.meterNumber
-                                    );
-                                    closeDialog();
-                                }}
-                                className="px-4 py-2 bg-[#161CCA] text-white hover:bg-[#161CCA]/90"
-                            >
-                                {selectedMeter.status === "Online" ? "Disconnect" : "Connect"}
-                            </Button>
-                        </div>
-                    </div>
-                </div>
             )}
             {showOfflineDialog && (
                 <OfflineDialog
