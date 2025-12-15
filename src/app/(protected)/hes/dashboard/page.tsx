@@ -8,7 +8,6 @@ import SimpleCommunicationReport from "@/components/hes/dashboard/simple-communi
 import { Ban, CircleCheck, CircleCheckBig } from "lucide-react";
 import React, { useState } from "react";
 import { ContentHeader } from "@/components/ui/content-header";
-import { FiltersOnly } from "@/components/hes/dashboard/filtersonly";
 import { useHesDashboard } from "@/hooks/use-dashboard";
 import type { CommunicationReport } from "@/types/dashboard";
 import type { ReportData } from "@/components/hes/dashboard/simple-communication-report";
@@ -27,9 +26,8 @@ const convertToReportData = (report: CommunicationReport, index: number): Report
 };
 
 export default function HESDashboardPage() {
-  const [selectedBand, setSelectedBand] = useState("Band");
-  const [selectedYear, setSelectedYear] = useState("Year");
-  const [selectedMeterType, setSelectedMeterType] = useState("Meter Type");
+  // const [selectedBand, setSelectedBand] = useState("Band");
+  // const [selectedMeterType, setSelectedMeterType] = useState("Meter Type");
   // API call enabled with new JSON format
   const {data: hesDashboardData, isLoading } = useHesDashboard()
 
