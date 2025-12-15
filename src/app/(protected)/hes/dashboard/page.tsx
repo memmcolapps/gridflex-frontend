@@ -6,7 +6,7 @@ import EventsTable from "@/components/hes/dashboard/events-table";
 import CommunicationSummaryChart from "@/components/hes/dashboard/communication-summary-chart";
 import SimpleCommunicationReport from "@/components/hes/dashboard/simple-communication-report";
 import { Ban, CircleCheck, CircleCheckBig } from "lucide-react";
-import React, { useState } from "react";
+// import React, { useState } from "react";
 import { ContentHeader } from "@/components/ui/content-header";
 import { useHesDashboard } from "@/hooks/use-dashboard";
 import type { CommunicationReport } from "@/types/dashboard";
