@@ -114,17 +114,6 @@ export default function HESDashboardPage() {
         />
       </div>
 
-      {/* Filters Section */}
-      {/* <section>
-        <FiltersOnly
-          selectedBand={selectedBand}
-          setSelectedBand={setSelectedBand}
-          selectedYear={selectedYear}
-          setSelectedYear={setSelectedYear}
-          selectedMeterType={selectedMeterType}
-          setSelectedMeterType={setSelectedMeterType}
-        />
-      </section> */}
 
       {/* Overview Cards - 3 cards in a row */}
       <div className="mt-6 grid w-full grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
