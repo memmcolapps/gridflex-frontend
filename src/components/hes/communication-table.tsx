@@ -67,32 +67,24 @@ export function CommunicationTable({ searchQuery = "", activeTab = 'MD' }: Commu
         setDialogOpen(true);
     };
 
-    const handleCheckboxChange = (serialNumber: string, isChecked: boolean) => {
+    const handleCheckboxChange = (meterNo: string, isChecked: boolean) => {
         if (isChecked) {
-            setSelectedRows(prev => [...prev, serialNumber]);
+            setSelectedRows(prev => [...prev, meterNo]);
         } else {
-            setSelectedRows(prev => prev.filter(sn => sn !== serialNumber));
+            setSelectedRows(prev => prev.filter(mn => mn !== meterNo));
         }
     };
 
     const handleSelectAll = (isChecked: boolean) => {
         if (isChecked) {
-            setSelectedRows(paginatedData.map(row => row.serialNumber ?? ''));
+            setSelectedRows(paginatedData.map(row => row.meterNo ?? ''));
         } else {
             setSelectedRows([]);
         }
     };
 
-    const handleConnectRelay = (serialNumber: string) => {
-        toast.success(`Successfully connected relay for meter ${serialNumber}`);
-    };
-
-    const handleDisconnectRelay = (serialNumber: string) => {
-        toast.error(`Successfully disconnected relay for meter ${serialNumber}`);
-    };
-
-    const handleSendToken = (serialNumber: string) => {
-        setMeterToTokenize(serialNumber);
+    const handleSendToken = (meterNo: string) => {
+        setMeterToTokenize(meterNo);
         setIsTokenDialogOpen(true);
     };
 
@@ -106,8 +98,7 @@ export function CommunicationTable({ searchQuery = "", activeTab = 'MD' }: Commu
     };
 
     // Determine which columns to show based on the data structure
-    // const hasCategory = paginatedData.length > 0 && paginatedData[0]?.category != null;
-    const hasMeterModel = paginatedData.length > 0 && paginatedData[0]?.meterModel != null;
+    const hasMeterModel = paginatedData.length > 0 && paginatedData[0]?.meter?.smartMeterInfo?.meterModel != null;
 
     if (isLoading) {
         return <div className="p-4 text-center">Loading...</div>;
@@ -127,21 +118,18 @@ export function CommunicationTable({ searchQuery = "", activeTab = 'MD' }: Commu
                         </TableHead>
                         <TableHead>S/N</TableHead>
                         <TableHead>Meter No.</TableHead>
-                        {/* {hasCategory && <TableHead>Category</TableHead>} */}
                         {hasMeterModel && <TableHead>Meter Model</TableHead>}
-                        <TableHead>Status</TableHead>
-                        <TableHead>Last Sync</TableHead>
-                        <TableHead>Tamper State</TableHead>
-                        <TableHead>Tamper Sync</TableHead>
-                        <TableHead>Relay Control</TableHead>
-                        <TableHead>Relay Sync</TableHead>
+                        <TableHead>Connection Type</TableHead>
+                        <TableHead>Online Time</TableHead>
+                        <TableHead>Offline Time</TableHead>
+                        <TableHead>Last Updated</TableHead>
                         <TableHead>Actions</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
                     {paginatedData.map((row, index) => (
                         <TableRow
-                            key={row.serialNumber}
+                            key={row.meterNo || `row-${index}`}
                             onClick={(e) => {
                                 if ((e.target as HTMLElement).tagName !== 'INPUT' && (e.target as HTMLElement).tagName !== 'BUTTON') {
                                     handleRowClick(row);
@@ -151,29 +139,22 @@ export function CommunicationTable({ searchQuery = "", activeTab = 'MD' }: Commu
                         >
                             <TableCell onClick={(e) => e.stopPropagation()}>
                                 <Checkbox
-                                    checked={selectedRows.includes(row.serialNumber ?? '')}
+                                    checked={selectedRows.includes(row.meterNo ?? '')}
                                     className='mr-2 cursor-pointer'
-                                    onCheckedChange={(checked) => handleCheckboxChange(row.serialNumber ?? '', Boolean(checked))}
+                                    onCheckedChange={(checked) => handleCheckboxChange(row.meterNo ?? '', Boolean(checked))}
                                 />
                             </TableCell>
                             <TableCell>{(currentPage - 1) * rowsPerPage + index + 1}</TableCell>
                             <TableCell>{row.meterNo}</TableCell>
-                            {/* {hasCategory && <TableCell>{row.category}</TableCell>} */}
-                            {hasMeterModel && <TableCell>{row.meterModel}</TableCell>}
+                            {hasMeterModel && <TableCell>{row.meter?.smartMeterInfo?.meterModel}</TableCell>}
                             <TableCell>
-                                <span className={getStatusStyle(row.status)}>
-                                    {row.status}
+                                <span className={getStatusStyle(row.connectionType)}>
+                                    {row.connectionType}
                                 </span>
                             </TableCell>
-                            <TableCell>{row.lastSync}</TableCell>
-                            <TableCell>{row.tamperState}</TableCell>
-                            <TableCell>{row.tamperSync}</TableCell>
-                            <TableCell>
-                                <span className={getStatusStyle(row.relayControl)}>
-                                    {row.relayControl}
-                                </span>
-                            </TableCell>
-                            <TableCell>{row.relaySync}</TableCell>
+                            <TableCell>{row.onlineTime ? new Date(row.onlineTime).toLocaleString() : '-'}</TableCell>
+                            <TableCell>{row.offlineTime ? new Date(row.offlineTime).toLocaleString() : '-'}</TableCell>
+                            <TableCell>{row.updatedAt ? new Date(row.updatedAt).toLocaleString() : '-'}</TableCell>
                             <TableCell onClick={(e) => e.stopPropagation()}>
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
@@ -182,29 +163,12 @@ export function CommunicationTable({ searchQuery = "", activeTab = 'MD' }: Commu
                                         </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent className="w-full p-3 shadow-lg">
-                                        {row.relayControl === 'Disconnected' ? (
-                                            <DropdownMenuItem
-                                                className="cursor-pointer"
-                                                onClick={() => handleConnectRelay(row.serialNumber ?? '')}
-                                            >
-                                                <CircleCheck size={14} className="mr-2" /> Connect Relay
-                                            </DropdownMenuItem>
-                                        ) : (
-                                            <>
-                                                <DropdownMenuItem
-                                                    className="cursor-pointer"
-                                                    onClick={() => handleDisconnectRelay(row.serialNumber ?? '')}
-                                                >
-                                                    <BanIcon size={14} className="mr-2" /> Disconnect Relay
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem
-                                                    className="cursor-pointer"
-                                                    onClick={() => handleSendToken(row.serialNumber ?? '')}
-                                                >
-                                                    <SendIcon size={14} className="mr-2" /> Send Token
-                                                </DropdownMenuItem>
-                                            </>
-                                        )}
+                                        <DropdownMenuItem
+                                            className="cursor-pointer"
+                                            onClick={() => handleSendToken(row.meterNo ?? '')}
+                                        >
+                                            <SendIcon size={14} className="mr-2" /> Send Token
+                                        </DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                             </TableCell>
@@ -236,42 +200,44 @@ export function CommunicationTable({ searchQuery = "", activeTab = 'MD' }: Commu
                                 <Label className="font-semibold">Meter Number:</Label>
                                 <span>{selectedRow.meterNo}</span>
                             </div>
-                            {/* {selectedRow.category && (
-                                <div className="grid grid-cols-2 gap-2">
-                                    <Label className="font-semibold">Category:</Label>
-                                    <span>{selectedRow.category}</span>
-                                </div>
-                            )} */}
-                            {selectedRow.meterModel && (
+                            {selectedRow.meter?.smartMeterInfo?.meterModel && (
                                 <div className="grid grid-cols-2 gap-2">
                                     <Label className="font-semibold">Meter Model:</Label>
-                                    <span>{selectedRow.meterModel}</span>
+                                    <span>{selectedRow.meter.smartMeterInfo.meterModel}</span>
                                 </div>
                             )}
                             <div className="grid grid-cols-2 gap-2">
-                                <Label className="font-semibold">Status:</Label>
-                                <span>{selectedRow.status}</span>
+                                <Label className="font-semibold">Connection Type:</Label>
+                                <span>{selectedRow.connectionType}</span>
                             </div>
                             <div className="grid grid-cols-2 gap-2">
-                                <Label className="font-semibold">Last Sync:</Label>
-                                <span>{selectedRow.lastSync}</span>
+                                <Label className="font-semibold">Online Time:</Label>
+                                <span>{selectedRow.onlineTime ? new Date(selectedRow.onlineTime).toLocaleString() : '-'}</span>
                             </div>
                             <div className="grid grid-cols-2 gap-2">
-                                <Label className="font-semibold">Tamper State:</Label>
-                                <span>{selectedRow.tamperState}</span>
+                                <Label className="font-semibold">Offline Time:</Label>
+                                <span>{selectedRow.offlineTime ? new Date(selectedRow.offlineTime).toLocaleString() : '-'}</span>
                             </div>
                             <div className="grid grid-cols-2 gap-2">
-                                <Label className="font-semibold">Tamper Sync:</Label>
-                                <span>{selectedRow.tamperSync}</span>
+                                <Label className="font-semibold">Last Updated:</Label>
+                                <span>{selectedRow.updatedAt ? new Date(selectedRow.updatedAt).toLocaleString() : '-'}</span>
                             </div>
-                            <div className="grid grid-cols-2 gap-2">
-                                <Label className="font-semibold">Relay Control:</Label>
-                                <span>{selectedRow.relayControl}</span>
-                            </div>
-                            <div className="grid grid-cols-2 gap-2">
-                                <Label className="font-semibold">Relay Sync:</Label>
-                                <span>{selectedRow.relaySync}</span>
-                            </div>
+                            {selectedRow.meter && (
+                                <>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <Label className="font-semibold">Account Number:</Label>
+                                        <span>{selectedRow.meter.accountNumber}</span>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <Label className="font-semibold">Meter Class:</Label>
+                                        <span>{selectedRow.meter.meterClass}</span>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <Label className="font-semibold">Customer ID:</Label>
+                                        <span>{selectedRow.meter.customerId}</span>
+                                    </div>
+                                </>
+                            )}
                         </div>
                     )}
                 </DialogContent>

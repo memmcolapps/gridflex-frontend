@@ -1,14 +1,37 @@
 export interface CommunicationReportData {
-    serialNumber?: string;
     meterNo?: string;
-    meterModel?: string;
-    meterClass?: string;
-    status?: string;
-    lastSync?: string;
-    tamperState?: string;
-    tamperSync?: string;
-    relayControl?: string;
-    relaySync?: string;
+    connectionType?: string;
+    onlineTime?: string;
+    offlineTime?: string;
+    updatedAt?: string;
+    meter?: {
+        id?: string;
+        orgId?: string;
+        nodeId?: string;
+        meterNumber?: string;
+        accountNumber?: string;
+        simNumber?: string;
+        fixedEnergy?: string;
+        dss?: string;
+        meterCategory?: string;
+        meterClass?: string;
+        meterType?: string;
+        smartStatus?: boolean;
+        customerId?: string;
+        oldSgc?: string;
+        newSgc?: string;
+        oldKrn?: string;
+        newKrn?: string;
+        oldTariffIndex?: number;
+        newTariffIndex?: number;
+        smartMeterInfo?: {
+            meterModel?: string;
+            createdAt?: string;
+            updatedAt?: string;
+        };
+        createdAt?: string;
+        updatedAt?: string;
+    };
 }
 
 export interface CommunicationReport {
