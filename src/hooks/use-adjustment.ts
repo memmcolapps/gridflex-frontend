@@ -11,11 +11,11 @@ import {
 import { type Adjustment, type AdjustmentPayload } from "@/types/credit-debit";
 import { toast } from "sonner";
 
-export const useAllAdjustments = (type: "credit" | "debit") => {
+export const useAllAdjustments = (type: "credit" | "debit", searchTerm?: string) => {
   return useQuery<Adjustment[]>({
-    queryKey: ["adjustments", type],
+    queryKey: ["adjustments", type, searchTerm],
     queryFn: async () => {
-      const result = await fetchAllAdjustments(type);
+      const result = await fetchAllAdjustments(type, searchTerm);
       if (result.success) {
         return result.data;
       } else {

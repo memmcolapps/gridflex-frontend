@@ -18,15 +18,19 @@ const CUSTOM_HEADER = env.NEXT_PUBLIC_CUSTOM_HEADER;
 
 // --- Liability Cause API Calls ---
 
-export const fetchAllLiabilityCauses = async (): Promise<
+export const fetchAllLiabilityCauses = async (searchTerm?: string): Promise<
   { success: true; data: LiabilityCause[] } | { success: false; error: string }
 > => {
   try {
     const token = localStorage.getItem("auth_token");
 
+    const params: Record<string, string> = {};
+    if (searchTerm) params.search = searchTerm;
+
     const response = await axiosInstance.get<ApiResponse<LiabilityCause[]>>(
       `${API_URL}/debt-setting/service/liability-cause/all`,
       {
+        params,
         headers: {
           "Content-Type": "application/json",
           custom: CUSTOM_HEADER,
@@ -171,15 +175,19 @@ export const changeLiabilityCauseStatus = async (
 
 // --- Percentage Range API Calls ---
 
-export const fetchAllPercentageRanges = async (): Promise<
+export const fetchAllPercentageRanges = async (searchTerm?: string): Promise<
   { success: true; data: PercentageRange[] } | { success: false; error: string }
 > => {
   try {
     const token = localStorage.getItem("auth_token");
 
+    const params: Record<string, string> = {};
+    if (searchTerm) params.search = searchTerm;
+
     const response = await axiosInstance.get<ApiResponse<PercentageRange[]>>(
       `${API_URL}/debt-setting/service/percentage-range/all`,
       {
+        params,
         headers: {
           "Content-Type": "application/json",
           custom: CUSTOM_HEADER,

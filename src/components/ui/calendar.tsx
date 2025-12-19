@@ -3,7 +3,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { differenceInCalendarDays } from "date-fns";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, Clock, CalendarIcon } from "lucide-react";
 import {
   DayPicker,
   labelNext,
@@ -24,6 +24,7 @@ import {
   subMonths,
   setHours,
   setMinutes,
+  setSeconds,
 } from "date-fns";
 
 interface SimplifiedCalendarProps {
@@ -33,6 +34,7 @@ interface SimplifiedCalendarProps {
   onTimeChange?: (time: string) => void;
   onClose?: () => void;
   className?: string;
+  showSeconds?: boolean;
 }
 
 export type CalendarProps = DayPickerProps & {
@@ -559,13 +561,14 @@ export function SimplifiedCalendar({
   onTimeChange,
   onClose,
   className,
+  showSeconds = false,
 }: SimplifiedCalendarProps) {
   const [currentMonth, setCurrentMonth] = React.useState(
     selected ?? new Date(),
   );
 
   // Use external time value or default
-  const timeValue = externalTimeValue ?? "00:00";
+  const timeValue = externalTimeValue ?? (showSeconds ? "00:00:00" : "00:00");
 
   const [dateValue, setDateValue] = React.useState(
     selected
@@ -599,13 +602,13 @@ export function SimplifiedCalendar({
         <button
           key={day.toString()}
           className={cn(
-            "h-8 w-8 rounded p-0 font-normal hover:bg-gray-100",
-            !isSameMonth(day, monthStart) && "text-gray-400",
+            "h-10 w-10 rounded-lg font-medium transition-all hover:bg-gray-50 hover:shadow-sm",
+            !isSameMonth(day, monthStart) && "text-gray-300",
             isSameDay(day, selected ?? new Date()) &&
-              "bg-blue-600 text-white hover:bg-blue-700",
+              "bg-blue-600 text-white hover:bg-blue-700 shadow-md",
             isSameDay(day, new Date()) &&
               !isSameDay(day, selected ?? new Date()) &&
-              "bg-gray-100",
+              "bg-blue-50 text-blue-600",
           )}
           onClick={() => handleDayClick(cloneDay)}
           type="button"
@@ -628,14 +631,16 @@ export function SimplifiedCalendar({
     const timeParts = timeValue.split(":");
     const hoursStr = timeParts[0];
     const minutesStr = timeParts[1];
+    const secondsStr = showSeconds ? (timeParts[2] || "0") : "0";
 
     let newDate = new Date(day);
     if (hoursStr && minutesStr) {
       const hours = parseInt(hoursStr, 10);
       const minutes = parseInt(minutesStr, 10);
+      const seconds = parseInt(secondsStr, 10);
 
-      if (!isNaN(hours) && !isNaN(minutes)) {
-        newDate = setHours(setMinutes(day, minutes), hours);
+      if (!isNaN(hours) && !isNaN(minutes) && !isNaN(seconds)) {
+        newDate = setHours(setMinutes(setSeconds(day, seconds), minutes), hours);
       }
     }
 
@@ -652,13 +657,15 @@ export function SimplifiedCalendar({
     const timeParts = time.split(":");
     const hoursStr = timeParts[0];
     const minutesStr = timeParts[1];
+    const secondsStr = showSeconds ? (timeParts[2] || "0") : "0";
 
     if (hoursStr && minutesStr) {
       const hours = parseInt(hoursStr, 10);
       const minutes = parseInt(minutesStr, 10);
+      const seconds = parseInt(secondsStr, 10);
 
-      if (!isNaN(hours) && !isNaN(minutes)) {
-        const newDate = setHours(setMinutes(baseDate, minutes), hours);
+      if (!isNaN(hours) && !isNaN(minutes) && !isNaN(seconds)) {
+        const newDate = setHours(setMinutes(setSeconds(baseDate, seconds), minutes), hours);
         onSelect?.(newDate);
       }
     }
@@ -727,14 +734,16 @@ export function SimplifiedCalendar({
               const timeParts = timeValue.split(":");
               const hoursStr = timeParts[0];
               const minutesStr = timeParts[1];
+              const secondsStr = showSeconds ? (timeParts[2] || "0") : "0";
 
               if (hoursStr && minutesStr) {
                 const hours = parseInt(hoursStr, 10);
                 const minutes = parseInt(minutesStr, 10);
+                const seconds = parseInt(secondsStr, 10);
 
-                if (!isNaN(hours) && !isNaN(minutes)) {
+                if (!isNaN(hours) && !isNaN(minutes) && !isNaN(seconds)) {
                   const finalDate = setHours(
-                    setMinutes(newDate, minutes),
+                    setMinutes(setSeconds(newDate, seconds), minutes),
                     hours,
                   );
                   onSelect?.(finalDate);
@@ -765,13 +774,15 @@ export function SimplifiedCalendar({
       const timeParts = timeValue.split(":");
       const hoursStr = timeParts[0];
       const minutesStr = timeParts[1];
+      const secondsStr = showSeconds ? (timeParts[2] || "0") : "0";
 
       if (hoursStr && minutesStr) {
         const hours = parseInt(hoursStr, 10);
         const minutes = parseInt(minutesStr, 10);
+        const seconds = parseInt(secondsStr, 10);
 
-        if (!isNaN(hours) && !isNaN(minutes)) {
-          const finalDate = setHours(setMinutes(selected, minutes), hours);
+        if (!isNaN(hours) && !isNaN(minutes) && !isNaN(seconds)) {
+          const finalDate = setHours(setMinutes(setSeconds(selected, seconds), minutes), hours);
           onSelect?.(finalDate);
         }
       }
@@ -782,7 +793,7 @@ export function SimplifiedCalendar({
   return (
     <div
       className={cn(
-        "w-[320px] rounded-lg border bg-white p-4 shadow-lg",
+        "w-[320px] rounded-lg bg-white p-4 shadow-lg border border-gray-200",
         className,
       )}
     >
@@ -799,35 +810,50 @@ export function SimplifiedCalendar({
       </div>
 
       {/* Date and Time inputs */}
-      <div className="mb-4 flex gap-2 rounded border border-gray-200 bg-gray-50 p-2">
-        <Input
-          type="text"
-          value={dateValue}
-          onChange={handleDateChange}
-          placeholder="01/04/2025"
-          maxLength={10}
-          className="h-7 min-w-0 flex-1 px-2 py-1 text-center text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-        />
-        <Input
-          type="time"
-          value={timeValue}
-          onChange={handleTimeChange}
-          className="h-7 w-25 min-w-0 px-2 py-1 text-center text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-        />
+      <div className="mb-6 space-y-3">
+        <div className="flex items-center gap-3">
+          <div className="flex-1">
+            <label className="block text-xs font-medium text-gray-600 mb-1">Date</label>
+            <div className="relative">
+              <CalendarIcon size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                type="text"
+                value={dateValue}
+                onChange={handleDateChange}
+                placeholder="DD/MM/YYYY"
+                maxLength={10}
+                className="h-10 w-full rounded-lg border-gray-200 bg-white pl-10 pr-3 py-2 text-sm font-medium focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+              />
+            </div>
+          </div>
+          <div className="flex-1">
+            <label className="block text-xs font-medium text-gray-600 mb-1">Time</label>
+            <div className="relative">
+              <Clock size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                type="time"
+                step={showSeconds ? "1" : "60"}
+                value={timeValue}
+                onChange={handleTimeChange}
+                className="h-10 w-full rounded-lg border-gray-200 bg-white pl-10 pr-3 py-2 text-sm font-medium focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+              />
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Month navigation */}
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-6 flex items-center justify-between">
         <Button
           variant="ghost"
           size="icon"
           onClick={handlePreviousMonth}
-          className="h-8 w-8 p-0"
+          className="h-9 w-9 rounded-full hover:bg-gray-100 transition-colors"
         >
-          <ChevronLeft size={16} />
+          <ChevronLeft size={18} className="text-gray-600" />
         </Button>
 
-        <h2 className="text-base font-semibold">
+        <h2 className="text-lg font-semibold text-gray-800">
           {format(currentMonth, "MMMM yyyy")}
         </h2>
 
@@ -835,18 +861,18 @@ export function SimplifiedCalendar({
           variant="ghost"
           size="icon"
           onClick={handleNextMonth}
-          className="h-8 w-8 p-0"
+          className="h-9 w-9 rounded-full hover:bg-gray-100 transition-colors"
         >
-          <ChevronRight size={16} />
+          <ChevronRight size={18} className="text-gray-600" />
         </Button>
       </div>
 
       {/* Weekday headers */}
-      <div className="mb-2 flex justify-between">
+      <div className="mb-4 flex justify-between">
         {["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"].map((day) => (
           <div
             key={day}
-            className="w-8 text-center text-xs font-medium text-gray-500"
+            className="w-10 text-center text-xs font-semibold text-gray-400 uppercase tracking-wide"
           >
             {day}
           </div>
@@ -854,7 +880,7 @@ export function SimplifiedCalendar({
       </div>
 
       {/* Calendar grid */}
-      <div className="mb-4 space-y-1">{rows}</div>
+      <div className="mb-6 space-y-2">{rows}</div>
 
       {/* Done button */}
       <Button

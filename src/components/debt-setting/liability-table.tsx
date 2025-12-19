@@ -83,8 +83,8 @@ const LiabilityTable = ({ view, onViewChange, onDataChange }: LiabilityTableProp
 
     const [editFormData, setEditFormData] = useState<Partial<TableData>>({});
 
-    const { data: liabilityData, isLoading: isLoadingLiabilities, refetch: refetchLiabilities } = useAllLiabilityCauses();
-    const { data: percentageData, isLoading: isLoadingPercentages, refetch: refetchPercentages } = useAllPercentageRanges();
+    const { data: liabilityData, isLoading: isLoadingLiabilities, refetch: refetchLiabilities } = useAllLiabilityCauses(searchTerm);
+    const { data: percentageData, isLoading: isLoadingPercentages, refetch: refetchPercentages } = useAllPercentageRanges(searchTerm);
     const { mutate: updateLiability } = useUpdateLiabilityCause();
     const { mutate: updatePercentage } = useUpdatePercentageRange();
     const { mutate: changeLiabilityStatus } = useChangeLiabilityCauseStatus();
@@ -387,35 +387,9 @@ const LiabilityTable = ({ view, onViewChange, onDataChange }: LiabilityTableProp
         }
     };
 
-    const filteredTableData = useMemo(() => {
-        return tableData.filter((item) => {
-            if (!searchTerm) return true;
-            const lowerSearch = searchTerm.toLowerCase();
-            if ("liabilityName" in item) {
-                const liabilityItem = item as UILiability;
-                return (
-                    liabilityItem.liabilityName?.toLowerCase().includes(lowerSearch) ||
-                    liabilityItem.liabilityCode?.toLowerCase().includes(lowerSearch) ||
-                    liabilityItem.approvalStatus?.toLowerCase().includes(lowerSearch)
-                );
-            } else if ("percentage" in item) {
-                const percentageItem = item as UiPercentageRange;
-                return (
-                    percentageItem.percentage?.toLowerCase().includes(lowerSearch) ||
-                    percentageItem.percentageCode?.toLowerCase().includes(lowerSearch) ||
-                    percentageItem.band?.toLowerCase().includes(lowerSearch) ||
-                    percentageItem.amountStartRange?.toLowerCase().includes(lowerSearch) ||
-                    percentageItem.amountEndRange?.toLowerCase().includes(lowerSearch) ||
-                    percentageItem.approvalStatus?.toLowerCase().includes(lowerSearch)
-                );
-            }
-            return false;
-        });
-    }, [tableData, searchTerm]);
-
     const columns = getColumns();
     const table = useReactTable({
-        data: filteredTableData,
+        data: tableData,
         columns,
         getCoreRowModel: getCoreRowModel(),
     });

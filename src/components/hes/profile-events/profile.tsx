@@ -26,6 +26,7 @@ import {
   ChevronDown,
   Check,
   Square,
+  ChevronsUpDown,
 } from "lucide-react";
 import { format, setHours, setMinutes } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -49,6 +50,10 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { PaginationControls } from "@/components/ui/pagination-controls";
+import { useProfileEventsData, useProfiles } from "@/hooks/use-profile-events";
+import { useMeters } from "@/hooks/use-assign-meter";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { toast } from "sonner";
 
 interface ProfileData {
   sn: number;
@@ -65,87 +70,25 @@ const mockProfileData: ProfileData[] = [
 ];
 
 const profileTypes = [
-  "Energy Profile",
-  "Instant Data Profile",
-  "Billing Data Daily",
-  "Billing Data Monthly",
+  { label: "Load Profile 1", value: "load-profile-one" },
+  { label: "Load Profile 2", value: "load-profile-two" },
+  { label: "Daily Billing", value: "daily-billing-profile" },
+  { label: "Monthly Billing", value: "monthly-billing-profile" },
 ];
 
-// Profile options based on profile type
-const profileOptionsByType: Record<string, string[]> = {
-  "Energy Profile": [
-    "Status Word",
-    "Cumulative Total Active Energy kWh",
-    "Cumulative Import Active Energy kWh",
-    "Cumulative Export Active Energy kWh",
-    "Cumulative Apparent Energy kWh",
-    "Cumulative Import Apparent Energy kWh",
-    "Cumulative Export Apparent Energy kWh",
-  ],
-  "Instant Data Profile": [
-    "Status Word",
-    "Clock",
-    "Voltage L1",
-    "Voltage L2",
-    "Voltage L3",
-    "Current L1",
-    "Current L2",
-    "Current L3",
-    "Active Power +P",
-    "Active Power -P",
-    "Reactive Power +Q",
-    "Reactive Power -Q",
-    "Apparent Power +S",
-    "Apparent Power -S",
-    "Power Factor",
-    "Frequency",
-    "Quadrant",
-    "Maximum Demand kW",
-    "Maximum Demand kVA",
-    "TOU Tariff",
-    "Billing Count",
-    "Cumulative Total Active Energy kWh",
-    "Cumulative Import Active Energy kWh",
-    "Cumulative Export Active Energy kWh",
-    "Cumulative Total Reactive Energy kVARh",
-    "Cumulative Import Reactive Energy kVARh",
-    "Cumulative Export Reactive Energy kVARh",
-    "Cumulative Apparent Energy kVAh",
-    "Cumulative Import Apparent Energy kVAh",
-    "Cumulative Export Apparent Energy kVAh",
-  ],
-  "Billing Data Daily": [
-    "Residual Credit",
-    "Daily Consumption",
-    "Cumulative Total Active Energy kWh",
-    "Cumulative Import Active Energy kWh",
-    "Cumulative Export Active Energy kWh",
-    "Cumulative Apparent Energy kWh",
-    "Cumulative Import Apparent Energy kWh",
-    "Cumulative Export Apparent Energy kWh",
-  ],
-  "Billing Data Monthly": [
-    "Residual Credit",
-    "Increase Active Energy kWh",
-    "Cumulative Power Purchase Credit kWh",
-    "Monthly Cumulative Running Hours kWh",
-    "Cumulative Total Active Energy kWh",
-    "Cumulative Import Active Energy kWh",
-    "Cumulative Export Active Energy kWh",
-    "Cumulative Apparent Energy kWh",
-    "Cumulative Import Apparent Energy kWh",
-    "Cumulative Export Apparent Energy kWh",
-  ],
-};
+interface ProfileProps {
+  selectedHierarchy: string | null;
+  selectedUnits: string;
+}
 
-export function Profile() {
+export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
   const [startDateOpen, setStartDateOpen] = useState(false);
   const [endDateOpen, setEndDateOpen] = useState(false);
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
-  const [startTimeValue, setStartTimeValue] = useState<string>("00:00");
-  const [endTimeValue, setEndTimeValue] = useState<string>("00:00");
-  const [meterNo, setMeterNo] = useState("");
+  const [startTimeValue, setStartTimeValue] = useState<string>("00:00:00");
+  const [endTimeValue, setEndTimeValue] = useState<string>("00:00:00");
+  const [selectedMeterNos, setSelectedMeterNos] = useState<string[]>([]);
   const [selectedProfileTypes, setSelectedProfileTypes] = useState<string[]>(
     [],
   );
@@ -158,6 +101,24 @@ export function Profile() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [profileTypeDropdownOpen, setProfileTypeDropdownOpen] = useState(false);
   const [profilesDropdownOpen, setProfilesDropdownOpen] = useState(false);
+  const [selectedMeterModels, setSelectedMeterModels] = useState<string[]>([]);
+  const [meterModelDropdownOpen, setMeterModelDropdownOpen] = useState(false);
+  const [meterDropdownOpen, setMeterDropdownOpen] = useState(false);
+
+  const { data: profileEventsData } = useProfileEventsData();
+  const { data: metersData } = useMeters({
+    page: 1,
+    pageSize: 1000,
+    searchTerm: "",
+    sortBy: null,
+    sortDirection: null,
+    type: "assigned",
+  });
+  const { mutate: fetchProfiles, isPending: isLoading } = useProfiles();
+
+  const filteredMeters = metersData?.actualMeters.filter(meter =>
+    meter.type !== 'VIRTUAL'
+  ) || [];
 
   // Update available profile options when profile type changes
   useEffect(() => {
@@ -168,11 +129,14 @@ export function Profile() {
     }
 
     // Get all unique profile options from selected profile types
-    const allOptions = selectedProfileTypes.flatMap(
-      (type) => profileOptionsByType[type] ?? [],
-    );
-    const uniqueOptions = [...new Set(allOptions)];
-    setAvailableProfileOptions(uniqueOptions);
+    const optionsSet = new Set<string>();
+    selectedProfileTypes.forEach((type) => {
+      profileEventsData?.responsedata.event_types.forEach((eventType) => {
+        if (eventType.name.includes(type)) {
+          optionsSet.add(eventType.name);
+        }
+      });
+    });
 
     // Reset selected profiles when profile types change
     setSelectedProfiles([]);
@@ -186,7 +150,7 @@ export function Profile() {
         setSelectedProfileTypes([]);
       } else {
         // Select all profile types
-        setSelectedProfileTypes([...profileTypes]);
+        setSelectedProfileTypes(profileTypes.map(pt => pt.value));
       }
     } else {
       setSelectedProfileTypes((prev) => {
@@ -226,11 +190,14 @@ export function Profile() {
 
   // Get display text for dropdowns
   const getProfileTypeDisplayText = () => {
-    if (selectedProfileTypes.length === 0) return "Select Profile Type";
-    if (selectedProfileTypes.length === 1) return selectedProfileTypes[0];
+    if (selectedProfileTypes.length === 0) return "Select Profile";
+    if (selectedProfileTypes.length === 1) {
+      const pt = profileTypes.find(p => p.value === selectedProfileTypes[0]);
+      return pt ? pt.label : selectedProfileTypes[0];
+    }
     if (selectedProfileTypes.length === profileTypes.length)
-      return "All Profile Types";
-    return `${selectedProfileTypes.length} Profile Types`;
+      return "All Profiles";
+    return `${selectedProfileTypes.length} Profiles`;
   };
 
   const getProfilesDisplayText = () => {
@@ -265,17 +232,85 @@ export function Profile() {
   };
 
   const handleRun = () => {
-    // This is where you'd make your API call
-    console.log({
-      startDate,
-      endDate,
-      meterNo,
-      selectedProfileTypes,
-      selectedProfiles,
-    });
+    const isMeterModelRequired = selectedHierarchy && selectedUnits;
+    if (!startDate || !endDate || selectedMeterNos.length === 0 || (isMeterModelRequired && selectedMeterModels.length === 0) || selectedProfileTypes.length === 0) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
 
-    // For now, just set mock data
-    setTableData(mockProfileData);
+    const startDateStr = format(startDate, "yyyy-MM-dd HH:mm:ss");
+    const endDateStr = format(endDate, "yyyy-MM-dd HH:mm:ss");
+
+    fetchProfiles(
+      {
+        page: 0,
+        size: 2000,
+        startDate: startDateStr,
+        endDate: endDateStr,
+        meterNumber: selectedMeterNos.join(','),
+        profile: selectedProfileTypes.join(','),
+        model: selectedMeterModels.join(','),
+        search: selectedMeterNos.join(','),
+        node: selectedUnits,
+      },
+      {
+        onSuccess: (data) => {
+          toast.success("Profiles fetched successfully!");
+          // Transform the data to match ProfileData interface
+          const transformedData: ProfileData[] = [];
+          data.responsedata.data.forEach((profile, index) => {
+            const baseData = {
+              sn: index + 1,
+              meterNo: profile.meterNumber,
+              feeder: profile.meter.flatNode?.feederName || "N/A",
+              time: profile.entryTimestamp,
+            };
+
+            // Add rows for each energy type
+            transformedData.push({
+              ...baseData,
+              profileType: "Energy Profile",
+              profile: "T1 Active Energy",
+              value: profile.t1ActiveEnergy,
+            });
+            transformedData.push({
+              ...baseData,
+              profileType: "Energy Profile",
+              profile: "T2 Active Energy",
+              value: profile.t2ActiveEnergy,
+            });
+            transformedData.push({
+              ...baseData,
+              profileType: "Energy Profile",
+              profile: "T3 Active Energy",
+              value: profile.t3ActiveEnergy,
+            });
+            transformedData.push({
+              ...baseData,
+              profileType: "Energy Profile",
+              profile: "T4 Active Energy",
+              value: profile.t4ActiveEnergy,
+            });
+            transformedData.push({
+              ...baseData,
+              profileType: "Energy Profile",
+              profile: "Total Active Energy",
+              value: profile.totalActiveEnergy,
+            });
+            transformedData.push({
+              ...baseData,
+              profileType: "Energy Profile",
+              profile: "Total Apparent Energy",
+              value: profile.totalApparentEnergy,
+            });
+          });
+          setTableData(transformedData);
+        },
+        onError: (error) => {
+          toast.error(`Failed to fetch profiles: ${error.message}`);
+        },
+      }
+    );
   };
 
   const totalRows = tableData.length;
@@ -321,7 +356,7 @@ export function Profile() {
               >
                 <CalendarIcon className="mr-2" size={16} />
                 {startDate
-                  ? format(startDate, "dd-MM-yyyy HH:mm")
+                  ? format(startDate, "dd-MM-yyyy HH:mm:ss")
                   : "Select Date"}
               </Button>
             </PopoverTrigger>
@@ -334,6 +369,7 @@ export function Profile() {
                 onClose={() => {
                   setStartDateOpen(false);
                 }}
+                showSeconds={true}
               />
             </PopoverContent>
           </Popover>
@@ -359,7 +395,7 @@ export function Profile() {
                 )}
               >
                 <CalendarIcon className="mr-2" size={16} />
-                {endDate ? format(endDate, "dd-MM-yyyy HH:mm") : "Select Date"}
+                {endDate ? format(endDate, "dd-MM-yyyy HH:mm:ss") : "Select Date"}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto bg-white p-0" align="start">
@@ -371,6 +407,7 @@ export function Profile() {
                 onClose={() => {
                   setEndDateOpen(false);
                 }}
+                showSeconds={true}
               />
             </PopoverContent>
           </Popover>
@@ -378,22 +415,166 @@ export function Profile() {
 
         {/* Meter No */}
         <div className="flex min-w-[140px] flex-1 flex-col gap-2">
-          <Label htmlFor="meter-no" className="text-sm font-medium">
+          <Label className="text-sm font-medium">
             Meter No. <span className="text-red-500">*</span>
           </Label>
-          <Input
-            id="meter-no"
-            placeholder="622456789012"
-            value={meterNo}
-            onChange={(e) => setMeterNo(e.target.value)}
-            className="w-full border-gray-300 focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
-          />
+          <Popover open={meterDropdownOpen} onOpenChange={setMeterDropdownOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={meterDropdownOpen}
+                className="w-full justify-between border-gray-300"
+              >
+                {selectedMeterNos.length > 0 ? `${selectedMeterNos.length} selected` : "Select meter numbers..."}
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-full p-0 border-none">
+              <Command className="bg-white border-none">
+                <CommandInput placeholder="Search meter numbers..." className="border-none" />
+                <CommandList>
+                  <CommandEmpty>No meter found.</CommandEmpty>
+                  <CommandGroup>
+                    <CommandItem
+                      onSelect={() => {
+                        if (selectedMeterNos.length === filteredMeters.length) {
+                          setSelectedMeterNos([]);
+                        } else {
+                          setSelectedMeterNos(filteredMeters.map(m => m.meterNumber));
+                        }
+                      }}
+                      className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-50"
+                    >
+                      <span className="text-sm">Select All</span>
+                      <div className="flex h-4 w-4 items-center justify-center">
+                        {selectedMeterNos.length === filteredMeters.length ? (
+                          <div className="flex h-4 w-4 items-center justify-center rounded-sm bg-green-100">
+                            <Check size={12} className="text-green-600" />
+                          </div>
+                        ) : (
+                          <Square size={14} className="text-gray-400" />
+                        )}
+                      </div>
+                    </CommandItem>
+                    <div className="mx-2 border-t border-dotted border-[#4ECDC4]" />
+                    {filteredMeters.map((meter) => (
+                      <CommandItem
+                        key={meter.id ?? meter.meterNumber}
+                        value={meter.meterNumber}
+                        onSelect={() => {
+                          setSelectedMeterNos((prev) =>
+                            prev.includes(meter.meterNumber)
+                              ? prev.filter((m) => m !== meter.meterNumber)
+                              : [...prev, meter.meterNumber]
+                          );
+                        }}
+                        className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-50"
+                      >
+                        <span className="text-sm">{meter.meterNumber}</span>
+                        <div className="flex h-4 w-4 items-center justify-center">
+                          {selectedMeterNos.includes(meter.meterNumber) ? (
+                            <div className="flex h-4 w-4 items-center justify-center rounded-sm bg-green-100">
+                              <Check size={12} className="text-green-600" />
+                            </div>
+                          ) : (
+                            <Square size={14} className="text-gray-400" />
+                          )}
+                        </div>
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
+        </div>
+
+        {/* Meter Model */}
+        <div className="flex min-w-[140px] flex-1 flex-col gap-2">
+          <Label className="text-sm font-medium">
+            Meter Model <span className="text-red-500">*</span>
+          </Label>
+          <DropdownMenu
+            open={meterModelDropdownOpen}
+            onOpenChange={setMeterModelDropdownOpen}
+          >
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                className="w-full justify-between border-gray-300"
+                disabled={!selectedHierarchy || !selectedUnits}
+              >
+                {selectedMeterModels.length > 0 ? `${selectedMeterModels.length} selected` : "Select Meter Models"}
+                <ChevronDown size={12} className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              className="max-h-60 w-[var(--radix-dropdown-menu-trigger-width)] min-w-[160px] overflow-y-auto"
+              align="start"
+            >
+              {/* Select All Option */}
+              <DropdownMenuItem
+                onSelect={(e) => e.preventDefault()}
+                onClick={() => {
+                  if (selectedMeterModels.length === (profileEventsData?.responsedata.models.length || 0)) {
+                    setSelectedMeterModels([]);
+                  } else {
+                    setSelectedMeterModels(profileEventsData?.responsedata.models.map(m => m.meterModel) || []);
+                  }
+                }}
+                className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-50"
+              >
+                <span className="text-sm">Select All</span>
+                <div className="flex h-4 w-4 items-center justify-center">
+                  {selectedMeterModels.length === (profileEventsData?.responsedata.models.length || 0) ? (
+                    <div className="flex h-4 w-4 items-center justify-center rounded-sm bg-green-100">
+                      <Check size={12} className="text-green-600" />
+                    </div>
+                  ) : (
+                    <Square size={14} className="text-gray-400" />
+                  )}
+                </div>
+              </DropdownMenuItem>
+
+              {/* Dotted separator */}
+              <div className="mx-2 border-t border-dotted border-[#4ECDC4]" />
+
+              {profileEventsData?.responsedata.models.map((model) => (
+                <div key={model.meterModel}>
+                  <DropdownMenuItem
+                    onSelect={(e) => e.preventDefault()}
+                    onClick={() => {
+                      setSelectedMeterModels((prev) =>
+                        prev.includes(model.meterModel)
+                          ? prev.filter((m) => m !== model.meterModel)
+                          : [...prev, model.meterModel]
+                      );
+                    }}
+                    className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-50"
+                  >
+                    <span className="text-sm">{model.meterModel}</span>
+                    <div className="flex h-4 w-4 items-center justify-center">
+                      {selectedMeterModels.includes(model.meterModel) ? (
+                        <div className="flex h-4 w-4 items-center justify-center rounded-sm bg-green-100">
+                          <Check size={12} className="text-green-600" />
+                        </div>
+                      ) : (
+                        <Square size={14} className="text-gray-400" />
+                      )}
+                    </div>
+                  </DropdownMenuItem>
+                  <div className="mx-2 border-t border-dotted border-[#4ECDC4]" />
+                </div>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         {/* Profile Type */}
         <div className="flex min-w-[160px] flex-1 flex-col gap-2">
           <Label className="text-sm font-medium">
-            Profile Type <span className="text-red-500">*</span>
+            Profile <span className="text-red-500">*</span>
           </Label>
           <DropdownMenu
             open={profileTypeDropdownOpen}
@@ -434,85 +615,15 @@ export function Profile() {
               <div className="mx-2 border-t border-dotted border-[#4ECDC4]" />
 
               {profileTypes.map((type) => (
-                <div key={type}>
+                <div key={type.value}>
                   <DropdownMenuItem
                     onSelect={(e) => e.preventDefault()}
-                    onClick={() => handleProfileTypeChange(type)}
+                    onClick={() => handleProfileTypeChange(type.value)}
                     className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-50"
                   >
-                    <span className="text-sm">{type}</span>
+                    <span className="text-sm">{type.label}</span>
                     <div className="flex h-4 w-4 items-center justify-center">
-                      {selectedProfileTypes.includes(type) ? (
-                        <div className="flex h-4 w-4 items-center justify-center rounded-sm bg-green-100">
-                          <Check size={12} className="text-green-600" />
-                        </div>
-                      ) : (
-                        <Square size={14} className="text-gray-400" />
-                      )}
-                    </div>
-                  </DropdownMenuItem>
-                  <div className="mx-2 border-t border-dotted border-[#4ECDC4]" />
-                </div>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-
-        {/* Profiles */}
-        <div className="flex min-w-[120px] flex-1 flex-col gap-2">
-          <Label className="text-sm font-medium">
-            Profiles <span className="text-red-500">*</span>
-          </Label>
-          <DropdownMenu
-            open={profilesDropdownOpen}
-            onOpenChange={setProfilesDropdownOpen}
-          >
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                className="w-full justify-between border-gray-300"
-                disabled={availableProfileOptions.length === 0}
-              >
-                {getProfilesDisplayText()}
-                <ChevronDown size={12} className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              className="max-h-60 w-[var(--radix-dropdown-menu-trigger-width)] min-w-[160px] overflow-y-auto"
-              align="start"
-            >
-              {/* Select All Option */}
-              <DropdownMenuItem
-                onSelect={(e) => e.preventDefault()}
-                onClick={() => handleProfilesChange("Select All")}
-                className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-50"
-              >
-                <span className="text-sm">Select All</span>
-                <div className="flex h-4 w-4 items-center justify-center">
-                  {selectedProfiles.length === availableProfileOptions.length &&
-                  availableProfileOptions.length > 0 ? (
-                    <div className="flex h-4 w-4 items-center justify-center rounded-sm bg-green-100">
-                      <Check size={12} className="text-green-600" />
-                    </div>
-                  ) : (
-                    <Square size={14} className="text-gray-400" />
-                  )}
-                </div>
-              </DropdownMenuItem>
-
-              {/* Dotted separator */}
-              <div className="mx-2 border-t border-dotted border-[#4ECDC4]" />
-
-              {availableProfileOptions.map((profile) => (
-                <div key={profile}>
-                  <DropdownMenuItem
-                    onSelect={(e) => e.preventDefault()}
-                    onClick={() => handleProfilesChange(profile)}
-                    className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-50"
-                  >
-                    <span className="text-sm">{profile}</span>
-                    <div className="flex h-4 w-4 items-center justify-center">
-                      {selectedProfiles.includes(profile) ? (
+                      {selectedProfileTypes.includes(type.value) ? (
                         <div className="flex h-4 w-4 items-center justify-center rounded-sm bg-green-100">
                           <Check size={12} className="text-green-600" />
                         </div>
@@ -533,8 +644,9 @@ export function Profile() {
           <Button
             className="cursor-pointer bg-[#161CCA] px-8 font-medium text-white hover:bg-[#161CCA]/90"
             onClick={handleRun}
+            disabled={isLoading}
           >
-            Run
+            {isLoading ? "Searching..." : "Search"}
           </Button>
         </div>
       </div>
@@ -568,7 +680,33 @@ export function Profile() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {tableData.length > 0 ? (
+            {isLoading ? (
+              Array.from({ length: rowsPerPage }).map((_, index) => (
+                <TableRow key={index}>
+                  <TableCell className="px-4 py-3 text-sm text-gray-900">
+                    <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-sm text-gray-900">
+                    <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-sm text-gray-900">
+                    <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-sm text-gray-900">
+                    <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-sm text-gray-900">
+                    <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-sm text-gray-900">
+                    <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-sm text-gray-900">
+                    <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : tableData.length > 0 ? (
               tableData
                 .slice(
                   (currentPage - 1) * rowsPerPage,
@@ -605,7 +743,7 @@ export function Profile() {
                   colSpan={7}
                   className="py-8 text-center text-sm text-gray-500"
                 >
-                  No data available. Click &ldquo;Run&rdquo; to fetch profiles.
+                  No data available. Click &ldquo;Search&rdquo; to fetch profiles.
                 </TableCell>
               </TableRow>
             )}

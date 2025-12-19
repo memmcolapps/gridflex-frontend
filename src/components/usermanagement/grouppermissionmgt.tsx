@@ -158,11 +158,6 @@ const transformAccessLevelsToPermissions = (accessLevels: string[]) => {
 };
 
 export default function GroupPermissionManagement() {
-  const { data: groupPermissions, isLoading, error } = useGroupPermissions();
-  const { mutate: createPermissionGroup } = useCreateGroupPermission();
-  const { mutate: updatePermissionGroup } = useUpdateGroupPermission();
-  const { mutate: updatePermissionField } = useUpdateGroupPermissionField();
-
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState<{
     key: keyof GroupPermission;
@@ -173,6 +168,11 @@ export default function GroupPermissionManagement() {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedGroupForEdit, setSelectedGroupForEdit] =
     useState<GroupPermission | null>(null);
+
+  const { data: groupPermissions, isLoading, error } = useGroupPermissions(searchTerm);
+  const { mutate: createPermissionGroup } = useCreateGroupPermission();
+  const { mutate: updatePermissionGroup } = useUpdateGroupPermission();
+  const { mutate: updatePermissionField } = useUpdateGroupPermissionField();
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -209,13 +209,6 @@ export default function GroupPermissionManagement() {
         }
         return 0;
       });
-    }
-
-    // Apply filtering
-    if (searchTerm) {
-      sortableGroups = sortableGroups.filter((group) =>
-        group.groupTitle.toLowerCase().includes(searchTerm.toLowerCase()),
-      );
     }
 
     return sortableGroups;
