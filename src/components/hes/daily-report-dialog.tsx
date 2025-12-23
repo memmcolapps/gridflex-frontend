@@ -57,7 +57,7 @@ export function DailyReportDialog({ open, onOpenChange, activeTab }: DailyReport
 
     const filteredMeters = metersData?.actualMeters.filter(meter =>
         meter.type !== 'VIRTUAL'
-    ) || [];
+    ) ?? [];
 
     const handleProceed = async () => {
         if (!startDate || !endDate || selectedMeters.length === 0) {

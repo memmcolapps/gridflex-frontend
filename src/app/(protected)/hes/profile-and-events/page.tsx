@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Events } from "@/components/hes/profile-events/events";
 import { Profile } from "@/components/hes/profile-events/profile";
-import { SquareArrowOutUpRight, Check, ChevronDown, Plus, Grid2X2, Building, Wrench, Database, Zap, Lightbulb } from "lucide-react";
+import { SquareArrowOutUpRight, Check, ChevronDown, Grid2X2, Building, Wrench, Database, Zap, Lightbulb } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { useProfileEventsData } from "@/hooks/use-profile-events";
 
@@ -67,7 +67,7 @@ export default function HesProfileEvents() {
   const [selectedHierarchy, setSelectedHierarchy] = useState<string | null>(null);
   const [selectedUnits, setSelectedUnits] = useState<string>(""); // assetId
 
-  const { data: profileEventsData, isLoading, error } = useProfileEventsData();
+  const { data: profileEventsData } = useProfileEventsData();
 
   const hierarchyOptions = useMemo(() => {
     if (!profileEventsData) return [];
@@ -95,7 +95,7 @@ export default function HesProfileEvents() {
     const traverseNodes = (nodes: typeof profileEventsData.responsedata.nodes) => {
       nodes.forEach(node => {
         if (node.nodeInfo?.type && normalizeType(node.nodeInfo.type) === selectedHierarchy) {
-          units.push({ assetId: node.nodeInfo.assetId || node.nodeInfo.regionId || node.id, name: node.name });
+          units.push({ assetId: node.nodeInfo.assetId ?? node.nodeInfo.regionId ?? node.id, name: node.name });
         }
         if (node.nodesTree) traverseNodes(node.nodesTree);
       });

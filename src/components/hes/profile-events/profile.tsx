@@ -118,7 +118,7 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
 
   const filteredMeters = metersData?.actualMeters.filter(meter =>
     meter.type !== 'VIRTUAL'
-  ) || [];
+  ) ?? [];
 
   // Update available profile options when profile type changes
   useEffect(() => {
@@ -140,7 +140,7 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
 
     // Reset selected profiles when profile types change
     setSelectedProfiles([]);
-  }, [selectedProfileTypes]);
+  }, [selectedProfileTypes, profileEventsData?.responsedata.event_types]);
 
   // Handle Profile Type selection
   const handleProfileTypeChange = (profileType: string) => {
@@ -517,17 +517,17 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
               <DropdownMenuItem
                 onSelect={(e) => e.preventDefault()}
                 onClick={() => {
-                  if (selectedMeterModels.length === (profileEventsData?.responsedata.models.length || 0)) {
+                  if (selectedMeterModels.length === (profileEventsData?.responsedata.models.length ?? 0)) {
                     setSelectedMeterModels([]);
                   } else {
-                    setSelectedMeterModels(profileEventsData?.responsedata.models.map(m => m.meterModel) || []);
+                    setSelectedMeterModels(profileEventsData?.responsedata.models.map(m => m.meterModel) ?? []);
                   }
                 }}
                 className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-50"
               >
                 <span className="text-sm">Select All</span>
                 <div className="flex h-4 w-4 items-center justify-center">
-                  {selectedMeterModels.length === (profileEventsData?.responsedata.models.length || 0) ? (
+                  {selectedMeterModels.length === (profileEventsData?.responsedata.models.length ?? 0) ? (
                     <div className="flex h-4 w-4 items-center justify-center rounded-sm bg-green-100">
                       <Check size={12} className="text-green-600" />
                     </div>

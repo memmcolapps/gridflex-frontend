@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import {
   getProfileEventsData,
   getEvents,
@@ -22,8 +22,6 @@ export const useProfileEventsData = () => {
 };
 
 export const useEvents = () => {
-  const queryClient = useQueryClient();
-
   return useMutation<EventsApiResponse, Error, GetEventsParams>({
     mutationFn: getEvents,
     onSuccess: (data) => {
@@ -37,8 +35,6 @@ export const useEvents = () => {
 };
 
 export const useProfiles = () => {
-  const queryClient = useQueryClient();
-
   return useMutation<ProfilesApiResponse, Error, GetProfilesParams>({
     mutationFn: getProfiles,
     onSuccess: (data) => {

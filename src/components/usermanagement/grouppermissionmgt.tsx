@@ -192,7 +192,7 @@ export default function GroupPermissionManagement() {
   };
 
   const processedGroupPermissions = useMemo(() => {
-    let sortableGroups = [...groupPermissions];
+    const sortableGroups = [...groupPermissions];
 
     if (sortConfig !== null) {
       sortableGroups.sort((a, b) => {
@@ -212,7 +212,7 @@ export default function GroupPermissionManagement() {
     }
 
     return sortableGroups;
-  }, [groupPermissions, sortConfig, searchTerm]);
+  }, [groupPermissions, sortConfig]);
 
   const totalRows = processedGroupPermissions.length;
   const startIndex = (currentPage - 1) * rowsPerPage;

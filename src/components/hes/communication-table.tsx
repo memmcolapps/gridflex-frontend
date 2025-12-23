@@ -10,7 +10,7 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { BanIcon, CircleCheck, EllipsisVertical, SendIcon } from 'lucide-react';
+import { EllipsisVertical, SendIcon } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -129,7 +129,7 @@ export function CommunicationTable({ searchQuery = "", activeTab = 'MD' }: Commu
                 <TableBody>
                     {paginatedData.map((row, index) => (
                         <TableRow
-                            key={row.meterNo || `row-${index}`}
+                            key={row.meterNo ?? `row-${index}`}
                             onClick={(e) => {
                                 if ((e.target as HTMLElement).tagName !== 'INPUT' && (e.target as HTMLElement).tagName !== 'BUTTON') {
                                     handleRowClick(row);

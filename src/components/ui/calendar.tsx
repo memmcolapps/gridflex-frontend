@@ -631,7 +631,7 @@ export function SimplifiedCalendar({
     const timeParts = timeValue.split(":");
     const hoursStr = timeParts[0];
     const minutesStr = timeParts[1];
-    const secondsStr = showSeconds ? (timeParts[2] || "0") : "0";
+    const secondsStr = showSeconds ? (timeParts[2] ?? "0") : "0";
 
     let newDate = new Date(day);
     if (hoursStr && minutesStr) {
@@ -657,7 +657,7 @@ export function SimplifiedCalendar({
     const timeParts = time.split(":");
     const hoursStr = timeParts[0];
     const minutesStr = timeParts[1];
-    const secondsStr = showSeconds ? (timeParts[2] || "0") : "0";
+    const secondsStr = showSeconds ? (timeParts[2] ?? "0") : "0";
 
     if (hoursStr && minutesStr) {
       const hours = parseInt(hoursStr, 10);
@@ -734,7 +734,7 @@ export function SimplifiedCalendar({
               const timeParts = timeValue.split(":");
               const hoursStr = timeParts[0];
               const minutesStr = timeParts[1];
-              const secondsStr = showSeconds ? (timeParts[2] || "0") : "0";
+              const secondsStr = showSeconds ? (timeParts[2] ?? "0") : "0";
 
               if (hoursStr && minutesStr) {
                 const hours = parseInt(hoursStr, 10);
@@ -774,7 +774,7 @@ export function SimplifiedCalendar({
       const timeParts = timeValue.split(":");
       const hoursStr = timeParts[0];
       const minutesStr = timeParts[1];
-      const secondsStr = showSeconds ? (timeParts[2] || "0") : "0";
+      const secondsStr = showSeconds ? (timeParts[2] ?? "0") : "0";
 
       if (hoursStr && minutesStr) {
         const hours = parseInt(hoursStr, 10);
