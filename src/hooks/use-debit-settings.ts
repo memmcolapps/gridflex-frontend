@@ -25,18 +25,18 @@ import {
 
 // --- Liability Cause Hooks ---
 
-export const useAllLiabilityCauses = () => {
-    return useQuery<LiabilityCause[]>({
-        queryKey: ["liability"],
-        queryFn: async () => {
-            const result = await fetchAllLiabilityCauses();
-            if (result.success) {
-                return result.data;
-            } else {
-                throw new Error(result.error);
-            }
-        },
-    });
+export const useAllLiabilityCauses = (searchTerm?: string) => {
+  return useQuery<LiabilityCause[]>({
+    queryKey: ["liability", searchTerm],
+    queryFn: async () => {
+      const result = await fetchAllLiabilityCauses(searchTerm);
+      if (result.success) {
+        return result.data;
+      } else {
+        throw new Error(result.error);
+      }
+    },
+  });
 };
 
 export const useCreateLiabilityCause = () => {
@@ -95,18 +95,18 @@ export const useChangeLiabilityCauseStatus = () => {
 
 // --- Percentage Range Hooks ---
 
-export const useAllPercentageRanges = () => {
-    return useQuery<PercentageRange[]>({
-        queryKey: ["percentageRange"],
-        queryFn: async () => {
-            const result = await fetchAllPercentageRanges();
-            if (result.success) {
-                return result.data;
-            } else {
-                throw new Error(result.error);
-            }
-        },
-    });
+export const useAllPercentageRanges = (searchTerm?: string) => {
+  return useQuery<PercentageRange[]>({
+    queryKey: ["percentageRange", searchTerm],
+    queryFn: async () => {
+      const result = await fetchAllPercentageRanges(searchTerm);
+      if (result.success) {
+        return result.data;
+      } else {
+        throw new Error(result.error);
+      }
+    },
+  });
 };
 
 export const useCreatePercentageRange = () => {

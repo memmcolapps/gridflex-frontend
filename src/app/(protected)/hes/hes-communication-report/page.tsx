@@ -5,19 +5,16 @@ import { DailyReportDialog } from '@/components/hes/daily-report-dialog';
 import { FilterControl, SearchControl, SortControl } from '@/components/search-control';
 import { Button } from '@/components/ui/button';
 import { ContentHeader } from '@/components/ui/content-header';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ChevronDown, ExternalLink, NotepadText } from 'lucide-react';
+import { ExternalLink, NotepadText } from 'lucide-react';
 import { useState } from 'react';
 
 export default function CommunicationReportPage() {
     const [openDialog, setOpenDialog] = useState(false);
-    const [reportType, setReportType] = useState<'daily' | 'monthly'>('daily');
     const [activeTab, setActiveTab] = useState<'MD' | 'Non-MD'>('MD');
     const [searchQuery, setSearchQuery] = useState('');
 
-    const handleOpenDialog = (type: 'daily' | 'monthly') => {
-        setReportType(type);
+    const handleOpenDialog = () => {
         setOpenDialog(true);
     };
 
@@ -29,33 +26,15 @@ export default function CommunicationReportPage() {
                     description="View and analyze detailed historical data from your smart meter"
                 />
                 <div className="flex items-center space-x-2">
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button
-                                className="bg-[#161CCA] text-white border-none cursor-pointer font-medium py-6"
-                                variant="secondary"
-                                size="lg"
-                            >
-                                <NotepadText size={14} />
-                                Get Report
-                                <ChevronDown className="ml-2" size={14} />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="w-full p-3 shadow-lg">
-                            <DropdownMenuItem
-                                onClick={() => handleOpenDialog('daily')}
-                                className="cursor-pointer text-md font-medium"
-                            >
-                                Daily Report
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onClick={() => handleOpenDialog('monthly')}
-                                className="cursor-pointer text-md font-medium"
-                            >
-                                Monthly Report
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                    <Button
+                        className="bg-[#161CCA] text-white border-none cursor-pointer font-medium py-6"
+                        variant="secondary"
+                        size="lg"
+                        onClick={handleOpenDialog}
+                    >
+                        <NotepadText size={14} />
+                        Get Report
+                    </Button>
                 </div>
             </div>
 
@@ -106,7 +85,7 @@ export default function CommunicationReportPage() {
             <DailyReportDialog
                 open={openDialog}
                 onOpenChange={setOpenDialog}
-                reportType={reportType}
+                activeTab={activeTab}
             />
         </div>
     );

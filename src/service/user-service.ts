@@ -40,14 +40,19 @@ export interface GroupPermission {
   }>;
 }
 
-export async function getGroupPermission(): Promise<
+export async function getGroupPermission(searchTerm?: string): Promise<
   { success: true; data: GroupPermission[] } | { success: false; error: string }
 > {
   try {
     const token = localStorage.getItem("auth_token");
+
+    const params: Record<string, string> = {};
+    if (searchTerm) params.search = searchTerm;
+
     const response = await axiosInstance.get<GroupPermissionResponse>(
       `${API_URL}/user/service/groups`,
       {
+        params,
         headers: {
           "Content-Type": "application/json",
           custom: CUSTOM_HEADER,
@@ -224,15 +229,20 @@ export async function deactivateOrActivateGroupPermission(
   }
 }
 
-export async function getUsers(): Promise<
+export async function getUsers(searchTerm?: string): Promise<
   | { success: true; data: GetUsersResponseData }
   | { success: false; error: string }
 > {
   try {
     const token = localStorage.getItem("auth_token");
+
+    const params: Record<string, string> = {};
+    if (searchTerm) params.search = searchTerm;
+
     const response = await axiosInstance.get<GetUsersApiResponse>(
       `${API_URL}/user/service/all`,
       {
+        params,
         headers: {
           "Content-Type": "application/json",
           custom: CUSTOM_HEADER,

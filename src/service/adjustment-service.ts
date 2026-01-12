@@ -18,16 +18,20 @@ const CUSTOM_HEADER = env.NEXT_PUBLIC_CUSTOM_HEADER;
 // Function to fetch all adjustments by type (credit or debit)
 export const fetchAllAdjustments = async (
   type: "credit" | "debit",
+  searchTerm?: string,
 ): Promise<
   { success: true; data: Adjustment[] } | { success: false; error: string }
 > => {
   try {
     const token = localStorage.getItem("auth_token");
 
+    const params: Record<string, string> = { type };
+    if (searchTerm) params.search = searchTerm;
+
     const response = await axiosInstance.get<ApiResponse<any>>(
       `${API_URL}/debit-credit-adjustment/service/all`,
       {
-        params: { type },
+        params,
         headers: {
           "Content-Type": "application/json",
           custom: CUSTOM_HEADER,
