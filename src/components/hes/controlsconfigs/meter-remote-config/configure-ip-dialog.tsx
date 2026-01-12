@@ -6,7 +6,6 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
-    DialogFooter,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -72,7 +71,7 @@ export default function ConfigureIPDialog({ isOpen, onClose, meter }: ConfigureI
                         />
                     </div>
                 </div>
-                <DialogFooter>
+                <div className="flex justify-between">
                     <Button
                         variant="outline"
                         onClick={onClose}
@@ -89,7 +88,7 @@ export default function ConfigureIPDialog({ isOpen, onClose, meter }: ConfigureI
                     >
                         Configure
                     </Button>
-                </DialogFooter>
+                </div>
             </DialogContent>
         </Dialog>
     );
