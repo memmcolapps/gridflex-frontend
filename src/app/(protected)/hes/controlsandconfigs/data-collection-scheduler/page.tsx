@@ -86,7 +86,7 @@ const eventTypeLabels: Record<string, string> = {
 const activeDaysLabels: Record<string, string> = {
   repeatDaily: "Repeat Daily",
   repeatMonFri: "Repeat (Mon-Fri)",
-  repeatOnly: "Repeat Only",
+  // repeatOnly: "Repeat Only",
 };
 
 const filterSections = [
@@ -177,16 +177,16 @@ export default function DataCollScheduler() {
       activeDays: "repeatMonFri",
       status: "Paused",
     },
+    // {
+    //   sNo: "09",
+    //   eventType: "billingData",
+    //   timeInterval: "30 mins",
+    //   unit: "min",
+    //   activeDays: "repeatOnly",
+    //   status: "Paused",
+    // },
     {
       sNo: "09",
-      eventType: "billingData",
-      timeInterval: "30 mins",
-      unit: "min",
-      activeDays: "repeatOnly",
-      status: "Paused",
-    },
-    {
-      sNo: "10",
       eventType: "fraudEventLog",
       timeInterval: "30 mins",
       unit: "min",
@@ -194,7 +194,7 @@ export default function DataCollScheduler() {
       status: "Paused",
     },
     {
-      sNo: "11",
+      sNo: "10",
       eventType: "fraudEventLog",
       timeInterval: "30 mins",
       unit: "min",
