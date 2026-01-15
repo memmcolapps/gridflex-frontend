@@ -52,7 +52,14 @@ import {
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { useProfileEventsData, useProfiles } from "@/hooks/use-profile-events";
 import { useMeters } from "@/hooks/use-assign-meter";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import { toast } from "sonner";
 
 interface ProfileData {
@@ -89,8 +96,8 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
   const [startTimeValue, setStartTimeValue] = useState<string>("00:00:00");
   const [endTimeValue, setEndTimeValue] = useState<string>("00:00:00");
   const [selectedMeterNos, setSelectedMeterNos] = useState<string[]>([]);
-  const [selectedProfileTypes, setSelectedProfileTypes] = useState<string[]>(
-    [],
+  const [selectedProfileTypes, setSelectedProfileTypes] = useState<string | null>(
+    null
   );
   const [selectedProfiles, setSelectedProfiles] = useState<string[]>([]);
   const [availableProfileOptions, setAvailableProfileOptions] = useState<
@@ -116,13 +123,12 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
   });
   const { mutate: fetchProfiles, isPending: isLoading } = useProfiles();
 
-  const filteredMeters = metersData?.actualMeters.filter(meter =>
-    meter.type !== 'VIRTUAL'
-  ) ?? [];
+  const filteredMeters =
+    metersData?.actualMeters.filter((meter) => meter.type !== "VIRTUAL") ?? [];
 
   // Update available profile options when profile type changes
   useEffect(() => {
-    if (selectedProfileTypes.length === 0) {
+    if (!selectedProfileTypes) {
       setAvailableProfileOptions([]);
       setSelectedProfiles([]);
       return;
@@ -130,13 +136,11 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
 
     // Get all unique profile options from selected profile types
     const optionsSet = new Set<string>();
-    selectedProfileTypes.forEach((type) => {
       profileEventsData?.responsedata.event_types.forEach((eventType) => {
-        if (eventType.name.includes(type)) {
+        if (eventType.name.includes(selectedProfileTypes)) {
           optionsSet.add(eventType.name);
         }
       });
-    });
 
     // Reset selected profiles when profile types change
     setSelectedProfiles([]);
@@ -144,26 +148,9 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
 
   // Handle Profile Type selection
   const handleProfileTypeChange = (profileType: string) => {
-    if (profileType === "Select All") {
-      if (selectedProfileTypes.length === profileTypes.length) {
-        // If all are selected, deselect all
-        setSelectedProfileTypes([]);
-      } else {
-        // Select all profile types
-        setSelectedProfileTypes(profileTypes.map(pt => pt.value));
-      }
-    } else {
-      setSelectedProfileTypes((prev) => {
-        if (prev.includes(profileType)) {
-          // Remove if already selected
-          return prev.filter((type) => type !== profileType);
-        } else {
-          // Add if not selected
-          return [...prev, profileType];
-        }
-      });
-    }
-  };
+    setSelectedProfileTypes(profileType)
+    setProfilesDropdownOpen(false)
+  }
 
   // Handle Profiles selection
   const handleProfilesChange = (profile: string) => {
@@ -190,14 +177,9 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
 
   // Get display text for dropdowns
   const getProfileTypeDisplayText = () => {
-    if (selectedProfileTypes.length === 0) return "Select Profile";
-    if (selectedProfileTypes.length === 1) {
-      const pt = profileTypes.find(p => p.value === selectedProfileTypes[0]);
-      return pt ? pt.label : selectedProfileTypes[0];
-    }
-    if (selectedProfileTypes.length === profileTypes.length)
-      return "All Profiles";
-    return `${selectedProfileTypes.length} Profiles`;
+    if (!selectedProfileTypes) return "Select Profile";
+      const pt = profileTypes.find((p) => p.value === selectedProfileTypes[0]);
+      return pt ? pt.label : selectedProfileTypes;
   };
 
   const getProfilesDisplayText = () => {
@@ -233,7 +215,13 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
 
   const handleRun = () => {
     const isMeterModelRequired = selectedHierarchy && selectedUnits;
-    if (!startDate || !endDate || selectedMeterNos.length === 0 || (isMeterModelRequired && selectedMeterModels.length === 0) || selectedProfileTypes.length === 0) {
+    if (
+      !startDate ||
+      !endDate ||
+      selectedMeterNos.length === 0 ||
+      (isMeterModelRequired && selectedMeterModels.length === 0) ||
+      !selectedProfileTypes
+    ) {
       toast.error("Please fill in all required fields");
       return;
     }
@@ -247,10 +235,10 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
         size: 2000,
         startDate: startDateStr,
         endDate: endDateStr,
-        meterNumber: selectedMeterNos.join(','),
-        profile: selectedProfileTypes.join(','),
-        model: selectedMeterModels.join(','),
-        search: selectedMeterNos.join(','),
+        meterNumber: selectedMeterNos.join(","),
+        profile: selectedProfileTypes,
+        model: selectedMeterModels.join(","),
+        search: selectedMeterNos.join(","),
         node: selectedUnits,
       },
       {
@@ -309,7 +297,7 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
         onError: (error) => {
           toast.error(`Failed to fetch profiles: ${error.message}`);
         },
-      }
+      },
     );
   };
 
@@ -395,7 +383,9 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
                 )}
               >
                 <CalendarIcon className="mr-2" size={16} />
-                {endDate ? format(endDate, "dd-MM-yyyy HH:mm:ss") : "Select Date"}
+                {endDate
+                  ? format(endDate, "dd-MM-yyyy HH:mm:ss")
+                  : "Select Date"}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto bg-white p-0" align="start">
@@ -426,13 +416,18 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
                 aria-expanded={meterDropdownOpen}
                 className="w-full justify-between border-gray-300"
               >
-                {selectedMeterNos.length > 0 ? `${selectedMeterNos.length} selected` : "Select meter numbers..."}
+                {selectedMeterNos.length > 0
+                  ? `${selectedMeterNos.length} selected`
+                  : "Select meter numbers..."}
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-full p-0 border-none">
-              <Command className="bg-white border-none">
-                <CommandInput placeholder="Search meter numbers..." className="border-none" />
+            <PopoverContent className="w-full border-none p-0">
+              <Command className="border-none bg-white">
+                <CommandInput
+                  placeholder="Search meter numbers..."
+                  className="border-none"
+                />
                 <CommandList>
                   <CommandEmpty>No meter found.</CommandEmpty>
                   <CommandGroup>
@@ -441,7 +436,9 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
                         if (selectedMeterNos.length === filteredMeters.length) {
                           setSelectedMeterNos([]);
                         } else {
-                          setSelectedMeterNos(filteredMeters.map(m => m.meterNumber));
+                          setSelectedMeterNos(
+                            filteredMeters.map((m) => m.meterNumber),
+                          );
                         }
                       }}
                       className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-50"
@@ -466,7 +463,7 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
                           setSelectedMeterNos((prev) =>
                             prev.includes(meter.meterNumber)
                               ? prev.filter((m) => m !== meter.meterNumber)
-                              : [...prev, meter.meterNumber]
+                              : [...prev, meter.meterNumber],
                           );
                         }}
                         className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-50"
@@ -505,7 +502,9 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
                 className="w-full justify-between border-gray-300"
                 disabled={!selectedHierarchy || !selectedUnits}
               >
-                {selectedMeterModels.length > 0 ? `${selectedMeterModels.length} selected` : "Select Meter Models"}
+                {selectedMeterModels.length > 0
+                  ? `${selectedMeterModels.length} selected`
+                  : "Select Meter Models"}
                 <ChevronDown size={12} className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -517,17 +516,25 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
               <DropdownMenuItem
                 onSelect={(e) => e.preventDefault()}
                 onClick={() => {
-                  if (selectedMeterModels.length === (profileEventsData?.responsedata.models.length ?? 0)) {
+                  if (
+                    selectedMeterModels.length ===
+                    (profileEventsData?.responsedata.models.length ?? 0)
+                  ) {
                     setSelectedMeterModels([]);
                   } else {
-                    setSelectedMeterModels(profileEventsData?.responsedata.models.map(m => m.meterModel) ?? []);
+                    setSelectedMeterModels(
+                      profileEventsData?.responsedata.models.map(
+                        (m) => m.meterModel,
+                      ) ?? [],
+                    );
                   }
                 }}
                 className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-50"
               >
                 <span className="text-sm">Select All</span>
                 <div className="flex h-4 w-4 items-center justify-center">
-                  {selectedMeterModels.length === (profileEventsData?.responsedata.models.length ?? 0) ? (
+                  {selectedMeterModels.length ===
+                  (profileEventsData?.responsedata.models.length ?? 0) ? (
                     <div className="flex h-4 w-4 items-center justify-center rounded-sm bg-green-100">
                       <Check size={12} className="text-green-600" />
                     </div>
@@ -548,7 +555,7 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
                       setSelectedMeterModels((prev) =>
                         prev.includes(model.meterModel)
                           ? prev.filter((m) => m !== model.meterModel)
-                          : [...prev, model.meterModel]
+                          : [...prev, model.meterModel],
                       );
                     }}
                     className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-50"
@@ -593,28 +600,7 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
               className="max-h-60 w-[var(--radix-dropdown-menu-trigger-width)] min-w-[160px] overflow-y-auto"
               align="start"
             >
-              {/* Select All Option */}
-              <DropdownMenuItem
-                onSelect={(e) => e.preventDefault()}
-                onClick={() => handleProfileTypeChange("Select All")}
-                className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-50"
-              >
-                <span className="text-sm">Select All</span>
-                <div className="flex h-4 w-4 items-center justify-center">
-                  {selectedProfileTypes.length === profileTypes.length ? (
-                    <div className="flex h-4 w-4 items-center justify-center rounded-sm bg-green-100">
-                      <Check size={12} className="text-green-600" />
-                    </div>
-                  ) : (
-                    <Square size={14} className="text-gray-400" />
-                  )}
-                </div>
-              </DropdownMenuItem>
-
-              {/* Dotted separator */}
-              <div className="mx-2 border-t border-dotted border-[#4ECDC4]" />
-
-              {profileTypes.map((type) => (
+              {profileTypes.map((type, index) => (
                 <div key={type.value}>
                   <DropdownMenuItem
                     onSelect={(e) => e.preventDefault()}
@@ -623,7 +609,7 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
                   >
                     <span className="text-sm">{type.label}</span>
                     <div className="flex h-4 w-4 items-center justify-center">
-                      {selectedProfileTypes.includes(type.value) ? (
+                      {selectedProfileTypes?.includes(type.value) ? (
                         <div className="flex h-4 w-4 items-center justify-center rounded-sm bg-green-100">
                           <Check size={12} className="text-green-600" />
                         </div>
@@ -632,7 +618,9 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
                       )}
                     </div>
                   </DropdownMenuItem>
-                  <div className="mx-2 border-t border-dotted border-[#4ECDC4]" />
+                  {index < profileTypes.length - 1 && (
+                    <div className="mx-2 border-t border-dotted border-[#4ECDC4]" />
+                  )}
                 </div>
               ))}
             </DropdownMenuContent>
@@ -684,25 +672,25 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
               Array.from({ length: rowsPerPage }).map((_, index) => (
                 <TableRow key={index}>
                   <TableCell className="px-4 py-3 text-sm text-gray-900">
-                    <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                    <div className="h-4 animate-pulse rounded bg-gray-200"></div>
                   </TableCell>
                   <TableCell className="px-4 py-3 text-sm text-gray-900">
-                    <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                    <div className="h-4 animate-pulse rounded bg-gray-200"></div>
                   </TableCell>
                   <TableCell className="px-4 py-3 text-sm text-gray-900">
-                    <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                    <div className="h-4 animate-pulse rounded bg-gray-200"></div>
                   </TableCell>
                   <TableCell className="px-4 py-3 text-sm text-gray-900">
-                    <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                    <div className="h-4 animate-pulse rounded bg-gray-200"></div>
                   </TableCell>
                   <TableCell className="px-4 py-3 text-sm text-gray-900">
-                    <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                    <div className="h-4 animate-pulse rounded bg-gray-200"></div>
                   </TableCell>
                   <TableCell className="px-4 py-3 text-sm text-gray-900">
-                    <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                    <div className="h-4 animate-pulse rounded bg-gray-200"></div>
                   </TableCell>
                   <TableCell className="px-4 py-3 text-sm text-gray-900">
-                    <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                    <div className="h-4 animate-pulse rounded bg-gray-200"></div>
                   </TableCell>
                 </TableRow>
               ))
@@ -743,7 +731,8 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
                   colSpan={7}
                   className="py-8 text-center text-sm text-gray-500"
                 >
-                  No data available. Click &ldquo;Search&rdquo; to fetch profiles.
+                  No data available. Click &ldquo;Search&rdquo; to fetch
+                  profiles.
                 </TableCell>
               </TableRow>
             )}
