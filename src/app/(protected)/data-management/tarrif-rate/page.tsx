@@ -41,7 +41,11 @@ import {
 import React, { useState } from "react";
 import { toast } from "sonner";
 import { useBand } from "@/hooks/use-band";
-import { useCreateTariff, useTariff, useExportTariff } from "@/hooks/use-tarrif";
+import {
+  useCreateTariff,
+  useTariff,
+  useExportTariff,
+} from "@/hooks/use-tarrif";
 import { LoadingAnimation } from "@/components/ui/loading-animation";
 
 export default function TariffManagementPage() {
@@ -100,25 +104,30 @@ export default function TariffManagementPage() {
   };
 
   const handleExport = () => {
-    exportTariff({}, {
-      onSuccess: (blob) => {
-        // Create a download link for the Excel file
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `tariff_export_${new Date().toISOString().split("T")[0]}.xlsx`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
+    exportTariff(
+      {},
+      {
+        onSuccess: (blob) => {
+          // Create a download link for the Excel file
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = `tariff_export_${new Date().toISOString().split("T")[0]}.xlsx`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(url);
 
-        toast.success("Tariff export downloaded successfully!");
+          toast.success("Tariff export downloaded successfully!");
+        },
+        onError: (error) => {
+          toast.error(
+            error.message || "Failed to export tariff data. Please try again.",
+          );
+          console.error("Export error:", error);
+        },
       },
-      onError: (error) => {
-        toast.error(error.message || "Failed to export tariff data. Please try again.");
-        console.error("Export error:", error);
-      },
-    });
+    );
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -272,7 +281,7 @@ export default function TariffManagementPage() {
                         )}
                         disabled={isSubmitting}
                       >
-                        <CalendarIcon className="mr-2" size={12} />
+                        <CalendarIcon className="mr-2 h-3 w-3" size={12} />
                         {formData.effectiveDate ? (
                           format(formData.effectiveDate, "PPP")
                         ) : (
