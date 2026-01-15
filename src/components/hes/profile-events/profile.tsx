@@ -4,7 +4,7 @@
 import { useState, useEffect } from "react";
 import type { ChangeEventHandler } from "react";
 import { Button } from "@/components/ui/button";
-import { SimplifiedCalendar } from "@/components/ui/calendar";
+import { Calendar } from "@/components/ui/calendar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -342,22 +342,20 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
                   !startDate && "text-muted-foreground",
                 )}
               >
-                <CalendarIcon className="mr-2" size={16} />
+                <CalendarIcon className="mr-2 h-3 w-3" size={12} />
                 {startDate
                   ? format(startDate, "dd-MM-yyyy HH:mm:ss")
                   : "Select Date"}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto bg-white p-0" align="start">
-              <SimplifiedCalendar
+              <Calendar
+                mode="single"
                 selected={startDate}
-                timeValue={startTimeValue}
-                onSelect={setStartDate}
-                onTimeChange={setStartTimeValue}
-                onClose={() => {
+                onSelect={(d) => {
+                  setStartDate(d as Date | undefined);
                   setStartDateOpen(false);
                 }}
-                showSeconds={true}
               />
             </PopoverContent>
           </Popover>
@@ -389,15 +387,13 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto bg-white p-0" align="start">
-              <SimplifiedCalendar
+              <Calendar
+                mode="single"
                 selected={endDate}
-                timeValue={endTimeValue}
-                onSelect={setEndDate}
-                onTimeChange={setEndTimeValue}
-                onClose={() => {
+                onSelect={(d) => {
+                  setEndDate(d as Date | undefined);
                   setEndDateOpen(false);
                 }}
-                showSeconds={true}
               />
             </PopoverContent>
           </Popover>
