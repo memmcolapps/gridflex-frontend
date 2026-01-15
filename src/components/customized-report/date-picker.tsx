@@ -11,7 +11,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Calendar } from "../ui/blue-calendar";
+import { Calendar } from "@/components/ui/calendar";
 
 function formatDate(date: Date | undefined) {
   if (!date) return "";
@@ -81,14 +81,14 @@ export function DatePicker({ placeHolder, className }: Props) {
           <PopoverTrigger asChild>
             <Button
               variant="ghost"
-              className="absolute left-2 top-1/2 -translate-y-1/2 p-0 h-5 w-5"
+              className="absolute top-1/2 left-2 h-5 w-5 -translate-y-1/2 p-0"
             >
-              <CalendarIcon size={14} className="text-gray-500" />
+              <CalendarIcon size={12} className="h-3 w-3 text-gray-500" />
             </Button>
           </PopoverTrigger>
 
           <PopoverContent
-            className="relative w-120 bg-white border-none overflow-hidden p-4 rounded-lg shadow-lg"
+            className="relative w-120 overflow-hidden rounded-lg border-none bg-white p-4 shadow-lg"
             align="start"
           >
             {/* Close button */}
@@ -102,10 +102,10 @@ export function DatePicker({ placeHolder, className }: Props) {
                 <X strokeWidth={2} size={16} />
               </Button>
             </div>
-            <div className="border border-[0.5px] border-gray-200 mb-6"></div>
+            <div className="mb-6 border border-[0.5px] border-gray-200"></div>
 
             {/* Header section */}
-            <div className="flex items-center px-2 justify-between mb-3 z-10 relative">
+            <div className="relative z-10 mb-3 flex items-center justify-between px-2">
               <div className="font-semibold text-gray-800">
                 {month.toLocaleString("default", {
                   month: "long",
@@ -119,7 +119,7 @@ export function DatePicker({ placeHolder, className }: Props) {
                   className="h-7 w-7"
                   onClick={handlePrevMonth}
                 >
-                  <ChevronLeft strokeWidth="1" className="h-4 w-4" />
+                  <ChevronLeft strokeWidth="1" className="h-3 w-3" />
                 </Button>
                 <Button
                   variant="ghost"
@@ -127,7 +127,7 @@ export function DatePicker({ placeHolder, className }: Props) {
                   className="h-7 w-7"
                   onClick={handleNextMonth}
                 >
-                  <ChevronRight strokeWidth="1" className="h-4 w-4" />
+                  <ChevronRight strokeWidth="1" className="h-3 w-3" />
                 </Button>
               </div>
             </div>
@@ -150,13 +150,12 @@ export function DatePicker({ placeHolder, className }: Props) {
             <div className="relative z-10 mt-4">
               <Button
                 onClick={handleDone}
-                className="w-full h-11 bg-[#161CCA] px-10 py-6 text-base text-white font-semibold rounded-lg"
+                className="h-11 w-full rounded-lg bg-[#161CCA] px-10 py-6 text-base font-semibold text-white"
               >
                 Done
               </Button>
             </div>
           </PopoverContent>
-
         </Popover>
       </div>
     </div>
