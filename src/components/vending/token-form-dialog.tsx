@@ -226,7 +226,15 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
 
       try {
         const result = await generateCreditTokenMutation.mutateAsync(payload);
-        setGeneratedTokenData(result);
+        // Merge calculated data with generated data to preserve adjustment info
+        const mergedData = {
+          ...result,
+          creditAdjustment: calculatedTokenData?.totalCreditBalance ?? result.creditAdjustment ?? 0,
+          debitAdjustment: calculatedTokenData?.totalDebitBalance ?? result.debitAdjustment ?? 0,
+          creditAdjustmentBalance: calculatedTokenData?.totalCreditBalance ?? 0,
+          debitAdjustmentBalance: calculatedTokenData?.totalDebitBalance ?? 0,
+        };
+        setGeneratedTokenData(mergedData);
         setShowTokenDialog(true);
         setShowReceipt(false);
         setIsFormDialogOpen(false);
@@ -249,6 +257,21 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
           tokenType: "credit-token",
         });
         console.log("Print token result:", result);
+
+        // Calculate adjustment values - handle both number and array types
+        // If it's an array, sum up the values; if it's a number, use it; otherwise default to 0
+        const creditAdjustmentValue = Array.isArray(generatedTokenData?.creditAdjustment)
+          ? (generatedTokenData.creditAdjustment.length > 0
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              ? generatedTokenData.creditAdjustment.reduce((sum: number, val: any) => sum + (typeof val === 'number' ? val : 0), 0)
+              : 0)
+          : (generatedTokenData?.creditAdjustment ?? 0);
+        const debitAdjustmentValue = Array.isArray(generatedTokenData?.debitAdjustment)
+          ? (generatedTokenData.debitAdjustment.length > 0
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              ? generatedTokenData.debitAdjustment.reduce((sum: number, val: any) => sum + (typeof val === 'number' ? val : 0), 0)
+              : 0)
+          : (generatedTokenData?.debitAdjustment ?? 0);
 
         // Create HTML content for printing (formatted like a receipt)
         const printContent = `
@@ -419,11 +442,11 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                                 </div>
                                 <div class="info-row">
                                     <span class="label">Credit Adjustment:</span>
-                                    <span class="value">₦${generatedTokenData?.creditAdjustment?.toLocaleString() || "0.00"}</span>
+                                    <span class="value">₦${creditAdjustmentValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                 </div>
                                 <div class="info-row">
                                     <span class="label">Debit Adjustment:</span>
-                                    <span class="value">₦${generatedTokenData?.debitAdjustment?.toLocaleString() || "0.00"}</span>
+                                    <span class="value">₦${debitAdjustmentValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                 </div>
                                 <div class="info-row">
                                     <span class="label">Amount Tendered:</span>
@@ -440,11 +463,11 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                             </div>
                             <div class="info-row">
                                 <span class="label">Debit Adjustment Balance:</span>
-                                <span class="value">₦${generatedTokenData?.debitAdjustmentBalance?.toLocaleString() ?? "0.00"}</span>
+                                <span class="value">₦${(generatedTokenData?.debitAdjustmentBalance ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                             </div>
                             <div class="info-row">
                                 <span class="label">Credit Adjustment Balance:</span>
-                                <span class="value">₦${generatedTokenData?.creditAdjustmentBalance?.toLocaleString() ?? "0.00"}</span>
+                                <span class="value">₦${(generatedTokenData?.creditAdjustmentBalance ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                             </div>
                             `
                                 : tokenType === "kct"
