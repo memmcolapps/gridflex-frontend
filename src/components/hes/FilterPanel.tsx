@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ChevronDown,
   Building2,
@@ -27,7 +27,12 @@ import {
 import {
   getHierarchyOptions,
   type HierarchyType,
+  getUnitsForHierarchy,
+  flattenOrganizationNodes,
 } from "@/utils/hierarchy-utils";
+import { fetchHierarchyData } from "@/service/hes-service";
+import { type HierarchyResponse } from "@/types/hes";
+import { useMeters } from "@/hooks/use-assign-meter";
 
 type MeterId =
   | "62124022443"
@@ -97,22 +102,7 @@ const hierarchyOptionsWithIcons = getHierarchyOptions().map((option) => {
   };
 });
 
-const unitOptions: UnitOption[] = [
-  { value: "molete", label: "Molete" },
-  { value: "ojoo", label: "Ojoo" },
-  { value: "ibadan", label: "Ibadan" },
-];
 
-const metersOptions: MeterOption[] = [
-  { value: "all-meters", label: "All Meters" },
-  { value: "62124022443", label: "62124022443" },
-  { value: "62124569871", label: "62124569871" },
-  { value: "62224029918", label: "62224029918" },
-  { value: "62224039487", label: "62224039487" },
-  { value: "62124095803", label: "62124095803" },
-  { value: "62124023359", label: "62124023359" },
-  { value: "62124027822", label: "62124027822" },
-];
 
 const readingOptions: ReadingOption[] = [
   {
@@ -545,6 +535,46 @@ export function FilterPanel({ onRun }: FilterPanelProps) {
   const [unit, setUnit] = useState<string>("");
   const [meters, setMeters] = useState<MeterId[]>([]);
   const [reading, setReading] = useState<ReadingKey[]>([]);
+  const [hierarchyData, setHierarchyData] = useState<HierarchyResponse | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const { data: metersData, isLoading: metersLoading } = useMeters({
+    page: 1,
+    pageSize: 1000,
+    searchTerm: "",
+    sortBy: null,
+    sortDirection: null,
+    type: "assigned",
+  });
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const data = await fetchHierarchyData();
+        setHierarchyData(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch hierarchy data');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    setUnit("");
+  }, [hierarchy]);
+
+  const allNodes = hierarchyData ? flattenOrganizationNodes(hierarchyData.responsedata.nodes) : [];
+  const unitOptions: UnitOption[] = hierarchy ? getUnitsForHierarchy(allNodes, hierarchy).map(option => ({ value: option.label.toLowerCase(), label: option.label })) : [];
+
+  const metersOptions: MeterOption[] = metersData ? [
+    { value: "all-meters", label: "All Meters" },
+    ...metersData.actualMeters.map(m => ({ value: m.meterNumber as MeterId, label: m.meterNumber })),
+    ...metersData.virtualMeters.map(m => ({ value: m.meterNumber as MeterId, label: m.meterNumber })),
+  ] : [];
 
   const getHierarchyLabel = () => {
     return hierarchy
@@ -687,6 +717,7 @@ export function FilterPanel({ onRun }: FilterPanelProps) {
             <Button
               variant="outline"
               className="h-12 w-full justify-between text-left text-base"
+              disabled={loading || !hierarchy}
             >
               <span>{getUnitLabel()}</span>
               <ChevronDown size={16} />
@@ -720,6 +751,7 @@ export function FilterPanel({ onRun }: FilterPanelProps) {
             <Button
               variant="outline"
               className="h-12 w-full justify-between text-left text-base"
+              disabled={metersLoading || !unit}
             >
               <span>{getMetersLabel()}</span>
               <ChevronDown size={16} />

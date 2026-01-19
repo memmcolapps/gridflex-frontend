@@ -1,17 +1,10 @@
 /* eslint-disable @typescript-eslint/consistent-indexed-object-style */
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { FilterPanel } from './FilterPanel';
 import { DataTable } from './DataTable';
+import { RealTimeData, MeterStatusData } from '@/hooks/use-sse';
 
-type MeterId = '62124022443' | '62124569871' | '62224029918' | '62224039487' | '62124095803' | '62124023359' | '62124027822';
-
-interface MeterReading {
-    [key: string]: string | undefined;
-}
-
-type MockData = {
-    [key in MeterId]: MeterReading | undefined;
-};
+type MeterId = string;
 
 interface MeterData {
     [key: string]: string;
@@ -19,111 +12,58 @@ interface MeterData {
     time: string;
 }
 
-const mockData: MockData = {
-    '62124022443': {
-        'meter-serial-number': '62124022443',
-        'meter-logical-device-name': 'LDE106212402243',
-        'meter-hardware-version': 'LD103S101-APPO-02.00',
-        'meter-firmware-version': '03.03',
-        'meter-firmware-checksum': 'LD103S1',
-        'clock object': '2025-09-03 12:41:00',
-        'Total absolute cumulative active energy register': '1456.78 kWh',
-        'T1 absolute cumulative active energy register': '456.12 kWh',
-        'Frequency': '50.1 Hz',
-        'L1 Voltage ': '230.5 V',
-        'L1 Current ': '5.2 A',
-        'Remaining Credit Amount': '250.00',
-    },
-    '62124569871': {
-        'meter-serial-number': '62124569871',
-        'meter-logical-device-name': 'LDE106212456987',
-        'meter-hardware-version': 'LD103S101-APPO-02.00',
-        'meter-firmware-version': '03.03',
-        'meter-firmware-checksum': 'LD103S1',
-        'clock object': '2025-09-03 12:41:00',
-        'Total absolute cumulative active energy register': '2345.67 kWh',
-        'T1 absolute cumulative active energy register': '789.01 kWh',
-        'Frequency': '49.9 Hz',
-        'L1 Voltage ': '228.3 V',
-        'L1 Current ': '6.1 A',
-        'Remaining Credit Amount': '180.50',
-    },
-    '62224029918': {
-        'meter-serial-number': '62224029918',
-        'meter-logical-device-name': 'LDE106212402443',
-        'meter-hardware-version': 'LD103S101-APPO-02.00',
-        'meter-firmware-version': '03.03',
-        'meter-firmware-checksum': 'LD103S1',
-        'clock object': '2025-09-03 12:41:00',
-        'Total absolute cumulative active energy register': '1123.45 kWh',
-        'T1 absolute cumulative active energy register': '345.67 kWh',
-        'Frequency': '50.0 Hz',
-        'L1 Voltage ': '231.0 V',
-        'L1 Current ': '4.8 A',
-        'Remaining Credit Amount': '300.00',
-    },
-    '62224039487': {
-        'meter-serial-number': '62224039487',
-        'meter-logical-device-name': 'LDE106212403948',
-        'meter-hardware-version': 'LD103S101-APPO-02.00',
-        'meter-firmware-version': '03.03',
-        'meter-firmware-checksum': 'LD103S1',
-        'clock object': '2025-09-03 12:41:00',
-        'Total absolute cumulative active energy register': '1987.65 kWh',
-        'T1 absolute cumulative active energy register': '654.32 kWh',
-        'Frequency': '50.2 Hz',
-        'L1 Voltage ': '229.8 V',
-        'L1 Current ': '5.5 A',
-        'Remaining Credit Amount': '120.75',
-    },
-    '62124095803': {
-        'meter-serial-number': '62124095803',
-        'meter-logical-device-name': 'LDE106212409580',
-        'meter-hardware-version': 'LD103S101-APPO-02.00',
-        'meter-firmware-version': '03.03',
-        'meter-firmware-checksum': 'LD103S1',
-        'clock object': '2025-09-03 12:41:00',
-        'Total absolute cumulative active energy register': '1678.90 kWh',
-        'T1 absolute cumulative active energy register': '567.89 kWh',
-        'Frequency': '49.8 Hz',
-        'L1 Voltage ': '232.1 V',
-        'L1 Current ': '4.9 A',
-        'Remaining Credit Amount': '210.00',
-    },
-    '62124023359': {
-        'meter-serial-number': '62124023359',
-        'meter-logical-device-name': 'LDE106212402335',
-        'meter-hardware-version': 'LD103S101-APPO-02.00',
-        'meter-firmware-version': '03.03',
-        'meter-firmware-checksum': 'LD103S1',
-        'clock object': '2025-09-03 12:41:00',
-        'Total absolute cumulative active energy register': '2100.12 kWh',
-        'T1 absolute cumulative active energy register': '890.34 kWh',
-        'Frequency': '50.3 Hz',
-        'L1 Voltage ': '230.0 V',
-        'L1 Current ': '5.7 A',
-        'Remaining Credit Amount': '95.25',
-    },
-    '62124027822': {
-        'meter-serial-number': '62124027822',
-        'meter-logical-device-name': 'LDE106212402782',
-        'meter-hardware-version': 'LD103S101-APPO-02.00',
-        'meter-firmware-version': '03.03',
-        'meter-firmware-checksum': 'LD103S1',
-        'clock object': '2025-09-03 12:41:00',
-        'Total absolute cumulative active energy register': '1345.67 kWh',
-        'T1 absolute cumulative active energy register': '432.10 kWh',
-        'Frequency': '49.7 Hz',
-        'L1 Voltage ': '231.5 V',
-        'L1 Current ': '6.0 A',
-        'Remaining Credit Amount': '150.00',
-    },
-};
+interface RealTimeDataTableProps {
+    sseData?: RealTimeData[];
+    connectionStatus?: {[key: string]: boolean};
+    selectedMeters?: string[];
+    onMeterSelection?: (meters: string[]) => void;
+    meterType?: string;
+}
 
-export function RealTimeDataTable() {
+export function RealTimeDataTable({ 
+    sseData = [], 
+    connectionStatus = {}, 
+    selectedMeters = [], 
+    onMeterSelection,
+    meterType = 'MD' 
+}: RealTimeDataTableProps) {
     const [loading, setLoading] = useState<boolean>(false);
     const [data, setData] = useState<MeterData[]>([]);
     const [selectedReading, setSelectedReading] = useState<string[]>([]);
+    const [realTimeData, setRealTimeData] = useState<{[key: string]: any}>({});
+    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+    // Update real-time data when SSE data changes
+    useEffect(() => {
+        if (sseData && sseData.length > 0) {
+            const newRealTimeData: {[key: string]: any} = {};
+            
+            sseData.forEach((dataPoint: RealTimeData) => {
+                if (dataPoint.meterNo) {
+                    newRealTimeData[dataPoint.meterNo] = {
+                        ...newRealTimeData[dataPoint.meterNo],
+                        ...dataPoint,
+                        timestamp: dataPoint.timestamp || new Date().toISOString(),
+                    };
+                }
+            });
+            
+            setRealTimeData(prevData => ({
+                ...prevData,
+                ...newRealTimeData
+            }));
+        }
+    }, [sseData]);
+
+    // Cleanup timeout on component unmount
+    useEffect(() => {
+        return () => {
+            if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+                timeoutRef.current = null;
+            }
+        };
+    }, []);
 
     const handleRun = (filters: {
         hierarchy: string;
@@ -134,21 +74,41 @@ export function RealTimeDataTable() {
         setLoading(true);
         setData([]);
         setSelectedReading(filters.reading);
-        setTimeout(() => {
+        
+        // Notify parent component about selected meters
+        if (onMeterSelection) {
+            onMeterSelection(filters.meters);
+        }
+
+        // Clear any existing timeout to prevent memory leaks
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+        }
+
+        timeoutRef.current = setTimeout(() => {
             const newData = filters.meters.map(meter => {
-                const meterData = mockData[meter] ?? {};
+                // Get real-time data for the meter
+                const rtData = realTimeData[meter] || {};
+                
                 const row: MeterData = {
                     meter,
-                    time: meterData['clock object'] ?? '2025-09-03 16:03:00', // Updated to current time: 04:03 PM WAT, Sep 3, 2025
+                    time: rtData.timestamp || new Date().toISOString(),
                 };
+                
                 filters.reading.forEach(r => {
-                    row[r] = meterData[r] ?? 'N/A';
+                    row[r] = rtData[r] || 'N/A';
                 });
+                
                 return row;
             });
             setData(newData);
             setLoading(false);
+            timeoutRef.current = null;
         }, 2000);
+    };
+
+    const getConnectionStatus = (meterId: string) => {
+        return connectionStatus[meterId] || false;
     };
 
     return (
@@ -156,9 +116,31 @@ export function RealTimeDataTable() {
             <div className="py-8">
                 <FilterPanel onRun={handleRun} />
             </div>
+            
+            {/* Connection Status Indicator */}
+            {selectedMeters.length > 0 && (
+                <div className="bg-gray-50 p-4 rounded-lg">
+                    <h3 className="text-sm font-medium text-gray-700 mb-2">Connection Status</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
+                        {selectedMeters.map(meterId => (
+                            <div key={meterId} className="flex items-center space-x-2">
+                                <div className={`w-2 h-2 rounded-full ${
+                                    getConnectionStatus(meterId) ? 'bg-green-500' : 'bg-red-500'
+                                }`} />
+                                <span className="text-xs text-gray-600">{meterId}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+            
             <div className="py-8">
                 {(loading || data.length > 0) && (
-                    <DataTable data={data} reading={selectedReading} loading={loading} />
+                    <DataTable
+                        data={data}
+                        reading={selectedReading}
+                        loading={loading}
+                    />
                 )}
             </div>
         </div>
