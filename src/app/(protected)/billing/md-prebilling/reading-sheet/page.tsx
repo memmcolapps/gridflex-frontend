@@ -18,20 +18,12 @@ export default function ReadingSheetPage() {
     const [inputValue, setInputValue] = useState("");
     const [isBulkUploadDialogOpen, setIsBulkUploadDialogOpen] = useState(false);
     const [sortConfig, setSortConfig] = useState<string>("");
-    const [selectedMonth, setSelectedMonth] = useState<string>("Select Month");
-    const [selectedYear, setSelectedYear] = useState<string>("Select Year");
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => setInputValue(e.target.value);
+    // Get current month and year
+    const currentDate = new Date();
+    const currentMonthIndex = currentDate.getMonth();
+    const currentYear = currentDate.getFullYear();
 
-    const handleBulkUpload = (_data: unknown) => {
-        setIsBulkUploadDialogOpen(false);
-    };
-
-    const handleSortChange = (sortBy: string) => {
-        setSortConfig(sortBy);
-    };
-
-    // List of months for dropdown
     const months = [
         "January",
         "February",
@@ -47,8 +39,20 @@ export default function ReadingSheetPage() {
         "December"
     ];
 
+    const [selectedMonth, setSelectedMonth] = useState<string>(months[currentMonthIndex]);
+    const [selectedYear, setSelectedYear] = useState<string>(currentYear.toString());
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => setInputValue(e.target.value);
+
+    const handleBulkUpload = (_data: unknown) => {
+        setIsBulkUploadDialogOpen(false);
+    };
+
+    const handleSortChange = (sortBy: string) => {
+        setSortConfig(sortBy);
+    };
+
     // Generate years (current year and past 5 years)
-    const currentYear = new Date().getFullYear();
     const years = [ ...Array.from({ length: 6 }, (_, i) => (currentYear - i).toString())];
 
     // Handle filter changes
