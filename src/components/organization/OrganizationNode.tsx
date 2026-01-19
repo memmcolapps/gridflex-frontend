@@ -47,12 +47,12 @@ export const OrganizationNode = ({
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedNodeType, setSelectedNodeType] = useState("");
   const [nodeDataForEdit, setNodeDataForEdit] = useState<FormData>(
-    mapNodeInfoToFormData(node.nodeInfo),
+    mapNodeInfoToFormData(node.nodeInfo, node.name),
   );
 
   useEffect(() => {
     setChildren(node.nodesTree ?? []);
-    setNodeDataForEdit(mapNodeInfoToFormData(node.nodeInfo));
+    setNodeDataForEdit(mapNodeInfoToFormData(node.nodeInfo, node.name));
   }, [node]);
 
   const handleAddNode = (data: {
@@ -75,7 +75,7 @@ export const OrganizationNode = ({
   };
 
   const displayName = node.nodeInfo?.name ?? node.name;
-  const displayNodeType = node.nodeInfo?.type ?? node.name;
+  const displayNodeType = node.nodeInfo?.type ?? "root";
 
   const getNormalizedDisplayType = (type?: string): string => {
     if (!type) return "Node";

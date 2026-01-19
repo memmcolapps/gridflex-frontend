@@ -1825,9 +1825,11 @@ export default function MeterManagementPage() {
                 onMeterSelect={(meterId) => setSelectedPhysicalMeter(meterId)}
                 meters={meterData.filter(meter =>
                     meter.customerId === selectedVirtualCustomer?.customerId &&
-                    meter.status === "Assigned"
+                    meter.cin === selectedVirtualCustomer?.cin &&
+                    meter.status === "Assigned" &&
+                    meter.meterCategory !== "Virtual"
                 ).map(meter => ({
-                    id: meter.customerId ?? "",
+                    id: meter.id ?? "",
                     number: meter.meterNumber,
                     address: `${meter.state}, ${meter.city}, ${meter.streetName} ${meter.houseNo}`
                 }))}

@@ -1,7 +1,7 @@
 // vending.ts
 
 export interface VendingTransaction {
-  id:string;
+  id: string;
   transactionId: string;
   customerId: string;
   customerFullname: string;
@@ -24,13 +24,15 @@ export interface VendingTransaction {
   bandHour: string;
   userId: string;
   userFullname: string;
-  debitAdjustment: [];
-  creditAdjustment: [];
+  debitAdjustment: number | [];
+  creditAdjustment: number | [];
+  debitAdjustmentBalance?: number;
+  creditAdjustmentBalance?: number;
+  lastAmountVended?: number;
   createdAt: string;
   updatedAt: string;
   initialAmount: number;
   finalAmount: number;
- 
 }
 
 export interface GenerateCreditTokenPayload {
