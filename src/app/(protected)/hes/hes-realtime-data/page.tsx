@@ -75,9 +75,6 @@ export default function RealtimeDataPage() {
     }, [selectedHierarchy, hierarchyData]);
 
     // Validate base URL
-    if (!baseUrl) {
-        console.error('NEXT_PUBLIC_BASE_URL is not configured in environment variables');
-    }
 
     const handleMeterSelection = (meters: string[]) => {
         setSelectedMeters(meters);
@@ -180,28 +177,9 @@ export default function RealtimeDataPage() {
                 onMeterSelection={handleMeterSelection}
                 meterType={activeTab}
             />
-            {!baseUrl && (
-                <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
-                    <p className="text-yellow-800 text-sm">
-                        <strong>Configuration Required:</strong> The NEXT_PUBLIC_BASE_URL environment variable is not configured.
-                        Please ensure your .env file contains the correct API base URL.
-                    </p>
-                </div>
-            )}
+        
             
-            {error && baseUrl && (
-                <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-md">
-                    <p className="text-red-600 text-sm">Connection Error: {error}</p>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={reconnect}
-                        className="mt-2"
-                    >
-                        Retry Connection
-                    </Button>
-                </div>
-            )}
+  
         </div>
     );
 }
