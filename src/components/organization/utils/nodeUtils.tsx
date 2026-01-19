@@ -11,10 +11,10 @@ import React from "react";
 import { type NodeInfo } from "../../../service/organaization-service";
 import { normalizeHierarchyType } from "../../../utils/hierarchy-utils";
 
-export const mapNodeInfoToFormData = (nodeInfo?: NodeInfo) => {
+export const mapNodeInfoToFormData = (nodeInfo?: NodeInfo, nodeName?: string) => {
   if (!nodeInfo) {
     return {
-      name: "",
+      name: nodeName ?? "",
       regionId: "",
       phoneNumber: "",
       email: "",
