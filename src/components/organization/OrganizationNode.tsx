@@ -75,7 +75,7 @@ export const OrganizationNode = ({
   };
 
   const displayName = node.nodeInfo?.name ?? node.name;
-  const displayNodeType = node.nodeInfo?.type ?? node.type ?? "root";
+  const displayNodeType = node.nodeInfo?.type ?? "root";
 
   const getNormalizedDisplayType = (type?: string): string => {
     if (!type) return "Node";
