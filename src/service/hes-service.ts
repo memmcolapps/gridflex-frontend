@@ -1,4 +1,4 @@
-import { HierarchyResponse } from '@/types/hes';
+import type { HierarchyResponse } from '@/types/hes';
 import { env } from "@/env";
 
 export const fetchHierarchyData = async (): Promise<HierarchyResponse> => {

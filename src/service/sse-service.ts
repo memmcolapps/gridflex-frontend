@@ -1,4 +1,4 @@
-import { MeterStatusData, RealTimeData } from '@/hooks/use-sse';
+import type { MeterStatusData, RealTimeData } from '@/hooks/use-sse';
 import { env } from "@/env";
 
 const API_URL = env.NEXT_PUBLIC_BASE_URL;
@@ -8,10 +8,10 @@ export interface SSEMeterData extends RealTimeData {
 }
 
 export class SSEService {
-  private eventSources: Map<string, EventSource> = new Map();
-  private statusCallbacks: Map<string, (status: MeterStatusData) => void> = new Map();
-  private dataCallbacks: Map<string, (data: SSEMeterData) => void> = new Map();
-  private connectionStatusCallbacks: Map<string, (isConnected: boolean) => void> = new Map();
+  private eventSources: Map<string, EventSource> = new Map<string, EventSource>();
+  private statusCallbacks: Map<string, (status: MeterStatusData) => void> = new Map<string, (status: MeterStatusData) => void>();
+  private dataCallbacks: Map<string, (data: SSEMeterData) => void> = new Map<string, (data: SSEMeterData) => void>();
+  private connectionStatusCallbacks: Map<string, (isConnected: boolean) => void> = new Map<string, (isConnected: boolean) => void>();
 
   connectToMeterStatus(meterNo: string) {
     if (this.eventSources.has(`status-${meterNo}`)) {
@@ -27,7 +27,7 @@ export class SSEService {
       const eventSource = new EventSource(url); 
       this.eventSources.set(`status-${meterNo}`, eventSource);
 
-      eventSource.onopen = (event) => {
+      eventSource.onopen = (_event) => {
         console.log(`SSE meter status connected for meter ${meterNo}:`, url);
         this.connectionStatusCallbacks.get(`status-${meterNo}`)?.(true);
       };
@@ -79,7 +79,7 @@ export class SSEService {
       const eventSource = new EventSource(url);
       this.eventSources.set(`data-${meterNo}`, eventSource);
 
-      eventSource.onopen = (event) => {
+      eventSource.onopen = (_event) => {
         console.log(`SSE real-time data connected for meter ${meterNo}:`, url);
         this.connectionStatusCallbacks.get(`data-${meterNo}`)?.(true);
       };

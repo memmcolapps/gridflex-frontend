@@ -9,11 +9,11 @@ export interface MeterStatusData {
 export interface RealTimeData {
   meterNo: string;
   timestamp: string;
-  [key: string]: any; // For dynamic meter readings
+  [key: string]: unknown; // For dynamic meter readings
 }
 
 export interface SSEHookOptions {
-  onMessage?: (data: any) => void;
+  onMessage?: (data: Record<string, unknown>) => void;
   onError?: (error: Event) => void;
   onOpen?: (event: Event) => void;
   reconnectInterval?: number;
@@ -24,13 +24,13 @@ export function useSSE(
   url: string,
   options: SSEHookOptions = {}
 ): {
-  data: any[];
+  data: Record<string, unknown>[];
   isConnected: boolean;
   error: string | null;
   reconnect: () => void;
   close: () => void;
 } {
-  const [data, setData] = useState<any[]>([]);
+  const [data, setData] = useState<Record<string, unknown>[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const eventSourceRef = useRef<EventSource | null>(null);

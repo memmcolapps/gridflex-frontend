@@ -7,18 +7,17 @@ import { ContentHeader } from '@/components/ui/content-header';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ExternalLink, Wifi, WifiOff } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useSSEManagement, useMeterConnections } from '@/hooks/use-hes-realtime';
 import { useHierarchyData } from '@/hooks/use-hes-hierarchy';
 import { env } from '@/env';
-import { Node } from '@/types/hes';
-import { RealTimeData } from '@/hooks/use-sse';
+import type { Node } from '@/types/hes';
+import type { RealTimeData } from '@/hooks/use-sse';
 export default function RealtimeDataPage() {
     const [activeTab, setActiveTab] = useState('MD');
     const [selectedMeters, setSelectedMeters] = useState<string[]>([]);
-    const [selectedHierarchy, setSelectedHierarchy] = useState<string>('');
-    const [selectedUnit, setSelectedUnit] = useState<string>('');
-    const [unitOptions, setUnitOptions] = useState<{ label: string; id: string }[]>([]);
+    const [selectedHierarchy,] = useState<string>('');
+    // const [selectedUnit, setSelectedUnit] = useState<string>('');
+    const [, setUnitOptions] = useState<{ label: string; id: string }[]>([]);
 
     // Use TanStack Query hooks for state management
     const {
@@ -31,10 +30,12 @@ export default function RealtimeDataPage() {
     } = useMeterConnections(selectedMeters);
 
     const error = null;
-    const reconnect = () => {};
+    const reconnect = () => {
+        // TODO: Implement reconnect functionality
+    };
     const sseData: RealTimeData[] = [];
 
-    const { data: hierarchyData, isLoading: hierarchyLoading, error: hierarchyError } = useHierarchyData();
+    const { data: hierarchyData } = useHierarchyData();
 
     // Flatten hierarchy nodes for dropdown options
     const flattenNodes = (nodes: Node[]): { label: string; id: string }[] => {
@@ -49,7 +50,7 @@ export default function RealtimeDataPage() {
         return result;
     };
 
-    const hierarchyOptions = hierarchyData ? flattenNodes(hierarchyData.responsedata.nodes) : [];
+    // const hierarchyOptions = hierarchyData ? flattenNodes(hierarchyData.responsedata.nodes) : [];
 
     // Update unit options based on selected hierarchy
     useEffect(() => {
@@ -63,7 +64,7 @@ export default function RealtimeDataPage() {
                 return undefined;
             };
             const selectedNode = findNode(hierarchyData.responsedata.nodes);
-            if (selectedNode && selectedNode.nodesTree) {
+            if (selectedNode?.nodesTree) {
                 setUnitOptions(flattenNodes(selectedNode.nodesTree));
             } else {
                 setUnitOptions([]);

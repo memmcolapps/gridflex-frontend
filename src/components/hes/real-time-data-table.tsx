@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FilterPanel } from './FilterPanel';
 import { DataTable } from './DataTable';
-import { RealTimeData, MeterStatusData } from '@/hooks/use-sse';
+import type { RealTimeData } from '@/hooks/use-sse';
 
 type MeterId = string;
 
@@ -20,28 +20,29 @@ interface RealTimeDataTableProps {
     meterType?: string;
 }
 
-export function RealTimeDataTable({ 
-    sseData = [], 
-    connectionStatus = {}, 
-    selectedMeters = [], 
+export function RealTimeDataTable({
+    sseData = [],
+    connectionStatus = {},
+    selectedMeters = [],
     onMeterSelection,
-    meterType = 'MD' 
+    meterType: _meterType = 'MD'
 }: RealTimeDataTableProps) {
     const [loading, setLoading] = useState<boolean>(false);
     const [data, setData] = useState<MeterData[]>([]);
     const [selectedReading, setSelectedReading] = useState<string[]>([]);
-    const [realTimeData, setRealTimeData] = useState<{[key: string]: any}>({});
+    const [realTimeData, setRealTimeData] = useState<Record<string, unknown>>({});
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     // Update real-time data when SSE data changes
     useEffect(() => {
         if (sseData && sseData.length > 0) {
-            const newRealTimeData: {[key: string]: any} = {};
+            const newRealTimeData: Record<string, unknown> = {};
             
             sseData.forEach((dataPoint: RealTimeData) => {
                 if (dataPoint.meterNo) {
+                    const existing = (newRealTimeData[dataPoint.meterNo] as Record<string, unknown>) || {};
                     newRealTimeData[dataPoint.meterNo] = {
-                        ...newRealTimeData[dataPoint.meterNo],
+                        ...existing,
                         ...dataPoint,
                         timestamp: dataPoint.timestamp || new Date().toISOString(),
                     };
@@ -88,17 +89,17 @@ export function RealTimeDataTable({
         timeoutRef.current = setTimeout(() => {
             const newData = filters.meters.map(meter => {
                 // Get real-time data for the meter
-                const rtData = realTimeData[meter] || {};
-                
+                const rtData = (realTimeData[meter] as Record<string, unknown>) ?? {};
+
                 const row: MeterData = {
                     meter,
-                    time: rtData.timestamp || new Date().toISOString(),
+                    time: (rtData.timestamp as string) ?? new Date().toISOString(),
                 };
-                
+
                 filters.reading.forEach(r => {
-                    row[r] = rtData[r] || 'N/A';
+                    row[r] = (rtData[r] as string) ?? 'N/A';
                 });
-                
+
                 return row;
             });
             setData(newData);
@@ -108,7 +109,7 @@ export function RealTimeDataTable({
     };
 
     const getConnectionStatus = (meterId: string) => {
-        return connectionStatus[meterId] || false;
+        return connectionStatus[meterId] ?? false;
     };
 
     return (

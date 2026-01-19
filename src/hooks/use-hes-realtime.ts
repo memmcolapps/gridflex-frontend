@@ -1,8 +1,8 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSSE } from './use-sse';
 import { env } from '@/env';
 import { useState, useEffect } from 'react';
-import { MeterStatusData, RealTimeData } from './use-sse';
+import type { MeterStatusData, RealTimeData } from './use-sse';
 
 // Helper function to get auth token
 const getAuthToken = (): string | null => {
@@ -12,14 +12,12 @@ const getAuthToken = (): string | null => {
 
 
 // Types for our query data
-export interface MeterConnectionStatus {
-  [meterNo: string]: boolean;
-}
+export type MeterConnectionStatus = Record<string, boolean>;
 
 export interface SSEDataPoint {
   id: string;
   timestamp: string;
-  data: any;
+  data: unknown;
   type: 'meter-status' | 'real-time-data';
 }
 
@@ -34,11 +32,7 @@ export const hesQueryKeys = {
 // Custom hook for managing SSE connection
 export function useSSEManagement() {
   const baseUrl = env.NEXT_PUBLIC_BASE_URL;
-  const queryClient = useQueryClient();
   const [connectionStatus, setConnectionStatus] = useState<MeterConnectionStatus>({});
-  
-  // Get auth token
-  const authToken = getAuthToken();
 
   return {
     baseUrl,
@@ -54,7 +48,7 @@ export function useMeterConnections(selectedMeters: string[]) {
 
   // SSE for meter status
   const statusUrl = baseUrl ? `${baseUrl}/hes/service/meter-status/stream` : '';
-  const { data: statusData, isConnected: statusConnected, error: statusError } = useSSE(statusUrl, {
+  const { data: _statusData, isConnected: _statusConnected, error: _statusError } = useSSE(statusUrl, {
     onOpen: () => {
       console.log('Meter status SSE connected');
       setConnectionStatus(prev => {
@@ -75,19 +69,19 @@ export function useMeterConnections(selectedMeters: string[]) {
         return newStatus;
       });
     },
-    onMessage: (parsedData) => {
+    onMessage: (data) => {
+      const parsedData = data as unknown as MeterStatusData;
       if (parsedData.meterNo && selectedMeters.includes(parsedData.meterNo)) {
-        const status: MeterStatusData = parsedData;
-        console.log(`Meter ${parsedData.meterNo} status:`, status);
+        console.log(`Meter ${parsedData.meterNo} status:`, parsedData);
         setConnectionStatus(prev => ({
           ...prev,
-          [parsedData.meterNo]: status.status === 'CONNECTED'
+          [parsedData.meterNo]: parsedData.status === 'CONNECTED'
         }));
 
         // Update query cache
         queryClient.setQueryData(
           hesQueryKeys.connectionStatus(parsedData.meterNo),
-          status.status === 'CONNECTED'
+          parsedData.status === 'CONNECTED'
         );
       }
     }
@@ -95,7 +89,7 @@ export function useMeterConnections(selectedMeters: string[]) {
 
   // SSE for real-time data
   const dataUrl = baseUrl ? `${baseUrl}/hes/service/stream` : '';
-  const { data: realtimeData, isConnected: dataConnected, error: dataError } = useSSE(dataUrl, {
+  const { data: _realtimeData, isConnected: _dataConnected, error: _dataError } = useSSE(dataUrl, {
     onOpen: () => {
       console.log('Real-time data SSE connected');
       setConnectionStatus(prev => {
@@ -116,18 +110,18 @@ export function useMeterConnections(selectedMeters: string[]) {
         return newStatus;
       });
     },
-    onMessage: (parsedData) => {
+    onMessage: (data) => {
+      const parsedData = data as unknown as RealTimeData;
       if (parsedData.meterNo && selectedMeters.includes(parsedData.meterNo)) {
-        const data: RealTimeData = parsedData;
-        console.log(`Meter ${parsedData.meterNo} real-time data:`, data);
+        console.log(`Meter ${parsedData.meterNo} real-time data:`, parsedData);
 
         // Update query cache with new real-time data
         queryClient.setQueryData(
           hesQueryKeys.realtimeData(parsedData.meterNo),
-          (oldData: any) => ({
+          (oldData: RealTimeData | undefined) => ({
             ...oldData,
-            ...data,
-            timestamp: data.timestamp || new Date().toISOString(),
+            ...parsedData,
+            timestamp: parsedData.timestamp || new Date().toISOString(),
           })
         );
       }
@@ -139,7 +133,7 @@ export function useMeterConnections(selectedMeters: string[]) {
     selectedMeters.forEach(meterNo => {
       queryClient.setQueryData(
         hesQueryKeys.connectionStatus(meterNo),
-        connectionStatus[meterNo] || false
+        connectionStatus[meterNo] ?? false
       );
     });
   }, [selectedMeters, connectionStatus, queryClient]);
@@ -152,7 +146,7 @@ export function useMeterConnections(selectedMeters: string[]) {
 }
 
 // Query hook for fetching meter data (if needed for initial data)
-export function useMeterData(meterNo?: string, enabled: boolean = true) {
+export function useMeterData(meterNo?: string, enabled = true) {
   const { baseUrl } = useSSEManagement();
   const authToken = getAuthToken();
 
@@ -182,8 +176,6 @@ export function useMeterData(meterNo?: string, enabled: boolean = true) {
 
 // Hook for managing connection status across all meters
 export function useConnectionStatus() {
-  const queryClient = useQueryClient();
-  
   return useQuery({
     queryKey: hesQueryKeys.connectionStatus(),
     queryFn: async () => {
