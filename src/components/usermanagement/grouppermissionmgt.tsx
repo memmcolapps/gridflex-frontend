@@ -58,7 +58,6 @@ interface GroupPermission {
   }>;
 }
 
-// For CREATE operations only - backend generates the IDs
 const transformModuleAccessToModules = (moduleAccessArray: string[]) => {
   const dataManagementModules = [
     "organization",
@@ -169,7 +168,7 @@ export default function GroupPermissionManagement() {
   const [selectedGroupForEdit, setSelectedGroupForEdit] =
     useState<GroupPermission | null>(null);
 
-  const { data: groupPermissions, isLoading, error } = useGroupPermissions(searchTerm);
+  const { data: groupPermissions = [], isLoading, error } = useGroupPermissions(searchTerm);
   const { mutate: createPermissionGroup } = useCreateGroupPermission();
   const { mutate: updatePermissionGroup } = useUpdateGroupPermission();
   const { mutate: updatePermissionField } = useUpdateGroupPermissionField();
@@ -236,7 +235,6 @@ export default function GroupPermissionManagement() {
         },
         {
           onSuccess: () => {
-            console.log("Permission Group created successfully");
             toast.success("Permission Group created successfully");
           },
           onError: (error) => {
@@ -255,7 +253,7 @@ export default function GroupPermissionManagement() {
     permissionType: keyof GroupPermission["permissions"],
     value: boolean,
   ) => {
-    if (permissionType === "id") return; // Don't update id
+    if (permissionType === "id") return;
     updatePermissionField(
       {
         groupId,
@@ -287,7 +285,6 @@ export default function GroupPermissionManagement() {
     existingModules: GroupPermission["modules"],
     newModuleAccess: string[],
   ): GroupPermission["modules"] => {
-    // Build the desired module structure based on selected access
     const dataManagementModules = [
       "organization",
       "meter-management",
@@ -313,99 +310,52 @@ export default function GroupPermissionManagement() {
       dashboard: "Dashboard",
     };
 
-    // If all-access is selected, return all modules with backend IDs
     if (newModuleAccess.includes("all-access")) {
-      // Create structure for Data Management parent + all others
-      // ONLY include modules that exist in the backend data
       const result: GroupPermission["modules"] = [];
-
-      // Find Data Management module from existing backend data
       const existingDataManagement = existingModules.find(
         (m) => m.name === "Data Management",
       );
 
-      // Only add Data Management if it exists in backend data
       if (existingDataManagement) {
-        result.push({
-          ...existingDataManagement,
-          access: true,
-        });
+        result.push({ ...existingDataManagement, access: true });
       }
 
-      // Add other modules - only those that exist in backend data
-      const otherModules = [
-        "billing",
-        "vending",
-        "hes",
-        "user-management",
-        "dashboard",
-      ];
+      const otherModules = ["billing", "vending", "hes", "user-management", "dashboard"];
       for (const moduleKey of otherModules) {
         const moduleName = moduleNames[moduleKey] ?? moduleKey;
         const existing = existingModules.find((m) => m.name === moduleName);
-        if (existing) {
-          result.push({ ...existing, access: true });
-        }
-        // If not found in backend, skip it - don't generate ID
+        if (existing) result.push({ ...existing, access: true });
       }
-
       return result;
     }
 
-    // For partial selections, build only the selected modules
     const result: GroupPermission["modules"] = [];
     const selectedDataManagementSubModules: string[] = [];
 
-    // Separate data management from other modules
     newModuleAccess.forEach((moduleAccess) => {
       if (dataManagementModules.includes(moduleAccess)) {
         selectedDataManagementSubModules.push(moduleAccess);
       }
     });
 
-    // Add Data Management module if it has selections
     if (selectedDataManagementSubModules.length > 0) {
-      const existingDataManagement = existingModules.find(
-        (m) => m.name === "Data Management",
-      );
-
-      // Only add if it exists in backend data
+      const existingDataManagement = existingModules.find((m) => m.name === "Data Management");
       if (existingDataManagement) {
         const subModules: GroupPermission["modules"][0]["subModules"] = [];
-
         selectedDataManagementSubModules.forEach((moduleAccess) => {
           const moduleName = moduleNames[moduleAccess] ?? "Unknown Module";
-          const existingSub = existingDataManagement.subModules.find(
-            (s) => s.name === moduleName,
-          );
-
-          // Only add if found - never generate ID
-          if (existingSub) {
-            subModules.push({ ...existingSub, access: true });
-          }
-          // If not found in backend, skip it - don't generate ID
+          const existingSub = existingDataManagement.subModules.find((s) => s.name === moduleName);
+          if (existingSub) subModules.push({ ...existingSub, access: true });
         });
-
-        result.push({
-          ...existingDataManagement,
-          access: true,
-          subModules,
-        });
+        result.push({ ...existingDataManagement, access: true, subModules });
       }
-      // If Data Management doesn't exist in backend, skip it entirely
     }
 
-    // Add other selected modules
     newModuleAccess.forEach((moduleAccess) => {
       if (!dataManagementModules.includes(moduleAccess)) {
         const moduleName = moduleNames[moduleAccess] ?? moduleAccess;
         const existing = existingModules.find((m) => m.name === moduleName);
-
-        // Only add if found in backend data
-        if (existing) {
-          result.push({ ...existing, access: true });
-        }
-        // If not found in backend, skip it - don't generate ID
+        if (existing) result.push({ ...existing, access: true });
       }
     });
 
@@ -416,7 +366,6 @@ export default function GroupPermissionManagement() {
     existingPermissions: GroupPermission["permissions"],
     newAccessLevels: string[],
   ): GroupPermission["permissions"] => {
-    // Always preserve the backend-provided ID
     return {
       id: existingPermissions.id,
       view: newAccessLevels.includes("view-only"),
@@ -433,24 +382,15 @@ export default function GroupPermissionManagement() {
     accessLevel: string[];
   }) => {
     try {
-      // Find the existing group to preserve backend IDs
       const existingGroup = groupPermissions.find((g) => g.id === data.id);
       if (!existingGroup) {
         toast.error("Group not found");
         return;
       }
 
-      // Use the new update functions that preserve backend IDs
-      const permissions = updatePermissionsForUpdate(
-        existingGroup.permissions,
-        data.accessLevel,
-      );
-      const modules = updateModulesAccessForUpdate(
-        existingGroup.modules,
-        data.moduleAccess,
-      );
+      const permissions = updatePermissionsForUpdate(existingGroup.permissions, data.accessLevel);
+      const modules = updateModulesAccessForUpdate(existingGroup.modules, data.moduleAccess);
 
-      // Build payload matching the backend sample exactly
       const payload = {
         id: data.id,
         groupTitle: data.groupTitle,
@@ -462,7 +402,6 @@ export default function GroupPermissionManagement() {
         { groupId: data.id, payload },
         {
           onSuccess: () => {
-            console.log("Group permission updated successfully");
             toast.success("Group permission updated successfully");
           },
           onError: (error) => {
@@ -525,14 +464,9 @@ export default function GroupPermissionManagement() {
               onChange={handleSearch}
             />
           </div>
-          <Button
-            variant="outline"
-            className="gap-1 border-[rgba(228,231,236,1)]"
-          >
+          <Button variant="outline" className="gap-1 border-[rgba(228,231,236,1)]">
             <ListFilter className="" strokeWidth={2.5} size={12} />
-            <Label htmlFor="filterCheckbox" className="cursor-pointer">
-              Filter
-            </Label>
+            <Label htmlFor="filterCheckbox" className="cursor-pointer">Filter</Label>
           </Button>
           <Button
             variant="outline"
@@ -540,9 +474,7 @@ export default function GroupPermissionManagement() {
             onClick={() => setSortConfig(null)}
           >
             <ArrowUpDown className="" strokeWidth={2.5} size={12} />
-            <Label className="cursor-pointer">
-              {sortConfig ? "Clear Sort" : "Sort"}
-            </Label>
+            <Label className="cursor-pointer">{sortConfig ? "Clear Sort" : "Sort"}</Label>
           </Button>
         </div>
       </div>
@@ -568,11 +500,12 @@ export default function GroupPermissionManagement() {
                   )}
                 </div>
               </TableHead>
-              <TableHead>View</TableHead>
-              <TableHead>Edit</TableHead>
-              <TableHead>Approve</TableHead>
-              <TableHead>Disable</TableHead>
-              <TableHead>Actions</TableHead>
+              {/* Added consistent width and centering to all functional headers */}
+              <TableHead className="w-28 text-center">View</TableHead>
+              <TableHead className="w-28 text-center">Edit</TableHead>
+              <TableHead className="w-28 text-center">Approve</TableHead>
+              <TableHead className="w-28 text-center">Disable</TableHead>
+              <TableHead className="w-28 text-center">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -588,100 +521,61 @@ export default function GroupPermissionManagement() {
             ) : paginatedGroups.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="py-8 text-center">
-                  {searchTerm ? (
-                    <div>
-                      <p>
-                        No group permissions found matching &quot;{searchTerm}
-                        &quot;
-                      </p>
-                      <Button
-                        variant="outline"
-                        onClick={() => setSearchTerm("")}
-                        className="mt-2"
-                      >
-                        Clear search
-                      </Button>
-                    </div>
-                  ) : (
-                    "No group permissions found"
-                  )}
+                  No results found.
                 </TableCell>
               </TableRow>
             ) : (
               paginatedGroups.map((group) => (
-                <TableRow
-                  key={group.id}
-                  className="hover:bg-muted/50 bg-transparent"
-                >
+                <TableRow key={group.id} className="hover:bg-muted/50 bg-transparent">
                   <TableCell>
                     <div>
                       <div className="font-medium">{group.groupTitle}</div>
-                      <div className="text-sm text-gray-500">
+                      <div className="text-sm text-gray-500 line-clamp-1">
                         {group.modules?.map((m) => m.name).join(", ")}
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell>
+                  {/* Body cells match header width and alignment */}
+                  <TableCell className="text-center">
                     <Checkbox
                       checked={group.permissions.view}
-                      onCheckedChange={(checked) =>
-                        handleUpdatePermission(group.id, "view", !!checked)
-                      }
-                      className="border-gray-300 data-[state=checked]:bg-green-500 data-[state=checked]:text-white"
+                      onCheckedChange={(checked) => handleUpdatePermission(group.id, "view", !!checked)}
+                      className="border-gray-300 data-[state=checked]:bg-green-500"
                     />
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="text-center">
                     <Checkbox
                       checked={group.permissions.edit}
-                      onCheckedChange={(checked) =>
-                        handleUpdatePermission(group.id, "edit", !!checked)
-                      }
-                      className="border-gray-300 data-[state=checked]:bg-green-500 data-[state=checked]:text-white"
+                      onCheckedChange={(checked) => handleUpdatePermission(group.id, "edit", !!checked)}
+                      className="border-gray-300 data-[state=checked]:bg-green-500"
                     />
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="text-center">
                     <Checkbox
                       checked={group.permissions.approve}
-                      onCheckedChange={(checked) =>
-                        handleUpdatePermission(group.id, "approve", !!checked)
-                      }
-                      className="border-gray-300 data-[state=checked]:bg-green-500 data-[state=checked]:text-white"
+                      onCheckedChange={(checked) => handleUpdatePermission(group.id, "approve", !!checked)}
+                      className="border-gray-300 data-[state=checked]:bg-green-500"
                     />
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="text-center">
                     <Checkbox
                       checked={group.permissions.disable}
-                      onCheckedChange={(checked) =>
-                        handleUpdatePermission(group.id, "disable", !!checked)
-                      }
-                      className="border-gray-300 data-[state=checked]:bg-green-500 data-[state=checked]:text-white"
+                      onCheckedChange={(checked) => handleUpdatePermission(group.id, "disable", !!checked)}
+                      className="border-gray-300 data-[state=checked]:bg-green-500"
                     />
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="text-center">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-8 w-8 cursor-pointer p-2"
-                        >
+                        <Button size="sm" variant="ghost" className="h-8 w-8 p-2">
                           <MoreVertical size={14} />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent
-                        align="center"
-                        className="cursor-pointer"
-                      >
-                        <DropdownMenuItem
-                          onSelect={() => {
-                            handleEditGroup(group);
-                          }}
-                        >
-                          <div className="flex w-full items-center gap-2">
+                      <DropdownMenuContent align="center">
+                        <DropdownMenuItem onSelect={() => handleEditGroup(group)}>
+                          <div className="flex items-center gap-2">
                             <Pencil size={14} />
-                            <span className="cursor-pointer">
-                              Edit Group Permission
-                            </span>
+                            <span>Edit Group Permission</span>
                           </div>
                         </DropdownMenuItem>
                         <GroupStatusToggleDropdownItem group={group} />
@@ -708,17 +602,12 @@ export default function GroupPermissionManagement() {
             className="rounded-md border border-gray-300 px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
           >
             {[5, 10, 12, 20, 50].map((num) => (
-              <option key={num} value={num}>
-                {num}
-              </option>
+              <option key={num} value={num}>{num}</option>
             ))}
           </select>
         </div>
         <span className="text-black-500 text-sm">
-          {totalRows === 0
-            ? "0-0"
-            : `${startIndex + 1}-${Math.min(endIndex, totalRows)}`}{" "}
-          of {totalRows} rows
+          {totalRows === 0 ? "0-0" : `${startIndex + 1}-${Math.min(endIndex, totalRows)}`} of {totalRows} rows
         </span>
         <div className="flex items-center gap-2">
           <button
@@ -741,7 +630,6 @@ export default function GroupPermissionManagement() {
         </div>
       </div>
 
-      {/* Edit Group Permission Modal */}
       <EditGroupPermissionForm
         isOpen={editDialogOpen}
         onOpenChange={setEditDialogOpen}
