@@ -318,7 +318,7 @@ export const useMeters = (params: FetchParams): UseMetersResult => {
     error,
     reviewMutation,
     bulkApproveMutation,
-  };
+  }; 
 };
 
 // Single item fetching hooks

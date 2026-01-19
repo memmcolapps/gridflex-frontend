@@ -49,7 +49,9 @@ export function AuthForm({
 
   return (
     <form onSubmit={handleSubmit} className="w-full space-y-6">
-      <h2 className="mb-8 text-3xl font-semibold text-gray-800">Sign In</h2>
+      <h2 className="mb-8 text-3xl font-semibold text-gray-800">
+        {isSignInForm ? "Sign In" : "Reset Password"}
+      </h2>
 
       <div className="space-y-1.5">
         <label
@@ -69,42 +71,46 @@ export function AuthForm({
         />
       </div>
 
-      <div className="space-y-1.5">
-        <label
-          htmlFor="password"
-          className="block text-sm font-medium text-gray-700"
-        >
-          Password
-        </label>
-        <div className="relative">
-          <input
-            type={showPassword ? "text" : "password"}
-            id="password"
-            placeholder="••••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-md border border-gray-300 px-4 py-3 pr-10 text-gray-800 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
-            required
-          />
-          <button
-            type="button"
-            onClick={togglePasswordVisibility}
-            className="absolute inset-y-0 right-0 flex w-10 cursor-pointer items-center justify-center pr-3 text-gray-400 hover:text-gray-600"
-            aria-label={showPassword ? "Hide password" : "Show password"}
+      {isSignInForm && (
+        <div className="space-y-1.5">
+          <label
+            htmlFor="password"
+            className="block text-sm font-medium text-gray-700"
           >
-            {showPassword ? <EyeIcon size="10" /> : <EyeOffIcon size="10" />}
-          </button>
+            Password
+          </label>
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              id="password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full rounded-md border border-gray-300 px-4 py-3 pr-10 text-gray-800 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none"
+              required
+            />
+            <button
+              type="button"
+              onClick={togglePasswordVisibility}
+              className="absolute inset-y-0 right-0 flex w-10 cursor-pointer items-center justify-center pr-3 text-gray-400 hover:text-gray-600"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? <EyeIcon size="10" /> : <EyeOffIcon size="10" />}
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
-      <div className="flex justify-end">
-        <Link
-          href="/login/forgotpassword"
-          className="text-sm text-gray-600 hover:text-blue-700 hover:underline"
-        >
-          Forgot Password?
-        </Link>
-      </div>
+      {isSignInForm && (
+        <div className="flex justify-end">
+          <Link
+            href="/login/forgotpassword"
+            className="text-sm text-gray-600 hover:text-blue-700 hover:underline"
+          >
+            Forgot Password?
+          </Link>
+        </div>
+      )}
 
       <button
         type="submit"
@@ -118,10 +124,10 @@ export function AuthForm({
         {isSubmitting ? (
           <>
             <Loader className="animate-spin" size={15} />
-            <span>Signing in...</span>
+            <span>{isSignInForm ? "Signing in..." : "Sending OTP..."}</span>
           </>
         ) : (
-          "Sign In"
+          isSignInForm ? "Sign In" : "Send OTP"
         )}
       </button>
 

@@ -58,18 +58,18 @@ const formatDateAdded = (date: Date) => {
 };
 
 export default function UserManagement() {
-  const { data: users, isLoading } = useGetUsers();
-  const { mutate: createUser } = useCreateUser();
-  const { mutate: editUser } = useEditUser();
+   const [searchTerm, setSearchTerm] = useState("");
+   const [sortConfig, setSortConfig] = useState<{
+     key: keyof GetUsersUser;
+     direction: "ascending" | "descending";
+   } | null>(null);
+   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+   const [editingUser, setEditingUser] = useState<GetUsersUser | null>(null);
+   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
-  const [searchTerm, setSearchTerm] = useState("");
-  const [sortConfig, setSortConfig] = useState<{
-    key: keyof GetUsersUser;
-    direction: "ascending" | "descending";
-  } | null>(null);
-  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
-  const [editingUser, setEditingUser] = useState<GetUsersUser | null>(null);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+   const { data: users, isLoading } = useGetUsers(searchTerm);
+   const { mutate: createUser } = useCreateUser();
+   const { mutate: editUser } = useEditUser();
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -159,13 +159,7 @@ export default function UserManagement() {
     return sortableUsers;
   };
 
-  const filteredUsers = sortedUsers().filter(
-    (user) =>
-      `${user.firstname} ${user.lastname}`
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+  const filteredUsers = sortedUsers();
 
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);

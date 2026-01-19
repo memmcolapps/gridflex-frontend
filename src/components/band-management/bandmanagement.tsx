@@ -73,7 +73,7 @@ export default function BandManagement() {
   const [showStatusDialog, setShowStatusDialog] = useState(false);
   const [bandToToggle, setBandToToggle] = useState<Band | null>(null);
 
-  const { bands, isLoading } = useBand();
+  const { bands, isLoading } = useBand(searchTerm);
   const { mutate: createBand } = useCreateBand();
   const { mutate: updateBand } = useUpdateBand();
   const { mutate: deactivateBand, isPending: isDeactivating } =
@@ -116,9 +116,7 @@ export default function BandManagement() {
     return sortableBands;
   };
 
-  const filteredBands = sortedBands().filter((band) =>
-    band.name.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+  const filteredBands = sortedBands();
 
   const handleAddBand = async (newBand: Omit<Band, "id">) => {
     createBand(newBand, {

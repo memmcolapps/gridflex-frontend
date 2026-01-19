@@ -11,12 +11,12 @@ import {
 import { useAuth } from "../context/auth-context";
 import { queryClient } from "@/lib/queryClient";
 
-export const useBand = () => {
+export const useBand = (searchTerm?: string) => {
   const { isAuthenticated } = useAuth();
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ["bands"],
-    queryFn: fetchBands,
+    queryKey: ["bands", searchTerm],
+    queryFn: () => fetchBands(searchTerm),
     enabled: isAuthenticated,
   });
 

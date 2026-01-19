@@ -6,6 +6,7 @@ import { useAuth } from "@/context/auth-context";
 import { SidebarNav } from "@/components/sidebar-nav";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { Navbar } from "@/components/navbar";
+import { Footer } from "@/components/footer";
 import { LoadingAnimation } from "@/components/ui/loading-animation";
 
 export default function ProtectedLayout({
@@ -70,6 +71,7 @@ export default function ProtectedLayout({
     >
       {children}
     </main>
+    <Footer />
   </div>
 </div>
 

@@ -4,7 +4,7 @@
 import { useState, useEffect } from "react";
 import type { ChangeEventHandler } from "react";
 import { Button } from "@/components/ui/button";
-import { SimplifiedCalendar } from "@/components/ui/calendar";
+import { Calendar } from "@/components/ui/calendar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -49,6 +49,18 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { PaginationControls } from "@/components/ui/pagination-controls";
+import { useEvents, useProfileEventsData } from "@/hooks/use-profile-events";
+import { useMeters } from "@/hooks/use-assign-meter";
+import { toast } from "sonner";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { ChevronsUpDown } from "lucide-react";
 
 interface EventData {
   sn: number;
@@ -72,194 +84,40 @@ const eventTypes = [
   "Token Event Log",
 ];
 
-// Event options based on event type
-const eventOptionsByType: Record<string, string[]> = {
-  "Standard Event Log": [
-    "Daylight Saving Time",
-    "Clock invalid",
-    "Replace Battery",
-    "Battery Voltage Low",
-    "TOU Activated",
-    "Error Registered Cleared",
-    "Alarm Registered Cleared",
-    "Meter Program Memory Error",
-    "RAM Error",
-    "NV Meter Error",
-    "Watchdog Error",
-    "Measurement System Error",
-    "Firmware Ready for Activation",
-    "Firmware Verification Failed",
-    "Unexpected Consumption",
-    "Phase Sequence Reversal",
-    "Missing Neutrals",
-    "Event Code of Standard Event Log",
-    "Meter Data Cleared",
-    "Load Profile Cleared",
-    "Standard Event Log Cleared",
-    "Event Log Cleared",
-  ],
-  "Relay Control Log": [
-    "Power Down",
-    "Power Up",
-    "Disconnector Ready For Manual Connection",
-    "Manual Disconnection",
-    "Remote Disconnection",
-    "Local Disconnection",
-    "Limiter Threshold Exceeded",
-    "Limiter Threshold OK",
-    "Limiter Threshold Changed",
-    "Disconnect/Reconnect Failure",
-    "Local Reconnection",
-    "Fuse Supervision L1, Threshold Exceeded",
-    "Fuse Supervision L1, Threshold OK",
-    "Fuse Supervision L2, Threshold Exceeded",
-    "Fuse Supervision L2, Threshold OK",
-    "Event Code of Fraud",
-    "Relay Event Log Cleared",
-  ],
-  "Power Quality Log": [
-    "Current Imbalance Occurs",
-    "Lower Power Factor Started",
-    "Lower Power Factor Stopped",
-    "Under Voltage L1",
-    "Normal Voltage L1",
-    "Normal Voltage L2",
-    "Normal Voltage L3",
-    "Bad Voltage Quality L1",
-    "Bad Voltage Quality L2",
-    "Bad Voltage Quality L3",
-    "Other Fraud Related Event",
-    "SIM Registration Status",
-    "Packet Switched Status",
-    "Over Current L1 Started",
-    "Over Current L1 Stopped",
-    "Over Current L2 Started",
-    "Over Current L2 Stopped",
-    "Over Current L3 Started",
-    "Over Current L3 Stopped",
-    "Lost Current L1 Started",
-    "Lost Current L1 Stopped",
-    "Lost Current L2 Stopped",
-    "Lost Current L3 Started",
-    "Lost Current L3 Stopped",
-    "Lost Current L1 Started",
-    "Lost Current L2 Stopped",
-    "Lost Current L3 Started",
-    "Lost Current L3 Stopped",
-    "Active Power Reverse L1 Started",
-    "Active Power Reverse L1 Stopped",
-    "Active Power Reverse L2 Started",
-    "Active Power Reverse L2 Stopped",
-    "Active Power Reverse L3 Started",
-    "Active Power Reverse L3 Stopped",
-    "Power Overload L1 Started",
-    "Power Overload L1 Stopped",
-    "Power Overload L2 Started",
-    "Power Overload L2 Stopped",
-    "Power Overload L3 Started",
-    "Power Overload L3 Stopped",
-    "Voltage Unbalance Start",
-    "Voltage Unbalance Stopped",
-    "Phase Failure L1 Started",
-    "Phase Failure L1 Stopped",
-    "Phase Failure L2 Started",
-    "Phase Failure L2 Stopped",
-    "Phase Failure L3 Started",
-  ],
-  "Communication Log": [
-    "Terminal Power On",
-    "GPRS Module Pull Out",
-    "B Phase Miss",
-    "C Phase Miss",
-    "A Phase Lower",
-    "B Phase Lower",
-    "C Phase Lower",
-    "A Phase High",
-    "B Phase High",
-    "C Phase High",
-    "CPU Temperature High",
-    "Terminal Top Cover Opened",
-    "Terminal Top Cover Closed",
-    "No Connection Timeout",
-    "Modem Initialization Failure",
-    "SIM Card Failure",
-    "SIM Card OK",
-    "GSM Registration Failure",
-    "GPRS Registration Failure",
-    "PDP Context Established",
-    "PDP Context Destroyed",
-    "PDP Context Failure",
-    "Modem SW Reset",
-    "Modem HW Reset",
-    "GSM Outgoing Connection",
-    "GSM Incoming Connection",
-    "GSM Hang-Up",
-    "Diagnostic Failure",
-    "User Initialization Failure",
-    "Signal Quality Low",
-    "Auto Answer Number Of Calls Exceeded",
-    "Local Communication Attempt",
-    "Register Successful",
-    "Module In",
-    "Module Out",
-  ],
-  "Fraud Event Log": [
-    "Terminal Cover Open",
-    "Terminal Cover Closed",
-    "Strong DC Field Detected",
-    "Strong DC Field Removed",
-    "Meter Cover Opened",
-    "Meter Cover Closed",
-    "Association Authentication After (n) Times",
-    "CT Bypass Start",
-    "CT Bypass End",
-    "Decryption or Message Authentication Failure",
-    "Relay Attack",
-    "Current Reverse Start",
-    "Event Code Of Standard Event Log",
-    "Fraud Event Log Cleared",
-  ],
-  "Token Event Log": ["Recharge Token Event", "Token Event"],
-};
+interface EventsProps {
+  selectedHierarchy: string | null;
+  selectedUnits: string;
+}
 
-export function Events() {
+export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
   const [startDateOpen, setStartDateOpen] = useState(false);
   const [endDateOpen, setEndDateOpen] = useState(false);
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
-  const [startTimeValue, setStartTimeValue] = useState<string>("00:00");
-  const [endTimeValue, setEndTimeValue] = useState<string>("00:00");
-  const [meterNo, setMeterNo] = useState("");
+  const [startTimeValue, setStartTimeValue] = useState<string>("00:00:00");
+  const [endTimeValue, setEndTimeValue] = useState<string>("00:00:00");
+  const [selectedMeterNos, setSelectedMeterNos] = useState<string[]>([]);
+  const [selectedMeterModels, setSelectedMeterModels] = useState<string[]>([]);
   const [selectedEventTypes, setSelectedEventTypes] = useState<string[]>([]);
-  const [selectedEvents, setSelectedEvents] = useState<string[]>([]);
-  const [availableEventOptions, setAvailableEventOptions] = useState<string[]>(
-    [],
-  );
   const [tableData, setTableData] = useState<EventData[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [eventTypeDropdownOpen, setEventTypeDropdownOpen] = useState(false);
-  const [eventsDropdownOpen, setEventsDropdownOpen] = useState(false);
-  
+  const [meterDropdownOpen, setMeterDropdownOpen] = useState(false);
 
-  // Update available event options when event type changes
-  useEffect(() => {
-    if (selectedEventTypes.length === 0) {
-      setAvailableEventOptions([]);
-      setSelectedEvents([]);
-      return;
-    }
+  const { mutate: fetchEvents, isPending: isLoading } = useEvents();
+  const { data: profileEventsData } = useProfileEventsData();
+  const { data: metersData } = useMeters({
+    page: 1,
+    pageSize: 1000,
+    searchTerm: "",
+    sortBy: null,
+    sortDirection: null,
+    type: "assigned",
+  });
 
-    // Get all unique event options from selected event types
-    const allOptions = selectedEventTypes.flatMap(
-      (type) => eventOptionsByType[type] ?? [],
-    );
-    const uniqueOptions = [...new Set(allOptions)];
-    setAvailableEventOptions(uniqueOptions);
-
-    // Reset selected events when event types change
-    setSelectedEvents([]);
-  }, [selectedEventTypes]);
+  const filteredMeters =
+    metersData?.actualMeters.filter((meter) => meter.type !== "VIRTUAL") ?? [];
 
   // Handle Event Type selection
   const handleEventTypeChange = (eventType: string) => {
@@ -284,47 +142,12 @@ export function Events() {
     }
   };
 
-  // Handle Events selection
-  const handleEventsChange = (event: string) => {
-    if (event === "Select All") {
-      if (selectedEvents.length === availableEventOptions.length) {
-        // If all are selected, deselect all
-        setSelectedEvents([]);
-      } else {
-        // Select all events
-        setSelectedEvents([...availableEventOptions]);
-      }
-    } else {
-      setSelectedEvents((prev) => {
-        if (prev.includes(event)) {
-          // Remove if already selected
-          return prev.filter((e) => e !== event);
-        } else {
-          // Add if not selected
-          return [...prev, event];
-        }
-      });
-    }
-  };
-
   // Get display text for dropdowns
-  const getEventTypeDisplayText = () => {
-    if (selectedEventTypes.length === 0) return "Select Event Type";
-    if (selectedEventTypes.length === 1) return selectedEventTypes[0];
-    if (selectedEventTypes.length === eventTypes.length)
-      return "All Event Types";
-    return `${selectedEventTypes.length} Event Types`;
-  };
-
   const getEventsDisplayText = () => {
-    if (selectedEvents.length === 0) return "Select Events";
-    if (selectedEvents.length === 1) return selectedEvents[0];
-    if (
-      selectedEvents.length === availableEventOptions.length &&
-      availableEventOptions.length > 0
-    )
-      return "All Events";
-    return `${selectedEvents.length} Events`;
+    if (selectedEventTypes.length === 0) return "Select Events";
+    if (selectedEventTypes.length === 1) return selectedEventTypes[0];
+    if (selectedEventTypes.length === eventTypes.length) return "All Events";
+    return `${selectedEventTypes.length} Events`;
   };
 
   // Handle time change for start date
@@ -348,17 +171,54 @@ export function Events() {
   };
 
   const handleRun = () => {
-    // This is where you'd make your API call
-    console.log({
-      startDate,
-      endDate,
-      meterNo,
-      selectedEventTypes,
-      selectedEvents,
-    });
+    const isMeterModelRequired = selectedHierarchy && selectedUnits;
+    if (
+      !startDate ||
+      !endDate ||
+      selectedMeterNos.length === 0 ||
+      (isMeterModelRequired && selectedMeterModels.length === 0) ||
+      selectedEventTypes.length === 0
+    ) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
 
-    // For now, just set mock data
-    setTableData(mockEventData);
+    const startDateStr = format(startDate, "yyyy-MM-dd HH:mm:ss");
+    const endDateStr = format(endDate, "yyyy-MM-dd HH:mm:ss");
+
+    fetchEvents(
+      {
+        page: 0,
+        size: 100,
+        startDate: startDateStr,
+        endDate: endDateStr,
+        meterNumber: selectedMeterNos.join(","),
+        eventTypeName: selectedEventTypes.join(","),
+        model: selectedMeterModels.join(","),
+        search: selectedMeterNos.join(","),
+        node: selectedUnits,
+      },
+      {
+        onSuccess: (data) => {
+          toast.success("Events fetched successfully!");
+          // Transform the data to match EventData interface
+          const transformedData: EventData[] = data.responsedata.data.map(
+            (event, index) => ({
+              sn: index + 1,
+              meterNo: event.meterNumber,
+              feeder: event.meter.flatNode?.feederName || "N/A",
+              time: event.eventTime,
+              eventType: event.eventType.name,
+              event: event.eventName,
+            }),
+          );
+          setTableData(transformedData);
+        },
+        onError: (error) => {
+          toast.error(`Failed to fetch events: ${error.message}`);
+        },
+      },
+    );
   };
 
   const totalRows = tableData.length;
@@ -402,19 +262,18 @@ export function Events() {
                   !startDate && "text-muted-foreground",
                 )}
               >
-                <CalendarIcon className="mr-2" size={16} />
+                <CalendarIcon className="mr-2 h-3 w-3" size={12} />
                 {startDate
-                  ? format(startDate, "dd-MM-yyyy HH:mm")
+                  ? format(startDate, "dd-MM-yyyy HH:mm:ss")
                   : "Select Date"}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto bg-white p-0" align="start">
-              <SimplifiedCalendar
+              <Calendar
+                mode="single"
                 selected={startDate}
-                timeValue={startTimeValue}
-                onSelect={setStartDate}
-                onTimeChange={setStartTimeValue}
-                onClose={() => {
+                onSelect={(d) => {
+                  setStartDate(d as Date | undefined);
                   setStartDateOpen(false);
                 }}
               />
@@ -441,19 +300,18 @@ export function Events() {
                   !endDate && "text-muted-foreground",
                 )}
               >
-                <CalendarIcon className="mr-2" size={16} />
+                <CalendarIcon className="mr-2 h-3 w-3" size={12} />
                 {endDate
-                  ? format(endDate, "dd-MM-yyyy HH:mm")
+                  ? format(endDate, "dd-MM-yyyy HH:mm:ss")
                   : "Select Date"}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto bg-white p-0" align="start">
-              <SimplifiedCalendar
+              <Calendar
+                mode="single"
                 selected={endDate}
-                timeValue={endTimeValue}
-                onSelect={setEndDate}
-                onTimeChange={setEndTimeValue}
-                onClose={() => {
+                onSelect={(d) => {
+                  setEndDate(d as Date | undefined);
                   setEndDateOpen(false);
                 }}
               />
@@ -461,24 +319,182 @@ export function Events() {
           </Popover>
         </div>
 
-        {/* Meter No */}
+        {/* Meter Model */}
         <div className="flex min-w-[140px] flex-1 flex-col gap-2">
-          <Label htmlFor="meter-no" className="text-sm font-medium">
-            Meter No. <span className="text-red-500">*</span>
+          <Label className="text-sm font-medium">
+            Meter Model <span className="text-red-500">*</span>
           </Label>
-          <Input
-            id="meter-no"
-            placeholder="622456789012"
-            value={meterNo}
-            onChange={(e) => setMeterNo(e.target.value)}
-            className="w-full border-gray-300 focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
-          />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                className="w-full justify-between border-gray-300"
+                disabled={!selectedHierarchy || !selectedUnits}
+              >
+                {selectedMeterModels.length > 0
+                  ? `${selectedMeterModels.length} selected`
+                  : "Select Meter Models"}
+                <ChevronDown size={12} className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              className="max-h-60 w-[var(--radix-dropdown-menu-trigger-width)] min-w-[160px] overflow-y-auto"
+              align="start"
+            >
+              {/* Select All Option */}
+              <DropdownMenuItem
+                onSelect={(e) => e.preventDefault()}
+                onClick={() => {
+                  if (
+                    selectedMeterModels.length ===
+                    (profileEventsData?.responsedata.models.length ?? 0)
+                  ) {
+                    setSelectedMeterModels([]);
+                  } else {
+                    setSelectedMeterModels(
+                      profileEventsData?.responsedata.models.map(
+                        (m) => m.meterModel,
+                      ) ?? [],
+                    );
+                  }
+                }}
+                className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-50"
+              >
+                <span className="text-sm">Select All</span>
+                <div className="flex h-4 w-4 items-center justify-center">
+                  {selectedMeterModels.length ===
+                  (profileEventsData?.responsedata.models.length ?? 0) ? (
+                    <div className="flex h-4 w-4 items-center justify-center rounded-sm bg-green-100">
+                      <Check size={12} className="text-green-600" />
+                    </div>
+                  ) : (
+                    <Square size={14} className="text-gray-400" />
+                  )}
+                </div>
+              </DropdownMenuItem>
+
+              {/* Dotted separator */}
+              <div className="mx-2 border-t border-dotted border-[#4ECDC4]" />
+
+              {profileEventsData?.responsedata.models.map((model) => (
+                <div key={model.meterModel}>
+                  <DropdownMenuItem
+                    onSelect={(e) => e.preventDefault()}
+                    onClick={() => {
+                      setSelectedMeterModels((prev) =>
+                        prev.includes(model.meterModel)
+                          ? prev.filter((m) => m !== model.meterModel)
+                          : [...prev, model.meterModel],
+                      );
+                    }}
+                    className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-50"
+                  >
+                    <span className="text-sm">{model.meterModel}</span>
+                    <div className="flex h-4 w-4 items-center justify-center">
+                      {selectedMeterModels.includes(model.meterModel) ? (
+                        <div className="flex h-4 w-4 items-center justify-center rounded-sm bg-green-100">
+                          <Check size={12} className="text-green-600" />
+                        </div>
+                      ) : (
+                        <Square size={14} className="text-gray-400" />
+                      )}
+                    </div>
+                  </DropdownMenuItem>
+                  <div className="mx-2 border-t border-dotted border-[#4ECDC4]" />
+                </div>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
-        {/* Events Type */}
+        {/* Meter No */}
+        <div className="flex min-w-[140px] flex-1 flex-col gap-2">
+          <Label className="text-sm font-medium">
+            Meter No. <span className="text-red-500">*</span>
+          </Label>
+          <Popover open={meterDropdownOpen} onOpenChange={setMeterDropdownOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={meterDropdownOpen}
+                className="w-full justify-between border-gray-300"
+              >
+                {selectedMeterNos.length > 0
+                  ? `${selectedMeterNos.length} selected`
+                  : "Select meter numbers..."}
+                <ChevronsUpDown className="ml-2 h-3 w-3 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-full border-none p-0">
+              <Command className="border-none bg-white">
+                <CommandInput
+                  placeholder="Search meter numbers..."
+                  className="border-none"
+                />
+                <CommandList>
+                  <CommandEmpty>No meter found.</CommandEmpty>
+                  <CommandGroup>
+                    <CommandItem
+                      onSelect={() => {
+                        if (selectedMeterNos.length === filteredMeters.length) {
+                          setSelectedMeterNos([]);
+                        } else {
+                          setSelectedMeterNos(
+                            filteredMeters.map((m) => m.meterNumber),
+                          );
+                        }
+                      }}
+                      className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-50"
+                    >
+                      <span className="text-sm">Select All</span>
+                      <div className="flex h-4 w-4 items-center justify-center">
+                        {selectedMeterNos.length === filteredMeters.length ? (
+                          <div className="flex h-4 w-4 items-center justify-center rounded-sm bg-green-100">
+                            <Check size={12} className="text-green-600" />
+                          </div>
+                        ) : (
+                          <Square size={14} className="text-gray-400" />
+                        )}
+                      </div>
+                    </CommandItem>
+                    <div className="mx-2 border-t border-dotted border-[#4ECDC4]" />
+                    {filteredMeters.map((meter) => (
+                      <CommandItem
+                        key={meter.id ?? meter.meterNumber}
+                        value={meter.meterNumber}
+                        onSelect={() => {
+                          setSelectedMeterNos((prev) =>
+                            prev.includes(meter.meterNumber)
+                              ? prev.filter((m) => m !== meter.meterNumber)
+                              : [...prev, meter.meterNumber],
+                          );
+                        }}
+                        className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-50"
+                      >
+                        <span className="text-sm">{meter.meterNumber}</span>
+                        <div className="flex h-4 w-4 items-center justify-center">
+                          {selectedMeterNos.includes(meter.meterNumber) ? (
+                            <div className="flex h-4 w-4 items-center justify-center rounded-sm bg-green-100">
+                              <Check size={12} className="text-green-600" />
+                            </div>
+                          ) : (
+                            <Square size={14} className="text-gray-400" />
+                          )}
+                        </div>
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
+        </div>
+
+        {/* Events */}
         <div className="flex min-w-[160px] flex-1 flex-col gap-2">
           <Label className="text-sm font-medium">
-            Events Type <span className="text-red-500">*</span>
+            Events <span className="text-red-500">*</span>
           </Label>
           <DropdownMenu
             open={eventTypeDropdownOpen}
@@ -489,7 +505,7 @@ export function Events() {
                 variant="outline"
                 className="w-full justify-between border-gray-300"
               >
-                {getEventTypeDisplayText()}
+                {getEventsDisplayText()}
                 <ChevronDown size={12} className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -543,83 +559,14 @@ export function Events() {
           </DropdownMenu>
         </div>
 
-        {/* Events */}
-        <div className="flex min-w-[120px] flex-1 flex-col gap-2">
-          <Label className="text-sm font-medium">
-            Events <span className="text-red-500">*</span>
-          </Label>
-          <DropdownMenu
-            open={eventsDropdownOpen}
-            onOpenChange={setEventsDropdownOpen}
-          >
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                className="w-full justify-between border-gray-300"
-                disabled={availableEventOptions.length === 0}
-              >
-                {getEventsDisplayText()}
-                <ChevronDown size={12} className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              className="max-h-60 w-[var(--radix-dropdown-menu-trigger-width)] min-w-[160px] overflow-y-auto"
-              align="start"
-            >
-              {/* Select All Option */}
-              <DropdownMenuItem
-                onSelect={(e) => e.preventDefault()}
-                onClick={() => handleEventsChange("Select All")}
-                className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-50"
-              >
-                <span className="text-sm">Select All</span>
-                <div className="flex h-4 w-4 items-center justify-center">
-                  {selectedEvents.length === availableEventOptions.length &&
-                  availableEventOptions.length > 0 ? (
-                    <div className="flex h-4 w-4 items-center justify-center rounded-sm bg-green-100">
-                      <Check size={12} className="text-green-600" />
-                    </div>
-                  ) : (
-                    <Square size={14} className="text-gray-400" />
-                  )}
-                </div>
-              </DropdownMenuItem>
-
-              {/* Dotted separator */}
-              <div className="mx-2 border-t border-dotted border-[#4ECDC4]" />
-
-              {availableEventOptions.map((event) => (
-                <div key={event}>
-                  <DropdownMenuItem
-                    onSelect={(e) => e.preventDefault()}
-                    onClick={() => handleEventsChange(event)}
-                    className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-50"
-                  >
-                    <span className="text-sm">{event}</span>
-                    <div className="flex h-4 w-4 items-center justify-center">
-                      {selectedEvents.includes(event) ? (
-                        <div className="flex h-4 w-4 items-center justify-center rounded-sm bg-green-100">
-                          <Check size={12} className="text-green-600" />
-                        </div>
-                      ) : (
-                        <Square size={14} className="text-gray-400" />
-                      )}
-                    </div>
-                  </DropdownMenuItem>
-                  <div className="mx-2 border-t border-dotted border-[#4ECDC4]" />
-                </div>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-
-        {/* Run Button */}
+        {/* Search Button */}
         <div className="flex items-end">
           <Button
-            className="bg-[#161CCA] px-8 font-medium text-white hover:bg-[#161CCA]/90"
+            className="cursor-pointer bg-[#161CCA] px-8 font-medium text-white hover:bg-[#161CCA]/90"
             onClick={handleRun}
+            disabled={isLoading}
           >
-            Run
+            {isLoading ? "Searching..." : "Search"}
           </Button>
         </div>
       </div>
@@ -650,7 +597,30 @@ export function Events() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {tableData.length > 0 ? (
+            {isLoading ? (
+              Array.from({ length: rowsPerPage }).map((_, index) => (
+                <TableRow key={index}>
+                  <TableCell className="px-4 py-3 text-sm text-gray-900">
+                    <div className="h-4 animate-pulse rounded bg-gray-200"></div>
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-sm text-gray-900">
+                    <div className="h-4 animate-pulse rounded bg-gray-200"></div>
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-sm text-gray-900">
+                    <div className="h-4 animate-pulse rounded bg-gray-200"></div>
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-sm text-gray-900">
+                    <div className="h-4 animate-pulse rounded bg-gray-200"></div>
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-sm text-gray-900">
+                    <div className="h-4 animate-pulse rounded bg-gray-200"></div>
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-sm text-gray-900">
+                    <div className="h-4 animate-pulse rounded bg-gray-200"></div>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : tableData.length > 0 ? (
               tableData
                 .slice(
                   (currentPage - 1) * rowsPerPage,
@@ -684,7 +654,7 @@ export function Events() {
                   colSpan={6}
                   className="py-8 text-center text-sm text-gray-500"
                 >
-                  No data available. Click &ldquo;Run&rdquo; to fetch events.
+                  No data available. Click &ldquo;Search&rdquo; to fetch events.
                 </TableCell>
               </TableRow>
             )}

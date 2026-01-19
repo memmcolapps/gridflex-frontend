@@ -18,10 +18,10 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { type CreateUserPayload } from "@/types/users-groups";
 
-export const useGroupPermissions = () => {
+export const useGroupPermissions = (searchTerm?: string) => {
   const { data, error, isLoading } = useQuery({
-    queryKey: ["groupPermissions"],
-    queryFn: () => getGroupPermission(),
+    queryKey: ["groupPermissions", searchTerm],
+    queryFn: () => getGroupPermission(searchTerm),
   });
   return { data: data?.success ? data.data : [], error, isLoading };
 };
@@ -116,10 +116,10 @@ export const useDeactivateOrActivateGroupPermission = () => {
   });
 };
 
-export const useGetUsers = () => {
+export const useGetUsers = (searchTerm?: string) => {
   const { data, error, isLoading } = useQuery({
-    queryKey: ["users"],
-    queryFn: () => getUsers(),
+    queryKey: ["users", searchTerm],
+    queryFn: () => getUsers(searchTerm),
   });
   return {
     data: data?.success

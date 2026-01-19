@@ -6,7 +6,6 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
-    DialogFooter,
 } from "@/components/ui/dialog";
 import {
     Select,
@@ -109,8 +108,8 @@ export default function ChangeRelayModeDialog({
                             <SelectValue placeholder="Select Mode">
                                 {relayMode
                                     ? relayModes.find(
-                                          (mode) => mode.value === relayMode
-                                      )?.title
+                                        (mode) => mode.value === relayMode
+                                    )?.title
                                     : ""}
                             </SelectValue>
                         </SelectTrigger>
@@ -141,7 +140,7 @@ export default function ChangeRelayModeDialog({
                     </Select>
                 </div>
 
-                <DialogFooter>
+                <div className="flex justify-between">
                     <Button
                         variant="outline"
                         onClick={onClose}
@@ -152,15 +151,14 @@ export default function ChangeRelayModeDialog({
                     <Button
                         onClick={handleChange}
                         disabled={!isFormValid}
-                        className={`bg-[#161CCA] text-white ${
-                            !isFormValid
+                        className={`bg-[#161CCA] text-white ${!isFormValid
                                 ? "opacity-50 cursor-not-allowed"
                                 : "cursor-pointer"
-                        }`}
+                            }`}
                     >
                         Change
                     </Button>
-                </DialogFooter>
+                </div>
             </DialogContent>
         </Dialog>
     );

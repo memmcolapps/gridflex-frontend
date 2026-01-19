@@ -66,15 +66,19 @@ export async function createBand(band: Omit<Band, "id">): Promise<BandResult> {
   }
 }
 
-export async function fetchBands(): Promise<
+export async function fetchBands(searchTerm?: string): Promise<
   { success: true; data: Band[] } | { success: false; error: string }
 > {
   try {
     const token = localStorage.getItem("auth_token");
 
+    const params: Record<string, string> = {};
+    if (searchTerm) params.search = searchTerm;
+
     const response = await axiosInstance.get<BandListResponse>(
       `${API_URL}/band/service/all`,
       {
+        params,
         headers: {
           "Content-Type": "application/json",
           custom: CUSTOM_HEADER,

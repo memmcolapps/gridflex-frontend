@@ -17,6 +17,18 @@ axiosInstance.interceptors.request.use((config) => {
   return config;
 });
 
+// Response interceptor to handle 401 errors
+axiosInstance.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Dispatch custom event to trigger logout
+      window.dispatchEvent(new CustomEvent("auth-token-expired"));
+    }
+    return Promise.reject(error);
+  }
+);
+
 const trimObjectStrings = (obj: any): any => {
   if (typeof obj === "string") return obj.trim();
   if (Array.isArray(obj)) return obj.map(trimObjectStrings);

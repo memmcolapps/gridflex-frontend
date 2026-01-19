@@ -6,7 +6,6 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
-    DialogFooter,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -56,7 +55,7 @@ export default function ConfigureAPNDialog({ isOpen, onClose, meter }: Configure
                         className="w-full border border-gray-200"
                     />
                 </div>
-                <DialogFooter>
+                <div className="flex justify-between">
                     <Button
                         variant="outline"
                         onClick={onClose}
@@ -67,13 +66,13 @@ export default function ConfigureAPNDialog({ isOpen, onClose, meter }: Configure
                     <Button
                         onClick={handleConfigure}
                         disabled={!isFormValid} // Disable when form is invalid
-                        className={`bg-[#161CCA] text-white ${
-                            !isFormValid ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
-                        }`}
+                        className={`bg-[#161CCA] text-white ${!isFormValid ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+                            }`}
                     >
                         Configure
                     </Button>
-                </DialogFooter>
+                </div>
+
             </DialogContent>
         </Dialog>
     );
