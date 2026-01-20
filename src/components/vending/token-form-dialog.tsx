@@ -91,7 +91,11 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
               initialAmount: parseInt(amountTendered) || 0,
             }
           : {
+<<<<<<< HEAD
               accountNumber: meterNumber, // This holds the account number when vendBy is "accountNumber"
+=======
+              accountNumber: meterNumber, 
+>>>>>>> e7ef134 (fix: vending)
               initialAmount: parseInt(amountTendered) || 0,
             };
 
@@ -103,6 +107,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
     } catch (error) {
       console.error("Failed to calculate token:", error);
     }
+<<<<<<< HEAD
   }
   // ... rest of your code for other token types
     if (
@@ -123,9 +128,12 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
         console.error("Failed to calculate token:", error);
       }
     } else if (tokenType === "kct") {
+=======
+  } else if (tokenType === "kct") {
+>>>>>>> e7ef134 (fix: vending)
       // For KCT, we need to generate the token first to get customer data
       const payload = {
-        [vendBy === "meterNumber" ? "meterNumber" : "meterAccountNumber"]:
+        [vendBy === "meterNumber" ? "meterNumber" : "accountNumber"]:
           meterNumber,
         tokenType: "kct",
         reason,
@@ -148,7 +156,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
     } else if (tokenType === "clearTamper") {
       // For Clear Tamper, we need to generate the token first to get customer data
       const payload = {
-        [vendBy === "meterNumber" ? "meterNumber" : "meterAccountNumber"]:
+        [vendBy === "meterNumber" ? "meterNumber" : "accountNumber"]:
           meterNumber,
         tokenType: "clear-tamper",
         reason,
@@ -166,7 +174,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
     } else if (tokenType === "clearCredit") {
       // For Clear Credit, we need to generate the token first to get customer data
       const payload = {
-        [vendBy === "meterNumber" ? "meterNumber" : "meterAccountNumber"]:
+        [vendBy === "meterNumber" ? "meterNumber" : "accountNumber"]:
           meterNumber,
         tokenType: "clear-credit",
         reason,
@@ -184,7 +192,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
     } else if (tokenType === "kctAndClearTamper") {
       // For KCT and Clear Tamper, we need to generate the token first to get customer data
       const payload = {
-        [vendBy === "meterNumber" ? "meterNumber" : "meterAccountNumber"]:
+        [vendBy === "meterNumber" ? "meterNumber" : "accountNumber"]:
           meterNumber,
         tokenType: "kct-clear-tamper",
         reason,
@@ -210,7 +218,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
     } else if (tokenType === "compensation") {
       // For Compensation, we need to generate the token first to get customer data
       const payload = {
-        [vendBy === "meterNumber" ? "meterNumber" : "meterAccountNumber"]:
+        [vendBy === "meterNumber" ? "meterNumber" : "accountNumber"]:
           meterNumber,
         tokenType: "compensation",
         reason,
@@ -247,7 +255,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
   const handleGetToken = async () => {
     if (tokenType === "creditToken") {
       const payload = {
-        [vendBy === "meterNumber" ? "meterNumber" : "meterAccountNumber"]:
+        [vendBy === "meterNumber" ? "meterNumber" : "accountNumber"]:
           meterNumber,
         initialAmount: parseInt(amountTendered) || 0,
         tokenType: "credit-token",

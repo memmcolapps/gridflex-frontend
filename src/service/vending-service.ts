@@ -10,6 +10,7 @@ import type {
   VendingDashboardResponse,
   VendingDashboardPayload,
   PrintTokenPayload,
+  CalculateCreditTokenPayload,
 } from "@/types/vending";
 import { axiosInstance } from "@/lib/axios";
 
