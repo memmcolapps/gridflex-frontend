@@ -75,6 +75,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
   const getDynamicPlaceholder = () =>
     vendBy === "meterNumber" ? "Enter Meter Number" : "Enter Account Number";
 
+
   const handleProceed = async () => {
     if (
       tokenType === "creditToken" &&
@@ -83,20 +84,27 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
       amountTendered
     ) {
       try {
-        const result = await calculateCreditTokenMutation.mutateAsync({
-          meterNumber,
-          initialAmount: parseInt(amountTendered) || 0,
-        });
-        setCalculatedTokenData(result);
-        setShowReceipt(true);
-        // Don't close form dialog, keep it open to show receipt
-      } catch (error) {
-        console.error("Failed to calculate token:", error);
-      }
-    } else if (tokenType === "kct") {
+          const payload =
+        vendBy === "meterNumber"
+          ? {
+              meterNumber: meterNumber,
+              initialAmount: parseInt(amountTendered) || 0,
+            }
+          : {
+              accountNumber: meterNumber, 
+              initialAmount: parseInt(amountTendered) || 0,
+            };
+
+     const result = await calculateCreditTokenMutation.mutateAsync(payload);
+      setCalculatedTokenData(result);
+      setShowReceipt(true);
+    } catch (error) {
+      console.error("Failed to calculate token:", error);
+    }
+  }else if (tokenType === "kct") {
       // For KCT, we need to generate the token first to get customer data
       const payload = {
-        [vendBy === "meterNumber" ? "meterNumber" : "meterAccountNumber"]:
+        [vendBy === "meterNumber" ? "meterNumber" : "accountNumber"]:
           meterNumber,
         tokenType: "kct",
         reason,
@@ -119,7 +127,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
     } else if (tokenType === "clearTamper") {
       // For Clear Tamper, we need to generate the token first to get customer data
       const payload = {
-        [vendBy === "meterNumber" ? "meterNumber" : "meterAccountNumber"]:
+        [vendBy === "meterNumber" ? "meterNumber" : "accountNumber"]:
           meterNumber,
         tokenType: "clear-tamper",
         reason,
@@ -137,7 +145,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
     } else if (tokenType === "clearCredit") {
       // For Clear Credit, we need to generate the token first to get customer data
       const payload = {
-        [vendBy === "meterNumber" ? "meterNumber" : "meterAccountNumber"]:
+        [vendBy === "meterNumber" ? "meterNumber" : "accountNumber"]:
           meterNumber,
         tokenType: "clear-credit",
         reason,
@@ -155,7 +163,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
     } else if (tokenType === "kctAndClearTamper") {
       // For KCT and Clear Tamper, we need to generate the token first to get customer data
       const payload = {
-        [vendBy === "meterNumber" ? "meterNumber" : "meterAccountNumber"]:
+        [vendBy === "meterNumber" ? "meterNumber" : "accountNumber"]:
           meterNumber,
         tokenType: "kct-clear-tamper",
         reason,
@@ -181,7 +189,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
     } else if (tokenType === "compensation") {
       // For Compensation, we need to generate the token first to get customer data
       const payload = {
-        [vendBy === "meterNumber" ? "meterNumber" : "meterAccountNumber"]:
+        [vendBy === "meterNumber" ? "meterNumber" : "accountNumber"]:
           meterNumber,
         tokenType: "compensation",
         reason,
@@ -218,7 +226,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
   const handleGetToken = async () => {
     if (tokenType === "creditToken") {
       const payload = {
-        [vendBy === "meterNumber" ? "meterNumber" : "meterAccountNumber"]:
+        [vendBy === "meterNumber" ? "meterNumber" : "accountNumber"]:
           meterNumber,
         initialAmount: parseInt(amountTendered) || 0,
         tokenType: "credit-token",
