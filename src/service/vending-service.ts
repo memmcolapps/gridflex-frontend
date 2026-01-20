@@ -429,9 +429,12 @@ export async function printToken(
   }
 }
 
+type CalculateCreditTokenPayload =
+  | { meterNumber: string; initialAmount: number }
+  | { accountNumber: string; initialAmount: number };
+
 export async function calculateCreditToken(payload: {
-  meterNumber: string;
-  initialAmount: number;
+  payload: CalculateCreditTokenPayload
 }): Promise<
   | { success: true; data: CalculateCreditTokenResponse["responsedata"] }
   | { success: false; error: string }
@@ -444,14 +447,10 @@ export async function calculateCreditToken(payload: {
         error: "Authorization token not found",
       };
     }
-    const requestPayload = {
-      meterNumber: payload.meterNumber,
-      initialAmount: payload.initialAmount,
-    };
 
     const response = await axiosInstance.post<CalculateCreditTokenResponse>(
       `${API_URL}/vending/service/generate/token/credit/calculate`,
-      requestPayload,
+      payload,
       {
         headers: {
           custom: CUSTOM_HEADER,

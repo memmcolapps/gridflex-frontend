@@ -76,6 +76,35 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
     vendBy === "meterNumber" ? "Enter Meter Number" : "Enter Account Number";
 
   const handleProceed = async () => {
+
+  if (
+    tokenType === "creditToken" &&
+    vendBy &&
+    meterNumber &&
+    amountTendered
+  ) {
+    try {
+      const payload =
+        vendBy === "meterNumber"
+          ? {
+              meterNumber: meterNumber,
+              initialAmount: parseInt(amountTendered) || 0,
+            }
+          : {
+              accountNumber: meterNumber, // This holds the account number when vendBy is "accountNumber"
+              initialAmount: parseInt(amountTendered) || 0,
+            };
+
+      console.log("Payload being sent:", payload);
+
+      const result = await calculateCreditTokenMutation.mutateAsync(payload);
+      setCalculatedTokenData(result);
+      setShowReceipt(true);
+    } catch (error) {
+      console.error("Failed to calculate token:", error);
+    }
+  }
+  // ... rest of your code for other token types
     if (
       tokenType === "creditToken" &&
       vendBy &&
