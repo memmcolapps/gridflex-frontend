@@ -42,7 +42,7 @@ export const handleApiError = (error: unknown): ApiError => {
         case 403:
           errorMessage =
             data?.responsedesc ??
-            "You do not have permission to perform this action";
+            "Access denied. Please review your details and try again.";
           break;
         case 404:
           errorMessage =
