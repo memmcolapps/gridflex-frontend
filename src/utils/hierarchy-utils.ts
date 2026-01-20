@@ -11,12 +11,19 @@ export type HierarchyType =
   (typeof HIERARCHY_TYPES)[keyof typeof HIERARCHY_TYPES];
 
 export function normalizeHierarchyType(input: string): string {
-  return input
+  let normalized = input
     .toLowerCase()
     .replace(/\s+/g, "")
     .replace(/-/g, "")
     .replace(/\(.*?\)/g, "")
     .trim();
+
+  // Special mapping for DSS
+  if (normalized === "dss") {
+    normalized = "distributionsubstation";
+  }
+
+  return normalized;
 }
 
 export function isValidHierarchyType(
