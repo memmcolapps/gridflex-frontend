@@ -1,7 +1,7 @@
 // use-vending.ts
 
 import { generateCreditToken, printToken, calculateCreditToken, generateKCTToken, generateClearTamperToken, generateClearCreditToken, generateKCTAndClearTamperToken, generateCompensationToken, getVendingDashboardData, getVendingTransactions } from "@/service/vending-service";
-import type { GenerateCreditTokenPayload, PrintTokenPayload, GenerateKCTPayload, GenerateClearTamperPayload, GenerateClearCreditPayload, GenerateKCTAndClearTamperPayload, GenerateCompensationPayload, VendingDashboardPayload } from "@/types/vending";
+import type { GenerateCreditTokenPayload, PrintTokenPayload, GenerateKCTPayload, GenerateClearTamperPayload, GenerateClearCreditPayload, GenerateKCTAndClearTamperPayload, GenerateCompensationPayload, VendingDashboardPayload, CalculateCreditTokenPayload } from "@/types/vending";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -45,8 +45,8 @@ export const usePrintToken = () => {
 
 export const useCalculateCreditToken = () => {
   return useMutation({
-    mutationFn: async ({ meterNumber, initialAmount }: { meterNumber: string; initialAmount: number; }) => {
-      const response = await calculateCreditToken({ meterNumber, initialAmount});
+    mutationFn: async (payload: CalculateCreditTokenPayload) => {
+      const response = await calculateCreditToken(payload);
       if (!response.success) {
         throw new Error(response.error);
       }
@@ -55,11 +55,13 @@ export const useCalculateCreditToken = () => {
     onSuccess: () => {
       toast.success("Credit token calculated successfully");
     },
-    onError: (error) => {
-      toast.error(error.message || "Failed to calculate credit token");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onError: (error: any) => {
+      toast.error(error.message ?? "Failed to calculate credit token");
     },
   });
 };
+
 
 export const useGenerateKCTToken = () => {
   return useMutation({
