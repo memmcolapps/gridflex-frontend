@@ -430,9 +430,9 @@ export async function printToken(
   }
 }
 
-export async function calculateCreditToken(payload: {
+export async function calculateCreditToken(
  payload: CalculateCreditTokenPayload
-}): Promise<
+): Promise<
   | { success: true; data: CalculateCreditTokenResponse["responsedata"] }
   | { success: false; error: string }
 > {
