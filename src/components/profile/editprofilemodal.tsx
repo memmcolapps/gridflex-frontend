@@ -150,11 +150,6 @@ export default function EditProfileModal({ isOpen, onClose, onOpenChangePassword
                                     onClick={() => setShowPassword(!showPassword)}
                                     className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700"
                                 >
-                                    {showPassword ? (
-                                        <Eye  size={14} />
-                                    ) : (
-                                        <EyeOff size={14} />
-                                    )}
                                 </button>
                             </div>
                             <div className="mt-2">
