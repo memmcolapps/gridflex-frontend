@@ -86,6 +86,10 @@ export interface CreditTokenData {
   finalAmount: number;
 }
 
+export type CalculateCreditTokenPayload =
+  | { meterNumber: string; initialAmount: number }
+  | { accountNumber: string; initialAmount: number };
+
 export interface CalculateCreditTokenResponse {
   responsecode: string;
   responsedesc: string;
