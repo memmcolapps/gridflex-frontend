@@ -1,7 +1,7 @@
 // use-vending.ts
 
 import { generateCreditToken, printToken, calculateCreditToken, generateKCTToken, generateClearTamperToken, generateClearCreditToken, generateKCTAndClearTamperToken, generateCompensationToken, getVendingDashboardData, getVendingTransactions } from "@/service/vending-service";
-import type { GenerateCreditTokenPayload, PrintTokenPayload, GenerateKCTPayload, GenerateClearTamperPayload, GenerateClearCreditPayload, GenerateKCTAndClearTamperPayload, GenerateCompensationPayload, VendingDashboardPayload, CalculateCreditTokenPayload } from "@/types/vending";
+import type { GenerateCreditTokenPayload, PrintTokenPayload, GenerateKCTPayload, GenerateClearTamperPayload, GenerateClearCreditPayload, GenerateKCTAndClearTamperPayload, GenerateCompensationPayload, VendingDashboardPayload } from "@/types/vending";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -42,6 +42,10 @@ export const usePrintToken = () => {
     },
   });
 };
+
+type CalculateCreditTokenPayload =
+  | { meterNumber: string; initialAmount: number }
+  | { accountNumber: string; initialAmount: number };
 
 export const useCalculateCreditToken = () => {
   return useMutation({
