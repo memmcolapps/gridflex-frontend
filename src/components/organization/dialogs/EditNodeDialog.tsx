@@ -87,6 +87,7 @@ export const EditNodeDialog = ({
 
     try {
       const isRegionBhubServiceCenter = [
+        "root",
         "region",
         "business hub",
         "service center",
