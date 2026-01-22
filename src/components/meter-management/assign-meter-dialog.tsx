@@ -393,7 +393,7 @@ export function AssignMeterDialog({
                 Account Number<span className="text-red-700">*</span>
               </Label>
               <Input
-                value={accountNumber}
+                value={(customer as Customer)?.accountNumber ?? accountNumber}
                 onChange={(e) => setAccountNumber(e.target.value)}
                 readOnly
                 placeholder="Enter Account Number"

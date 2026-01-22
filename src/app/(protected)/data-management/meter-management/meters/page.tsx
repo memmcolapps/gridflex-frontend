@@ -1459,11 +1459,11 @@ export default function MeterManagementPage() {
                                                         <TableCell className="px-4 py-3 text-sm text-gray-900 break-words">
                                                             {(item as any).tariffInfo?.name ?? item.tariff}
                                                         </TableCell>
-                                                        <TableCell className="px-4 py-3 text-center">
-                                                            <span className={cn("inline-block text-sm font-medium", getStatusStyle(item.status))}>
-                                                                {item.status}
-                                                            </span>
-                                                        </TableCell>
+                                                       <TableCell className="px-4 py-3 text-center">
+                                                        <span className={cn("inline-block text-sm font-medium", getStatusStyle(item.meterStage))}>
+                                                            {item.meterStage}
+                                                        </span>
+                                                    </TableCell>
                                                         <TableCell className="px-4 py-3 text-right">
                                                             <DropdownMenu>
                                                                 <DropdownMenuTrigger asChild>
