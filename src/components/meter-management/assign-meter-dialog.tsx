@@ -503,8 +503,8 @@ export function AssignMeterDialog({
                       disabled={isLoadingFeeders}
                     >
                       {feeder
-                        ? feeders?.find((f) => f.assetId === feeder)?.name ||
-                          "Select feeder..."
+                        ? (feeders?.find((f) => f.assetId === feeder)?.name ??
+                          "Select feeder...")
                         : isLoadingFeeders
                           ? "Loading feeders..."
                           : "Select feeder..."}
@@ -570,8 +570,8 @@ export function AssignMeterDialog({
                       disabled={!feeder || isLoadingDSS}
                     >
                       {dss
-                        ? dssOptions?.find((d) => d.assetId === dss)?.name ||
-                          "Select DSS..."
+                        ? (dssOptions?.find((d) => d.assetId === dss)?.name ??
+                          "Select DSS...")
                         : !feeder
                           ? "Select feeder first"
                           : isLoadingDSS
@@ -598,7 +598,9 @@ export function AssignMeterDialog({
                               value={dssItem.name}
                               onSelect={() => {
                                 setDss(
-                                  dssItem.assetId === dss ? "" : dssItem.assetId,
+                                  dssItem.assetId === dss
+                                    ? ""
+                                    : dssItem.assetId,
                                 );
                                 setDssOpen(false);
                               }}
