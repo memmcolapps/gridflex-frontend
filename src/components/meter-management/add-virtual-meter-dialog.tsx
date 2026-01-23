@@ -8,6 +8,23 @@ import type { FC } from "react";
 import type { VirtualMeterData } from "@/types/meter";
 import { useTariff } from "@/hooks/use-tarrif";
 import { useNigerianStates, useNigerianCities } from "@/hooks/use-location";
+import { useFeeders, useDSS } from "@/hooks/use-node";
+import { useState } from "react";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 
 interface AddVirtualMeterDetailsDialogProps {
   isOpen: boolean;
@@ -85,6 +102,12 @@ const AddVirtualMeterDetailsDialog: FC<AddVirtualMeterDetailsDialogProps> = ({
     isLoading: isLoadingCities,
     isError: isErrorCities,
   } = useNigerianCities(state);
+
+  const { data: feeders, isLoading: isLoadingFeeders } = useFeeders();
+  const { data: dssOptions, isLoading: isLoadingDSS } = useDSS(feeder || null);
+
+  const [feederOpen, setFeederOpen] = useState(false);
+  const [dssOpen, setDssOpen] = useState(false);
 
   // Filter only approved tariffs
   const approvedTariffs = tariffs.filter(tariff => tariff.approve_status === 'Approved');
@@ -176,23 +199,134 @@ const AddVirtualMeterDetailsDialog: FC<AddVirtualMeterDetailsDialogProps> = ({
               <Label>
                 Feeder Line <span className="text-red-500">*</span>
               </Label>
-              <Input
-                value={feeder}
-                onChange={(e) => setFeeder(e.target.value)}
-                placeholder="Enter Feeder Line"
-                className="border border-gray-300"
-              />
+              <Popover open={feederOpen} onOpenChange={setFeederOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={feederOpen}
+                    className="w-full justify-between border-gray-300"
+                    disabled={isLoadingFeeders}
+                  >
+                    {feeder
+                      ? (feeders?.find((f) => f.assetId === feeder)?.name ??
+                        "Select feeder...")
+                      : isLoadingFeeders
+                        ? "Loading feeders..."
+                        : "Select feeder..."}
+                    <ChevronsUpDown
+                      className="ml-2 h-4 w-4 shrink-0 opacity-50"
+                      size={14}
+                    />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-full border-none p-0">
+                  <Command className="border-none bg-white">
+                    <CommandInput
+                      placeholder="Search feeder..."
+                      className="border-none"
+                    />
+                    <CommandList>
+                      <CommandEmpty>No feeder found.</CommandEmpty>
+                      <CommandGroup>
+                        {feeders?.map((feederItem) => (
+                          <CommandItem
+                            key={feederItem.assetId}
+                            value={feederItem.name}
+                            onSelect={() => {
+                              const selectedAssetId =
+                                feederItem.assetId === feeder
+                                  ? ""
+                                  : feederItem.assetId;
+                              setFeeder(selectedAssetId);
+                              if (selectedAssetId !== feeder) {
+                                setDss("");
+                              }
+                              setFeederOpen(false);
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 !h-3.5 !w-3.5",
+                                feeder === feederItem.assetId
+                                  ? "opacity-100"
+                                  : "opacity-0",
+                              )}
+                            />
+                            {feederItem.name}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
             <div className="space-y-2">
               <Label>
                 DSS <span className="text-red-500">*</span>
               </Label>
-              <Input
-                value={dss}
-                onChange={(e) => setDss(e.target.value)}
-                placeholder="Enter DSS"
-                className="border border-gray-300"
-              />
+              <Popover open={dssOpen} onOpenChange={setDssOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={dssOpen}
+                    className="w-full justify-between border-gray-300"
+                    disabled={!feeder || isLoadingDSS}
+                  >
+                    {dss
+                      ? (dssOptions?.find((d) => d.assetId === dss)?.name ??
+                        "Select DSS...")
+                      : !feeder
+                        ? "Select feeder first"
+                        : isLoadingDSS
+                          ? "Loading DSS..."
+                          : "Select DSS..."}
+                    <ChevronsUpDown
+                      className="ml-2 h-4 w-4 shrink-0 opacity-50"
+                      size={14}
+                    />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-full border-none p-0">
+                  <Command className="border-none bg-white">
+                    <CommandInput
+                      placeholder="Search DSS..."
+                      className="border-none"
+                    />
+                    <CommandList>
+                      <CommandEmpty>No DSS found.</CommandEmpty>
+                      <CommandGroup>
+                        {dssOptions?.map((dssItem) => (
+                          <CommandItem
+                            key={dssItem.assetId}
+                            value={dssItem.name}
+                            onSelect={() => {
+                              setDss(
+                                dssItem.assetId === dss
+                                  ? ""
+                                  : dssItem.assetId,
+                              );
+                              setDssOpen(false);
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 !h-3.5 !w-3.5",
+                                dss === dssItem.assetId
+                                  ? "opacity-100"
+                                  : "opacity-0",
+                              )}
+                            />
+                            {dssItem.name}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
             <div className="space-y-2">
               <Label>
