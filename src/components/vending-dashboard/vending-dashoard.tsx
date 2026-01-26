@@ -8,15 +8,17 @@ import { useState } from "react";
 import { SearchAndFilters } from "../dashboard/SearchAndFilters";
 import { useVendingDashboard } from "@/hooks/use-vending";
 
+
+
 export default function VendingDashboard() {
     const [selectedBand, setSelectedBand] = useState('Band');
     const [selectedYear, setSelectedYear] = useState('Year');
-    const [selectedMeterCategory, setSelectedMeterCategory] = useState('Meter Category');
+    const [selectedMeterClass, setSelectedMeterClass] = useState('Meter Class');
 
     const payload = {
         band: selectedBand !== 'Band' ? selectedBand : undefined,
         year: selectedYear !== 'Year' ? selectedYear : undefined,
-        meterCategory: selectedMeterCategory !== 'Meter Category' ? selectedMeterCategory : undefined,
+        meterClass: selectedMeterClass !== 'Meter Class' ? selectedMeterClass : undefined,
     };
 
     const { data: dashboardData, isLoading, error } = useVendingDashboard(payload);
@@ -32,7 +34,7 @@ export default function VendingDashboard() {
                         />
                     </div>
 
-                    {/* Loading Skeleton for Filters */}
+                    {/* Loading Skeleton for Filters */} 
                     <section>
                         <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                             <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
@@ -142,8 +144,8 @@ export default function VendingDashboard() {
                     <SearchAndFilters
                         selectedBand={selectedBand}
                         setSelectedBand={setSelectedBand}
-                        selectedMeterCategory={selectedMeterCategory}
-                        setSelectedMeterCategory={setSelectedMeterCategory}
+                        selectedMeterClass={selectedMeterClass}
+                        setSelectedMeterClass={setSelectedMeterClass}
                         selectedYear={selectedYear}
                         setSelectedYear={setSelectedYear}
                     />

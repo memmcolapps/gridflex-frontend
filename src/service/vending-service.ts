@@ -558,8 +558,8 @@ export async function getVendingDashboardData(
     const params = new URLSearchParams();
     if (payload?.band) params.append("band", payload.band);
     if (payload?.year) params.append("year", payload.year);
-    if (payload?.meterCategory)
-      params.append("meterCategory", payload.meterCategory);
+    if (payload?.meterClass)
+      params.append("meterClass", payload.meterClass);
 
     const response = await axiosInstance.get<VendingDashboardResponse>(
       `${API_URL}/dashboard/service/vending?${params.toString()}`,
