@@ -6,6 +6,7 @@ import {
     createMeterReading,
     createVirtualMeterReading,
     generateReading,
+    getMonthlyConsumption,
     type MeterReadingsApiResponse,
     type MeterReadingItem,
     type CreateMeterReadingPayload,
@@ -13,6 +14,8 @@ import {
     type CreateMeterReadingResponse,
     type GenerateReadingParams,
     type GenerateReadingResponse,
+    type MonthlyConsumptionApiResponse,
+    type MonthlyConsumptionItem,
 } from "../service/billing-service";
 
 export interface UseMeterReadingsParams {
@@ -70,5 +73,49 @@ export const useCreateVirtualMeterReading = () => {
 export const useGenerateReading = () => {
     return useMutation<GenerateReadingResponse, Error, GenerateReadingParams>({
         mutationFn: generateReading,
+    });
+};
+
+// --- Monthly Consumption Hook ---
+
+export interface UseMonthlyConsumptionParams {
+    search?: string;
+    month?: string;
+    year?: string;
+    virtual?: boolean;
+    page?: number;
+    size?: number;
+}
+
+export const useMonthlyConsumption = ({
+    search,
+    month,
+    year,
+    virtual = false,
+    page = 0,
+    size = 10,
+}: UseMonthlyConsumptionParams) => {
+    return useQuery<
+        MonthlyConsumptionApiResponse,
+        Error,
+        { consumptions: MonthlyConsumptionItem[]; totalCount: number; totalPages: number; currentPage: number }
+    >({
+        queryKey: ["monthlyConsumption", search, month, year, virtual, page, size],
+        queryFn: () => getMonthlyConsumption({
+            search,
+            month,
+            year,
+            virtual,
+            page,
+            size,
+        }),
+        staleTime: 1000 * 60 * 5,
+        refetchOnWindowFocus: false,
+        select: (data) => ({
+            consumptions: data.responsedata?.consumptions || [],
+            totalCount: data.responsedata?.totalMeterConsumptions || 0,
+            totalPages: data.responsedata?.totalPages || 0,
+            currentPage: data.responsedata?.currentPage || 0,
+        }),
     });
 };
