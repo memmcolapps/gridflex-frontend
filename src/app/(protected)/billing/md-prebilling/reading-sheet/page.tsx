@@ -52,7 +52,7 @@ export default function ReadingSheetPage() {
 
   // Check if a month is in the future (only applies when current year is selected)
   const isMonthDisabled = (month: string) => {
-    const selectedYearValue = selectedYear || displayYear;
+    const selectedYearValue = selectedYear ?? displayYear;
     if (selectedYearValue === currentYear.toString()) {
       const monthIndex = months.indexOf(month);
       return monthIndex > currentMonthIndex;
