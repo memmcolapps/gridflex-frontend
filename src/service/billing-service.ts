@@ -92,6 +92,48 @@ export interface GetMeterReadingsParams {
   selectedYear?: string;
 }
 
+// --- Monthly Consumption Types ---
+
+export interface MonthlyConsumptionItem {
+  id: string;
+  meterNumber: string;
+  orgId: string;
+  readingType: string;
+  currentReading: number;
+  currentReadingDate: string;
+  createdAt: string;
+  updatedAt: string;
+  tariffType: string;
+  feederName: string;
+  dssName: string;
+  meterClass: string;
+  type: string;
+  cumulativeReading: number;
+  averageConsumption: number;
+  consumption: number;
+}
+
+export interface MonthlyConsumptionApiResponse {
+  responsecode: "000" | string;
+  responsedesc: string;
+  responsedata: {
+    totalMeterConsumptions: number;
+    consumptions: MonthlyConsumptionItem[];
+    totalPages: number;
+    pageSize: number;
+    currentPage: number;
+  };
+}
+
+export interface GetMonthlyConsumptionParams {
+  search?: string;
+  month?: string;
+  year?: string;
+  virtual?: boolean;
+  page?: number;
+  size?: number;
+}
+
 // --- API Service Functions ---
 
 export async function getMeterReadings({
@@ -251,6 +293,61 @@ export async function createVirtualMeterReading(
     if (response.data.responsecode !== "000") {
       throw new Error(
         response.data.responsedesc ?? "Failed to create virtual meter reading.",
+      );
+    }
+
+    return response.data;
+  } catch (error) {
+    throw new Error(handleApiError(error));
+  }
+}
+
+// --- Get Monthly Consumption API Function ---
+
+export async function getMonthlyConsumption({
+  search,
+  month,
+  year,
+  virtual = false,
+  page = 0,
+  size = 10,
+}: GetMonthlyConsumptionParams): Promise<MonthlyConsumptionApiResponse> {
+  try {
+    const token = localStorage.getItem("auth_token");
+    if (!token) {
+      throw new Error("Authentication token not found.");
+    }
+
+    const params = new URLSearchParams();
+    params.append("page", page.toString());
+    params.append("size", size.toString());
+    params.append("virtual", virtual.toString());
+
+    if (search) {
+      params.append("search", search);
+    }
+    if (month) {
+      params.append("month", month);
+    }
+    if (year) {
+      params.append("year", year);
+    }
+
+    const response = await axiosInstance.get(
+      `${API_URL}/billing/service/meter/consumption/all`,
+      {
+        params,
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    if (response.data.responsecode !== "000") {
+      throw new Error(
+        response.data.responsedesc ?? "Failed to fetch monthly consumption.",
       );
     }
 
