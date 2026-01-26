@@ -4,10 +4,12 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import {
     getMeterReadings,
     createMeterReading,
+    createVirtualMeterReading,
     generateReading,
     type MeterReadingsApiResponse,
     type MeterReadingItem,
     type CreateMeterReadingPayload,
+    type CreateVirtualMeterReadingPayload,
     type CreateMeterReadingResponse,
     type GenerateReadingParams,
     type GenerateReadingResponse,
@@ -56,6 +58,12 @@ export const useMeterReadings = ({
 export const useCreateMeterReading = () => {
     return useMutation<CreateMeterReadingResponse, Error, CreateMeterReadingPayload>({
         mutationFn: createMeterReading,
+    });
+};
+
+export const useCreateVirtualMeterReading = () => {
+    return useMutation<CreateMeterReadingResponse, Error, CreateVirtualMeterReadingPayload>({
+        mutationFn: createVirtualMeterReading,
     });
 };
 
