@@ -215,7 +215,6 @@ export default function DashboardPage() {
                 icon="CircleCheckBig"
                 iconBgColor="bg-[rgba(191,211,254,1)]"
                 iconColor="text-[rgba(22,28,202,1)]"
-                url="/data-management/meter-management"
               />
               <StatusCard
                 title="Allocated"
