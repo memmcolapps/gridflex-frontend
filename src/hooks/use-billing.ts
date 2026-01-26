@@ -47,7 +47,7 @@ export const useMeterReadings = ({
         staleTime: 1000 * 60 * 5,
         refetchOnWindowFocus: false,
         select: (data) => ({
-            meterReadings: data.responsedata?.messages || [],
+            meterReadings: data.responsedata?.reading || [],
             totalData: data.responsedata?.totalCount || 0,
         }),
     });

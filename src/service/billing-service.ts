@@ -16,10 +16,15 @@ export interface MeterReadingItem {
   currentReading: number;
   currentReadingDate: string;
   lastReadingDate: string;
+  billMonth: string;
+  billYear: string;
   createdAt: string;
   updatedAt: string;
   tariffType: string;
-  name: string;
+  feederName: string;
+  dssName: string;
+  meterClass: string;
+  type: string;
 }
 
 export interface CreateMeterReadingPayload {
@@ -64,7 +69,7 @@ export interface MeterReadingsApiResponse {
   responsedata: {
     size: number;
     totalPages: number;
-    messages: MeterReadingItem[];
+    reading: MeterReadingItem[];
     page: number;
     totalCount: number;
   };

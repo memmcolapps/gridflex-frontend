@@ -30,10 +30,15 @@ interface MeterReading {
     currentReading: number;
     currentReadingDate: string;
     lastReadingDate: string;
+    billMonth: string;
+    billYear: string;
     createdAt: string;
     updatedAt: string;
     tariffType: string;
-    name: string;
+    feederName: string;
+    dssName: string;
+    meterClass: string;
+    type: string;
 }
 
 interface MeterReadingsProps {
@@ -242,7 +247,7 @@ export default function MeterReadings({ searchQuery, sortConfig, selectedMonth, 
                                 </TableCell>
                                 <TableCell>{(currentPage - 1) * rowsPerPage + index + 1}</TableCell>
                                 <TableCell>{item.meterNumber}</TableCell>
-                                <TableCell>{item.name}</TableCell>
+                                <TableCell>{item.feederName}</TableCell>
                                 <TableCell>{item.tariffType}</TableCell>
                                 <TableCell>{item.lastReadingDate}</TableCell>
                                 <TableCell>{item.lastReading}</TableCell>
