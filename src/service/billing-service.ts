@@ -16,10 +16,15 @@ export interface MeterReadingItem {
   currentReading: number;
   currentReadingDate: string;
   lastReadingDate: string;
+  billMonth: string;
+  billYear: string;
   createdAt: string;
   updatedAt: string;
   tariffType: string;
-  name: string;
+  feederName: string;
+  dssName: string;
+  meterClass: string;
+  type: string;
 }
 
 export interface CreateMeterReadingPayload {
@@ -64,7 +69,7 @@ export interface MeterReadingsApiResponse {
   responsedata: {
     size: number;
     totalPages: number;
-    messages: MeterReadingItem[];
+    reading: MeterReadingItem[];
     page: number;
     totalCount: number;
   };
@@ -105,7 +110,7 @@ export async function getMeterReadings({
       params.append("sortDirection", sortDirection ?? "asc");
     }
     if (selectedMonth && selectedMonth !== "Select Month") {
-      params.append("month", selectedMonth);
+      params.append("month", selectedMonth.toUpperCase());
     }
     if (selectedYear && selectedYear !== "Select Year") {
       params.append("year", selectedYear);

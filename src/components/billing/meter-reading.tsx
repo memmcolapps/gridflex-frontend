@@ -15,7 +15,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import EditMeterReading from "./edit-reading";
 import { Card } from "../ui/card";
 import ViewMeterReadingDetails from "./view-meter-reading-details";
@@ -30,21 +30,27 @@ interface MeterReading {
     currentReading: number;
     currentReadingDate: string;
     lastReadingDate: string;
+    billMonth: string;
+    billYear: string;
     createdAt: string;
     updatedAt: string;
     tariffType: string;
-    name: string;
+    feederName: string;
+    dssName: string;
+    meterClass: string;
+    type: string;
 }
 
 interface MeterReadingsProps {
     searchQuery: string;
     sortConfig: string;
-    selectedMonth: string;
-    selectedYear: string;
+    selectedMonth?: string;
+    selectedYear?: string;
     meterClass: string;
+    onDataLoaded?: (latestMonth: string, latestYear: string) => void;
 }
 
-export default function MeterReadings({ searchQuery, sortConfig, selectedMonth, selectedYear, meterClass }: MeterReadingsProps) {
+export default function MeterReadings({ searchQuery, sortConfig, selectedMonth, selectedYear, meterClass, onDataLoaded }: MeterReadingsProps) {
     // Prevent hydration mismatch by ensuring consistent initial state
     const [mounted, setMounted] = useState(false);
 
@@ -72,12 +78,18 @@ export default function MeterReadings({ searchQuery, sortConfig, selectedMonth, 
     const data = meterReadingsData?.meterReadings ?? [];
     const totalData = meterReadingsData?.totalData ?? 0;
 
-    // Debug logging - remove after debugging
-    // console.log("Meter Readings Data:", meterReadingsData);
-    // console.log("Data array:", data);
-    // console.log("Total data:", totalData);
-    // console.log("Is loading:", isLoading);
-    // console.log("Error:", error);
+    // Notify parent component of latest data's month/year
+    useEffect(() => {
+        if (data.length > 0 && onDataLoaded) {
+            const firstItem = data[0];
+            if (firstItem?.billMonth && firstItem?.billYear) {
+                // Convert month to title case (e.g., "FEBRUARY" -> "February")
+                const formattedMonth = firstItem.billMonth.charAt(0).toUpperCase() +
+                    firstItem.billMonth.slice(1).toLowerCase();
+                onDataLoaded(formattedMonth, firstItem.billYear);
+            }
+        }
+    }, [data, onDataLoaded]);
 
 
     const paginatedData = data.slice(
@@ -242,7 +254,7 @@ export default function MeterReadings({ searchQuery, sortConfig, selectedMonth, 
                                 </TableCell>
                                 <TableCell>{(currentPage - 1) * rowsPerPage + index + 1}</TableCell>
                                 <TableCell>{item.meterNumber}</TableCell>
-                                <TableCell>{item.name}</TableCell>
+                                <TableCell>{item.feederName}</TableCell>
                                 <TableCell>{item.tariffType}</TableCell>
                                 <TableCell>{item.lastReadingDate}</TableCell>
                                 <TableCell>{item.lastReading}</TableCell>

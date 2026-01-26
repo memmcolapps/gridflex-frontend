@@ -20,7 +20,7 @@ import {
   Search,
   SquareArrowOutUpRight,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 
 export default function ReadingSheetPage() {
   const [isLoading] = useState(false);
@@ -30,10 +30,10 @@ export default function ReadingSheetPage() {
   const [isBulkUploadDialogOpen, setIsBulkUploadDialogOpen] = useState(false);
   const [sortConfig, setSortConfig] = useState<string>("");
 
-  // Get current month and year
+  // Get current month and year for filtering future dates
   const currentDate = new Date();
-  const currentMonthIndex = currentDate.getMonth();
   const currentYear = currentDate.getFullYear();
+  const currentMonthIndex = currentDate.getMonth(); // 0-indexed
 
   const months = [
     "January",
@@ -50,12 +50,24 @@ export default function ReadingSheetPage() {
     "December",
   ];
 
-  const [selectedMonth, setSelectedMonth] = useState<string>(
-    months[currentMonthIndex] ?? "January",
-  );
-  const [selectedYear, setSelectedYear] = useState<string>(
-    currentYear.toString(),
-  );
+  // Check if a month is in the future (only applies when current year is selected)
+  const isMonthDisabled = (month: string) => {
+    const selectedYearValue = selectedYear || displayYear;
+    if (selectedYearValue === currentYear.toString()) {
+      const monthIndex = months.indexOf(month);
+      return monthIndex > currentMonthIndex;
+    }
+    return false;
+  };
+
+  // Start with undefined - no filter applied by default
+  const [selectedMonth, setSelectedMonth] = useState<string | undefined>(undefined);
+  const [selectedYear, setSelectedYear] = useState<string | undefined>(undefined);
+  // Display values from latest API response
+  const [displayMonth, setDisplayMonth] = useState<string>("");
+  const [displayYear, setDisplayYear] = useState<string>("");
+  // Track if filter has been manually triggered
+  const [isFilterActive, setIsFilterActive] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setInputValue(e.target.value);
@@ -73,14 +85,37 @@ export default function ReadingSheetPage() {
     ...Array.from({ length: 6 }, (_, i) => (currentYear - i).toString()),
   ];
 
-  // Handle filter changes
+  // Handle filter changes - activates filtering
   const handleMonthChange = (month: string) => {
     setSelectedMonth(month);
+    setDisplayMonth(month);
+    setIsFilterActive(true);
   };
 
   const handleYearChange = (year: string) => {
     setSelectedYear(year);
+    setDisplayYear(year);
+    setIsFilterActive(true);
+
+    // If selecting current year and the selected month is in the future, reset it
+    if (year === currentYear.toString() && selectedMonth) {
+      const selectedMonthIndex = months.indexOf(selectedMonth);
+      if (selectedMonthIndex > currentMonthIndex) {
+        // Reset to current month
+        const currentMonth = months[currentMonthIndex];
+        setSelectedMonth(currentMonth);
+        setDisplayMonth(currentMonth ?? "");
+      }
+    }
   };
+
+  // Callback to receive latest data from API response
+  const handleDataLoaded = useCallback((latestMonth: string, latestYear: string) => {
+    if (!isFilterActive) {
+      setDisplayMonth(latestMonth);
+      setDisplayYear(latestYear);
+    }
+  }, [isFilterActive]);
 
   return (
     <div className="p-6">
@@ -140,19 +175,23 @@ export default function ReadingSheetPage() {
                   className="flex items-center gap-1 p-4"
                 >
                   <ChevronDown size={14} />
-                  {selectedMonth}
+                  {displayMonth || "Month"}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                {months.map((month) => (
-                  <DropdownMenuItem
-                    key={month}
-                    onClick={() => handleMonthChange(month)}
-                    className={selectedMonth === month ? "bg-gray-100" : ""}
-                  >
-                    {month}
-                  </DropdownMenuItem>
-                ))}
+                {months.map((month) => {
+                  const disabled = isMonthDisabled(month);
+                  return (
+                    <DropdownMenuItem
+                      key={month}
+                      onClick={() => !disabled && handleMonthChange(month)}
+                      className={`${selectedMonth === month ? "bg-gray-100" : ""} ${disabled ? "cursor-not-allowed opacity-50" : ""}`}
+                      disabled={disabled}
+                    >
+                      {month}
+                    </DropdownMenuItem>
+                  );
+                })}
               </DropdownMenuContent>
             </DropdownMenu>
             <DropdownMenu>
@@ -163,7 +202,7 @@ export default function ReadingSheetPage() {
                   className="flex items-center gap-1 p-4"
                 >
                   <ChevronDown size={14} />
-                  {selectedYear}
+                  {displayYear || "Year"}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
@@ -211,6 +250,7 @@ export default function ReadingSheetPage() {
             selectedMonth={selectedMonth}
             selectedYear={selectedYear}
             meterClass="MD"
+            onDataLoaded={handleDataLoaded}
           />
         )}
       </div>

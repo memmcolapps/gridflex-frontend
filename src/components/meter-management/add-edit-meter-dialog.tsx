@@ -404,6 +404,8 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
     step1ButtonText = shouldShowNext ? "Next" : "Add Meter";
   }
 
+  console.log("formData.meterManufacturer:", formData.meterManufacturer);
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-lg h-fit bg-white p-6 rounded-lg">
@@ -537,7 +539,12 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                     className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.meterManufacturer ? "border-red-500" : ""
                       }`}
                   >
-                    <SelectValue>{manufacturers?.find(m => m.id === formData.meterManufacturer)?.name ?? "Select Manufacturer"}</SelectValue>
+                    <SelectValue>
+                      {manufacturers?.find(m => m.id === formData.meterManufacturer)?.name 
+                        ?? formData.meterManufacturer 
+                        ?? "Select Manufacturer"}
+                    </SelectValue>
+
                   </SelectTrigger>
                   <SelectContent>
                     {manufacturers && manufacturers.length > 0 ? (

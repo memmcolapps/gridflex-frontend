@@ -14,10 +14,15 @@ interface MeterReading {
     currentReading: number;
     currentReadingDate: string;
     lastReadingDate: string;
+    billMonth: string;
+    billYear: string;
     createdAt: string;
     updatedAt: string;
     tariffType: string;
-    name: string;
+    feederName: string;
+    dssName: string;
+    meterClass: string;
+    type: string;
 }
 
 interface ViewMeterReadingDetailsProps {
@@ -40,11 +45,27 @@ export default function ViewMeterReadingDetails({ open, onClose, data }: ViewMet
                     </div>
                     <div className="grid grid-cols-2 items-center gap-2">
                         <Label className="font-semibold">Feeder Line:</Label>
-                        <span>{data.name}</span>
+                        <span>{data.feederName}</span>
+                    </div>
+                    <div className="grid grid-cols-2 items-center gap-2">
+                        <Label className="font-semibold">DSS Name:</Label>
+                        <span>{data.dssName}</span>
                     </div>
                     <div className="grid grid-cols-2 items-center gap-2">
                         <Label className="font-semibold">Tariff Type:</Label>
                         <span>{data.tariffType}</span>
+                    </div>
+                    <div className="grid grid-cols-2 items-center gap-2">
+                        <Label className="font-semibold">Meter Class:</Label>
+                        <span>{data.meterClass}</span>
+                    </div>
+                    <div className="grid grid-cols-2 items-center gap-2">
+                        <Label className="font-semibold">Type:</Label>
+                        <span>{data.type}</span>
+                    </div>
+                    <div className="grid grid-cols-2 items-center gap-2">
+                        <Label className="font-semibold">Bill Month/Year:</Label>
+                        <span>{data.billMonth} {data.billYear}</span>
                     </div>
                     <div className="grid grid-cols-2 items-center gap-2">
                         <Label className="font-semibold">Last Actual Reading Date:</Label>
