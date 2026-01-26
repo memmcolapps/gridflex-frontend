@@ -16,7 +16,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { useCreateMeterReading, useCreateVirtualMeterReading } from "@/hooks/use-billing";
+import { useCreateMeterReading } from "@/hooks/use-billing";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -26,30 +26,16 @@ interface AddReadingDialogProps {
     meterClass: string;
 }
 
-type MeterType = "NON-VIRTUAL" | "VIRTUAL";
-
 export default function AddReadingDialog({ open, onClose, meterClass }: AddReadingDialogProps) {
-    const [meterType, setMeterType] = useState<MeterType>("NON-VIRTUAL");
-
-    // Form data for NON-VIRTUAL meters
     const [formData, setFormData] = useState({
         meterNo: "",
         month: "",
         year: "",
-        readingType: "",
         presentReadings: "",
-    });
-
-    // Form data for VIRTUAL meters
-    const [virtualFormData, setVirtualFormData] = useState({
-        meterId: "",
-        date: "",
-        currentReading: "",
     });
 
     const queryClient = useQueryClient();
     const createMeterReadingMutation = useCreateMeterReading();
-    const createVirtualMeterReadingMutation = useCreateVirtualMeterReading();
 
     // Get current date for validation
     const currentDate = new Date();
@@ -83,72 +69,39 @@ export default function AddReadingDialog({ open, onClose, meterClass }: AddReadi
         return false;
     };
 
-    // Get max date for virtual meter (today)
-    const getMaxDate = () => {
-        const today = new Date();
-        return today.toISOString().split('T')[0];
-    };
-
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
-    const handleVirtualChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        setVirtualFormData((prev) => ({ ...prev, [name]: value }));
-    };
-
-    const resetForms = () => {
-        setFormData({
-            meterNo: "",
-            month: "",
-            year: "",
-            readingType: "",
-            presentReadings: "",
-        });
-        setVirtualFormData({
-            meterId: "",
-            date: "",
-            currentReading: "",
-        });
-    };
-
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
+        // Convert numeric month to full month name
+        const monthIndex = parseInt(formData.month) - 1;
+        const fullMonthName = months[monthIndex]?.label ?? formData.month;
+
+        const payload = {
+            meterNumber: formData.meterNo,
+            billMonth: fullMonthName,
+            billYear: formData.year,
+            currentReading: formData.presentReadings,
+            meterClass,
+        };
+
         try {
-            if (meterType === "NON-VIRTUAL") {
-                // Convert numeric month to full month name
-                const monthIndex = parseInt(formData.month) - 1;
-                const fullMonthName = months[monthIndex]?.label ?? formData.month;
-
-                const payload = {
-                    meterNumber: formData.meterNo,
-                    billMonth: fullMonthName,
-                    billYear: formData.year,
-                    currentReading: formData.presentReadings,
-                    meterClass,
-                };
-
-                await createMeterReadingMutation.mutateAsync(payload);
-            } else {
-                // VIRTUAL meter payload
-                const payload = [{
-                    meterId: virtualFormData.meterId,
-                    date: virtualFormData.date,
-                    currentReading: Number(virtualFormData.currentReading),
-                }];
-
-                await createVirtualMeterReadingMutation.mutateAsync(payload);
-            }
-
+            await createMeterReadingMutation.mutateAsync(payload);
             toast.success("Meter reading added successfully!");
 
             // Invalidate and refetch meter readings queries
             queryClient.invalidateQueries({ queryKey: ["meterReadings"] });
 
-            resetForms();
+            setFormData({
+                meterNo: "",
+                month: "",
+                year: "",
+                presentReadings: "",
+            });
             onClose();
         } catch (error: unknown) {
             // Extract error message from backend response
@@ -160,13 +113,6 @@ export default function AddReadingDialog({ open, onClose, meterClass }: AddReadi
         }
     };
 
-    const isPending = createMeterReadingMutation.isPending || createVirtualMeterReadingMutation.isPending;
-
-    const isNonVirtualFormValid = formData.meterNo && formData.month && formData.year && formData.readingType && formData.presentReadings;
-    const isVirtualFormValid = virtualFormData.meterId && virtualFormData.date && virtualFormData.currentReading;
-
-    const isFormValid = meterType === "NON-VIRTUAL" ? isNonVirtualFormValid : isVirtualFormValid;
-
     return (
         <Dialog open={open} onOpenChange={onClose}>
             <DialogContent className="bg-white p-6 h-fit w-full max-w-md">
@@ -174,196 +120,101 @@ export default function AddReadingDialog({ open, onClose, meterClass }: AddReadi
                     <DialogTitle>Add Readings</DialogTitle>
                 </DialogHeader>
                 <div className="text-sm text-gray-800 mb-4">
-                    Select meter type and add readings.
+                    Enter a meter number and add readings.
                 </div>
                 <form onSubmit={handleSubmit}>
                     <div className="grid gap-4 py-4 -mt-4">
-                        {/* Meter Type Selection */}
                         <div className="grid grid-cols-1 items-center gap-4">
-                            <Label htmlFor="meterType" className="text-right">
-                                Meter Type *
+                            <Label htmlFor="meterNo" className="text-right">
+                                Meter No *
+                            </Label>
+                            <Input
+                                id="meterNo"
+                                name="meterNo"
+                                value={formData.meterNo}
+                                onChange={handleChange}
+                                className="col-span-3 border-gray-300"
+                                placeholder="Enter meter no."
+                                type="number"
+                                inputMode="numeric"
+                                pattern="[0-9]*"
+                                min="0"
+                            />
+                        </div>
+                        <div className="grid grid-cols-1 items-center gap-4">
+                            <Label htmlFor="month" className="text-right">
+                                Month *
                             </Label>
                             <Select
-                                name="meterType"
-                                value={meterType}
-                                onValueChange={(value: MeterType) => {
-                                    setMeterType(value);
-                                    resetForms();
-                                }}
+                                name="month"
+                                value={formData.month}
+                                onValueChange={(value) => setFormData((prev) => ({ ...prev, month: value }))}
                             >
                                 <SelectTrigger className="col-span-3">
-                                    <SelectValue placeholder="Select meter type" />
+                                    <SelectValue placeholder="Select billing month" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="NON-VIRTUAL">Non-Virtual</SelectItem>
-                                    <SelectItem value="VIRTUAL">Virtual</SelectItem>
+                                    {months.map((month) => (
+                                        <SelectItem
+                                            key={month.value}
+                                            value={month.value}
+                                            disabled={isMonthDisabled(month.value)}
+                                        >
+                                            {month.label}
+                                        </SelectItem>
+                                    ))}
                                 </SelectContent>
                             </Select>
                         </div>
-
-                        {meterType === "NON-VIRTUAL" ? (
-                            <>
-                                {/* NON-VIRTUAL Meter Fields */}
-                                <div className="grid grid-cols-1 items-center gap-4">
-                                    <Label htmlFor="meterNo" className="text-right">
-                                        Meter No *
-                                    </Label>
-                                    <Input
-                                        id="meterNo"
-                                        name="meterNo"
-                                        value={formData.meterNo}
-                                        onChange={handleChange}
-                                        className="col-span-3 border-gray-300"
-                                        placeholder="Enter meter no."
-                                        type="number"
-                                        inputMode="numeric"
-                                        pattern="[0-9]*"
-                                        min="0"
-                                    />
-                                </div>
-                                <div className="grid grid-cols-1 items-center gap-4">
-                                    <Label htmlFor="month" className="text-right">
-                                        Month *
-                                    </Label>
-                                    <Select
-                                        name="month"
-                                        value={formData.month}
-                                        onValueChange={(value) => setFormData((prev) => ({ ...prev, month: value }))}
-                                    >
-                                        <SelectTrigger className="col-span-3">
-                                            <SelectValue placeholder="Select billing month" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {months.map((month) => (
-                                                <SelectItem
-                                                    key={month.value}
-                                                    value={month.value}
-                                                    disabled={isMonthDisabled(month.value)}
-                                                >
-                                                    {month.label}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div className="grid grid-cols-1 items-center gap-4">
-                                    <Label htmlFor="year" className="text-right">
-                                        Year *
-                                    </Label>
-                                    <Select
-                                        name="year"
-                                        value={formData.year}
-                                        onValueChange={(value) => {
-                                            setFormData((prev) => {
-                                                // If selecting current year and month is in the future, reset month
-                                                if (value === currentYear.toString() && prev.month) {
-                                                    const monthIndex = parseInt(prev.month) - 1;
-                                                    if (monthIndex > currentMonthIndex) {
-                                                        return { ...prev, year: value, month: "" };
-                                                    }
-                                                }
-                                                return { ...prev, year: value };
-                                            });
-                                        }}
-                                    >
-                                        <SelectTrigger className="col-span-3">
-                                            <SelectValue placeholder="Select billing year" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {years.map((year) => (
-                                                <SelectItem key={year} value={year}>
-                                                    {year}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div className="grid grid-cols-1 items-center gap-4">
-                                    <Label htmlFor="readingType" className="text-right">
-                                        Reading Type *
-                                    </Label>
-                                    <Select
-                                        name="readingType"
-                                        value={formData.readingType}
-                                        onValueChange={(value) => setFormData((prev) => ({ ...prev, readingType: value }))}
-                                    >
-                                        <SelectTrigger className="col-span-3">
-                                            <SelectValue placeholder="Select Reading Type" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="Normal">Normal</SelectItem>
-                                            <SelectItem value="Rollover">Rollover</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div className="grid grid-cols-1 items-center gap-4">
-                                    <Label htmlFor="presentReadings" className="text-right">
-                                        Present Readings (kWh) *
-                                    </Label>
-                                    <Input
-                                        id="presentReadings"
-                                        name="presentReadings"
-                                        value={formData.presentReadings}
-                                        onChange={handleChange}
-                                        className="col-span-3 border-gray-300"
-                                        type="number"
-                                        inputMode="numeric"
-                                        pattern="[0-9]*"
-                                        min="0"
-                                        placeholder="Enter present reading"
-                                    />
-                                </div>
-                            </>
-                        ) : (
-                            <>
-                                {/* VIRTUAL Meter Fields */}
-                                <div className="grid grid-cols-1 items-center gap-4">
-                                    <Label htmlFor="meterId" className="text-right">
-                                        Meter ID *
-                                    </Label>
-                                    <Input
-                                        id="meterId"
-                                        name="meterId"
-                                        value={virtualFormData.meterId}
-                                        onChange={handleVirtualChange}
-                                        className="col-span-3 border-gray-300"
-                                        placeholder="Enter meter ID (UUID)"
-                                        type="text"
-                                    />
-                                </div>
-                                <div className="grid grid-cols-1 items-center gap-4">
-                                    <Label htmlFor="date" className="text-right">
-                                        Date *
-                                    </Label>
-                                    <Input
-                                        id="date"
-                                        name="date"
-                                        value={virtualFormData.date}
-                                        onChange={handleVirtualChange}
-                                        className="col-span-3 border-gray-300"
-                                        type="date"
-                                        max={getMaxDate()}
-                                    />
-                                </div>
-                                <div className="grid grid-cols-1 items-center gap-4">
-                                    <Label htmlFor="currentReading" className="text-right">
-                                        Current Reading *
-                                    </Label>
-                                    <Input
-                                        id="currentReading"
-                                        name="currentReading"
-                                        value={virtualFormData.currentReading}
-                                        onChange={handleVirtualChange}
-                                        className="col-span-3 border-gray-300"
-                                        type="number"
-                                        inputMode="numeric"
-                                        pattern="[0-9]*"
-                                        min="0"
-                                        placeholder="Enter current reading"
-                                    />
-                                </div>
-                            </>
-                        )}
+                        <div className="grid grid-cols-1 items-center gap-4">
+                            <Label htmlFor="year" className="text-right">
+                                Year *
+                            </Label>
+                            <Select
+                                name="year"
+                                value={formData.year}
+                                onValueChange={(value) => {
+                                    setFormData((prev) => {
+                                        // If selecting current year and month is in the future, reset month
+                                        if (value === currentYear.toString() && prev.month) {
+                                            const monthIndex = parseInt(prev.month) - 1;
+                                            if (monthIndex > currentMonthIndex) {
+                                                return { ...prev, year: value, month: "" };
+                                            }
+                                        }
+                                        return { ...prev, year: value };
+                                    });
+                                }}
+                            >
+                                <SelectTrigger className="col-span-3">
+                                    <SelectValue placeholder="Select billing year" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {years.map((year) => (
+                                        <SelectItem key={year} value={year}>
+                                            {year}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="grid grid-cols-1 items-center gap-4">
+                            <Label htmlFor="presentReadings" className="text-right">
+                                Present Readings (kWh) *
+                            </Label>
+                            <Input
+                                id="presentReadings"
+                                name="presentReadings"
+                                value={formData.presentReadings}
+                                onChange={handleChange}
+                                className="col-span-3 border-gray-300"
+                                type="number"
+                                inputMode="numeric"
+                                pattern="[0-9]*"
+                                min="0"
+                                placeholder="Enter present reading"
+                            />
+                        </div>
                     </div>
                     <DialogFooter>
                         <Button
@@ -377,9 +228,15 @@ export default function AddReadingDialog({ open, onClose, meterClass }: AddReadi
                             className="bg-[#161CCA] text-white cursor-pointer"
                             size={"lg"}
                             type="submit"
-                            disabled={!isFormValid || isPending}
+                            disabled={
+                                !formData.meterNo ||
+                                !formData.month ||
+                                !formData.year ||
+                                !formData.presentReadings ||
+                                createMeterReadingMutation.isPending
+                            }
                         >
-                            {isPending ? "Adding..." : "Proceed"}
+                            {createMeterReadingMutation.isPending ? "Adding..." : "Proceed"}
                         </Button>
                     </DialogFooter>
                 </form>
