@@ -14,8 +14,10 @@ interface SearchAndFiltersProps {
   setSelectedBand: (band: string) => void;
   selectedYear: string;
   setSelectedYear: (year: string) => void;
-  selectedMeterCategory: string;
-  setSelectedMeterCategory: (category: string) => void;
+  selectedMeterCategory?: string;
+  setSelectedMeterCategory?: (category: string) => void;
+  selectedMeterClass?: string;
+  setSelectedMeterClass?: (meterClass: string) => void;
 }
 
 export const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({
@@ -25,6 +27,8 @@ export const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({
   setSelectedYear,
   selectedMeterCategory,
   setSelectedMeterCategory,
+  selectedMeterClass,
+  setSelectedMeterClass,
 }) => {
   const [loading] = useState(false);
   const { bands } = useBand();
@@ -61,7 +65,7 @@ export const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({
           onValueChange={setSelectedBand}
           disabled={loading || bands.length === 0}
         >
-          <SelectTrigger className="ring-gray-300/1-0 w-full cursor-pointer transition-all duration-200 hover:text-gray-700">
+          <SelectTrigger className="ring-gray-300 w-full cursor-pointer transition-all duration-200 hover:text-gray-700">
             <SelectValue placeholder={loading ? "Loading bands..." : "Band"} />
           </SelectTrigger>
           <SelectContent>
@@ -96,18 +100,33 @@ export const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({
             ))}
           </SelectContent>
         </Select>
-        <Select value={selectedMeterCategory} onValueChange={setSelectedMeterCategory}>
-          <SelectTrigger className="w-full cursor-pointer">
-            <SelectValue placeholder="Meter Category">
-              {selectedMeterCategory}
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="All Categories">All Categories</SelectItem>
-            <SelectItem value="Prepaid">Prepaid</SelectItem>
-            <SelectItem value="Postpaid">Postpaid</SelectItem>
-          </SelectContent>
-        </Select>
+        {selectedMeterCategory !== undefined && setSelectedMeterCategory && (
+          <Select value={selectedMeterCategory} onValueChange={setSelectedMeterCategory}>
+            <SelectTrigger className="w-full cursor-pointer">
+              <SelectValue placeholder="Meter Category">
+                {selectedMeterCategory}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Prepaid">Prepaid</SelectItem>
+              <SelectItem value="Postpaid">Postpaid</SelectItem>
+            </SelectContent>
+          </Select>
+        )}
+        {selectedMeterClass !== undefined && setSelectedMeterClass && (
+          <Select value={selectedMeterClass} onValueChange={setSelectedMeterClass}>
+            <SelectTrigger className="w-full cursor-pointer">
+              <SelectValue placeholder="Meter Class">
+                {selectedMeterClass}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="MD">MD</SelectItem>
+              <SelectItem value="Single-Phase">Single-Phase</SelectItem>
+              <SelectItem value="Three-Phase">Three-Phase</SelectItem>
+            </SelectContent>
+          </Select>
+        )}
       </div>
     </div>
   );
