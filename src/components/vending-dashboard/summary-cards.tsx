@@ -44,7 +44,7 @@ export default function SummaryCards({ cardData }: SummaryCardsProps) {
       color: "bg-[#DCFCE8] text-green-800 border border-[#DCFCE8]",
     },
     {
-      title: "Total Sum Of Profit",
+      title: "Total Amount Vended",
       value: formatValue(cardData?.totalProfit ?? 0),
       change: calculateChange(cardData?.totalProfit ?? 0, cardData?.previousTotalProfit ?? 0).change,
       previous: formatPrevious(cardData?.previousTotalProfit ?? 0),
@@ -53,7 +53,7 @@ export default function SummaryCards({ cardData }: SummaryCardsProps) {
       color: "bg-[#FEF2C3] text-yellow-800 border border-[#FEF2C3]",
     },
     {
-      title: "Total Sum Of VAT",
+      title: "Total No. Of Transactions",
       value: formatValue(cardData?.vatAmountSum ?? 0),
       change: calculateChange(cardData?.vatAmountSum ?? 0, cardData?.previousVatAmountSum ?? 0).change,
       previous: formatPrevious(cardData?.previousVatAmountSum ?? 0),
