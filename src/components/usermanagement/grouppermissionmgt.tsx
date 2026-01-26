@@ -81,7 +81,6 @@ const transformModuleAccessToModules = (moduleAccessArray: string[]) => {
     vending: "Vending",
     hes: "HES",
     "user-management": "User Management",
-    dashboard: "Dashboard",
   };
 
   if (moduleAccessArray.includes("all-access")) {
@@ -107,7 +106,6 @@ const transformModuleAccessToModules = (moduleAccessArray: string[]) => {
         access: true,
         subModules: [],
       },
-      { name: "Dashboard", access: true, subModules: [] },
     ];
   }
 
@@ -307,7 +305,6 @@ export default function GroupPermissionManagement() {
       vending: "Vending",
       hes: "HES",
       "user-management": "User Management",
-      dashboard: "Dashboard",
     };
 
     if (newModuleAccess.includes("all-access")) {
@@ -320,7 +317,7 @@ export default function GroupPermissionManagement() {
         result.push({ ...existingDataManagement, access: true });
       }
 
-      const otherModules = ["billing", "vending", "hes", "user-management", "dashboard"];
+      const otherModules = ["billing", "vending", "hes", "user-management"];
       for (const moduleKey of otherModules) {
         const moduleName = moduleNames[moduleKey] ?? moduleKey;
         const existing = existingModules.find((m) => m.name === moduleName);

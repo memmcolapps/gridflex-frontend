@@ -44,7 +44,6 @@ export default function GroupPermissionForm({
   }>({});
 
   const moduleAccessOptions = [
-    { value: "dashboard", label: "Dashboard", group: "Data Management" },
     {
       value: "organization",
       label: "Organization",

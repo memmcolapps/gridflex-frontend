@@ -75,6 +75,7 @@ export default function MeterReadings({ searchQuery, sortConfig, selectedMonth, 
         selectedYear,
     });
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     const data = meterReadingsData?.meterReadings ?? [];
     const totalData = meterReadingsData?.totalData ?? 0;
 
