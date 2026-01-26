@@ -110,7 +110,7 @@ export async function getMeterReadings({
       params.append("sortDirection", sortDirection ?? "asc");
     }
     if (selectedMonth && selectedMonth !== "Select Month") {
-      params.append("month", selectedMonth);
+      params.append("month", selectedMonth.toUpperCase());
     }
     if (selectedYear && selectedYear !== "Select Year") {
       params.append("year", selectedYear);
