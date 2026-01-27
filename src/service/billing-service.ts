@@ -134,6 +134,44 @@ export interface GetMonthlyConsumptionParams {
   size?: number;
 }
 
+// --- Energy Import List Types ---
+
+export interface EnergyImportListItem {
+  id?: number;
+  feederName: string;
+  assetId: string;
+  feederConsumption: string | number;
+  prepaidConsumption: string | number;
+  postpaidConsumption: string | number;
+  mdVirtual: string | number;
+  nonMdVirtual: string | number;
+  month?: string;
+  year?: string;
+  technicalLoss?: string | number;
+  commercialLoss?: string | number;
+  nodeId?: string;
+}
+
+export interface EnergyImportListApiResponse {
+  responsecode: "000" | string;
+  responsedesc: string;
+  responsedata: {
+    totalFeeders: number;
+    feeders: EnergyImportListItem[];
+    totalPages: number;
+    pageSize: number;
+    currentPage: number;
+  };
+}
+
+export interface GetEnergyImportListParams {
+  search?: string;
+  month?: string;
+  year?: string;
+  page?: number;
+  size?: number;
+}
+
 // --- API Service Functions ---
 
 export async function getMeterReadings({
@@ -302,6 +340,102 @@ export async function createVirtualMeterReading(
   }
 }
 
+// --- MD Energy Import Types ---
+
+export interface MDEnergyImportConsumption {
+  meterId: string;
+  meterNumber: string;
+  orgId: string;
+  readingType: string;
+  currentReading: number;
+  createdAt: string;
+  updatedAt: string;
+  tariffType: string;
+  feederName: string;
+  dssName: string;
+  meterClass: string;
+  type: string;
+  cumulativeReading: number;
+  averageConsumption: number;
+  consumption: number;
+}
+
+export interface MDEnergyImportApiResponse {
+  responsecode: "000" | string;
+  responsedesc: string;
+  responsedata: {
+    totalMeterConsumptions: number;
+    consumptions: MDEnergyImportConsumption[];
+    totalPages: number;
+    pageSize: number;
+    currentPage: number;
+  };
+}
+
+export interface GetMDEnergyImportParams {
+  search?: string;
+  month?: string;
+  year?: string;
+  nodeId: string;
+  page?: number;
+  size?: number;
+}
+
+// --- Get MD Energy Import API Function ---
+
+export async function getMDEnergyImport({
+  search,
+  month,
+  year,
+  nodeId,
+  page = 0,
+  size = 10,
+}: GetMDEnergyImportParams): Promise<MDEnergyImportApiResponse> {
+  try {
+    const token = localStorage.getItem("auth_token");
+    if (!token) {
+      throw new Error("Authentication token not found.");
+    }
+
+    const params = new URLSearchParams();
+    params.append("page", page.toString());
+    params.append("size", size.toString());
+    params.append("nodeId", nodeId);
+
+    if (search) {
+      params.append("search", search);
+    }
+    if (month) {
+      params.append("month", month);
+    }
+    if (year) {
+      params.append("year", year);
+    }
+
+    const response = await axiosInstance.get(
+      `${API_URL}/billing/service/virtual/md-meter/energy/import/assetId/all`,
+      {
+        params,
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    if (response.data.responsecode !== "000") {
+      throw new Error(
+        response.data.responsedesc ?? "Failed to fetch MD energy import data.",
+      );
+    }
+
+    return response.data;
+  } catch (error) {
+    throw new Error(handleApiError(error));
+  }
+}
+
 // --- Get Monthly Consumption API Function ---
 
 export async function getMonthlyConsumption({
@@ -348,6 +482,59 @@ export async function getMonthlyConsumption({
     if (response.data.responsecode !== "000") {
       throw new Error(
         response.data.responsedesc ?? "Failed to fetch monthly consumption.",
+      );
+    }
+
+    return response.data;
+  } catch (error) {
+    throw new Error(handleApiError(error));
+  }
+}
+
+// --- Get Energy Import List API Function ---
+
+export async function getEnergyImportList({
+  search,
+  month,
+  year,
+  page = 0,
+  size = 10,
+}: GetEnergyImportListParams): Promise<EnergyImportListApiResponse> {
+  try {
+    const token = localStorage.getItem("auth_token");
+    if (!token) {
+      throw new Error("Authentication token not found.");
+    }
+
+    const params = new URLSearchParams();
+    params.append("page", page.toString());
+    params.append("size", size.toString());
+
+    if (search) {
+      params.append("search", search);
+    }
+    if (month) {
+      params.append("month", month);
+    }
+    if (year) {
+      params.append("year", year);
+    }
+
+    const response = await axiosInstance.get(
+      `${API_URL}/billing/service/virtual/md-meter/energy/import/list`,
+      {
+        params,
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    if (response.data.responsecode !== "000") {
+      throw new Error(
+        response.data.responsedesc ?? "Failed to fetch energy import list.",
       );
     }
 
