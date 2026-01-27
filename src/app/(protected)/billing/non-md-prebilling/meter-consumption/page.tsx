@@ -160,6 +160,7 @@ export default function ReadingSheetPage() {
             sortConfig={sortConfig}
             selectedMonth={selectedMonth}
             selectedYear={selectedYear}
+            meterClass="Non-MD"
           />
         )}
       </div>
