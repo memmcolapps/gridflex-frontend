@@ -83,65 +83,6 @@ export default function MeterConsumptions({
     });
   };
 
-<<<<<<< HEAD
-    const consumptions = data?.consumptions ?? [];
-    const totalCount = data?.totalCount ?? 0;
-
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [searchQuery, selectedMonth, selectedYear, meterClass]);
-
-    const isAllSelected = consumptions.length > 0 && consumptions.every(item => selectedRowIds.has(item.id));
-
-    const handlePageSizeChange = (newPageSize: number) => {
-        setRowsPerPage(newPageSize);
-        setCurrentPage(1);
-    };
-
-    const handleCheckboxChange = (id: string, checked: boolean) => {
-        setSelectedRowIds(prev => {
-            const newSelected = new Set(prev);
-            if (checked) {
-                newSelected.add(id);
-            } else {
-                newSelected.delete(id);
-            }
-            return newSelected;
-        });
-    };
-
-    const handleSelectAll = (checked: boolean) => {
-        setSelectedRowIds(prev => {
-            const newSelected = new Set(prev);
-            if (checked) {
-                consumptions.forEach(item => newSelected.add(item.id));
-            } else {
-                consumptions.forEach(item => newSelected.delete(item.id));
-            }
-            return newSelected;
-        });
-    };
-
-    if (isLoading) {
-        return (
-            <Card className="h-full border-none p-4">
-                <div className="flex items-center justify-center p-8">
-                    <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-gray-900"></div>
-                </div>
-            </Card>
-        );
-    }
-
-    if (isError) {
-        return (
-            <Card className="h-full border-none p-4">
-                <div className="flex items-center justify-center p-8 text-red-500">
-                    Failed to load consumption data. Please try again.
-                </div>
-            </Card>
-        );
-    }
-=======
   const handleSelectAll = (checked: boolean) => {
     setSelectedRowIds((prev) => {
       const newSelected = new Set(prev);
@@ -153,7 +94,6 @@ export default function MeterConsumptions({
       return newSelected;
     });
   };
->>>>>>> origin/main
 
   if (isLoading) {
     return (
