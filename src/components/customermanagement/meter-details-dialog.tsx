@@ -21,9 +21,9 @@ export default function MeterDetailsDialog({ isOpen, onOpenChange, customer }: M
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
             <DialogContent className="bg-white w-full min-w-fit border-none max-w-fit h-fit max-h-full p-6 rounded-lg overflow-hidden">
                 <DialogHeader>
-                    <DialogTitle className="text-lg font-semibold flex items-center justify-between mt-8 -mb-8">
+                    <DialogTitle className="text-lg font-semibold flex items-center justify-between mt-8 -mb-8 ">
                         {customer.firstname} {customer.lastname}
-                        <div>
+                        <div className="p-4">
                             <Label className="text-sm font-medium text-gray-900 mt-2">
                                 Total Number of meters
                             </Label>
