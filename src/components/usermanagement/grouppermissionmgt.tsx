@@ -33,6 +33,7 @@ import {
 } from "@radix-ui/react-dropdown-menu";
 import { DropdownMenuContent, DropdownMenuItem } from "../ui/dropdown-menu";
 import GroupStatusToggleDropdownItem from "./groupstatustoggledropdownitem";
+import { usePermissions } from "@/hooks/use-permissions";
 
 interface GroupPermissionFormData {
   groupTitle: string;
@@ -170,6 +171,7 @@ export default function GroupPermissionManagement() {
   const { mutate: createPermissionGroup } = useCreateGroupPermission();
   const { mutate: updatePermissionGroup } = useUpdateGroupPermission();
   const { mutate: updatePermissionField } = useUpdateGroupPermissionField();
+  const { canEdit } = usePermissions();
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -427,23 +429,25 @@ export default function GroupPermissionManagement() {
         <p className="text-muted-foreground text-sm">
           Configure group permission, and system accessibility here.
         </p>
-        <GroupPermissionForm
-          mode="add"
-          onSave={handleAddGroupPermission}
-          triggerButton={
-            <Button
-              className="mb-2 flex items-center gap-2 bg-[#161CCA] hover:bg-[#121eb3]"
-              disabled={isLoading}
-            >
-              <div className="flex items-center justify-center p-0.5">
-                <PlusCircleIcon className="text-[#FEFEFE]" size={12} />
-              </div>
-              <span className="cursor-pointer text-white">
-                {isLoading ? "Adding..." : "Add Group Permission"}
-              </span>
-            </Button>
-          }
-        />
+        {canEdit && (
+          <GroupPermissionForm
+            mode="add"
+            onSave={handleAddGroupPermission}
+            triggerButton={
+              <Button
+                className="mb-2 flex items-center gap-2 bg-[#161CCA] hover:bg-[#121eb3]"
+                disabled={isLoading}
+              >
+                <div className="flex items-center justify-center p-0.5">
+                  <PlusCircleIcon className="text-[#FEFEFE]" size={12} />
+                </div>
+                <span className="cursor-pointer text-white">
+                  {isLoading ? "Adding..." : "Add Group Permission"}
+                </span>
+              </Button>
+            }
+          />
+        )}
       </div>
 
       <div className="mb-6 flex items-center justify-between">
@@ -538,6 +542,7 @@ export default function GroupPermissionManagement() {
                       checked={group.permissions.view}
                       onCheckedChange={(checked) => handleUpdatePermission(group.id, "view", !!checked)}
                       className="border-gray-300 data-[state=checked]:bg-green-500"
+                      disabled={!canEdit}
                     />
                   </TableCell>
                   <TableCell className="text-center">
@@ -545,6 +550,7 @@ export default function GroupPermissionManagement() {
                       checked={group.permissions.edit}
                       onCheckedChange={(checked) => handleUpdatePermission(group.id, "edit", !!checked)}
                       className="border-gray-300 data-[state=checked]:bg-green-500"
+                      disabled={!canEdit}
                     />
                   </TableCell>
                   <TableCell className="text-center">
@@ -552,6 +558,7 @@ export default function GroupPermissionManagement() {
                       checked={group.permissions.approve}
                       onCheckedChange={(checked) => handleUpdatePermission(group.id, "approve", !!checked)}
                       className="border-gray-300 data-[state=checked]:bg-green-500"
+                      disabled={!canEdit}
                     />
                   </TableCell>
                   <TableCell className="text-center">
@@ -559,25 +566,28 @@ export default function GroupPermissionManagement() {
                       checked={group.permissions.disable}
                       onCheckedChange={(checked) => handleUpdatePermission(group.id, "disable", !!checked)}
                       className="border-gray-300 data-[state=checked]:bg-green-500"
+                      disabled={!canEdit}
                     />
                   </TableCell>
                   <TableCell className="text-center">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button size="sm" variant="ghost" className="h-8 w-8 p-2">
-                          <MoreVertical size={14} />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="center">
-                        <DropdownMenuItem onSelect={() => handleEditGroup(group)}>
-                          <div className="flex items-center gap-2">
-                            <Pencil size={14} />
-                            <span>Edit Group Permission</span>
-                          </div>
-                        </DropdownMenuItem>
-                        <GroupStatusToggleDropdownItem group={group} />
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    {canEdit && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button size="sm" variant="ghost" className="h-8 w-8 p-2">
+                            <MoreVertical size={14} />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="center">
+                          <DropdownMenuItem onSelect={() => handleEditGroup(group)}>
+                            <div className="flex items-center gap-2">
+                              <Pencil size={14} />
+                              <span>Edit Group Permission</span>
+                            </div>
+                          </DropdownMenuItem>
+                          <GroupStatusToggleDropdownItem group={group} />
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
                   </TableCell>
                 </TableRow>
               ))

@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { ContentHeader } from "@/components/ui/content-header";
+import { usePermissions } from "@/hooks/use-permissions";
 import { Ban, Eye, MoreVertical, Send, Settings2 } from "lucide-react";
 import { useState } from "react";
 import {

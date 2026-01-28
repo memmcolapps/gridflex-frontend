@@ -41,6 +41,7 @@ import {
 import React, { useState } from "react";
 import { toast } from "sonner";
 import { useBand } from "@/hooks/use-band";
+import { usePermissions } from "@/hooks/use-permissions";
 import {
   useCreateTariff,
   useTariff,
@@ -49,6 +50,7 @@ import {
 import { LoadingAnimation } from "@/components/ui/loading-animation";
 
 export default function TariffManagementPage() {
+  const { canEdit } = usePermissions();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedTariffs, setSelectedTariffs] = useState<string[]>([]);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
@@ -197,17 +199,18 @@ export default function TariffManagementPage() {
             title={"Tariff"}
             description={"Set and manage tariff plans here"}
           />
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button
-                className="flex h-fit cursor-pointer items-center gap-2 bg-[rgb(22,28,202)] px-6 py-2 text-sm text-white"
-                size={"sm"}
-                disabled={addTarriffDisabled}
-              >
-                <CirclePlusIcon strokeWidth={2.75} size={15} />
-                Add tariff
-              </Button>
-            </DialogTrigger>
+          {canEdit && (
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button
+                  className="flex h-fit cursor-pointer items-center gap-2 bg-[rgb(22,28,202)] px-6 py-2 text-sm text-white"
+                  size={"sm"}
+                  disabled={addTarriffDisabled}
+                >
+                  <CirclePlusIcon strokeWidth={2.75} size={15} />
+                  Add tariff
+                </Button>
+              </DialogTrigger>
             <DialogContent className="max-w-md bg-white">
               <DialogHeader className="space-y-3">
                 <DialogTitle className="text-xl font-semibold text-gray-900">
@@ -417,6 +420,7 @@ export default function TariffManagementPage() {
               </form>
             </DialogContent>
           </Dialog>
+          )}
         </div>
 
         <div className="mb-8 flex items-center justify-between">

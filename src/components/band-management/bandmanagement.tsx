@@ -37,6 +37,7 @@ import {
 } from "@/hooks/use-band";
 import { toast } from "sonner";
 import { ContentHeader } from "../ui/content-header";
+import { usePermissions } from "@/hooks/use-permissions";
 import { getStatusStyle } from "../status-style";
 import {
   DropdownMenu,
@@ -63,6 +64,7 @@ import {
 import { LoadingAnimation } from "@/components/ui/loading-animation";
 
 export default function BandManagement() {
+  const { canEdit } = usePermissions();
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState<{
     key: keyof Band;
@@ -209,18 +211,20 @@ export default function BandManagement() {
           title="Band Management"
           description="Add and manage electricity distribution bands"
         />
-        <BandForm
-          mode="add"
-          onSave={handleAddBand}
-          triggerButton={
-            <Button className="flex cursor-pointer items-center gap-2 bg-[#161CCA] hover:bg-[#121eb3]">
-              <div className="flex items-center justify-center p-0.5">
-                <PlusCircleIcon className="text-[#FEFEFE]" size={12} />
-              </div>
-              <span className="text-white">Add Band</span>
-            </Button>
-          }
-        />
+        {canEdit && (
+          <BandForm
+            mode="add"
+            onSave={handleAddBand}
+            triggerButton={
+              <Button className="flex cursor-pointer items-center gap-2 bg-[#161CCA] hover:bg-[#121eb3]">
+                <div className="flex items-center justify-center p-0.5">
+                  <PlusCircleIcon className="text-[#FEFEFE]" size={12} />
+                </div>
+                <span className="text-white">Add Band</span>
+              </Button>
+            }
+          />
+        )}
       </div>
 
       <div className="mb-6 flex w-80 items-center gap-4">
@@ -327,7 +331,7 @@ export default function BandManagement() {
                         align="center"
                         className="cursor-pointer bg-white"
                       >
-                        {band.approveStatus === "Approved" && (
+                        {canEdit && band.approveStatus === "Approved" && (
                           <DropdownMenuItem
                             onSelect={() => {
                               handleEditBand(band);
@@ -339,24 +343,26 @@ export default function BandManagement() {
                             </div>
                           </DropdownMenuItem>
                         )}
-                        <DropdownMenuItem
-                          onSelect={() => {
-                            handleToggleBandStatus(band);
-                          }}
-                        >
-                          <div className="flex w-full items-center gap-2 p-2">
-                            {band.approveStatus === "Approved" ? (
-                              <Ban size={14} />
-                            ) : (
-                              <CircleCheck size={14} />
-                            )}
-                            <span>
-                              {band.approveStatus === "Approved"
-                                ? "Deactivate"
-                                : "Activate"}
-                            </span>
-                          </div>
-                        </DropdownMenuItem>
+                        {canEdit && (
+                          <DropdownMenuItem
+                            onSelect={() => {
+                              handleToggleBandStatus(band);
+                            }}
+                          >
+                            <div className="flex w-full items-center gap-2 p-2">
+                              {band.approveStatus === "Approved" ? (
+                                <Ban size={14} />
+                              ) : (
+                                <CircleCheck size={14} />
+                              )}
+                              <span>
+                                {band.approveStatus === "Approved"
+                                  ? "Deactivate"
+                                  : "Activate"}
+                              </span>
+                            </div>
+                          </DropdownMenuItem>
+                        )}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>

@@ -53,6 +53,7 @@ import type { MeterInventoryFilters, BusinessHub } from "@/types/meter-inventory
 import { useAuth } from '@/context/auth-context';
 import { useBulkUploadMeters, useDownloadMeterCsvTemplate, useDownloadMeterExcelTemplate, useDownloadAllocateCsvTemplate, useDownloadAllocateExcelTemplate, useBulkAllocateMeters } from "@/hooks/use-meter-bulk";
 import { toast } from "sonner";
+import { usePermissions } from "@/hooks/use-permissions";
 import {
     Dialog,
     DialogContent,
@@ -110,6 +111,7 @@ const mapMeterInventoryToMeterData = (meter: MeterInventoryItem): MeterInventory
 
 export default function MeterInventoryPage() {
   const { user } = useAuth();
+  const { canEdit } = usePermissions();
 
   const userOrgId = user?.orgId;
 
@@ -497,30 +499,32 @@ export default function MeterInventoryPage() {
           title="Meter Inventory"
           description="Add Meters and Allocate meter to respective organization"
         />
-        <div className="mb-4 flex items-center justify-between">
-          <div className="flex gap-2">
-            <Button
-              className="flex w-full cursor-pointer items-center gap-2 border bg-white font-medium text-[#161CCA] md:w-auto"
-              variant="outline"
-              size="lg"
-              onClick={() => setIsBulkUploadDialogOpen(true)}
-            >
-              <CirclePlus size={14} strokeWidth={2.3} className="h-4 w-4 text-[161CCA]" />
-              <span className="text-sm md:text-base">Bulk Upload New Meters</span>
-            </Button>
-            <Button
-              size="lg"
-              onClick={() => {
-                setSelectedMeter(null);
-                setIsAddMeterDialogOpen(true);
-              }}
-              className="flex w-full cursor-pointer items-center gap-2 bg-[#161CCA] font-medium text-white hover:bg-[#1e2abf] md:w-auto"
-            >
-              <CirclePlus size={14} strokeWidth={2.3} className="h-4 w-4" />
-              <span className="text-sm md:text-base">Add Meter</span>
-            </Button>
+        {canEdit && (
+          <div className="mb-4 flex items-center justify-between">
+            <div className="flex gap-2">
+              <Button
+                className="flex w-full cursor-pointer items-center gap-2 border bg-white font-medium text-[#161CCA] md:w-auto"
+                variant="outline"
+                size="lg"
+                onClick={() => setIsBulkUploadDialogOpen(true)}
+              >
+                <CirclePlus size={14} strokeWidth={2.3} className="h-4 w-4 text-[161CCA]" />
+                <span className="text-sm md:text-base">Bulk Upload New Meters</span>
+              </Button>
+              <Button
+                size="lg"
+                onClick={() => {
+                  setSelectedMeter(null);
+                  setIsAddMeterDialogOpen(true);
+                }}
+                className="flex w-full cursor-pointer items-center gap-2 bg-[#161CCA] font-medium text-white hover:bg-[#1e2abf] md:w-auto"
+              >
+                <CirclePlus size={14} strokeWidth={2.3} className="h-4 w-4" />
+                <span className="text-sm md:text-base">Add Meter</span>
+              </Button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       <Card className="mb-4 border-none bg-transparent p-4 shadow-none">
@@ -573,102 +577,104 @@ export default function MeterInventoryPage() {
         </div>
 
         {/* REVERTED: Allocation Section to previous UI layout */}
-        <div className="flex items-center gap-4 py-4">
-          <div className="flex-1">
-            <Label
-              htmlFor="meterNumber"
-              className="mb-2 text-sm font-medium text-gray-700"
+        {canEdit && (
+          <div className="flex items-center gap-4 py-4">
+            <div className="flex-1">
+              <Label
+                htmlFor="meterNumber"
+                className="mb-2 text-sm font-medium text-gray-700"
+              >
+                Meter Number
+              </Label>
+              <Input
+                id="meterNumber"
+                value={meterNumberInput}
+                onChange={(e) => handleMeterNumberChange(e.target.value)}
+                placeholder="Enter Meter Number"
+                className="w-full border-gray-300 focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
+              />
+            </div>
+            <div className="flex h-16 w-16 items-center justify-center">
+              {isAllocating ? (
+                <Loader2 className="h-7 w-7 animate-spin" strokeWidth={2.75} />
+              ) : (
+                <ArrowRightLeft onClick={handleAllocate} size={28} strokeWidth={2.75} className="w-full px-6 py-3 bg-green-500 text-white rounded-3xl cursor-pointer" />
+              )}
+            </div>
+            <div className="flex-1">
+              <Label
+                htmlFor="organizationId"
+                className="mb-2 text-sm font-medium text-gray-700"
+              >
+                Organization ID <span className="text-red-500">*</span>
+              </Label>
+              <Select
+                value={selectedHubId}
+                onValueChange={setSelectedHubId}
+                disabled={isHubsLoading || isHubsError || !userOrgId || isAllocating}
+              >
+                <SelectTrigger className="w-full border-gray-300 focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50">
+                  <SelectHubTrigger />
+                </SelectTrigger>
+
+                <SelectContent>
+                  {/* Search box inside SelectContent */}
+                  <div className="p-2">
+                    <Input
+                      placeholder="Search hubs..."
+                      value={hubSearchTerm}
+                      onChange={(e) => setHubSearchTerm(e.target.value)}
+                      className="h-8 text-sm"
+                    />
+                  </div>
+
+                  <div className="h-px bg-gray-100 my-1" />
+
+                  {/* Filtered list */}
+                  {filteredHubs.length > 0 ? (
+                    filteredHubs.map((hub: BusinessHub) => {
+                      const regionId = hub.regionId ?? hub.id;
+                      const displayName = `${hub.name} (${regionId})`;
+
+                      return (
+                        <SelectItem key={regionId} value={regionId}>
+                          {displayName}
+                        </SelectItem>
+                      );
+                    })
+                  ) : (
+                    <div className="p-2 text-sm text-gray-500">No results found</div>
+                  )}
+
+                </SelectContent>
+              </Select>
+            </div>
+            <Button
+              onClick={() => setIsBulkAllocateDialogOpen(true)}
+              size="lg"
+              className="mt-7 flex w-full cursor-pointer items-center gap-2 bg-green-500 px-6 py-3 text-white hover:bg-green-600 sm:w-auto"
             >
-              Meter Number
-            </Label>
-            <Input
-              id="meterNumber"
-              value={meterNumberInput}
-              onChange={(e) => handleMeterNumberChange(e.target.value)}
-              placeholder="Enter Meter Number"
-              className="w-full border-gray-300 focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
+              <ArrowRightLeft size={12} strokeWidth={2.75} />
+              Bulk Allocate
+            </Button>
+            <BulkUploadDialog
+              isOpen={isBulkAllocateDialogOpen}
+              onClose={() => setIsBulkAllocateDialogOpen(false)}
+              onSave={handleSaveBulkAllocate}
+              title="Bulk Allocate Meters"
+              sendRawFile={true}
+              templateUrl="#"
+              onTemplateClick={() => {
+                setIsBulkAllocateDialogOpen(false);
+                setIsAllocateTemplateDropdownOpen(true);
+              }}
+              requiredColumns={[
+                "meterNumber",
+                "regionId",
+              ]}
             />
           </div>
-          <div className="flex h-16 w-16 items-center justify-center">
-            {isAllocating ? (
-              <Loader2 className="h-7 w-7 animate-spin" strokeWidth={2.75} />
-            ) : (
-              <ArrowRightLeft onClick={handleAllocate} size={28} strokeWidth={2.75} className="w-full px-6 py-3 bg-green-500 text-white rounded-3xl cursor-pointer" />
-            )}
-          </div>
-          <div className="flex-1">
-            <Label
-              htmlFor="organizationId"
-              className="mb-2 text-sm font-medium text-gray-700"
-            >
-              Organization ID <span className="text-red-500">*</span>
-            </Label>
-            <Select
-              value={selectedHubId}
-              onValueChange={setSelectedHubId}
-              disabled={isHubsLoading || isHubsError || !userOrgId || isAllocating}
-            >
-              <SelectTrigger className="w-full border-gray-300 focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50">
-                <SelectHubTrigger />
-              </SelectTrigger>
-
-              <SelectContent>
-                {/* Search box inside SelectContent */}
-                <div className="p-2">
-                  <Input
-                    placeholder="Search hubs..."
-                    value={hubSearchTerm}
-                    onChange={(e) => setHubSearchTerm(e.target.value)}
-                    className="h-8 text-sm"
-                  />
-                </div>
-
-                <div className="h-px bg-gray-100 my-1" />
-
-                {/* Filtered list */}
-                {filteredHubs.length > 0 ? (
-                  filteredHubs.map((hub: BusinessHub) => {
-                    const regionId = hub.regionId ?? hub.id;
-                    const displayName = `${hub.name} (${regionId})`;
-
-                    return (
-                      <SelectItem key={regionId} value={regionId}>
-                        {displayName}
-                      </SelectItem>
-                    );
-                  })
-                ) : (
-                  <div className="p-2 text-sm text-gray-500">No results found</div>
-                )}
-
-              </SelectContent>
-            </Select>
-          </div>
-          <Button
-            onClick={() => setIsBulkAllocateDialogOpen(true)}
-            size="lg"
-            className="mt-7 flex w-full cursor-pointer items-center gap-2 bg-green-500 px-6 py-3 text-white hover:bg-green-600 sm:w-auto"
-          >
-            <ArrowRightLeft size={12} strokeWidth={2.75} />
-            Bulk Allocate
-          </Button>
-          <BulkUploadDialog
-            isOpen={isBulkAllocateDialogOpen}
-            onClose={() => setIsBulkAllocateDialogOpen(false)}
-            onSave={handleSaveBulkAllocate}
-            title="Bulk Allocate Meters"
-            sendRawFile={true}
-            templateUrl="#"
-            onTemplateClick={() => {
-              setIsBulkAllocateDialogOpen(false);
-              setIsAllocateTemplateDropdownOpen(true);
-            }}
-            requiredColumns={[
-              "meterNumber",
-              "regionId",
-            ]}
-          />
-        </div>
+        )}
       </Card>
 
       <Card className="h-4/6 rounded-md border-none">
@@ -762,13 +768,15 @@ export default function MeterInventoryPage() {
                           <Eye size={14} />
                           View Details
                         </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => handleEditMeter(mapMeterInventoryToMeterData(meter))}
-                          className="cursor-pointer text-sm hover:bg-gray-100"
-                        >
-                          <Pencil size={14} />
-                          Edit Meter
-                        </DropdownMenuItem>
+                        {canEdit && (
+                          <DropdownMenuItem
+                            onClick={() => handleEditMeter(mapMeterInventoryToMeterData(meter))}
+                            className="cursor-pointer text-sm hover:bg-gray-100"
+                          >
+                            <Pencil size={14} />
+                            Edit Meter
+                          </DropdownMenuItem>
+                        )}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>

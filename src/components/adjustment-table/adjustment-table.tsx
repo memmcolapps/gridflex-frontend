@@ -45,6 +45,7 @@ import {
 } from "lucide-react";
 import { SearchControl, SortControl } from "../search-control";
 import { ContentHeader } from "../ui/content-header";
+import { usePermissions } from "@/hooks/use-permissions";
 import {
   Pagination,
   PaginationContent,
@@ -71,6 +72,7 @@ import {
 import { Card } from "../ui/card";
 
 const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
+  const { canEdit } = usePermissions();
   const queryClient = useQueryClient();
   const { data: allAdjustments, isLoading, error } = useAllAdjustments(type);
 
@@ -430,40 +432,41 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
             title={type === "credit" ? "Credit Adjustment" : "Debit Adjustment"}
             description={`Set and manage account ${type} here`}
           />
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              className="cursor-pointer border-[#161CCA] text-[#161CCA]"
-            >
-              <div className="flex items-center justify-center p-0.5">
-                <PlusCircle className="text-[#161CCA]" size={12} />
-              </div>
-              <span>Bulk Upload</span>
-            </Button>
-            <Dialog
-              open={isAddDialogOpen}
-              onOpenChange={(open) => {
-                setIsAddDialogOpen(open);
-                if (!open) {
-                  setDialogStep("initial");
-                  setMeterInput("");
-                  setSelectedMeter(null);
-                  setAmount("");
-                  setLiabilityCause("");
-                  resetSearch();
-                }
-              }}
-            >
-              <DialogTrigger asChild>
-                <Button className="flex cursor-pointer items-center gap-2 bg-[#161CCA] hover:bg-[#121eb3]">
-                  <div className="flex items-center justify-center p-0.5">
-                    <PlusCircle className="text-[#FEFEFE]" size={12} />
-                  </div>
-                  <span className="text-white">
-                    Add {type === "credit" ? "Credit" : "Debit"}
-                  </span>
-                </Button>
-              </DialogTrigger>
+          {canEdit && (
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                className="cursor-pointer border-[#161CCA] text-[#161CCA]"
+              >
+                <div className="flex items-center justify-center p-0.5">
+                  <PlusCircle className="text-[#161CCA]" size={12} />
+                </div>
+                <span>Bulk Upload</span>
+              </Button>
+              <Dialog
+                open={isAddDialogOpen}
+                onOpenChange={(open) => {
+                  setIsAddDialogOpen(open);
+                  if (!open) {
+                    setDialogStep("initial");
+                    setMeterInput("");
+                    setSelectedMeter(null);
+                    setAmount("");
+                    setLiabilityCause("");
+                    resetSearch();
+                  }
+                }}
+              >
+                <DialogTrigger asChild>
+                  <Button className="flex cursor-pointer items-center gap-2 bg-[#161CCA] hover:bg-[#121eb3]">
+                    <div className="flex items-center justify-center p-0.5">
+                      <PlusCircle className="text-[#FEFEFE]" size={12} />
+                    </div>
+                    <span className="text-white">
+                      Add {type === "credit" ? "Credit" : "Debit"}
+                    </span>
+                  </Button>
+                </DialogTrigger>
               <DialogContent className="pointer-events-auto h-fit w-full bg-white text-black">
                 <DialogHeader>
                   <DialogTitle>
@@ -623,6 +626,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
               </DialogContent>
             </Dialog>
           </div>
+          )}
         </div>
 
         <div className="flex justify-between">

@@ -12,6 +12,7 @@ import { BulkUploadDialog } from "@/components/meter-management/bulk-upload";
 import { useBulkUploadCustomer, useDownloadCustomerCsvTemplate, useDownloadCustomerExcelTemplate } from "@/hooks/use-customer";
 import { type Customer } from "@/types/customer-types";
 import { toast } from "sonner";
+import { usePermissions } from "@/hooks/use-permissions";
 import {
     Dialog,
     DialogContent,
@@ -29,6 +30,7 @@ import {
 import { CheckCircle, XCircle, AlertTriangle } from "lucide-react";
 
 export default function CustomerManagement() {
+    const { canEdit } = usePermissions();
     const bulkUploadMutation = useBulkUploadCustomer();
     const downloadCsvTemplateMutation = useDownloadCustomerCsvTemplate();
     const downloadExcelTemplateMutation = useDownloadCustomerExcelTemplate();
@@ -152,34 +154,36 @@ export default function CustomerManagement() {
                         title="Customer Management"
                         description="Manage And Access Customer Records"
                     />
-                    <div className="flex gap-4">
-                        <Button
-                            onClick={() => setIsBulkUploadDialogOpen(true)}
-                            variant="outline"
-                            size={"lg"}
-                            className="border-[#161CCA] text-[#161CCA] cursor-pointer py-4"
-                        >
-                            <div className="flex items-center justify-center p-0.5">
-                                <PlusCircleIcon className="text-[#161CCA]" size={12} />
-                            </div>
-                            <span>Bulk Upload New Customer</span>
-                        </Button>
-                        <CustomerForm
-                            mode="add"
-                            // eslint-disable-next-line @typescript-eslint/no-empty-function
-                            onSave={() => {}}
-                            triggerButton={
-                                <Button 
+                    {canEdit && (
+                        <div className="flex gap-4">
+                            <Button
+                                onClick={() => setIsBulkUploadDialogOpen(true)}
+                                variant="outline"
                                 size={"lg"}
-                                className="flex items-center gap-2 bg-[#161CCA] hover:bg-[#121eb3] cursor-pointer py-4">
-                                    <div className="flex items-center justify-center p-0.5">
-                                        <PlusCircleIcon className="text-[#FEFEFE]" size={12} />
-                                    </div>
-                                    <span className="text-white">Add New Customer</span>
-                                </Button>
-                            }
-                        />
-                    </div>
+                                className="border-[#161CCA] text-[#161CCA] cursor-pointer py-4"
+                            >
+                                <div className="flex items-center justify-center p-0.5">
+                                    <PlusCircleIcon className="text-[#161CCA]" size={12} />
+                                </div>
+                                <span>Bulk Upload New Customer</span>
+                            </Button>
+                            <CustomerForm
+                                mode="add"
+                                // eslint-disable-next-line @typescript-eslint/no-empty-function
+                                onSave={() => {}}
+                                triggerButton={
+                                    <Button
+                                    size={"lg"}
+                                    className="flex items-center gap-2 bg-[#161CCA] hover:bg-[#121eb3] cursor-pointer py-4">
+                                        <div className="flex items-center justify-center p-0.5">
+                                            <PlusCircleIcon className="text-[#FEFEFE]" size={12} />
+                                        </div>
+                                        <span className="text-white">Add New Customer</span>
+                                    </Button>
+                                }
+                            />
+                        </div>
+                    )}
                 </div>
 
                 <CustomerTable
