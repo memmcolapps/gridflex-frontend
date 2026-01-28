@@ -46,6 +46,7 @@ import {
 } from "@/hooks/use-meter";
 import { useNigerianCities, useNigerianStates } from "@/hooks/use-location";
 import { toast } from "sonner";
+import { usePermissions } from "@/hooks/use-permissions";
 
 function AddManufacturerDialog({
   isOpen,
@@ -710,6 +711,7 @@ export default function ManufacturersPage() {
   const [selectedManufacturer, setSelectedManufacturer] =
     useState<Manufacturer | null>(null);
 
+  const { canEdit } = usePermissions();
   const { mutate: createManufacturer } = useCreateManufacturer();
   const { mutate: updateManufacturer } = useUpdateManufacturer();
 
@@ -818,15 +820,17 @@ export default function ManufacturersPage() {
           title="Manufacturer"
           description="Manage and Access Manufacturers."
         />
-        <Button
-          className="w-full cursor-pointer rounded-md bg-[#161CCA] px-3 py-1.5 text-white hover:bg-[#161CCA]/90 sm:w-auto sm:px-4 sm:py-2"
-          onClick={() => setIsAddDialogOpen(true)}
-          size="lg"
-        >
-          <CirclePlus size={14} strokeWidth={2.3} className="mr-2" />
-          <span className="hidden sm:inline">Add Manufacturer</span>
-          <span className="sm:hidden">Add</span>
-        </Button>
+        {canEdit && (
+          <Button
+            className="w-full cursor-pointer rounded-md bg-[#161CCA] px-3 py-1.5 text-white hover:bg-[#161CCA]/90 sm:w-auto sm:px-4 sm:py-2"
+            onClick={() => setIsAddDialogOpen(true)}
+            size="lg"
+          >
+            <CirclePlus size={14} strokeWidth={2.3} className="mr-2" />
+            <span className="hidden sm:inline">Add Manufacturer</span>
+            <span className="sm:hidden">Add</span>
+          </Button>
+        )}
       </div>
 
       {/* Search and Filter Section */}
@@ -916,34 +920,36 @@ export default function ManufacturersPage() {
                     {item.houseNo + " " + item.street + ", " + item.city}
                   </TableCell>
                   <TableCell className="px-4 py-3 text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          className="cursor-pointer border-gray-200 outline-none focus:ring-gray-500 focus:outline-none"
-                          variant="ghost"
-                          size="sm"
+                    {canEdit && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            className="cursor-pointer border-gray-200 outline-none focus:ring-gray-500 focus:outline-none"
+                            variant="ghost"
+                            size="sm"
+                          >
+                            <MoreVertical size={16} className="text-gray-500" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent
+                          align="end"
+                          className="w-48 bg-white shadow-lg"
                         >
-                          <MoreVertical size={16} className="text-gray-500" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent
-                        align="end"
-                        className="w-48 bg-white shadow-lg"
-                      >
-                        <DropdownMenuItem
-                          className="flex cursor-pointer items-center gap-2"
-                          onClick={() => {
-                            setSelectedManufacturer(item);
-                            setIsEditDialogOpen(true);
-                          }}
-                        >
-                          <Pencil size={14} className="text-gray-500" />
-                          <span className="text-sm text-gray-700">
-                            Edit Manufacturer
-                          </span>
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                          <DropdownMenuItem
+                            className="flex cursor-pointer items-center gap-2"
+                            onClick={() => {
+                              setSelectedManufacturer(item);
+                              setIsEditDialogOpen(true);
+                            }}
+                          >
+                            <Pencil size={14} className="text-gray-500" />
+                            <span className="text-sm text-gray-700">
+                              Edit Manufacturer
+                            </span>
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
                   </TableCell>
                 </TableRow>
               ))

@@ -21,6 +21,7 @@ import {
   SquareArrowOutUpRight,
 } from "lucide-react";
 import { useState } from "react";
+import { usePermissions } from "@/hooks/use-permissions";
 
 export default function ReadingSheetPage() {
   const [isLoading] = useState(false);

@@ -5,9 +5,11 @@ import VendTokenDialog from "@/components/vending/vending-dialog";
 import VendingTable from "@/components/vending/vending-table";
 import { ArrowUpDown, ListFilter, Search, SquareArrowOutUpRight } from "lucide-react";
 import { useState } from "react";
+import { usePermissions } from "@/hooks/use-permissions";
 
 export default function VendingPage() {
     const [searchQuery, setSearchQuery] = useState("");
+    const { canEdit } = usePermissions();
     return (
         <div className="p-6">
             {/* header */}
@@ -16,9 +18,11 @@ export default function VendingPage() {
                     title="Vending"
                     description="Vend for all token types"
                 />
-                <div className="flex flex-col md:flex-row gap-2">
-                    <VendTokenDialog />
-                </div>
+                {canEdit && (
+                    <div className="flex flex-col md:flex-row gap-2">
+                        <VendTokenDialog />
+                    </div>
+                )}
             </div>
             {/* Search and filter section */}
             <div className="mb-8 flex items-center justify-between">

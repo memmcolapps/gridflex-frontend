@@ -31,12 +31,14 @@ import type {
   VendingTransaction,
   CalculateCreditTokenResponse,
 } from "@/types/vending";
+import { usePermissions } from "@/hooks/use-permissions";
 
 interface TokenFormDialogProps {
   tokenType: string;
 }
 
 export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
+  const { canEdit } = usePermissions();
   const generateCreditTokenMutation = useGenerateCreditToken();
   const printTokenMutation = usePrintToken();
   const calculateCreditTokenMutation = useCalculateCreditToken();
@@ -979,15 +981,17 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
             >
               Back
             </Button>
-            <Button
-              variant="default"
-              size="lg"
-              className="cursor-pointer bg-[#161CCA] text-white"
-              onClick={handleReprintToken}
-              disabled={printTokenMutation.isPending}
-            >
-              {printTokenMutation.isPending ? "Printing..." : "Print Token"}
-            </Button>
+            {canEdit && (
+              <Button
+                variant="default"
+                size="lg"
+                className="cursor-pointer bg-[#161CCA] text-white"
+                onClick={handleReprintToken}
+                disabled={printTokenMutation.isPending}
+              >
+                {printTokenMutation.isPending ? "Printing..." : "Print Token"}
+              </Button>
+            )}
           </div>
         </DialogContent>
       </Dialog>

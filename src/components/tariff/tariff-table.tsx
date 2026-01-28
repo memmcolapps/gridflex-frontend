@@ -46,6 +46,7 @@ import { getStatusStyle } from "../status-style";
 import { useBand } from "@/hooks/use-band";
 import { DeactivateTariffDialog } from "./deactivate-tarrif-dialog";
 import { useChangeTariffStatus, useUpdateTariff } from "@/hooks/use-tarrif";
+import { usePermissions } from "@/hooks/use-permissions";
 
 interface TariffTableProps {
   tariffs: Tariff[];
@@ -58,6 +59,7 @@ export function TariffTable({
   selectedTariffs,
   setSelectedTariffs,
 }: TariffTableProps) {
+  const { canEdit } = usePermissions();
   const { bands, isLoading: isBandsLoading, error: bandsError } = useBand();
   const { mutate: changeTariffStatus } = useChangeTariffStatus();
   const { mutate: updateTariff } = useUpdateTariff();
@@ -303,7 +305,7 @@ export function TariffTable({
                       align="center"
                       className="cursor-pointer bg-white"
                     >
-                      {tariff.approve_status === "Approved" && (
+                      {canEdit && tariff.approve_status === "Approved" && (
                         <DropdownMenuItem
                           onSelect={() => {
                             handleEditTariff(tariff);
@@ -315,24 +317,26 @@ export function TariffTable({
                           </div>
                         </DropdownMenuItem>
                       )}
-                      <DropdownMenuItem
-                        onSelect={() => {
-                          handleToggleTariffStatus(tariff);
-                        }}
-                      >
-                        <div className="flex w-full items-center gap-2">
-                          {tariff.approve_status === "Approved" ? (
-                            <Ban size={14} />
-                          ) : (
-                            <CircleCheck size={14} />
-                          )}
-                          <span>
-                            {tariff.approve_status === "Approved"
-                              ? "Deactivate"
-                              : "Activate"}
-                          </span>
-                        </div>
-                      </DropdownMenuItem>
+                      {canEdit && (
+                        <DropdownMenuItem
+                          onSelect={() => {
+                            handleToggleTariffStatus(tariff);
+                          }}
+                        >
+                          <div className="flex w-full items-center gap-2">
+                            {tariff.approve_status === "Approved" ? (
+                              <Ban size={14} />
+                            ) : (
+                              <CircleCheck size={14} />
+                            )}
+                            <span>
+                              {tariff.approve_status === "Approved"
+                                ? "Deactivate"
+                                : "Activate"}
+                            </span>
+                          </div>
+                        </DropdownMenuItem>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
