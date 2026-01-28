@@ -49,8 +49,8 @@ export default function MeterConsumptions({ searchQuery, sortConfig, selectedMon
         size: rowsPerPage,
     });
 
-    const consumptions = data?.consumptions || [];
-    const totalCount = data?.totalCount || 0;
+    const consumptions = data?.consumptions ?? [];
+    const totalCount = data?.totalCount ?? 0;
 
     useEffect(() => {
         setCurrentPage(1);
