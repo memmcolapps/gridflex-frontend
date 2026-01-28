@@ -22,6 +22,7 @@ import ViewMeterReadingDetails from "./view-meter-reading-details";
 import { Checkbox } from "@/components/ui/checkbox"; // Import the Checkbox component
 import { useMeterReadings } from "@/hooks/use-billing";
 import { LoadingAnimation } from "@/components/ui/loading-animation";
+import { usePermissions } from "@/hooks/use-permissions";
 
 interface MeterReading {
     meterNumber: string;
@@ -51,6 +52,7 @@ interface MeterReadingsProps {
 }
 
 export default function MeterReadings({ searchQuery, sortConfig, selectedMonth, selectedYear, meterClass, onDataLoaded }: MeterReadingsProps) {
+    const { canEdit } = usePermissions();
     // Prevent hydration mismatch by ensuring consistent initial state
     const [mounted, setMounted] = useState(false);
 
@@ -274,10 +276,12 @@ export default function MeterReadings({ searchQuery, sortConfig, selectedMonth, 
                                                 <Eye size={16} className="mr-2" />
                                                 View details
                                             </DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => handleEdit(item.meterNumber)}>
-                                                <Pencil size={16} className="mr-2" />
-                                                Edit Current Readings
-                                            </DropdownMenuItem>
+                                            {canEdit && (
+                                                <DropdownMenuItem onClick={() => handleEdit(item.meterNumber)}>
+                                                    <Pencil size={16} className="mr-2" />
+                                                    Edit Current Readings
+                                                </DropdownMenuItem>
+                                            )}
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </TableCell>

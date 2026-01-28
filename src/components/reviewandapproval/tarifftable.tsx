@@ -25,6 +25,7 @@ import { toast } from 'sonner';
 import { useTariffs } from '@/hooks/use-ReviewApproval';
 import type{ FetchParams } from '@/service/reviewapproval-service';
 import { LoadingAnimation } from '@/components/ui/loading-animation';
+import { usePermissions } from '@/hooks/use-permissions';
 
 interface TariffTableProps {
   selectedTariffNames: string[];
@@ -32,6 +33,7 @@ interface TariffTableProps {
 }
 
 const TariffTable = ({ selectedTariffNames, setSelectedTariffNames }: TariffTableProps) => {
+  const { canApprove } = usePermissions();
   const [fetchParams, setFetchParams] = useState<FetchParams>({
     page: 1,
     pageSize: 10,
@@ -207,22 +209,26 @@ const TariffTable = ({ selectedTariffNames, setSelectedTariffNames }: TariffTabl
                         <EyeIcon size={14} />
                         <span className="text-sm text-gray-700">View Details</span>
                       </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className="flex items-center gap-2 cursor-pointer"
-                        onSelect={(e) => e.preventDefault()}
-                        onClick={() => handleApprove(item)}
-                      >
-                        <CheckCircle size={14} />
-                        <span className="text-sm text-gray-700">Approve</span>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className="flex items-center gap-2 cursor-pointer"
-                        onSelect={(e) => e.preventDefault()}
-                        onClick={() => handleReject(item)}
-                      >
-                        <Ban size={14} />
-                        <span className="text-sm text-gray-700">Reject</span>
-                      </DropdownMenuItem>
+                      {canApprove && (
+                        <>
+                          <DropdownMenuItem
+                            className="flex items-center gap-2 cursor-pointer"
+                            onSelect={(e) => e.preventDefault()}
+                            onClick={() => handleApprove(item)}
+                          >
+                            <CheckCircle size={14} />
+                            <span className="text-sm text-gray-700">Approve</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="flex items-center gap-2 cursor-pointer"
+                            onSelect={(e) => e.preventDefault()}
+                            onClick={() => handleReject(item)}
+                          >
+                            <Ban size={14} />
+                            <span className="text-sm text-gray-700">Reject</span>
+                          </DropdownMenuItem>
+                        </>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>

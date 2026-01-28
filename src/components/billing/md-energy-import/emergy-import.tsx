@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/dialog";
 import AddReadings from "./add-readings-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
+import { usePermissions } from "@/hooks/use-permissions";
 
 interface EnergyImportData {
   id: number;
@@ -75,6 +76,7 @@ export default function EnergyImportTable({
   onPageSizeChange,
 }: EnergyImportTableProps) {
   const router = useRouter();
+  const { canEdit } = usePermissions();
   const [isViewDetailsOpen, setIsViewDetailsOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<EnergyImportData | null>(
     null,
@@ -301,12 +303,14 @@ export default function EnergyImportTable({
                         <Zap size={16} className="mr-2" />
                         View virtual meters
                       </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => handleEditReadings(item)}
-                      >
-                        <Pencil size={16} className="mr-2" />
-                        Edit feeder consumption
-                      </DropdownMenuItem>
+                      {canEdit && (
+                        <DropdownMenuItem
+                          onClick={() => handleEditReadings(item)}
+                        >
+                          <Pencil size={16} className="mr-2" />
+                          Edit feeder consumption
+                        </DropdownMenuItem>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>

@@ -24,6 +24,7 @@ import { useState } from "react";
 import { usePermissions } from "@/hooks/use-permissions";
 
 export default function ReadingSheetPage() {
+  const { canEdit } = usePermissions();
   const [isLoading] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
@@ -91,26 +92,28 @@ export default function ReadingSheetPage() {
           title="Meter Reading Sheet"
           description="Set and manage meter reading to track electricity usage."
         />
-        <div className="flex flex-col gap-2 md:flex-row">
-          <Button
-            className="flex w-full cursor-pointer items-center gap-2 border border-[#161CCA] font-medium text-[#161CCA] md:w-auto"
-            variant="outline"
-            size="lg"
-            onClick={() => setIsBulkUploadDialogOpen(true)}
-          >
-            <CirclePlus size={14} strokeWidth={2.3} className="h-4 w-4" />
-            <span className="text-sm md:text-base">Bulk Upload</span>
-          </Button>
-          <Button
-            className="flex w-full cursor-pointer items-center gap-2 bg-[#161CCA] font-medium text-white md:w-auto"
-            variant="secondary"
-            size="lg"
-            onClick={() => setIsAddDialogOpen(true)}
-          >
-            <CirclePlus size={14} strokeWidth={2.3} className="h-4 w-4" />
-            <span className="text-sm md:text-base">Add Reading</span>
-          </Button>
-        </div>
+        {canEdit && (
+          <div className="flex flex-col gap-2 md:flex-row">
+            <Button
+              className="flex w-full cursor-pointer items-center gap-2 border border-[#161CCA] font-medium text-[#161CCA] md:w-auto"
+              variant="outline"
+              size="lg"
+              onClick={() => setIsBulkUploadDialogOpen(true)}
+            >
+              <CirclePlus size={14} strokeWidth={2.3} className="h-4 w-4" />
+              <span className="text-sm md:text-base">Bulk Upload</span>
+            </Button>
+            <Button
+              className="flex w-full cursor-pointer items-center gap-2 bg-[#161CCA] font-medium text-white md:w-auto"
+              variant="secondary"
+              size="lg"
+              onClick={() => setIsAddDialogOpen(true)}
+            >
+              <CirclePlus size={14} strokeWidth={2.3} className="h-4 w-4" />
+              <span className="text-sm md:text-base">Add Reading</span>
+            </Button>
+          </div>
+        )}
       </div>
 
       <div className="mb-8 flex items-center justify-between bg-transparent">
@@ -182,14 +185,16 @@ export default function ReadingSheetPage() {
           </div>
         </div>
         <div className="flex gap-5">
-          <Button
-            variant={"default"}
-            className="text-md cursor-pointer gap-2 bg-[#22C55E] px-8 py-5 font-semibold text-white"
-            onClick={() => setIsGenerateDialogOpen(true)}
-          >
-            <Printer size={14} />
-            Generate Readings
-          </Button>
+          {canEdit && (
+            <Button
+              variant={"default"}
+              className="text-md cursor-pointer gap-2 bg-[#22C55E] px-8 py-5 font-semibold text-white"
+              onClick={() => setIsGenerateDialogOpen(true)}
+            >
+              <Printer size={14} />
+              Generate Readings
+            </Button>
+          )}
           <Button
             variant={"default"}
             className="text-md cursor-pointer gap-2 border px-8 py-5 font-semibold text-[rgba(22,28,202,1)]"

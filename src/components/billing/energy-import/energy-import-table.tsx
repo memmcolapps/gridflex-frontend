@@ -22,6 +22,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import ViewEnergyImportDetails from "./view-energy-import-details";
 import ViewVirtualMetersDialog from "./view-virtual-meters-dialog";
 import { PaginationControls } from "@/components/ui/pagination-controls";
+import { usePermissions } from "@/hooks/use-permissions";
 
 
 interface EnergyImportData {
@@ -51,6 +52,7 @@ export default function EnergyImportTable({
   onSelectionChange,
 }: EnergyImportTableProps) {
   const router = useRouter();
+  const { canEdit } = usePermissions();
   const [isViewDetailsOpen, setIsViewDetailsOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<EnergyImportData | null>(
     null,
@@ -388,12 +390,14 @@ export default function EnergyImportTable({
                         <Zap size={16} className="mr-2" />
                         View virtual meters
                       </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => handleEditFeederConsumption(item)}
-                      >
-                        <Pencil size={16} className="mr-2" />
-                        Edit feeder consumption
-                      </DropdownMenuItem>
+                      {canEdit && (
+                        <DropdownMenuItem
+                          onClick={() => handleEditFeederConsumption(item)}
+                        >
+                          <Pencil size={16} className="mr-2" />
+                          Edit feeder consumption
+                        </DropdownMenuItem>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
