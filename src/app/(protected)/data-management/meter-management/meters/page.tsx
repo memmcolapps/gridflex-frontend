@@ -252,7 +252,7 @@ export default function MeterManagementPage() {
           id: customer.customerId,
           customerId: customer.customerId,
           meterNumber: "",
-          cin: customerRecord.GeneratedVirtualMeterNo || "",
+          cin: "",
           accountNumber: customerRecord.GeneratedAccountNumber || "",
           tariff: "",
           feeder: "",
@@ -275,7 +275,7 @@ export default function MeterManagementPage() {
         setIsAssignModalOpen(true);
         setProgress(50);
         setMeterNumber("");
-        setCin(customerRecord.GeneratedVirtualMeterNo || "");
+        setCin("");
         setAccountNumber(customerRecord.GeneratedAccountNumber || "");
         setTariff("");
         setFeeder("");
@@ -356,7 +356,7 @@ export default function MeterManagementPage() {
         id: customer.customerId,
         customerId: customer.customerId,
         meterNumber: "",
-        cin: customerRecordData.GeneratedVirtualMeterNo || "",
+        cin: "",
         accountNumber: customerRecordData.GeneratedAccountNumber || "",
         tariff: "",
         feeder: "",
@@ -991,7 +991,7 @@ export default function MeterManagementPage() {
           id: customer.customerId,
           customerId: customer.customerId,
           meterNumber: "",
-          cin: customerRecord.GeneratedVirtualMeterNo || "",
+          cin: "",
           accountNumber: customerRecord.GeneratedAccountNumber || "",
           tariff: "",
           feeder: "",
@@ -1014,7 +1014,7 @@ export default function MeterManagementPage() {
         setIsAddVirtualMeterOpen(true);
         setProgress(50);
         setAccountNumber(customerRecord.GeneratedAccountNumber || "");
-        setCin(customerRecord.GeneratedVirtualMeterNo || "");
+        setCin("");
         setTariff("");
         setFeeder("");
         setDss("");
@@ -1041,7 +1041,7 @@ export default function MeterManagementPage() {
         id: customer.customerId,
         customerId: customer.customerId,
         meterNumber: "",
-        cin: virtualCustomerRecordData.GeneratedVirtualMeterNo || "",
+        cin: "",
         accountNumber: virtualCustomerRecordData.GeneratedAccountNumber || "",
         tariff: "",
         feeder: "",
