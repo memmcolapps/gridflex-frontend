@@ -48,17 +48,17 @@ export interface UpdateGroupPermissionPayload {
   id: string;
   groupTitle: string;
   modules: {
-    id: string;
+    id?: string;
     name: string;
     access: boolean;
     subModules: {
-      id: string;
+      id?: string;
       name: string;
       access: boolean;
     }[];
   }[];
   permission: {
-    id: string;
+    id?: string;
     view: boolean;
     edit: boolean;
     approve: boolean;
