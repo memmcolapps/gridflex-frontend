@@ -6,8 +6,10 @@ import { ContentHeader } from "@/components/ui/content-header";
 import AddPercentageRangeDialog from "@/components/debt-setting/percentage-range-dialog";
 import AddLiabilityDialog from "@/components/debt-setting/liabilty-dialog";
 import { type TableData } from "@/types/credit-debit";
+import { usePermissions } from "@/hooks/use-permissions";
 
 export default function DebtSettingsPage() {
+    const { canEdit } = usePermissions();
     const [view, setView] = useState<"liability" | "percentage">("liability");
     const handleDataChange = (_data: TableData[]) => {};
 
@@ -26,13 +28,15 @@ export default function DebtSettingsPage() {
                         title="Debt Setting"
                         description="Set and Manage reasons for liability and percentage range here"
                     />
-                    <div className="flex gap-2">
-                        {view === "liability" ? (
-                            <AddLiabilityDialog onAddLiability={handleAddLiability} />
-                        ) : (
-                            <AddPercentageRangeDialog />
-                        )}
-                    </div>
+                    {canEdit && (
+                        <div className="flex gap-2">
+                            {view === "liability" ? (
+                                <AddLiabilityDialog onAddLiability={handleAddLiability} />
+                            ) : (
+                                <AddPercentageRangeDialog />
+                            )}
+                        </div>
+                    )}
                 </div>
                 <section className="bg-transparent">
                     <LiabilityTable

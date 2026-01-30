@@ -28,6 +28,7 @@ import { useVendingTransactions, usePrintToken } from "@/hooks/use-vending";
 import { type PrintTokenPayload, type VendingTransaction } from "@/types/vending";
 import { toast } from "sonner";
 import { LoadingAnimation } from "@/components/ui/loading-animation";
+import { usePermissions } from "@/hooks/use-permissions";
 
 interface VendingTableProps {
     searchQuery?: string;
@@ -36,6 +37,7 @@ interface VendingTableProps {
 const VendingTable = ({ searchQuery = "" }: VendingTableProps = {}) => {
     const [rowsPerPage, setRowsPerPage] = useState<number>(10);
     const [currentPage, setCurrentPage] = useState<number>(1);
+    const { canEdit } = usePermissions();
 
     const { data: transactionsData, isLoading } = useVendingTransactions({
         page: currentPage - 1, // API uses 0-based indexing
@@ -121,7 +123,7 @@ const VendingTable = ({ searchQuery = "" }: VendingTableProps = {}) => {
                             <TableHead>VAT</TableHead>
                             <TableHead>Units</TableHead>
                             <TableHead>Status</TableHead>
-                            <TableHead>Actions</TableHead>
+                            {canEdit && <TableHead>Actions</TableHead>}
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -156,28 +158,30 @@ const VendingTable = ({ searchQuery = "" }: VendingTableProps = {}) => {
                                             {transaction.status}
                                         </span>
                                     </TableCell>
-                                    <TableCell>
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="ring-gray-200/20 hover:bg-gray-100 focus:bg-gray-100 cursor-pointer"
-                                                >
-                                                    <EllipsisVertical size={14} />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                                <DropdownMenuItem
-                                                    className="flex items-center gap-2 cursor-pointer"
-                                                    onClick={() => handleReprintToken(transaction)}
-                                                >
-                                                    <Printer size={14} />
-                                                    Reprint Token
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    </TableCell>
+                                    {canEdit && (
+                                        <TableCell>
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="ring-gray-200/20 hover:bg-gray-100 focus:bg-gray-100 cursor-pointer"
+                                                    >
+                                                        <EllipsisVertical size={14} />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuItem
+                                                        className="flex items-center gap-2 cursor-pointer"
+                                                        onClick={() => handleReprintToken(transaction)}
+                                                    >
+                                                        <Printer size={14} />
+                                                        Reprint Token
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </TableCell>
+                                    )}
                                 </TableRow>
                             ))
                         )}

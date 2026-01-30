@@ -18,9 +18,15 @@ import {
 import { Label } from "../ui/label";
 import TokenFormDialog from "./token-form-dialog";
 import { Send } from "lucide-react";
+import { usePermissions } from "@/hooks/use-permissions";
 
 export default function VendTokenDialog() {
     const [tokenType, setTokenType] = useState("");
+    const { canEdit } = usePermissions();
+
+    if (!canEdit) {
+        return null;
+    }
 
     return (
         <Dialog>

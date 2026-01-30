@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Search, Check, RefreshCw, Percent } from "lucide-react";
 import { useState, useCallback, use, useEffect, useMemo } from "react";
+import { usePermissions } from "@/hooks/use-permissions";
 import FeederDetailsTable from "@/components/billing/energy-import/feeder-details-table";
 import { ConfirmationDialog } from "@/components/billing/energy-import/confirmation-dialog";
 import { toast } from "sonner";

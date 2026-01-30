@@ -245,5 +245,5 @@ export interface VendingDashboardResponse {
 export interface VendingDashboardPayload {
   band?: string;
   year?: string;
-  meterCategory?: string;
+  meterClass?: string;
 }

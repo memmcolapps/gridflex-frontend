@@ -17,10 +17,12 @@ import {
   SquareArrowOutUpRight,
 } from "lucide-react";
 import { useState } from "react";
+import { usePermissions } from "@/hooks/use-permissions";
 import EnergyImportTable from "@/components/billing/energy-import/energy-import-table";
 import ExportEnergyImportDialog from "@/components/billing/energy-import/export-energy-import-dialog";
 
 export default function EnergyImportPage() {
+  const { canEdit } = usePermissions();
   const [isLoading] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [isBulkUploadDialogOpen, setIsBulkUploadDialogOpen] = useState(false);
@@ -187,26 +189,28 @@ export default function EnergyImportPage() {
           title="Energy Import"
           description="Set and manage feeder readings to track electricity usage and generate bills"
         />
-        <div className="flex flex-col gap-2 md:flex-row">
-          <Button
-            className="flex w-full cursor-pointer items-center gap-2 border border-[#161CCA] font-medium text-[#161CCA] md:w-auto"
-            variant="outline"
-            size="lg"
-            onClick={() => setIsBulkUploadDialogOpen(true)}
-          >
-            <CirclePlus size={14} strokeWidth={2.3} className="h-4 w-4" />
-            <span className="text-sm md:text-base">Bulk Upload</span>
-          </Button>
-          <Button
-            className="flex w-full cursor-pointer items-center gap-2 bg-[#161CCA] font-medium text-white md:w-auto"
-            variant="secondary"
-            size="lg"
-            onClick={() => setIsBulkUploadDialogOpen(true)}
-          >
-            <CirclePlus size={14} strokeWidth={2.3} className="h-4 w-4" />
-            <span className="text-sm md:text-base">Add Readings</span>
-          </Button>
-        </div>
+        {canEdit && (
+          <div className="flex flex-col gap-2 md:flex-row">
+            <Button
+              className="flex w-full cursor-pointer items-center gap-2 border border-[#161CCA] font-medium text-[#161CCA] md:w-auto"
+              variant="outline"
+              size="lg"
+              onClick={() => setIsBulkUploadDialogOpen(true)}
+            >
+              <CirclePlus size={14} strokeWidth={2.3} className="h-4 w-4" />
+              <span className="text-sm md:text-base">Bulk Upload</span>
+            </Button>
+            <Button
+              className="flex w-full cursor-pointer items-center gap-2 bg-[#161CCA] font-medium text-white md:w-auto"
+              variant="secondary"
+              size="lg"
+              onClick={() => setIsBulkUploadDialogOpen(true)}
+            >
+              <CirclePlus size={14} strokeWidth={2.3} className="h-4 w-4" />
+              <span className="text-sm md:text-base">Add Readings</span>
+            </Button>
+          </div>
+        )}
       </div>
 
       <div className="mb-8 flex items-center justify-between bg-transparent">

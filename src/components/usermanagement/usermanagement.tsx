@@ -39,6 +39,7 @@ import { type EditUserPayload } from "@/service/user-service";
 import { formatDistanceToNow, format, parseISO } from "date-fns";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { LoadingAnimation } from "@/components/ui/loading-animation";
+import { usePermissions } from "@/hooks/use-permissions";
 
 const parseTimestamp = (timestamp: string): Date => {
   // Convert format "2025-10-22 10:32:15.338908-05" to ISO 8601
@@ -70,6 +71,7 @@ export default function UserManagement() {
    const { data: users, isLoading } = useGetUsers(searchTerm);
    const { mutate: createUser } = useCreateUser();
    const { mutate: editUser } = useEditUser();
+   const { canEdit } = usePermissions();
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -189,19 +191,21 @@ export default function UserManagement() {
           <p className="text-muted-foreground text-sm">
             Manage your team members and their group permissions here
           </p>
-          <AddUserForm
-            onSave={(newUser) => {
-              handleCreateUser(newUser);
-            }}
-            triggerButton={
-              <Button className="flex cursor-pointer items-center gap-2 bg-[#161CCA] hover:bg-[#121eb3]">
-                <div className="flex items-center justify-center p-0.5">
-                  <PlusCircleIcon className="text-[#FEFEFE]" size={12} />
-                </div>
-                <span className="text-white">Add User</span>
-              </Button>
-            }
-          />
+          {canEdit && (
+            <AddUserForm
+              onSave={(newUser) => {
+                handleCreateUser(newUser);
+              }}
+              triggerButton={
+                <Button className="flex cursor-pointer items-center gap-2 bg-[#161CCA] hover:bg-[#121eb3]">
+                  <div className="flex items-center justify-center p-0.5">
+                    <PlusCircleIcon className="text-[#FEFEFE]" size={12} />
+                  </div>
+                  <span className="text-white">Add User</span>
+                </Button>
+              }
+            />
+          )}
         </div>
 
         <div className="mb-6 flex w-80 items-center gap-4">
@@ -391,34 +395,36 @@ export default function UserManagement() {
                     {formatDateAdded(new Date(user.createdAt))}
                   </TableCell>
                   <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild disabled={isEditDialogOpen}>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-8 w-8 cursor-pointer p-2"
+                    {canEdit && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild disabled={isEditDialogOpen}>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-8 w-8 cursor-pointer p-2"
+                          >
+                            <MoreVertical size={14} />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent
+                          align="center"
+                          className="w-35 cursor-pointer"
                         >
-                          <MoreVertical size={14} />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent
-                        align="center"
-                        className="w-35 cursor-pointer"
-                      >
-                        <DropdownMenuItem
-                          onSelect={() => {
-                            setEditingUser(user);
-                            setIsEditDialogOpen(true);
-                          }}
-                        >
-                          <div className="flex w-full items-center gap-2">
-                            <Pencil size={14} />
-                            <span className="cursor-pointer">Edit User</span>
-                          </div>
-                        </DropdownMenuItem>
-                        <UserStatusToggleDropdownItem user={user} />
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                          <DropdownMenuItem
+                            onSelect={() => {
+                              setEditingUser(user);
+                              setIsEditDialogOpen(true);
+                            }}
+                          >
+                            <div className="flex w-full items-center gap-2">
+                              <Pencil size={14} />
+                              <span className="cursor-pointer">Edit User</span>
+                            </div>
+                          </DropdownMenuItem>
+                          <UserStatusToggleDropdownItem user={user} />
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}

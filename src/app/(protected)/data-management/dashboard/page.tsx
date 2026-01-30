@@ -15,7 +15,7 @@ import { EditCompleteProfileModal } from "@/components/profile/editcompleteprofi
 export default function DashboardPage() {
   const [selectedBand, setSelectedBand] = useState("All Bands");
   const [selectedYear, setSelectedYear] = useState("All Years");
-  const [selectedMeterCategory, setSelectedMeterCategory] = useState("All Categories");
+  const [selectedMeterCategory, setSelectedMeterCategory] = useState("Meter Category");
   const [showCompleteProfileModal, setShowCompleteProfileModal] =
     useState(false);
   const [showEditCompleteProfileModal, setShowEditCompleteProfileModal] =
@@ -215,7 +215,6 @@ export default function DashboardPage() {
                 icon="CircleCheckBig"
                 iconBgColor="bg-[rgba(191,211,254,1)]"
                 iconColor="text-[rgba(22,28,202,1)]"
-                url="/data-management/meter-management"
               />
               <StatusCard
                 title="Allocated"

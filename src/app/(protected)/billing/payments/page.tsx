@@ -13,9 +13,11 @@ import {
 } from "@/components/ui/select";
 import { Search, SquareArrowOutUpRight, SendHorizontal } from "lucide-react";
 import { useState } from "react";
+import { usePermissions } from "@/hooks/use-permissions";
 import PaymentHistoryTable from "@/components/billing/payment-history/payment-history-table";
 
 export default function PaymentHistoryPage() {
+  const { canEdit } = usePermissions();
   const [isLoading] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [sortConfig, setSortConfig] = useState<string>("");
