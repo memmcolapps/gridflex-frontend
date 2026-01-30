@@ -10,6 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ChevronDown, ChevronRight } from "lucide-react";
+import { useUpdateGroupPermission } from "@/hooks/use-groups";
+import { type UpdateGroupPermissionPayload } from "@/types/group-permission-user";
 
 interface GroupPermission {
   id: string;
@@ -48,6 +50,7 @@ export default function EditGroupPermissionForm({
   groupPermission,
   onSave,
 }: EditGroupPermissionFormProps) {
+  const updateGroupPermission = useUpdateGroupPermission();
   const [groupTitle, setGroupTitle] = useState("");
   const [selectedModules, setSelectedModules] = useState<string[]>([]);
   const [selectedAccessLevels, setSelectedAccessLevels] = useState<string[]>(
@@ -244,16 +247,99 @@ export default function EditGroupPermissionForm({
       return;
     }
 
-    const formData: EditGroupPermissionFormData & { id: string } = {
+    // Transform form data to UpdateGroupPermissionPayload
+    const payload: UpdateGroupPermissionPayload = {
       id: groupPermission.id,
       groupTitle,
-      moduleAccess: selectedModules,
-      accessLevel: selectedAccessLevels,
+      modules: selectedModules.map((moduleValue) => {
+        // Get module name from options
+        const moduleOption = moduleAccessOptions.find(
+          (opt) => opt.value === moduleValue,
+        );
+        const moduleName = moduleOption?.label || moduleValue;
+
+        // Check if this is a Data Management submodule
+        const isDataManagementSubModule = [
+          "organization",
+          "meter-management",
+          "customer-management",
+          "tarrif",
+          "band-management",
+          "reviewandapproval",
+          "debt-management",
+        ].includes(moduleValue);
+
+        // Find the original module from groupPermission to get subModules
+        const originalModule = groupPermission.modules.find((m) => {
+          if (isDataManagementSubModule) {
+            return m.name === "Data Management";
+          }
+          return m.name === moduleName;
+        });
+
+        if (isDataManagementSubModule && originalModule) {
+          // Return Data Management module with updated subModules
+          return {
+            id: originalModule.id,
+            name: "Data Management",
+            access: true,
+            subModules: originalModule.subModules.map((sub) => {
+              const subModuleMap: Record<string, string> = {
+                Organization: "organization",
+                "Meter Management": "meter-management",
+                "Customer Management": "customer-management",
+                Tariff: "tarrif",
+                "Band Management": "band-management",
+                "Review and Approval": "reviewandapproval",
+                "Debt Management": "debt-management",
+              };
+              const subModuleKey = subModuleMap[sub.name];
+              return {
+                ...sub,
+                access: subModuleKey === moduleValue ? true : sub.access,
+              };
+            }),
+          };
+        }
+
+        // Return regular module
+        return {
+          id: originalModule?.id || "",
+          name: moduleName,
+          access: true,
+          subModules: originalModule?.subModules || [],
+        };
+      }),
+      permission: {
+        id: groupPermission.permissions.id,
+        view: selectedAccessLevels.includes("view-only"),
+        edit: selectedAccessLevels.includes("edit-only"),
+        approve: selectedAccessLevels.includes("approve-only"),
+        disable: selectedAccessLevels.includes("disable-only"),
+      },
     };
 
-    onSave(formData);
-    onOpenChange(false);
-    resetForm();
+    // Use the mutation hook to update group permission
+    updateGroupPermission.mutate(
+      { groupId: groupPermission.id, payload },
+      {
+        onSuccess: () => {
+          onOpenChange(false);
+          resetForm();
+          if (onSave) {
+            onSave({
+              id: groupPermission.id,
+              groupTitle,
+              moduleAccess: selectedModules,
+              accessLevel: selectedAccessLevels,
+            });
+          }
+        },
+        onError: (error) => {
+          console.error("Failed to update group permission:", error);
+        },
+      },
+    );
   };
 
   const handleCancel = () => {
@@ -462,8 +548,9 @@ export default function EditGroupPermissionForm({
               type="button"
               onClick={handleSubmit}
               className="cursor-pointer bg-[#161CCA] text-white"
+              disabled={updateGroupPermission.isPending}
             >
-              Update
+              {updateGroupPermission.isPending ? "Updating..." : "Update"}
             </Button>
           </div>
         </div>
