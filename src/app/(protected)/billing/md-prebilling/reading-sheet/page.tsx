@@ -63,8 +63,12 @@ export default function ReadingSheetPage() {
   };
 
   // Start with undefined - no filter applied by default
-  const [selectedMonth, setSelectedMonth] = useState<string | undefined>(undefined);
-  const [selectedYear, setSelectedYear] = useState<string | undefined>(undefined);
+  const [selectedMonth, setSelectedMonth] = useState<string | undefined>(
+    undefined,
+  );
+  const [selectedYear, setSelectedYear] = useState<string | undefined>(
+    undefined,
+  );
   // Display values from latest API response
   const [displayMonth, setDisplayMonth] = useState<string>("");
   const [displayYear, setDisplayYear] = useState<string>("");
@@ -87,17 +91,30 @@ export default function ReadingSheetPage() {
     ...Array.from({ length: 6 }, (_, i) => (currentYear - i).toString()),
   ];
 
-  // Handle filter changes - activates filtering
+  // Handle filter changes - activates filtering and always sends both month and year
   const handleMonthChange = (month: string) => {
     setSelectedMonth(month);
     setDisplayMonth(month);
     setIsFilterActive(true);
+    // Ensure year is always set when month changes - default to current year if not selected
+    if (!selectedYear) {
+      const defaultYear = currentYear.toString();
+      setSelectedYear(defaultYear);
+      setDisplayYear(defaultYear);
+    }
   };
 
   const handleYearChange = (year: string) => {
     setSelectedYear(year);
     setDisplayYear(year);
     setIsFilterActive(true);
+
+    // Ensure month is always set when year changes - default to current month if not selected
+    if (!selectedMonth) {
+      const defaultMonth = months[currentMonthIndex] ?? "January";
+      setSelectedMonth(defaultMonth);
+      setDisplayMonth(defaultMonth);
+    }
 
     // If selecting current year and the selected month is in the future, reset it
     if (year === currentYear.toString() && selectedMonth) {
@@ -112,12 +129,15 @@ export default function ReadingSheetPage() {
   };
 
   // Callback to receive latest data from API response
-  const handleDataLoaded = useCallback((latestMonth: string, latestYear: string) => {
-    if (!isFilterActive) {
-      setDisplayMonth(latestMonth);
-      setDisplayYear(latestYear);
-    }
-  }, [isFilterActive]);
+  const handleDataLoaded = useCallback(
+    (latestMonth: string, latestYear: string) => {
+      if (!isFilterActive) {
+        setDisplayMonth(latestMonth);
+        setDisplayYear(latestYear);
+      }
+    },
+    [isFilterActive],
+  );
 
   return (
     <div className="p-6">

@@ -75,13 +75,21 @@ export default function ReadingSheetPage() {
     ...Array.from({ length: 6 }, (_, i) => (currentYear - i).toString()),
   ];
 
-  // Handle filter changes
+  // Handle filter changes - always send both month and year
   const handleMonthChange = (month: string) => {
     setSelectedMonth(month);
+    // Ensure year is always set when month changes
+    if (!selectedYear) {
+      setSelectedYear(currentYear.toString());
+    }
   };
 
   const handleYearChange = (year: string) => {
     setSelectedYear(year);
+    // Ensure month is always set when year changes
+    if (!selectedMonth) {
+      setSelectedMonth(months[currentMonthIndex] ?? "January");
+    }
   };
 
   return (
