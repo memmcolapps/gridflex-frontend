@@ -77,12 +77,15 @@ export default function EditUserDialog({
             }));
           }
         } else if (field === "unitName") {
-          // Update the unit name
+          // Update the nodeId and find the corresponding unit name
+          const selectedUnit = availableUnits.find((unit) => unit.value === e);
           setFormData((prev) => ({
             ...prev,
+            nodeId: e,
             nodes: {
               ...prev.nodes,
-              name: e,
+              id: e,
+              name: selectedUnit?.label || prev.nodes?.name || "",
             },
           }));
         } else {
@@ -99,7 +102,7 @@ export default function EditUserDialog({
         }));
       }
     },
-    [groupPermissions],
+    [groupPermissions, availableUnits],
   );
 
   const handleSubmit = useCallback(
@@ -227,7 +230,7 @@ export default function EditUserDialog({
                 Unit Name <span className="text-red-500">*</span>
               </Label>
               <Select
-                value={formData.nodes?.name || ""}
+                value={formData.nodeId || ""}
                 onValueChange={(value) => handleChange(value, "unitName")}
                 required
               >
