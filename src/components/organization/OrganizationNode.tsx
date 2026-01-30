@@ -31,6 +31,7 @@ import {
   matchNodeTypeToHierarchy,
   getHierarchyDisplayLabel,
 } from "../../utils/hierarchy-utils";
+import { usePermissions } from "@/hooks/use-permissions";
 
 interface OrganizationNodeProps {
   node: Node;
@@ -41,18 +42,19 @@ export const OrganizationNode = ({
   node,
   level = 0,
 }: OrganizationNodeProps) => {
+  const { canEdit } = usePermissions();
   const [children, setChildren] = useState<Node[]>(node.nodesTree ?? []);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedNodeType, setSelectedNodeType] = useState("");
   const [nodeDataForEdit, setNodeDataForEdit] = useState<FormData>(
-    mapNodeInfoToFormData(node.nodeInfo),
+    mapNodeInfoToFormData(node.nodeInfo, node.name),
   );
 
   useEffect(() => {
     setChildren(node.nodesTree ?? []);
-    setNodeDataForEdit(mapNodeInfoToFormData(node.nodeInfo));
+    setNodeDataForEdit(mapNodeInfoToFormData(node.nodeInfo, node.name));
   }, [node]);
 
   const handleAddNode = (data: {
@@ -75,7 +77,7 @@ export const OrganizationNode = ({
   };
 
   const displayName = node.nodeInfo?.name ?? node.name;
-  const displayNodeType = node.nodeInfo?.type ?? node.name;
+  const displayNodeType = node.nodeInfo?.type ?? "root";
 
   const getNormalizedDisplayType = (type?: string): string => {
     if (!type) return "Node";
@@ -100,50 +102,52 @@ export const OrganizationNode = ({
             {renderNodeIcon(displayNodeType)}
             {displayName}
           </span>
-          <div className="flex items-center">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="secondary"
-                  className="cursor-pointer border-none p-1 text-gray-600 ring-[rgba(22,28,202,0)] hover:text-gray-800 focus:outline-none"
-                >
-                  <Plus size={14} strokeWidth={2.7} />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem onClick={() => openAddDialog("Region")}>
-                  <Grid2X2 size={14} className="mr-2 text-gray-700" /> Region
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => openAddDialog("Business Hub")}>
-                  <Building size={14} className="mr-2 text-gray-700" /> Business
-                  Hub
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => openAddDialog("Service Center")}
-                >
-                  <Wrench size={14} className="mr-2 text-gray-700" /> Service
-                  Centre
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => openAddDialog("Substation")}>
-                  <Database size={14} className="mr-2 text-gray-700" />
-                  Substation
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => openAddDialog("Feeder Line")}>
-                  <Zap size={14} className="mr-2 text-gray-700" /> Feeder Line
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => openAddDialog("DSS")}>
-                  <Lightbulb size={14} className="mr-2 text-gray-700" />{" "}
-                  Distribution Substation (DSS)
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <Button
-              onClick={() => setIsEditDialogOpen(true)}
-              className="cursor-pointer border-none p-1 text-gray-600 ring-[rgba(22,28,202,0)] hover:text-gray-800 focus:outline-none"
-            >
-              <Edit size={14} strokeWidth={2.7} />
-            </Button>
-          </div>
+          {canEdit && (
+            <div className="flex items-center">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="secondary"
+                    className="cursor-pointer border-none p-1 text-gray-600 ring-[rgba(22,28,202,0)] hover:text-gray-800 focus:outline-none"
+                  >
+                    <Plus size={14} strokeWidth={2.7} />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => openAddDialog("Region")}>
+                    <Grid2X2 size={14} className="mr-2 text-gray-700" /> Region
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => openAddDialog("Business Hub")}>
+                    <Building size={14} className="mr-2 text-gray-700" /> Business
+                    Hub
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => openAddDialog("Service Center")}
+                  >
+                    <Wrench size={14} className="mr-2 text-gray-700" /> Service
+                    Centre
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => openAddDialog("Substation")}>
+                    <Database size={14} className="mr-2 text-gray-700" />
+                    Substation
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => openAddDialog("Feeder Line")}>
+                    <Zap size={14} className="mr-2 text-gray-700" /> Feeder Line
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => openAddDialog("DSS")}>
+                    <Lightbulb size={14} className="mr-2 text-gray-700" />{" "}
+                    Distribution Substation (DSS)
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Button
+                onClick={() => setIsEditDialogOpen(true)}
+                className="cursor-pointer border-none p-1 text-gray-600 ring-[rgba(22,28,202,0)] hover:text-gray-800 focus:outline-none"
+              >
+                <Edit size={14} strokeWidth={2.7} />
+              </Button>
+            </div>
+          )}
         </div>
         {isExpanded &&
           children.map((childNode) => (

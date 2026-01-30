@@ -340,7 +340,9 @@ export function SidebarNav() {
           return {
             ...item,
             submenuItems: item.submenuItems.filter((subItem) => {
-              // Filter submenu items based on submodule access
+              // Dashboard is always visible if user has access to Data Management module
+              if (subItem.title === "Dashboard") return true;
+              // Filter other submenu items based on submodule access
               return hasSubModuleAccess("Data Management", subItem.title);
             }),
           };

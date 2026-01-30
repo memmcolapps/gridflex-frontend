@@ -26,6 +26,7 @@ import { type Customer } from "@/types/customer-types";
 import { FilterControl, SearchControl, SortControl } from "../search-control";
 import { Card } from "../ui/card";
 import { LoadingAnimation } from "@/components/ui/loading-animation";
+import { usePermissions } from "@/hooks/use-permissions";
 
 interface CustomerTableProps {
   onEditCustomer: (customer: Customer) => void;
@@ -40,6 +41,7 @@ export default function CustomerTable({
   onViewMeter,
   onBlockCustomer,
 }: CustomerTableProps) {
+  const { canEdit } = usePermissions();
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -180,24 +182,28 @@ export default function CustomerTable({
                 align="center"
                 className="w-fit cursor-pointer"
               >
-                <DropdownMenuItem
-                  onSelect={() => onEditCustomer(customer)}
-                  className="w-fit"
-                >
-                  <div className="flex w-fit items-center gap-2">
-                    <span className="w-fit cursor-pointer">Edit Customer</span>
-                  </div>
-                </DropdownMenuItem>
+                {canEdit && (
+                  <DropdownMenuItem
+                    onSelect={() => onEditCustomer(customer)}
+                    className="w-fit"
+                  >
+                    <div className="flex w-fit items-center gap-2">
+                      <span className="w-fit cursor-pointer">Edit Customer</span>
+                    </div>
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem onSelect={() => onViewMeter(customer)}>
                   <div className="flex w-full items-center gap-2">
                     <span className="cursor-pointer">View Meter</span>
                   </div>
                 </DropdownMenuItem>
-                <DropdownMenuItem onSelect={() => onBlockCustomer(customer)}>
-                  <div className="flex w-full items-center gap-2">
-                    <span className="cursor-pointer">Block</span>
-                  </div>
-                </DropdownMenuItem>
+                {canEdit && (
+                  <DropdownMenuItem onSelect={() => onBlockCustomer(customer)}>
+                    <div className="flex w-full items-center gap-2">
+                      <span className="cursor-pointer">Block</span>
+                    </div>
+                  </DropdownMenuItem>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           </TableCell>

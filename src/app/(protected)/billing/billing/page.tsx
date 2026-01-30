@@ -30,6 +30,7 @@ import {
   TriangleAlert,
 } from "lucide-react";
 import { useState, useEffect } from "react";
+import { usePermissions } from "@/hooks/use-permissions";
 
 export default function BillingPage() {
   const [isLoading] = useState(false);

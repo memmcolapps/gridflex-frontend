@@ -4,6 +4,7 @@ import { useState } from "react";
 import { FilterControl } from "@/components/search-control";
 import { Button } from "@/components/ui/button";
 import { ContentHeader } from "@/components/ui/content-header";
+import { usePermissions } from "@/hooks/use-permissions";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -108,6 +109,7 @@ const filterSections = [
 ];
 
 export default function DataCollScheduler() {
+  const { canEdit } = usePermissions();
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState<boolean>(false);
@@ -411,19 +413,21 @@ export default function DataCollScheduler() {
           title="Data Collection Scheduler"
           description="Set meter sync intervals and configure communication settings for efficient data transmission"
         />
-        <Button
-          className="flex w-full cursor-pointer items-center gap-2 border bg-[#161CCA] font-medium text-white md:w-auto"
-          variant="outline"
-          size="lg"
-          onClick={() => setIsDialogOpen(true)}
-        >
-          <RefreshCcw
-            size={14}
-            strokeWidth={2.3}
-            className="h-4 w-4 text-white"
-          />
-          <span className="text-sm md:text-base">Set Sync Schedule</span>
-        </Button>
+        {canEdit && (
+          <Button
+            className="flex w-full cursor-pointer items-center gap-2 border bg-[#161CCA] font-medium text-white md:w-auto"
+            variant="outline"
+            size="lg"
+            onClick={() => setIsDialogOpen(true)}
+          >
+            <RefreshCcw
+              size={14}
+              strokeWidth={2.3}
+              className="h-4 w-4 text-white"
+            />
+            <span className="text-sm md:text-base">Set Sync Schedule</span>
+          </Button>
+        )}
       </div>
 
       <div className="mb-4 flex w-full flex-col items-center gap-4 md:flex-row">
@@ -553,52 +557,58 @@ export default function DataCollScheduler() {
                         align="center"
                         className="w-48 bg-white shadow-lg"
                       >
-                        <DropdownMenuItem
-                          className="flex cursor-pointer items-center gap-2"
-                          onClick={() =>
-                            openConfirmDialog(
-                              item.status === "Paused" ? "continue" : "pause",
-                              item.sNo,
-                            )
-                          }
-                        >
-                          {item.status === "Paused" ? (
-                            <>
-                              <Play size={14} className="text-gray-500" />
-                              <span className="text-sm text-black">
-                                Continue Schedule
-                              </span>
-                            </>
-                          ) : (
-                            <>
-                              <CirclePause
-                                size={14}
-                                className="text-gray-500"
-                              />
-                              <span className="text-sm text-black">
-                                Pause Schedule
-                              </span>
-                            </>
-                          )}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          className="flex cursor-pointer items-center gap-2"
-                          onClick={() => openEditDialog(item.sNo)}
-                        >
-                          <Pencil size={14} className="text-gray-500" />
-                          <span className="text-sm text-black">
-                            Edit Sync Schedule
-                          </span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          className="flex cursor-pointer items-center gap-2"
-                          onClick={() => openConfirmDialog("delete", item.sNo)}
-                        >
-                          <Trash2 size={14} className="text-gray-500" />
-                          <span className="text-sm whitespace-nowrap text-black">
-                            Delete Sync Schedule
-                          </span>
-                        </DropdownMenuItem>
+                        {canEdit && (
+                          <DropdownMenuItem
+                            className="flex cursor-pointer items-center gap-2"
+                            onClick={() =>
+                              openConfirmDialog(
+                                item.status === "Paused" ? "continue" : "pause",
+                                item.sNo,
+                              )
+                            }
+                          >
+                            {item.status === "Paused" ? (
+                              <>
+                                <Play size={14} className="text-gray-500" />
+                                <span className="text-sm text-black">
+                                  Continue Schedule
+                                </span>
+                              </>
+                            ) : (
+                              <>
+                                <CirclePause
+                                  size={14}
+                                  className="text-gray-500"
+                                />
+                                <span className="text-sm text-black">
+                                  Pause Schedule
+                                </span>
+                              </>
+                            )}
+                          </DropdownMenuItem>
+                        )}
+                        {canEdit && (
+                          <DropdownMenuItem
+                            className="flex cursor-pointer items-center gap-2"
+                            onClick={() => openEditDialog(item.sNo)}
+                          >
+                            <Pencil size={14} className="text-gray-500" />
+                            <span className="text-sm text-black">
+                              Edit Sync Schedule
+                            </span>
+                          </DropdownMenuItem>
+                        )}
+                        {canEdit && (
+                          <DropdownMenuItem
+                            className="flex cursor-pointer items-center gap-2"
+                            onClick={() => openConfirmDialog("delete", item.sNo)}
+                          >
+                            <Trash2 size={14} className="text-gray-500" />
+                            <span className="text-sm whitespace-nowrap text-black">
+                              Delete Sync Schedule
+                            </span>
+                          </DropdownMenuItem>
+                        )}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>

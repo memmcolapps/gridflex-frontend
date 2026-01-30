@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Search, Check, RefreshCw, Percent } from "lucide-react";
 import { useState, useEffect, useMemo, use } from "react";
+import { usePermissions } from "@/hooks/use-permissions";
 import { ConfirmationDialog } from "@/components/billing/energy-import/confirmation-dialog";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -54,6 +55,7 @@ interface EnergyImportData {
 export default function FeederDetailsPage({ params }: FeederDetailsPageProps) {
     const { feederId } = use(params);
     const router = useRouter();
+    const { canEdit } = usePermissions();
 
     const [inputValue, setInputValue] = useState("");
     const [selectedMonth, setSelectedMonth] = useState<string>("July"); // Current month, 01:40 PM WAT, July 22, 2025
@@ -388,31 +390,33 @@ export default function FeederDetailsPage({ params }: FeederDetailsPageProps) {
                     title={`${feederInfo.feederName} Feeder`}
                     description={`Asset ID: ${feederInfo.assetId}`}
                 />
-                <div className="flex flex-col gap-2 md:flex-row">
-                    <Button
-                        className="flex w-full cursor-pointer items-center gap-2 border border-[#161CCA] font-medium text-[#161CCA] md:w-auto"
-                        variant="outline"
-                        size="lg"
-                        onClick={handleApplyClick}
-                        disabled={isLoading}
-                    >
-                        <Check size={14} strokeWidth={2.3} className="h-4 w-4" />
-                        <span className="text-sm md:text-base">
-                            {isLoading ? "Applying..." : "Apply"}
-                        </span>
-                    </Button>
-                    <Button
-                        className="flex w-full cursor-pointer items-center gap-2 bg-[#161CCA] font-medium text-white md:w-auto"
-                        variant="secondary"
-                        size="lg"
-                        onClick={handleSave}
-                        disabled={isLoading}
-                    >
-                        <span className="text-sm md:text-base">
-                            {isLoading ? "Saving..." : "Save"}
-                        </span>
-                    </Button>
-                </div>
+                {canEdit && (
+                    <div className="flex flex-col gap-2 md:flex-row">
+                        <Button
+                            className="flex w-full cursor-pointer items-center gap-2 border border-[#161CCA] font-medium text-[#161CCA] md:w-auto"
+                            variant="outline"
+                            size="lg"
+                            onClick={handleApplyClick}
+                            disabled={isLoading}
+                        >
+                            <Check size={14} strokeWidth={2.3} className="h-4 w-4" />
+                            <span className="text-sm md:text-base">
+                                {isLoading ? "Applying..." : "Apply"}
+                            </span>
+                        </Button>
+                        <Button
+                            className="flex w-full cursor-pointer items-center gap-2 bg-[#161CCA] font-medium text-white md:w-auto"
+                            variant="secondary"
+                            size="lg"
+                            onClick={handleSave}
+                            disabled={isLoading}
+                        >
+                            <span className="text-sm md:text-base">
+                                {isLoading ? "Saving..." : "Save"}
+                            </span>
+                        </Button>
+                    </div>
+                )}
             </div>
 
             <div className="mb-8 flex items-center justify-between">
@@ -466,64 +470,66 @@ export default function FeederDetailsPage({ params }: FeederDetailsPageProps) {
                     </div>
                 </div>
                 <div className="flex items-center gap-8">
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-10 w-20 cursor-pointer rounded-4xl bg-green-500 text-white hover:bg-green-600"
-                            >
-                                <RefreshCw size={16} className="text-white" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-64">
-                            <DropdownMenuItem
-                                onClick={() =>
-                                    handleReplicationClick("Replicate Previous Consumption")
-                                }
-                                className="cursor-pointer"
-                            >
-                                <RefreshCw size={16} className="mr-2" />
-                                Replicate Previous Consumption
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onClick={() =>
-                                    handleReplicationClick("Replicate last consumption +10%")
-                                }
-                                className="cursor-pointer"
-                            >
-                                <Percent size={16} className="mr-2" />
-                                Replicate last consumption +10%
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onClick={() =>
-                                    handleReplicationClick("Replicate last consumption +15%")
-                                }
-                                className="cursor-pointer"
-                            >
-                                <Percent size={16} className="mr-2" />
-                                Replicate last consumption +15%
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onClick={() =>
-                                    handleReplicationClick("Replicate last consumption -10%")
-                                }
-                                className="cursor-pointer"
-                            >
-                                <Percent size={16} className="mr-2" />
-                                Replicate last consumption -10%
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onClick={() =>
-                                    handleReplicationClick("Replicate last consumption -15%")
-                                }
-                                className="cursor-pointer"
-                            >
-                                <Percent size={16} className="mr-2" />
-                                Replicate last consumption -15%
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                    {canEdit && (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-10 w-20 cursor-pointer rounded-4xl bg-green-500 text-white hover:bg-green-600"
+                                >
+                                    <RefreshCw size={16} className="text-white" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-64">
+                                <DropdownMenuItem
+                                    onClick={() =>
+                                        handleReplicationClick("Replicate Previous Consumption")
+                                    }
+                                    className="cursor-pointer"
+                                >
+                                    <RefreshCw size={16} className="mr-2" />
+                                    Replicate Previous Consumption
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onClick={() =>
+                                        handleReplicationClick("Replicate last consumption +10%")
+                                    }
+                                    className="cursor-pointer"
+                                >
+                                    <Percent size={16} className="mr-2" />
+                                    Replicate last consumption +10%
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onClick={() =>
+                                        handleReplicationClick("Replicate last consumption +15%")
+                                    }
+                                    className="cursor-pointer"
+                                >
+                                    <Percent size={16} className="mr-2" />
+                                    Replicate last consumption +15%
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onClick={() =>
+                                        handleReplicationClick("Replicate last consumption -10%")
+                                    }
+                                    className="cursor-pointer"
+                                >
+                                    <Percent size={16} className="mr-2" />
+                                    Replicate last consumption -10%
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    onClick={() =>
+                                        handleReplicationClick("Replicate last consumption -15%")
+                                    }
+                                    className="cursor-pointer"
+                                >
+                                    <Percent size={16} className="mr-2" />
+                                    Replicate last consumption -15%
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    )}
 
                     <div className="text-sm text-gray-600">
                         <div>Efficiency Score:</div>

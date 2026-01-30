@@ -66,7 +66,6 @@ export default function EditGroupPermissionForm({
   }>({});
 
   const moduleAccessOptions = [
-    { value: "dashboard", label: "Dashboard", group: "Data Management" },
     {
       value: "organization",
       label: "Organization",
@@ -131,7 +130,6 @@ export default function EditGroupPermissionForm({
       Vending: "vending",
       HES: "hes",
       "User Management": "user-management",
-      Dashboard: "dashboard",
     };
 
     const accessArray: string[] = [];

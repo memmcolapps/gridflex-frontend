@@ -35,6 +35,7 @@ import type { AssignMeterPayload } from "@/service/assign-meter-service";
 import { LoadingAnimation } from "@/components/ui/loading-animation";
 import { useDownloadAssignCsvTemplate, useDownloadAssignExcelTemplate, useBulkAssignMeters, useExportActualMeters, useExportVirtualMeters, useDownloadVirtualAssignCsvTemplate, useDownloadVirtualAssignExcelTemplate, useBulkVirtualAssignMeters } from "@/hooks/use-meter-bulk";
 import { toast } from "sonner";
+import { usePermissions } from "@/hooks/use-permissions";
 import {
     Dialog,
     DialogContent,
@@ -131,6 +132,7 @@ export default function MeterManagementPage() {
         type: activeTab === "actual" ? "allocated" : "virtual",
     });
 
+    const { canEdit } = usePermissions();
 
     const { data: customerRecordData, isLoading: isCustomerRecordLoading } = useCustomerRecordQuery(customerIdInput);
     const { data: virtualCustomerRecordData, isLoading: isVirtualCustomerRecordLoading } = useCustomerRecordQuery(virtualCustomerIdInput);
@@ -1053,41 +1055,43 @@ export default function MeterManagementPage() {
                 <div className="flex items-center justify-between mb-6">
                     <h1 className="text-3xl font-bold">Meter Management</h1>
                 </div>
-                <div className="flex flex-col md:flex-row gap-2 bg-transparent">
-                    <Button
-                        className="flex items-center gap-2 border font-medium border-[#161CCA] text-[#161CCA] w-full md:w-auto cursor-pointer"
-                        variant="outline"
-                        size="lg"
-                        onClick={() => setIsBulkAssignDialogOpen(true)}
-                    >
-                        <CirclePlus size={14} strokeWidth={2.3} className="h-4 w-4" />
-                        <span className="text-sm md:text-base">
-                            {activeTab === "actual" ? "Bulk Assign Meters" : "Bulk Add Virtual Meters"}
-                        </span>
-                    </Button>
-                    {activeTab === "actual" && (
+                {canEdit && (
+                    <div className="flex flex-col md:flex-row gap-2 bg-transparent">
                         <Button
-                            className="flex items-center gap-2 bg-[#161CCA] text-white font-medium w-full md:w-auto cursor-pointer"
-                            variant="secondary"
+                            className="flex items-center gap-2 border font-medium border-[#161CCA] text-[#161CCA] w-full md:w-auto cursor-pointer"
+                            variant="outline"
                             size="lg"
-                            onClick={handleOpenCustomerIdModal}
+                            onClick={() => setIsBulkAssignDialogOpen(true)}
                         >
                             <CirclePlus size={14} strokeWidth={2.3} className="h-4 w-4" />
-                            <span className="text-sm md:text-base">Assign Meter</span>
+                            <span className="text-sm md:text-base">
+                                {activeTab === "actual" ? "Bulk Assign Meters" : "Bulk Add Virtual Meters"}
+                            </span>
                         </Button>
-                    )}
-                    {activeTab === "virtual" && (
-                        <Button
-                            className="flex items-center gap-2 bg-[#161CCA] text-white font-medium w-full md:w-auto cursor-pointer"
-                            variant="secondary"
-                            size="lg"
-                            onClick={handleOpenAddVirtualMeter}
-                        >
-                            <CirclePlus size={14} strokeWidth={2.3} className="h-4 w-4" />
-                            <span className="text-sm md:text-base">Add Virtual Meter</span>
-                        </Button>
-                    )}
-                </div>
+                        {activeTab === "actual" && (
+                            <Button
+                                className="flex items-center gap-2 bg-[#161CCA] text-white font-medium w-full md:w-auto cursor-pointer"
+                                variant="secondary"
+                                size="lg"
+                                onClick={handleOpenCustomerIdModal}
+                            >
+                                <CirclePlus size={14} strokeWidth={2.3} className="h-4 w-4" />
+                                <span className="text-sm md:text-base">Assign Meter</span>
+                            </Button>
+                        )}
+                        {activeTab === "virtual" && (
+                            <Button
+                                className="flex items-center gap-2 bg-[#161CCA] text-white font-medium w-full md:w-auto cursor-pointer"
+                                variant="secondary"
+                                size="lg"
+                                onClick={handleOpenAddVirtualMeter}
+                            >
+                                <CirclePlus size={14} strokeWidth={2.3} className="h-4 w-4" />
+                                <span className="text-sm md:text-base">Add Virtual Meter</span>
+                            </Button>
+                        )}
+                    </div>
+                )}
             </div>
 
             <Card className="p-4 mb-4 border-none shadow-none bg-transparent">
@@ -1286,7 +1290,7 @@ export default function MeterManagementPage() {
                                                                             <Eye size={14} />
                                                                             <span className="text-sm text-gray-700">View Details</span>
                                                                         </DropdownMenuItem>
-                                                                        {item.status !== "Unassigned" && (
+                                                                        {canEdit && item.status !== "Unassigned" && (
                                                                             <DropdownMenuItem
                                                                                 className="flex items-center gap-2 cursor-pointer"
                                                                                 onClick={(event) => {
@@ -1300,26 +1304,28 @@ export default function MeterManagementPage() {
                                                                                 <span className="text-sm text-gray-700">Edit Meter</span>
                                                                             </DropdownMenuItem>
                                                                         )}
-                                                                        <DropdownMenuItem
-                                                                            className="flex items-center gap-2 cursor-pointer"
-                                                                            onClick={(event) => {
-                                                                                event.stopPropagation();
-                                                                                setSelectedMeter(item);
-                                                                                setIsDeactivateDialogOpen(true);
-                                                                            }}
-                                                                        >
-                                                                            {item.status === "Deactivated" ? (
-                                                                                <>
-                                                                                    <CheckCircle size={14} />
-                                                                                    <span className="text-sm text-gray-700">Activate</span>
-                                                                                </>
-                                                                            ) : (
-                                                                                <>
-                                                                                    <Ban size={14} />
-                                                                                    <span className="text-sm text-gray-700">Deactivate</span>
-                                                                                </>
-                                                                            )}
-                                                                        </DropdownMenuItem>
+                                                                        {canEdit && (
+                                                                            <DropdownMenuItem
+                                                                                className="flex items-center gap-2 cursor-pointer"
+                                                                                onClick={(event) => {
+                                                                                    event.stopPropagation();
+                                                                                    setSelectedMeter(item);
+                                                                                    setIsDeactivateDialogOpen(true);
+                                                                                }}
+                                                                            >
+                                                                                {item.status === "Deactivated" ? (
+                                                                                    <>
+                                                                                        <CheckCircle size={14} />
+                                                                                        <span className="text-sm text-gray-700">Activate</span>
+                                                                                    </>
+                                                                                ) : (
+                                                                                    <>
+                                                                                        <Ban size={14} />
+                                                                                        <span className="text-sm text-gray-700">Deactivate</span>
+                                                                                    </>
+                                                                                )}
+                                                                            </DropdownMenuItem>
+                                                                        )}
                                                                     </>
                                                                 )}
                                                             </DropdownMenuContent>
@@ -1459,11 +1465,11 @@ export default function MeterManagementPage() {
                                                         <TableCell className="px-4 py-3 text-sm text-gray-900 break-words">
                                                             {(item as any).tariffInfo?.name ?? item.tariff}
                                                         </TableCell>
-                                                        <TableCell className="px-4 py-3 text-center">
-                                                            <span className={cn("inline-block text-sm font-medium", getStatusStyle(item.status))}>
-                                                                {item.status}
-                                                            </span>
-                                                        </TableCell>
+                                                       <TableCell className="px-4 py-3 text-center">
+                                                        <span className={cn("inline-block text-sm font-medium", getStatusStyle(item.meterStage))}>
+                                                            {item.meterStage}
+                                                        </span>
+                                                    </TableCell>
                                                         <TableCell className="px-4 py-3 text-right">
                                                             <DropdownMenu>
                                                                 <DropdownMenuTrigger asChild>
@@ -1490,7 +1496,7 @@ export default function MeterManagementPage() {
                                                                                 <Eye size={14} />
                                                                                 <span className="text-sm text-gray-700">View Details</span>
                                                                             </DropdownMenuItem>
-                                                                            {item.status !== "Deactivated" && (
+                                                                            {canEdit && item.status !== "Deactivated" && (
                                                                                 <DropdownMenuItem
                                                                                     className="flex items-center gap-2 cursor-pointer"
                                                                                     onClick={(event) => {
@@ -1504,26 +1510,28 @@ export default function MeterManagementPage() {
                                                                                     <span className="text-sm text-gray-700">Edit Meter</span>
                                                                                 </DropdownMenuItem>
                                                                             )}
-                                                                            <DropdownMenuItem
-                                                                                className="flex items-center gap-2 cursor-pointer"
-                                                                                onClick={(event) => {
-                                                                                    event.stopPropagation();
-                                                                                    setSelectedMeter(item);
-                                                                                    setIsDeactivateDialogOpen(true);
-                                                                                }}
-                                                                            >
-                                                                                {item.status === "Deactivated" ? (
-                                                                                    <>
-                                                                                        <CheckCircle size={14} />
-                                                                                        <span className="text-sm text-gray-700">Activate</span>
-                                                                                    </>
-                                                                                ) : (
-                                                                                    <>
-                                                                                        <Ban size={14} />
-                                                                                        <span className="text-sm text-gray-700">Deactivate</span>
-                                                                                    </>
-                                                                                )}
-                                                                            </DropdownMenuItem>
+                                                                            {canEdit && (
+                                                                                <DropdownMenuItem
+                                                                                    className="flex items-center gap-2 cursor-pointer"
+                                                                                    onClick={(event) => {
+                                                                                        event.stopPropagation();
+                                                                                        setSelectedMeter(item);
+                                                                                        setIsDeactivateDialogOpen(true);
+                                                                                    }}
+                                                                                >
+                                                                                    {item.status === "Deactivated" ? (
+                                                                                        <>
+                                                                                            <CheckCircle size={14} />
+                                                                                            <span className="text-sm text-gray-700">Activate</span>
+                                                                                        </>
+                                                                                    ) : (
+                                                                                        <>
+                                                                                            <Ban size={14} />
+                                                                                            <span className="text-sm text-gray-700">Deactivate</span>
+                                                                                        </>
+                                                                                    )}
+                                                                                </DropdownMenuItem>
+                                                                            )}
                                                                         </>
                                                                     )}
                                                                 </DropdownMenuContent>
@@ -1825,9 +1833,11 @@ export default function MeterManagementPage() {
                 onMeterSelect={(meterId) => setSelectedPhysicalMeter(meterId)}
                 meters={meterData.filter(meter =>
                     meter.customerId === selectedVirtualCustomer?.customerId &&
-                    meter.status === "Assigned"
+                    meter.cin === selectedVirtualCustomer?.cin &&
+                    meter.status === "Assigned" &&
+                    meter.meterCategory !== "Virtual"
                 ).map(meter => ({
-                    id: meter.customerId ?? "",
+                    id: meter.id ?? "",
                     number: meter.meterNumber,
                     address: `${meter.state}, ${meter.city}, ${meter.streetName} ${meter.houseNo}`
                 }))}

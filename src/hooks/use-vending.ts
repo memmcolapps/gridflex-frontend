@@ -43,10 +43,14 @@ export const usePrintToken = () => {
   });
 };
 
+type CalculateCreditTokenPayload =
+  | { meterNumber: string; initialAmount: number }
+  | { accountNumber: string; initialAmount: number };
+
 export const useCalculateCreditToken = () => {
   return useMutation({
-    mutationFn: async ({ meterNumber, initialAmount }: { meterNumber: string; initialAmount: number; }) => {
-      const response = await calculateCreditToken({ meterNumber, initialAmount});
+    mutationFn: async (payload: CalculateCreditTokenPayload) => {
+      const response = await calculateCreditToken(payload);
       if (!response.success) {
         throw new Error(response.error);
       }
@@ -55,11 +59,13 @@ export const useCalculateCreditToken = () => {
     onSuccess: () => {
       toast.success("Credit token calculated successfully");
     },
-    onError: (error) => {
-      toast.error(error.message || "Failed to calculate credit token");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onError: (error: any) => {
+      toast.error(error.message ?? "Failed to calculate credit token");
     },
   });
 };
+
 
 export const useGenerateKCTToken = () => {
   return useMutation({

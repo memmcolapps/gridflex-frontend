@@ -44,7 +44,6 @@ export default function GroupPermissionForm({
   }>({});
 
   const moduleAccessOptions = [
-    { value: "dashboard", label: "Dashboard", group: "Data Management" },
     {
       value: "organization",
       label: "Organization",
@@ -194,14 +193,14 @@ export default function GroupPermissionForm({
       }}
     >
       <DialogTrigger asChild>{triggerButton}</DialogTrigger>
-      <DialogContent className="h-fit bg-white sm:max-w-[425px]">
+      <DialogContent className="h-fit bg-white sm:max-w-[425px] p-6">
         <DialogHeader>
           <DialogTitle>Add Group Permission</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div className="grid gap-4">
             {/* Group Title */}
-            <div className="grid gap-2">
+            <div className="grid gap-2 mt-4">
               <Label htmlFor="groupTitle">Group Title</Label>
               <Input
                 id="groupTitle"

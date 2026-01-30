@@ -28,6 +28,7 @@ import { useVendingTransactions, usePrintToken } from "@/hooks/use-vending";
 import { type PrintTokenPayload, type VendingTransaction } from "@/types/vending";
 import { toast } from "sonner";
 import { LoadingAnimation } from "@/components/ui/loading-animation";
+import { usePermissions } from "@/hooks/use-permissions";
 
 interface VendingTableProps {
     searchQuery?: string;
@@ -36,6 +37,7 @@ interface VendingTableProps {
 const VendingTable = ({ searchQuery = "" }: VendingTableProps = {}) => {
     const [rowsPerPage, setRowsPerPage] = useState<number>(10);
     const [currentPage, setCurrentPage] = useState<number>(1);
+    const { canEdit } = usePermissions();
 
     const { data: transactionsData, isLoading } = useVendingTransactions({
         page: currentPage - 1, // API uses 0-based indexing
@@ -121,7 +123,7 @@ const VendingTable = ({ searchQuery = "" }: VendingTableProps = {}) => {
                             <TableHead>VAT</TableHead>
                             <TableHead>Units</TableHead>
                             <TableHead>Status</TableHead>
-                            <TableHead>Actions</TableHead>
+                            {canEdit && <TableHead>Actions</TableHead>}
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -156,28 +158,30 @@ const VendingTable = ({ searchQuery = "" }: VendingTableProps = {}) => {
                                             {transaction.status}
                                         </span>
                                     </TableCell>
-                                    <TableCell>
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="ring-gray-200/20 hover:bg-gray-100 focus:bg-gray-100 cursor-pointer"
-                                                >
-                                                    <EllipsisVertical size={14} />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                                <DropdownMenuItem
-                                                    className="flex items-center gap-2 cursor-pointer"
-                                                    onClick={() => handleReprintToken(transaction)}
-                                                >
-                                                    <Printer size={14} />
-                                                    Reprint Token
-                                                </DropdownMenuItem>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    </TableCell>
+                                    {canEdit && (
+                                        <TableCell>
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="ring-gray-200/20 hover:bg-gray-100 focus:bg-gray-100 cursor-pointer"
+                                                    >
+                                                        <EllipsisVertical size={14} />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuItem
+                                                        className="flex items-center gap-2 cursor-pointer"
+                                                        onClick={() => handleReprintToken(transaction)}
+                                                    >
+                                                        <Printer size={14} />
+                                                        Reprint Token
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </TableCell>
+                                    )}
                                 </TableRow>
                             ))
                         )}
@@ -407,14 +411,6 @@ const VendingTable = ({ searchQuery = "" }: VendingTableProps = {}) => {
                                                         <span class="value">${selectedTransaction?.customerFullname ?? 'N/A'}</span>
                                                     </div>
                                                     <div class="info-row">
-                                                        <span class="label">Meter Number:</span>
-                                                        <span class="value">${selectedTransaction?.meterNumber || 'N/A'}</span>
-                                                    </div>
-                                                    <div class="info-row">
-                                                        <span class="label">Account Number:</span>
-                                                        <span class="value">${selectedTransaction?.meterAccountNumber || 'N/A'}</span>
-                                                    </div>
-                                                    <div class="info-row">
                                                         <span class="label">Address:</span>
                                                         <span class="value">${selectedTransaction?.address || 'N/A'}</span>
                                                     </div>
@@ -424,24 +420,28 @@ const VendingTable = ({ searchQuery = "" }: VendingTableProps = {}) => {
                                                         <span class="value">${selectedTransaction?.tariffName || 'N/A'}</span>
                                                     </div>
                                                     <div class="info-row">
-                                                        <span class="label">Tariff Rate:</span>
-                                                        <span class="value">₦${selectedTransaction?.tariffRate || 'N/A'}</span>
+                                                        <span class="label">Rate:</span>
+                                                        <span class="value">${selectedTransaction?.tariffRate || 'N/A'}</span>
                                                     </div>
                                                     ` : ''}
                                                     <div class="info-row">
-                                                        <span class="label">Operator:</span>
+                                                        <span class="label">Account No:</span>
+                                                        <span class="value">${selectedTransaction?.meterAccountNumber || 'N/A'}</span>
+                                                    </div>
+                                                    <div class="info-row">
+                                                        <span class="label">Meter No:</span>
+                                                        <span class="value">${selectedTransaction?.meterNumber || 'N/A'}</span>
+                                                    </div>
+                                                    <div class="info-row">
+                                                        <span class="label">Operator ID:</span>
                                                         <span class="value">${selectedTransaction?.userFullname || 'N/A'}</span>
                                                     </div>
                                                     <div class="info-row">
-                                                        <span class="label">Transaction Date:</span>
-                                                        <span class="value">${selectedTransaction?.createdAt ? new Date(selectedTransaction.createdAt).toLocaleDateString() : 'N/A'}</span>
+                                                        <span class="label">Trans Date:</span>
+                                                        <span class="value">${selectedTransaction?.createdAt ? new Date(selectedTransaction.createdAt).toLocaleString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' }) : 'N/A'}</span>
                                                     </div>
                                                     <div class="info-row">
-                                                        <span class="label">Time:</span>
-                                                        <span class="value">${selectedTransaction?.createdAt ? new Date(selectedTransaction.createdAt).toLocaleTimeString() : 'N/A'}</span>
-                                                    </div>
-                                                    <div class="info-row">
-                                                        <span class="label">Receipt Number:</span>
+                                                        <span class="label">Receipt No:</span>
                                                         <span class="value">${selectedTransaction?.receiptNo || 'N/A'}</span>
                                                     </div>
                                                     ${selectedTransaction?.tokenType === "compensation" ? `
@@ -458,29 +458,53 @@ const VendingTable = ({ searchQuery = "" }: VendingTableProps = {}) => {
                                                     ${selectedTransaction?.tokenType === "credit-token" ? `
                                                     <div class="amount-section">
                                                         <div class="info-row">
+                                                            <span class="label">Last Amount Vended:</span>
+                                                            <span class="value">₦${selectedTransaction?.lastAmountVended?.toLocaleString() ?? '0'}</span>
+                                                        </div>
+                                                        <div class="info-row">
+                                                            <span class="label">Costs of units:</span>
+                                                            <span class="value">₦${selectedTransaction?.unitCost?.toLocaleString() || 'N/A'}</span>
+                                                        </div>
+                                                        <div class="info-row">
+                                                            <span class="label">VAT:</span>
+                                                            <span class="value">₦${selectedTransaction?.vatAmount?.toLocaleString() || 'N/A'}</span>
+                                                        </div>
+                                                        <div class="info-row">
+                                                            <span class="label">Credit Adjustment:</span>
+                                                            <span class="value">₦${(Array.isArray(selectedTransaction?.creditAdjustment)
+                                                                ? (selectedTransaction.creditAdjustment.length > 0
+                                                                    ? selectedTransaction.creditAdjustment.reduce((sum, val) => sum + (typeof val === 'number' ? val : 0), 0)
+                                                                    : 0)
+                                                                : (selectedTransaction?.creditAdjustment ?? 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                                        </div>
+                                                        <div class="info-row">
+                                                            <span class="label">Debit Adjustment:</span>
+                                                            <span class="value">₦${(Array.isArray(selectedTransaction?.debitAdjustment)
+                                                                ? (selectedTransaction.debitAdjustment.length > 0
+                                                                    ? selectedTransaction.debitAdjustment.reduce((sum, val) => sum + (typeof val === 'number' ? val : 0), 0)
+                                                                    : 0)
+                                                                : (selectedTransaction?.debitAdjustment ?? 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                                        </div>
+                                                        <div class="info-row">
                                                             <span class="label">Amount Tendered:</span>
                                                             <span class="value">₦${selectedTransaction?.initialAmount?.toLocaleString() || 'N/A'}</span>
                                                         </div>
                                                         <div class="info-row">
-                                                            <span class="label">VAT (${selectedTransaction?.vatAmount ? ((selectedTransaction.vatAmount / selectedTransaction.initialAmount) * 100).toFixed(1) : 'N/A'}%):</span>
-                                                            <span class="value">₦${selectedTransaction?.vatAmount?.toLocaleString() || 'N/A'}</span>
-                                                        </div>
-                                                        <div class="info-row">
-                                                            <span class="label">Units Purchased:</span>
+                                                            <span class="label">Units (kWh):</span>
                                                             <span class="value">${selectedTransaction?.unit?.toLocaleString() || 'N/A'}</span>
-                                                        </div>
-                                                        <div class="info-row">
-                                                            <span class="label"> Cost of Unit:</span>
-                                                            <span class="value">₦${selectedTransaction?.unitCost?.toLocaleString() || 'N/A'}</span>
-                                                        </div>
-                                                        <div class="info-row">
-                                                            <span class="label"><strong>Total Amount:</strong></span>
-                                                            <span class="value"><strong>₦${selectedTransaction?.finalAmount?.toLocaleString() || 'N/A'}</strong></span>
                                                         </div>
                                                     </div>
                                                     <div class="token-section">
                                                         <div class="token-label">CREDIT TOKEN</div>
                                                         <div class="token-value">${selectedTransaction?.token || 'N/A'}</div>
+                                                    </div>
+                                                    <div class="info-row">
+                                                        <span class="label">Debit Adjustment Balance:</span>
+                                                        <span class="value">₦${(selectedTransaction?.debitAdjustmentBalance ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                                    </div>
+                                                    <div class="info-row">
+                                                        <span class="label">Credit Adjustment Balance:</span>
+                                                        <span class="value">₦${(selectedTransaction?.creditAdjustmentBalance ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                                     </div>
                                                     ` : selectedTransaction?.tokenType === "kct" ? `
                                                     <div class="token-section">

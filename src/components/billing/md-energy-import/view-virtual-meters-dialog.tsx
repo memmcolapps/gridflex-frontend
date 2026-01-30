@@ -1,5 +1,5 @@
-// components/billing/energy-import/view-virtual-meters-dialog.tsx
-import { useState } from "react";
+// components/billing/md-energy-import/view-virtual-meters-dialog.tsx
+import { useState, useEffect } from "react";
 import {
     Dialog,
     DialogContent,
@@ -32,6 +32,8 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
+import { useMDEnergyImport } from "@/hooks/use-billing";
+import { Loader2 } from "lucide-react";
 
 interface EnergyImportData {
     id: number;
@@ -42,71 +44,56 @@ interface EnergyImportData {
     postpaidConsumption: string;
     mdVirtual: string;
     nonMdVirtual: string;
-}
-
-interface VirtualMeterData {
-    id: number;
-    sn: string;
-    meterNumber: string;
-    accountNumber: string;
-    dss: string;
-    averageConsumption: number;
-    cumulativeReading: number;
-    tariffType: string;
-    energyType: string;
-    consumedEnergy: number;
+    nodeId?: string;
 }
 
 interface ViewVirtualMetersDialogProps {
     open: boolean;
     onClose: () => void;
     data: EnergyImportData;
+    month?: string;
+    year?: string;
 }
 
 export default function ViewVirtualMetersDialog({
     open,
     onClose,
     data,
+    month,
+    year,
 }: ViewVirtualMetersDialogProps) {
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(10);
-    const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
+    const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
     const [isExporting, setIsExporting] = useState(false);
 
-    // Define tariff types array
-    const tariffTypes = ["R1", "R2", "R3", "C1", "C2", "C3"];
+    // Use the MD Energy Import hook to fetch data
+    const { data: apiData, isLoading, error } = useMDEnergyImport({
+        nodeId: data.nodeId ?? "",
+        month: month,
+        year: year,
+        page: currentPage - 1,
+        size: rowsPerPage,
+        enabled: open && !!data.nodeId,
+    });
 
-    // Mock data for virtual meters based on the feeder
-    const virtualMeters: VirtualMeterData[] = Array.from(
-        { length: 40 },
-        (_, index) => {
-            const randomTariffIndex = Math.floor(Math.random() * tariffTypes.length);
-            return {
-                id: index + 1,
-                sn: (index + 1).toString().padStart(2, "0"),
-                meterNumber: `V-${data.assetId}`,
-                accountNumber: "0159004612",
-                dss: data.feederName.toLowerCase(),
-                averageConsumption: Math.floor(Math.random() * 400) + 50,
-                cumulativeReading: Math.floor(Math.random() * 2000) + 300,
-                tariffType: tariffTypes[randomTariffIndex] ?? "R1",
-                energyType: "Estimate",
-                consumedEnergy: Math.floor(Math.random() * 700) + 200,
-            };
-        },
-    );
+    // Reset pagination when dialog opens or filters change
+    useEffect(() => {
+        if (open) {
+            setCurrentPage(1);
+            setSelectedRows(new Set());
+        }
+    }, [open, month, year]);
 
-    const totalPages = Math.ceil(virtualMeters.length / rowsPerPage);
-    const paginatedData = virtualMeters.slice(
-        (currentPage - 1) * rowsPerPage,
-        currentPage * rowsPerPage,
-    );
+    const virtualMeters = apiData?.consumptions ?? [];
+    const totalCount = apiData?.totalCount ?? 0;
+    const totalPages = apiData?.totalPages ?? Math.ceil(totalCount / rowsPerPage);
 
     const isAllSelected =
-        paginatedData.length > 0 &&
-        paginatedData.every((item) => selectedRows.has(item.id));
+        virtualMeters.length > 0 &&
+        virtualMeters.every((item) => selectedRows.has(item.meterId));
     const isSomeSelected =
-        paginatedData.some((item) => selectedRows.has(item.id)) && !isAllSelected;
+        virtualMeters.some((item) => selectedRows.has(item.meterId)) && !isAllSelected;
 
     const handleRowsPerPageChange = (value: string) => {
         setRowsPerPage(Number(value));
@@ -121,7 +108,7 @@ export default function ViewVirtualMetersDialog({
         setCurrentPage((prev) => Math.min(prev + 1, totalPages));
     };
 
-    const handleCheckboxChange = (id: number, checked: boolean) => {
+    const handleCheckboxChange = (id: string, checked: boolean) => {
         setSelectedRows((prev) => {
             const newSelected = new Set(prev);
             if (checked) {
@@ -137,9 +124,9 @@ export default function ViewVirtualMetersDialog({
         setSelectedRows((prev) => {
             const newSelected = new Set(prev);
             if (checked) {
-                paginatedData.forEach((item) => newSelected.add(item.id));
+                virtualMeters.forEach((item) => newSelected.add(item.meterId));
             } else {
-                paginatedData.forEach((item) => newSelected.delete(item.id));
+                virtualMeters.forEach((item) => newSelected.delete(item.meterId));
             }
             return newSelected;
         });
@@ -151,19 +138,20 @@ export default function ViewVirtualMetersDialog({
         try {
             const dataToExport =
                 selectedRows.size > 0
-                    ? virtualMeters.filter((meter) => selectedRows.has(meter.id))
+                    ? virtualMeters.filter((meter) => selectedRows.has(meter.meterId))
                     : virtualMeters;
 
-            const exportData = dataToExport.map((meter) => ({
-                "S/N": meter.sn,
+            const exportData = dataToExport.map((meter, index) => ({
+                "S/N": (index + 1).toString().padStart(2, "0"),
                 "Meter Number": meter.meterNumber,
-                "Account Number": meter.accountNumber,
-                DSS: meter.dss,
+                "Feeder Name": meter.feederName,
+                "DSS": meter.dssName,
                 "Average Consumption": meter.averageConsumption,
                 "Cumulative Reading": meter.cumulativeReading,
                 "Tariff Type": meter.tariffType,
-                "Energy Type": meter.energyType,
-                "Consumed Energy": meter.consumedEnergy,
+                "Meter Class": meter.meterClass,
+                "Type": meter.type,
+                "Consumption": meter.consumption,
             }));
 
             const workbook = XLSX.utils.book_new();
@@ -191,6 +179,8 @@ export default function ViewVirtualMetersDialog({
         }
     };
 
+    const startIndex = (currentPage - 1) * rowsPerPage;
+
     return (
         <Dialog open={open} onOpenChange={onClose}>
             <DialogContent
@@ -210,137 +200,160 @@ export default function ViewVirtualMetersDialog({
                 </DialogHeader>
 
                 <div className="py-4">
-                    <div className="overflow-x-auto">
-                        <Table className="min-w-full">
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead className="w-[50px] text-center">
-                                        <Checkbox
-                                            checked={isAllSelected}
-                                            onCheckedChange={handleSelectAll}
-                                            aria-label="Select all"
-                                            className={
-                                                isSomeSelected
-                                                    ? "indeterminate"
-                                                    : "mx-auto cursor-pointer border-gray-500 hover:border-gray-500"
-                                            }
-                                        />
-                                    </TableHead>
-                                    <TableHead className="min-w-[60px] py-3 font-medium text-gray-700">
-                                        S/N
-                                    </TableHead>
-                                    <TableHead className="min-w-[140px] py-3 font-medium text-gray-700">
-                                        Meter Number
-                                    </TableHead>
-                                    <TableHead className="min-w-[140px] py-3 font-medium text-gray-700">
-                                        Account Number
-                                    </TableHead>
-                                    <TableHead className="min-w-[80px] py-3 font-medium text-gray-700">
-                                        DSS
-                                    </TableHead>
-                                    <TableHead className="min-w-[160px] py-3 font-medium text-gray-700">
-                                        Average Consumption
-                                    </TableHead>
-                                    <TableHead className="min-w-[160px] py-3 font-medium text-gray-700">
-                                        Cumulative Reading
-                                    </TableHead>
-                                    <TableHead className="min-w-[100px] py-3 font-medium text-gray-700">
-                                        Tariff Type
-                                    </TableHead>
-                                    <TableHead className="min-w-[110px] py-3 font-medium text-gray-700">
-                                        Energy Type
-                                    </TableHead>
-                                    <TableHead className="min-w-[140px] py-3 font-medium text-gray-700">
-                                        Consumed Energy
-                                    </TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {paginatedData.map((meter) => (
-                                    <TableRow key={meter.id} className="hover:bg-gray-50">
-                                        <TableCell className="text-center">
-                                            <Checkbox
-                                                checked={selectedRows.has(meter.id)}
-                                                onCheckedChange={(checked) =>
-                                                    handleCheckboxChange(meter.id, Boolean(checked))
-                                                }
-                                                aria-label={`Select row ${meter.id}`}
-                                                className="mx-auto cursor-pointer border-gray-500 hover:border-gray-500"
-                                            />
-                                        </TableCell>
-                                        <TableCell className="font-medium">{meter.sn}</TableCell>
-                                        <TableCell className="font-mono text-sm">
-                                            {meter.meterNumber}
-                                        </TableCell>
-                                        <TableCell className="font-mono text-sm">
-                                            {meter.accountNumber}
-                                        </TableCell>
-                                        <TableCell className="capitalize">{meter.dss}</TableCell>
-                                        <TableCell className="text-right">
-                                            {meter.averageConsumption.toLocaleString()}
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            {meter.cumulativeReading.toLocaleString()}
-                                        </TableCell>
-                                        <TableCell className="font-semibold">
-                                            {meter.tariffType}
-                                        </TableCell>
-                                        <TableCell>{meter.energyType}</TableCell>
-                                        <TableCell className="text-right">
-                                            {meter.consumedEnergy.toLocaleString()}
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </div>
-
-                    {/* Pagination */}
-                    <div className="mt-4 flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                            <span className="text-sm font-medium">Rows per page</span>
-                            <Select
-                                value={rowsPerPage.toString()}
-                                onValueChange={handleRowsPerPageChange}
-                            >
-                                <SelectTrigger className="h-8 w-[70px]">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="10">10</SelectItem>
-                                    <SelectItem value="20">20</SelectItem>
-                                    <SelectItem value="50">50</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <span className="text-sm font-medium">
-                                {(currentPage - 1) * rowsPerPage + 1}-
-                                {Math.min(currentPage * rowsPerPage, virtualMeters.length)} of{" "}
-                                {virtualMeters.length} rows
-                            </span>
+                    {!data.nodeId ? (
+                        <div className="flex flex-col items-center justify-center py-8 text-gray-500">
+                            <p>No node ID available for this feeder.</p>
+                            <p className="text-sm">Unable to fetch virtual meters data.</p>
                         </div>
-                        <PaginationContent>
-                            <PaginationItem>
-                                <PaginationPrevious
-                                    href="#"
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        handlePrevious();
-                                    }}
-                                    aria-disabled={currentPage === 1}
-                                />
-                            </PaginationItem>
-                            <PaginationItem>
-                                <PaginationNext
-                                    href="#"
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        handleNext();
-                                    }}
-                                    aria-disabled={currentPage === totalPages}
-                                />
-                            </PaginationItem>
-                        </PaginationContent>
-                    </div>
+                    ) : isLoading ? (
+                        <div className="flex items-center justify-center py-8">
+                            <Loader2 className="h-8 w-8 animate-spin text-[#161CCA]" />
+                            <span className="ml-2">Loading virtual meters...</span>
+                        </div>
+                    ) : error ? (
+                        <div className="flex flex-col items-center justify-center py-8 text-red-500">
+                            <p>Error loading virtual meters data.</p>
+                            <p className="text-sm">{error.message}</p>
+                        </div>
+                    ) : virtualMeters.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-8 text-gray-500">
+                            <p>No virtual meters found for this feeder.</p>
+                        </div>
+                    ) : (
+                        <>
+                            <div className="overflow-x-auto">
+                                <Table className="min-w-full">
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead className="w-[50px] text-center">
+                                                <Checkbox
+                                                    checked={isAllSelected}
+                                                    onCheckedChange={handleSelectAll}
+                                                    aria-label="Select all"
+                                                    className={
+                                                        isSomeSelected
+                                                            ? "indeterminate"
+                                                            : "mx-auto cursor-pointer border-gray-500 hover:border-gray-500"
+                                                    }
+                                                />
+                                            </TableHead>
+                                            <TableHead className="min-w-[60px] py-3 font-medium text-gray-700">
+                                                S/N
+                                            </TableHead>
+                                            <TableHead className="min-w-[140px] py-3 font-medium text-gray-700">
+                                                Meter Number
+                                            </TableHead>
+                                            <TableHead className="min-w-[120px] py-3 font-medium text-gray-700">
+                                                Feeder Name
+                                            </TableHead>
+                                            <TableHead className="min-w-[100px] py-3 font-medium text-gray-700">
+                                                DSS
+                                            </TableHead>
+                                            <TableHead className="min-w-[160px] py-3 font-medium text-gray-700">
+                                                Average Consumption
+                                            </TableHead>
+                                            <TableHead className="min-w-[160px] py-3 font-medium text-gray-700">
+                                                Cumulative Reading
+                                            </TableHead>
+                                            <TableHead className="min-w-[100px] py-3 font-medium text-gray-700">
+                                                Tariff Type
+                                            </TableHead>
+                                            <TableHead className="min-w-[100px] py-3 font-medium text-gray-700">
+                                                Meter Class
+                                            </TableHead>
+                                            <TableHead className="min-w-[140px] py-3 font-medium text-gray-700">
+                                                Consumption
+                                            </TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {virtualMeters.map((meter, index) => (
+                                            <TableRow key={meter.meterId} className="hover:bg-gray-50">
+                                                <TableCell className="text-center">
+                                                    <Checkbox
+                                                        checked={selectedRows.has(meter.meterId)}
+                                                        onCheckedChange={(checked) =>
+                                                            handleCheckboxChange(meter.meterId, Boolean(checked))
+                                                        }
+                                                        aria-label={`Select row ${meter.meterId}`}
+                                                        className="mx-auto cursor-pointer border-gray-500 hover:border-gray-500"
+                                                    />
+                                                </TableCell>
+                                                <TableCell className="font-medium">
+                                                    {(startIndex + index + 1).toString().padStart(2, "0")}
+                                                </TableCell>
+                                                <TableCell className="font-mono text-sm">
+                                                    {meter.meterNumber}
+                                                </TableCell>
+                                                <TableCell>{meter.feederName}</TableCell>
+                                                <TableCell className="capitalize">{meter.dssName}</TableCell>
+                                                <TableCell className="text-right">
+                                                    {meter.averageConsumption.toLocaleString()}
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                    {meter.cumulativeReading.toLocaleString()}
+                                                </TableCell>
+                                                <TableCell className="font-semibold">
+                                                    {meter.tariffType}
+                                                </TableCell>
+                                                <TableCell>{meter.meterClass}</TableCell>
+                                                <TableCell className="text-right">
+                                                    {meter.consumption.toLocaleString()}
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
+
+                            {/* Pagination */}
+                            <div className="mt-4 flex items-center justify-between">
+                                <div className="flex items-center space-x-2">
+                                    <span className="text-sm font-medium">Rows per page</span>
+                                    <Select
+                                        value={rowsPerPage.toString()}
+                                        onValueChange={handleRowsPerPageChange}
+                                    >
+                                        <SelectTrigger className="h-8 w-[70px]">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="10">10</SelectItem>
+                                            <SelectItem value="20">20</SelectItem>
+                                            <SelectItem value="50">50</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <span className="text-sm font-medium">
+                                        {startIndex + 1}-
+                                        {Math.min(startIndex + rowsPerPage, totalCount)} of{" "}
+                                        {totalCount} rows
+                                    </span>
+                                </div>
+                                <PaginationContent>
+                                    <PaginationItem>
+                                        <PaginationPrevious
+                                            href="#"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                handlePrevious();
+                                            }}
+                                            aria-disabled={currentPage === 1}
+                                        />
+                                    </PaginationItem>
+                                    <PaginationItem>
+                                        <PaginationNext
+                                            href="#"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                handleNext();
+                                            }}
+                                            aria-disabled={currentPage === totalPages}
+                                        />
+                                    </PaginationItem>
+                                </PaginationContent>
+                            </div>
+                        </>
+                    )}
                 </div>
 
                 <DialogFooter className="flex justify-between">
@@ -354,7 +367,7 @@ export default function ViewVirtualMetersDialog({
                     </Button>
                     <Button
                         onClick={handleExport}
-                        disabled={isExporting}
+                        disabled={isExporting || isLoading || virtualMeters.length === 0}
                         className="cursor-pointer bg-[#161CCA] text-white"
                     >
                         {isExporting
