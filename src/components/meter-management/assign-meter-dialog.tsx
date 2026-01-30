@@ -159,7 +159,7 @@ export function AssignMeterDialog({
   const availableMeters = useMemo(() => {
     if (!metersData) return [];
 
-    const allMeters = [...metersData.actualMeters, ...metersData.virtualMeters];
+    const allMeters = [...metersData.actualMeters];
 
     if (assignedMetersData) {
       const assignedMeterNumbers = new Set([
