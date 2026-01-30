@@ -9,9 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { useUpdateGroupPermission } from "@/hooks/use-groups";
-import { type UpdateGroupPermissionPayload } from "@/types/group-permission-user";
 
 interface GroupPermission {
   id: string;
@@ -33,7 +32,6 @@ interface GroupPermission {
 
 interface EditGroupPermissionFormData {
   groupTitle: string;
-  moduleAccess: string[];
   accessLevel: string[];
 }
 
@@ -41,7 +39,12 @@ interface EditGroupPermissionFormProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   groupPermission: GroupPermission | null;
-  onSave: (data: EditGroupPermissionFormData & { id: string }) => void;
+  onSave: (
+    data: EditGroupPermissionFormData & {
+      id: string;
+      modules: GroupPermission["modules"];
+    },
+  ) => void;
 }
 
 export default function EditGroupPermissionForm({
@@ -52,60 +55,14 @@ export default function EditGroupPermissionForm({
 }: EditGroupPermissionFormProps) {
   const updateGroupPermission = useUpdateGroupPermission();
   const [groupTitle, setGroupTitle] = useState("");
-  const [selectedModules, setSelectedModules] = useState<string[]>([]);
   const [selectedAccessLevels, setSelectedAccessLevels] = useState<string[]>(
     [],
   );
-  const [isModuleDropdownOpen, setIsModuleDropdownOpen] = useState(false);
   const [isAccessDropdownOpen, setIsAccessDropdownOpen] = useState(false);
-  const [isDataManagementOpen, setIsDataManagementOpen] = useState(false);
   const [errors, setErrors] = useState<{
     groupTitle?: string;
-    moduleAccess?: string;
     accessLevel?: string;
   }>({});
-
-  const moduleAccessOptions = [
-    {
-      value: "organization",
-      label: "Organization",
-      group: "Data Management",
-    },
-    {
-      value: "meter-management",
-      label: "Meter Management",
-      group: "Data Management",
-    },
-    {
-      value: "customer-management",
-      label: "Customer Management",
-      group: "Data Management",
-    },
-    {
-      value: "tarrif",
-      label: "Tariff",
-      group: "Data Management",
-    },
-    {
-      value: "band-management",
-      label: "Band Management",
-      group: "Data Management",
-    },
-    {
-      value: "reviewandapproval",
-      label: "Review and Approval",
-      group: "Data Management",
-    },
-    {
-      value: "debt-management",
-      label: "Debt Management",
-      group: "Data Management",
-    },
-    { value: "billing", label: "Billing", group: null },
-    { value: "vending", label: "Vending", group: null },
-    { value: "hes", label: "HES", group: null },
-    { value: "user-management", label: "User Management", group: null },
-  ];
 
   const accessLevelOptions = [
     { value: "view-only", label: "View only" },
@@ -113,47 +70,6 @@ export default function EditGroupPermissionForm({
     { value: "approve-only", label: "Approve only" },
     { value: "disable-only", label: "Disable only" },
   ];
-
-  // Utility function to convert modules back to module access array
-  const convertModulesToModuleAccess = (
-    modules: GroupPermission["modules"],
-  ): string[] => {
-    const moduleMap: Record<string, string> = {
-      Organization: "organization",
-      "Meter Management": "meter-management",
-      "Customer Management": "customer-management",
-      Tariff: "tarrif",
-      "Band Management": "band-management",
-      "Review and Approval": "reviewandapproval",
-      "Debt Management": "debt-management",
-      Billing: "billing",
-      Vending: "vending",
-      HES: "hes",
-      "User Management": "user-management",
-    };
-
-    const accessArray: string[] = [];
-    const foundDataManagementModules: string[] = [];
-
-    modules.forEach((module) => {
-      if (module.name === "Data Management" && module.subModules) {
-        module.subModules.forEach((subModule) => {
-          const moduleKey = moduleMap[subModule.name];
-          if (moduleKey && subModule.access) {
-            foundDataManagementModules.push(moduleKey);
-            accessArray.push(moduleKey);
-          }
-        });
-      } else {
-        const moduleKey = moduleMap[module.name];
-        if (moduleKey && module.access) {
-          accessArray.push(moduleKey);
-        }
-      }
-    });
-
-    return accessArray;
-  };
 
   // Convert permissions back to access level array
   const convertPermissionsToAccessLevel = (
@@ -171,33 +87,12 @@ export default function EditGroupPermissionForm({
   useEffect(() => {
     if (groupPermission && isOpen) {
       setGroupTitle(groupPermission.groupTitle);
-      setSelectedModules(convertModulesToModuleAccess(groupPermission.modules));
       setSelectedAccessLevels(
         convertPermissionsToAccessLevel(groupPermission.permissions),
       );
       setErrors({});
     }
   }, [groupPermission, isOpen]);
-
-  const handleModuleSelection = (value: string) => {
-    if (value === "all-access") {
-      setSelectedModules(["all-access"]);
-    } else {
-      const newSelection = selectedModules.filter(
-        (item) => item !== "all-access",
-      );
-
-      if (selectedModules.includes(value)) {
-        setSelectedModules(newSelection.filter((item) => item !== value));
-      } else {
-        setSelectedModules([...newSelection, value]);
-      }
-    }
-
-    if (errors.moduleAccess) {
-      setErrors((prev) => ({ ...prev, moduleAccess: undefined }));
-    }
-  };
 
   const handleAccessLevelSelection = (value: string) => {
     if (selectedAccessLevels.includes(value)) {
@@ -215,11 +110,8 @@ export default function EditGroupPermissionForm({
 
   const resetForm = () => {
     setGroupTitle("");
-    setSelectedModules([]);
     setSelectedAccessLevels([]);
-    setIsModuleDropdownOpen(false);
     setIsAccessDropdownOpen(false);
-    setIsDataManagementOpen(false);
     setErrors({});
   };
 
@@ -228,9 +120,6 @@ export default function EditGroupPermissionForm({
 
     if (!groupTitle.trim()) {
       newErrors.groupTitle = "Group title is required";
-    }
-    if (selectedModules.length === 0) {
-      newErrors.moduleAccess = "At least one module access is required";
     }
     if (selectedAccessLevels.length === 0) {
       newErrors.accessLevel = "At least one access level is required";
@@ -245,69 +134,10 @@ export default function EditGroupPermissionForm({
       return;
     }
 
-    // Transform form data to UpdateGroupPermissionPayload
-    const payload: UpdateGroupPermissionPayload = {
+    const payload = {
       id: groupPermission.id,
       groupTitle,
-      modules: selectedModules.map((moduleValue) => {
-        // Get module name from options
-        const moduleOption = moduleAccessOptions.find(
-          (opt) => opt.value === moduleValue,
-        );
-        const moduleName = moduleOption?.label || moduleValue;
-
-        // Check if this is a Data Management submodule
-        const isDataManagementSubModule = [
-          "organization",
-          "meter-management",
-          "customer-management",
-          "tarrif",
-          "band-management",
-          "reviewandapproval",
-          "debt-management",
-        ].includes(moduleValue);
-
-        // Find the original module from groupPermission to get subModules
-        const originalModule = groupPermission.modules.find((m) => {
-          if (isDataManagementSubModule) {
-            return m.name === "Data Management";
-          }
-          return m.name === moduleName;
-        });
-
-        if (isDataManagementSubModule && originalModule) {
-          // Return Data Management module with updated subModules
-          return {
-            id: originalModule.id,
-            name: "Data Management",
-            access: true,
-            subModules: originalModule.subModules.map((sub) => {
-              const subModuleMap: Record<string, string> = {
-                Organization: "organization",
-                "Meter Management": "meter-management",
-                "Customer Management": "customer-management",
-                Tariff: "tarrif",
-                "Band Management": "band-management",
-                "Review and Approval": "reviewandapproval",
-                "Debt Management": "debt-management",
-              };
-              const subModuleKey = subModuleMap[sub.name];
-              return {
-                ...sub,
-                access: subModuleKey === moduleValue ? true : sub.access,
-              };
-            }),
-          };
-        }
-
-        // Return regular module
-        return {
-          id: originalModule?.id || "",
-          name: moduleName,
-          access: true,
-          subModules: originalModule?.subModules || [],
-        };
-      }),
+      modules: groupPermission.modules,
       permission: {
         id: groupPermission.permissions.id,
         view: selectedAccessLevels.includes("view-only"),
@@ -328,8 +158,8 @@ export default function EditGroupPermissionForm({
             onSave({
               id: groupPermission.id,
               groupTitle,
-              moduleAccess: selectedModules,
               accessLevel: selectedAccessLevels,
+              modules: groupPermission.modules,
             });
           }
         },
@@ -343,17 +173,6 @@ export default function EditGroupPermissionForm({
   const handleCancel = () => {
     onOpenChange(false);
     resetForm();
-  };
-
-  const getSelectedModulesDisplay = () => {
-    if (selectedModules.length === 0) return "Select module access";
-    if (selectedModules.length === 1) {
-      const option = moduleAccessOptions.find(
-        (opt) => opt.value === selectedModules[0],
-      );
-      return option?.label ?? selectedModules[0];
-    }
-    return `${selectedModules.length} modules selected`;
   };
 
   const getSelectedAccessLevelsDisplay = () => {
@@ -390,100 +209,6 @@ export default function EditGroupPermissionForm({
               />
               {errors.groupTitle && (
                 <p className="text-sm text-red-500">{errors.groupTitle}</p>
-              )}
-            </div>
-
-            {/* Module Access */}
-            <div className="grid gap-2">
-              <Label htmlFor="moduleAccess">Module Access</Label>
-              <div className="relative">
-                <div
-                  className={`flex w-[390px] cursor-pointer items-center justify-between rounded-md border border-gray-300 px-3 py-2 ${errors.moduleAccess ? "border-red-500" : ""}`}
-                  onClick={() => setIsModuleDropdownOpen(!isModuleDropdownOpen)}
-                >
-                  <span
-                    className={
-                      selectedModules.length === 0 ? "text-gray-500" : ""
-                    }
-                  >
-                    {getSelectedModulesDisplay()}
-                  </span>
-                  <ChevronDown
-                    size={16}
-                    className={`transition-transform ${isModuleDropdownOpen ? "rotate-180" : ""}`}
-                  />
-                </div>
-
-                {isModuleDropdownOpen && (
-                  <div className="absolute top-full right-0 left-0 z-50 mt-1 max-h-64 overflow-y-auto rounded-md border border-gray-300 bg-white shadow-lg">
-                    {moduleAccessOptions
-                      .filter((opt) => opt.value === "all-access")
-                      .map((option) => (
-                        <div
-                          key={option.value}
-                          className="flex cursor-pointer items-center justify-between border-0 px-3 py-2 hover:bg-gray-100"
-                          onClick={() => handleModuleSelection(option.value)}
-                        >
-                          <span>{option.label}</span>
-                          <Checkbox
-                            checked={selectedModules.includes(option.value)}
-                            className="border-gray-200 data-[state=checked]:bg-green-500 data-[state=checked]:text-white"
-                          />
-                        </div>
-                      ))}
-
-                    {/* Data Management */}
-                    <div
-                      className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-100"
-                      onClick={() =>
-                        setIsDataManagementOpen(!isDataManagementOpen)
-                      }
-                    >
-                      <span className="font-medium">Data Management</span>
-                      {isDataManagementOpen ? (
-                        <ChevronDown size={12} />
-                      ) : (
-                        <ChevronRight size={12} />
-                      )}
-                    </div>
-
-                    {isDataManagementOpen &&
-                      moduleAccessOptions
-                        .filter((opt) => opt.group === "Data Management")
-                        .map((option) => (
-                          <div
-                            key={option.value}
-                            className="flex cursor-pointer items-center justify-between border-0 px-3 py-2 pl-6 hover:bg-gray-100"
-                            onClick={() => handleModuleSelection(option.value)}
-                          >
-                            <span>{option.label}</span>
-                            <Checkbox
-                              checked={selectedModules.includes(option.value)}
-                              className="border-gray-200 data-[state=checked]:bg-green-500 data-[state=checked]:text-white"
-                            />
-                          </div>
-                        ))}
-
-                    {moduleAccessOptions
-                      .filter((opt) => !opt.group && opt.value !== "all-access")
-                      .map((option) => (
-                        <div
-                          key={option.value}
-                          className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-100"
-                          onClick={() => handleModuleSelection(option.value)}
-                        >
-                          <span>{option.label}</span>
-                          <Checkbox
-                            checked={selectedModules.includes(option.value)}
-                            className="border-gray-200 data-[state=checked]:bg-green-500 data-[state=checked]:text-white"
-                          />
-                        </div>
-                      ))}
-                  </div>
-                )}
-              </div>
-              {errors.moduleAccess && (
-                <p className="text-sm text-red-500">{errors.moduleAccess}</p>
               )}
             </div>
 

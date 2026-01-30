@@ -167,7 +167,11 @@ export default function GroupPermissionManagement() {
   const [selectedGroupForEdit, setSelectedGroupForEdit] =
     useState<GroupPermission | null>(null);
 
-  const { data: groupPermissions = [], isLoading, error } = useGroupPermissions(searchTerm);
+  const {
+    data: groupPermissions = [],
+    isLoading,
+    error,
+  } = useGroupPermissions(searchTerm);
   const { mutate: createPermissionGroup } = useCreateGroupPermission();
   const { mutate: updatePermissionGroup } = useUpdateGroupPermission();
   const { mutate: updatePermissionField } = useUpdateGroupPermissionField();
@@ -319,7 +323,13 @@ export default function GroupPermissionManagement() {
         result.push({ ...existingDataManagement, access: true });
       }
 
-      const otherModules = ["billing", "vending", "hes", "user-management"];
+      const otherModules = [
+        "billing",
+        "vending",
+        "hes",
+        "user-management",
+        "dashboard",
+      ];
       for (const moduleKey of otherModules) {
         const moduleName = moduleNames[moduleKey] ?? moduleKey;
         const existing = existingModules.find((m) => m.name === moduleName);
@@ -338,12 +348,16 @@ export default function GroupPermissionManagement() {
     });
 
     if (selectedDataManagementSubModules.length > 0) {
-      const existingDataManagement = existingModules.find((m) => m.name === "Data Management");
+      const existingDataManagement = existingModules.find(
+        (m) => m.name === "Data Management",
+      );
       if (existingDataManagement) {
         const subModules: GroupPermission["modules"][0]["subModules"] = [];
         selectedDataManagementSubModules.forEach((moduleAccess) => {
           const moduleName = moduleNames[moduleAccess] ?? "Unknown Module";
-          const existingSub = existingDataManagement.subModules.find((s) => s.name === moduleName);
+          const existingSub = existingDataManagement.subModules.find(
+            (s) => s.name === moduleName,
+          );
           if (existingSub) subModules.push({ ...existingSub, access: true });
         });
         result.push({ ...existingDataManagement, access: true, subModules });
@@ -377,8 +391,8 @@ export default function GroupPermissionManagement() {
   const handleUpdateGroupPermission = async (data: {
     id: string;
     groupTitle: string;
-    moduleAccess: string[];
     accessLevel: string[];
+    modules: GroupPermission["modules"];
   }) => {
     try {
       const existingGroup = groupPermissions.find((g) => g.id === data.id);
@@ -387,14 +401,16 @@ export default function GroupPermissionManagement() {
         return;
       }
 
-      const permissions = updatePermissionsForUpdate(existingGroup.permissions, data.accessLevel);
-      const modules = updateModulesAccessForUpdate(existingGroup.modules, data.moduleAccess);
+      const permissions = updatePermissionsForUpdate(
+        existingGroup.permissions,
+        data.accessLevel,
+      );
 
       const payload = {
         id: data.id,
         groupTitle: data.groupTitle,
         permission: permissions,
-        modules,
+        modules: data.modules,
       };
 
       updatePermissionGroup(
@@ -465,9 +481,14 @@ export default function GroupPermissionManagement() {
               onChange={handleSearch}
             />
           </div>
-          <Button variant="outline" className="gap-1 border-[rgba(228,231,236,1)]">
+          <Button
+            variant="outline"
+            className="gap-1 border-[rgba(228,231,236,1)]"
+          >
             <ListFilter className="" strokeWidth={2.5} size={12} />
-            <Label htmlFor="filterCheckbox" className="cursor-pointer">Filter</Label>
+            <Label htmlFor="filterCheckbox" className="cursor-pointer">
+              Filter
+            </Label>
           </Button>
           <Button
             variant="outline"
@@ -475,7 +496,9 @@ export default function GroupPermissionManagement() {
             onClick={() => setSortConfig(null)}
           >
             <ArrowUpDown className="" strokeWidth={2.5} size={12} />
-            <Label className="cursor-pointer">{sortConfig ? "Clear Sort" : "Sort"}</Label>
+            <Label className="cursor-pointer">
+              {sortConfig ? "Clear Sort" : "Sort"}
+            </Label>
           </Button>
         </div>
       </div>
@@ -527,11 +550,14 @@ export default function GroupPermissionManagement() {
               </TableRow>
             ) : (
               paginatedGroups.map((group) => (
-                <TableRow key={group.id} className="hover:bg-muted/50 bg-transparent">
+                <TableRow
+                  key={group.id}
+                  className="hover:bg-muted/50 bg-transparent"
+                >
                   <TableCell>
                     <div>
                       <div className="font-medium">{group.groupTitle}</div>
-                      <div className="text-sm text-gray-500 line-clamp-1">
+                      <div className="line-clamp-1 text-sm text-gray-500">
                         {group.modules?.map((m) => m.name).join(", ")}
                       </div>
                     </div>
@@ -540,7 +566,9 @@ export default function GroupPermissionManagement() {
                   <TableCell className="text-center">
                     <Checkbox
                       checked={group.permissions.view}
-                      onCheckedChange={(checked) => handleUpdatePermission(group.id, "view", !!checked)}
+                      onCheckedChange={(checked) =>
+                        handleUpdatePermission(group.id, "view", !!checked)
+                      }
                       className="border-gray-300 data-[state=checked]:bg-green-500"
                       disabled={!canEdit}
                     />
@@ -548,7 +576,9 @@ export default function GroupPermissionManagement() {
                   <TableCell className="text-center">
                     <Checkbox
                       checked={group.permissions.edit}
-                      onCheckedChange={(checked) => handleUpdatePermission(group.id, "edit", !!checked)}
+                      onCheckedChange={(checked) =>
+                        handleUpdatePermission(group.id, "edit", !!checked)
+                      }
                       className="border-gray-300 data-[state=checked]:bg-green-500"
                       disabled={!canEdit}
                     />
@@ -556,7 +586,9 @@ export default function GroupPermissionManagement() {
                   <TableCell className="text-center">
                     <Checkbox
                       checked={group.permissions.approve}
-                      onCheckedChange={(checked) => handleUpdatePermission(group.id, "approve", !!checked)}
+                      onCheckedChange={(checked) =>
+                        handleUpdatePermission(group.id, "approve", !!checked)
+                      }
                       className="border-gray-300 data-[state=checked]:bg-green-500"
                       disabled={!canEdit}
                     />
@@ -564,30 +596,36 @@ export default function GroupPermissionManagement() {
                   <TableCell className="text-center">
                     <Checkbox
                       checked={group.permissions.disable}
-                      onCheckedChange={(checked) => handleUpdatePermission(group.id, "disable", !!checked)}
+                      onCheckedChange={(checked) =>
+                        handleUpdatePermission(group.id, "disable", !!checked)
+                      }
                       className="border-gray-300 data-[state=checked]:bg-green-500"
                       disabled={!canEdit}
                     />
                   </TableCell>
                   <TableCell className="text-center">
-                    {canEdit && (
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button size="sm" variant="ghost" className="h-8 w-8 p-2">
-                            <MoreVertical size={14} />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="center">
-                          <DropdownMenuItem onSelect={() => handleEditGroup(group)}>
-                            <div className="flex items-center gap-2">
-                              <Pencil size={14} />
-                              <span>Edit Group Permission</span>
-                            </div>
-                          </DropdownMenuItem>
-                          <GroupStatusToggleDropdownItem group={group} />
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    )}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 w-8 p-2"
+                        >
+                          <MoreVertical size={14} />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="center">
+                        <DropdownMenuItem
+                          onSelect={() => handleEditGroup(group)}
+                        >
+                          <div className="flex items-center gap-2">
+                            <Pencil size={14} />
+                            <span>Edit Group Permission</span>
+                          </div>
+                        </DropdownMenuItem>
+                        <GroupStatusToggleDropdownItem group={group} />
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </TableCell>
                 </TableRow>
               ))
@@ -609,12 +647,17 @@ export default function GroupPermissionManagement() {
             className="rounded-md border border-gray-300 px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
           >
             {[5, 10, 12, 20, 50].map((num) => (
-              <option key={num} value={num}>{num}</option>
+              <option key={num} value={num}>
+                {num}
+              </option>
             ))}
           </select>
         </div>
         <span className="text-black-500 text-sm">
-          {totalRows === 0 ? "0-0" : `${startIndex + 1}-${Math.min(endIndex, totalRows)}`} of {totalRows} rows
+          {totalRows === 0
+            ? "0-0"
+            : `${startIndex + 1}-${Math.min(endIndex, totalRows)}`}{" "}
+          of {totalRows} rows
         </span>
         <div className="flex items-center gap-2">
           <button
