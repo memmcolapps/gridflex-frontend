@@ -74,7 +74,7 @@ export function NotificationBar({
                                 setIsClosed(true);
                                 if (onClose) onClose();
                             }}
-                            className="fixed sm:absolute top-4 sm:top-22 right-4 sm:right-12 m-2 p-1 rounded-full text-white transition duration-200 ease-in-out ml-2"
+                            className="fixed sm:absolute top-4 sm:top-22 right-4 sm:right-12 m-2 p-4 rounded-full text-white transition duration-200 ease-in-out ml-2"
                             aria-label="Close"
                         >
                             <CircleAlert size={18} strokeWidth={2.75} className='cursor-pointer'/>
