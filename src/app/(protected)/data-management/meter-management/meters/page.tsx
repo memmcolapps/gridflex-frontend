@@ -187,7 +187,8 @@ export default function MeterManagementPage() {
     pageSize: rowsPerPage,
     searchTerm,
     sortDirection: sortConfig.direction,
-    type: activeTab === "actual" ? "allocated" : "virtual",
+    // type: activeTab === "actual" ? "allocated" : "virtual",
+    type: undefined
   });
 
   const { canEdit } = usePermissions();
