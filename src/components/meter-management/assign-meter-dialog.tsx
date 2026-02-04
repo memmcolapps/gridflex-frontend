@@ -19,13 +19,19 @@ import {
 import type { VirtualMeterData } from "@/types/meter";
 import type { MeterInventoryItem } from "@/types/meter-inventory";
 import type { Customer } from "@/types/customer-types";
+import type { MeterAPIItem } from "@/service/assign-meter-service";
 import { useTariff } from "@/hooks/use-tarrif";
-import { useMeters, useAssignMeter } from "@/hooks/use-assign-meter";
+import {
+  useMeters,
+  useAssignMeter,
+  useContinueAssignMeter,
+} from "@/hooks/use-assign-meter";
 import { useNigerianStates, useNigerianCities } from "@/hooks/use-location";
 import { useFeeders, useDSS } from "@/hooks/use-node";
 import UploadImageDialog from "./upload-image-dialog";
 import { ConfirmationModalDialog } from "./confirmation-modal-dialog";
 import { SetPaymentModeDialog } from "./set-payment-mode-dialog";
+import { CinExistsDialog } from "./cin-exists-dialog";
 import { useState, useMemo } from "react";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -155,6 +161,7 @@ export function AssignMeterDialog({
   });
 
   const assignMeterMutation = useAssignMeter();
+  const continueAssignMeterMutation = useContinueAssignMeter();
 
   const availableMeters = useMemo(() => {
     if (!metersData) return [];
@@ -178,8 +185,6 @@ export function AssignMeterDialog({
   const [isUploadImageOpen, setIsUploadImageOpen] = useState(false);
   const [isConfirmImageOpen, setIsConfirmImageOpen] = useState(false);
   const [isSetPaymentModalOpen, setIsSetPaymentModalOpen] = useState(false);
-  const [isDeactivateModalOpen, setIsDeactivateModalOpen] = useState(false);
-  const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
   const [uploadedImage, setUploadedImage] = useState<File | null>(null);
   const [debitMop, setDebitMop] = useState("");
   const [creditMop, setCreditMop] = useState("");
@@ -189,6 +194,26 @@ export function AssignMeterDialog({
   const [open, setOpen] = useState(false);
   const [feederOpen, setFeederOpen] = useState(false);
   const [dssOpen, setDssOpen] = useState(false);
+  const [isCinExistsDialogOpen, setIsCinExistsDialogOpen] = useState(false);
+  const [existingMeterData, setExistingMeterData] =
+    useState<MeterAPIItem | null>(null);
+  const [pendingAssignmentPayload, setPendingAssignmentPayload] = useState<{
+    meterNumber: string;
+    customerId: string;
+    tariffId: string;
+    dssAssetId: string;
+    feederAssetId: string;
+    cin: string;
+    accountNumber: string;
+    state: string;
+    city: string;
+    houseNo: string;
+    streetName: string;
+    creditPaymentMode: string;
+    debitPaymentMode: string;
+    creditPaymentPlan: string;
+    debitPaymentPlan: string;
+  } | null>(null);
 
   const isMeterInventoryItem = (
     customer: Customer | MeterInventoryItem | VirtualMeterData,
@@ -199,6 +224,51 @@ export function AssignMeterDialog({
   const handleProceedFromAssign = () => {
     onOpenChange(false);
     setIsUploadImageOpen(true);
+  };
+
+  const executeAssignMeter = async (forceAssign = false) => {
+    const assignmentPayload = {
+      meterNumber,
+      customerId: customer?.customerId ?? "",
+      tariffId: tariff,
+      dssAssetId: dss,
+      feederAssetId: feeder,
+      cin,
+      accountNumber,
+      state: states?.find((s) => s.id === state)?.name ?? "",
+      city: cities?.find((c) => c.id === city)?.name ?? "",
+      houseNo,
+      streetName,
+      creditPaymentMode: creditMop,
+      debitPaymentMode: debitMop,
+      creditPaymentPlan,
+      debitPaymentPlan,
+      forceAssign,
+    };
+
+    console.log("Assignment payload:", assignmentPayload);
+
+    try {
+      const response = await assignMeterMutation.mutateAsync(assignmentPayload);
+      console.log("Assignment response:", response);
+
+      // Check if CIN already exists (response code 131)
+      if (response.responsecode === "131" && response.responsedata?.meter) {
+        setExistingMeterData(response.responsedata.meter);
+        setPendingAssignmentPayload(assignmentPayload);
+        setIsCinExistsDialogOpen(true);
+        return;
+      }
+
+      if (response.responsecode === "000") {
+        console.log("Meter assigned successfully");
+        if (onConfirmAssignment) {
+          onConfirmAssignment();
+        }
+      }
+    } catch (error) {
+      console.error("Error assigning meter:", error);
+    }
   };
 
   const handleProceedFromUploadImage = (image: File | null) => {
@@ -217,96 +287,65 @@ export function AssignMeterDialog({
     if (meterCategory && meterCategory.toLowerCase() === "prepaid") {
       setIsSetPaymentModalOpen(true);
       setProgress(80);
-    } else if (meterCategory && meterCategory.toLowerCase() === "postpaid") {
-      setIsDeactivateModalOpen(true);
-      setProgress(80);
     } else {
-      console.log("No valid category found, defaulting to confirmation modal");
-      setIsConfirmationModalOpen(true);
+      // For postpaid or unknown, call API directly
       setProgress(100);
-    }
-  };
-
-  const handleProceedFromConfirmImage = () => {
-    setIsConfirmImageOpen(false);
-
-    const selectedMeter = availableMeters.find(
-      (meter) => meter.meterNumber === meterNumber,
-    );
-    const meterCategory =
-      selectedMeter?.category ??
-      (selectedMeter && "meterCategory" in selectedMeter
-        ? selectedMeter.meterCategory
-        : null);
-
-    if (meterCategory && meterCategory.toLowerCase() === "prepaid") {
-      setIsSetPaymentModalOpen(true);
-      setProgress(80);
-    } else if (meterCategory && meterCategory.toLowerCase() === "postpaid") {
-      setIsDeactivateModalOpen(true);
-      setProgress(80);
-    } else {
-      console.log("No valid category found, defaulting to confirmation modal");
-      setIsConfirmationModalOpen(true);
-      setProgress(100);
+      void executeAssignMeter();
     }
   };
 
   const handleProceedFromSetPayment = () => {
     setIsSetPaymentModalOpen(false);
-    setIsDeactivateModalOpen(true);
-    setProgress(90);
-  };
-
-  const handleProceedFromDeactivate = () => {
-    setIsDeactivateModalOpen(false);
-    setIsConfirmationModalOpen(true);
     setProgress(100);
+    void executeAssignMeter();
   };
 
-  const handleConfirmAssignment = async () => {
-    setIsConfirmationModalOpen(false);
-
-    const selectedMeter = availableMeters.find(
-      (meter) => meter.meterNumber === meterNumber,
-    );
-
-    const assignmentPayload = {
-      meterNumber,
-      customerId: customer?.customerId ?? "",
-      tariffId: tariff, // Assuming tariff is the ID
-      dssAssetId: dss, // Assuming dss is the asset ID
-      feederAssetId: feeder, // Assuming feeder is the asset ID
-      cin,
-      accountNumber,
-      state: states?.find((s) => s.id === state)?.name ?? "",
-      city: cities?.find((c) => c.id === city)?.name ?? "",
-      houseNo,
-      streetName,
-      creditPaymentMode: creditMop,
-      debitPaymentMode: debitMop,
-      creditPaymentPlan,
-      debitPaymentPlan,
-    };
-
-    console.log("Assignment payload:", assignmentPayload);
+  const handleProceedWithSever = async () => {
+    if (!pendingAssignmentPayload) return;
 
     try {
-      await assignMeterMutation.mutateAsync(assignmentPayload);
-      console.log("Meter assigned successfully");
-      if (onConfirmAssignment) {
-        onConfirmAssignment();
+      const response = await continueAssignMeterMutation.mutateAsync(
+        pendingAssignmentPayload,
+      );
+
+      if (response.responsecode === "000") {
+        setIsCinExistsDialogOpen(false);
+        setExistingMeterData(null);
+        setPendingAssignmentPayload(null);
+        if (onConfirmAssignment) {
+          onConfirmAssignment();
+        }
       }
     } catch (error) {
-      console.error("Error assigning meter:", error);
+      console.error("Error severing and assigning meter:", error);
     }
   };
 
-  const handleCancelConfirmation = () => {
-    setIsConfirmationModalOpen(false);
+  const handleCancelCinExists = () => {
+    setIsCinExistsDialogOpen(false);
+    setExistingMeterData(null);
+    setPendingAssignmentPayload(null);
   };
 
   const isPaymentFormComplete = debitMop !== "" && creditMop !== "";
+
+  // Debug: Log form completion state
+  console.log("Form completion check:", {
+    meterNumber,
+    cin,
+    accountNumber,
+    tariff,
+    feeder,
+    dss,
+    state,
+    city,
+    streetName,
+    houseNo,
+    customerPhone:
+      (customer as CustomerDisplay)?.phone ??
+      (customer as CustomerDisplay)?.phoneNumber,
+    isFormComplete,
+  });
 
   return (
     <>
@@ -756,16 +795,6 @@ export function AssignMeterDialog({
         onCancel={() => setIsUploadImageOpen(false)}
       />
 
-      <UploadImageDialog
-        isOpen={isConfirmImageOpen}
-        onOpenChange={setIsConfirmImageOpen}
-        onProceed={handleProceedFromConfirmImage}
-        onCancel={() => setIsConfirmImageOpen(false)}
-        onConfirmImage={handleProceedFromConfirmImage}
-        title="Confirm Meter Image"
-        description="Please review the uploaded meter image and confirm to proceed with the assignment."
-      />
-
       <SetPaymentModeDialog
         isOpen={isSetPaymentModalOpen}
         onOpenChange={setIsSetPaymentModalOpen}
@@ -782,42 +811,13 @@ export function AssignMeterDialog({
         onProceed={handleProceedFromSetPayment}
       />
 
-      <Dialog
-        open={isDeactivateModalOpen}
-        onOpenChange={setIsDeactivateModalOpen}
-      >
-        <DialogContent className="h-fit bg-white text-black">
-          <DialogHeader>
-            <DialogTitle>Deactivate Virtual Meter</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <p>Deactivate meter for customer</p>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsDeactivateModalOpen(false)}
-              className="cursor-pointer border-[#161CCA] text-[#161CCA]"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleProceedFromDeactivate}
-              className="cursor-pointer bg-[#161CCA] text-white"
-            >
-              Proceed
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <ConfirmationModalDialog
-        isOpen={isConfirmationModalOpen}
-        onOpenChange={setIsConfirmationModalOpen}
-        selectedCustomer={customer}
-        onConfirm={handleConfirmAssignment}
-        onCancel={handleCancelConfirmation}
-        isSubmitting={false}
+      <CinExistsDialog
+        isOpen={isCinExistsDialogOpen}
+        onOpenChange={setIsCinExistsDialogOpen}
+        existingMeter={existingMeterData}
+        onProceed={handleProceedWithSever}
+        onCancel={handleCancelCinExists}
+        isSubmitting={continueAssignMeterMutation.isPending}
       />
     </>
   );
