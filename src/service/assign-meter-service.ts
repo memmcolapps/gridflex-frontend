@@ -200,6 +200,15 @@ export interface AssignMeterPayload {
   creditPaymentPlan: string;
   debitPaymentPlan: string;
   meterClass?: string;
+  forceAssign?: boolean;
+}
+
+export interface CinExistsResponse {
+  responsecode: "131";
+  responsedesc: string;
+  responsedata: {
+    meter: MeterAPIItem;
+  };
 }
 
 export interface UpdateMeterPayload {
@@ -315,9 +324,11 @@ export async function saveMeter(
   }
 }
 
-export async function assignMeter(
-  data: AssignMeterPayload,
-): Promise<{ responsecode: string; responsedesc: string }> {
+export async function assignMeter(data: AssignMeterPayload): Promise<{
+  responsecode: string;
+  responsedesc: string;
+  responsedata?: { meter: MeterAPIItem };
+}> {
   try {
     const token = localStorage.getItem("auth_token");
     if (!token) {
@@ -326,6 +337,43 @@ export async function assignMeter(
 
     const response = await axiosInstance.post(
       `${API_URL}/meter/service/cin/assign`,
+      data,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    if (
+      response.data.responsecode !== "000" &&
+      response.data.responsecode !== "131"
+    ) {
+      throw new Error(response.data.responsedesc ?? "Failed to assign meter.");
+    }
+    return response.data;
+  } catch (error) {
+    throw new Error(handleApiError(error));
+  }
+}
+
+export async function continueAssignMeter(
+  data: AssignMeterPayload,
+): Promise<{
+  responsecode: string;
+  responsedesc: string;
+  responsedata?: { meter: MeterAPIItem };
+}> {
+  try {
+    const token = localStorage.getItem("auth_token");
+    if (!token) {
+      throw new Error("Authentication token not found.");
+    }
+
+    const response = await axiosInstance.post(
+      `${API_URL}/api/meter/service/assign`,
       data,
       {
         headers: {
