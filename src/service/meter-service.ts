@@ -119,7 +119,6 @@ export async function updateManufacturer(
     const response = await axiosInstance.put<ApiResponse>(
       `${API_URL}/manufacturer/service/update`,
       manufacturer,
-
       {
         headers: {
           "Content-Type": "application/json",
