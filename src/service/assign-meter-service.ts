@@ -224,7 +224,7 @@ export interface MigrateMeterPayload {
   debitPaymentMode?: string;
   debitPaymentPlan?: string;
   creditPaymentMode?: string;
-  creditPaymentPlan?: string;
+  creditPaymentPlan?: string; 
 }
 
 export interface DetachMeterPayload {
