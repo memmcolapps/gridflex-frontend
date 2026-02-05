@@ -69,7 +69,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
         meterCategory: editMeter.meterCategory ?? "",
         meterClass: editMeter.meterClass ?? "",
         meterType: editMeter.meterType ?? "",
-        meterManufacturer: editMeter.meterManufacturer ?? editMeter.manufacturer?.id ?? "",
+        meterManufacturer: editMeter.manufacturer?.id ?? editMeter.meterManufacturer ?? "",
         oldSgc: editMeter.oldSgc ?? "",
         newSgc: editMeter.newSgc ?? "",
         oldKrn: editMeter.oldKrn ?? "",
