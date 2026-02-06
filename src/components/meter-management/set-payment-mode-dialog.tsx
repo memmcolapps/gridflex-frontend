@@ -65,6 +65,7 @@ export function SetPaymentModeDialog({
                     <SelectItem value="monthly">Monthly</SelectItem>
                     <SelectItem value="one-off">One off</SelectItem>
                     <SelectItem value="percentage">Percentage</SelectItem>
+                    <SelectItem value="percentage">No Payment</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -88,6 +89,7 @@ export function SetPaymentModeDialog({
                     <SelectItem value="monthly">Monthly</SelectItem>
                     <SelectItem value="one-off">One off</SelectItem>
                     <SelectItem value="percentage">Percentage</SelectItem>
+                     <SelectItem value="percentage">No Payment </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
