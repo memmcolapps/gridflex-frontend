@@ -46,10 +46,7 @@ export function ViewMeterDetailsDialog({ isOpen, onClose, meter }: ViewMeterDeta
               <span className="font-medium text-gray-700">SIM No:</span>
               <span className="text-gray-900 font-bold">{meter.simNumber}</span>
             </div>
-            <div className="grid grid-cols-[150px_1fr] items-center gap-16">
-              <span className="font-medium text-gray-700">Meter Type:</span>
-              <span className="text-gray-900 font-bold">{meter.meterType}</span>
-            </div>
+           
             <div className="grid grid-cols-[150px_1fr] items-center gap-16">
               <span className="font-medium text-gray-700">Meter Manufacturer:</span>
               <span className="text-gray-900 font-bold">{meter.manufacturer?.name}</span>

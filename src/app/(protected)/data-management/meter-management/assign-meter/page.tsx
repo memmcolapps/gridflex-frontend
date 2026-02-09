@@ -10,7 +10,6 @@ import { DeactivateVirtualMeterDialog } from "@/components/meter-management/deac
 import { DetachConfirmationDialog } from "@/components/meter-management/detach-confirmation-dialog";
 import { DetachMeterDialog } from "@/components/meter-management/detach-meter-dialog";
 import { EditCustomerDetailsDialog } from "@/components/meter-management/edit-customer-details-dialog";
-import { MigrateMeterDialog } from "@/components/meter-management/migrate-meter-dialog";
 import { SetPaymentModeDialog } from "@/components/meter-management/set-payment-mode-dialog";
 import { FilterControl } from "@/components/search-control";
 import { getStatusStyle } from "@/components/status-style";
