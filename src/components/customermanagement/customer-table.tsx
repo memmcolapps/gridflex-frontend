@@ -214,8 +214,8 @@ export default function CustomerTable({
 
   return (
     <div className="flex h-screen flex-col">
-      <div className="mb-6 flex w-80 items-center gap-4">
-        <div className="relative flex-1">
+      <div className="mb-6 flex items-center gap-4">
+        <div className="relative  w-full md:w-[300px]">
           <SearchControl
             value={searchTerm}
             onChange={handleSearch}

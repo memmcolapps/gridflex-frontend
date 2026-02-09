@@ -32,10 +32,7 @@ export function ViewMeterInfoDialog({ isOpen, onClose, meter }: ViewMeterInfoDia
                             <span className="font-medium text-gray-700">SIM No:</span>
                             <span className="text-gray-900 font-bold">{meter.simNumber}</span>
                         </div>
-                        <div className="grid grid-cols-[150px_1fr] items-center gap-16">
-                            <span className="font-medium text-gray-700">Meter Type:</span>
-                            <span className="text-gray-900 font-bold">{meter.meterType}</span>
-                        </div>
+                        
                         <div className="grid grid-cols-[150px_1fr] items-center gap-16">
                             <span className="font-medium text-gray-700">Meter Manufacturer:</span>
                             <span className="text-gray-900 font-bold">{meter.manufacturer?.name}</span>
@@ -44,10 +41,7 @@ export function ViewMeterInfoDialog({ isOpen, onClose, meter }: ViewMeterInfoDia
                             <span className="font-medium text-gray-700">Meter Class:</span>
                             <span className="text-gray-900 font-bold">{meter.meterClass}</span>
                         </div>
-                        <div className="grid grid-cols-[150px_1fr] items-center gap-16">
-                            <span className="font-medium text-gray-700">Meter Category:</span>
-                            <span className="text-gray-900 font-bold">{meter.meterCategory}</span>
-                        </div>
+                      
                         <div className="grid grid-cols-[150px_1fr] items-center gap-16">
                             <span className="font-medium text-gray-700">Smart Meter:</span>
                             <span className="text-gray-900 font-bold">

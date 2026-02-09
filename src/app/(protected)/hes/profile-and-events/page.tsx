@@ -146,7 +146,7 @@ export default function HesProfileEvents() {
               className="flex cursor-pointer items-center gap-2 border border-[#161CCA] font-medium text-[#161CCA] hover:bg-[#161CCA]/5"
             >
               <SquareArrowOutUpRight
-                size={14}
+                size={12}
                 strokeWidth={2.3}
                 className="text-[#161CCA]"
               />

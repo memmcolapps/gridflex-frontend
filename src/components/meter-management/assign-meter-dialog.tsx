@@ -284,7 +284,7 @@ export function AssignMeterDialog({
         ? selectedMeter.meterCategory
         : null);
 
-    if (meterCategory && meterCategory.toLowerCase() === "prepaid") {
+    if (meterCategory && meterCategory === "prepaid") {
       setIsSetPaymentModalOpen(true);
       setProgress(80);
     } else {

@@ -58,8 +58,8 @@ export interface MeterInventoryItem {
   meterNumber: string;
   meterManufacturer: string;
   meterClass: string;
-  meterType?: string;
-  meterCategory: string;
+  // meterType?: string;
+  // meterCategory: string;
   dateAdded?: string;
   oldSgc?: string;
   newSgc?: string;
@@ -147,12 +147,12 @@ export interface SmartMeterInfo {
 export interface CreateMeterPayload {
   meterNumber: string;
   simNumber: string;
-  meterCategory: string;
   meterClass: string;
   meterManufacturer: string; // Standardized field name
-  meterType: string;
   oldSgc: string;
   newSgc: string;
+  meterCategory?: string; 
+  meterType?: string;
   oldKrn: string;
   newKrn: string;
   oldTariffIndex: number;
@@ -167,11 +167,11 @@ export interface UpdateMeterPayload {
   id: string;
   meterNumber: string;
   simNumber: string;
-  meterCategory: string;
   meterClass: string;
   meterManufacturer: string; // Standardized field name
-  meterType: string;
   oldSgc: string;
+  meterCategory?: string; 
+  meterType?: string;
   newSgc: string;
   oldKrn: string;
   newKrn: string;
