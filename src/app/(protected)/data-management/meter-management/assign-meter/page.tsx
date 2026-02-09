@@ -369,6 +369,16 @@ export default function AssignMeterPage() {
     }
   };
 
+  const handleNextToPayment = () => {
+    if (editCustomer?.category === "Prepaid") {
+      setDebitMop(editCustomer.debitMop ?? "");
+      setCreditMop(editCustomer.creditMop ?? "");
+      setDebitPaymentPlan(editCustomer.debitPaymentPlan ?? "");
+      setCreditPaymentPlan(editCustomer.creditPaymentPlan ?? "");
+      setIsSetPaymentModalOpen(true);
+    }
+  };
+
   const handleConfirmEditFromSetPayment = () => {
     if (!editCustomer?.customerId) {
       return;
@@ -900,6 +910,7 @@ export default function AssignMeterPage() {
         progress={progress}
         isFormComplete={isFormComplete}
         onProceed={handleProceedFromEdit}
+        onNextToPayment={handleNextToPayment}
       />
       <SetPaymentModeDialog
         isOpen={isSetPaymentModalOpen}
