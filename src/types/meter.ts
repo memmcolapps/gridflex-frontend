@@ -245,8 +245,6 @@ export interface SmartMeterInfo {
 export interface CreateMeterPayload {
   meterNumber: string;
   meterClass: string;
-  meterType: string;
-  meterCategory: string;
   dateAdded?: string;
   oldSgc?: string;
   newSgc?: string;

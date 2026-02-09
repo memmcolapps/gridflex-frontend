@@ -755,7 +755,7 @@ export default function MeterManagementPage() {
       <Card className="mb-4 border-none bg-transparent p-4 shadow-none">
         <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
           <div className="flex w-full items-center gap-2 md:w-auto">
-            <div className="relative w-full md:w-[300px]">
+            <div className="relative">
               <SearchControl
                 onSearchChange={handleSearchChange}
                 value={searchTerm}
