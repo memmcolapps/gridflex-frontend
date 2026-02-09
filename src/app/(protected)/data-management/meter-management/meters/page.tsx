@@ -984,9 +984,6 @@ export default function MeterManagementPage() {
                     <TableCell className="px-4 py-3 text-sm text-gray-900">
                       {item.meterClass}
                     </TableCell>
-                    <TableCell className="px-4 py-3 text-sm text-gray-900">
-                      {item.meterCategory}
-                    </TableCell>
                     <TableCell className="px-4 py-3 text-center">
                       <span
                         className={cn(

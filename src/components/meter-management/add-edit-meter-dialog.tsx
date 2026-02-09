@@ -284,10 +284,10 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
         onClose();
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Failed to update meter due to an unknown error.";
-
+  
         toast.error(`Update failed: ${errorMessage}`, {
-          duration: 5000,
-        });
+    duration: 5000,
+  });
         console.error("Update meter error:", error);
       }
 

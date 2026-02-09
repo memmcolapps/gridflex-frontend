@@ -58,8 +58,8 @@ export interface MeterInventoryItem {
   meterNumber: string;
   meterManufacturer: string;
   meterClass: string;
-  meterType?: string;
-  meterCategory: string;
+  // meterType?: string;
+  // meterCategory: string;
   dateAdded?: string;
   oldSgc?: string;
   newSgc?: string;

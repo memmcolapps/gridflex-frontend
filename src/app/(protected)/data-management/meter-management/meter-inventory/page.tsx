@@ -818,8 +818,8 @@ export default function MeterInventoryPage() {
           "manufactureName",
           "class",
           "meterId",
-          "meterType",
-          "category",
+          // "meterType",
+          // "category",
           "dateAdded",
           "status",
         ]}
