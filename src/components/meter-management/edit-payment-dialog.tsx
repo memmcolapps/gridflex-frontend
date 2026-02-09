@@ -1,14 +1,27 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import type {MeterInventoryItem}  from "@/types/meter-inventory";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import type { MeterInventoryItem } from "@/types/meter-inventory";
 
-interface SetPaymentModeDialogProps {
+interface EditPaymentDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
+  editCustomer: MeterInventoryItem | null;
   debitMop: string;
   setDebitMop: (value: string) => void;
   creditMop: string;
@@ -18,13 +31,14 @@ interface SetPaymentModeDialogProps {
   creditPaymentPlan: string;
   setCreditPaymentPlan: (value: string) => void;
   isPaymentFormComplete: boolean;
-  editCustomer: MeterInventoryItem | null;
   onProceed: () => void;
+  onBack: () => void;
 }
 
-export function SetPaymentModeDialog({
+export function EditPaymentDialog({
   isOpen,
   onOpenChange,
+  editCustomer,
   debitMop,
   setDebitMop,
   creditMop,
@@ -34,15 +48,14 @@ export function SetPaymentModeDialog({
   creditPaymentPlan,
   setCreditPaymentPlan,
   isPaymentFormComplete,
-  editCustomer,
   onProceed,
-}: SetPaymentModeDialogProps) {
+  onBack,
+}: EditPaymentDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-white text-black h-fit">
+      <DialogContent className="bg-white text-black h-fit border-none">
         <DialogHeader>
-          {/* <Progress value={progress} className="w-full" /> */}
-          <DialogTitle className="mt-2 text-xl">Set Payment Mode</DialogTitle>
+          <DialogTitle className="mt-2 text-xl">Edit Payment Mode</DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-2 gap-4">
@@ -89,7 +102,7 @@ export function SetPaymentModeDialog({
                     <SelectItem value="monthly">Monthly</SelectItem>
                     <SelectItem value="one-off">One off</SelectItem>
                     <SelectItem value="percentage">Percentage</SelectItem>
-                     <SelectItem value="percentage">No Payment</SelectItem>
+                      <SelectItem value="percentage">No Payment</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -102,7 +115,7 @@ export function SetPaymentModeDialog({
                 value={debitPaymentPlan}
               >
                 <SelectTrigger
-                  className={`w-full ${debitMop === "one-off" || debitMop === "percentage" ? "bg-gray-100 cursor-not-allowed text-gray-300" : ""}`}
+                  className={`w-full ${debitMop === "one-off" || debitMop === "percentage" ? "bg-gray-100 cursor-not-allowed text-gray-400" : ""}`}
                 >
                   <SelectValue placeholder="Select payment plan" />
                 </SelectTrigger>
@@ -120,7 +133,7 @@ export function SetPaymentModeDialog({
                 value={creditPaymentPlan}
               >
                 <SelectTrigger
-                  className={`w-full ${creditMop === "one-off" || creditMop === "percentage" ? "bg-gray-100 cursor-not-allowed text-gray-300" : ""}`}
+                  className={`w-full ${creditMop === "one-off" || creditMop === "percentage" ? "bg-gray-100 cursor-not-allowed text-gray-400" : ""}`}
                 >
                   <SelectValue placeholder="Select payment plan" />
                 </SelectTrigger>
@@ -135,10 +148,13 @@ export function SetPaymentModeDialog({
         <DialogFooter>
           <Button
             variant="outline"
-            onClick={() => onOpenChange(false)}
+            onClick={() => {
+              onOpenChange(false);
+              onBack();
+            }}
             className="text-[#161CCA] border-[#161CCA] cursor-pointer"
           >
-            Cancel
+            Back
           </Button>
           <Button
             onClick={onProceed}
