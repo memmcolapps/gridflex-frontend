@@ -858,16 +858,6 @@ export default function AssignMeterPage() {
                             <Unlink size={14} />
                             Detach Meter
                           </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => handleMigrateMeter(meter)}
-                            className="flex cursor-pointer items-center gap-2"
-                            disabled={meter.meterStage
-                              ?.toLowerCase()
-                              .includes("pending-migrate")}
-                          >
-                            <Navigation size={14} />
-                            Migrate Meter
-                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     )}
@@ -1000,24 +990,6 @@ export default function AssignMeterPage() {
         onConfirm={handleConfirmAssignment}
         onCancel={handleCancelConfirmation}
         isSubmitting={false}
-      />
-      <MigrateMeterDialog
-        isOpen={isMigrateModalOpen}
-        onOpenChange={setIsMigrateModalOpen}
-        migrateCustomer={migrateCustomer}
-        migrateToCategory={migrateToCategory}
-        setMigrateToCategory={setMigrateToCategory}
-        migrateDebitMop={migrateDebitMop}
-        setMigrateDebitMop={setMigrateDebitMop}
-        migrateDebitPaymentPlan={migrateDebitPaymentPlan}
-        setMigrateDebitPaymentPlan={setMigrateDebitPaymentPlan}
-        migrateCreditMop={migrateCreditMop}
-        setMigrateCreditMop={setMigrateCreditMop}
-        migrateCreditPaymentPlan={migrateCreditPaymentPlan}
-        setMigrateCreditPaymentPlan={setMigrateCreditPaymentPlan}
-        isMigrateFormComplete={isMigrateFormComplete}
-        isPending={migrateMeterMutation.isPending}
-        onConfirm={handleConfirmMigrate}
       />
       <DetachMeterDialog
         isOpen={isDetachModalOpen}

@@ -26,9 +26,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
     id: "",
     meterNumber: "",
     simNumber: "",
-    meterCategory: "",
     meterClass: "",
-    meterType: "",
     meterManufacturer: "",
     oldSgc: "",
     newSgc: "",
@@ -66,9 +64,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
         id: editMeter.id ?? "", // Set meter ID for update
         meterNumber: editMeter.meterNumber ?? "",
         simNumber: editMeter.simNumber ?? "",
-        meterCategory: editMeter.meterCategory ?? "",
         meterClass: editMeter.meterClass ?? "",
-        meterType: editMeter.meterType ?? "",
         meterManufacturer: editMeter.manufacturer?.id ?? editMeter.meterManufacturer ?? "",
         oldSgc: editMeter.oldSgc ?? "",
         newSgc: editMeter.newSgc ?? "",
@@ -100,9 +96,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
         id: "", // Clear ID
         meterNumber: "",
         simNumber: "", // Corrected
-        meterCategory: "",
         meterClass: "",
-        meterType: "",
         meterManufacturer: "",
         oldSgc: "",
         newSgc: "",
@@ -135,9 +129,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
     const newErrors: Record<string, string> = {};
     if (!formData.meterNumber) newErrors.meterNumber = "Meter Number is required";
     if (!formData.simNumber) newErrors.simNumber = "Sim Card is required";
-    if (!formData.meterCategory) newErrors.meterCategory = "Meter Category is required";
     if (!formData.meterClass) newErrors.meterClass = "Meter Class is required";
-    if (!formData.meterType) newErrors.meterType = "Meter Type is required";
     if (!formData.meterManufacturer) newErrors.meterManufacturer = "Meter Manufacturer is required";
     if (!formData.oldSgc) newErrors.oldSgc = "Old SGC is required";
     if (!formData.newSgc) newErrors.newSgc = "New SGC is required";
@@ -249,9 +241,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
         id: formData.id,
         meterNumber: formData.meterNumber,
         simNumber: formData.simNumber,
-        meterCategory: formData.meterCategory,
         meterClass: formData.meterClass,
-        meterType: formData.meterType,
         meterManufacturer: formData.meterManufacturer,
         oldSgc: formData.oldSgc,
         newSgc: formData.newSgc,
@@ -306,9 +296,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
       const payload: CreateMeterPayload = {
         meterNumber: formData.meterNumber,
         simNumber: formData.simNumber,
-        meterCategory: formData.meterCategory,
         meterClass: formData.meterClass,
-        meterType: formData.meterType,
         meterManufacturer: formData.meterManufacturer,
         oldSgc: formData.oldSgc,
         newSgc: formData.newSgc,
@@ -353,9 +341,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
           id: "",
           meterNumber: "",
           simNumber: "",
-          meterCategory: "",
           meterClass: "",
-          meterType: "",
           meterManufacturer: "",
           oldSgc: "",
           newSgc: "",
@@ -460,48 +446,6 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                   required
                 />
                 {errors.simNumber && <p className="text-xs text-red-500 mt-1">{errors.simNumber}</p>} {/* Corrected error key */}
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="meterType" className="text-sm font-medium text-gray-700">
-                  Meter Type <span className="text-red-500">*</span>
-                </Label>
-                <Select onValueChange={(value) => handleSelectChange("meterType", value)} value={formData.meterType}>
-                  <SelectTrigger
-                    id="meterType"
-                    className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.meterType ? "border-red-500" : ""
-                      }`}
-                  >
-                    <SelectValue>{formData.meterType || "Select Meter Type"}</SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Electricity">Electricity</SelectItem>
-                    <SelectItem value="Water">Water</SelectItem>
-                    <SelectItem value="Gas">Gas</SelectItem>
-                  </SelectContent>
-                </Select>
-                {errors.meterType && <p className="text-xs text-red-500 mt-1">{errors.meterType}</p>}
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="meterCategory" className="text-sm font-medium text-gray-700">
-                  Meter Category <span className="text-red-500">*</span>
-                </Label>
-                <Select
-                  onValueChange={(value) => handleSelectChange("meterCategory", value)}
-                  value={formData.meterCategory}
-                >
-                  <SelectTrigger
-                    id="meterCategory"
-                    className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.meterCategory ? "border-red-500" : ""
-                      }`}
-                  >
-                    <SelectValue>{formData.meterCategory || "Select Category"}</SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Prepaid">Prepaid</SelectItem>
-                    <SelectItem value="Postpaid">Postpaid</SelectItem>
-                  </SelectContent>
-                </Select>
-                {errors.meterCategory && <p className="text-xs text-red-500 mt-1">{errors.meterCategory}</p>}
               </div>
               <div className="space-y-1">
                 <Label htmlFor="meterClass" className="text-sm font-medium text-gray-700">
@@ -947,10 +891,8 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                 disabled={
                   !formData.meterNumber ||
                   !formData.simNumber ||
-                  !formData.meterCategory ||
                   !formData.meterClass ||
                   !formData.meterManufacturer ||
-                  !formData.meterType || // Added meterType check
                   !formData.oldSgc ||
                   !formData.newSgc ||
                   !formData.oldKrn ||

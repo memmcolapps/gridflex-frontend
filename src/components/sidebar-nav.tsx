@@ -379,7 +379,7 @@ export function SidebarNav() {
                   <SidebarMenuItem
                     key={item.title}
                     className={cn(
-                      "p-2.5 text-xl",
+                      "px-2.5 py-5  text-xl",
                       isActive
                         ? "rounded-md bg-[#161CCA] text-white"
                         : "rounded-md hover:bg-gray-100",

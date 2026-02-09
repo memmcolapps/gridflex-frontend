@@ -147,10 +147,8 @@ export interface SmartMeterInfo {
 export interface CreateMeterPayload {
   meterNumber: string;
   simNumber: string;
-  meterCategory: string;
   meterClass: string;
   meterManufacturer: string; // Standardized field name
-  meterType: string;
   oldSgc: string;
   newSgc: string;
   oldKrn: string;
@@ -167,10 +165,8 @@ export interface UpdateMeterPayload {
   id: string;
   meterNumber: string;
   simNumber: string;
-  meterCategory: string;
   meterClass: string;
   meterManufacturer: string; // Standardized field name
-  meterType: string;
   oldSgc: string;
   newSgc: string;
   oldKrn: string;

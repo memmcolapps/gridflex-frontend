@@ -703,7 +703,6 @@ export default function MeterInventoryPage() {
               <TableHead>New SGC</TableHead>
               <TableHead>Manufacture</TableHead>
               <TableHead>Class</TableHead>
-              <TableHead>Category</TableHead>
               <TableHead>Date Added</TableHead>
               <TableHead>Meter Stage</TableHead>
               <TableHead>Actions</TableHead>
@@ -748,7 +747,6 @@ export default function MeterInventoryPage() {
                   <TableCell>{meter.newSgc}</TableCell>
                   <TableCell className="text-sm">{meter.manufacturer?.name}</TableCell>
                   <TableCell>{meter.meterClass}</TableCell>
-                  <TableCell>{meter.meterCategory}</TableCell>
                   <TableCell>{meter.createdAt ? meter.createdAt.split(' ')[0] : meter.dateAdded ?? 'N/A'}</TableCell>
                   <TableCell>
                     <span className={getStatusStyle(meter.meterStage)}>
