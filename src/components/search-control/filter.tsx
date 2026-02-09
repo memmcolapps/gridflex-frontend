@@ -145,7 +145,7 @@ export function FilterControl({
                     className="gap-2 border-gray-300 w-full lg:w-auto cursor-pointer"
                     onClick={() => setIsOpen(!isOpen)}
                 >
-                    <ListFilter className="text-gray-500" size={14} />
+                    <ListFilter className="text-gray-500" size={12} />
                     <span className="text-gray-800 text-sm lg:text-base">Filter</span>
                 </Button>
             </div>

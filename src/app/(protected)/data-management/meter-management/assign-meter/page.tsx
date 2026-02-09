@@ -699,7 +699,7 @@ export default function AssignMeterPage() {
           >
             <SquareArrowOutUpRight
               className="text-[#161CCA]"
-              size={15}
+              size={12}
               strokeWidth={2.3}
             />
             <span className="text-sm font-medium lg:text-base">Export</span>

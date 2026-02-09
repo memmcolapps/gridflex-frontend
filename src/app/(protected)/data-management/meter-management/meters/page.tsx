@@ -753,73 +753,73 @@ export default function MeterManagementPage() {
       </div>
 
       <Card className="mb-4 border-none bg-transparent p-4 shadow-none">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
-            <div className="flex w-full items-center gap-2 lg:w-auto">
+        <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
+          <div className="flex w-full items-center gap-2 md:w-auto">
+            <div className="relative w-full md:w-[300px]">
               <SearchControl
                 onSearchChange={handleSearchChange}
                 value={searchTerm}
                 placeholder="Search by Meter Number, SIM Number, or Status"
               />
-              <FilterControl
-                sections={actualFilterSections}
-                filterType="multi-section"
-                onApply={(filters) => setActiveFilters(filters)}
-                onReset={() => setActiveFilters({})}
-              />
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="w-full cursor-pointer gap-2 border-gray-300 sm:w-auto"
-                  >
-                    <ArrowUpDown className="text-gray-500" size={14} />
-                    <span className="hidden text-gray-800 sm:inline">Sort</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem
-                    onClick={handleSortChange}
-                    className="cursor-pointer text-sm hover:bg-gray-100"
-                  >
-                    Ascending - Descending
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={handleSortChange}
-                    className="cursor-pointer text-sm hover:bg-gray-100"
-                  >
-                    Descending - Ascending
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
             </div>
-            <Button
-              variant="outline"
-              size="lg"
-              className="w-full cursor-pointer gap-2 border border-[#161CCA] font-medium text-[#161CCA] lg:w-auto"
-              onClick={() => {
-                exportActualMetersMutation.mutate(undefined, {
-                  onSuccess: () => {
-                    toast.success("Actual meters exported successfully");
-                  },
-                  onError: (error) => {
-                    console.error("Export failed:", error);
-                    toast.error("Failed to export actual meters");
-                  },
-                });
-              }}
-              disabled={exportActualMetersMutation.isPending}
-            >
-              <SquareArrowOutUpRight
-                className="text-[#161CCA]"
-                size={15}
-                strokeWidth={2.3}
-              />
-              <span className="text-sm font-medium lg:text-base">
-                {exportActualMetersMutation.isPending
-                  ? "Exporting..."
-                  : "Export"}
-              </span>
-            </Button>
+            <FilterControl
+              sections={actualFilterSections}
+              filterType="multi-section"
+              onApply={(filters) => setActiveFilters(filters)}
+              onReset={() => setActiveFilters({})}
+            />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="w-full cursor-pointer gap-2 border-gray-300 sm:w-auto"
+                >
+                  <ArrowUpDown className="text-gray-500" size={14} />
+                  <span className="hidden text-gray-800 sm:inline">Sort</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem
+                  onClick={handleSortChange}
+                  className="cursor-pointer text-sm hover:bg-gray-100"
+                >
+                  Ascending - Descending
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={handleSortChange}
+                  className="cursor-pointer text-sm hover:bg-gray-100"
+                >
+                  Descending - Ascending
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+          <Button
+            variant="outline"
+            size="lg"
+            className="cursor-pointer gap-2 border border-[#161CCA] font-medium text-[#161CCA]"
+            onClick={() => {
+              exportActualMetersMutation.mutate(undefined, {
+                onSuccess: () => {
+                  toast.success("Actual meters exported successfully");
+                },
+                onError: (error) => {
+                  console.error("Export failed:", error);
+                  toast.error("Failed to export actual meters");
+                },
+              });
+            }}
+            disabled={exportActualMetersMutation.isPending}
+          >
+            <SquareArrowOutUpRight
+              className="text-[#161CCA]"
+              size={12}
+              strokeWidth={2.3}
+            />
+            <span className="text-sm font-medium lg:text-base">
+              {exportActualMetersMutation.isPending ? "Exporting..." : "Export"}
+            </span>
+          </Button>
         </div>
         <Card className="min-h-[calc(100vh-300px)] overflow-x-auto border-none bg-transparent shadow-none">
           <Table className="w-full table-auto bg-transparent">
