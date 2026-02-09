@@ -675,7 +675,6 @@ export default function AssignMeterPage() {
             <TableHead>Meter No</TableHead>
             <TableHead>Account No</TableHead>
             <TableHead>CIN</TableHead>
-            <TableHead>Category</TableHead>
             <TableHead>Debit MOP</TableHead>
             <TableHead className="px-4 py-3 text-center">
               Payment Plan
