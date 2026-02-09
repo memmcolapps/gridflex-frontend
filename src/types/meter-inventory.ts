@@ -151,6 +151,8 @@ export interface CreateMeterPayload {
   meterManufacturer: string; // Standardized field name
   oldSgc: string;
   newSgc: string;
+  meterCategory?: string; 
+  meterType?: string;
   oldKrn: string;
   newKrn: string;
   oldTariffIndex: number;
@@ -168,6 +170,8 @@ export interface UpdateMeterPayload {
   meterClass: string;
   meterManufacturer: string; // Standardized field name
   oldSgc: string;
+  meterCategory?: string; 
+  meterType?: string;
   newSgc: string;
   oldKrn: string;
   newKrn: string;

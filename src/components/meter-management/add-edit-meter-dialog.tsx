@@ -54,8 +54,8 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const { mutateAsync: createMeter, isPending: isCreatePending } = useCreateMeter();
-  const { mutateAsync: updateMeter, isPending: isUpdatePending } = useUpdateMeter(); // Changed mutate to mutateAsync
-  const isPending = isCreatePending || isUpdatePending; // Combined pending state
+  const { mutateAsync: updateMeter, isPending: isUpdatePending } = useUpdateMeter();
+  const isPending = isCreatePending || isUpdatePending;
 
   useEffect(() => {
     console.log("editMeter received:", editMeter);
@@ -250,6 +250,8 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
         oldTariffIndex: Number(formData.oldTariffIndex) || 0,
         newTariffIndex: Number(formData.newTariffIndex) || 0,
         smartStatus: formData.smartStatus,
+        meterCategory: "Prepaid",
+        meterType: "Electricity",
         mdMeterInfo: formData.meterClass === "MD"
           ? {
             ctRatioNum: formData.ctRatioNum,
@@ -284,10 +286,13 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
         onClose();
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Failed to update meter due to an unknown error.";
-  
+        
+        console.error("Full error details:", error);
+        console.error("Payload being sent:", payload);
+        
         toast.error(`Update failed: ${errorMessage}`, {
-    duration: 5000,
-  });
+          duration: 5000,
+        });
         console.error("Update meter error:", error);
       }
 
@@ -305,6 +310,8 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
         oldTariffIndex: Number(formData.oldTariffIndex) || 0,
         newTariffIndex: Number(formData.newTariffIndex) || 0,
         smartStatus: formData.smartStatus,
+        meterCategory: "Prepaid",
+        meterType: "Electricity",
         mdMeterInfo: formData.meterClass === "MD"
           ? {
             ctRatioNum: formData.ctRatioNum,
@@ -367,9 +374,11 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
         });
         setErrors({});
       } catch (error) {
-        // Catch the error thrown by Tanstack Query's mutationFn
         const errorMessage = error instanceof Error ? error.message : "Failed to save meter due to an unknown error.";
 
+        console.error("Full error details:", error);
+        console.error("Payload being sent:", payload);
+        
         toast.error(`Save failed: ${errorMessage}`, {
           duration: 5000,
         });
@@ -382,7 +391,6 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
 
   const shouldShowNext = formData.meterClass === "MD" || formData.smartStatus;
 
-  // Determine the button text on step 1
   let step1ButtonText = "Add Meter";
   if (editMeter) {
     step1ButtonText = shouldShowNext ? "Next" : "Save";
@@ -903,7 +911,6 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                 }
                 className="text-sm font-medium bg-[#161CCA] text-white hover:bg-[#1e2abf]"
               >
-                {/* Updated logic for button text */}
                 {step1ButtonText}
               </Button>
             </>
