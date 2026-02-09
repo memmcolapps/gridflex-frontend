@@ -453,59 +453,6 @@ export default function AssignMeterPage() {
     }
   };
 
-  const handleConfirmMigrate = () => {
-    if (!migrateCustomer?.customerId || !migrateCustomer.id) {
-      return;
-    }
-    migrateMeterMutation.mutate(
-      {
-        meterId: migrateCustomer.id,
-        migrationFrom: migrateCustomer.meterCategory ?? "Postpaid",
-        meterCategory: migrateToCategory,
-      },
-      {
-        onSuccess: () => {
-          setMeterData((prev) =>
-            prev.map((item) =>
-              item.customerId === migrateCustomer.customerId
-                ? {
-                    ...item,
-                    meterStage: "Pending-migrated",
-                    category: migrateToCategory ?? item.category,
-                    ...(migrateToCategory === "Prepaid" && {
-                      debitMop: migrateDebitMop,
-                      debitPaymentPlan:
-                        migrateDebitMop === "monthly"
-                          ? migrateDebitPaymentPlan
-                          : "",
-                      creditMop: migrateCreditMop,
-                      creditPaymentPlan:
-                        migrateCreditMop === "monthly"
-                          ? migrateCreditPaymentPlan
-                          : "",
-                    }),
-                    ...(migrateToCategory === "Postpaid" && {
-                      debitMop: "",
-                      debitPaymentPlan: "",
-                      creditMop: "",
-                      creditPaymentPlan: "",
-                    }),
-                  }
-                : item,
-            ),
-          );
-          setIsMigrateModalOpen(false);
-          setMigrateToCategory("");
-          setMigrateDebitMop("");
-          setMigrateDebitPaymentPlan("");
-          setMigrateCreditMop("");
-          setMigrateCreditPaymentPlan("");
-          setMigrateCustomer(null);
-        },
-      },
-    );
-  };
-
   const handleSearchChange = (term: string) => {
     setSearchTerm(term);
     applyFiltersAndSort(term, sortConfig.key, sortConfig.direction);
@@ -776,9 +723,6 @@ export default function AssignMeterPage() {
                   <TableCell>{meter.meterNumber ?? "-"}</TableCell>
                   <TableCell>{meter.accountNumber ?? "-"}</TableCell>
                   <TableCell>{meter.cin ?? "-"}</TableCell>
-                  <TableCell>
-                    {meter.meterCategory ?? meter.category ?? "-"}
-                  </TableCell>
                   <TableCell>{meter.debitMop ?? "-"}</TableCell>
                   <TableCell className="px-4 py-3 text-center">
                     {meter.debitPaymentPlan ?? "-"}
