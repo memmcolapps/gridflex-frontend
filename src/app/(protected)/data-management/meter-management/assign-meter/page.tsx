@@ -370,6 +370,16 @@ export default function AssignMeterPage() {
     }
   };
 
+  const handleNextToPayment = () => {
+    if (editCustomer?.category === "Prepaid") {
+      setDebitMop(editCustomer.debitMop ?? "");
+      setCreditMop(editCustomer.creditMop ?? "");
+      setDebitPaymentPlan(editCustomer.debitPaymentPlan ?? "");
+      setCreditPaymentPlan(editCustomer.creditPaymentPlan ?? "");
+      setIsSetPaymentModalOpen(true);
+    }
+  };
+
   const handleConfirmEditFromSetPayment = () => {
     if (!editCustomer?.customerId) {
       return;
@@ -729,7 +739,7 @@ export default function AssignMeterPage() {
             <TableHead>Meter No</TableHead>
             <TableHead>Account No</TableHead>
             <TableHead>CIN</TableHead>
-            <TableHead>Category</TableHead>
+       
             <TableHead>Debit MOP</TableHead>
             <TableHead className="px-4 py-3 text-center">
               Payment Plan
@@ -776,9 +786,7 @@ export default function AssignMeterPage() {
                   <TableCell>{meter.meterNumber ?? "-"}</TableCell>
                   <TableCell>{meter.accountNumber ?? "-"}</TableCell>
                   <TableCell>{meter.cin ?? "-"}</TableCell>
-                  <TableCell>
-                    {meter.meterCategory ?? meter.category ?? "-"}
-                  </TableCell>
+              
                   <TableCell>{meter.debitMop ?? "-"}</TableCell>
                   <TableCell className="px-4 py-3 text-center">
                     {meter.debitPaymentPlan ?? "-"}
@@ -858,16 +866,7 @@ export default function AssignMeterPage() {
                             <Unlink size={14} />
                             Detach Meter
                           </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => handleMigrateMeter(meter)}
-                            className="flex cursor-pointer items-center gap-2"
-                            disabled={meter.meterStage
-                              ?.toLowerCase()
-                              .includes("pending-migrate")}
-                          >
-                            <Navigation size={14} />
-                            Migrate Meter
-                          </DropdownMenuItem>
+                      
                         </DropdownMenuContent>
                       </DropdownMenu>
                     )}
@@ -968,6 +967,7 @@ export default function AssignMeterPage() {
         progress={progress}
         isFormComplete={isFormComplete}
         onProceed={handleProceedFromEdit}
+        onNextToPayment={handleNextToPayment}
       />
       <SetPaymentModeDialog
         isOpen={isSetPaymentModalOpen}
