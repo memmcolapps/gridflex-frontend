@@ -854,6 +854,8 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                           {type === "debit" && (
                             <DropdownMenuItem
                               onSelect={() => {
+                                const adjId = customerAdjustments[index]?.id;
+                                setSelectedAdjustmentId(adjId ?? null);
                                 setSelectedCustomer(selectedCustomer);
                                 setIsReconcileDialogOpen(true);
                               }}
