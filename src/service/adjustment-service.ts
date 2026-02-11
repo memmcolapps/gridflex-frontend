@@ -18,8 +18,8 @@ const CUSTOM_HEADER = env.NEXT_PUBLIC_CUSTOM_HEADER;
 // Function to fetch all adjustments by type (credit or debit)
 export const fetchAllAdjustments = async (
   type: "credit" | "debit",
-  page: number = 0,
-  size: number = 10,
+  page = 0,
+  size = 10,
   searchTerm?: string,
 ): Promise<
   { success: true; data: Adjustment[]; totalData?: number } | { success: false; error: string }

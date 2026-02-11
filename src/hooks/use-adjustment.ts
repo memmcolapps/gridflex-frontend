@@ -11,7 +11,7 @@ import {
 import { type Adjustment, type AdjustmentPayload } from "@/types/credit-debit";
 import { toast } from "sonner";
 
-export const useAllAdjustments = (type: "credit" | "debit", page: number = 0, size: number = 10, searchTerm?: string) => {
+export const useAllAdjustments = (type: "credit" | "debit", page = 0, size = 10, searchTerm?: string) => {
   return useQuery<Adjustment[]>({
     queryKey: ["adjustments", type, searchTerm, page, size],
     queryFn: async () => {

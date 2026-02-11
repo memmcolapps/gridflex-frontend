@@ -308,7 +308,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
     });
 
     let runningBalance = debitInfo?.amount ?? 0;
-    (debitInfo?.payment || [])
+    (debitInfo?.payment ?? [])
       .filter((pay): pay is Required<Payment> & { createdAt: string } => !!pay.createdAt)
       .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
       .forEach((pay) => {
