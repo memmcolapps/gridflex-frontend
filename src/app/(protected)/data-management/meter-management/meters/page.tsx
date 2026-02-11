@@ -153,7 +153,7 @@ export default function MeterManagementPage() {
     pageSize: rowsPerPage,
     searchTerm,
     sortDirection: sortConfig.direction,
-    type: undefined,
+    type: "allocated",
   });
 
   const { canEdit } = usePermissions();

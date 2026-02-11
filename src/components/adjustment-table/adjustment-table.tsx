@@ -68,13 +68,14 @@ import {
   type AdjustmentTableProps,
   type Meter as MeterType,
   type AdjustmentPayload,
+  type Payment,
 } from "@/types/credit-debit";
 import { Card } from "../ui/card";
 
 const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
   const { canEdit } = usePermissions();
   const queryClient = useQueryClient();
-  const { data: allAdjustments, isLoading, error } = useAllAdjustments(type);
+  const { data: allAdjustments, isLoading, error } = useAllAdjustments(type, 0, 100);
 
   const customers = useMemo(() => {
     if (!allAdjustments) return [];
@@ -82,18 +83,20 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
     const group = new Map<string, Customer>();
 
     allAdjustments.forEach((adj) => {
-      // Safely access the first element of the meter array, as per the API data
-      const meter = adj.meter && adj.meter.length > 0 ? adj.meter[0] : null;
-
-      // Provide fallback values if meter or customer data is missing
-      const cust = meter?.customer;
+      // Customer info is now directly on the adjustment
+      const cust = adj.customer;
       const name = cust ? `${cust.firstname} ${cust.lastname}` : "N/A";
-      const customerId = meter?.customerId ?? 'N/A';
-      const meterNo = meter?.meterNumber ?? 'N/A';
-      const accountNo = meter?.accountNumber ?? 'N/A';
-      const id = customerId;
+      const customerId = adj.customerId ?? 'N/A';
+      const meterNo = adj.meterNumber ?? 'N/A';
+      const accountNo = adj.accountNumber ?? 'N/A';
+      // Use meter ID (adj.id) as unique key instead of customer ID
+      const id = adj.id;
 
-      if (id !== 'N/A' && !group.has(id)) {
+      // Get balance from debitCreditAdjustInfo array
+      const debitInfo = adj.debitCreditAdjustInfo && adj.debitCreditAdjustInfo.length > 0 ? adj.debitCreditAdjustInfo[0] : null;
+      const balance = debitInfo?.balance ?? 0;
+
+      if (id && !group.has(id)) {
         group.set(id, {
           id,
           name,
@@ -103,9 +106,9 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
         });
       }
 
-      const current = id !== 'N/A' ? group.get(id) : undefined;
+      const current = id ? group.get(id) : undefined;
       if (current) {
-        current.balance += adj.balance;
+        current.balance += balance;
       }
     });
 
@@ -263,19 +266,23 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
 
   const customerAdjustments = useMemo(() => {
     if (!selectedCustomer || !allAdjustments) return [];
-    // Safely access the customerId from the first element of the meter array using optional chaining
-    return allAdjustments.filter((adj) => adj.meter?.[0]?.customerId === selectedCustomer.id);
+    // Use meter ID (adj.id) to match the new grouping
+    return allAdjustments.filter((adj) => adj.id === selectedCustomer.id);
   }, [selectedCustomer, allAdjustments]);
 
-  const liabilityTransactions: Transaction[] = customerAdjustments.map((adj) => ({
-    date: adj.createdAt?.split(' ')[0] ?? '',
-    // Safely access name and code using optional chaining with a fallback
-    liabilityCause: adj.liabilityCause?.name ?? 'N/A',
-    liabilityCode: adj.liabilityCause?.code ?? 'N/A',
-    credit: type === 'credit' ? adj.amount : '',
-    debit: type === 'debit' ? adj.amount : '',
-    balance: adj.balance,
-  }));
+  const liabilityTransactions: Transaction[] = customerAdjustments.map((adj) => {
+    // Get adjustment data from debitCreditAdjustInfo array
+    const debitInfo = adj.debitCreditAdjustInfo && adj.debitCreditAdjustInfo.length > 0 ? adj.debitCreditAdjustInfo[0] : null;
+    return {
+      date: adj.createdAt?.split(' ')[0] ?? '',
+      // Safely access name and code using optional chaining with a fallback
+      liabilityCause: debitInfo?.liabilityCause?.name ?? 'N/A',
+      liabilityCode: debitInfo?.liabilityCause?.code ?? 'N/A',
+      credit: type === 'credit' ? debitInfo?.amount ?? '' : '',
+      debit: type === 'debit' ? debitInfo?.amount ?? '' : '',
+      balance: debitInfo?.balance ?? 0,
+    };
+  });
 
   const selectedAdjustment = useMemo(() => {
     if (!selectedAdjustmentId || !allAdjustments) return null;
@@ -287,18 +294,22 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
 
     const transactions: Transaction[] = [];
 
+    // Get adjustment data from debitCreditAdjustInfo array
+    const debitInfo = selectedAdjustment.debitCreditAdjustInfo && selectedAdjustment.debitCreditAdjustInfo.length > 0 ? selectedAdjustment.debitCreditAdjustInfo[0] : null;
+
     // Push the initial adjustment transaction
     transactions.push({
       date: selectedAdjustment.createdAt?.split(' ')[0] ?? '',
-      liabilityCause: selectedAdjustment.liabilityCause?.name ?? 'N/A',
-      liabilityCode: selectedAdjustment.liabilityCause?.code ?? 'N/A',
-      credit: selectedAdjustment.type === 'credit' ? selectedAdjustment.amount : '',
-      debit: selectedAdjustment.type === 'debit' ? selectedAdjustment.amount : '',
-      balance: selectedAdjustment.amount,
+      liabilityCause: debitInfo?.liabilityCause?.name ?? 'N/A',
+      liabilityCode: debitInfo?.liabilityCause?.code ?? 'N/A',
+      credit: debitInfo?.type === 'credit' ? debitInfo?.amount ?? '' : '',
+      debit: debitInfo?.type === 'debit' ? debitInfo?.amount ?? '' : '',
+      balance: debitInfo?.amount ?? 0,
     });
 
-    let runningBalance = selectedAdjustment.amount;
-    selectedAdjustment.payment
+    let runningBalance = debitInfo?.amount ?? 0;
+    (debitInfo?.payment || [])
+      .filter((pay): pay is Required<Payment> & { createdAt: string } => !!pay.createdAt)
       .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
       .forEach((pay) => {
         runningBalance -= pay.credit;
@@ -920,8 +931,8 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
             </div>
             {/* Fix applied here to prevent crash */}
             <p className="mb-4 ml-4 text-sm">
-              {selectedAdjustment?.liabilityCause?.name ?? 'N/A'}:{" "}
-              {selectedAdjustment?.liabilityCause?.code ?? 'N/A'}
+              {selectedAdjustment?.debitCreditAdjustInfo?.[0]?.liabilityCause?.name ?? 'N/A'}:{" "}
+              {selectedAdjustment?.debitCreditAdjustInfo?.[0]?.liabilityCause?.code ?? 'N/A'}
             </p>
           </DialogHeader>
           <div className="overflow-x-hidden">
