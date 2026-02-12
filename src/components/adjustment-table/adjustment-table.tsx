@@ -1072,7 +1072,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                 <div className="space-y-4">
                   <Label>Meter Number</Label>
                   <Input
-                    value={selectedCustomer?.meterNo ?? ""}
+                    value={(selectedCustomer?.meterNo ?? "").trim()}
                     className="border-[rgba(228,231,236,1)]"
                     disabled
                   />
@@ -1080,7 +1080,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                 <div className="space-y-4">
                   <Label>Account Number</Label>
                   <Input
-                    value={selectedCustomer?.accountNo ?? ""}
+                    value={(selectedCustomer?.accountNo ?? "").trim()}
                     className="border-[rgba(228,231,236,1)]"
                     disabled
                   />
