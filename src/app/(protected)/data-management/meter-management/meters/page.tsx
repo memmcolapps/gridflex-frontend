@@ -859,9 +859,7 @@ export default function MeterManagementPage() {
                 <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">
                   Class
                 </TableHead>
-                <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">
-                  Category
-                </TableHead>
+
                 <TableHead className="px-4 py-3 text-center text-sm font-medium text-gray-900">
                   Activation Status
                 </TableHead>
@@ -984,6 +982,7 @@ export default function MeterManagementPage() {
                     <TableCell className="px-4 py-3 text-sm text-gray-900">
                       {item.meterClass}
                     </TableCell>
+                   
                     <TableCell className="px-4 py-3 text-center">
                       <span
                         className={cn(
