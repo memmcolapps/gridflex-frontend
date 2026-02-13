@@ -195,12 +195,12 @@ export interface AssignMeterPayload {
   city: string;
   houseNo: string;
   streetName: string;
-  creditPaymentMode: string;
-  debitPaymentMode: string;
-  creditPaymentPlan: string;
-  debitPaymentPlan: string;
+  paymentType: string;
+  paymentMode: string;
+  paymentPlan: string;
   meterClass?: string;
   forceAssign?: boolean;
+  image?: File | null;
 }
 
 export interface CinExistsResponse {
@@ -324,7 +324,7 @@ export async function saveMeter(
   }
 }
 
-export async function assignMeter(data: AssignMeterPayload): Promise<{
+export async function assignMeter(data: AssignMeterPayload | FormData): Promise<{
   responsecode: string;
   responsedesc: string;
   responsedata?: { meter: MeterAPIItem };
@@ -335,12 +335,14 @@ export async function assignMeter(data: AssignMeterPayload): Promise<{
       throw new Error("Authentication token not found.");
     }
 
+    const isFormData = data instanceof FormData;
+    
     const response = await axiosInstance.post(
       `${API_URL}/meter/service/cin/assign`,
       data,
       {
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": isFormData ? "multipart/form-data" : "application/json",
           custom: CUSTOM_HEADER,
           Authorization: `Bearer ${token}`,
         },
@@ -360,7 +362,7 @@ export async function assignMeter(data: AssignMeterPayload): Promise<{
 }
 
 export async function continueAssignMeter(
-  data: AssignMeterPayload,
+  data: AssignMeterPayload | FormData,
 ): Promise<{
   responsecode: string;
   responsedesc: string;
@@ -372,12 +374,14 @@ export async function continueAssignMeter(
       throw new Error("Authentication token not found.");
     }
 
+    const isFormData = data instanceof FormData;
+    
     const response = await axiosInstance.post(
       `${API_URL}/api/meter/service/assign`,
       data,
       {
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": isFormData ? "multipart/form-data" : "application/json",
           custom: CUSTOM_HEADER,
           Authorization: `Bearer ${token}`,
         },
