@@ -125,6 +125,9 @@ export default function MeterManagementPage() {
   const [creditMop, setCreditMop] = useState("");
   const [debitPaymentPlan, setDebitPaymentPlan] = useState("");
   const [creditPaymentPlan, setCreditPaymentPlan] = useState("");
+  const [paymentType, setPaymentType] = useState("");
+  const [paymentMode, setPaymentMode] = useState("");
+  const [paymentPlan, setPaymentPlan] = useState("");
   const [isSetPaymentModalOpen, setIsSetPaymentModalOpen] = useState(false);
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
   const [category, setCategory] = useState("");
@@ -241,6 +244,9 @@ export default function MeterManagementPage() {
         setCreditMop("");
         setDebitPaymentPlan("");
         setCreditPaymentPlan("");
+        setPaymentType("");
+        setPaymentMode("");
+        setPaymentPlan("");
         setCategory("");
       }
     } catch (error) {
@@ -264,10 +270,9 @@ export default function MeterManagementPage() {
       city,
       houseNo,
       streetName,
-      creditPaymentMode: debitMop,
-      debitPaymentMode: creditMop,
-      creditPaymentPlan: debitPaymentPlan,
-      debitPaymentPlan: creditPaymentPlan,
+      paymentType,
+      paymentMode,
+      paymentPlan,
     };
 
     assignMeterMutation.mutate(assignPayload, {
@@ -339,6 +344,9 @@ export default function MeterManagementPage() {
       setCreditMop("");
       setDebitPaymentPlan("");
       setCreditPaymentPlan("");
+      setPaymentType("");
+      setPaymentMode("");
+      setPaymentPlan("");
       setCategory("");
     }
   };
@@ -389,7 +397,7 @@ export default function MeterManagementPage() {
                   creditMop === "one-off"
                     ? ""
                     : (creditPaymentPlan ?? item.creditPaymentPlan),
-                image: uploadedImage ?? item.Image,
+                image: uploadedImage ?? item.image,
               }
             : item,
         ),

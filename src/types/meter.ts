@@ -299,7 +299,7 @@ export interface CreateMeterPayload {
   approvedStatus?: string;
   meterStage?: string;
   type?: string;
-  manufacturer?: {
+  manufacturer?: string | {
     id: string;
     orgId: string;
     manufacturerId: string;
