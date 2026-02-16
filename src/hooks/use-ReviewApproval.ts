@@ -240,6 +240,7 @@ export const useTariffs = (params: FetchParams): UseTariffsResult => {
     mutationFn: (payload) => reviewTariff(payload.id, payload.approveStatus),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tariffs"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
   });
 
@@ -297,6 +298,7 @@ export const useMeters = (params: FetchParams): UseMetersResult => {
     mutationFn: (payload) => reviewMeter(payload.id, payload.approveStatus),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["meters"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
   });
 

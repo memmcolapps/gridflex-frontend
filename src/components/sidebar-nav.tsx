@@ -113,55 +113,55 @@ const navItems: NavItemProps[] = [
       },
     ],
   },
-  {
-    title: "Billing",
-    href: "/billing",
-    icon: CreditCard,
-    hasSubmenu: true,
-    submenuItems: [
-      { title: "Dashboard", href: "/billing/dashboard" },
-      {
-        title: "MD Prebilling",
-        href: "#",
-        hasSubmenu: true,
-        submenuItems: [
-          {
-            title: "Meter Reading Sheet",
-            href: "/billing/md-prebilling/reading-sheet",
-          },
-          {
-            title: "Meter Consumption",
-            href: "/billing/md-prebilling/meter-consumption",
-          },
-          {
-            title: "Energy-Import",
-            href: "/billing/md-prebilling/energy-import",
-          },
-        ],
-      },
-      {
-        title: "Non-MD Prebilling",
-        href: "#",
-        hasSubmenu: true,
-        submenuItems: [
-          {
-            title: "Meter Reading Sheet",
-            href: "/billing/non-md-prebilling/reading-sheet",
-          },
-          {
-            title: "Meter Consumption",
-            href: "/billing/non-md-prebilling/meter-consumption",
-          },
-          {
-            title: "Energy-Import",
-            href: "/billing/non-md-prebilling/energy-import",
-          },
-        ],
-      },
-      { title: "Billing", href: "/billing/billing" },
-      { title: "Payments", href: "/billing/payments" },
-    ],
-  },
+  // {
+  //   title: "Billing",
+  //   href: "/billing",
+  //   icon: CreditCard,
+  //   hasSubmenu: true,
+  //   submenuItems: [
+  //     { title: "Dashboard", href: "/billing/dashboard" },
+  //     {
+  //       title: "MD Prebilling",
+  //       href: "#",
+  //       hasSubmenu: true,
+  //       submenuItems: [
+  //         {
+  //           title: "Meter Reading Sheet",
+  //           href: "/billing/md-prebilling/reading-sheet",
+  //         },
+  //         {
+  //           title: "Meter Consumption",
+  //           href: "/billing/md-prebilling/meter-consumption",
+  //         },
+  //         {
+  //           title: "Energy-Import",
+  //           href: "/billing/md-prebilling/energy-import",
+  //         },
+  //       ],
+  //     },
+  //     {
+  //       title: "Non-MD Prebilling",
+  //       href: "#",
+  //       hasSubmenu: true,
+  //       submenuItems: [
+  //         {
+  //           title: "Meter Reading Sheet",
+  //           href: "/billing/non-md-prebilling/reading-sheet",
+  //         },
+  //         {
+  //           title: "Meter Consumption",
+  //           href: "/billing/non-md-prebilling/meter-consumption",
+  //         },
+  //         {
+  //           title: "Energy-Import",
+  //           href: "/billing/non-md-prebilling/energy-import",
+  //         },
+  //       ],
+  //     },
+  //     { title: "Billing", href: "/billing/billing" },
+  //     { title: "Payments", href: "/billing/payments" },
+  //   ],
+  // },
   {
     title: "Vending",
     href: "/vending",
