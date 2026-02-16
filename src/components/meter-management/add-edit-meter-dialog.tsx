@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { MeterInventoryItem } from "@/types/meter-inventory";
-import type { CreateMeterPayload, UpdateMeterPayload } from "@/types/meter-inventory";
+import type { CreateMeterPayload, UpdateMeterPayload } from "@/types/meter";
 import { useCreateMeter, useGetMeterManufactures, useUpdateMeter } from "@/hooks/use-meter";
 import { toast } from "sonner";
 
@@ -48,7 +48,10 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
     initialReading: "",
     dial: "",
     longitude: "",
-    latitude: ""
+    latitude: "",
+    paymentMode: "",
+    paymentPlan: "",
+    paymentType: ""
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -86,7 +89,10 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
         initialReading: editMeter.mdMeterInfo?.initialReading ?? "",
         dial: editMeter.mdMeterInfo?.dial ?? "",
         longitude: editMeter.mdMeterInfo?.longitude ?? "",
-        latitude: editMeter.mdMeterInfo?.latitude ?? ""
+        latitude: editMeter.mdMeterInfo?.latitude ?? "",
+        paymentMode: editMeter.paymentMode ?? "",
+        paymentPlan: editMeter.paymentPlan ?? "",
+        paymentType: editMeter.paymentType ?? ""
       });
       setStep(1);
       setErrors({});
@@ -118,7 +124,10 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
         initialReading: "",
         dial: "",
         longitude: "",
-        latitude: ""
+        latitude: "",
+        paymentMode: "",
+        paymentPlan: "",
+        paymentType: ""
       });
       setStep(1);
       setErrors({});
@@ -242,7 +251,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
         meterNumber: formData.meterNumber,
         simNumber: formData.simNumber,
         meterClass: formData.meterClass,
-        meterManufacturer: formData.meterManufacturer,
+        manufacturer: formData.meterManufacturer,
         oldSgc: formData.oldSgc,
         newSgc: formData.newSgc,
         oldKrn: formData.oldKrn,
@@ -250,8 +259,6 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
         oldTariffIndex: Number(formData.oldTariffIndex) || 0,
         newTariffIndex: Number(formData.newTariffIndex) || 0,
         smartStatus: formData.smartStatus,
-        meterCategory: "Prepaid",
-        meterType: "Electricity",
         mdMeterInfo: formData.meterClass === "MD"
           ? {
             ctRatioNum: formData.ctRatioNum,
@@ -273,9 +280,12 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
             authentication: formData.authentication,
             password: formData.password,
           }
-          : undefined
-
-        ,
+          : undefined,
+        paymentMode: {
+          paymentMode: formData.paymentMode,
+          paymentPlan: formData.paymentPlan,
+          paymentType: formData.paymentType,
+        },
       };
 
       try {
@@ -302,7 +312,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
         meterNumber: formData.meterNumber,
         simNumber: formData.simNumber,
         meterClass: formData.meterClass,
-        meterManufacturer: formData.meterManufacturer,
+        manufacturer: formData.meterManufacturer,
         oldSgc: formData.oldSgc,
         newSgc: formData.newSgc,
         oldKrn: formData.oldKrn,
@@ -310,8 +320,6 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
         oldTariffIndex: Number(formData.oldTariffIndex) || 0,
         newTariffIndex: Number(formData.newTariffIndex) || 0,
         smartStatus: formData.smartStatus,
-        meterCategory: "Prepaid",
-        meterType: "Electricity",
         mdMeterInfo: formData.meterClass === "MD"
           ? {
             ctRatioNum: formData.ctRatioNum,
@@ -371,6 +379,9 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
           dial: "",
           longitude: "",
           latitude: "",
+          paymentMode: "",
+          paymentPlan: "",
+          paymentType: ""
         });
         setErrors({});
       } catch (error) {

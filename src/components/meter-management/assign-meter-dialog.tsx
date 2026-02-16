@@ -19,7 +19,7 @@ import {
 import type { VirtualMeterData } from "@/types/meter";
 import type { MeterInventoryItem } from "@/types/meter-inventory";
 import type { Customer } from "@/types/customer-types";
-import type { MeterAPIItem } from "@/service/assign-meter-service";
+import type { AssignMeterPayload, MeterAPIItem } from "@/service/assign-meter-service";
 import { useTariff } from "@/hooks/use-tarrif";
 import {
   useMeters,
@@ -186,10 +186,9 @@ export function AssignMeterDialog({
   const [isConfirmImageOpen, setIsConfirmImageOpen] = useState(false);
   const [isSetPaymentModalOpen, setIsSetPaymentModalOpen] = useState(false);
   const [uploadedImage, setUploadedImage] = useState<File | null>(null);
-  const [debitMop, setDebitMop] = useState("");
-  const [creditMop, setCreditMop] = useState("");
-  const [debitPaymentPlan, setDebitPaymentPlan] = useState("");
-  const [creditPaymentPlan, setCreditPaymentPlan] = useState("");
+  const [paymentMode, setPaymentMode] = useState("");
+  const [paymentPlan, setPaymentPlan] = useState("");
+  const [paymentType, setPaymentType] = useState("");
   const [progress, setProgress] = useState(50);
   const [open, setOpen] = useState(false);
   const [feederOpen, setFeederOpen] = useState(false);
@@ -209,10 +208,10 @@ export function AssignMeterDialog({
     city: string;
     houseNo: string;
     streetName: string;
-    creditPaymentMode: string;
-    debitPaymentMode: string;
-    creditPaymentPlan: string;
-    debitPaymentPlan: string;
+    paymentType: string;
+    paymentMode: string;
+    paymentPlan: string;
+    image?: File | null;
   } | null>(null);
 
   const isMeterInventoryItem = (
@@ -226,8 +225,12 @@ export function AssignMeterDialog({
     setIsUploadImageOpen(true);
   };
 
-  const executeAssignMeter = async (forceAssign = false) => {
-    const assignmentPayload = {
+  const executeAssignMeter = async (forceAssign = false, isContinuation = false) => {
+    // Create payload for the API call
+    // Use image from pendingAssignmentPayload if available (for continue assignment)
+    const imageToUse = isContinuation ? pendingAssignmentPayload?.image ?? null : uploadedImage;
+    
+    const payload: AssignMeterPayload = {
       meterNumber,
       customerId: customer?.customerId ?? "",
       tariffId: tariff,
@@ -239,23 +242,49 @@ export function AssignMeterDialog({
       city: cities?.find((c) => c.id === city)?.name ?? "",
       houseNo,
       streetName,
-      creditPaymentMode: creditMop,
-      debitPaymentMode: debitMop,
-      creditPaymentPlan,
-      debitPaymentPlan,
+      paymentType,
+      paymentMode,
+      paymentPlan,
       forceAssign,
+      image: imageToUse,
     };
+    
+    // Always use FormData since the API requires multipart/form-data
+    const formData = new FormData();
+    Object.entries(payload).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        formData.append(key, value instanceof File ? value : String(value));
+      }
+    });
 
-    console.log("Assignment payload:", assignmentPayload);
+    console.log("Assignment payload: FormData with image:", !!imageToUse);
 
     try {
-      const response = await assignMeterMutation.mutateAsync(assignmentPayload);
+      const response = isContinuation 
+        ? await continueAssignMeterMutation.mutateAsync(formData)
+        : await assignMeterMutation.mutateAsync(formData);
       console.log("Assignment response:", response);
 
       // Check if CIN already exists (response code 131)
       if (response.responsecode === "131" && response.responsedata?.meter) {
         setExistingMeterData(response.responsedata.meter);
-        setPendingAssignmentPayload(assignmentPayload);
+        setPendingAssignmentPayload({
+          meterNumber,
+          customerId: customer?.customerId ?? "",
+          tariffId: tariff,
+          dssAssetId: dss,
+          feederAssetId: feeder,
+          cin,
+          accountNumber,
+          state: states?.find((s) => s.id === state)?.name ?? "",
+          city: cities?.find((c) => c.id === city)?.name ?? "",
+          houseNo,
+          streetName,
+          paymentType,
+          paymentMode,
+          paymentPlan,
+          image: uploadedImage,
+        });
         setIsCinExistsDialogOpen(true);
         return;
       }
@@ -278,17 +307,22 @@ export function AssignMeterDialog({
     const selectedMeter = availableMeters.find(
       (meter) => meter.meterNumber === meterNumber,
     );
-    const meterCategory =
+    // Determine the meter category from available sources
+    const meterCategory: string | null =
       selectedMeter?.category ??
       (selectedMeter && "meterCategory" in selectedMeter
-        ? selectedMeter.meterCategory
+        ? (selectedMeter.meterCategory as string | undefined) ?? null
         : null);
 
-    if (meterCategory && meterCategory === "prepaid") {
+    console.log("Meter category detected:", meterCategory, "meterNumber:", meterNumber);
+
+    // Only proceed if meterCategory is a valid string
+    if (meterCategory && typeof meterCategory === "string" && meterCategory.toLowerCase() === "prepaid") {
       setIsSetPaymentModalOpen(true);
       setProgress(80);
     } else {
       // For postpaid or unknown, call API directly
+      console.log("Calling executeAssignMeter directly (non-prepaid or unknown category)");
       setProgress(100);
       void executeAssignMeter();
     }
@@ -303,10 +337,16 @@ export function AssignMeterDialog({
   const handleProceedWithSever = async () => {
     if (!pendingAssignmentPayload) return;
 
+    // Create FormData from pendingAssignmentPayload
+    const formData = new FormData();
+    Object.entries(pendingAssignmentPayload).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        formData.append(key, value instanceof File ? value : String(value));
+      }
+    });
+
     try {
-      const response = await continueAssignMeterMutation.mutateAsync(
-        pendingAssignmentPayload,
-      );
+      const response = await continueAssignMeterMutation.mutateAsync(formData);
 
       if (response.responsecode === "000") {
         setIsCinExistsDialogOpen(false);
@@ -327,7 +367,7 @@ export function AssignMeterDialog({
     setPendingAssignmentPayload(null);
   };
 
-  const isPaymentFormComplete = debitMop !== "" && creditMop !== "";
+  const isPaymentFormComplete = paymentMode !== "" && paymentType !== "";
 
   // Debug: Log form completion state
   console.log("Form completion check:", {
@@ -798,14 +838,12 @@ export function AssignMeterDialog({
       <SetPaymentModeDialog
         isOpen={isSetPaymentModalOpen}
         onOpenChange={setIsSetPaymentModalOpen}
-        debitMop={debitMop}
-        setDebitMop={setDebitMop}
-        creditMop={creditMop}
-        setCreditMop={setCreditMop}
-        debitPaymentPlan={debitPaymentPlan}
-        setDebitPaymentPlan={setDebitPaymentPlan}
-        creditPaymentPlan={creditPaymentPlan}
-        setCreditPaymentPlan={setCreditPaymentPlan}
+        paymentType={paymentType}
+        setPaymentType={setPaymentType}
+        paymentMode={paymentMode}
+        setPaymentMode={setPaymentMode}
+        paymentPlan={paymentPlan}
+        setPaymentPlan={setPaymentPlan}
         isPaymentFormComplete={isPaymentFormComplete}
         editCustomer={null}
         onProceed={handleProceedFromSetPayment}

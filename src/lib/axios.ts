@@ -11,7 +11,7 @@ export const axiosInstance = axios.create({
 });
 
 axiosInstance.interceptors.request.use((config) => {
-  if (config.data && typeof config.data === "object") {
+  if (config.data && typeof config.data === "object" && !(config.data instanceof FormData)) {
     config.data = trimObjectStrings(config.data);
   }
   return config;

@@ -10,10 +10,21 @@ export interface LiabilityCause {
 
 export interface CustomerDetails {
     id: string;
+    orgId?: string;
     firstname: string;
     lastname: string;
-    createdAt: string;
-    updatedAt: string;
+    customerId?: string;
+    nin?: string;
+    phoneNumber?: string;
+    email?: string;
+    state?: string;
+    city?: string;
+    houseNo?: string;
+    streetName?: string;
+    status?: string;
+    vat?: string;
+    createdAt?: string;
+    updatedAt?: string;
 }
 
 export interface Meter {
@@ -28,25 +39,61 @@ export interface Meter {
 
 export interface Payment {
     id: string;
-    amount: number;
-    createdAt: string;
-    updatedAt: string;
+    orgId?: string;
+    creditDebitAdjId?: string;
     credit: number;
+    createdAt?: string;
 }
 
 export interface Adjustment {
+    id: string;
+    orgId?: string;
+    nodeId?: string;
+    meterId: string;
+    meterNumber?: string;
+    accountNumber?: string;
+    simNumber?: string;
+    cin?: string;
+    tariff?: string;
+    type?: string;
+    dss?: string;
+    meterCategory?: string;
+    meterClass?: string;
+    meterType?: string;
+    meterStage?: string;
+    status?: string;
+    smartStatus?: boolean;
+    customerId?: string;
+    oldSgc?: string;
+    newSgc?: string;
+    oldKrn?: string;
+    newKrn?: string;
+    oldTariffIndex?: number;
+    newTariffIndex?: number;
+    customer?: CustomerDetails;
+    debitCreditAdjustInfo?: DebitCreditAdjustInfo[];
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+export interface DebitCreditAdjustInfo {
     id: string;
     meterId: string;
     liabilityCauseId: string;
     amount: number;
     balance: number;
     status: string;
-    type: string;
-    origId: string;
+    type: "credit" | "debit";
+    orgId?: string;
     payment: Payment[];
     liabilityCause: LiabilityCause;
-    meter: Meter[];
-    createdAt: string;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+export interface AdjustmentListResponse {
+    totalData: number;
+    data: Adjustment[];
 }
 
 export interface ApiResponse<T> {
@@ -70,6 +117,8 @@ export interface Transaction {
     credit: number | string;
     debit: number | string;
     balance: number;
+    adjustmentId?: string;
+    adjustmentIndex?: number;
 }
 
 export interface AdjustmentTableProps {
@@ -86,7 +135,7 @@ export interface AdjustmentPayload {
 export interface AdjustmentMutationResponse {
     responsecode: string;
     responsedesc: string;
-    responsedata: Adjustment;
+    responsedata: AdjustmentListResponse | Adjustment;
 }
 
 export interface LiabilityCausePayload {

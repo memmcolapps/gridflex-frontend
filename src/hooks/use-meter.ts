@@ -15,11 +15,13 @@ import {
 } from "@/service/meter-service";
 import {
   type MeterInventoryFilters,
-  type CreateMeterPayload,
-  type UpdateMeterPayload,
   type MeterInventoryResponse,
   type BusinessHub,
 } from "@/types/meter-inventory";
+import {
+  type CreateMeterPayload,
+  type UpdateMeterPayload,
+} from "@/types/meter";
 import { type Manufacturer } from "@/types/meters-manufacturers";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";

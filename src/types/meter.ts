@@ -1,115 +1,115 @@
 export interface VirtualMeterData {
-   id: string;
-   nodeId?: string;
-   customerId: string;
-   meterNumber: string;
-   accountNumber: string;
-   simNumber?: string;
-   feeder?: string;
-   dss?: string;
-   dssInfo?: {
-     nodeId: string;
-     parentId: string;
-     assetId: string;
-     name: string;
-     type: string;
-     createdAt: string;
-     updatedAt: string;
-   };
-   tariffInfo?: {
-     id: string;
-     name: string;
-     org_id: string;
-     tariff_type: string;
-     effective_date: string;
-     tariff_rate: string;
-     band_id: string;
-     approve_status: string;
-     band: {
-       id: string;
-       orgId: string;
-       name: string;
-       hour: string;
-       approveStatus: string;
-       createdAt: string;
-       updatedAt: string;
-     };
-     created_at: string;
-     updated_at: string;
-   };
-   feederInfo?: {
-     nodeId: string;
-     parentId: string;
-     assetId: string;
-     name: string;
-     type: string;
-     createdAt: string;
-     updatedAt: string;
-   };
-   category?: string;
-   meterCategory?: string;
-   meterClass?: string;
-   meterType?: string;
-   meterStage?: string;
-   cin?: string;
-   tariff?: string;
-   status?: string;
-   smartStatus?: boolean;
-   oldSgc?: string;
-   newSgc?: string;
-   oldKrn?: string;
-   newKrn?: string;
-   oldTariffIndex?: number;
-   newTariffIndex?: number;
-   firstName?: string;
-   lastName?: string;
-   phone?: string;
-   state?: string;
-   city?: string;
-   streetName?: string;
-   houseNo?: string;
-   reason?: string;
-   debitMop?: string;
-   debitPaymentPlan?: string;
-   creditMop?: string;
-   creditPaymentPlan?: string;
-   energyType?: string;
-   fixedEnergy?: string;
-   custoType?: string;
-   image?: File | null;
-   consumptionType?: string;
-   assignedStatus?: string;
-   customer?: {
-       id: string;
-       orgId: string;
-       firstname: string;
-       lastname: string;
-       customerId: string;
-       nin: string;
-       phoneNumber: string;
-       email: string;
-       state: string;
-       city: string;
-       houseNo: string;
-       streetName: string;
-       status: string;
-       vat: string;
-       createdAt: string;
-       updatedAt: string;
-   };
-   meterAssignLocation?: {
-       id: string;
-       orgId: string;
-       meterId: string;
-       state: string;
-       city: string;
-       houseNo: string;
-       streetName: string;
-       createdAt: string;
-       updatedAt: string;
-   };
-   createdAt?: string;
-   updatedAt?: string;
+  id: string;
+  nodeId?: string;
+  customerId: string;
+  meterNumber: string;
+  accountNumber: string;
+  simNumber?: string;
+  feeder?: string;
+  dss?: string;
+  dssInfo?: {
+    nodeId: string;
+    parentId: string;
+    assetId: string;
+    name: string;
+    type: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+  tariffInfo?: {
+    id: string;
+    name: string;
+    org_id: string;
+    tariff_type: string;
+    effective_date: string;
+    tariff_rate: string;
+    band_id: string;
+    approve_status: string;
+    band: {
+      id: string;
+      orgId: string;
+      name: string;
+      hour: string;
+      approveStatus: string;
+      createdAt: string;
+      updatedAt: string;
+    };
+    created_at: string;
+    updated_at: string;
+  };
+  feederInfo?: {
+    nodeId: string;
+    parentId: string;
+    assetId: string;
+    name: string;
+    type: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+  category?: string;
+  meterCategory?: string;
+  meterClass?: string;
+  meterType?: string;
+  meterStage?: string;
+  cin?: string;
+  tariff?: string;
+  status?: string;
+  smartStatus?: boolean;
+  oldSgc?: string;
+  newSgc?: string;
+  oldKrn?: string;
+  newKrn?: string;
+  oldTariffIndex?: number;
+  newTariffIndex?: number;
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  state?: string;
+  city?: string;
+  streetName?: string;
+  houseNo?: string;
+  reason?: string;
+  debitMop?: string;
+  debitPaymentPlan?: string;
+  creditMop?: string;
+  creditPaymentPlan?: string;
+  energyType?: string;
+  fixedEnergy?: string;
+  custoType?: string;
+  image?: File | null;
+  consumptionType?: string;
+  assignedStatus?: string;
+  customer?: {
+    id: string;
+    orgId: string;
+    firstname: string;
+    lastname: string;
+    customerId: string;
+    nin: string;
+    phoneNumber: string;
+    email: string;
+    state: string;
+    city: string;
+    houseNo: string;
+    streetName: string;
+    status: string;
+    vat: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+  meterAssignLocation?: {
+    id: string;
+    orgId: string;
+    meterId: string;
+    state: string;
+    city: string;
+    houseNo: string;
+    streetName: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 // types.ts
@@ -282,6 +282,12 @@ export interface CreateMeterPayload {
   debitPaymentPlan?: string;
   creditPaymentPlan?: string;
   creditMop?: string;
+  paymentMode?: {
+    paymentMode: string;
+    paymentPlan: string;
+    paymentType: string;
+  };
+
   Image?: File;
   feederLine?: string;
   dss?: string; // Optional, as not always required
@@ -293,7 +299,7 @@ export interface CreateMeterPayload {
   approvedStatus?: string;
   meterStage?: string;
   type?: string;
-  manufacturer?: {
+  manufacturer?: string | {
     id: string;
     orgId: string;
     manufacturerId: string;
