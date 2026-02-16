@@ -189,6 +189,9 @@ export function AssignMeterDialog({
   const [paymentMode, setPaymentMode] = useState("");
   const [paymentPlan, setPaymentPlan] = useState("");
   const [paymentType, setPaymentType] = useState("");
+  // Separate state for credit payment mode and plan
+  const [creditPaymentMode, setCreditPaymentMode] = useState("");
+  const [creditPaymentPlan, setCreditPaymentPlan] = useState("");
   const [progress, setProgress] = useState(50);
   const [open, setOpen] = useState(false);
   const [feederOpen, setFeederOpen] = useState(false);
@@ -844,6 +847,10 @@ export function AssignMeterDialog({
         setPaymentMode={setPaymentMode}
         paymentPlan={paymentPlan}
         setPaymentPlan={setPaymentPlan}
+        creditPaymentMode={creditPaymentMode}
+        setCreditPaymentMode={setCreditPaymentMode}
+        creditPaymentPlan={creditPaymentPlan}
+        setCreditPaymentPlan={setCreditPaymentPlan}
         isPaymentFormComplete={isPaymentFormComplete}
         editCustomer={null}
         onProceed={handleProceedFromSetPayment}
