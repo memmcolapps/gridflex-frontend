@@ -108,6 +108,7 @@ export interface Customer {
     meterNo: string;
     accountNo: string;
     balance: number;
+    customerId: string;
 }
 
 export interface Transaction {

@@ -103,6 +103,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
           meterNo,
           accountNo,
           balance: 0,
+          customerId
         });
       }
 
@@ -388,7 +389,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
           {customer.accountNo}
         </TableCell>
         <TableCell className="py-4 align-middle">
-          {customer.id}
+          {customer.customerId}
         </TableCell>
         <TableCell className="py-4 align-middle">
           {customer.name}
