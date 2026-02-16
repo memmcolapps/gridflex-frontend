@@ -26,7 +26,7 @@ const formatPrevious = (value: number) => value.toLocaleString();
 export default function SummaryCards({ cardData }: SummaryCardsProps) {
   const summaryData = [
     {
-      title: "Total Sum Of Transaction",
+      title: "Total Amount Vended",
       value: formatValue(cardData?.transactionSum ?? 0),
       change: calculateChange(cardData?.transactionSum ?? 0, cardData?.previousTransactionSum ?? 0).change,
       previous: formatPrevious(cardData?.previousTransactionSum ?? 0),
@@ -35,7 +35,7 @@ export default function SummaryCards({ cardData }: SummaryCardsProps) {
       color: "bg-[#DBE6FE] text-blue-800 border border-[#DBE6FE]",
     },
     {
-      title: "Total Sum Of Units",
+      title: "Total Energy Vended (kWh)",
       value: formatValue(cardData?.unitCostSum ?? 0),
       change: calculateChange(cardData?.unitCostSum ?? 0, cardData?.previousUnitCostSum ?? 0).change,
       previous: formatPrevious(cardData?.previousUnitCostSum ?? 0),
@@ -44,7 +44,7 @@ export default function SummaryCards({ cardData }: SummaryCardsProps) {
       color: "bg-[#DCFCE8] text-green-800 border border-[#DCFCE8]",
     },
     {
-      title: "Total Amount Vended",
+      title: "Highest B.Hub Transaction",
       value: formatValue(cardData?.totalProfit ?? 0),
       change: calculateChange(cardData?.totalProfit ?? 0, cardData?.previousTotalProfit ?? 0).change,
       previous: formatPrevious(cardData?.previousTotalProfit ?? 0),
