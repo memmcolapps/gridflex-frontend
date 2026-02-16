@@ -16,6 +16,11 @@ interface SetPaymentModeDialogPropsLegacy {
   setPaymentMode: (value: string) => void;
   paymentPlan: string;
   setPaymentPlan: (value: string) => void;
+  // Optional separate credit state - if not provided, credit uses same as debit
+  creditPaymentMode?: string;
+  setCreditPaymentMode?: (value: string) => void;
+  creditPaymentPlan?: string;
+  setCreditPaymentPlan?: (value: string) => void;
   isPaymentFormComplete: boolean;
   editCustomer: MeterInventoryItem | null;
   onProceed: () => void;
@@ -199,12 +204,24 @@ export function SetPaymentModeDialog(props: SetPaymentModeDialogPropsCombined) {
     setPaymentMode,
     paymentPlan,
     setPaymentPlan,
+    // Optional separate credit state
+    creditPaymentMode,
+    setCreditPaymentMode,
+    creditPaymentPlan,
+    setCreditPaymentPlan,
     isPaymentFormComplete,
     editCustomer,
     onProceed,
   } = props;
 
+  // Use separate credit state if provided, otherwise fall back to debit state
+  const effectiveCreditPaymentMode = creditPaymentMode ?? paymentMode;
+  const effectiveSetCreditPaymentMode = setCreditPaymentMode ?? setPaymentMode;
+  const effectiveCreditPaymentPlan = creditPaymentPlan ?? paymentPlan;
+  const effectiveSetCreditPaymentPlan = setCreditPaymentPlan ?? setPaymentPlan;
+
   const isModeDisabled = paymentMode === "one-off" || paymentMode === "percentage";
+  const isCreditModeDisabled = effectiveCreditPaymentMode === "one-off" || effectiveCreditPaymentMode === "percentage";
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -283,7 +300,7 @@ export function SetPaymentModeDialog(props: SetPaymentModeDialogPropsCombined) {
                 <p className="text-sm">
                   Mode of payment <span className="text-red-600">*</span>
                 </p>
-                <Select onValueChange={setPaymentMode} value={paymentMode}>
+                <Select onValueChange={effectiveSetCreditPaymentMode} value={effectiveCreditPaymentMode}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select mode of payment" />
                   </SelectTrigger>
@@ -298,12 +315,12 @@ export function SetPaymentModeDialog(props: SetPaymentModeDialogPropsCombined) {
               <div className="space-y-2">
                 <Label>Payment Plan</Label>
                 <Select
-                  onValueChange={setPaymentPlan}
-                  disabled={isModeDisabled}
-                  value={paymentPlan}
+                  onValueChange={effectiveSetCreditPaymentPlan}
+                  disabled={isCreditModeDisabled}
+                  value={effectiveCreditPaymentPlan}
                 >
                   <SelectTrigger
-                    className={`w-full ${isModeDisabled ? "bg-gray-100 cursor-not-allowed text-gray-300" : ""}`}
+                    className={`w-full ${isCreditModeDisabled ? "bg-gray-100 cursor-not-allowed text-gray-300" : ""}`}
                   >
                     <SelectValue placeholder="Select payment plan" />
                   </SelectTrigger>
