@@ -126,12 +126,9 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
   const [rowsPerPage, setRowsPerPage] = useState<number>(10);
   const [selectedCustomers, setSelectedCustomers] = useState<string[]>([]);
   const [dialogStep, setDialogStep] = useState<"initial" | "fullForm">("initial");
-
   const [meterInput, setMeterInput] = useState("");
   const [searchType, setSearchType] = useState<'meterNumber' | 'accountNumber'>('meterNumber');
-
   const { mutate: searchMeterMutate, isPending: isMeterLoading, error: meterError, reset: resetSearch } = useSearchMeter();
-
   const [selectedMeter, setSelectedMeter] = useState<MeterType | null>(null);
 
   const [amount, setAmount] = useState("");
@@ -270,18 +267,20 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
     return allAdjustments.filter((adj) => adj.id === selectedCustomer.id);
   }, [selectedCustomer, allAdjustments]);
 
-  const liabilityTransactions: Transaction[] = customerAdjustments.map((adj) => {
-    // Get adjustment data from debitCreditAdjustInfo array
-    const debitInfo = adj.debitCreditAdjustInfo && adj.debitCreditAdjustInfo.length > 0 ? adj.debitCreditAdjustInfo[0] : null;
-    return {
+  const liabilityTransactions: Transaction[] = customerAdjustments.flatMap((adj, adjIndex) => {
+    // Get all adjustment data from debitCreditAdjustInfo array
+    const debitInfos = adj.debitCreditAdjustInfo ?? [];
+    return debitInfos.map((debitInfo) => ({
       date: adj.createdAt?.split(' ')[0] ?? '',
-      // Safely access name and code using optional chaining with a fallback
       liabilityCause: debitInfo?.liabilityCause?.name ?? 'N/A',
       liabilityCode: debitInfo?.liabilityCause?.code ?? 'N/A',
       credit: type === 'credit' ? debitInfo?.amount ?? '' : '',
       debit: type === 'debit' ? debitInfo?.amount ?? '' : '',
       balance: debitInfo?.balance ?? 0,
-    };
+      // Store the adjustment ID for nested dialog
+      adjustmentId: adj.id,
+      adjustmentIndex: adjIndex,
+    }));
   });
 
   const selectedAdjustment = useMemo(() => {
@@ -849,7 +848,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                         >
                           <DropdownMenuItem
                             onSelect={() => {
-                              const adjId = customerAdjustments[index]?.id;
+                              const adjId = transaction.adjustmentId ?? customerAdjustments[transaction.adjustmentIndex ?? 0]?.id;
                               setSelectedAdjustmentId(adjId ?? null);
                               setIsTransactionsDialogOpen(false);
                               setIsNestedDialogOpen(true);
@@ -865,7 +864,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                           {type === "debit" && (
                             <DropdownMenuItem
                               onSelect={() => {
-                                const adjId = customerAdjustments[index]?.id;
+                                const adjId = transaction.adjustmentId ?? customerAdjustments[transaction.adjustmentIndex ?? 0]?.id;
                                 setSelectedAdjustmentId(adjId ?? null);
                                 setSelectedCustomer(selectedCustomer);
                                 setIsReconcileDialogOpen(true);

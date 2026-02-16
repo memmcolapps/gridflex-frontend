@@ -117,6 +117,8 @@ export interface Transaction {
     credit: number | string;
     debit: number | string;
     balance: number;
+    adjustmentId?: string;
+    adjustmentIndex?: number;
 }
 
 export interface AdjustmentTableProps {

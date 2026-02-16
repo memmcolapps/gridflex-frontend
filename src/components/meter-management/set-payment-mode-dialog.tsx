@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import type {MeterInventoryItem}  from "@/types/meter-inventory";
+import type { MeterInventoryItem } from "@/types/meter-inventory";
 
 // Old interface for backward compatibility
 interface SetPaymentModeDialogPropsLegacy {
@@ -234,7 +234,7 @@ export function SetPaymentModeDialog(props: SetPaymentModeDialogPropsCombined) {
             <div className="space-y-2 p-3 rounded-lg">
               <div className="space-y-2">
                 <Label className="font-bold text-lg">
-                  Debit 
+                  Debit
                 </Label>
               </div>
               <div className="space-y-2">
@@ -279,12 +279,12 @@ export function SetPaymentModeDialog(props: SetPaymentModeDialogPropsCombined) {
                   Credit
                 </Label>
               </div>
-              <div className="space-y-2" >
+              <div className="space-y-2">
                 <p className="text-sm">
                   Mode of payment <span className="text-red-600">*</span>
                 </p>
-                <Select value="monthly">
-                  <SelectTrigger className="w-full bg-gray-50" disabled>
+                <Select onValueChange={setPaymentMode} value={paymentMode}>
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select mode of payment" />
                   </SelectTrigger>
                   <SelectContent>
@@ -297,8 +297,14 @@ export function SetPaymentModeDialog(props: SetPaymentModeDialogPropsCombined) {
               </div>
               <div className="space-y-2">
                 <Label>Payment Plan</Label>
-                <Select value="6">
-                  <SelectTrigger className="w-full bg-gray-50" disabled>
+                <Select
+                  onValueChange={setPaymentPlan}
+                  disabled={isModeDisabled}
+                  value={paymentPlan}
+                >
+                  <SelectTrigger
+                    className={`w-full ${isModeDisabled ? "bg-gray-100 cursor-not-allowed text-gray-300" : ""}`}
+                  >
                     <SelectValue placeholder="Select payment plan" />
                   </SelectTrigger>
                   <SelectContent>
