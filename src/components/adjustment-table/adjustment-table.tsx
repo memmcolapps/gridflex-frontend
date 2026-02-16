@@ -75,7 +75,11 @@ import { Card } from "../ui/card";
 const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
   const { canEdit } = usePermissions();
   const queryClient = useQueryClient();
-  const { data: allAdjustments, isLoading, error } = useAllAdjustments(type, 0, 100);
+  const {
+    data: allAdjustments,
+    isLoading,
+    error,
+  } = useAllAdjustments(type, 0, 100);
 
   const customers = useMemo(() => {
     if (!allAdjustments) return [];
@@ -86,14 +90,17 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
       // Customer info is now directly on the adjustment
       const cust = adj.customer;
       const name = cust ? `${cust.firstname} ${cust.lastname}` : "N/A";
-      const customerId = adj.customerId ?? 'N/A';
-      const meterNo = adj.meterNumber ?? 'N/A';
-      const accountNo = adj.accountNumber ?? 'N/A';
+      const customerId = adj.customerId ?? "N/A";
+      const meterNo = adj.meterNumber ?? "N/A";
+      const accountNo = adj.accountNumber ?? "N/A";
       // Use meter ID (adj.id) as unique key instead of customer ID
       const id = adj.id;
 
       // Get balance from debitCreditAdjustInfo array
-      const debitInfo = adj.debitCreditAdjustInfo && adj.debitCreditAdjustInfo.length > 0 ? adj.debitCreditAdjustInfo[0] : null;
+      const debitInfo =
+        adj.debitCreditAdjustInfo && adj.debitCreditAdjustInfo.length > 0
+          ? adj.debitCreditAdjustInfo[0]
+          : null;
       const balance = debitInfo?.balance ?? 0;
 
       if (id && !group.has(id)) {
@@ -103,7 +110,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
           meterNo,
           accountNo,
           balance: 0,
-          customerId
+          customerId,
         });
       }
 
@@ -118,18 +125,32 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
 
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isReconcileDialogOpen, setIsReconcileDialogOpen] = useState(false);
-  const [isTransactionsDialogOpen, setIsTransactionsDialogOpen] = useState(false);
+  const [isTransactionsDialogOpen, setIsTransactionsDialogOpen] =
+    useState(false);
   const [isNestedDialogOpen, setIsNestedDialogOpen] = useState(false);
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
-  const [selectedAdjustmentId, setSelectedAdjustmentId] = useState<string | null>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
+    null,
+  );
+  const [selectedAdjustmentId, setSelectedAdjustmentId] = useState<
+    string | null
+  >(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [rowsPerPage, setRowsPerPage] = useState<number>(10);
   const [selectedCustomers, setSelectedCustomers] = useState<string[]>([]);
-  const [dialogStep, setDialogStep] = useState<"initial" | "fullForm">("initial");
+  const [dialogStep, setDialogStep] = useState<"initial" | "fullForm">(
+    "initial",
+  );
   const [meterInput, setMeterInput] = useState("");
-  const [searchType, setSearchType] = useState<'meterNumber' | 'accountNumber'>('meterNumber');
-  const { mutate: searchMeterMutate, isPending: isMeterLoading, error: meterError, reset: resetSearch } = useSearchMeter();
+  const [searchType, setSearchType] = useState<"meterNumber" | "accountNumber">(
+    "meterNumber",
+  );
+  const {
+    mutate: searchMeterMutate,
+    isPending: isMeterLoading,
+    error: meterError,
+    reset: resetSearch,
+  } = useSearchMeter();
   const [selectedMeter, setSelectedMeter] = useState<MeterType | null>(null);
 
   const [amount, setAmount] = useState("");
@@ -195,7 +216,9 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
 
   const toggleCustomerSelection = (id: string) => {
     setSelectedCustomers((prev) =>
-      prev.includes(id) ? prev.filter((customerId) => customerId !== id) : [...prev, id],
+      prev.includes(id)
+        ? prev.filter((customerId) => customerId !== id)
+        : [...prev, id],
     );
   };
 
@@ -225,15 +248,18 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
 
   const handleReconcileDebit = () => {
     if (!selectedAdjustmentId || !selectedCustomer) return;
-    reconcileDebitMutation.mutate({
-      debitCreditAdjustmentId: selectedAdjustmentId,
-      amount: Number(reconcileAmount),
-    }, {
-      onSuccess: () => {
-        setIsReconcileDialogOpen(false);
-        setReconcileAmount("");
-      }
-    });
+    reconcileDebitMutation.mutate(
+      {
+        debitCreditAdjustmentId: selectedAdjustmentId,
+        amount: Number(reconcileAmount),
+      },
+      {
+        onSuccess: () => {
+          setIsReconcileDialogOpen(false);
+          setReconcileAmount("");
+        },
+      },
+    );
   };
 
   const handlePrevious = () => {
@@ -268,25 +294,31 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
     return allAdjustments.filter((adj) => adj.id === selectedCustomer.id);
   }, [selectedCustomer, allAdjustments]);
 
-  const liabilityTransactions: Transaction[] = customerAdjustments.flatMap((adj, adjIndex) => {
-    // Get all adjustment data from debitCreditAdjustInfo array
-    const debitInfos = adj.debitCreditAdjustInfo ?? [];
-    return debitInfos.map((debitInfo) => ({
-      date: adj.createdAt?.split(' ')[0] ?? '',
-      liabilityCause: debitInfo?.liabilityCause?.name ?? 'N/A',
-      liabilityCode: debitInfo?.liabilityCause?.code ?? 'N/A',
-      credit: type === 'credit' ? debitInfo?.amount ?? '' : '',
-      debit: type === 'debit' ? debitInfo?.amount ?? '' : '',
-      balance: debitInfo?.balance ?? 0,
-      // Store the adjustment ID for nested dialog
-      adjustmentId: adj.id,
-      adjustmentIndex: adjIndex,
-    }));
-  });
+  const liabilityTransactions: Transaction[] = customerAdjustments.flatMap(
+    (adj, adjIndex) => {
+      // Get all adjustment data from debitCreditAdjustInfo array
+      const debitInfos = adj.debitCreditAdjustInfo ?? [];
+      return debitInfos.map((debitInfo) => ({
+        date: adj.createdAt?.split(" ")[0] ?? "",
+        liabilityCause: debitInfo?.liabilityCause?.name ?? "N/A",
+        liabilityCode: debitInfo?.liabilityCause?.code ?? "N/A",
+        credit: type === "credit" ? (debitInfo?.amount ?? "") : "",
+        debit: type === "debit" ? (debitInfo?.amount ?? "") : "",
+        balance: debitInfo?.balance ?? 0,
+        // Store the adjustment ID for nested dialog
+        adjustmentId: debitInfo?.id,
+        adjustmentIndex: adjIndex,
+      }));
+    },
+  );
 
   const selectedAdjustment = useMemo(() => {
     if (!selectedAdjustmentId || !allAdjustments) return null;
-    return allAdjustments.find((adj) => adj.id === selectedAdjustmentId);
+    return allAdjustments.find((adj) =>
+      adj?.debitCreditAdjustInfo?.some(
+        (info) => info.id === selectedAdjustmentId,
+      ),
+    );
   }, [selectedAdjustmentId, allAdjustments]);
 
   const nestedTransactions: Transaction[] = useMemo(() => {
@@ -295,30 +327,40 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
     const transactions: Transaction[] = [];
 
     // Get adjustment data from debitCreditAdjustInfo array
-    const debitInfo = selectedAdjustment.debitCreditAdjustInfo && selectedAdjustment.debitCreditAdjustInfo.length > 0 ? selectedAdjustment.debitCreditAdjustInfo[0] : null;
+    const debitInfo =
+      selectedAdjustment.debitCreditAdjustInfo &&
+      selectedAdjustment.debitCreditAdjustInfo.length > 0
+        ? selectedAdjustment.debitCreditAdjustInfo[0]
+        : null;
 
     // Push the initial adjustment transaction
     transactions.push({
-      date: selectedAdjustment.createdAt?.split(' ')[0] ?? '',
-      liabilityCause: debitInfo?.liabilityCause?.name ?? 'N/A',
-      liabilityCode: debitInfo?.liabilityCause?.code ?? 'N/A',
-      credit: debitInfo?.type === 'credit' ? debitInfo?.amount ?? '' : '',
-      debit: debitInfo?.type === 'debit' ? debitInfo?.amount ?? '' : '',
+      date: selectedAdjustment.createdAt?.split(" ")[0] ?? "",
+      liabilityCause: debitInfo?.liabilityCause?.name ?? "N/A",
+      liabilityCode: debitInfo?.liabilityCause?.code ?? "N/A",
+      credit: debitInfo?.type === "credit" ? (debitInfo?.amount ?? "") : "",
+      debit: debitInfo?.type === "debit" ? (debitInfo?.amount ?? "") : "",
       balance: debitInfo?.amount ?? 0,
     });
 
     let runningBalance = debitInfo?.amount ?? 0;
     (debitInfo?.payment ?? [])
-      .filter((pay): pay is Required<Payment> & { createdAt: string } => !!pay.createdAt)
-      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+      .filter(
+        (pay): pay is Required<Payment> & { createdAt: string } =>
+          !!pay.createdAt,
+      )
+      .sort(
+        (a, b) =>
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+      )
       .forEach((pay) => {
         runningBalance -= pay.credit;
         transactions.push({
-          date: pay.createdAt?.split(' ')[0] ?? '',
-          liabilityCause: 'Payment',
-          liabilityCode: '',
+          date: pay.createdAt?.split(" ")[0] ?? "",
+          liabilityCause: "Payment",
+          liabilityCode: "",
           credit: pay.credit,
-          debit: '',
+          debit: "",
           balance: runningBalance,
         });
       });
@@ -335,7 +377,9 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
           <TableCell colSpan={colSpan} className="h-24 text-center">
             <div className="flex flex-col items-center justify-center py-8">
               <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-              <p className="mt-2 text-sm text-gray-500">Fetching adjustment data...</p>
+              <p className="mt-2 text-sm text-gray-500">
+                Fetching adjustment data...
+              </p>
             </div>
           </TableCell>
         </TableRow>
@@ -347,8 +391,12 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
         <TableRow>
           <TableCell colSpan={colSpan} className="h-24 text-center">
             <div className="flex flex-col items-center justify-center py-8">
-              <p className="text-lg font-medium text-red-500">Failed to load data</p>
-              <p className="text-sm text-gray-400">Please check your network and try again.</p>
+              <p className="text-lg font-medium text-red-500">
+                Failed to load data
+              </p>
+              <p className="text-sm text-gray-400">
+                Please check your network and try again.
+              </p>
             </div>
           </TableCell>
         </TableRow>
@@ -360,8 +408,13 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
         <TableRow>
           <TableCell colSpan={colSpan} className="h-24 text-center">
             <div className="flex flex-col items-center justify-center py-8">
-              <p className="text-lg font-medium text-gray-500">No Adjustments Found</p>
-              <p className="text-sm text-gray-400">Try adjusting your search or add a new adjustment to get started.</p>
+              <p className="text-lg font-medium text-gray-500">
+                No Adjustments Found
+              </p>
+              <p className="text-sm text-gray-400">
+                Try adjusting your search or add a new adjustment to get
+                started.
+              </p>
             </div>
           </TableCell>
         </TableRow>
@@ -391,12 +444,8 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
         <TableCell className="py-4 align-middle">
           {customer.customerId}
         </TableCell>
-        <TableCell className="py-4 align-middle">
-          {customer.name}
-        </TableCell>
-        <TableCell className="py-4 align-middle">
-          {customer.meterNo}
-        </TableCell>
+        <TableCell className="py-4 align-middle">{customer.name}</TableCell>
+        <TableCell className="py-4 align-middle">{customer.meterNo}</TableCell>
         <TableCell className="py-4 align-middle">
           <span
             className={
@@ -416,24 +465,30 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
 
   const handleProceed = () => {
     if (isProceedButtonEnabled) {
-      searchMeterMutate({ searchTerm: meterInput, searchType }, {
-        onSuccess: (data) => {
-          if (data.success) {
-            setSelectedMeter(data.data);
-            setDialogStep("fullForm");
-          } else {
-            toast.error(data.error);
-          }
+      searchMeterMutate(
+        { searchTerm: meterInput, searchType },
+        {
+          onSuccess: (data) => {
+            if (data.success) {
+              setSelectedMeter(data.data);
+              setDialogStep("fullForm");
+            } else {
+              toast.error(data.error);
+            }
+          },
+          onError: (error) => {
+            toast.error(error.message);
+          },
         },
-        onError: (error) => {
-          toast.error(error.message);
-        }
-      });
+      );
     }
   };
 
-  const { data: liabilityCauses, isLoading: isLiabilityCausesLoading, isError: isLiabilityCausesError } = useAllLiabilityCauses();
-
+  const {
+    data: liabilityCauses,
+    isLoading: isLiabilityCausesLoading,
+    isError: isLiabilityCausesError,
+  } = useAllLiabilityCauses();
 
   return (
     <div className="flex h-screen flex-col p-6 text-black">
@@ -478,165 +533,189 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                     </span>
                   </Button>
                 </DialogTrigger>
-              <DialogContent className="pointer-events-auto h-fit w-full bg-white text-black">
-                <DialogHeader>
-                  <DialogTitle>
-                    Add {type === "credit" ? "Credit" : "Debit"}
-                  </DialogTitle>
-                </DialogHeader>
-                {dialogStep === "initial" ? (
-                  <div className="h-fit space-y-4">
-                    <div className="mt-6 grid w-fit grid-cols-2 gap-4">
+                <DialogContent className="pointer-events-auto h-fit w-full bg-white text-black">
+                  <DialogHeader>
+                    <DialogTitle>
+                      Add {type === "credit" ? "Credit" : "Debit"}
+                    </DialogTitle>
+                  </DialogHeader>
+                  {dialogStep === "initial" ? (
+                    <div className="h-fit space-y-4">
+                      <div className="mt-6 grid w-fit grid-cols-2 gap-4">
+                        <div className="space-y-4">
+                          <Label>Transact By</Label>
+                          <Select
+                            defaultValue="meterNumber"
+                            onValueChange={(value) =>
+                              setSearchType(
+                                value as "meterNumber" | "accountNumber",
+                              )
+                            }
+                          >
+                            <SelectTrigger className="w-55 border-[rgba(228,231,236,1)]">
+                              <SelectValue placeholder="Select transaction type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="meterNumber">
+                                Meter Number
+                              </SelectItem>
+                              <SelectItem value="accountNumber">
+                                Account Number
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-4">
+                          <Label>Meter Number</Label>
+                          <div className="relative">
+                            <Input
+                              placeholder="6210009900"
+                              value={meterInput}
+                              onChange={(e) => setMeterInput(e.target.value)}
+                              className="w-55 border-[rgba(228,231,236,1)]"
+                            />
+                            {isMeterLoading && (
+                              <div className="absolute top-2 right-2">
+                                <Loader2
+                                  className="animate-spin text-gray-400"
+                                  size={14}
+                                />
+                              </div>
+                            )}
+                            {meterError && meterInput.length > 0 && (
+                              <p className="mt-2 text-sm text-red-500">
+                                {meterError.message}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex w-full justify-end">
+                        <Button
+                          onClick={handleProceed}
+                          disabled={!isProceedButtonEnabled}
+                          className={`text-white ${!isProceedButtonEnabled ? "cursor-not-allowed bg-[#A2A4EA] hover:bg-[#A2A4EA]" : "cursor-pointer bg-[#161CCA] hover:bg-[#121eb3]"}`}
+                        >
+                          {isMeterLoading ? (
+                            <>
+                              <Loader2
+                                className="mr-2 h-4 w-4 animate-spin"
+                                size={14}
+                              />
+                              Searching...
+                            </>
+                          ) : (
+                            "Proceed"
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-4 p-2">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-4">
+                          <Label>First Name</Label>
+                          <Input
+                            value={selectedMeter?.customer?.firstname ?? ""}
+                            placeholder="Enter first name"
+                            className="border-[rgba(228,231,236,1)]"
+                            disabled
+                          />
+                        </div>
+                        <div className="space-y-4">
+                          <Label>Last Name</Label>
+                          <Input
+                            value={selectedMeter?.customer?.lastname ?? ""}
+                            placeholder="Enter last name"
+                            className="border-[rgba(228,231,236,1)]"
+                            disabled
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-4">
+                          <Label>Meter Number</Label>
+                          <Input
+                            value={selectedMeter?.meterNumber ?? ""}
+                            placeholder="Enter meter number"
+                            className="border-[rgba(228,231,236,1)]"
+                            disabled
+                          />
+                        </div>
+                        <div className="space-y-4">
+                          <Label>Account Number</Label>
+                          <Input
+                            value={selectedMeter?.accountNumber ?? ""}
+                            placeholder="Enter account number"
+                            className="border-[rgba(228,231,236,1)]"
+                            disabled
+                          />
+                        </div>
+                      </div>
                       <div className="space-y-4">
-                        <Label>Transact By</Label>
-                        <Select defaultValue="meterNumber" onValueChange={(value) => setSearchType(value as 'meterNumber' | 'accountNumber')}>
-                          <SelectTrigger className="w-55 border-[rgba(228,231,236,1)]">
-                            <SelectValue placeholder="Select transaction type" />
+                        <Label>Liability Cause</Label>
+                        <Select
+                          value={liabilityCause}
+                          onValueChange={setLiabilityCause}
+                        >
+                          <SelectTrigger className="w-full border-[rgba(228,231,236,1)]">
+                            <SelectValue placeholder="Select liability cause" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="meterNumber">
-                              Meter Number
-                            </SelectItem>
-                            <SelectItem value="accountNumber">
-                              Account Number
-                            </SelectItem>
+                            {isLiabilityCausesLoading ? (
+                              <SelectItem value="" disabled>
+                                Loading...
+                              </SelectItem>
+                            ) : isLiabilityCausesError || !liabilityCauses ? (
+                              <SelectItem value="" disabled>
+                                Error fetching causes
+                              </SelectItem>
+                            ) : (
+                              liabilityCauses.map((cause) => (
+                                <SelectItem key={cause.id} value={cause.id}>
+                                  {cause.name}
+                                </SelectItem>
+                              ))
+                            )}
                           </SelectContent>
                         </Select>
                       </div>
                       <div className="space-y-4">
-                        <Label>Meter Number</Label>
-                        <div className="relative">
-                          <Input
-                            placeholder="6210009900"
-                            value={meterInput}
-                            onChange={(e) => setMeterInput(e.target.value)}
-                            className="w-55 border-[rgba(228,231,236,1)]"
-                          />
-                          {isMeterLoading && (
-                            <div className="absolute top-2 right-2">
-                              <Loader2 className="animate-spin text-gray-400" size={14} />
-                            </div>
-                          )}
-                          {meterError && meterInput.length > 0 && (
-                            <p className="text-red-500 text-sm mt-2">{meterError.message}</p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex w-full justify-end">
-                      <Button
-                        onClick={handleProceed}
-                        disabled={!isProceedButtonEnabled}
-                        className={`text-white ${!isProceedButtonEnabled ? 'cursor-not-allowed bg-[#A2A4EA] hover:bg-[#A2A4EA]' : 'cursor-pointer bg-[#161CCA] hover:bg-[#121eb3]'}`}
-                      >
-                        {isMeterLoading ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" size={14} />
-                            Searching...
-                          </>
-                        ) : (
-                          'Proceed'
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-4 p-2">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-4">
-                        <Label>First Name</Label>
+                        <Label>Amount</Label>
                         <Input
-                          value={selectedMeter?.customer?.firstname ?? ""}
-                          placeholder="Enter first name"
+                          placeholder="Enter amount"
+                          value={amount}
+                          onChange={(e) => setAmount(e.target.value)}
                           className="border-[rgba(228,231,236,1)]"
-                          disabled
                         />
                       </div>
-                      <div className="space-y-4">
-                        <Label>Last Name</Label>
-                        <Input
-                          value={selectedMeter?.customer?.lastname ?? ""}
-                          placeholder="Enter last name"
-                          className="border-[rgba(228,231,236,1)]"
-                          disabled
-                        />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-4">
-                        <Label>Meter Number</Label>
-                        <Input
-                          value={selectedMeter?.meterNumber ?? ""}
-                          placeholder="Enter meter number"
-                          className="border-[rgba(228,231,236,1)]"
-                          disabled
-                        />
-                      </div>
-                      <div className="space-y-4">
-                        <Label>Account Number</Label>
-                        <Input
-                          value={selectedMeter?.accountNumber ?? ""}
-                          placeholder="Enter account number"
-                          className="border-[rgba(228,231,236,1)]"
-                          disabled
-                        />
-                      </div>
-                    </div>
-                    <div className="space-y-4">
-                      <Label>Liability Cause</Label>
-                      <Select
-                        value={liabilityCause}
-                        onValueChange={setLiabilityCause}
-                      >
-                        <SelectTrigger className="w-full border-[rgba(228,231,236,1)]">
-                          <SelectValue placeholder="Select liability cause" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {isLiabilityCausesLoading ? (
-                            <SelectItem value="" disabled>Loading...</SelectItem>
-                          ) : isLiabilityCausesError || !liabilityCauses ? (
-                            <SelectItem value="" disabled>Error fetching causes</SelectItem>
-                          ) : (
-                            liabilityCauses.map((cause) => (
-                              <SelectItem key={cause.id} value={cause.id}>{cause.name}</SelectItem>
-                            ))
-                          )}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-4">
-                      <Label>Amount</Label>
-                      <Input
-                        placeholder="Enter amount"
-                        value={amount}
-                        onChange={(e) => setAmount(e.target.value)}
-                        className="border-[rgba(228,231,236,1)]"
-                      />
-                    </div>
-                    <div className="flex w-full justify-end">
-                      <Button
-                        onClick={handleAddAdjustment}
-                        disabled={isAddDisabled || createAdjustmentMutation.isPending}
-                        className={`text-white ${isAddDisabled || createAdjustmentMutation.isPending
-                          ? "cursor-not-allowed bg-[#A2A4EA] hover:bg-[#A2A4EA]"
-                          : "cursor-pointer bg-[#161CCA] hover:bg-[#121eb3]"
+                      <div className="flex w-full justify-end">
+                        <Button
+                          onClick={handleAddAdjustment}
+                          disabled={
+                            isAddDisabled || createAdjustmentMutation.isPending
+                          }
+                          className={`text-white ${
+                            isAddDisabled || createAdjustmentMutation.isPending
+                              ? "cursor-not-allowed bg-[#A2A4EA] hover:bg-[#A2A4EA]"
+                              : "cursor-pointer bg-[#161CCA] hover:bg-[#121eb3]"
                           }`}
-                      >
-                        {createAdjustmentMutation.isPending ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Adding...
-                          </>
-                        ) : (
-                          `Add ${type === "credit" ? "Credit" : "Debit"}`
-                        )}
-                      </Button>
+                        >
+                          {createAdjustmentMutation.isPending ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Adding...
+                            </>
+                          ) : (
+                            `Add ${type === "credit" ? "Credit" : "Debit"}`
+                          )}
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                )}
-              </DialogContent>
-            </Dialog>
-          </div>
+                  )}
+                </DialogContent>
+              </Dialog>
+            </div>
           )}
         </div>
 
@@ -683,7 +762,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                       type="checkbox"
                       checked={
                         selectedCustomers.length ===
-                        paginatedCustomers.length &&
+                          paginatedCustomers.length &&
                         paginatedCustomers.length > 0
                       }
                       onChange={toggleSelectAll}
@@ -701,9 +780,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                 </TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody>
-              {renderTableBody()}
-            </TableBody>
+            <TableBody>{renderTableBody()}</TableBody>
           </Table>
         </Card>
 
@@ -763,9 +840,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
         open={isTransactionsDialogOpen}
         onOpenChange={setIsTransactionsDialogOpen}
       >
-        <DialogContent
-          className="h-fit !w-[700px] !max-w-none border-gray-500 bg-white text-black"
-        >
+        <DialogContent className="h-fit !w-[700px] !max-w-none border-gray-500 bg-white text-black">
           <DialogHeader>
             <div className="mt-8 flex justify-between p-4">
               <div className="flex flex-col space-y-4">
@@ -806,9 +881,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                   <TableRow key={index} className="h-16 py-4">
                     <TableCell className="py-4 align-middle">
                       <div className="flex items-center gap-2">
-                        <span>
-                          {index + 1}
-                        </span>
+                        <span>{index + 1}</span>
                       </div>
                     </TableCell>
                     <TableCell className="py-4 align-middle">
@@ -849,8 +922,12 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                         >
                           <DropdownMenuItem
                             onSelect={() => {
-                              const adjId = transaction.adjustmentId ?? customerAdjustments[transaction.adjustmentIndex ?? 0]?.id;
-                              setSelectedAdjustmentId(adjId ?? null);
+                              const adjId =
+                                transaction.adjustmentId ??
+                                customerAdjustments[
+                                  transaction.adjustmentIndex ?? 0
+                                ]?.id;
+                              setSelectedAdjustmentId(transaction?.adjustmentId ?? null);
                               setIsTransactionsDialogOpen(false);
                               setIsNestedDialogOpen(true);
                             }}
@@ -865,8 +942,12 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                           {type === "debit" && (
                             <DropdownMenuItem
                               onSelect={() => {
-                                const adjId = transaction.adjustmentId ?? customerAdjustments[transaction.adjustmentIndex ?? 0]?.id;
-                                setSelectedAdjustmentId(adjId ?? null);
+                                const adjId =
+                                  transaction.adjustmentId ??
+                                  customerAdjustments[
+                                    transaction.adjustmentIndex ?? 0
+                                  ]?.id;
+                                setSelectedAdjustmentId(transaction?.adjustmentId ?? null);
                                 setSelectedCustomer(selectedCustomer);
                                 setIsReconcileDialogOpen(true);
                               }}
@@ -931,8 +1012,11 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
             </div>
             {/* Fix applied here to prevent crash */}
             <p className="mb-4 ml-4 text-sm">
-              {selectedAdjustment?.debitCreditAdjustInfo?.[0]?.liabilityCause?.name ?? 'N/A'}:{" "}
-              {selectedAdjustment?.debitCreditAdjustInfo?.[0]?.liabilityCause?.code ?? 'N/A'}
+              {selectedAdjustment?.debitCreditAdjustInfo?.[0]?.liabilityCause
+                ?.name ?? "N/A"}
+              :{" "}
+              {selectedAdjustment?.debitCreditAdjustInfo?.[0]?.liabilityCause
+                ?.code ?? "N/A"}
             </p>
           </DialogHeader>
           <div className="overflow-x-hidden">
@@ -1098,11 +1182,14 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
               <div className="flex w-full justify-end">
                 <Button
                   onClick={handleReconcileDebit}
-                  disabled={isReconcileDisabled || reconcileDebitMutation.isPending}
-                  className={`text-white ${isReconcileDisabled || reconcileDebitMutation.isPending
-                    ? "cursor-not-allowed bg-[#A2A4EA] hover:bg-[#A2A4EA]"
-                    : "cursor-pointer bg-[#161CCA] hover:bg-[#121eb3]"
-                    }`}
+                  disabled={
+                    isReconcileDisabled || reconcileDebitMutation.isPending
+                  }
+                  className={`text-white ${
+                    isReconcileDisabled || reconcileDebitMutation.isPending
+                      ? "cursor-not-allowed bg-[#A2A4EA] hover:bg-[#A2A4EA]"
+                      : "cursor-pointer bg-[#161CCA] hover:bg-[#121eb3]"
+                  }`}
                 >
                   {reconcileDebitMutation.isPending ? (
                     <>
