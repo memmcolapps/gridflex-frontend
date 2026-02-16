@@ -23,6 +23,7 @@ export interface FormErrors {
   phoneNumber: string;
   regionId: string;
   serialNo: string;
+  assetId: string;
 }
 
 interface UseNodeFormValidationProps {
@@ -41,6 +42,7 @@ export const useNodeFormValidation = ({
     phoneNumber: "",
     regionId: "",
     serialNo: "",
+    assetId: "",
   });
   const [isValid, setIsValid] = useState(false);
 
@@ -51,6 +53,7 @@ export const useNodeFormValidation = ({
         phoneNumber: "",
         regionId: "",
         serialNo: "",
+        assetId: "",
       };
       let allFieldsValid = true;
 
@@ -62,7 +65,7 @@ export const useNodeFormValidation = ({
         nodeType.toLowerCase(),
       );
       if (isTechnicalNode) {
-        requiredFields.push("status", "voltage", "serialNo");
+        requiredFields.push("status", "voltage", "serialNo", "assetId");
       } else {
         requiredFields.push("regionId");
       }
@@ -106,6 +109,14 @@ export const useNodeFormValidation = ({
           !idRegex.test(data.serialNo)
         ) {
           newErrors.serialNo = "Serial number must be alphanumeric";
+          allFieldsValid = false;
+        }
+        if (
+          data.assetId &&
+          data.assetId.trim() !== "" &&
+          !idRegex.test(data.assetId)
+        ) {
+          newErrors.assetId = "Asset ID must be alphanumeric";
           allFieldsValid = false;
         }
       } else {

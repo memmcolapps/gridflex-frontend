@@ -281,6 +281,9 @@ export const EditNodeDialog = ({
                   placeholder="Enter Asset ID"
                   className="mt-1 border-gray-300"
                 />
+                {errors.assetId && (
+                  <p className="mt-1 text-xs text-red-500">{errors.assetId}</p>
+                )}
               </div>
               <div className="flex flex-col">
                 <label className="text-sm font-medium">Status *</label>

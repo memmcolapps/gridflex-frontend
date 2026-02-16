@@ -10,7 +10,6 @@ import { DeactivateVirtualMeterDialog } from "@/components/meter-management/deac
 import { DetachConfirmationDialog } from "@/components/meter-management/detach-confirmation-dialog";
 import { DetachMeterDialog } from "@/components/meter-management/detach-meter-dialog";
 import { EditCustomerDetailsDialog } from "@/components/meter-management/edit-customer-details-dialog";
-import { MigrateMeterDialog } from "@/components/meter-management/migrate-meter-dialog";
 import { SetPaymentModeDialog } from "@/components/meter-management/set-payment-mode-dialog";
 import { FilterControl } from "@/components/search-control";
 import { getStatusStyle } from "@/components/status-style";
@@ -370,6 +369,16 @@ export default function AssignMeterPage() {
     }
   };
 
+  const handleNextToPayment = () => {
+    if (editCustomer?.category === "Prepaid") {
+      setDebitMop(editCustomer.debitMop ?? "");
+      setCreditMop(editCustomer.creditMop ?? "");
+      setDebitPaymentPlan(editCustomer.debitPaymentPlan ?? "");
+      setCreditPaymentPlan(editCustomer.creditPaymentPlan ?? "");
+      setIsSetPaymentModalOpen(true);
+    }
+  };
+
   const handleConfirmEditFromSetPayment = () => {
     if (!editCustomer?.customerId) {
       return;
@@ -451,59 +460,6 @@ export default function AssignMeterPage() {
       setMigrateCreditPaymentPlan(customer.creditPaymentPlan ?? "");
       setIsMigrateModalOpen(true);
     }
-  };
-
-  const handleConfirmMigrate = () => {
-    if (!migrateCustomer?.customerId || !migrateCustomer.id) {
-      return;
-    }
-    migrateMeterMutation.mutate(
-      {
-        meterId: migrateCustomer.id,
-        migrationFrom: migrateCustomer.meterCategory ?? "Postpaid",
-        meterCategory: migrateToCategory,
-      },
-      {
-        onSuccess: () => {
-          setMeterData((prev) =>
-            prev.map((item) =>
-              item.customerId === migrateCustomer.customerId
-                ? {
-                    ...item,
-                    meterStage: "Pending-migrated",
-                    category: migrateToCategory ?? item.category,
-                    ...(migrateToCategory === "Prepaid" && {
-                      debitMop: migrateDebitMop,
-                      debitPaymentPlan:
-                        migrateDebitMop === "monthly"
-                          ? migrateDebitPaymentPlan
-                          : "",
-                      creditMop: migrateCreditMop,
-                      creditPaymentPlan:
-                        migrateCreditMop === "monthly"
-                          ? migrateCreditPaymentPlan
-                          : "",
-                    }),
-                    ...(migrateToCategory === "Postpaid" && {
-                      debitMop: "",
-                      debitPaymentPlan: "",
-                      creditMop: "",
-                      creditPaymentPlan: "",
-                    }),
-                  }
-                : item,
-            ),
-          );
-          setIsMigrateModalOpen(false);
-          setMigrateToCategory("");
-          setMigrateDebitMop("");
-          setMigrateDebitPaymentPlan("");
-          setMigrateCreditMop("");
-          setMigrateCreditPaymentPlan("");
-          setMigrateCustomer(null);
-        },
-      },
-    );
   };
 
   const handleSearchChange = (term: string) => {
@@ -699,7 +655,7 @@ export default function AssignMeterPage() {
           >
             <SquareArrowOutUpRight
               className="text-[#161CCA]"
-              size={15}
+              size={12}
               strokeWidth={2.3}
             />
             <span className="text-sm font-medium lg:text-base">Export</span>
@@ -729,7 +685,6 @@ export default function AssignMeterPage() {
             <TableHead>Meter No</TableHead>
             <TableHead>Account No</TableHead>
             <TableHead>CIN</TableHead>
-            <TableHead>Category</TableHead>
             <TableHead>Debit MOP</TableHead>
             <TableHead className="px-4 py-3 text-center">
               Payment Plan
@@ -776,9 +731,6 @@ export default function AssignMeterPage() {
                   <TableCell>{meter.meterNumber ?? "-"}</TableCell>
                   <TableCell>{meter.accountNumber ?? "-"}</TableCell>
                   <TableCell>{meter.cin ?? "-"}</TableCell>
-                  <TableCell>
-                    {meter.meterCategory ?? meter.category ?? "-"}
-                  </TableCell>
                   <TableCell>{meter.debitMop ?? "-"}</TableCell>
                   <TableCell className="px-4 py-3 text-center">
                     {meter.debitPaymentPlan ?? "-"}
@@ -857,16 +809,6 @@ export default function AssignMeterPage() {
                           >
                             <Unlink size={14} />
                             Detach Meter
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => handleMigrateMeter(meter)}
-                            className="flex cursor-pointer items-center gap-2"
-                            disabled={meter.meterStage
-                              ?.toLowerCase()
-                              .includes("pending-migrate")}
-                          >
-                            <Navigation size={14} />
-                            Migrate Meter
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -968,6 +910,7 @@ export default function AssignMeterPage() {
         progress={progress}
         isFormComplete={isFormComplete}
         onProceed={handleProceedFromEdit}
+        onNextToPayment={handleNextToPayment}
       />
       <SetPaymentModeDialog
         isOpen={isSetPaymentModalOpen}
@@ -1000,24 +943,6 @@ export default function AssignMeterPage() {
         onConfirm={handleConfirmAssignment}
         onCancel={handleCancelConfirmation}
         isSubmitting={false}
-      />
-      <MigrateMeterDialog
-        isOpen={isMigrateModalOpen}
-        onOpenChange={setIsMigrateModalOpen}
-        migrateCustomer={migrateCustomer}
-        migrateToCategory={migrateToCategory}
-        setMigrateToCategory={setMigrateToCategory}
-        migrateDebitMop={migrateDebitMop}
-        setMigrateDebitMop={setMigrateDebitMop}
-        migrateDebitPaymentPlan={migrateDebitPaymentPlan}
-        setMigrateDebitPaymentPlan={setMigrateDebitPaymentPlan}
-        migrateCreditMop={migrateCreditMop}
-        setMigrateCreditMop={setMigrateCreditMop}
-        migrateCreditPaymentPlan={migrateCreditPaymentPlan}
-        setMigrateCreditPaymentPlan={setMigrateCreditPaymentPlan}
-        isMigrateFormComplete={isMigrateFormComplete}
-        isPending={migrateMeterMutation.isPending}
-        onConfirm={handleConfirmMigrate}
       />
       <DetachMeterDialog
         isOpen={isDetachModalOpen}

@@ -508,7 +508,7 @@ export default function MeterInventoryPage() {
                 size="lg"
                 onClick={() => setIsBulkUploadDialogOpen(true)}
               >
-                <CirclePlus size={14} strokeWidth={2.3} className="h-4 w-4 text-[161CCA]" />
+                <CirclePlus size={14} strokeWidth={2.3} className="md:h-4 h-2 md:w-4 text-[161CCA]" />
                 <span className="text-sm md:text-base">Bulk Upload New Meters</span>
               </Button>
               <Button
@@ -703,7 +703,6 @@ export default function MeterInventoryPage() {
               <TableHead>New SGC</TableHead>
               <TableHead>Manufacture</TableHead>
               <TableHead>Class</TableHead>
-              <TableHead>Category</TableHead>
               <TableHead>Date Added</TableHead>
               <TableHead>Meter Stage</TableHead>
               <TableHead>Actions</TableHead>
@@ -748,7 +747,6 @@ export default function MeterInventoryPage() {
                   <TableCell>{meter.newSgc}</TableCell>
                   <TableCell className="text-sm">{meter.manufacturer?.name}</TableCell>
                   <TableCell>{meter.meterClass}</TableCell>
-                  <TableCell>{meter.meterCategory}</TableCell>
                   <TableCell>{meter.createdAt ? meter.createdAt.split(' ')[0] : meter.dateAdded ?? 'N/A'}</TableCell>
                   <TableCell>
                     <span className={getStatusStyle(meter.meterStage)}>
@@ -820,8 +818,8 @@ export default function MeterInventoryPage() {
           "manufactureName",
           "class",
           "meterId",
-          "meterType",
-          "category",
+          // "meterType",
+          // "category",
           "dateAdded",
           "status",
         ]}

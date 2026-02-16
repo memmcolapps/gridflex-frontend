@@ -136,6 +136,8 @@ const mapToFrontendMeter = (
     creditMop: apiItem.paymentMode?.creditPaymentMode,
     debitPaymentPlan: apiItem.paymentMode?.debitPaymentPlan,
     creditPaymentPlan: apiItem.paymentMode?.creditPaymentPlan,
+    paymentType: (apiItem as MeterAPIItem & { paymentType?: string }).paymentType ??
+      (apiItem.paymentMode?.debitPaymentMode ? "PREPAID" : "POSTPAID"),
     state: apiItem.meterAssignLocation?.state ?? apiItem.customer?.state,
     city: apiItem.meterAssignLocation?.city ?? apiItem.customer?.city,
     streetName:
@@ -233,7 +235,7 @@ export const useAssignMeter = () => {
       responsedata?: { meter?: MeterAPIItem };
     },
     Error,
-    AssignMeterPayload
+    AssignMeterPayload | FormData
   >({
     mutationFn: assignMeter,
     onSuccess: (data) => {
@@ -258,7 +260,7 @@ export const useContinueAssignMeter = () => {
       responsedata?: { meter?: MeterAPIItem };
     },
     Error,
-    AssignMeterPayload
+    AssignMeterPayload | FormData
   >({
     mutationFn: continueAssignMeter,
     onSuccess: (data) => {

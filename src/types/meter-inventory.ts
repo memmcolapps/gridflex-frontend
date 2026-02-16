@@ -15,6 +15,7 @@ export interface ManufacturerDetails {
 }
 
 export interface MeterInventoryItem {
+  paymentType: string;
   dssInfo?: {
     nodeId: string;
     parentId: string;
@@ -58,8 +59,8 @@ export interface MeterInventoryItem {
   meterNumber: string;
   meterManufacturer: string;
   meterClass: string;
-  meterType?: string;
-  meterCategory: string;
+  // meterType?: string;
+  // meterCategory: string;
   dateAdded?: string;
   oldSgc?: string;
   newSgc?: string;
@@ -93,11 +94,13 @@ export interface MeterInventoryItem {
   firstName?: string;
   lastName?: string;
   phone?: string;
-  debitMop?: string; // Added for payment fields
-  debitPaymentPlan?: string;
-  creditPaymentPlan?: string;
-  creditMop?: string;
-  Image?: File;
+  debitMop?: string; // Deprecated - use paymentMode instead
+  creditMop?: string; // Deprecated - use paymentMode instead
+  paymentMode?: string; // Unified payment mode (replaces debitMop/creditMop)
+  debitPaymentPlan?: string; // Deprecated - use paymentPlan instead
+  creditPaymentPlan?: string; // Deprecated - use paymentPlan instead
+  paymentPlan?: string; // Unified payment plan (replaces debitPaymentPlan/creditPaymentPlan)
+  image?: File | null;
   feederLine?: string;
   dss?: string; // Optional, as not always required
   cin?: string;
@@ -123,36 +126,36 @@ export interface MeterInventoryItem {
 
 // MD Meter specific information
 export interface mdMeterInfo {
-  ctRatioNum: string;
-  ctRatioDenom: string;
-  voltRatioNum: string;
-  voltRatioDenom: string;
-  multiplier: string;
-  meterRating: string;
-  initialReading: string;
-  dial: string;
-  latitude: string;
-  longitude: string;
+  ctRatioNum?: string;
+  ctRatioDenom?: string;
+  voltRatioNum?: string;
+  voltRatioDenom?: string;
+  multiplier?: string;
+  meterRating?: string;
+  initialReading?: string;
+  dial?: string;
+  latitude?: string;
+  longitude?: string;
 }
 
 // Smart meter info (aligned with expected structure)
 export interface SmartMeterInfo {
-  meterModel: string;
-  protocol: string;
-  authentication: string;
-  password: string;
+  meterModel?: string;
+  protocol?: string;
+  authentication?: string;
+  password?: string;
 }
 
 // Create meter payload (now includes missing fields)
 export interface CreateMeterPayload {
   meterNumber: string;
   simNumber: string;
-  meterCategory: string;
   meterClass: string;
   meterManufacturer: string; // Standardized field name
-  meterType: string;
   oldSgc: string;
   newSgc: string;
+  meterCategory?: string;
+  meterType?: string;
   oldKrn: string;
   newKrn: string;
   oldTariffIndex: number;
@@ -167,11 +170,11 @@ export interface UpdateMeterPayload {
   id: string;
   meterNumber: string;
   simNumber: string;
-  meterCategory: string;
   meterClass: string;
   meterManufacturer: string; // Standardized field name
-  meterType: string;
   oldSgc: string;
+  meterCategory?: string;
+  meterType?: string;
   newSgc: string;
   oldKrn: string;
   newKrn: string;
@@ -180,6 +183,11 @@ export interface UpdateMeterPayload {
   smartStatus?: boolean; // Added missing property
   smartMeterInfo?: SmartMeterInfo; // Added missing property (optional for creation)
   mdMeterInfo?: mdMeterInfo; //
+  paymentMode: {
+    paymentMode: string;
+    paymentPlan: string;
+    paymentType: string;
+  };
 }
 
 export interface MeterInventoryResponse {
@@ -256,11 +264,13 @@ export interface MeterData {
   firstName?: string;
   lastName?: string;
   phone?: string;
-  debitMop?: string; // Added for payment fields
-  debitPaymentPlan?: string;
-  creditPaymentPlan?: string;
-  creditMop?: string;
-  Image?: File;
+  debitMop?: string; // Deprecated - use paymentMode instead
+  creditMop?: string; // Deprecated - use paymentMode instead
+  paymentMode?: string; // Unified payment mode (replaces debitMop/creditMop)
+  debitPaymentPlan?: string; // Deprecated - use paymentPlan instead
+  creditPaymentPlan?: string; // Deprecated - use paymentPlan instead
+  paymentPlan?: string; // Unified payment plan (replaces debitPaymentPlan/creditPaymentPlan)
+  image?: File | null;
   feederLine?: string;
   dss?: string; // Optional, as not always required
   cin?: string;

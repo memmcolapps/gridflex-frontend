@@ -28,7 +28,7 @@ export function SearchControl({ onSearchChange, value = "",placeholder="" }: Sea
         
         <div className="relative w-full lg:w-[300px]">
             <Search
-                size={14}
+                size={12}
                 className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400"
             />
             <Input

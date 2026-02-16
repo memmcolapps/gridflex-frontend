@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { MeterInventoryItem } from "@/types/meter-inventory";
-import type { CreateMeterPayload, UpdateMeterPayload } from "@/types/meter-inventory";
+import type { CreateMeterPayload, UpdateMeterPayload } from "@/types/meter";
 import { useCreateMeter, useGetMeterManufactures, useUpdateMeter } from "@/hooks/use-meter";
 import { toast } from "sonner";
 
@@ -26,9 +26,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
     id: "",
     meterNumber: "",
     simNumber: "",
-    meterCategory: "",
     meterClass: "",
-    meterType: "",
     meterManufacturer: "",
     oldSgc: "",
     newSgc: "",
@@ -50,14 +48,17 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
     initialReading: "",
     dial: "",
     longitude: "",
-    latitude: ""
+    latitude: "",
+    paymentMode: "",
+    paymentPlan: "",
+    paymentType: ""
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const { mutateAsync: createMeter, isPending: isCreatePending } = useCreateMeter();
-  const { mutateAsync: updateMeter, isPending: isUpdatePending } = useUpdateMeter(); // Changed mutate to mutateAsync
-  const isPending = isCreatePending || isUpdatePending; // Combined pending state
+  const { mutateAsync: updateMeter, isPending: isUpdatePending } = useUpdateMeter();
+  const isPending = isCreatePending || isUpdatePending;
 
   useEffect(() => {
     console.log("editMeter received:", editMeter);
@@ -66,9 +67,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
         id: editMeter.id ?? "", // Set meter ID for update
         meterNumber: editMeter.meterNumber ?? "",
         simNumber: editMeter.simNumber ?? "",
-        meterCategory: editMeter.meterCategory ?? "",
         meterClass: editMeter.meterClass ?? "",
-        meterType: editMeter.meterType ?? "",
         meterManufacturer: editMeter.manufacturer?.id ?? editMeter.meterManufacturer ?? "",
         oldSgc: editMeter.oldSgc ?? "",
         newSgc: editMeter.newSgc ?? "",
@@ -90,7 +89,10 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
         initialReading: editMeter.mdMeterInfo?.initialReading ?? "",
         dial: editMeter.mdMeterInfo?.dial ?? "",
         longitude: editMeter.mdMeterInfo?.longitude ?? "",
-        latitude: editMeter.mdMeterInfo?.latitude ?? ""
+        latitude: editMeter.mdMeterInfo?.latitude ?? "",
+        paymentMode: editMeter.paymentMode ?? "",
+        paymentPlan: editMeter.paymentPlan ?? "",
+        paymentType: editMeter.paymentType ?? ""
       });
       setStep(1);
       setErrors({});
@@ -100,9 +102,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
         id: "", // Clear ID
         meterNumber: "",
         simNumber: "", // Corrected
-        meterCategory: "",
         meterClass: "",
-        meterType: "",
         meterManufacturer: "",
         oldSgc: "",
         newSgc: "",
@@ -124,7 +124,10 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
         initialReading: "",
         dial: "",
         longitude: "",
-        latitude: ""
+        latitude: "",
+        paymentMode: "",
+        paymentPlan: "",
+        paymentType: ""
       });
       setStep(1);
       setErrors({});
@@ -135,9 +138,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
     const newErrors: Record<string, string> = {};
     if (!formData.meterNumber) newErrors.meterNumber = "Meter Number is required";
     if (!formData.simNumber) newErrors.simNumber = "Sim Card is required";
-    if (!formData.meterCategory) newErrors.meterCategory = "Meter Category is required";
     if (!formData.meterClass) newErrors.meterClass = "Meter Class is required";
-    if (!formData.meterType) newErrors.meterType = "Meter Type is required";
     if (!formData.meterManufacturer) newErrors.meterManufacturer = "Meter Manufacturer is required";
     if (!formData.oldSgc) newErrors.oldSgc = "Old SGC is required";
     if (!formData.newSgc) newErrors.newSgc = "New SGC is required";
@@ -249,10 +250,8 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
         id: formData.id,
         meterNumber: formData.meterNumber,
         simNumber: formData.simNumber,
-        meterCategory: formData.meterCategory,
         meterClass: formData.meterClass,
-        meterType: formData.meterType,
-        meterManufacturer: formData.meterManufacturer,
+        manufacturer: formData.meterManufacturer,
         oldSgc: formData.oldSgc,
         newSgc: formData.newSgc,
         oldKrn: formData.oldKrn,
@@ -281,9 +280,12 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
             authentication: formData.authentication,
             password: formData.password,
           }
-          : undefined
-
-        ,
+          : undefined,
+        paymentMode: {
+          paymentMode: formData.paymentMode,
+          paymentPlan: formData.paymentPlan,
+          paymentType: formData.paymentType,
+        },
       };
 
       try {
@@ -294,7 +296,10 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
         onClose();
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Failed to update meter due to an unknown error.";
-
+        
+        console.error("Full error details:", error);
+        console.error("Payload being sent:", payload);
+        
         toast.error(`Update failed: ${errorMessage}`, {
           duration: 5000,
         });
@@ -306,10 +311,8 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
       const payload: CreateMeterPayload = {
         meterNumber: formData.meterNumber,
         simNumber: formData.simNumber,
-        meterCategory: formData.meterCategory,
         meterClass: formData.meterClass,
-        meterType: formData.meterType,
-        meterManufacturer: formData.meterManufacturer,
+        manufacturer: formData.meterManufacturer,
         oldSgc: formData.oldSgc,
         newSgc: formData.newSgc,
         oldKrn: formData.oldKrn,
@@ -353,9 +356,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
           id: "",
           meterNumber: "",
           simNumber: "",
-          meterCategory: "",
           meterClass: "",
-          meterType: "",
           meterManufacturer: "",
           oldSgc: "",
           newSgc: "",
@@ -378,12 +379,17 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
           dial: "",
           longitude: "",
           latitude: "",
+          paymentMode: "",
+          paymentPlan: "",
+          paymentType: ""
         });
         setErrors({});
       } catch (error) {
-        // Catch the error thrown by Tanstack Query's mutationFn
         const errorMessage = error instanceof Error ? error.message : "Failed to save meter due to an unknown error.";
 
+        console.error("Full error details:", error);
+        console.error("Payload being sent:", payload);
+        
         toast.error(`Save failed: ${errorMessage}`, {
           duration: 5000,
         });
@@ -396,7 +402,6 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
 
   const shouldShowNext = formData.meterClass === "MD" || formData.smartStatus;
 
-  // Determine the button text on step 1
   let step1ButtonText = "Add Meter";
   if (editMeter) {
     step1ButtonText = shouldShowNext ? "Next" : "Save";
@@ -460,48 +465,6 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                   required
                 />
                 {errors.simNumber && <p className="text-xs text-red-500 mt-1">{errors.simNumber}</p>} {/* Corrected error key */}
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="meterType" className="text-sm font-medium text-gray-700">
-                  Meter Type <span className="text-red-500">*</span>
-                </Label>
-                <Select onValueChange={(value) => handleSelectChange("meterType", value)} value={formData.meterType}>
-                  <SelectTrigger
-                    id="meterType"
-                    className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.meterType ? "border-red-500" : ""
-                      }`}
-                  >
-                    <SelectValue>{formData.meterType || "Select Meter Type"}</SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Electricity">Electricity</SelectItem>
-                    <SelectItem value="Water">Water</SelectItem>
-                    <SelectItem value="Gas">Gas</SelectItem>
-                  </SelectContent>
-                </Select>
-                {errors.meterType && <p className="text-xs text-red-500 mt-1">{errors.meterType}</p>}
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="meterCategory" className="text-sm font-medium text-gray-700">
-                  Meter Category <span className="text-red-500">*</span>
-                </Label>
-                <Select
-                  onValueChange={(value) => handleSelectChange("meterCategory", value)}
-                  value={formData.meterCategory}
-                >
-                  <SelectTrigger
-                    id="meterCategory"
-                    className={`w-full text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500 ${errors.meterCategory ? "border-red-500" : ""
-                      }`}
-                  >
-                    <SelectValue>{formData.meterCategory || "Select Category"}</SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Prepaid">Prepaid</SelectItem>
-                    <SelectItem value="Postpaid">Postpaid</SelectItem>
-                  </SelectContent>
-                </Select>
-                {errors.meterCategory && <p className="text-xs text-red-500 mt-1">{errors.meterCategory}</p>}
               </div>
               <div className="space-y-1">
                 <Label htmlFor="meterClass" className="text-sm font-medium text-gray-700">
@@ -947,10 +910,8 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                 disabled={
                   !formData.meterNumber ||
                   !formData.simNumber ||
-                  !formData.meterCategory ||
                   !formData.meterClass ||
                   !formData.meterManufacturer ||
-                  !formData.meterType || // Added meterType check
                   !formData.oldSgc ||
                   !formData.newSgc ||
                   !formData.oldKrn ||
@@ -961,7 +922,6 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                 }
                 className="text-sm font-medium bg-[#161CCA] text-white hover:bg-[#1e2abf]"
               >
-                {/* Updated logic for button text */}
                 {step1ButtonText}
               </Button>
             </>
