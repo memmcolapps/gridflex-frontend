@@ -122,11 +122,14 @@ export function EditCustomerDetailsDialog({
     isLoading: isLoadingStates,
     isError: isErrorStates,
   } = useNigerianStates();
+
+  // Convert state name to ID format for fetching cities
+  const stateId = state ? state.toLowerCase().replace(/\s+/g, "-") : "";
   const {
     data: cities,
     isLoading: isLoadingCities,
     isError: isErrorCities,
-  } = useNigerianCities(state);
+  } = useNigerianCities(stateId);
 
   const { data: feeders, isLoading: isLoadingFeeders } = useFeeders();
   const { data: dssOptions, isLoading: isLoadingDSS } = useDSS(feeder || null);
@@ -260,6 +263,7 @@ export function EditCustomerDetailsDialog({
                     >
                       {feeder
                         ? (feeders?.find((f) => f.assetId === feeder)?.name ??
+                          feeders?.find((f) => f.name === feeder)?.name ??
                           "Select feeder...")
                         : isLoadingFeeders
                           ? "Loading feeders..."
@@ -285,7 +289,7 @@ export function EditCustomerDetailsDialog({
                               value={feederItem.name}
                               onSelect={() => {
                                 const selectedAssetId =
-                                  feederItem.assetId === feeder
+                                  feederItem.assetId === feeder || feederItem.name === feeder
                                     ? ""
                                     : feederItem.assetId;
                                 setFeeder(selectedAssetId);
@@ -298,7 +302,7 @@ export function EditCustomerDetailsDialog({
                               <Check
                                 className={cn(
                                   "mr-2 !h-3.5 !w-3.5",
-                                  feeder === feederItem.assetId
+                                  feeder === feederItem.assetId || feeder === feederItem.name
                                     ? "opacity-100"
                                     : "opacity-0",
                                 )}
@@ -327,6 +331,7 @@ export function EditCustomerDetailsDialog({
                     >
                       {dss
                         ? (dssOptions?.find((d) => d.assetId === dss)?.name ??
+                          dssOptions?.find((d) => d.name === dss)?.name ??
                           "Select DSS...")
                         : !feeder
                           ? "Select feeder first"
@@ -354,7 +359,7 @@ export function EditCustomerDetailsDialog({
                               value={dssItem.name}
                               onSelect={() => {
                                 setDss(
-                                  dssItem.assetId === dss
+                                  dssItem.assetId === dss || dssItem.name === dss
                                     ? ""
                                     : dssItem.assetId,
                                 );
@@ -364,7 +369,7 @@ export function EditCustomerDetailsDialog({
                               <Check
                                 className={cn(
                                   "mr-2 !h-3.5 !w-3.5",
-                                  dss === dssItem.assetId
+                                  dss === dssItem.assetId || dss === dssItem.name
                                     ? "opacity-100"
                                     : "opacity-0",
                                 )}
@@ -390,7 +395,7 @@ export function EditCustomerDetailsDialog({
                   }}
                 >
                   <SelectTrigger className="w-full border-gray-100 text-gray-600">
-                    <SelectValue placeholder="Select State" />
+                    <SelectValue placeholder={state && !states?.find(s => s.name === state) ? state : "Select State"} />
                   </SelectTrigger>
                   <SelectContent>
                     {isLoadingStates ? (
@@ -407,7 +412,7 @@ export function EditCustomerDetailsDialog({
                       </SelectItem>
                     ) : (
                       states?.map((stateItem) => (
-                        <SelectItem key={stateItem.id} value={stateItem.id}>
+                        <SelectItem key={stateItem.id} value={stateItem.name}>
                           {stateItem.name}
                         </SelectItem>
                       ))
@@ -425,15 +430,7 @@ export function EditCustomerDetailsDialog({
                   disabled={!state || isLoadingCities}
                 >
                   <SelectTrigger className="w-full border-gray-100 text-gray-600">
-                    <SelectValue
-                      placeholder={
-                        isLoadingCities
-                          ? "Loading cities..."
-                          : state
-                            ? "Select City"
-                            : "Select a state first"
-                      }
-                    />
+                    <SelectValue placeholder={city || (isLoadingCities ? "Loading cities..." : state ? "Select City" : "Select a state first")} />
                   </SelectTrigger>
                   <SelectContent>
                     {isLoadingCities ? (
@@ -450,7 +447,7 @@ export function EditCustomerDetailsDialog({
                       </SelectItem>
                     ) : (
                       cities?.map((cityItem) => (
-                        <SelectItem key={cityItem.id} value={cityItem.id}>
+                        <SelectItem key={cityItem.name} value={cityItem.name}>
                           {cityItem.name}
                         </SelectItem>
                       ))
