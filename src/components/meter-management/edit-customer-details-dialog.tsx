@@ -23,6 +23,23 @@ import {
 import { Progress } from "@/components/ui/progress";
 import type { MeterInventoryItem } from "@/types/meter-inventory";
 import { EditPaymentDialog } from "@/components/meter-management/edit-payment-dialog";
+import { useNigerianStates, useNigerianCities } from "@/hooks/use-location";
+import { useFeeders, useDSS } from "@/hooks/use-node";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 
 interface EditCustomerDetailsDialogProps {
   isOpen: boolean;
@@ -94,6 +111,25 @@ export function EditCustomerDetailsDialog({
   const [creditMop, setCreditMop] = useState("");
   const [debitPaymentPlan, setDebitPaymentPlan] = useState("");
   const [creditPaymentPlan, setCreditPaymentPlan] = useState("");
+
+  // Dropdown open states
+  const [feederOpen, setFeederOpen] = useState(false);
+  const [dssOpen, setDssOpen] = useState(false);
+
+  // Location hooks
+  const {
+    data: states,
+    isLoading: isLoadingStates,
+    isError: isErrorStates,
+  } = useNigerianStates();
+  const {
+    data: cities,
+    isLoading: isLoadingCities,
+    isError: isErrorCities,
+  } = useNigerianCities(state);
+
+  const { data: feeders, isLoading: isLoadingFeeders } = useFeeders();
+  const { data: dssOptions, isLoading: isLoadingDSS } = useDSS(feeder || null);
 
   const handleNextToPayment = () => {
     onOpenChange(false);
@@ -213,45 +249,214 @@ export function EditCustomerDetailsDialog({
                 <Label>
                   Feeder Line<span className="text-red-700">*</span>
                 </Label>
-                <Input
-                  value={feeder}
-                  onChange={(e) => setFeeder(e.target.value)}
-                  // placeholder="Enter CIN"
-                  className="border-gray-200 text-gray-600"
-                />
+                <Popover open={feederOpen} onOpenChange={setFeederOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={feederOpen}
+                      className="w-full justify-between border-gray-200 text-gray-600"
+                      disabled={isLoadingFeeders}
+                    >
+                      {feeder
+                        ? (feeders?.find((f) => f.assetId === feeder)?.name ??
+                          "Select feeder...")
+                        : isLoadingFeeders
+                          ? "Loading feeders..."
+                          : "Select feeder..."}
+                      <ChevronsUpDown
+                        className="ml-2 h-4 w-4 shrink-0 opacity-50"
+                        size={14}
+                      />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full border-none p-0">
+                    <Command className="border-none bg-white">
+                      <CommandInput
+                        placeholder="Search feeder..."
+                        className="border-none"
+                      />
+                      <CommandList>
+                        <CommandEmpty>No feeder found.</CommandEmpty>
+                        <CommandGroup>
+                          {feeders?.map((feederItem) => (
+                            <CommandItem
+                              key={feederItem.assetId}
+                              value={feederItem.name}
+                              onSelect={() => {
+                                const selectedAssetId =
+                                  feederItem.assetId === feeder
+                                    ? ""
+                                    : feederItem.assetId;
+                                setFeeder(selectedAssetId);
+                                if (selectedAssetId !== feeder) {
+                                  setDss("");
+                                }
+                                setFeederOpen(false);
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 !h-3.5 !w-3.5",
+                                  feeder === feederItem.assetId
+                                    ? "opacity-100"
+                                    : "opacity-0",
+                                )}
+                              />
+                              {feederItem.name}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               </div>
               <div className="space-y-2">
                 <Label>
                   DSS<span className="text-red-700">*</span>
                 </Label>
-                <Input
-                  value={dss}
-                  onChange={(e) => setDss(e.target.value)}
-                  // placeholder="Enter CIN"
-                  className="border-gray-200 text-gray-600"
-                />
+                <Popover open={dssOpen} onOpenChange={setDssOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={dssOpen}
+                      className="w-full justify-between border-gray-200 text-gray-600"
+                      disabled={!feeder || isLoadingDSS}
+                    >
+                      {dss
+                        ? (dssOptions?.find((d) => d.assetId === dss)?.name ??
+                          "Select DSS...")
+                        : !feeder
+                          ? "Select feeder first"
+                          : isLoadingDSS
+                            ? "Loading DSS..."
+                            : "Select DSS..."}
+                      <ChevronsUpDown
+                        className="ml-2 h-4 w-4 shrink-0 opacity-50"
+                        size={14}
+                      />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full border-none p-0">
+                    <Command className="border-none bg-white">
+                      <CommandInput
+                        placeholder="Search DSS..."
+                        className="border-none"
+                      />
+                      <CommandList>
+                        <CommandEmpty>No DSS found.</CommandEmpty>
+                        <CommandGroup>
+                          {dssOptions?.map((dssItem) => (
+                            <CommandItem
+                              key={dssItem.assetId}
+                              value={dssItem.name}
+                              onSelect={() => {
+                                setDss(
+                                  dssItem.assetId === dss
+                                    ? ""
+                                    : dssItem.assetId,
+                                );
+                                setDssOpen(false);
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 !h-3.5 !w-3.5",
+                                  dss === dssItem.assetId
+                                    ? "opacity-100"
+                                    : "opacity-0",
+                                )}
+                              />
+                              {dssItem.name}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               </div>
               <div className="space-y-2">
                 <Label>
                   State<span className="text-red-700">*</span>
                 </Label>
-                <Input
+                <Select
                   value={state}
-                  onChange={(e) => setState(e.target.value)}
-                  placeholder="Enter State"
-                  className="border-gray-100 text-gray-600"
-                />
+                  onValueChange={(value) => {
+                    setState(value);
+                    setCity(""); // Reset city when state changes
+                  }}
+                >
+                  <SelectTrigger className="w-full border-gray-100 text-gray-600">
+                    <SelectValue placeholder="Select State" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {isLoadingStates ? (
+                      <SelectItem value="loading" disabled>
+                        Loading states...
+                      </SelectItem>
+                    ) : isErrorStates ? (
+                      <SelectItem value="error-states" disabled>
+                        Error loading states
+                      </SelectItem>
+                    ) : states?.length === 0 ? (
+                      <SelectItem value="no-states-found" disabled>
+                        No states found
+                      </SelectItem>
+                    ) : (
+                      states?.map((stateItem) => (
+                        <SelectItem key={stateItem.id} value={stateItem.id}>
+                          {stateItem.name}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
                 <Label>
                   City<span className="text-red-700">*</span>
                 </Label>
-                <Input
+                <Select
                   value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  placeholder="Enter City"
-                  className="border-gray-100 text-gray-600"
-                />
+                  onValueChange={setCity}
+                  disabled={!state || isLoadingCities}
+                >
+                  <SelectTrigger className="w-full border-gray-100 text-gray-600">
+                    <SelectValue
+                      placeholder={
+                        isLoadingCities
+                          ? "Loading cities..."
+                          : state
+                            ? "Select City"
+                            : "Select a state first"
+                      }
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {isLoadingCities ? (
+                      <SelectItem value="loading" disabled>
+                        Loading cities...
+                      </SelectItem>
+                    ) : isErrorCities ? (
+                      <SelectItem value="error-cities" disabled>
+                        Error loading cities
+                      </SelectItem>
+                    ) : cities?.length === 0 && state ? (
+                      <SelectItem value="no-cities-found" disabled>
+                        No cities found for this state
+                      </SelectItem>
+                    ) : (
+                      cities?.map((cityItem) => (
+                        <SelectItem key={cityItem.id} value={cityItem.id}>
+                          {cityItem.name}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
                 <Label>

@@ -792,7 +792,12 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                   <strong>Credit Adjustment:</strong>{" "}
                   {calculatedTokenData?.totalCreditBalance}
                 </p>
+                
                 {/* <p><strong>KVA:</strong>{calculatedTokenData?.}</p> */}
+                    <p>
+                  <strong>Mode Of Payment:</strong>{" "}
+                
+                </p>
                 <p>
                   <strong>Cost Of Unit:</strong>{" "}
                   {calculatedTokenData?.data.costOfUnit}
