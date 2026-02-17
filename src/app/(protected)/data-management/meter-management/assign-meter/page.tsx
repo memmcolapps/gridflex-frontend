@@ -308,8 +308,10 @@ export default function AssignMeterPage() {
       setCin(customer.cin ?? "");
       setAccountNumber(customer.accountNumber ?? "");
       setTariff(customer.tariff ?? "");
-      setFeeder(customer.feederLine ?? "");
-      setDss(customer.dss ?? "");
+      // Use feederInfo.assetId if available, otherwise fall back to feederLine (name)
+      setFeeder(customer.feederInfo?.assetId ?? customer.feederLine ?? "");
+      // Use dssInfo.assetId if available, otherwise fall back to dss (name)
+      setDss(customer.dssInfo?.assetId ?? customer.dss ?? "");
       setState(customer.state ?? "");
       setCity(customer.city ?? "");
       setStreetName(customer.streetName ?? "");
