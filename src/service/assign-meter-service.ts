@@ -195,9 +195,10 @@ export interface AssignMeterPayload {
   city: string;
   houseNo: string;
   streetName: string;
-  paymentType: string;
-  paymentMode: string;
-  paymentPlan: string;
+  debitPaymentMode: string;
+  creditPaymentMode: string;
+  debitPaymentPlan: string;
+  creditPaymentPlan: string;
   meterClass?: string;
   forceAssign?: boolean;
   image?: File | null;

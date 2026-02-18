@@ -96,7 +96,7 @@ export interface MeterInventoryItem {
   phone?: string;
   debitMop?: string; // Deprecated - use paymentMode instead
   creditMop?: string; // Deprecated - use paymentMode instead
-  paymentMode?: string; // Unified payment mode (replaces debitMop/creditMop)
+ 
   debitPaymentPlan?: string; // Deprecated - use paymentPlan instead
   creditPaymentPlan?: string; // Deprecated - use paymentPlan instead
   paymentPlan?: string; // Unified payment plan (replaces debitPaymentPlan/creditPaymentPlan)
