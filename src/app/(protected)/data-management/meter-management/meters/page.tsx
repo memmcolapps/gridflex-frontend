@@ -270,9 +270,10 @@ export default function MeterManagementPage() {
       city,
       houseNo,
       streetName,
-      paymentType,
-      paymentMode,
-      paymentPlan,
+      debitPaymentMode: paymentMode,
+      creditPaymentMode: creditMop,
+      debitPaymentPlan: paymentPlan,
+      creditPaymentPlan: creditPaymentPlan,
     };
 
     assignMeterMutation.mutate(assignPayload, {

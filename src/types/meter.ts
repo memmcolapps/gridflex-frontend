@@ -245,6 +245,9 @@ export interface SmartMeterInfo {
 export interface CreateMeterPayload {
   meterNumber: string;
   meterClass: string;
+  meterCategory?: string;
+  meterType?: string;
+  meterManufacturer?: string;
   dateAdded?: string;
   oldSgc?: string;
   newSgc?: string;
@@ -282,11 +285,11 @@ export interface CreateMeterPayload {
   debitPaymentPlan?: string;
   creditPaymentPlan?: string;
   creditMop?: string;
-  paymentMode?: {
-    paymentMode: string;
-    paymentPlan: string;
-    paymentType: string;
-  };
+  // paymentMode?: {
+  //   paymentMode: string;
+  //   paymentPlan: string;
+  //   paymentType: string;
+  // };
 
   Image?: File;
   feederLine?: string;

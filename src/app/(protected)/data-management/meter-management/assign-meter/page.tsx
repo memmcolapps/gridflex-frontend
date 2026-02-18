@@ -35,6 +35,7 @@ import {
   useMeters,
   useDetachMeter,
   useMigrateMeter,
+  useAssignMeter,
 } from "@/hooks/use-assign-meter";
 import { cn } from "@/lib/utils";
 import type { VirtualMeterData } from "@/types/meter";
@@ -138,6 +139,7 @@ export default function AssignMeterPage() {
   // Initialize useDetachMeter and useMigrateMeter hooks
   const detachMeterMutation = useDetachMeter();
   const migrateMeterMutation = useMigrateMeter();
+  const assignMeterMutation = useAssignMeter();
 
   // Fetch meter data using the API
   const { data: metersData, isLoading } = useMeters({
@@ -383,28 +385,100 @@ export default function AssignMeterPage() {
 
   const handleConfirmEditFromSetPayment = () => {
     if (!editCustomer?.customerId) {
+      console.log("No editCustomer or customerId");
       return;
     }
-    setMeterData((prev) =>
-      prev.map((item) =>
-        item.customerId === editCustomer.customerId
-          ? {
-              ...item,
-              debitMop: debitMop ?? item.debitMop,
-              creditMop: creditMop ?? item.creditMop,
-              debitPaymentPlan:
-                debitMop === "one-off"
-                  ? ""
-                  : (debitPaymentPlan ?? item.debitPaymentPlan),
-              creditPaymentPlan:
-                creditMop === "one-off"
-                  ? ""
-                  : (creditPaymentPlan ?? item.creditPaymentPlan),
-            }
-          : item,
-      ),
-    );
-    setIsSetPaymentModalOpen(false);
+
+    console.log("handleConfirmEditFromSetPayment called", {
+      meterNumber,
+      customerId: editCustomer.customerId,
+      tariff,
+      dss,
+      feeder,
+      cin,
+      accountNumber,
+      state,
+      city,
+      houseNo,
+      streetName,
+      debitMop,
+      creditMop,
+      debitPaymentPlan,
+      creditPaymentPlan,
+    });
+
+    // Build the update payload using the same structure as assign meter
+    const updatePayload = {
+      meterNumber,
+      customerId: editCustomer.customerId,
+      tariffId: tariff,
+      dssAssetId: dss,
+      feederAssetId: feeder,
+      cin,
+      accountNumber,
+      state,
+      city,
+      houseNo,
+      streetName,
+      debitPaymentMode: debitMop,
+      creditPaymentMode: creditMop,
+      debitPaymentPlan: debitMop === "one-off" ? "" : debitPaymentPlan,
+      creditPaymentPlan: creditMop === "one-off" ? "" : creditPaymentPlan,
+    };
+
+    console.log("Update payload:", updatePayload);
+
+    // Wrap payload in FormData like the assign-meter-dialog does
+    const formData = new FormData();
+    Object.entries(updatePayload).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        formData.append(key, String(value));
+      }
+    });
+
+    console.log("Calling assignMeterMutation...");
+
+    // Make API call to update the meter
+    assignMeterMutation.mutate(formData, {
+      onSuccess: (data) => {
+        console.log("Update response:", data);
+        // Update local state on success
+        setMeterData((prev) =>
+          prev.map((item) =>
+            item.customerId === editCustomer.customerId
+              ? {
+                  ...item,
+                  meterNumber,
+                  cin,
+                  accountNumber,
+                  tariff,
+                  feeder,
+                  dss,
+                  state,
+                  city,
+                  streetName,
+                  houseNo,
+                  debitMop: debitMop ?? item.debitMop,
+                  creditMop: creditMop ?? item.creditMop,
+                  debitPaymentPlan:
+                    debitMop === "one-off"
+                      ? ""
+                      : (debitPaymentPlan ?? item.debitPaymentPlan),
+                  creditPaymentPlan:
+                    creditMop === "one-off"
+                      ? ""
+                      : (creditPaymentPlan ?? item.creditPaymentPlan),
+                }
+              : item,
+          ),
+        );
+        setIsSetPaymentModalOpen(false);
+        setIsEditModalOpen(false);
+      },
+      onError: (error) => {
+        console.error("Failed to update meter:", error);
+      },
+    });
   };
 
   const handleDetachMeter = (

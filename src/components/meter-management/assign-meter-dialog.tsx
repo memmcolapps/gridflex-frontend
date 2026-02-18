@@ -211,9 +211,10 @@ export function AssignMeterDialog({
     city: string;
     houseNo: string;
     streetName: string;
-    paymentType: string;
-    paymentMode: string;
-    paymentPlan: string;
+    debitPaymentMode: string;
+    creditPaymentMode: string;
+    debitPaymentPlan: string;
+    creditPaymentPlan: string;
     image?: File | null;
   } | null>(null);
 
@@ -245,9 +246,10 @@ export function AssignMeterDialog({
       city: cities?.find((c) => c.id === city)?.name ?? "",
       houseNo,
       streetName,
-      paymentType,
-      paymentMode,
-      paymentPlan,
+      debitPaymentMode: paymentMode,
+      creditPaymentMode: creditPaymentMode,
+      debitPaymentPlan: paymentPlan,
+      creditPaymentPlan: creditPaymentPlan,
       forceAssign,
       image: imageToUse,
     };
@@ -283,9 +285,10 @@ export function AssignMeterDialog({
           city: cities?.find((c) => c.id === city)?.name ?? "",
           houseNo,
           streetName,
-          paymentType,
-          paymentMode,
-          paymentPlan,
+          debitPaymentMode: paymentMode,
+          creditPaymentMode: creditPaymentMode,
+          debitPaymentPlan: paymentPlan,
+          creditPaymentPlan: creditPaymentPlan,
           image: uploadedImage,
         });
         setIsCinExistsDialogOpen(true);

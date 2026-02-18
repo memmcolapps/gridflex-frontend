@@ -49,9 +49,11 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
     dial: "",
     longitude: "",
     latitude: "",
-    paymentMode: "",
-    paymentPlan: "",
-    paymentType: ""
+    // Payment fields
+    debitMop: "",
+    debitPaymentPlan: "",
+    creditPaymentPlan: "",
+    creditMop: "",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -90,9 +92,11 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
         dial: editMeter.mdMeterInfo?.dial ?? "",
         longitude: editMeter.mdMeterInfo?.longitude ?? "",
         latitude: editMeter.mdMeterInfo?.latitude ?? "",
-        paymentMode: editMeter.paymentMode ?? "",
-        paymentPlan: editMeter.paymentPlan ?? "",
-        paymentType: editMeter.paymentType ?? ""
+        // Payment fields - using type assertion to access extended properties
+        debitMop: (editMeter as CreateMeterPayload).debitMop ?? "",
+        debitPaymentPlan: (editMeter as CreateMeterPayload).debitPaymentPlan ?? "",
+        creditPaymentPlan: (editMeter as CreateMeterPayload).creditPaymentPlan ?? "",
+        creditMop: (editMeter as CreateMeterPayload).creditMop ?? "",
       });
       setStep(1);
       setErrors({});
@@ -125,9 +129,11 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
         dial: "",
         longitude: "",
         latitude: "",
-        paymentMode: "",
-        paymentPlan: "",
-        paymentType: ""
+        // Payment fields
+        debitMop: "",
+        debitPaymentPlan: "",
+        creditPaymentPlan: "",
+        creditMop: "",
       });
       setStep(1);
       setErrors({});
@@ -251,7 +257,9 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
         meterNumber: formData.meterNumber,
         simNumber: formData.simNumber,
         meterClass: formData.meterClass,
-        manufacturer: formData.meterManufacturer,
+        meterManufacturer: formData.meterManufacturer,
+        meterCategory: formData.meterClass === "MD" ? "Postpaid" : "Prepaid",
+        meterType: "electricity",
         oldSgc: formData.oldSgc,
         newSgc: formData.newSgc,
         oldKrn: formData.oldKrn,
@@ -281,11 +289,11 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
             password: formData.password,
           }
           : undefined,
-        paymentMode: {
-          paymentMode: formData.paymentMode,
-          paymentPlan: formData.paymentPlan,
-          paymentType: formData.paymentType,
-        },
+        // Payment fields
+        debitMop: formData.debitMop || undefined,
+        debitPaymentPlan: formData.debitPaymentPlan || undefined,
+        creditPaymentPlan: formData.creditPaymentPlan || undefined,
+        creditMop: formData.creditMop || undefined,
       };
 
       try {
@@ -312,7 +320,9 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
         meterNumber: formData.meterNumber,
         simNumber: formData.simNumber,
         meterClass: formData.meterClass,
-        manufacturer: formData.meterManufacturer,
+        meterManufacturer: formData.meterManufacturer,
+        meterCategory: formData.meterClass === "MD" ? "Postpaid" : "Prepaid",
+        meterType: "electricity",
         oldSgc: formData.oldSgc,
         newSgc: formData.newSgc,
         oldKrn: formData.oldKrn,
@@ -342,6 +352,11 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
             password: formData.password,
           }
           : undefined,
+        // Payment fields
+        debitMop: formData.debitMop || undefined,
+        debitPaymentPlan: formData.debitPaymentPlan || undefined,
+        creditPaymentPlan: formData.creditPaymentPlan || undefined,
+        creditMop: formData.creditMop || undefined,
       };
 
       try {
@@ -379,9 +394,11 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
           dial: "",
           longitude: "",
           latitude: "",
-          paymentMode: "",
-          paymentPlan: "",
-          paymentType: ""
+          // Payment fields
+          debitMop: "",
+          debitPaymentPlan: "",
+          creditPaymentPlan: "",
+          creditMop: "",
         });
         setErrors({});
       } catch (error) {
