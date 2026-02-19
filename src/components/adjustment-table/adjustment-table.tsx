@@ -357,6 +357,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
           credit: item.type === "credit" ? item.amount : "",
           debit: item.type === "debit" ? item.amount : "",
           balance: item.balance ?? 0,
+          adjustmentId: item.id,
         });
       });
 
