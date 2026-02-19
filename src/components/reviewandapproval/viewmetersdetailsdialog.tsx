@@ -304,6 +304,7 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
                     disabled={!selectedRow}
                   >
                     Reject
+                    
                   </Button>
                   <Button
                     onClick={() => selectedRow && onApprove(selectedRow)}
