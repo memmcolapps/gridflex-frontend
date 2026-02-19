@@ -7,6 +7,8 @@ import {
   type AdjustmentMutationResponse,
   type Meter,
   type LiabilityCause,
+  type PaymentHistoryItem,
+  type PaymentHistoryResponse,
 } from "@/types/credit-debit";
 import { env } from "@/env";
 import { handleApiError } from "@/utils/error-handler";
@@ -22,7 +24,8 @@ export const fetchAllAdjustments = async (
   size = 10,
   searchTerm?: string,
 ): Promise<
-  { success: true; data: Adjustment[]; totalData?: number } | { success: false; error: string }
+  | { success: true; data: Adjustment[]; totalData?: number }
+  | { success: false; error: string }
 > => {
   try {
     const token = localStorage.getItem("auth_token");
@@ -32,7 +35,7 @@ export const fetchAllAdjustments = async (
       page,
       size,
     };
-    
+
     if (searchTerm) params.search = searchTerm;
 
     const response = await axiosInstance.get<ApiResponse<any>>(
@@ -134,7 +137,8 @@ export const fetchAllLiabilityCauses = async (): Promise<
     if (response.data?.responsecode !== "000" || !response.data?.responsedata) {
       return {
         success: false,
-        error: response.data?.responsedesc || "Failed to fetch liability causes.",
+        error:
+          response.data?.responsedesc || "Failed to fetch liability causes.",
       };
     }
 
@@ -191,7 +195,9 @@ export const createAdjustment = async (
 export const reconcileDebit = async (
   debitCreditAdjustmentId: string,
   amount: number,
-): Promise<{ success: true; data: any } | { success: false; error: string }> => {
+): Promise<
+  { success: true; data: any } | { success: false; error: string }
+> => {
   try {
     const token = localStorage.getItem("auth_token");
 
@@ -222,6 +228,59 @@ export const reconcileDebit = async (
     return {
       success: true,
       data: response.data,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: handleApiError(error).message,
+    };
+  }
+};
+
+// Function to fetch payment history for a meter and liability cause
+export const fetchPaymentHistory = async (
+  meterId: string,
+  liabilityCauseId: string | undefined,
+  type: "credit" | "debit",
+): Promise<
+  | { success: true; data: PaymentHistoryItem[] }
+  | { success: false; error: string }
+> => {
+  try {
+    const token = localStorage.getItem("auth_token");
+
+    const params: Record<string, string> = {
+      meterId,
+      type,
+    };
+
+    if (liabilityCauseId) {
+      params.liabilityCauseId = liabilityCauseId;
+    }
+
+    const response = await axiosInstance.get<PaymentHistoryResponse>(
+      `${API_URL}/debit-credit-adjustment/service/payment-history`,
+      {
+        params,
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    if (response.data?.responsecode !== "000" || !response.data?.responsedata) {
+      return {
+        success: false,
+        error:
+          response.data?.responsedesc || "Failed to fetch payment history.",
+      };
+    }
+
+    return {
+      success: true,
+      data: response.data.responsedata,
     };
   } catch (error) {
     return {

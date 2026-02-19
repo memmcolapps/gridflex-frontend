@@ -7,11 +7,21 @@ import {
   createAdjustment,
   reconcileDebit,
   fetchAllLiabilityCauses,
+  fetchPaymentHistory,
 } from "@/service/adjustment-service";
-import { type Adjustment, type AdjustmentPayload } from "@/types/credit-debit";
+import {
+  type Adjustment,
+  type AdjustmentPayload,
+  type PaymentHistoryItem,
+} from "@/types/credit-debit";
 import { toast } from "sonner";
 
-export const useAllAdjustments = (type: "credit" | "debit", page = 0, size = 10, searchTerm?: string) => {
+export const useAllAdjustments = (
+  type: "credit" | "debit",
+  page = 0,
+  size = 10,
+  searchTerm?: string,
+) => {
   return useQuery<Adjustment[]>({
     queryKey: ["adjustments", type, searchTerm, page, size],
     queryFn: async () => {
@@ -100,5 +110,27 @@ export const useAllLiabilityCauses = () => {
         throw new Error(result.error);
       }
     },
+  });
+};
+
+export const usePaymentHistory = (
+  meterId: string | null,
+  liabilityCauseId: string | null,
+  type: "credit" | "debit",
+) => {
+  return useQuery<PaymentHistoryItem[]>({
+    queryKey: ["payment-history", meterId, liabilityCauseId, type],
+    queryFn: async () => {
+      if (!meterId || !liabilityCauseId) {
+        throw new Error("Meter ID and Liability Cause ID are required");
+      }
+      const result = await fetchPaymentHistory(meterId, liabilityCauseId, type);
+      if (result.success) {
+        return result.data;
+      } else {
+        throw new Error(result.error);
+      }
+    },
+    enabled: !!meterId && !!liabilityCauseId,
   });
 };

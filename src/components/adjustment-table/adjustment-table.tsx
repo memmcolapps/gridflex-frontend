@@ -59,6 +59,7 @@ import {
   useCreateAdjustment,
   useReconcileDebit,
   useAllLiabilityCauses,
+  usePaymentHistory,
 } from "@/hooks/use-adjustment";
 import { Toaster, toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
@@ -96,12 +97,12 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
       // Use meter ID (adj.id) as unique key instead of customer ID
       const id = adj.id;
 
-      // Get balance from debitCreditAdjustInfo array
+      // Get outstandingBalance from debitCreditAdjustInfo array
       const debitInfo =
         adj.debitCreditAdjustInfo && adj.debitCreditAdjustInfo.length > 0
           ? adj.debitCreditAdjustInfo[0]
           : null;
-      const balance = debitInfo?.balance ?? 0;
+      const balance = debitInfo?.outstandingBalance ?? 0;
 
       if (id && !group.has(id)) {
         group.set(id, {
@@ -131,9 +132,19 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
     null,
   );
+  const [selectedMeterId, setSelectedMeterId] = useState<string | null>(null);
+  const [selectedLiabilityCauseId, setSelectedLiabilityCauseId] = useState<
+    string | null
+  >(null);
   const [selectedAdjustmentId, setSelectedAdjustmentId] = useState<
     string | null
   >(null);
+
+  const {
+    data: paymentHistory,
+    isLoading: isPaymentHistoryLoading,
+    error: paymentHistoryError,
+  } = usePaymentHistory(selectedMeterId, selectedLiabilityCauseId, type);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [rowsPerPage, setRowsPerPage] = useState<number>(10);
@@ -284,6 +295,13 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
     );
     if (!isCheckboxClicked) {
       setSelectedCustomer(customer);
+      setSelectedMeterId(customer.id);
+      
+      // Get the first liabilityCauseId from the adjustment
+      const adjustment = allAdjustments?.find(adj => adj.id === customer.id);
+      const firstLiabilityCauseId = adjustment?.debitCreditAdjustInfo?.[0]?.liabilityCauseId ?? null;
+      setSelectedLiabilityCauseId(firstLiabilityCauseId);
+      
       setIsTransactionsDialogOpen(true);
     }
   };
@@ -301,12 +319,13 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
       return debitInfos.map((debitInfo) => ({
         date: adj.createdAt?.split(" ")[0] ?? "",
         liabilityCause: debitInfo?.liabilityCause?.name ?? "N/A",
-        liabilityCode: debitInfo?.liabilityCause?.code ?? "N/A",
-        credit: type === "credit" ? (debitInfo?.amount ?? "") : "",
-        debit: type === "debit" ? (debitInfo?.amount ?? "") : "",
-        balance: debitInfo?.balance ?? 0,
+        liabilityCode: debitInfo?.liabilityCause?.code ?? "",
+        credit: type === "credit" ? (debitInfo?.totalBalance ?? "") : "",
+        debit: type === "debit" ? (debitInfo?.totalBalance ?? "") : "",
+        balance: debitInfo?.totalBalance ?? 0,
         // Store the adjustment ID for nested dialog
         adjustmentId: debitInfo?.id,
+        liabilityCauseId: debitInfo?.liabilityCauseId,
         adjustmentIndex: adjIndex,
       }));
     },
@@ -322,6 +341,29 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
   }, [selectedAdjustmentId, allAdjustments]);
 
   const nestedTransactions: Transaction[] = useMemo(() => {
+    // Use payment history data if available
+    if (paymentHistory && paymentHistory.length > 0) {
+      const transactions: Transaction[] = [];
+
+      // Filter to only include items with liability codes
+      paymentHistory
+        .filter((item) => item.liabilityCause?.code)
+        .forEach((item) => {
+        // Add the main adjustment transaction only (without payment details)
+        transactions.push({
+          date: item.createdAt?.split(" ")[0] ?? "",
+          liabilityCause: item.liabilityCause?.name ?? "N/A",
+          liabilityCode: item.liabilityCause?.code ?? "",
+          credit: item.type === "credit" ? item.amount : "",
+          debit: item.type === "debit" ? item.amount : "",
+          balance: item.balance ?? 0,
+        });
+      });
+
+      return transactions;
+    }
+
+    // Fallback to original logic if payment history is not available
     if (!selectedAdjustment) return [];
 
     const transactions: Transaction[] = [];
@@ -337,13 +379,14 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
     transactions.push({
       date: selectedAdjustment.createdAt?.split(" ")[0] ?? "",
       liabilityCause: debitInfo?.liabilityCause?.name ?? "N/A",
-      liabilityCode: debitInfo?.liabilityCause?.code ?? "N/A",
-      credit: debitInfo?.type === "credit" ? (debitInfo?.amount ?? "") : "",
-      debit: debitInfo?.type === "debit" ? (debitInfo?.amount ?? "") : "",
-      balance: debitInfo?.amount ?? 0,
+      liabilityCode: debitInfo?.liabilityCause?.code ?? "",
+      credit:
+        debitInfo?.type === "credit" ? (debitInfo?.totalBalance ?? "") : "",
+      debit: debitInfo?.type === "debit" ? (debitInfo?.totalBalance ?? "") : "",
+      balance: debitInfo?.totalBalance ?? 0,
     });
 
-    let runningBalance = debitInfo?.amount ?? 0;
+    let runningBalance = debitInfo?.totalBalance ?? 0;
     (debitInfo?.payment ?? [])
       .filter(
         (pay): pay is Required<Payment> & { createdAt: string } =>
@@ -366,7 +409,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
       });
 
     return transactions;
-  }, [selectedAdjustment]);
+  }, [selectedAdjustment, paymentHistory]);
 
   const colSpan = 6;
 
@@ -838,7 +881,12 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
 
       <Dialog
         open={isTransactionsDialogOpen}
-        onOpenChange={setIsTransactionsDialogOpen}
+        onOpenChange={(open) => {
+          setIsTransactionsDialogOpen(open);
+          if (!open) {
+            setSelectedMeterId(null);
+          }
+        }}
       >
         <DialogContent className="h-fit !w-[700px] !max-w-none border-gray-500 bg-white text-black">
           <DialogHeader>
@@ -854,7 +902,9 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
               <div className="flex flex-col space-y-4 text-right">
                 <span className="text-md">Outstanding Balance</span>
                 <p className="text-muted-foreground text-2xl font-semibold">
-                  {selectedCustomer?.balance?.toLocaleString()}
+                  {paymentHistory?.[0]?.outstandingBalance?.toLocaleString() ??
+                    customerAdjustments[0]?.outstandingBalance?.toLocaleString() ??
+                    0}
                 </p>
               </div>
             </div>
@@ -877,34 +927,35 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {liabilityTransactions.map((transaction, index) => (
-                  <TableRow key={index} className="h-16 py-4">
-                    <TableCell className="py-4 align-middle">
-                      <div className="flex items-center gap-2">
-                        <span>{index + 1}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="py-4 align-middle">
-                      {transaction.liabilityCause}
-                    </TableCell>
-                    <TableCell className="py-4 align-middle">
-                      {transaction.liabilityCode}
-                    </TableCell>
-                    <TableCell className="py-4 align-middle">
-                      {typeof transaction.balance === "number" ? (
-                        <span
-                          className={
-                            type === "credit"
-                              ? "rounded-full bg-[#E9FBF0] px-1.5 py-1.5 text-[#059E40]"
-                              : "rounded-full bg-[#FBE9E9] px-1.5 py-1.5 text-[#F50202]"
-                          }
-                        >
-                          {transaction.balance.toLocaleString()}
-                        </span>
-                      ) : (
-                        "0"
-                      )}
-                    </TableCell>
+                {(paymentHistory && paymentHistory.length > 0) ? (
+                  nestedTransactions.map((transaction, index) => (
+                    <TableRow key={index} className="h-16 py-4">
+                      <TableCell className="py-4 align-middle">
+                        <div className="flex items-center gap-2">
+                          <span>{index + 1}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-4 align-middle">
+                        {transaction.liabilityCause}
+                      </TableCell>
+                      <TableCell className="py-4 align-middle">
+                        {transaction.liabilityCode}
+                      </TableCell>
+                      <TableCell className="py-4 align-middle">
+                        {typeof transaction.balance === "number" ? (
+                          <span
+                            className={
+                              type === "credit"
+                                ? "rounded-full bg-[#E9FBF0] px-1.5 py-1.5 text-[#059E40]"
+                                : "rounded-full bg-[#FBE9E9] px-1.5 py-1.5 text-[#F50202]"
+                            }
+                          >
+                            {transaction.balance.toLocaleString()}
+                          </span>
+                        ) : (
+                          "0"
+                        )}
+                      </TableCell>
                     <TableCell className="py-4 align-middle">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -927,7 +978,23 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                                 customerAdjustments[
                                   transaction.adjustmentIndex ?? 0
                                 ]?.id;
-                              setSelectedAdjustmentId(transaction?.adjustmentId ?? null);
+                              setSelectedAdjustmentId(
+                                transaction?.adjustmentId ?? null,
+                              );
+                              // Find the liability cause ID from customerAdjustments
+                              const adjustment = customerAdjustments.find(
+                                (adj) =>
+                                  adj.debitCreditAdjustInfo?.some(
+                                    (info) =>
+                                      info.id === transaction.adjustmentId,
+                                  ),
+                              );
+                              const liabilityCauseId =
+                                adjustment?.debitCreditAdjustInfo?.find(
+                                  (info) =>
+                                    info.id === transaction.adjustmentId,
+                                )?.liabilityCauseId ?? null;
+                              setSelectedLiabilityCauseId(liabilityCauseId);
                               setIsTransactionsDialogOpen(false);
                               setIsNestedDialogOpen(true);
                             }}
@@ -947,7 +1014,9 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                                   customerAdjustments[
                                     transaction.adjustmentIndex ?? 0
                                   ]?.id;
-                                setSelectedAdjustmentId(transaction?.adjustmentId ?? null);
+                                setSelectedAdjustmentId(
+                                  transaction?.adjustmentId ?? null,
+                                );
                                 setSelectedCustomer(selectedCustomer);
                                 setIsReconcileDialogOpen(true);
                               }}
@@ -964,7 +1033,115 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                       </DropdownMenu>
                     </TableCell>
                   </TableRow>
-                ))}
+                ))
+                ) : (
+                  liabilityTransactions.map((transaction, index) => (
+                    <TableRow key={index} className="h-16 py-4">
+                      <TableCell className="py-4 align-middle">
+                        <div className="flex items-center gap-2">
+                          <span>{index + 1}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-4 align-middle">
+                        {transaction.liabilityCause}
+                      </TableCell>
+                      <TableCell className="py-4 align-middle">
+                        {transaction.liabilityCode}
+                      </TableCell>
+                      <TableCell className="py-4 align-middle">
+                        {typeof transaction.balance === "number" ? (
+                          <span
+                            className={
+                              type === "credit"
+                                ? "rounded-full bg-[#E9FBF0] px-1.5 py-1.5 text-[#059E40]"
+                                : "rounded-full bg-[#FBE9E9] px-1.5 py-1.5 text-[#F50202]"
+                            }
+                          >
+                            {transaction.balance.toLocaleString()}
+                          </span>
+                        ) : (
+                          "0"
+                        )}
+                      </TableCell>
+                      <TableCell className="py-4 align-middle">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-8 w-8 cursor-pointer p-2 focus:ring-gray-300/2"
+                            >
+                              <MoreVertical size={14} />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent
+                            align="center"
+                            className="w-fit cursor-pointer"
+                          >
+                            <DropdownMenuItem
+                              onSelect={() => {
+                                const adjId =
+                                  transaction.adjustmentId ??
+                                  customerAdjustments[
+                                    transaction.adjustmentIndex ?? 0
+                                  ]?.id;
+                                setSelectedAdjustmentId(
+                                  transaction?.adjustmentId ?? null,
+                                );
+                                // Find the liability cause ID from customerAdjustments
+                                const adjustment = customerAdjustments.find(
+                                  (adj) =>
+                                    adj.debitCreditAdjustInfo?.some(
+                                      (info) =>
+                                        info.id === transaction.adjustmentId,
+                                    ),
+                                );
+                                const liabilityCauseId =
+                                  adjustment?.debitCreditAdjustInfo?.find(
+                                    (info) =>
+                                      info.id === transaction.adjustmentId,
+                                  )?.liabilityCauseId ?? null;
+                                setSelectedLiabilityCauseId(liabilityCauseId);
+                                setIsTransactionsDialogOpen(false);
+                                setIsNestedDialogOpen(true);
+                              }}
+                            >
+                              <div className="flex w-fit items-center gap-2">
+                                <Eye size={14} />
+                                <span className="cursor-pointer">
+                                  View Transactions
+                                </span>
+                              </div>
+                            </DropdownMenuItem>
+                            {type === "debit" && (
+                              <DropdownMenuItem
+                                onSelect={() => {
+                                  const adjId =
+                                    transaction.adjustmentId ??
+                                    customerAdjustments[
+                                      transaction.adjustmentIndex ?? 0
+                                    ]?.id;
+                                  setSelectedAdjustmentId(
+                                    transaction?.adjustmentId ?? null,
+                                  );
+                                  setSelectedCustomer(selectedCustomer);
+                                  setIsReconcileDialogOpen(true);
+                                }}
+                              >
+                                <div className="flex w-fit items-center gap-2">
+                                  <Wallet size={14} />
+                                  <span className="cursor-pointer">
+                                    Reconcile Debit
+                                  </span>
+                                </div>
+                              </DropdownMenuItem>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </div>
@@ -989,6 +1166,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
           setIsNestedDialogOpen(open);
           if (!open) {
             setSelectedAdjustmentId(null);
+            setSelectedLiabilityCauseId(null);
           }
         }}
       >
@@ -1010,13 +1188,17 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                 </p>
               </div>
             </div>
-            {/* Fix applied here to prevent crash */}
+            {/* Display liability cause name and code */}
             <p className="mb-4 ml-4 text-sm">
-              {selectedAdjustment?.debitCreditAdjustInfo?.[0]?.liabilityCause
-                ?.name ?? "N/A"}
+              {paymentHistory?.[0]?.liabilityCause?.name ??
+                selectedAdjustment?.debitCreditAdjustInfo?.[0]?.liabilityCause
+                  ?.name ??
+                "N/A"}
               :{" "}
-              {selectedAdjustment?.debitCreditAdjustInfo?.[0]?.liabilityCause
-                ?.code ?? "N/A"}
+              {paymentHistory?.[0]?.liabilityCause?.code ??
+                selectedAdjustment?.debitCreditAdjustInfo?.[0]?.liabilityCause
+                  ?.code ??
+                "N/A"}
             </p>
           </DialogHeader>
           <div className="overflow-x-hidden">
@@ -1037,70 +1219,96 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {nestedTransactions.map((transaction, index) => (
-                  <TableRow key={index} className="h-16 py-4">
-                    <TableCell className="py-4 align-middle">
-                      <span>{index + 1}</span>
-                    </TableCell>
-                    <TableCell className="py-4 align-middle">
-                      {transaction.date}
-                    </TableCell>
-                    {type === "credit" ? (
-                      <>
-                        <TableCell className="py-4 align-middle">
-                          {transaction.credit ? (
-                            <span className="rounded-full bg-[#E9FBF0] px-2 py-1 text-[#059E40]">
-                              {transaction.credit}
-                            </span>
-                          ) : (
-                            "-"
-                          )}
-                        </TableCell>
-                        <TableCell className="py-4 align-middle">
-                          {transaction.debit ? (
-                            <span className="rounded-full bg-[#FBE9E9] px-2 py-1 text-[#F50202]">
-                              {transaction.debit}
-                            </span>
-                          ) : (
-                            "-"
-                          )}
-                        </TableCell>
-                      </>
-                    ) : (
-                      <>
-                        <TableCell className="py-4 align-middle">
-                          {transaction.debit ? (
-                            <span className="rounded-full bg-[#FBE9E9] px-2 py-1 text-[#F50202]">
-                              {transaction.debit}
-                            </span>
-                          ) : (
-                            "-"
-                          )}
-                        </TableCell>
-                        <TableCell className="py-4 align-middle">
-                          {transaction.credit ? (
-                            <span className="rounded-full bg-[#E9FBF0] px-2 py-1 text-[#059E40]">
-                              {transaction.credit}
-                            </span>
-                          ) : (
-                            "-"
-                          )}
-                        </TableCell>
-                      </>
-                    )}
-                    <TableCell className="py-4 align-middle">
-                      <span
-                        className={
-                          type === "credit"
-                            ? "rounded-full bg-[#E9FBF0] px-2 py-1 text-[#059E40]"
-                            : "rounded-full bg-[#FBE9E9] px-2 py-1 text-[#F50202]"
-                        }
-                      >
-                        {transaction.balance.toLocaleString()}
-                      </span>
+                {isPaymentHistoryLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="h-24 text-center">
+                      <div className="flex flex-col items-center justify-center py-8">
+                        <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+                        <p className="mt-2 text-sm text-gray-500">
+                          Fetching payment history...
+                        </p>
+                      </div>
                     </TableCell>
                   </TableRow>
-                ))}
+                ) : paymentHistoryError ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="h-24 text-center">
+                      <div className="flex flex-col items-center justify-center py-8">
+                        <p className="text-lg font-medium text-red-500">
+                          Failed to load payment history
+                        </p>
+                        <p className="text-sm text-gray-400">
+                          Please check your network and try again.
+                        </p>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  nestedTransactions.map((transaction, index) => (
+                    <TableRow key={index} className="h-16 py-4">
+                      <TableCell className="py-4 align-middle">
+                        <span>{index + 1}</span>
+                      </TableCell>
+                      <TableCell className="py-4 align-middle">
+                        {transaction.date}
+                      </TableCell>
+                      {type === "credit" ? (
+                        <>
+                          <TableCell className="py-4 align-middle">
+                            {transaction.credit ? (
+                              <span className="rounded-full bg-[#E9FBF0] px-2 py-1 text-[#059E40]">
+                                {transaction.credit}
+                              </span>
+                            ) : (
+                              "-"
+                            )}
+                          </TableCell>
+                          <TableCell className="py-4 align-middle">
+                            {transaction.debit ? (
+                              <span className="rounded-full bg-[#FBE9E9] px-2 py-1 text-[#F50202]">
+                                {transaction.debit}
+                              </span>
+                            ) : (
+                              "-"
+                            )}
+                          </TableCell>
+                        </>
+                      ) : (
+                        <>
+                          <TableCell className="py-4 align-middle">
+                            {transaction.debit ? (
+                              <span className="rounded-full bg-[#FBE9E9] px-2 py-1 text-[#F50202]">
+                                {transaction.debit}
+                              </span>
+                            ) : (
+                              "-"
+                            )}
+                          </TableCell>
+                          <TableCell className="py-4 align-middle">
+                            {transaction.credit ? (
+                              <span className="rounded-full bg-[#E9FBF0] px-2 py-1 text-[#059E40]">
+                                {transaction.credit}
+                              </span>
+                            ) : (
+                              "-"
+                            )}
+                          </TableCell>
+                        </>
+                      )}
+                      <TableCell className="py-4 align-middle">
+                        <span
+                          className={
+                            type === "credit"
+                              ? "rounded-full bg-[#E9FBF0] px-2 py-1 text-[#059E40]"
+                              : "rounded-full bg-[#FBE9E9] px-2 py-1 text-[#F50202]"
+                          }
+                        >
+                          {transaction.balance.toLocaleString()}
+                        </span>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </div>
