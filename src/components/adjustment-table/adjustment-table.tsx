@@ -332,33 +332,33 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
   );
 
   const selectedAdjustment = useMemo(() => {
-    if (!selectedAdjustmentId || !allAdjustments) return null;
-    return allAdjustments.find((adj) =>
-      adj?.debitCreditAdjustInfo?.some(
-        (info) => info.id === selectedAdjustmentId,
-      ),
-    );
-  }, [selectedAdjustmentId, allAdjustments]);
+    if (!selectedMeterId || !allAdjustments) return null;
+    // Find the adjustment that matches the selected meter/customer
+    return allAdjustments.find((adj) => adj.id === selectedMeterId) ?? null;
+  }, [selectedMeterId, allAdjustments]);
 
   const nestedTransactions: Transaction[] = useMemo(() => {
     // Use payment history data if available
     if (paymentHistory && paymentHistory.length > 0) {
       const transactions: Transaction[] = [];
 
-      // Filter to only include items with liability codes
-      paymentHistory
-        .filter((item) => item.liabilityCause?.code)
-        .forEach((item) => {
-        // Add the main adjustment transaction only (without payment details)
-        transactions.push({
-          date: item.createdAt?.split(" ")[0] ?? "",
-          liabilityCause: item.liabilityCause?.name ?? "N/A",
-          liabilityCode: item.liabilityCause?.code ?? "",
-          credit: item.type === "credit" ? item.amount : "",
-          debit: item.type === "debit" ? item.amount : "",
-          balance: item.balance ?? 0,
-          adjustmentId: item.id,
-        });
+      // paymentHistory is PaymentHistoryTransaction[][] - each inner array contains transactions for a creditDebitAdjId
+      // Flatten all transactions from all arrays
+      paymentHistory.forEach((historyArray) => {
+        if (Array.isArray(historyArray)) {
+          historyArray.forEach((item) => {
+            transactions.push({
+              date: item.createdAt?.split(" ")[0] ?? "",
+              liabilityCause:
+                type === "credit" ? "Credit Adjustment" : "Debit Adjustment",
+              liabilityCode: item.creditDebitAdjId ?? "",
+              credit: item.credit > 0 ? item.credit : "",
+              debit: item.debt > 0 ? item.debt : "",
+              balance: item.balance ?? 0,
+              adjustmentId: item.id,
+            });
+          });
+        }
       });
 
       return transactions;
@@ -903,8 +903,8 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
               <div className="flex flex-col space-y-4 text-right">
                 <span className="text-md">Outstanding Balance</span>
                 <p className="text-muted-foreground text-2xl font-semibold">
-                  {paymentHistory?.[0]?.outstandingBalance?.toLocaleString() ??
-                    customerAdjustments[0]?.outstandingBalance?.toLocaleString() ??
+                  {paymentHistory?.[0]?.[0]?.outstandingBalance?.toLocaleString() ??
+                    selectedAdjustment?.debitCreditAdjustInfo?.[0]?.outstandingBalance?.toLocaleString() ??
                     0}
                 </p>
               </div>
@@ -1191,15 +1191,11 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
             </div>
             {/* Display liability cause name and code */}
             <p className="mb-4 ml-4 text-sm">
-              {paymentHistory?.[0]?.liabilityCause?.name ??
-                selectedAdjustment?.debitCreditAdjustInfo?.[0]?.liabilityCause
-                  ?.name ??
-                "N/A"}
+              {selectedAdjustment?.debitCreditAdjustInfo?.[0]?.liabilityCause
+                ?.name ?? "N/A"}
               :{" "}
-              {paymentHistory?.[0]?.liabilityCause?.code ??
-                selectedAdjustment?.debitCreditAdjustInfo?.[0]?.liabilityCause
-                  ?.code ??
-                "N/A"}
+              {selectedAdjustment?.debitCreditAdjustInfo?.[0]?.liabilityCause
+                ?.code ?? "N/A"}
             </p>
           </DialogHeader>
           <div className="overflow-x-hidden">

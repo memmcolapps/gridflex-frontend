@@ -160,10 +160,22 @@ export interface PaymentHistoryItem {
   updatedAt: string;
 }
 
+// New payment history item for the frequently-used-reports API
+export interface PaymentHistoryTransaction {
+  id: string;
+  creditDebitAdjId: string;
+  parentId?: string;
+  credit: number;
+  debt: number;
+  balance: number;
+  outstandingBalance: number;
+  createdAt: string;
+}
+
 export interface PaymentHistoryResponse {
   responsecode: string;
   responsedesc: string;
-  responsedata: PaymentHistoryItem[];
+  responsedata: PaymentHistoryTransaction[][];
 }
 
 export interface LiabilityCausePayload {

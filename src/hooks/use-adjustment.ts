@@ -12,7 +12,7 @@ import {
 import {
   type Adjustment,
   type AdjustmentPayload,
-  type PaymentHistoryItem,
+  type PaymentHistoryTransaction,
 } from "@/types/credit-debit";
 import { toast } from "sonner";
 
@@ -118,7 +118,7 @@ export const usePaymentHistory = (
   liabilityCauseId: string | null,
   type: "credit" | "debit",
 ) => {
-  return useQuery<PaymentHistoryItem[]>({
+  return useQuery<PaymentHistoryTransaction[][]>({
     queryKey: ["payment-history", meterId, liabilityCauseId, type],
     queryFn: async () => {
       if (!meterId || !liabilityCauseId) {

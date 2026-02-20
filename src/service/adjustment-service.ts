@@ -8,6 +8,7 @@ import {
   type Meter,
   type LiabilityCause,
   type PaymentHistoryItem,
+  type PaymentHistoryTransaction,
   type PaymentHistoryResponse,
 } from "@/types/credit-debit";
 import { env } from "@/env";
@@ -243,7 +244,7 @@ export const fetchPaymentHistory = async (
   liabilityCauseId: string | undefined,
   type: "credit" | "debit",
 ): Promise<
-  | { success: true; data: PaymentHistoryItem[] }
+  | { success: true; data: PaymentHistoryTransaction[][] }
   | { success: false; error: string }
 > => {
   try {
@@ -262,6 +263,55 @@ export const fetchPaymentHistory = async (
       `${API_URL}/debit-credit-adjustment/service/payment-history`,
       {
         params,
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    if (response.data?.responsecode !== "000" || !response.data?.responsedata) {
+      return {
+        success: false,
+        error:
+          response.data?.responsedesc || "Failed to fetch payment history.",
+      };
+    }
+
+    return {
+      success: true,
+      data: response.data.responsedata,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: handleApiError(error).message,
+    };
+  }
+};
+
+// New function to fetch payment history for frequently-used-reports
+// Returns PaymentHistoryTransaction[][] based on the new API response structure
+export const fetchPaymentHistoryTransactions = async (
+  meterId: string,
+  liabilityCauseId: string,
+  type: "credit" | "debit",
+): Promise<
+  | { success: true; data: PaymentHistoryTransaction[][] }
+  | { success: false; error: string }
+> => {
+  try {
+    const token = localStorage.getItem("auth_token");
+
+    const response = await axiosInstance.get<PaymentHistoryResponse>(
+      `${API_URL}/debit-credit-adjustment/service/payment-history`,
+      {
+        params: {
+          meterId,
+          liabilityCauseId,
+          type,
+        },
         headers: {
           "Content-Type": "application/json",
           custom: CUSTOM_HEADER,
