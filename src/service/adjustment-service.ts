@@ -202,15 +202,13 @@ export const reconcileDebit = async (
   try {
     const token = localStorage.getItem("auth_token");
 
-    // Corrected to use POST request with URL parameters
     const response = await axiosInstance.post(
       `${API_URL}/debit-credit-adjustment/service/reconcile-dept`,
-      null,
       {
-        params: {
-          debitCreditAdjustmentId,
-          amount,
-        },
+        debitCreditAdjustmentId,
+        amount,
+      },
+      {
         headers: {
           "Content-Type": "application/json",
           custom: CUSTOM_HEADER,
