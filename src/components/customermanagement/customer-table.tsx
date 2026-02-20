@@ -200,7 +200,9 @@ export default function CustomerTable({
                 {canEdit && (
                   <DropdownMenuItem onSelect={() => onBlockCustomer(customer)}>
                     <div className="flex w-full items-center gap-2">
-                      <span className="cursor-pointer">Block</span>
+                      <span className="cursor-pointer">
+                        {customer.status.toString() === 'Block' ? 'Unblock' : 'Block'}
+                      </span>
                     </div>
                   </DropdownMenuItem>
                 )}

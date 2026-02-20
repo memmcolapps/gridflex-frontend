@@ -199,6 +199,45 @@ export async function blockCustomer({
   }
 }
 
+export async function unblockCustomer({
+  customerId,
+  reason,
+}: BlockCustomerPayload): Promise<CustomerMutationResponse> {
+  try {
+    const token = localStorage.getItem("auth_token");
+    if (!token) {
+      throw new Error("Authentication token not found.");
+    }
+
+    const formData = new FormData();
+    formData.append("customerId", customerId);
+    formData.append("status", "active");
+    formData.append("reason", reason);
+
+    const response = await axiosInstance.patch(
+      `${API_URL}/customer/service/change-state`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    if (response.data.responsecode !== "000") {
+      throw new Error(
+        response.data.responsedesc ?? "Failed to unblock customer.",
+      );
+    }
+
+    return response.data;
+  } catch (error) {
+    throw new Error(handleApiError(error));
+  }
+}
+
 export async function bulkUploadCustomers(
   file: File,
 ): Promise<CustomerMutationResponse> {
