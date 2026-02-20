@@ -1054,7 +1054,7 @@ export default function MeterManagementPage() {
                                   View Details
                                 </span>
                               </DropdownMenuItem>
-                              {canEdit && item.status !== "Unassigned" && (
+                              {canEdit && item.meterStage !== "Assigned" && (
                                 <DropdownMenuItem
                                   className="flex cursor-pointer items-center gap-2"
                                   onClick={(event) => {

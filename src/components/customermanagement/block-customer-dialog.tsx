@@ -15,7 +15,7 @@ import { Label } from "@/components/ui/label";
 import { type Customer } from "@/types/customer-types";
 import { X } from "lucide-react";
 import { toast } from "sonner";
-import { useBlockCustomer } from "@/hooks/use-customer";
+import { useBlockCustomer, useUnblockCustomer } from "@/hooks/use-customer";
 import { useQueryClient } from "@tanstack/react-query";
 
 interface BlockCustomerDialogProps {
@@ -27,6 +27,7 @@ interface BlockCustomerDialogProps {
     blockReason: string;
     setBlockReason: (reason: string) => void;
     onConfirmBlock: () => void;
+    onConfirmUnblock: () => void;
 }
 
 export default function BlockCustomerDialog({
@@ -38,9 +39,13 @@ export default function BlockCustomerDialog({
     blockReason,
     setBlockReason,
     onConfirmBlock,
+    onConfirmUnblock,
 }: BlockCustomerDialogProps) {
     const queryClient = useQueryClient();
     const blockMutation = useBlockCustomer();
+    const unblockMutation = useUnblockCustomer();
+
+    const isBlocked = customer?.status.toString() === "Block";
 
     const blockReasons = [
         "Abusive behavior",
@@ -52,7 +57,6 @@ export default function BlockCustomerDialog({
 
     const handleBlockAction = async () => {
         if (!customer) return;
-
         try {
             await blockMutation.mutateAsync({ customerId: customer.id, reason: blockReason });
             toast.success("Customer blocked successfully!");
@@ -67,7 +71,20 @@ export default function BlockCustomerDialog({
         }
     };
 
-    // The component will now always render, but the content will be null if no customer exists.
+    const handleUnblockAction = async () => {
+        if (!customer) return;
+        try {
+            await unblockMutation.mutateAsync({ customerId: customer.id , reason: "Customer unblocked by admin" });
+            toast.success("Customer unblocked successfully!");
+            queryClient.invalidateQueries({ queryKey: ["customers"] });
+            onConfirmUnblock();
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : "An unknown error occurred.");
+        } finally {
+            setIsBlockOpen(false);
+        }
+    };
+
     if (!customer) {
         return null;
     }
@@ -87,41 +104,56 @@ export default function BlockCustomerDialog({
                             <X size={16} className="text-gray-700 cursor-pointer" />
                         </button>
                     </AlertDialogCancel>
+
                     <div className="flex flex-col space-y-4 mt-10">
                         <AlertDialogHeader className="space-y-1">
                             <AlertDialogTitle className="text-lg font-semibold">
-                                Block {customer.firstName}
+                                {isBlocked ? `Unblock ${customer.firstName}` : `Block ${customer.firstName}`}
                             </AlertDialogTitle>
                         </AlertDialogHeader>
-                        <div className="space-y-2">
-                            <div className="w-full">
-                                <Label htmlFor="blockReason" className="text-sm font-medium text-gray-700">
-                                    Reason
-                                </Label>
-                                <div>
-                                    <div className="relative">
-                                        <select
-                                            id="blockReason"
-                                            value={blockReason}
-                                            onChange={(e) => setBlockReason(e.target.value)}
-                                            className="w-full p-2 border border-gray-300 rounded-md focus:ring-ring focus:border-ring bg-background text-foreground ring-gray-50/10"
-                                            required
-                                        >
-                                            <option value="">Select a reason to block</option>
-                                            {blockReasons.map((reason) => (
-                                                <option key={reason} value={reason}>
-                                                    {reason}
-                                                </option>
-                                            ))}
-                                        </select>
+
+                        {isBlocked ? (
+                            <AlertDialogDescription className="text-sm text-gray-600">
+                                Are you sure you want to unblock{" "}
+                                <span className="font-medium">{customer.firstName}</span>? They will
+                                regain full access to the platform.
+                            </AlertDialogDescription>
+                        ) : (
+                            <div className="space-y-2">
+                                <div className="w-full">
+                                    <Label htmlFor="blockReason" className="text-sm font-medium text-gray-700">
+                                        Reason
+                                    </Label>
+                                    <div>
+                                        <div className="relative">
+                                            <select
+                                                id="blockReason"
+                                                value={blockReason}
+                                                onChange={(e) => setBlockReason(e.target.value)}
+                                                className="w-full p-2 border border-gray-300 rounded-md focus:ring-ring focus:border-ring bg-background text-foreground ring-gray-50/10"
+                                                required
+                                            >
+                                                <option value="">Select a reason to block</option>
+                                                {blockReasons.map((reason) => (
+                                                    <option key={reason} value={reason}>
+                                                        {reason}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        )}
+
                         <AlertDialogFooter className="flex justify-between pt-4">
                             <div className="flex justify-start w-1/2">
                                 <AlertDialogCancel
-                                    className="border border-red-600 text-red-600 hover:bg-gray-50 px-4 py-2 rounded-md font-medium cursor-pointer"
+                                    className={`border px-4 py-2 rounded-md font-medium cursor-pointer hover:bg-gray-50 ${
+                                        isBlocked
+                                            ? "border-[#161CCA] text-[#161CCA]"
+                                            : "border-red-600 text-red-600"
+                                    }`}
                                     onClick={() => {
                                         setIsBlockOpen(false);
                                         setBlockReason("");
@@ -131,19 +163,29 @@ export default function BlockCustomerDialog({
                                 </AlertDialogCancel>
                             </div>
                             <div className="flex justify-end w-1/2">
-                                <AlertDialogAction
-                                    onClick={() => {
-                                        if (!blockReason) {
-                                            alert("Please select a reason for blocking.");
-                                            return;
-                                        }
-                                        setIsConfirmBlockOpen(true);
-                                    }}
-                                    className="bg-red-600 text-white hover:bg-red-700 px-4 py-2 rounded-md font-medium cursor-pointer"
-                                    disabled={!blockReason}
-                                >
-                                    Block
-                                </AlertDialogAction>
+                                {isBlocked ? (
+                                    <AlertDialogAction
+                                        onClick={handleUnblockAction}
+                                        className="bg-[#161CCA] text-white hover:bg-blue-700 px-4 py-2 rounded-md font-medium cursor-pointer"
+                                        disabled={unblockMutation.isPending}
+                                    >
+                                        {unblockMutation.isPending ? "Unblocking..." : "Unblock"}
+                                    </AlertDialogAction>
+                                ) : (
+                                    <AlertDialogAction
+                                        onClick={() => {
+                                            if (!blockReason) {
+                                                alert("Please select a reason for blocking.");
+                                                return;
+                                            }
+                                            setIsConfirmBlockOpen(true);
+                                        }}
+                                        className="bg-red-600 text-white hover:bg-red-700 px-4 py-2 rounded-md font-medium cursor-pointer"
+                                        disabled={!blockReason}
+                                    >
+                                        Block
+                                    </AlertDialogAction>
+                                )}
                             </div>
                         </AlertDialogFooter>
                     </div>
@@ -191,8 +233,9 @@ export default function BlockCustomerDialog({
                             </div>
                             <div className="flex justify-end w-1/2">
                                 <AlertDialogAction
-                                    onClick={handleBlockAction} // Use the new handler function
+                                    onClick={handleBlockAction}
                                     className="bg-red-600 text-white hover:bg-red-700 px-6 py-2 rounded-md font-medium"
+                                    disabled={blockMutation.isPending}
                                 >
                                     {blockMutation.isPending ? "Blocking..." : "Block"}
                                 </AlertDialogAction>

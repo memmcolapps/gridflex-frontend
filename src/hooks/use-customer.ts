@@ -2,14 +2,15 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-    getCustomers,
-    addCustomer,
-    updateCustomer,
-    blockCustomer,
-    fetchCustomerRecord,
-    bulkUploadCustomers,
-    downloadCustomerCsvTemplate,
-    downloadCustomerExcelTemplate,
+  getCustomers,
+  addCustomer,
+  updateCustomer,
+  blockCustomer,
+  fetchCustomerRecord,
+  bulkUploadCustomers,
+  downloadCustomerCsvTemplate,
+  downloadCustomerExcelTemplate,
+  unblockCustomer,
 } from "../service/customer-service";
 import {
     type Customer,
@@ -21,21 +22,21 @@ import {
 import type { FetchCustomerResponse } from "@/service/customer-service";
 
 export interface UseCustomersParams {
-    page: number;
-    pageSize: number;
-    searchTerm: string;
-    sortBy?: keyof Customer | null;
-    sortDirection?: "asc" | "desc" | null;
+  page: number;
+  pageSize: number;
+  searchTerm: string;
+  sortBy?: keyof Customer | null;
+  sortDirection?: "asc" | "desc" | null;
 }
 
 /**
  * A hook to fetch a paginated, searchable, and sortable list of customers.
  */
 export const useCustomers = ({ page, pageSize, searchTerm, sortBy, sortDirection }: UseCustomersParams) => {
-    return useQuery<CustomersApiResponse, Error>({
-        queryKey: ["customers", page, pageSize, searchTerm, sortBy, sortDirection],
+  return useQuery<CustomersApiResponse, Error>({
+    queryKey: ["customers", page, pageSize, searchTerm, sortBy, sortDirection],
         queryFn: () => getCustomers({ page, pageSize, searchTerm, sortBy: sortBy ?? null, sortDirection: sortDirection ?? null }),
-    });
+  });
 };
 
 /**
@@ -43,13 +44,13 @@ export const useCustomers = ({ page, pageSize, searchTerm, sortBy, sortDirection
  * It returns a mutation object to be used in components.
  */
 export const useAddCustomer = () => {
-    const queryClient = useQueryClient();
-    return useMutation<unknown, Error, AddCustomerPayload>({
-        mutationFn: addCustomer,
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["customers"] });
-        },
-    });
+  const queryClient = useQueryClient();
+  return useMutation<unknown, Error, AddCustomerPayload>({
+    mutationFn: addCustomer,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["customers"] });
+    },
+  });
 };
 
 /**
@@ -57,13 +58,13 @@ export const useAddCustomer = () => {
  * It returns a mutation object to be used in components.
  */
 export const useUpdateCustomer = () => {
-    const queryClient = useQueryClient();
-    return useMutation<unknown, Error, UpdateCustomerPayload>({
-        mutationFn: updateCustomer,
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["customers"] });
-        },
-    });
+  const queryClient = useQueryClient();
+  return useMutation<unknown, Error, UpdateCustomerPayload>({
+    mutationFn: updateCustomer,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["customers"] });
+    },
+  });
 };
 
 /**
@@ -71,13 +72,23 @@ export const useUpdateCustomer = () => {
  * It returns a mutation object to be used in components.
  */
 export const useBlockCustomer = () => {
-    const queryClient = useQueryClient();
-    return useMutation<unknown, Error, BlockCustomerPayload>({
-        mutationFn: blockCustomer,
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["customers"] });
-        },
-    });
+  const queryClient = useQueryClient();
+  return useMutation<unknown, Error, BlockCustomerPayload>({
+    mutationFn: blockCustomer,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["customers"] });
+    },
+  });
+};
+
+export const useUnblockCustomer = () => {
+  const queryClient = useQueryClient();
+  return useMutation<unknown, Error, BlockCustomerPayload>({
+    mutationFn: unblockCustomer,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["customers"] });
+    },
+  });
 };
 
 /**
@@ -87,13 +98,13 @@ export const useBlockCustomer = () => {
  * @returns The query result object.
  */
 export const useCustomerRecordQuery = (customerId: string) => {
-    return useQuery<FetchCustomerResponse, Error>({
-        queryKey: ["customerRecord", customerId],
-        queryFn: () => fetchCustomerRecord(customerId),
-        enabled: !!customerId,
-        staleTime: 1000 * 60 * 5,
-        refetchOnWindowFocus: false,
-    });
+  return useQuery<FetchCustomerResponse, Error>({
+    queryKey: ["customerRecord", customerId],
+    queryFn: () => fetchCustomerRecord(customerId),
+    enabled: !!customerId,
+    staleTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: false,
+  });
 };
 
 /**
@@ -101,13 +112,13 @@ export const useCustomerRecordQuery = (customerId: string) => {
  * It returns a mutation object to be used in components.
  */
 export const useBulkUploadCustomer = () => {
-    const queryClient = useQueryClient();
-    return useMutation<unknown, Error, File>({
-        mutationFn: bulkUploadCustomers,
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["customers"] });
-        },
-    });
+  const queryClient = useQueryClient();
+  return useMutation<unknown, Error, File>({
+    mutationFn: bulkUploadCustomers,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["customers"] });
+    },
+  });
 };
 
 /**
@@ -115,9 +126,9 @@ export const useBulkUploadCustomer = () => {
  * It returns a mutation object to be used in components.
  */
 export const useDownloadCustomerCsvTemplate = () => {
-    return useMutation<void, Error, void>({
-        mutationFn: downloadCustomerCsvTemplate,
-    });
+  return useMutation<void, Error, void>({
+    mutationFn: downloadCustomerCsvTemplate,
+  });
 };
 
 /**
@@ -125,7 +136,7 @@ export const useDownloadCustomerCsvTemplate = () => {
  * It returns a mutation object to be used in components.
  */
 export const useDownloadCustomerExcelTemplate = () => {
-    return useMutation<void, Error, void>({
-        mutationFn: downloadCustomerExcelTemplate,
-    });
+  return useMutation<void, Error, void>({
+    mutationFn: downloadCustomerExcelTemplate,
+  });
 };

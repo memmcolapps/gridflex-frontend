@@ -552,7 +552,7 @@ const LiabilityTable = ({ view, onViewChange, onDataChange }: LiabilityTableProp
                                     <div>
                                         <Label htmlFor="band" className="mb-2">Band</Label>
                                         <Select
-                                            value={"band" in editFormData ? (editFormData.band as unknown as Band)?.name ?? "" : ""}
+                                            value={"band" in editFormData ? editFormData.band ?? "" : ""}
                                             onValueChange={handleEditSelectChange}
                                         >
                                             <SelectTrigger className="w-full border-[#bebebe] focus:ring-ring/50 rounded-md h-10 px-3">
