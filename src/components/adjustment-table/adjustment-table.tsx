@@ -90,6 +90,11 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
     const group = new Map<string, Customer>();
 
     allAdjustments.forEach((adj) => {
+      // Skip adjustments without debitCreditAdjustInfo or with no balance
+      if (!adj.debitCreditAdjustInfo || adj.debitCreditAdjustInfo.length === 0) {
+        return;
+      }
+
       // Customer info is now directly on the adjustment
       const cust = adj.customer;
       const name = cust ? `${cust.firstname} ${cust.lastname}` : "N/A";
@@ -100,11 +105,13 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
       const id = adj.id;
 
       // Get outstandingBalance from debitCreditAdjustInfo array
-      const debitInfo =
-        adj.debitCreditAdjustInfo && adj.debitCreditAdjustInfo.length > 0
-          ? adj.debitCreditAdjustInfo[0]
-          : null;
+      const debitInfo = adj.debitCreditAdjustInfo[0];
       const balance = debitInfo?.outstandingBalance ?? 0;
+
+      // Skip if there's no balance
+      if (balance <= 0) {
+        return;
+      }
 
       if (id && !group.has(id)) {
         group.set(id, {
@@ -366,48 +373,54 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
     // Fallback to original logic if payment history is not available
     if (!selectedAdjustment) return [];
 
+    // Check if debitCreditAdjustInfo exists and has items
+    if (!selectedAdjustment.debitCreditAdjustInfo || selectedAdjustment.debitCreditAdjustInfo.length === 0) {
+      return [];
+    }
+
     const transactions: PaymentHistoryTransaction[] = [];
 
     // Get adjustment data from debitCreditAdjustInfo array
-    const debitInfo =
-      selectedAdjustment.debitCreditAdjustInfo &&
-      selectedAdjustment.debitCreditAdjustInfo.length > 0
-        ? selectedAdjustment.debitCreditAdjustInfo[0]
-        : null;
+    const debitInfo = selectedAdjustment.debitCreditAdjustInfo[0];
 
-    // Push the initial adjustment transaction
-    transactions.push({
-      id: selectedAdjustment.id ?? "",
-      creditDebitAdjId: debitInfo?.liabilityCause?.code ?? "",
-      credit: debitInfo?.type === "credit" ? (debitInfo?.totalBalance ?? 0) : 0,
-      debt: debitInfo?.type === "debit" ? (debitInfo?.totalBalance ?? 0) : 0,
-      balance: debitInfo?.totalBalance ?? 0,
-      outstandingBalance: debitInfo?.outstandingBalance ?? 0,
-      createdAt: selectedAdjustment.createdAt ?? "",
-    });
-
-    let runningBalance = debitInfo?.totalBalance ?? 0;
-    (debitInfo?.payment ?? [])
-      .filter(
-        (pay): pay is Required<Payment> & { createdAt: string } =>
-          !!pay.createdAt,
-      )
-      .sort(
-        (a, b) =>
-          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-      )
-      .forEach((pay) => {
-        runningBalance -= pay.credit;
-        transactions.push({
-          id: pay.id ?? "",
-          creditDebitAdjId: "",
-          credit: pay.credit,
-          debt: 0,
-          balance: runningBalance,
-          outstandingBalance: runningBalance,
-          createdAt: pay.createdAt ?? "",
-        });
+    // Only push initial adjustment transaction if there's actual balance data
+    if (debitInfo && debitInfo.totalBalance > 0) {
+      transactions.push({
+        id: selectedAdjustment.id ?? "",
+        creditDebitAdjId: debitInfo?.liabilityCause?.code ?? "",
+        credit: debitInfo?.type === "credit" ? (debitInfo?.totalBalance ?? 0) : 0,
+        debt: debitInfo?.type === "debit" ? (debitInfo?.totalBalance ?? 0) : 0,
+        balance: debitInfo?.totalBalance ?? 0,
+        outstandingBalance: debitInfo?.outstandingBalance ?? 0,
+        createdAt: selectedAdjustment.createdAt ?? "",
       });
+    }
+
+    // Only add payment transactions if there are payments
+    if (debitInfo?.payment && debitInfo.payment.length > 0) {
+      let runningBalance = debitInfo?.totalBalance ?? 0;
+      (debitInfo.payment)
+        .filter(
+          (pay): pay is Required<Payment> & { createdAt: string } =>
+            !!pay.createdAt,
+        )
+        .sort(
+          (a, b) =>
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+        )
+        .forEach((pay) => {
+          runningBalance -= pay.credit;
+          transactions.push({
+            id: pay.id ?? "",
+            creditDebitAdjId: "",
+            credit: pay.credit,
+            debt: 0,
+            balance: runningBalance,
+            outstandingBalance: runningBalance,
+            createdAt: pay.createdAt ?? "",
+          });
+        });
+    }
 
     return transactions;
   }, [selectedAdjustment, paymentHistory]);
@@ -1206,7 +1219,20 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {isPaymentHistoryLoading ? (
+                {nestedTransactions.length === 0 || (nestedTransactions.length === 1 && nestedTransactions[0]?.credit === 0 && nestedTransactions[0]?.debt === 0 && nestedTransactions[0]?.balance === 0) ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="h-24 text-center">
+                      <div className="flex flex-col items-center justify-center py-8">
+                        <p className="text-lg font-medium text-gray-500">
+                          No Transactions Found
+                        </p>
+                        <p className="text-sm text-gray-400">
+                          No {type} transactions available for this adjustment.
+                        </p>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : isPaymentHistoryLoading ? (
                   <TableRow>
                     <TableCell colSpan={5} className="h-24 text-center">
                       <div className="flex flex-col items-center justify-center py-8">
