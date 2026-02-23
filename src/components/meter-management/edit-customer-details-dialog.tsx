@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import type { MeterInventoryItem } from "@/types/meter-inventory";
+import type { Tariff } from "@/service/tarriff-service";
 import { EditPaymentDialog } from "@/components/meter-management/edit-payment-dialog";
 import { useNigerianStates, useNigerianCities } from "@/hooks/use-location";
 import { useFeeders, useDSS } from "@/hooks/use-node";
@@ -53,6 +54,8 @@ interface EditCustomerDetailsDialogProps {
   setAccountNumber: (value: string) => void;
   tariff: string;
   setTariff: (value: string) => void;
+  tariffs: Tariff[];
+  isLoadingTariffs: boolean;
   feeder: string;
   setFeeder: (value: string) => void;
   dss: string;
@@ -85,6 +88,8 @@ export function EditCustomerDetailsDialog({
   setAccountNumber,
   tariff,
   setTariff,
+  tariffs,
+  isLoadingTariffs,
   feeder,
   setFeeder,
   dss,
@@ -113,6 +118,7 @@ export function EditCustomerDetailsDialog({
   const [creditPaymentPlan, setCreditPaymentPlan] = useState("");
 
   // Dropdown open states
+  const [tariffOpen, setTariffOpen] = useState(false);
   const [feederOpen, setFeederOpen] = useState(false);
   const [dssOpen, setDssOpen] = useState(false);
 
@@ -242,12 +248,68 @@ export function EditCustomerDetailsDialog({
                 <Label>
                   Tariff<span className="text-red-700">*</span>
                 </Label>
-                <Input
-                  value={tariff}
-                  onChange={(e) => setTariff(e.target.value)}
-                  // placeholder="Enter CIN"
-                  className="border-gray-200 text-gray-600"
-                />
+                <Popover open={tariffOpen} onOpenChange={setTariffOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={tariffOpen}
+                      className="w-full justify-between border-gray-200 text-gray-600"
+                      disabled={isLoadingTariffs}
+                    >
+                      {tariff
+                        ? (tariffs.find((t) => t.id === tariff)?.name ??
+                          tariffs.find((t) => t.name === tariff)?.name ??
+                          "Select tariff...")
+                        : isLoadingTariffs
+                          ? "Loading tariffs..."
+                          : "Select tariff..."}
+                      <ChevronsUpDown
+                        className="ml-2 h-4 w-4 shrink-0 opacity-50"
+                        size={14}
+                      />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full border-none p-0">
+                    <Command className="border-none bg-white">
+                      <CommandInput
+                        placeholder="Search tariff..."
+                        className="border-none"
+                      />
+                      <CommandList>
+                        <CommandEmpty>No tariff found.</CommandEmpty>
+                        <CommandGroup>
+                          {tariffs?.map((tariffItem) => (
+                            <CommandItem
+                              key={tariffItem.id}
+                              value={tariffItem.name}
+                              onSelect={() => {
+                                const selectedId =
+                                  tariffItem.id === tariff ||
+                                  tariffItem.name === tariff
+                                    ? ""
+                                    : tariffItem.id;
+                                setTariff(selectedId);
+                                setTariffOpen(false);
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 !h-3.5 !w-3.5",
+                                  tariff === tariffItem.id ||
+                                    tariff === tariffItem.name
+                                    ? "opacity-100"
+                                    : "opacity-0",
+                                )}
+                              />
+                              {tariffItem.name}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               </div>
               <div className="space-y-2">
                 <Label>
