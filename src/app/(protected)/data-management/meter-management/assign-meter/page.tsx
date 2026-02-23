@@ -37,6 +37,7 @@ import {
   useMigrateMeter,
   useAssignMeter,
 } from "@/hooks/use-assign-meter";
+import { useTariff } from "@/hooks/use-tarrif";
 import { cn } from "@/lib/utils";
 import type { VirtualMeterData } from "@/types/meter";
 import type { MeterInventoryItem } from "@/types/meter-inventory";
@@ -140,6 +141,9 @@ export default function AssignMeterPage() {
   const detachMeterMutation = useDetachMeter();
   const migrateMeterMutation = useMigrateMeter();
   const assignMeterMutation = useAssignMeter();
+
+  // Fetch tariffs using the useTariff hook
+  const { tariffs, isLoading: isLoadingTariffs } = useTariff();
 
   // Fetch meter data using the API
   const { data: metersData, isLoading } = useMeters({
@@ -969,6 +973,8 @@ export default function AssignMeterPage() {
         setAccountNumber={setAccountNumber}
         tariff={tariff}
         setTariff={setTariff}
+        tariffs={tariffs}
+        isLoadingTariffs={isLoadingTariffs}
         feeder={feeder}
         setFeeder={setFeeder}
         dss={dss}
