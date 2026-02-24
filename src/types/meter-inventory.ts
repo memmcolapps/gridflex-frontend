@@ -55,6 +55,17 @@ export interface MeterInventoryItem {
     createdAt: string;
     updatedAt: string;
   };
+  meterAssignLocation?: {
+    id: string;
+    orgId: string;
+    meterId: string;
+    state: string;
+    city: string;
+    houseNo: string;
+    streetName: string;
+    createdAt: string;
+    updatedAt: string;
+  };
   id?: string;
   meterNumber: string;
   meterManufacturer: string;

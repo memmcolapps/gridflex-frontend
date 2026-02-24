@@ -132,6 +132,7 @@ const mapToFrontendMeter = (
     feederInfo: apiItem.feederInfo,
     dssInfo: apiItem.dssInfo,
     tariffInfo: apiItem.tariffInfo,
+    meterAssignLocation: apiItem.meterAssignLocation,
     debitMop: apiItem.paymentMode?.debitPaymentMode,
     creditMop: apiItem.paymentMode?.creditPaymentMode,
     debitPaymentPlan: apiItem.paymentMode?.debitPaymentPlan,

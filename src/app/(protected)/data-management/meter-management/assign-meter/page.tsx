@@ -299,16 +299,27 @@ export default function AssignMeterPage() {
   const handleEditDetails = (
     customer: MeterInventoryItem | VirtualMeterData,
   ) => {
+    // Debug: Log the full customer object to see meterAssignLocation
+    console.log("FULL CUSTOMER OBJECT:", JSON.stringify(customer, null, 2));
+    
+    // Get state and city from meterAssignLocation ONLY (not customer fallback)
+    const customerState = (customer as any).meterAssignLocation?.state ?? "";
+    const customerCity = (customer as any).meterAssignLocation?.city ?? "";
+    const customerStreetName = (customer as any).meterAssignLocation?.streetName ?? "";
+    const customerHouseNo = (customer as any).meterAssignLocation?.houseNo ?? "";
+
+    console.log("meterAssignLocation - state:", customerState, "city:", customerCity);
+
     if ("meterManufacturer" in customer) {
       setEditCustomer({
         ...customer,
         tariff: customer.tariff ?? "",
         feederLine: customer.feederLine ?? "",
         dss: customer.dss ?? "",
-        state: customer.state ?? "",
-        city: customer.city ?? "",
-        streetName: customer.streetName ?? "",
-        houseNo: customer.houseNo ?? "",
+        state: customerState,
+        city: customerCity,
+        streetName: customerStreetName,
+        houseNo: customerHouseNo,
       });
       setMeterNumber(customer.meterNumber ?? "");
       setCin(customer.cin ?? "");
@@ -318,14 +329,29 @@ export default function AssignMeterPage() {
       setFeeder(customer.feederInfo?.assetId ?? customer.feederLine ?? "");
       // Use dssInfo.assetId if available, otherwise fall back to dss (name)
       setDss(customer.dssInfo?.assetId ?? customer.dss ?? "");
-      setState(customer.state ?? "");
-      setCity(customer.city ?? "");
-      setStreetName(customer.streetName ?? "");
-      setHouseNo(customer.houseNo ?? "");
+      setState(customerState);
+      setCity(customerCity);
+      setStreetName(customerStreetName);
+      setHouseNo(customerHouseNo);
       setDebitMop(customer.debitMop ?? "");
       setCreditMop(customer.creditMop ?? "");
       setDebitPaymentPlan(customer.debitPaymentPlan ?? "");
       setCreditPaymentPlan(customer.creditPaymentPlan ?? "");
+      setProgress(50);
+      setIsEditModalOpen(true);
+    } else {
+      // Handle VirtualMeterData - cast to MeterInventoryItem for editCustomer state
+      setEditCustomer(customer as MeterInventoryItem);
+      setMeterNumber(customer.meterNumber ?? "");
+      setCin(customer.cin ?? "");
+      setAccountNumber(customer.accountNumber ?? "");
+      setTariff(customer.tariff ?? "");
+      setFeeder(customer.feederInfo?.assetId ?? (customer as any).feeder ?? "");
+      setDss(customer.dssInfo?.assetId ?? customer.dss ?? "");
+      setState(customerState);
+      setCity(customerCity);
+      setStreetName(customerStreetName);
+      setHouseNo(customerHouseNo);
       setProgress(50);
       setIsEditModalOpen(true);
     }

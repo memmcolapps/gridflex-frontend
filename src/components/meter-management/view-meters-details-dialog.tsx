@@ -60,7 +60,7 @@ export function ViewMeterDetailsDialog({ isOpen, onClose, meter }: ViewMeterDeta
               <span className="text-gray-900 font-bold">{meter.category ?? "-"}</span>
             </div>
             <div className="grid grid-cols-[150px_1fr] items-center gap-16">
-              <span className="font-medium text-gray-700">Samart Meter:</span>
+              <span className="font-medium text-gray-700">Smart Meter:</span>
               <span className="text-gray-900 font-bold">{meter.smartStatus ?? "-"}</span>
             </div>
             <div className="grid grid-cols-[150px_1fr] items-center gap-16">
