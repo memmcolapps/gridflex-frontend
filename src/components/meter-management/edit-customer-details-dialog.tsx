@@ -129,6 +129,10 @@ export function EditCustomerDetailsDialog({
     isError: isErrorStates,
   } = useNigerianStates();
 
+  // Debug: Log state and city values
+  console.log("EditCustomerDetailsDialog - state:", state, "city:", city);
+  console.log("EditCustomerDetailsDialog - states list:", states?.slice(0, 5)); // First 5 states
+
   // Convert state name to ID format for fetching cities
   const stateId = state ? state.toLowerCase().replace(/\s+/g, "-") : "";
   const {
@@ -484,11 +488,17 @@ export function EditCustomerDetailsDialog({
                         No states found
                       </SelectItem>
                     ) : (
-                      states?.map((stateItem) => (
-                        <SelectItem key={stateItem.id} value={stateItem.name}>
-                          {stateItem.name}
-                        </SelectItem>
-                      ))
+                      <>
+                        {/* Add current state as option if not in list */}
+                        {state && !states?.find((s) => s.name === state) && (
+                          <SelectItem value={state}>{state}</SelectItem>
+                        )}
+                        {states?.map((stateItem) => (
+                          <SelectItem key={stateItem.id} value={stateItem.name}>
+                            {stateItem.name}
+                          </SelectItem>
+                        ))}
+                      </>
                     )}
                   </SelectContent>
                 </Select>
@@ -505,12 +515,13 @@ export function EditCustomerDetailsDialog({
                   <SelectTrigger className="w-full border-gray-100 text-gray-600">
                     <SelectValue
                       placeholder={
-                        city ||
-                        (isLoadingCities
-                          ? "Loading cities..."
-                          : state
-                            ? "Select City"
-                            : "Select a state first")
+                        city && city.trim() !== ""
+                          ? city
+                          : isLoadingCities
+                            ? "Loading cities..."
+                            : state && state.trim() !== ""
+                              ? "Select City"
+                              : "Select a state first"
                       }
                     />
                   </SelectTrigger>
@@ -524,15 +535,27 @@ export function EditCustomerDetailsDialog({
                         Error loading cities
                       </SelectItem>
                     ) : cities?.length === 0 && state ? (
-                      <SelectItem value="no-cities-found" disabled>
-                        No cities found for this state
-                      </SelectItem>
-                    ) : (
-                      cities?.map((cityItem) => (
-                        <SelectItem key={cityItem.name} value={cityItem.name}>
-                          {cityItem.name}
+                      <>
+                        {/* Add current city as option if not in list */}
+                        {city && !cities?.find((c) => c.name === city) && (
+                          <SelectItem value={city}>{city}</SelectItem>
+                        )}
+                        <SelectItem value="no-cities-found" disabled>
+                          No cities found for this state
                         </SelectItem>
-                      ))
+                      </>
+                    ) : (
+                      <>
+                        {/* Add current city as option if not in list */}
+                        {city && !cities?.find((c) => c.name === city) && (
+                          <SelectItem value={city}>{city}</SelectItem>
+                        )}
+                        {cities?.map((cityItem) => (
+                          <SelectItem key={cityItem.name} value={cityItem.name}>
+                            {cityItem.name}
+                          </SelectItem>
+                        ))}
+                      </>
                     )}
                   </SelectContent>
                 </Select>

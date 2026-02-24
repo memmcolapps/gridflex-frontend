@@ -94,10 +94,15 @@ export interface MeterAPIItem {
     houseNo: string;
   };
   meterAssignLocation: {
+    id: string;
+    orgId: string;
+    meterId: string;
     state: string;
     city: string;
     streetName: string;
     houseNo: string;
+    createdAt: string;
+    updatedAt: string;
   };
   paymentMode: {
     debitPaymentMode: string;
