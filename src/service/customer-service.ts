@@ -62,7 +62,8 @@ export async function getCustomers({
     }
 
     const params = new URLSearchParams();
-    params.append("page", String(page));
+    // API expects 0-based page index (page 0 = first page), UI uses 1-based
+    params.append("page", String(page - 1));
     params.append("pageSize", String(pageSize));
     if (searchTerm) {
       params.append("search", searchTerm);

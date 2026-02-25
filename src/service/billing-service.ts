@@ -398,7 +398,8 @@ export async function getMDEnergyImport({
     }
 
     const params = new URLSearchParams();
-    params.append("page", page.toString());
+    // API expects 0-based page index (page 0 = first page), UI uses 1-based
+    params.append("page", String(page - 1));
     params.append("size", size.toString());
     params.append("nodeId", nodeId);
 
@@ -453,7 +454,8 @@ export async function getMonthlyConsumption({
     }
 
     const params = new URLSearchParams();
-    params.append("page", page.toString());
+    // API expects 0-based page index (page 0 = first page), UI uses 1-based
+    params.append("page", String(page - 1));
     params.append("size", size.toString());
     params.append("virtual", virtual.toString());
 
@@ -507,7 +509,8 @@ export async function getEnergyImportList({
     }
 
     const params = new URLSearchParams();
-    params.append("page", page.toString());
+    // API expects 0-based page index (page 0 = first page), UI uses 1-based
+    params.append("page", String(page - 1));
     params.append("size", size.toString());
 
     if (search) {

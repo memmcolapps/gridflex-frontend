@@ -431,7 +431,7 @@ export async function printToken(
 }
 
 export async function calculateCreditToken(
- payload: CalculateCreditTokenPayload
+  payload: CalculateCreditTokenPayload,
 ): Promise<
   | { success: true; data: CalculateCreditTokenResponse["responsedata"] }
   | { success: false; error: string }
@@ -505,8 +505,9 @@ export async function getVendingTransactions(payload?: {
     }
 
     const params = new URLSearchParams();
+    // API expects 0-based page index (page 0 = first page), UI uses 1-based
     if (payload?.page !== undefined)
-      params.append("page", payload.page.toString());
+      params.append("page", String(payload.page - 1));
     if (payload?.size !== undefined)
       params.append("size", payload.size.toString());
 
@@ -558,8 +559,7 @@ export async function getVendingDashboardData(
     const params = new URLSearchParams();
     if (payload?.band) params.append("band", payload.band);
     if (payload?.year) params.append("year", payload.year);
-    if (payload?.meterClass)
-      params.append("meterClass", payload.meterClass);
+    if (payload?.meterClass) params.append("meterClass", payload.meterClass);
 
     const response = await axiosInstance.get<VendingDashboardResponse>(
       `${API_URL}/dashboard/service/vending?${params.toString()}`,

@@ -269,7 +269,8 @@ export async function getMeters({
     }
 
     const params = new URLSearchParams();
-    params.append("page", String(page));
+    // API expects 0-based page index (page 0 = first page), UI uses 1-based
+    params.append("page", String(page - 1));
     params.append("pageSize", String(pageSize));
     if (searchTerm) {
       params.append("search", searchTerm);
@@ -330,7 +331,9 @@ export async function saveMeter(
   }
 }
 
-export async function assignMeter(data: AssignMeterPayload | FormData): Promise<{
+export async function assignMeter(
+  data: AssignMeterPayload | FormData,
+): Promise<{
   responsecode: string;
   responsedesc: string;
   responsedata?: { meter: MeterAPIItem };
@@ -342,13 +345,15 @@ export async function assignMeter(data: AssignMeterPayload | FormData): Promise<
     }
 
     const isFormData = data instanceof FormData;
-    
+
     const response = await axiosInstance.post(
       `${API_URL}/meter/service/cin/assign`,
       data,
       {
         headers: {
-          "Content-Type": isFormData ? "multipart/form-data" : "application/json",
+          "Content-Type": isFormData
+            ? "multipart/form-data"
+            : "application/json",
           custom: CUSTOM_HEADER,
           Authorization: `Bearer ${token}`,
         },
@@ -381,13 +386,15 @@ export async function continueAssignMeter(
     }
 
     const isFormData = data instanceof FormData;
-    
+
     const response = await axiosInstance.post(
       `${API_URL}/api/meter/service/assign`,
       data,
       {
         headers: {
-          "Content-Type": isFormData ? "multipart/form-data" : "application/json",
+          "Content-Type": isFormData
+            ? "multipart/form-data"
+            : "application/json",
           custom: CUSTOM_HEADER,
           Authorization: `Bearer ${token}`,
         },

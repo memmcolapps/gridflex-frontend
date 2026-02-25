@@ -158,7 +158,8 @@ export async function fetchMeterInventory(
 
     // Build query parameters
     const params = new URLSearchParams();
-    if (queryFilters.page) params.append("page", queryFilters.page.toString());
+    // API expects 0-based page index (page 0 = first page), UI uses 1-based
+    if (queryFilters.page) params.append("page", String(queryFilters.page - 1));
     if (queryFilters.size) params.append("size", queryFilters.size.toString());
     if (queryFilters.meterNumber)
       params.append("meterNumber", queryFilters.meterNumber);

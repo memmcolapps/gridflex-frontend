@@ -22,7 +22,8 @@ export async function fetchAllCommunicationReports(
     }
 
     const params = new URLSearchParams();
-    params.append("page", page.toString());
+    // API expects 0-based page index (page 0 = first page), UI uses 1-based
+    params.append("page", String(page - 1));
     params.append("size", size.toString());
     params.append("type", type);
     if (search) {
@@ -85,7 +86,8 @@ export async function fetchCommunicationRangeReport(
 
     if (response.data.responsecode !== "000") {
       throw new Error(
-        response.data.responsedesc ?? "Failed to fetch communication range report.",
+        response.data.responsedesc ??
+          "Failed to fetch communication range report.",
       );
     }
 

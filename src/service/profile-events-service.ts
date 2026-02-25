@@ -57,7 +57,8 @@ export async function getEvents({
     }
 
     const params = new URLSearchParams();
-    params.append("page", String(page));
+    // API expects 0-based page index (page 0 = first page), UI uses 1-based
+    params.append("page", String(page - 1));
     params.append("size", String(size));
     params.append("startDate", startDate);
     params.append("endDate", endDate);
@@ -106,7 +107,8 @@ export async function getProfiles({
     }
 
     const params = new URLSearchParams();
-    params.append("page", String(page));
+    // API expects 0-based page index (page 0 = first page), UI uses 1-based
+    params.append("page", String(page - 1));
     params.append("size", String(size));
     params.append("startDate", startDate);
     params.append("endDate", endDate);
