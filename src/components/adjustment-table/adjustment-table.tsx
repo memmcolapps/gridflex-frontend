@@ -317,6 +317,10 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
         adjustment?.debitCreditAdjustInfo?.[0]?.liabilityCauseId ?? null;
       setSelectedLiabilityCauseId(firstLiabilityCauseId);
 
+      // Reset fetchPaymentHistory to ensure a new API call is made
+      // when "View Transactions" is clicked for a different record
+      setFetchPaymentHistory(false);
+
       setIsTransactionsDialogOpen(true);
     }
   };
@@ -351,6 +355,30 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
     // Find the adjustment that matches the selected meter/customer
     return allAdjustments.find((adj) => adj.id === selectedMeterId) ?? null;
   }, [selectedMeterId, allAdjustments]);
+
+  // Find the specific debit credit adjust info based on selected adjustment ID or liability cause ID
+  const selectedDebitInfo = useMemo(() => {
+    if (!selectedAdjustment?.debitCreditAdjustInfo) return null;
+    
+    // First try to find by adjustment ID
+    if (selectedAdjustmentId) {
+      const foundById = selectedAdjustment.debitCreditAdjustInfo.find(
+        (info) => info.id === selectedAdjustmentId,
+      );
+      if (foundById) return foundById;
+    }
+    
+    // Then try to find by liability cause ID
+    if (selectedLiabilityCauseId) {
+      const foundByLiabilityId = selectedAdjustment.debitCreditAdjustInfo.find(
+        (info) => info.liabilityCauseId === selectedLiabilityCauseId,
+      );
+      if (foundByLiabilityId) return foundByLiabilityId;
+    }
+    
+    // Fallback to first item
+    return selectedAdjustment.debitCreditAdjustInfo[0] ?? null;
+  }, [selectedAdjustment, selectedAdjustmentId, selectedLiabilityCauseId]);
 
   const nestedTransactions: PaymentHistoryTransaction[] = useMemo(() => {
     // Use payment history data if available
@@ -989,10 +1017,25 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                             >
                               <DropdownMenuItem
                                 onSelect={() => {
-                                  setFetchPaymentHistory(true);
-                                  setSelectedAdjustmentId(
-                                    transaction?.id ?? null,
+                                  // Find the liability cause ID from customerAdjustments
+                                  const adjustment = customerAdjustments.find(
+                                    (adj) =>
+                                      adj.debitCreditAdjustInfo?.some(
+                                        (info) =>
+                                          info.id ===
+                                          transaction.creditDebitAdjId,
+                                      ),
                                   );
+                                  const liabilityCauseId =
+                                    adjustment?.debitCreditAdjustInfo?.find(
+                                      (info) =>
+                                        info.id ===
+                                        transaction.creditDebitAdjId,
+                                    )?.liabilityCauseId ?? null;
+                                  setSelectedLiabilityCauseId(
+                                    liabilityCauseId,
+                                  );
+                                  setFetchPaymentHistory(true);
                                   setIsTransactionsDialogOpen(false);
                                   setIsNestedDialogOpen(true);
                                 }}
@@ -1090,10 +1133,14 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                             >
                               <DropdownMenuItem
                                 onSelect={() => {
-                                  setFetchPaymentHistory(true);
+                                  // For Transaction type, liabilityCauseId exists directly
+                                  setSelectedLiabilityCauseId(
+                                    transaction?.liabilityCauseId ?? null,
+                                  );
                                   setSelectedAdjustmentId(
                                     transaction?.adjustmentId ?? null,
                                   );
+                                  setFetchPaymentHistory(true);
                                   setIsTransactionsDialogOpen(false);
                                   setIsNestedDialogOpen(true);
                                 }}
@@ -1194,11 +1241,9 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
             </div>
             {/* Display liability cause name and code */}
             <p className="mb-4 ml-4 text-sm">
-              {selectedAdjustment?.debitCreditAdjustInfo?.[0]?.liabilityCause
-                ?.name ?? "N/A"}
+              {selectedDebitInfo?.liabilityCause?.name ?? "N/A"}
               :{" "}
-              {selectedAdjustment?.debitCreditAdjustInfo?.[0]?.liabilityCause
-                ?.code ?? "N/A"}
+              {selectedDebitInfo?.liabilityCause?.code ?? "N/A"}
             </p>
           </DialogHeader>
           <div className="overflow-x-hidden">

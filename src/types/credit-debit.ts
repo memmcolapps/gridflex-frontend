@@ -124,6 +124,7 @@ export interface Transaction {
   debit: number | string;
   balance: number;
   adjustmentId?: string;
+  liabilityCauseId?: string;
   adjustmentIndex?: number;
 }
 
