@@ -69,8 +69,7 @@ export function EditPaymentDialog({
       return;
     }
 
-    // Build the payload using the correct ID for the meter assignment
-    // Use editCustomer.id directly, not meterAssignLocation.id
+  
     const meterAssignId = editCustomer.id || editCustomer.customerId;
     
     if (!meterAssignId) {
@@ -79,8 +78,7 @@ export function EditPaymentDialog({
       return;
     }
 
-    // Extract required fields from editCustomer
-    // Use the correct property paths to get IDs (not human-readable names)
+   
     const tariff = editCustomer.tariffInfo?.id || editCustomer.tariff || "";
     const dssAssetId = editCustomer.dssInfo?.assetId || editCustomer.dss || "";
     const feederAssetId = editCustomer.feederInfo?.assetId || (editCustomer as any).feederLine || "";
