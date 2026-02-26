@@ -9,14 +9,15 @@ import {
   createMeter,
   updateMeter,
   fetchBusinessHubs,
- 
   allocateMeter,
+  editAssignedMeter,
   type AllocateMeterPayload,
 } from "@/service/meter-service";
 import {
   type MeterInventoryFilters,
   type MeterInventoryResponse,
   type BusinessHub,
+  type EditAssignedMeterPayload,
 } from "@/types/meter-inventory";
 import {
   type CreateMeterPayload,
@@ -173,6 +174,27 @@ export const useUpdateMeter = () => {
       queryClient.invalidateQueries({
         queryKey: ["meters"],
       });
+    },
+  });
+};
+
+export const useEditAssignedMeter = () => {
+  return useMutation({
+    mutationFn: async (payload: EditAssignedMeterPayload) => {
+      const response = await editAssignedMeter(payload);
+      if (!response.success) {
+        throw new Error(response.error);
+      }
+      return response;
+    },
+    onSuccess: () => {
+      toast.success("Meter details updated successfully");
+      queryClient.invalidateQueries({
+        queryKey: ["assigned-meters"],
+      });
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to update meter details!");
     },
   });
 };

@@ -37,6 +37,7 @@ import {
   useMigrateMeter,
   useAssignMeter,
 } from "@/hooks/use-assign-meter";
+import { useEditAssignedMeter } from "@/hooks/use-meter";
 import { useTariff } from "@/hooks/use-tarrif";
 import { cn } from "@/lib/utils";
 import type { VirtualMeterData } from "@/types/meter";
@@ -141,6 +142,7 @@ export default function AssignMeterPage() {
   const detachMeterMutation = useDetachMeter();
   const migrateMeterMutation = useMigrateMeter();
   const assignMeterMutation = useAssignMeter();
+  const editAssignedMeterMutation = useEditAssignedMeter();
 
   // Fetch tariffs using the useTariff hook
   const { tariffs, isLoading: isLoadingTariffs } = useTariff();
@@ -414,14 +416,19 @@ export default function AssignMeterPage() {
   };
 
   const handleConfirmEditFromSetPayment = () => {
-    if (!editCustomer?.customerId) {
-      console.log("No editCustomer or customerId");
+    console.log("handleConfirmEditFromSetPayment called - editCustomer:", editCustomer);
+    
+    // Check for id (meter assignment id) or customerId
+    const customerIdValue = editCustomer?.id || editCustomer?.customerId;
+    if (!customerIdValue) {
+      console.log("No editCustomer or id/customerId", { id: editCustomer?.id, customerId: editCustomer?.customerId });
       return;
     }
 
-    console.log("handleConfirmEditFromSetPayment called", {
+    console.log("Edit customer data:", {
       meterNumber,
       customerId: editCustomer.customerId,
+      id: editCustomer.id,
       tariff,
       dss,
       feeder,
@@ -437,39 +444,37 @@ export default function AssignMeterPage() {
       creditPaymentPlan,
     });
 
-    // Build the update payload using the same structure as assign meter
+    // Build the update payload using the new API format
+    // Use meterAssignLocation.id for the update
+    const meterAssignId = (editCustomer as any).meterAssignLocation?.id || editCustomer?.id || editCustomer?.customerId;
     const updatePayload = {
-      meterNumber,
-      customerId: editCustomer.customerId,
-      tariffId: tariff,
+      id: meterAssignId,
+      tariff: tariff,
       dssAssetId: dss,
       feederAssetId: feeder,
       cin,
       accountNumber,
-      state,
-      city,
-      houseNo,
-      streetName,
-      debitPaymentMode: debitMop,
-      creditPaymentMode: creditMop,
-      debitPaymentPlan: debitMop === "one-off" ? "" : debitPaymentPlan,
-      creditPaymentPlan: creditMop === "one-off" ? "" : creditPaymentPlan,
+      meterAssignLocation: {
+        state,
+        city,
+        houseNo,
+        streetName,
+      },
+      paymentMode: {
+        debitPaymentMode: debitMop,
+        debitPaymentPlan: debitMop === "one-off" ? "" : debitPaymentPlan,
+        creditPaymentMode: creditMop,
+        creditPaymentPlan: creditMop === "one-off" ? "" : creditPaymentPlan,
+      },
     };
 
     console.log("Update payload:", updatePayload);
 
-    // Wrap payload in FormData like the assign-meter-dialog does
-    const formData = new FormData();
-    Object.entries(updatePayload).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        formData.append(key, String(value));
-      }
-    });
-
-    console.log("Calling assignMeterMutation...");
+    // Pass payload directly to the editAssignedMeter hook (service handles FormData)
+    console.log("Calling editAssignedMeterMutation...");
 
     // Make API call to update the meter
-    assignMeterMutation.mutate(formData, {
+    editAssignedMeterMutation.mutate(updatePayload, {
       onSuccess: (data) => {
         console.log("Update response:", data);
         // Update local state on success
@@ -1033,11 +1038,19 @@ export default function AssignMeterPage() {
         setCreditPaymentPlan={setCreditPaymentPlan}
         isPaymentFormComplete={isPaymentFormComplete}
         editCustomer={editCustomer}
-        onProceed={
-          editCustomer
-            ? handleConfirmEditFromSetPayment
-            : handleProceedFromSetPayment
-        }
+        tariff={tariff}
+        dssAssetId={dss}
+        feederAssetId={feeder}
+        cin={cin}
+        accountNumber={accountNumber}
+        state={state}
+        city={city}
+        streetName={streetName}
+        houseNo={houseNo}
+        onEditSuccess={() => {
+          setIsSetPaymentModalOpen(false);
+          setIsEditModalOpen(false);
+        }}
       />
       <DeactivateVirtualMeterDialog
         isOpen={isDeactivateModalOpen}
