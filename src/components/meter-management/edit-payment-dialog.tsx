@@ -70,7 +70,7 @@ export function EditPaymentDialog({
     }
 
   
-    const meterAssignId = editCustomer.id || editCustomer.customerId;
+    const meterAssignId = editCustomer.id ?? editCustomer.customerId;
     
     if (!meterAssignId) {
       toast.error("Cannot find customer ID");
@@ -79,12 +79,12 @@ export function EditPaymentDialog({
     }
 
    
-    const tariff = editCustomer.tariffInfo?.id || editCustomer.tariff || "";
-    const dssAssetId = editCustomer.dssInfo?.assetId || editCustomer.dss || "";
-    const feederAssetId = editCustomer.feederInfo?.assetId || (editCustomer as any).feederLine || "";
-    const cin = editCustomer.cin || "";
-    const accountNumber = editCustomer.accountNumber || "";
-    const meterAssignLocation = editCustomer.meterAssignLocation || { state: "", city: "", houseNo: "", streetName: "" };
+    const tariff = editCustomer.tariffInfo?.id ?? editCustomer.tariff ?? "";
+    const dssAssetId = editCustomer.dssInfo?.assetId ?? editCustomer.dss ?? "";
+    const feederAssetId = editCustomer.feederInfo?.assetId ?? editCustomer.feederLine ?? "";
+    const cin = editCustomer.cin ?? "";
+    const accountNumber = editCustomer.accountNumber ?? "";
+    const meterAssignLocation = editCustomer.meterAssignLocation ?? { state: "", city: "", houseNo: "", streetName: "" };
 
     const payload: EditAssignedMeterPayload = {
       id: meterAssignId,
@@ -94,10 +94,10 @@ export function EditPaymentDialog({
       cin: cin,
       accountNumber: accountNumber,
       meterAssignLocation: {
-        state: meterAssignLocation.state || "",
-        city: meterAssignLocation.city || "",
-        houseNo: meterAssignLocation.houseNo || "",
-        streetName: meterAssignLocation.streetName || "",
+        state: meterAssignLocation.state ?? "",
+        city: meterAssignLocation.city ?? "",
+        houseNo: meterAssignLocation.houseNo ?? "",
+        streetName: meterAssignLocation.streetName ?? "",
       },
       paymentMode: {
         debitPaymentMode: debitMop,
@@ -118,8 +118,8 @@ export function EditPaymentDialog({
       },
       onError: (error) => {
         console.error("Failed to update payment mode:", error);
-        toast.error(error.message || "Failed to update payment mode!");
-        alert(error.message || "Failed to update payment mode!");
+        toast.error(error.message ?? "Failed to update payment mode!");
+        alert(error.message ?? "Failed to update payment mode!");
       },
     });
   };

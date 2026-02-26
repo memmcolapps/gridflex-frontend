@@ -120,13 +120,13 @@ export function SetPaymentModeDialog(props: SetPaymentModeDialogPropsCombined) {
       }
 
       // Build the payload using meterAssignLocation.id or customer.id
-      const meterAssignId = (editCustomer as any).meterAssignLocation?.id || editCustomer.id || editCustomer.customerId;
+      const meterAssignId = editCustomer.meterAssignLocation?.id ?? editCustomer.id ?? editCustomer.customerId;
       
       if (!meterAssignId) {
         console.log("No meterAssignId found", { 
           id: editCustomer.id, 
           customerId: editCustomer.customerId,
-          meterAssignLocation: (editCustomer as any).meterAssignLocation 
+          meterAssignLocation: editCustomer.meterAssignLocation 
         });
         toast.error("Cannot find customer ID. Please refresh and try again.");
         alert("Error: Cannot find customer ID. Please refresh and try again.");

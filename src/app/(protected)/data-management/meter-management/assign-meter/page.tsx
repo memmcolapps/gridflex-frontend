@@ -419,16 +419,19 @@ export default function AssignMeterPage() {
     console.log("handleConfirmEditFromSetPayment called - editCustomer:", editCustomer);
     
     // Check for id (meter assignment id) or customerId
-    const customerIdValue = editCustomer?.id || editCustomer?.customerId;
+    const customerIdValue = editCustomer?.id ?? editCustomer?.customerId;
     if (!customerIdValue) {
       console.log("No editCustomer or id/customerId", { id: editCustomer?.id, customerId: editCustomer?.customerId });
       return;
     }
 
+    // At this point, editCustomer is guaranteed to be non-null based on the check above
+    const customer = editCustomer!;
+
     console.log("Edit customer data:", {
       meterNumber,
-      customerId: editCustomer.customerId,
-      id: editCustomer.id,
+      customerId: customer.customerId,
+      id: customer.id,
       tariff,
       dss,
       feeder,
@@ -446,7 +449,7 @@ export default function AssignMeterPage() {
 
     // Build the update payload using the new API format
     // Use meterAssignLocation.id for the update
-    const meterAssignId = (editCustomer as any).meterAssignLocation?.id || editCustomer?.id || editCustomer?.customerId;
+    const meterAssignId = (editCustomer as any).meterAssignLocation?.id ?? editCustomer?.id ?? editCustomer?.customerId;
     const updatePayload = {
       id: meterAssignId,
       tariff: tariff,
@@ -480,7 +483,7 @@ export default function AssignMeterPage() {
         // Update local state on success
         setMeterData((prev) =>
           prev.map((item) =>
-            item.customerId === editCustomer.customerId
+            item.customerId === customer.customerId
               ? {
                   ...item,
                   meterNumber,
