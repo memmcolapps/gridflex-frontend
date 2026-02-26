@@ -16,7 +16,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { MeterInventoryItem } from "@/types/meter-inventory";
+import type { MeterInventoryItem,EditAssignedMeterPayload } from "@/types/meter-inventory";
+import { useEditAssignedMeter } from "@/hooks/use-meter";
+import { toast } from "sonner";
 
 interface EditPaymentDialogProps {
   isOpen: boolean;
@@ -51,6 +53,76 @@ export function EditPaymentDialog({
   onProceed,
   onBack,
 }: EditPaymentDialogProps) {
+  const editAssignedMeterMutation = useEditAssignedMeter();
+  
+  console.log("=== EditPaymentDialog rendered ===", { isOpen, editCustomer: !!editCustomer, isPaymentFormComplete });
+  
+  const handleSave = () => {
+    console.log("=== EditPaymentDialog handleSave clicked ===");
+    console.log("editCustomer:", editCustomer);
+    console.log("isPaymentFormComplete:", isPaymentFormComplete);
+    console.log("debitMop:", debitMop, "creditMop:", creditMop);
+    
+    if (!editCustomer) {
+      toast.error("No customer selected");
+      alert("Error: No customer selected");
+      return;
+    }
+
+  
+    const meterAssignId = editCustomer.id ?? editCustomer.customerId;
+    
+    if (!meterAssignId) {
+      toast.error("Cannot find customer ID");
+      alert("Error: Cannot find customer ID");
+      return;
+    }
+
+   
+    const tariff = editCustomer.tariffInfo?.id ?? editCustomer.tariff ?? "";
+    const dssAssetId = editCustomer.dssInfo?.assetId ?? editCustomer.dss ?? "";
+    const feederAssetId = editCustomer.feederInfo?.assetId ?? editCustomer.feederLine ?? "";
+    const cin = editCustomer.cin ?? "";
+    const accountNumber = editCustomer.accountNumber ?? "";
+    const meterAssignLocation = editCustomer.meterAssignLocation ?? { state: "", city: "", houseNo: "", streetName: "" };
+
+    const payload: EditAssignedMeterPayload = {
+      id: meterAssignId,
+      tariff: tariff,
+      dssAssetId: dssAssetId,
+      feederAssetId: feederAssetId,
+      cin: cin,
+      accountNumber: accountNumber,
+      meterAssignLocation: {
+        state: meterAssignLocation.state ?? "",
+        city: meterAssignLocation.city ?? "",
+        houseNo: meterAssignLocation.houseNo ?? "",
+        streetName: meterAssignLocation.streetName ?? "",
+      },
+      paymentMode: {
+        debitPaymentMode: debitMop,
+        debitPaymentPlan: debitMop === "one-off" ? "" : debitPaymentPlan,
+        creditPaymentMode: creditMop,
+        creditPaymentPlan: creditMop === "one-off" ? "" : creditPaymentPlan,
+      },
+    };
+
+    console.log("Calling API with payload:", payload);
+    
+    editAssignedMeterMutation.mutate(payload, {
+      onSuccess: () => {
+        console.log("Meter updated successfully!");
+        toast.success("Meter updated successfully!");
+        onOpenChange(false);
+        if (onProceed) onProceed();
+      },
+      onError: (error) => {
+        console.error("Failed to update payment mode:", error);
+        toast.error(error.message ?? "Failed to update payment mode!");
+        alert(error.message ?? "Failed to update payment mode!");
+      },
+    });
+  };
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="bg-white text-black h-fit border-none">
@@ -157,7 +229,7 @@ export function EditPaymentDialog({
             Back
           </Button>
           <Button
-            onClick={onProceed}
+            onClick={handleSave}
             disabled={editCustomer ? false : !isPaymentFormComplete}
             className={
               editCustomer || isPaymentFormComplete

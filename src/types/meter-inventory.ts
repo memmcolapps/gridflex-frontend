@@ -330,6 +330,32 @@ export interface BusinessHub {
   updatedAt: string;
 }
 
+// Edit assigned meter payload
+export interface MeterAssignLocation {
+  state: string;
+  city: string;
+  houseNo: string;
+  streetName: string;
+}
+
+export interface PaymentMode {
+  debitPaymentMode: string;
+  debitPaymentPlan: string;
+  creditPaymentMode: string;
+  creditPaymentPlan: string;
+}
+
+export interface EditAssignedMeterPayload {
+  id: string;
+  tariff: string;
+  dssAssetId: string;
+  feederAssetId: string;
+  cin: string;
+  accountNumber: string;
+  meterAssignLocation: MeterAssignLocation;
+  paymentMode: PaymentMode;
+}
+
 export interface BusinessHubResponse {
   responsecode: string;
   responsedesc: string;

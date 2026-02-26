@@ -5,6 +5,8 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { MeterInventoryItem } from "@/types/meter-inventory";
+import { useEditAssignedMeter } from "@/hooks/use-meter";
+import { toast } from "sonner";
 
 // Old interface for backward compatibility
 interface SetPaymentModeDialogPropsLegacy {
@@ -26,8 +28,8 @@ interface SetPaymentModeDialogPropsLegacy {
   onProceed: () => void;
 }
 
-// New interface with separate debit/credit state
-interface SetPaymentModeDialogProps {
+// New interface with separate debit/credit state and required fields for edit
+export interface SetPaymentModeDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   debitMop: string;
@@ -40,7 +42,17 @@ interface SetPaymentModeDialogProps {
   setCreditPaymentPlan: (value: string) => void;
   isPaymentFormComplete: boolean;
   editCustomer: MeterInventoryItem | null;
-  onProceed: () => void;
+  // Additional fields needed for edit
+  tariff: string;
+  dssAssetId: string;
+  feederAssetId: string;
+  cin: string;
+  accountNumber: string;
+  state: string;
+  city: string;
+  streetName: string;
+  houseNo: string;
+  onEditSuccess?: () => void;
 }
 
 type SetPaymentModeDialogPropsCombined = SetPaymentModeDialogProps | (SetPaymentModeDialogPropsLegacy & {
@@ -59,8 +71,12 @@ function isNewInterface(props: SetPaymentModeDialogPropsCombined): props is SetP
 }
 
 export function SetPaymentModeDialog(props: SetPaymentModeDialogPropsCombined) {
+  console.log("=== SetPaymentModeDialog rendered ===", { isOpen: props.isOpen, hasDebitMop: 'debitMop' in props });
+  const editAssignedMeterMutation = useEditAssignedMeter();
+  
   // Handle both old and new interfaces
   if (isNewInterface(props)) {
+    console.log("=== Using NEW interface ===");
     const {
       isOpen,
       onOpenChange,
@@ -74,11 +90,89 @@ export function SetPaymentModeDialog(props: SetPaymentModeDialogPropsCombined) {
       setCreditPaymentPlan,
       isPaymentFormComplete,
       editCustomer,
-      onProceed,
+      tariff,
+      dssAssetId,
+      feederAssetId,
+      cin,
+      accountNumber,
+      state,
+      city,
+      streetName,
+      houseNo,
+      onEditSuccess,
     } = props;
 
     const isDebitModeDisabled = debitMop === "one-off" || debitMop === "percentage";
     const isCreditModeDisabled = creditMop === "one-off" || creditMop === "percentage";
+
+    const handleSave = () => {
+      console.log("=== handleSave START ===");
+      console.log("editCustomer:", editCustomer);
+      console.log("tariff:", tariff, "dssAssetId:", dssAssetId);
+      console.log("debitMop:", debitMop, "creditMop:", creditMop);
+      console.log("isPaymentFormComplete:", isPaymentFormComplete);
+      
+      if (!editCustomer) {
+        console.log("No editCustomer, not calling API");
+        toast.error("No customer selected. Please try again.");
+        alert("Error: No customer selected. Please try again.");
+        return;
+      }
+
+      // Build the payload using meterAssignLocation.id or customer.id
+      const meterAssignId = editCustomer.meterAssignLocation?.id ?? editCustomer.id ?? editCustomer.customerId;
+      
+      if (!meterAssignId) {
+        console.log("No meterAssignId found", { 
+          id: editCustomer.id, 
+          customerId: editCustomer.customerId,
+          meterAssignLocation: editCustomer.meterAssignLocation 
+        });
+        toast.error("Cannot find customer ID. Please refresh and try again.");
+        alert("Error: Cannot find customer ID. Please refresh and try again.");
+        return;
+      }
+      
+      console.log("meterAssignId:", meterAssignId);
+      
+      const payload = {
+        id: meterAssignId,
+        tariff: tariff,
+        dssAssetId: dssAssetId,
+        feederAssetId: feederAssetId,
+        cin: cin,
+        accountNumber: accountNumber,
+        meterAssignLocation: {
+          state: state,
+          city: city,
+          houseNo: houseNo,
+          streetName: streetName,
+        },
+        paymentMode: {
+          debitPaymentMode: debitMop,
+          debitPaymentPlan: debitMop === "one-off" ? "" : debitPaymentPlan,
+          creditPaymentMode: creditMop,
+          creditPaymentPlan: creditMop === "one-off" ? "" : creditPaymentPlan,
+        },
+      };
+
+      console.log("Calling editAssignedMeterMutation with payload:", payload);
+
+      editAssignedMeterMutation.mutate(payload, {
+        onSuccess: () => {
+          console.log("Edit success!");
+          toast.success("Payment mode updated successfully!");
+          onOpenChange(false);
+          if (onEditSuccess) {
+            onEditSuccess();
+          }
+        },
+        onError: (error) => {
+          console.error("Failed to update meter:", error);
+          toast.error(error.message || "Failed to update payment mode!");
+        },
+      });
+    };
 
     return (
       <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -183,10 +277,11 @@ export function SetPaymentModeDialog(props: SetPaymentModeDialogPropsCombined) {
               Cancel
             </Button>
             <Button
-              onClick={onProceed}
+              onClick={handleSave}
+              disabled={editAssignedMeterMutation.isPending}
               className="bg-[#161CCA] text-white cursor-pointer"
             >
-              Save Payment Mode
+              {editAssignedMeterMutation.isPending ? "Saving..." : "Save Payment Mode"}
             </Button>
           </DialogFooter>
         </DialogContent>
