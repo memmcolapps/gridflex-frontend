@@ -445,6 +445,7 @@ export default function AssignMeterPage() {
     };
     editAssignedMeterMutation.mutate(updatePayload, {
       onSuccess: (data) => {
+
         setMeterData((prev) =>
           prev.map((item) =>
             item.customerId === customer.customerId
@@ -476,8 +477,6 @@ export default function AssignMeterPage() {
         );
         setIsSetPaymentModalOpen(false);
         setIsEditModalOpen(false);
-      },
-      onError: (error) => {
       },
     });
   };
