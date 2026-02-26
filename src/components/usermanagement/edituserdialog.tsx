@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -57,12 +57,9 @@ export default function EditUserDialog({
     ? matchNodeTypeToHierarchy(user.nodes.nodeInfo.type)
     : null;
 
-  const availableUnits = useMemo(
-    () => currentHierarchyType
-      ? getUnitsForHierarchy(flattenedNodes, currentHierarchyType)
-      : [],
-    [currentHierarchyType, flattenedNodes],
-  );
+  const availableUnits = currentHierarchyType
+    ? getUnitsForHierarchy(flattenedNodes, currentHierarchyType)
+    : [];
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement> | string, field?: string) => {

@@ -301,16 +301,12 @@ export default function AssignMeterPage() {
   const handleEditDetails = (
     customer: MeterInventoryItem | VirtualMeterData,
   ) => {
-    // Debug: Log the full customer object to see meterAssignLocation
-    console.log("FULL CUSTOMER OBJECT:", JSON.stringify(customer, null, 2));
-    
-    // Get state and city from meterAssignLocation ONLY (not customer fallback)
+   
     const customerState = (customer as any).meterAssignLocation?.state ?? "";
     const customerCity = (customer as any).meterAssignLocation?.city ?? "";
     const customerStreetName = (customer as any).meterAssignLocation?.streetName ?? "";
     const customerHouseNo = (customer as any).meterAssignLocation?.houseNo ?? "";
 
-    console.log("meterAssignLocation - state:", customerState, "city:", customerCity);
 
     if ("meterManufacturer" in customer) {
       setEditCustomer({
@@ -327,9 +323,8 @@ export default function AssignMeterPage() {
       setCin(customer.cin ?? "");
       setAccountNumber(customer.accountNumber ?? "");
       setTariff(customer.tariff ?? "");
-      // Use feederInfo.assetId if available, otherwise fall back to feederLine (name)
       setFeeder(customer.feederInfo?.assetId ?? customer.feederLine ?? "");
-      // Use dssInfo.assetId if available, otherwise fall back to dss (name)
+   
       setDss(customer.dssInfo?.assetId ?? customer.dss ?? "");
       setState(customerState);
       setCity(customerCity);
@@ -416,39 +411,17 @@ export default function AssignMeterPage() {
   };
 
   const handleConfirmEditFromSetPayment = () => {
-    console.log("handleConfirmEditFromSetPayment called - editCustomer:", editCustomer);
     
-    // Check for id (meter assignment id) or customerId
-    const customerIdValue = editCustomer?.id ?? editCustomer?.customerId;
+    const customerIdValue = editCustomer?.id;
     if (!customerIdValue) {
-      console.log("No editCustomer or id/customerId", { id: editCustomer?.id, customerId: editCustomer?.customerId });
+   
       return;
     }
 
-    // At this point, editCustomer is guaranteed to be non-null based on the check above
+   
     const customer = editCustomer!;
 
-    console.log("Edit customer data:", {
-      meterNumber,
-      customerId: customer.customerId,
-      id: customer.id,
-      tariff,
-      dss,
-      feeder,
-      cin,
-      accountNumber,
-      state,
-      city,
-      houseNo,
-      streetName,
-      debitMop,
-      creditMop,
-      debitPaymentPlan,
-      creditPaymentPlan,
-    });
-
-    // Build the update payload using the new API format
-    // Use meterAssignLocation.id for the update
+   
     const meterAssignId = (editCustomer as any).meterAssignLocation?.id ?? editCustomer?.id ?? editCustomer?.customerId;
     const updatePayload = {
       id: meterAssignId,
@@ -470,17 +443,8 @@ export default function AssignMeterPage() {
         creditPaymentPlan: creditMop === "one-off" ? "" : creditPaymentPlan,
       },
     };
-
-    console.log("Update payload:", updatePayload);
-
-    // Pass payload directly to the editAssignedMeter hook (service handles FormData)
-    console.log("Calling editAssignedMeterMutation...");
-
-    // Make API call to update the meter
     editAssignedMeterMutation.mutate(updatePayload, {
       onSuccess: (data) => {
-        console.log("Update response:", data);
-        // Update local state on success
         setMeterData((prev) =>
           prev.map((item) =>
             item.customerId === customer.customerId
@@ -514,7 +478,6 @@ export default function AssignMeterPage() {
         setIsEditModalOpen(false);
       },
       onError: (error) => {
-        console.error("Failed to update meter:", error);
       },
     });
   };
@@ -682,8 +645,6 @@ export default function AssignMeterPage() {
 
   const handleBulkUploadSave = (data: File | MeterInventoryItem[]) => {
     if (data instanceof File) {
-      // Handle raw file if sendRawFile is true, but currently it's false
-      console.warn("Raw file received, but not handled");
     } else {
       setMeterData((prev) => [...prev, ...data]);
     }
