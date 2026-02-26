@@ -97,6 +97,39 @@ export async function getCustomers({
   }
 }
 
+export async function getAllCustomerIds(): Promise<string[]> {
+  try {
+    const token = localStorage.getItem("auth_token");
+    if (!token) {
+      throw new Error("Authentication token not found.");
+    }
+
+    const response = await axiosInstance.get(
+      `${API_URL}/customer/service/all`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    if (response.data.responsecode !== "000") {
+      throw new Error(
+        response.data.responsedesc ?? "Failed to fetch customer data.",
+      );
+    }
+
+    const customers = response.data.responsedata?.data ?? [];
+    return customers
+      .map((c: Customer) => c.customerId)
+      .filter((id: string | undefined): id is string => !!id);
+  } catch (error) {
+    throw new Error(handleApiError(error));
+  }
+}
+
 export async function addCustomer(
   customerData: AddCustomerPayload,
 ): Promise<CustomerMutationResponse> {

@@ -3,6 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   getCustomers,
+  getAllCustomerIds,
   addCustomer,
   updateCustomer,
   blockCustomer,
@@ -138,5 +139,17 @@ export const useDownloadCustomerCsvTemplate = () => {
 export const useDownloadCustomerExcelTemplate = () => {
   return useMutation<void, Error, void>({
     mutationFn: downloadCustomerExcelTemplate,
+  });
+};
+
+/**
+ * A hook to fetch all customer IDs (no pagination).
+ * Used for client-side filtering in dropdowns.
+ */
+export const useAllCustomerIds = () => {
+  return useQuery<string[], Error>({
+    queryKey: ["allCustomerIds"],
+    queryFn: getAllCustomerIds,
+    staleTime: 1000 * 60 * 5,
   });
 };

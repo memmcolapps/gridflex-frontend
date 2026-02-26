@@ -54,6 +54,8 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { LoadingAnimation } from "@/components/ui/loading-animation";
+import { useAllCustomerIds } from "@/hooks/use-customer";
+import { fetchCustomerRecord } from "@/service/customer-service";
 
 // Define filter sections
 const filterSections = [
@@ -137,6 +139,8 @@ export default function AssignMeterPage() {
   const [isBulkUploadModalOpen, setIsBulkUploadModalOpen] = useState(false);
   const [isUploadImageModalOpen, setIsUploadImageModalOpen] = useState(false);
 
+  const [isCustomerLoading, setIsCustomerLoading] = useState(false);
+
   // Initialize useDetachMeter and useMigrateMeter hooks
   const detachMeterMutation = useDetachMeter();
   const migrateMeterMutation = useMigrateMeter();
@@ -154,6 +158,10 @@ export default function AssignMeterPage() {
     sortDirection: sortConfig.direction,
     type: "assigned",
   });
+
+  // Fetch all customer IDs for the assign meter modal dropdown
+  const { data: allCustomerIds, isLoading: isAllCustomerIdsLoading } =
+    useAllCustomerIds();
 
   // Filter and process data
   const processedData = useMemo(() => {
@@ -206,11 +214,9 @@ export default function AssignMeterPage() {
     if (value.trim() === "") {
       setFilteredCustomerIds([]);
     } else {
-      const filtered = meterData
-        .filter((customer) =>
-          customer.customerId?.toLowerCase().includes(value.toLowerCase()),
-        )
-        .map((customer) => customer.customerId!);
+      const filtered = (allCustomerIds ?? []).filter((id) =>
+        id.toLowerCase().includes(value.toLowerCase()),
+      );
       setFilteredCustomerIds(filtered);
     }
   };
@@ -220,30 +226,54 @@ export default function AssignMeterPage() {
     setFilteredCustomerIds([]);
   };
 
-  const handleCustomerIdProceed = () => {
-    const customer = meterData.find(
-      (item) => item.customerId === customerIdInput,
-    );
-    if (customer) {
-      setSelectedCustomer(customer);
-      setIsCustomerIdModalOpen(false);
-      setIsAssignModalOpen(true);
-      setProgress(50);
-      setMeterNumber("");
-      setCin(customer.cin ?? "");
-      setAccountNumber(customer.accountNumber ?? "");
-      setTariff("");
-      setFeeder("");
-      setDss("");
-      setState(customer.state ?? "");
-      setCity(customer.city ?? "");
-      setStreetName(customer.streetName ?? "");
-      setHouseNo(customer.houseNo ?? "");
-      setPhone(customer.phone ?? "");
-      setDebitMop("");
-      setCreditMop("");
-      setDebitPaymentPlan("");
-      setCreditPaymentPlan("");
+  const handleCustomerIdProceed = async () => {
+    if (!customerIdInput.trim()) return;
+    setIsCustomerLoading(true);
+    try {
+      const customerRecord = await fetchCustomerRecord(customerIdInput);
+      if (customerRecord?.customer?.customerId) {
+        const customer = customerRecord.customer;
+        setSelectedCustomer({
+          id: customer.customerId,
+          customerId: customer.customerId,
+          meterNumber: "",
+          cin: "",
+          accountNumber: customerRecord.GeneratedAccountNumber || "",
+          tariff: "",
+          feeder: "",
+          dss: "",
+          state: "",
+          city: "",
+          streetName: "",
+          houseNo: "",
+          status: "Assigned",
+          firstName: customer.firstname || "",
+          lastName: customer.lastname || "",
+          phone: customer.phoneNumber || "",
+        } as any);
+        setIsCustomerIdModalOpen(false);
+        setIsAssignModalOpen(true);
+        setProgress(50);
+        setMeterNumber("");
+        setCin("");
+        setAccountNumber(customerRecord.GeneratedAccountNumber || "");
+        setTariff("");
+        setFeeder("");
+        setDss("");
+        setState("");
+        setCity("");
+        setStreetName("");
+        setHouseNo("");
+        setPhone(customer.phoneNumber || "");
+        setDebitMop("");
+        setCreditMop("");
+        setDebitPaymentPlan("");
+        setCreditPaymentPlan("");
+      }
+    } catch (error) {
+      console.error("Failed to fetch customer record:", error);
+    } finally {
+      setIsCustomerLoading(false);
     }
   };
 
@@ -952,7 +982,7 @@ export default function AssignMeterPage() {
         filteredCustomerIds={filteredCustomerIds}
         onCustomerSelect={handleCustomerIdSelect}
         onProceed={handleCustomerIdProceed}
-        isLoading={false}
+        isLoading={isAllCustomerIdsLoading || isCustomerLoading}
       />
       <AssignMeterDialog
         isOpen={isAssignModalOpen}

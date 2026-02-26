@@ -50,7 +50,7 @@ import {
   useAssignMeter,
   useChangeMeterState,
 } from "@/hooks/use-assign-meter";
-import { useCustomerRecordQuery } from "@/hooks/use-customer";
+import { useCustomerRecordQuery, useAllCustomerIds } from "@/hooks/use-customer";
 import type { AssignMeterPayload } from "@/service/assign-meter-service";
 import { fetchCustomerRecord } from "@/service/customer-service";
 import { LoadingAnimation } from "@/components/ui/loading-animation";
@@ -164,6 +164,9 @@ export default function MeterManagementPage() {
   const { data: customerRecordData, isLoading: isCustomerRecordLoading } =
     useCustomerRecordQuery(customerIdInput);
 
+  const { data: allCustomerIds, isLoading: isAllCustomerIdsLoading } =
+    useAllCustomerIds();
+
   const assignMeterMutation = useAssignMeter();
   const changeStateMutation = useChangeMeterState();
   const bulkAssignMutation = useBulkAssignMeters();
@@ -182,17 +185,9 @@ export default function MeterManagementPage() {
     if (value.trim() === "") {
       setFilteredCustomerIds([]);
     } else {
-      const currentData = metersData?.actualMeters ?? [];
-      const filtered = Array.from(
-        new Set(
-          currentData
-            .filter((customer) =>
-              customer.customerId?.toLowerCase().includes(value.toLowerCase()),
-            )
-            .map((customer) => customer.customerId)
-            .filter((id): id is string => id != null),
-        ),
-      ) as string[];
+      const filtered = (allCustomerIds ?? []).filter((id) =>
+        id.toLowerCase().includes(value.toLowerCase()),
+      );
       setFilteredCustomerIds(filtered);
     }
   };
@@ -1124,7 +1119,7 @@ export default function MeterManagementPage() {
         filteredCustomerIds={filteredCustomerIds}
         onCustomerSelect={handleCustomerIdSelect}
         onProceed={handleProceedFromCustomerIdDialog}
-        isLoading={isCustomerRecordLoading}
+        isLoading={isAllCustomerIdsLoading || isCustomerRecordLoading}
       />
       <AssignMeterDialog
         isOpen={isAssignModalOpen}
