@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -116,6 +116,18 @@ export function EditCustomerDetailsDialog({
   const [creditMop, setCreditMop] = useState("");
   const [debitPaymentPlan, setDebitPaymentPlan] = useState("");
   const [creditPaymentPlan, setCreditPaymentPlan] = useState("");
+
+  // Pre-fill payment values from editCustomer when payment dialog opens
+  useEffect(() => {
+    if (showPaymentDialog && editCustomer) {
+      // Set debit/credit mode of payment
+      setDebitMop(editCustomer.debitMop ?? "");
+      setCreditMop(editCustomer.creditMop ?? "");
+      // Set debit/credit payment plan
+      setDebitPaymentPlan(editCustomer.debitPaymentPlan ?? editCustomer.paymentPlan ?? "");
+      setCreditPaymentPlan(editCustomer.creditPaymentPlan ?? editCustomer.paymentPlan ?? "");
+    }
+  }, [showPaymentDialog, editCustomer]);
 
   // Dropdown open states
   const [tariffOpen, setTariffOpen] = useState(false);

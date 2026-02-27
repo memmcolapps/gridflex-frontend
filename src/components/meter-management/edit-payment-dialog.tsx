@@ -55,13 +55,10 @@ export function EditPaymentDialog({
 }: EditPaymentDialogProps) {
   const editAssignedMeterMutation = useEditAssignedMeter();
   
-  console.log("=== EditPaymentDialog rendered ===", { isOpen, editCustomer: !!editCustomer, isPaymentFormComplete });
+ 
   
   const handleSave = () => {
-    console.log("=== EditPaymentDialog handleSave clicked ===");
-    console.log("editCustomer:", editCustomer);
-    console.log("isPaymentFormComplete:", isPaymentFormComplete);
-    console.log("debitMop:", debitMop, "creditMop:", creditMop);
+  
     
     if (!editCustomer) {
       toast.error("No customer selected");
@@ -107,17 +104,15 @@ export function EditPaymentDialog({
       },
     };
 
-    console.log("Calling API with payload:", payload);
+   
     
     editAssignedMeterMutation.mutate(payload, {
       onSuccess: () => {
-        console.log("Meter updated successfully!");
         toast.success("Meter updated successfully!");
         onOpenChange(false);
         if (onProceed) onProceed();
       },
       onError: (error) => {
-        console.error("Failed to update payment mode:", error);
         toast.error(error.message ?? "Failed to update payment mode!");
         alert(error.message ?? "Failed to update payment mode!");
       },
