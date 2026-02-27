@@ -40,14 +40,14 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
     }
   }, [isOpen, selectedRow]);
 
-  const isMeterAllocated = selectedRow?.description === "Meter Allocated";
-  const isMeterAssigned = selectedRow?.description === "Meter Assigned";
-  const isMeterDeactivated = selectedRow?.description === "Meter Deactivated";
-  const isMeterActivated = selectedRow?.description === "Meter Activated";
-  const isMeterDetached = selectedRow?.description === "Meter detached";
-  const isMeterMigrated = selectedRow?.description === "Meter Migrated";
-  const isNewlyAdded = selectedRow?.description === "Newly added";
-  const isMeterEdited = selectedRow?.description === "Meter edited";
+const isMeterAllocated = selectedRow?.description?.toLowerCase() === "meter allocated";
+const isMeterAssigned = selectedRow?.description?.toLowerCase() === "meter assigned";
+const isMeterDeactivated = selectedRow?.description?.toLowerCase() === "meter deactivated";
+const isMeterActivated = selectedRow?.description?.toLowerCase() === "meter activated";
+const isMeterDetached = selectedRow?.description?.toLowerCase() === "meter detached";
+const isMeterMigrated = selectedRow?.description?.toLowerCase() === "meter migrated";
+const isNewlyAdded = selectedRow?.description?.toLowerCase() === "newly added";
+const isMeterEdited = selectedRow?.description?.toLowerCase() === "meter edited";
 
   const renderContent = () => {
     if (!selectedRow) {
