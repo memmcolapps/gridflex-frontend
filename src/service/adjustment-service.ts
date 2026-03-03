@@ -197,7 +197,6 @@ export const reconcileDebit = async (
   meterId: string,
   liabilityCauseId: string,
   amount: number,
-  type: "credit" | "debit",
 ): Promise<
   { success: true; data: any } | { success: false; error: string }
 > => {
@@ -212,8 +211,8 @@ export const reconcileDebit = async (
           meterId,
           liabilityCauseId,
           amount,
-          type,
-        },
+      
+        }, 
         headers: {
           "Content-Type": "application/json",
           custom: CUSTOM_HEADER,
@@ -247,7 +246,7 @@ export const fetchPaymentHistory = async (
   liabilityCauseId: string | undefined,
   type: "credit" | "debit",
 ): Promise<
-  | { success: true; data: PaymentHistoryTransaction[][] }
+  | { success: true; data: PaymentHistoryTransaction[] }
   | { success: false; error: string }
 > => {
   try {
@@ -295,13 +294,13 @@ export const fetchPaymentHistory = async (
 };
 
 // New function to fetch payment history for frequently-used-reports
-// Returns PaymentHistoryTransaction[][] based on the new API response structure
+// Returns PaymentHistoryTransaction[] based on the new API response structure
 export const fetchPaymentHistoryTransactions = async (
   meterId: string,
   liabilityCauseId: string,
   type: "credit" | "debit",
 ): Promise<
-  | { success: true; data: PaymentHistoryTransaction[][] }
+  | { success: true; data: PaymentHistoryTransaction[] }
   | { success: false; error: string }
 > => {
   try {
