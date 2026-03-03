@@ -189,9 +189,16 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    
+    // Only allow numeric values for meterNumber field
+    let processedValue = value;
+    if (name === "meterNumber") {
+      processedValue = value.replace(/[^0-9]/g, "");
+    }
+    
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: processedValue,
     }));
     setErrors((prev) => ({ ...prev, [name]: "" }));
   };
@@ -455,6 +462,8 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                 </Label>
                 <Input
                   type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   id="meterNumber"
                   name="meterNumber"
                   value={formData.meterNumber}

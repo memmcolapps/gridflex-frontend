@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import type { MeterInventoryItem } from "@/types/meter-inventory";
+import type { EditAssignedMeterPayload, MeterInventoryItem } from "@/types/meter-inventory";
 import { useEditAssignedMeter } from "@/hooks/use-meter";
 import { toast } from "sonner";
 
@@ -24,7 +24,7 @@ interface SetPaymentModeDialogPropsLegacy {
   creditPaymentPlan?: string;
   setCreditPaymentPlan?: (value: string) => void;
   isPaymentFormComplete: boolean;
-  editCustomer: MeterInventoryItem | null;
+  editCustomer: MeterInventoryItem | EditAssignedMeterPayload | null;
   onProceed: () => void;
 }
 
@@ -105,35 +105,23 @@ export function SetPaymentModeDialog(props: SetPaymentModeDialogPropsCombined) {
     const isDebitModeDisabled = debitMop === "one-off" || debitMop === "percentage";
     const isCreditModeDisabled = creditMop === "one-off" || creditMop === "percentage";
 
-    const handleSave = () => {
-      console.log("=== handleSave START ===");
-      console.log("editCustomer:", editCustomer);
-      console.log("tariff:", tariff, "dssAssetId:", dssAssetId);
-      console.log("debitMop:", debitMop, "creditMop:", creditMop);
-      console.log("isPaymentFormComplete:", isPaymentFormComplete);
-      
+    const handleSave = () => {   
       if (!editCustomer) {
-        console.log("No editCustomer, not calling API");
         toast.error("No customer selected. Please try again.");
         alert("Error: No customer selected. Please try again.");
         return;
       }
 
       // Build the payload using meterAssignLocation.id or customer.id
-      const meterAssignId = editCustomer.meterAssignLocation?.id ?? editCustomer.id ?? editCustomer.customerId;
+      const meterAssignId =  editCustomer.id ;
       
       if (!meterAssignId) {
-        console.log("No meterAssignId found", { 
-          id: editCustomer.id, 
-          customerId: editCustomer.customerId,
-          meterAssignLocation: editCustomer.meterAssignLocation 
-        });
         toast.error("Cannot find customer ID. Please refresh and try again.");
         alert("Error: Cannot find customer ID. Please refresh and try again.");
         return;
       }
       
-      console.log("meterAssignId:", meterAssignId);
+
       
       const payload = {
         id: meterAssignId,

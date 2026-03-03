@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
-import type { MeterInventoryItem } from "@/types/meter-inventory";
+import type { MeterInventoryItem, EditAssignedMeterPayload } from "@/types/meter-inventory";
 import type { Tariff } from "@/service/tarriff-service";
 import { EditPaymentDialog } from "@/components/meter-management/edit-payment-dialog";
 import { useNigerianStates, useNigerianCities } from "@/hooks/use-location";
@@ -45,7 +45,7 @@ import {
 interface EditCustomerDetailsDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  editCustomer: MeterInventoryItem | null;
+  editCustomer: EditAssignedMeterPayload | MeterInventoryItem | null;
   meterNumber: string;
   setMeterNumber: (value: string) => void;
   cin: string;
@@ -120,12 +120,20 @@ export function EditCustomerDetailsDialog({
   // Pre-fill payment values from editCustomer when payment dialog opens
   useEffect(() => {
     if (showPaymentDialog && editCustomer) {
-      // Set debit/credit mode of payment
-      setDebitMop(editCustomer.debitMop ?? "");
-      setCreditMop(editCustomer.creditMop ?? "");
-      // Set debit/credit payment plan
-      setDebitPaymentPlan(editCustomer.debitPaymentPlan ?? editCustomer.paymentPlan ?? "");
-      setCreditPaymentPlan(editCustomer.creditPaymentPlan ?? editCustomer.paymentPlan ?? "");
+      // Check if it's EditAssignedMeterPayload (has paymentMode) or MeterInventoryItem (has debitMop directly)
+      if ('paymentMode' in editCustomer) {
+        // EditAssignedMeterPayload
+        setDebitMop(editCustomer.paymentMode?.debitPaymentMode ?? "");
+        setCreditMop(editCustomer.paymentMode?.creditPaymentMode ?? "");
+        setDebitPaymentPlan(editCustomer.paymentMode?.debitPaymentPlan ?? "");
+        setCreditPaymentPlan(editCustomer.paymentMode?.creditPaymentPlan ?? "");
+      } else {
+        // MeterInventoryItem - use properties directly
+        setDebitMop(editCustomer.debitMop ?? "");
+        setCreditMop(editCustomer.creditMop ?? "");
+        setDebitPaymentPlan(editCustomer.debitPaymentPlan ?? editCustomer.paymentPlan ?? "");
+        setCreditPaymentPlan(editCustomer.creditPaymentPlan ?? editCustomer.paymentPlan ?? "");
+      }
     }
   }, [showPaymentDialog, editCustomer]);
 
@@ -141,9 +149,6 @@ export function EditCustomerDetailsDialog({
     isError: isErrorStates,
   } = useNigerianStates();
 
-  // Debug: Log state and city values
-  console.log("EditCustomerDetailsDialog - state:", state, "city:", city);
-  console.log("EditCustomerDetailsDialog - states list:", states?.slice(0, 5)); // First 5 states
 
   // Convert state name to ID format for fetching cities
   const stateId = state ? state.toLowerCase().replace(/\s+/g, "-") : "";
@@ -185,7 +190,7 @@ export function EditCustomerDetailsDialog({
                   Customer ID<span className="text-red-700">*</span>
                 </Label>
                 <Input
-                  value={editCustomer?.customerId ?? ""}
+                  value={(editCustomer as MeterInventoryItem)?.customerId ?? ""}
                   readOnly
                   disabled
                   placeholder="Enter Customer ID"
@@ -197,7 +202,7 @@ export function EditCustomerDetailsDialog({
                   First Name<span className="text-red-700">*</span>
                 </Label>
                 <Input
-                  value={editCustomer?.firstName ?? ""}
+                  value={(editCustomer as MeterInventoryItem)?.firstName ?? ""}
                   readOnly
                   placeholder="Enter First Name"
                   className="border-gray-200 text-gray-600"
@@ -208,7 +213,7 @@ export function EditCustomerDetailsDialog({
                   Last Name<span className="text-red-700">*</span>
                 </Label>
                 <Input
-                  value={editCustomer?.lastName ?? ""}
+                  value={(editCustomer as MeterInventoryItem)?.lastName ?? ""}
                   readOnly
                   placeholder="Enter Last Name"
                   className="border-gray-200 text-gray-600"
@@ -219,7 +224,7 @@ export function EditCustomerDetailsDialog({
                   Phone Number<span className="text-red-700">*</span>
                 </Label>
                 <Input
-                  value={editCustomer?.phone ?? ""}
+                  value={(editCustomer as MeterInventoryItem)?.phone ?? ""}
                   // onChange={(e) => setPhone(e.target.value)}
                   readOnly
                   placeholder="Enter Phone Number"
@@ -232,7 +237,7 @@ export function EditCustomerDetailsDialog({
                 </Label>
                 <Input
                   disabled
-                  value={editCustomer?.meterNumber ?? meterNumber}
+                  value={(editCustomer as MeterInventoryItem)?.meterNumber ?? meterNumber}
                   onChange={(e) => setMeterNumber(e.target.value)}
                   placeholder="Enter Meter Number"
                   className="border-gray-200 text-gray-600"
@@ -623,6 +628,15 @@ export function EditCustomerDetailsDialog({
         isOpen={showPaymentDialog}
         onOpenChange={setShowPaymentDialog}
         editCustomer={editCustomer}
+        editedCin={cin}
+        editedAccountNumber={accountNumber}
+        editedTariff={tariff}
+        editedFeeder={feeder}
+        editedDss={dss}
+        editedState={state}
+        editedCity={city}
+        editedStreetName={streetName}
+        editedHouseNo={houseNo}
         debitMop={debitMop}
         setDebitMop={setDebitMop}
         creditMop={creditMop}

@@ -339,9 +339,17 @@ export default function AssignMeterPage() {
 
 
     if ("meterManufacturer" in customer) {
+      // Try to find tariff ID by name, only if tariffs are loaded
+      let tariffIdForCustomer = customer.tariff ?? "";
+      if (tariffs && tariffs.length > 0 && customer.tariff) {
+        const tariffItem = tariffs.find((t) => t.name === customer.tariff);
+        if (tariffItem) {
+          tariffIdForCustomer = tariffItem.id;
+        }
+      }
       setEditCustomer({
         ...customer,
-        tariff: customer.tariff ?? "",
+        tariff: tariffIdForCustomer,
         feederLine: customer.feederLine ?? "",
         dss: customer.dss ?? "",
         state: customerState,
@@ -352,7 +360,15 @@ export default function AssignMeterPage() {
       setMeterNumber(customer.meterNumber ?? "");
       setCin(customer.cin ?? "");
       setAccountNumber(customer.accountNumber ?? "");
-      setTariff(customer.tariff ?? "");
+      // Try to find tariff ID by name, only if tariffs are loaded
+      let tariffId = customer.tariff ?? "";
+      if (tariffs && tariffs.length > 0 && customer.tariff) {
+        const tariffItem = tariffs.find((t) => t.name === customer.tariff);
+        if (tariffItem) {
+          tariffId = tariffItem.id;
+        }
+      }
+      setTariff(tariffId);
       setFeeder(customer.feederInfo?.assetId ?? customer.feederLine ?? "");
    
       setDss(customer.dssInfo?.assetId ?? customer.dss ?? "");
@@ -368,11 +384,30 @@ export default function AssignMeterPage() {
       setIsEditModalOpen(true);
     } else {
       // Handle VirtualMeterData - cast to MeterInventoryItem for editCustomer state
-      setEditCustomer(customer as MeterInventoryItem);
+      // Try to find tariff ID by name, only if tariffs are loaded
+      let tariffIdForCustomer2 = customer.tariff ?? "";
+      if (tariffs && tariffs.length > 0 && customer.tariff) {
+        const tariffItem3 = tariffs.find((t) => t.name === customer.tariff);
+        if (tariffItem3) {
+          tariffIdForCustomer2 = tariffItem3.id;
+        }
+      }
+      setEditCustomer({
+        ...customer,
+        tariff: tariffIdForCustomer2,
+      } as MeterInventoryItem);
       setMeterNumber(customer.meterNumber ?? "");
       setCin(customer.cin ?? "");
       setAccountNumber(customer.accountNumber ?? "");
-      setTariff(customer.tariff ?? "");
+      // Try to find tariff ID by name, only if tariffs are loaded
+      let tariffId2 = customer.tariff ?? "";
+      if (tariffs && tariffs.length > 0 && customer.tariff) {
+        const tariffItem2 = tariffs.find((t) => t.name === customer.tariff);
+        if (tariffItem2) {
+          tariffId2 = tariffItem2.id;
+        }
+      }
+      setTariff(tariffId2);
       setFeeder(customer.feederInfo?.assetId ?? (customer as any).feeder ?? "");
       setDss(customer.dssInfo?.assetId ?? customer.dss ?? "");
       setState(customerState);
