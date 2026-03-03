@@ -278,7 +278,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
         meterId: selectedMeterId,
         liabilityCauseId: selectedLiabilityCauseId,
         amount: Number(reconcileAmount),
-        type,
+      
       },
       {
         onSuccess: () => {
@@ -385,19 +385,8 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
   const nestedTransactions: PaymentHistoryTransaction[] = useMemo(() => {
     // Use payment history data if available
     if (paymentHistory && paymentHistory.length > 0) {
-      const transactions: PaymentHistoryTransaction[] = [];
-
-      // paymentHistory is PaymentHistoryTransaction[][] - each inner array contains transactions for a creditDebitAdjId
-      // Flatten all transactions from all arrays
-      paymentHistory.forEach((historyArray) => {
-        if (Array.isArray(historyArray)) {
-          historyArray.forEach((item) => {
-            transactions.push(item);
-          });
-        }
-      });
-
-      return transactions;
+      // paymentHistory is now PaymentHistoryTransaction[] - a flat array of transactions
+      return paymentHistory;
     }
 
     // Fallback to original logic if payment history is not available
@@ -946,7 +935,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
               <div className="flex flex-col space-y-4 text-right">
                 <span className="text-md">Outstanding Balance</span>
                 <p className="text-muted-foreground text-2xl font-semibold">
-                  {paymentHistory?.[0]?.[0]?.outstandingBalance?.toLocaleString() ??
+                  {paymentHistory?.[0]?.outstandingBalance?.toLocaleString() ??
                     selectedAdjustment?.debitCreditAdjustInfo?.[0]?.outstandingBalance?.toLocaleString() ??
                     0}
                 </p>

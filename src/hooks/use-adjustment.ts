@@ -82,13 +82,13 @@ export const useReconcileDebit = () => {
       meterId,
       liabilityCauseId,
       amount,
-      type,
+      
     }: {
       meterId: string;
       liabilityCauseId: string;
       amount: number;
-      type: "credit" | "debit";
-    }) => reconcileDebit(meterId, liabilityCauseId, amount, type),
+  
+    }) => reconcileDebit(meterId, liabilityCauseId, amount),
     onSuccess: (response) => {
       if (response.success) {
         toast.success("Debit reconciled successfully!");
@@ -122,7 +122,7 @@ export const usePaymentHistory = (
   liabilityCauseId: string | null,
   type: "credit" | "debit",
 ) => {
-  return useQuery<PaymentHistoryTransaction[][]>({
+  return useQuery<PaymentHistoryTransaction[]>({
     queryKey: ["payment-history", meterId, liabilityCauseId, type],
     queryFn: async () => {
       if (!meterId || !liabilityCauseId) {

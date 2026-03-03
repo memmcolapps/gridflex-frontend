@@ -165,7 +165,6 @@ export interface PaymentHistoryItem {
 export interface PaymentHistoryTransaction {
   id: string;
   creditDebitAdjId: string;
-  parentId?: string;
   credit: number;
   debt: number;
   balance: number;
@@ -176,7 +175,7 @@ export interface PaymentHistoryTransaction {
 export interface PaymentHistoryResponse {
   responsecode: string;
   responsedesc: string;
-  responsedata: PaymentHistoryTransaction[][];
+  responsedata: PaymentHistoryTransaction[];
 }
 
 export interface LiabilityCausePayload {
