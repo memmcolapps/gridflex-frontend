@@ -16,14 +16,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { MeterInventoryItem,EditAssignedMeterPayload } from "@/types/meter-inventory";
+import type { MeterInventoryItem, EditAssignedMeterPayload } from "@/types/meter-inventory";
 import { useEditAssignedMeter } from "@/hooks/use-meter";
 import { toast } from "sonner";
 
 interface EditPaymentDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  editCustomer: MeterInventoryItem | null;
+  editCustomer: MeterInventoryItem | EditAssignedMeterPayload | null;
+  // Edited values from parent dialog
+  editedCin?: string;
+  editedAccountNumber?: string;
+  editedTariff?: string;
+  editedFeeder?: string;
+  editedDss?: string;
+  editedState?: string;
+  editedCity?: string;
+  editedStreetName?: string;
+  editedHouseNo?: string;
   debitMop: string;
   setDebitMop: (value: string) => void;
   creditMop: string;
@@ -41,6 +51,15 @@ export function EditPaymentDialog({
   isOpen,
   onOpenChange,
   editCustomer,
+  editedCin,
+  editedAccountNumber,
+  editedTariff,
+  editedFeeder,
+  editedDss,
+  editedState,
+  editedCity,
+  editedStreetName,
+  editedHouseNo,
   debitMop,
   setDebitMop,
   creditMop,
@@ -54,58 +73,65 @@ export function EditPaymentDialog({
   onBack,
 }: EditPaymentDialogProps) {
   const editAssignedMeterMutation = useEditAssignedMeter();
-  
- 
-  
+
   const handleSave = () => {
-  
-    
     if (!editCustomer) {
       toast.error("No customer selected");
       alert("Error: No customer selected");
       return;
     }
 
-  
-    const meterAssignId = editCustomer.id ?? editCustomer.customerId;
-    
-    if (!meterAssignId) {
-      toast.error("Cannot find customer ID");
-      alert("Error: Cannot find customer ID");
-      return;
+    // Build payload - use edited values if provided, otherwise fall back to editCustomer values
+    let payload: EditAssignedMeterPayload;
+
+    if ('paymentMode' in editCustomer) {
+      // It's EditAssignedMeterPayload - use properties directly
+      payload = {
+        id: editCustomer.id,
+        tariff: editedTariff ?? editCustomer.tariff,
+        dssAssetId: editedDss ?? editCustomer.dssAssetId,
+        feederAssetId: editedFeeder ?? editCustomer.feederAssetId,
+        cin: editedCin ?? editCustomer.cin,
+        accountNumber: editedAccountNumber ?? editCustomer.accountNumber,
+        meterAssignLocation: {
+          state: editedState ?? editCustomer.meterAssignLocation.state ?? "",
+          city: editedCity ?? editCustomer.meterAssignLocation.city ?? "",
+          houseNo: editedHouseNo ?? editCustomer.meterAssignLocation.houseNo ?? "",
+          streetName: editedStreetName ?? editCustomer.meterAssignLocation.streetName ?? "",
+        },
+        paymentMode: {
+          debitPaymentMode: debitMop,
+          debitPaymentPlan: debitMop === "one-off" ? "" : (debitMop === "percentage" || debitMop === "no-payment" ? "no-payment" : debitPaymentPlan),
+          creditPaymentMode: creditMop,
+          creditPaymentPlan: creditMop === "one-off" ? "" : (creditMop === "percentage" || creditMop === "no-payment" ? "no-payment" : creditPaymentPlan),
+        },
+      };
+    } else {
+      // It's MeterInventoryItem - use edited values if provided
+      const meterAssignId = editCustomer.id ?? "";
+      
+      payload = {
+        id: meterAssignId,
+        tariff: editedTariff ?? editCustomer.tariff ?? "",
+        dssAssetId: editedDss ?? editCustomer.dss ?? "",
+        feederAssetId: editedFeeder ?? editCustomer.feederLine ?? "",
+        cin: editedCin ?? editCustomer.cin ?? "",
+        accountNumber: editedAccountNumber ?? editCustomer.accountNumber ?? "",
+        meterAssignLocation: {
+          state: editedState ?? editCustomer.meterAssignLocation?.state ?? "",
+          city: editedCity ?? editCustomer.meterAssignLocation?.city ?? "",
+          houseNo: editedHouseNo ?? editCustomer.meterAssignLocation?.houseNo ?? "",
+          streetName: editedStreetName ?? editCustomer.meterAssignLocation?.streetName ?? "",
+        },
+        paymentMode: {
+          debitPaymentMode: debitMop,
+          debitPaymentPlan: debitMop === "one-off" ? "" : (debitMop === "percentage" || debitMop === "no-payment" ? "no-payment" : debitPaymentPlan),
+          creditPaymentMode: creditMop,
+          creditPaymentPlan: creditMop === "one-off" ? "" : (creditMop === "percentage" || creditMop === "no-payment" ? "no-payment" : creditPaymentPlan),
+        },
+      };
     }
 
-   
-    const tariff = editCustomer.tariffInfo?.id ?? editCustomer.tariff ?? "";
-    const dssAssetId = editCustomer.dssInfo?.assetId ?? editCustomer.dss ?? "";
-    const feederAssetId = editCustomer.feederInfo?.assetId ?? editCustomer.feederLine ?? "";
-    const cin = editCustomer.cin ?? "";
-    const accountNumber = editCustomer.accountNumber ?? "";
-    const meterAssignLocation = editCustomer.meterAssignLocation ?? { state: "", city: "", houseNo: "", streetName: "" };
-
-    const payload: EditAssignedMeterPayload = {
-      id: meterAssignId,
-      tariff: tariff,
-      dssAssetId: dssAssetId,
-      feederAssetId: feederAssetId,
-      cin: cin,
-      accountNumber: accountNumber,
-      meterAssignLocation: {
-        state: meterAssignLocation.state ?? "",
-        city: meterAssignLocation.city ?? "",
-        houseNo: meterAssignLocation.houseNo ?? "",
-        streetName: meterAssignLocation.streetName ?? "",
-      },
-      paymentMode: {
-        debitPaymentMode: debitMop,
-        debitPaymentPlan: debitMop === "one-off" ? "" : debitPaymentPlan,
-        creditPaymentMode: creditMop,
-        creditPaymentPlan: creditMop === "one-off" ? "" : creditPaymentPlan,
-      },
-    };
-
-   
-    
     editAssignedMeterMutation.mutate(payload, {
       onSuccess: () => {
         toast.success("Meter updated successfully!");
@@ -118,6 +144,59 @@ export function EditPaymentDialog({
       },
     });
   };
+
+  // Get payment plan options based on mode of payment
+  const getDebitPaymentPlanOptions = () => {
+    if (debitMop === "one-off") return null;
+    if (debitMop === "percentage" || debitMop === "no-payment") {
+      return <SelectItem value="no-payment">No Payment</SelectItem>;
+    }
+    // monthly - show 6 and 3
+    return (
+      <>
+        <SelectItem value="6">6</SelectItem>
+        <SelectItem value="3">3</SelectItem>
+      </>
+    );
+  };
+
+  const getCreditPaymentPlanOptions = () => {
+    if (creditMop === "one-off") return null;
+    if (creditMop === "percentage" || creditMop === "no-payment") {
+      return <SelectItem value="no-payment">No Payment</SelectItem>;
+    }
+    // monthly - show 6 and 3
+    return (
+      <>
+        <SelectItem value="6">6</SelectItem>
+        <SelectItem value="3">3</SelectItem>
+      </>
+    );
+  };
+
+  // Check if payment plan should be disabled
+  const isDebitPaymentPlanDisabled = debitMop === "one-off";
+  const isCreditPaymentPlanDisabled = creditMop === "one-off";
+
+  // Get default value for payment plan based on mode
+  const getDebitPaymentPlanValue = () => {
+    // If mop is one-off, no payment plan
+    if (debitMop === "one-off") return "";
+    // If mop is percentage or no-payment, return no-payment
+    if (debitMop === "percentage" || debitMop === "no-payment") return "no-payment";
+    // For monthly, return the actual payment plan value, or default to "6" if empty
+    return debitPaymentPlan || "6";
+  };
+
+  const getCreditPaymentPlanValue = () => {
+    // If mop is one-off, no payment plan
+    if (creditMop === "one-off") return "";
+    // If mop is percentage or no-payment, return no-payment
+    if (creditMop === "percentage" || creditMop === "no-payment") return "no-payment";
+    // For monthly, return the actual payment plan value, or default to "6" if empty
+    return creditPaymentPlan || "6";
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="bg-white text-black h-fit border-none">
@@ -145,7 +224,7 @@ export function EditPaymentDialog({
                     <SelectItem value="monthly">Monthly</SelectItem>
                     <SelectItem value="one-off">One off</SelectItem>
                     <SelectItem value="percentage">Percentage</SelectItem>
-                    <SelectItem value="percentage">No Payment</SelectItem>
+                  
                   </SelectContent>
                 </Select>
               </div>
@@ -169,7 +248,7 @@ export function EditPaymentDialog({
                     <SelectItem value="monthly">Monthly</SelectItem>
                     <SelectItem value="one-off">One off</SelectItem>
                     <SelectItem value="percentage">Percentage</SelectItem>
-                      <SelectItem value="percentage">No Payment</SelectItem>
+                 
                   </SelectContent>
                 </Select>
               </div>
@@ -178,17 +257,16 @@ export function EditPaymentDialog({
               <Label>Payment Plan</Label>
               <Select
                 onValueChange={setDebitPaymentPlan}
-                disabled={debitMop === "one-off" || debitMop === "percentage"}
-                value={debitPaymentPlan}
+                disabled={isDebitPaymentPlanDisabled}
+                value={getDebitPaymentPlanValue()}
               >
                 <SelectTrigger
-                  className={`w-full ${debitMop === "one-off" || debitMop === "percentage" ? "bg-gray-100 cursor-not-allowed text-gray-400" : ""}`}
+                  className={`w-full ${isDebitPaymentPlanDisabled ? "bg-gray-100 cursor-not-allowed text-gray-400" : ""}`}
                 >
                   <SelectValue placeholder="Select payment plan" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="6">6</SelectItem>
-                  <SelectItem value="3">3</SelectItem>
+                  {getDebitPaymentPlanOptions()}
                 </SelectContent>
               </Select>
             </div>
@@ -196,17 +274,16 @@ export function EditPaymentDialog({
               <Label>Payment Plan</Label>
               <Select
                 onValueChange={setCreditPaymentPlan}
-                disabled={creditMop === "one-off" || creditMop === "percentage"}
-                value={creditPaymentPlan}
+                disabled={isCreditPaymentPlanDisabled}
+                value={getCreditPaymentPlanValue()}
               >
                 <SelectTrigger
-                  className={`w-full ${creditMop === "one-off" || creditMop === "percentage" ? "bg-gray-100 cursor-not-allowed text-gray-400" : ""}`}
+                  className={`w-full ${isCreditPaymentPlanDisabled ? "bg-gray-100 cursor-not-allowed text-gray-400" : ""}`}
                 >
                   <SelectValue placeholder="Select payment plan" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="6">6</SelectItem>
-                  <SelectItem value="3">3</SelectItem>
+                  {getCreditPaymentPlanOptions()}
                 </SelectContent>
               </Select>
             </div>

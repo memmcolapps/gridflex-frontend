@@ -194,8 +194,10 @@ export const createAdjustment = async (
 
 // Function to reconcile a debit
 export const reconcileDebit = async (
-  debitCreditAdjustmentId: string,
+  meterId: string,
+  liabilityCauseId: string,
   amount: number,
+  type: "credit" | "debit",
 ): Promise<
   { success: true; data: any } | { success: false; error: string }
 > => {
@@ -204,11 +206,14 @@ export const reconcileDebit = async (
 
     const response = await axiosInstance.post(
       `${API_URL}/debit-credit-adjustment/service/reconcile-dept`,
+      {},
       {
-        debitCreditAdjustmentId,
-        amount,
-      },
-      {
+        params: {
+          meterId,
+          liabilityCauseId,
+          amount,
+          type,
+        },
         headers: {
           "Content-Type": "application/json",
           custom: CUSTOM_HEADER,

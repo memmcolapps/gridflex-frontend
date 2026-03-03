@@ -79,12 +79,16 @@ export const useReconcileDebit = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({
-      debitCreditAdjustmentId,
+      meterId,
+      liabilityCauseId,
       amount,
+      type,
     }: {
-      debitCreditAdjustmentId: string;
+      meterId: string;
+      liabilityCauseId: string;
       amount: number;
-    }) => reconcileDebit(debitCreditAdjustmentId, amount),
+      type: "credit" | "debit";
+    }) => reconcileDebit(meterId, liabilityCauseId, amount, type),
     onSuccess: (response) => {
       if (response.success) {
         toast.success("Debit reconciled successfully!");

@@ -272,11 +272,13 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
   };
 
   const handleReconcileDebit = () => {
-    if (!selectedAdjustmentId || !selectedCustomer) return;
+    if (!selectedMeterId || !selectedLiabilityCauseId || !selectedCustomer) return;
     reconcileDebitMutation.mutate(
       {
-        debitCreditAdjustmentId: selectedAdjustmentId,
+        meterId: selectedMeterId,
+        liabilityCauseId: selectedLiabilityCauseId,
         amount: Number(reconcileAmount),
+        type,
       },
       {
         onSuccess: () => {
@@ -1235,7 +1237,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
               <div className="flex flex-col space-y-4 text-right">
                 <span className="text-md">Outstanding Balance</span>
                 <p className="text-muted-foreground text-2xl font-semibold">
-                  {selectedCustomer?.balance?.toLocaleString() ?? "0"}
+                  {selectedDebitInfo?.totalBalance?.toLocaleString() ?? "0"}
                 </p>
               </div>
             </div>
