@@ -92,7 +92,7 @@ export const useReconcileDebit = () => {
     onSuccess: (response) => {
       if (response.success) {
         toast.success("Debit reconciled successfully!");
-        queryClient.invalidateQueries({ queryKey: ["adjustments", "debit"] });
+        queryClient.invalidateQueries({ queryKey: ["adjustments"] });
       } else {
         toast.error(response.error);
       }
