@@ -108,11 +108,6 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
       const debitInfo = adj.debitCreditAdjustInfo[0];
       const balance = debitInfo?.outstandingBalance ?? 0;
 
-      // Skip if there's no balance
-      if (balance <= 0) {
-        return;
-      }
-
       if (id && !group.has(id)) {
         group.set(id, {
           id,
