@@ -1232,7 +1232,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
               {selectedDebitInfo?.liabilityCause?.code ?? "N/A"}
             </p>
           </DialogHeader>
-          <div className="overflow-x-hidden">
+          <div className="max-h-[320px] overflow-y-auto overflow-x-hidden">
             <Table className="h-fit w-full">
               <TableHeader>
                 <TableRow className="h-16 py-4">
