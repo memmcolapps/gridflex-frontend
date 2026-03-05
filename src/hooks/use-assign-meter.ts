@@ -149,6 +149,20 @@ const mapToFrontendMeter = (
     lastName: apiItem.customer?.lastname,
     createdAt: apiItem.createdAt,
     updatedAt: apiItem.updatedAt,
+    mdMeterInfo: apiItem.mdMeterInfo
+      ? {
+          ctRatioNum: String(apiItem.mdMeterInfo.ctRatioNum),
+          ctRatioDenom: String(apiItem.mdMeterInfo.ctRatioDenom),
+          voltRatioNum: String(apiItem.mdMeterInfo.voltRatioNum),
+          voltRatioDenom: String(apiItem.mdMeterInfo.voltRatioDenom),
+          multiplier: String(apiItem.mdMeterInfo.multiplier),
+          meterRating: String(apiItem.mdMeterInfo.meterRating),
+          initialReading: String(apiItem.mdMeterInfo.initialReading),
+          dial: String(apiItem.mdMeterInfo.dial),
+          latitude: apiItem.mdMeterInfo.latitude,
+          longitude: apiItem.mdMeterInfo.longitude,
+        }
+      : undefined,
   } as MeterInventoryItem;
 };
 

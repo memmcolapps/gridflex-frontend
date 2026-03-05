@@ -378,65 +378,70 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
   }, [selectedAdjustment, selectedAdjustmentId, selectedLiabilityCauseId]);
 
   const nestedTransactions: PaymentHistoryTransaction[] = useMemo(() => {
-    // Use payment history data if available
-    if (paymentHistory && paymentHistory.length > 0) {
-      // paymentHistory is now PaymentHistoryTransaction[] - a flat array of transactions
-      return paymentHistory;
-    }
+    try {
+      // Use payment history data if available
+      if (paymentHistory && paymentHistory.length > 0) {
+        // paymentHistory is now PaymentHistoryTransaction[] - a flat array of transactions
+        return paymentHistory;
+      }
 
-    // Fallback to original logic if payment history is not available
-    if (!selectedAdjustment) return [];
+      // Fallback to original logic if payment history is not available
+      if (!selectedAdjustment) return [];
 
-    // Check if debitCreditAdjustInfo exists and has items
-    if (!selectedAdjustment.debitCreditAdjustInfo || selectedAdjustment.debitCreditAdjustInfo.length === 0) {
+      // Check if debitCreditAdjustInfo exists and has items
+      if (!selectedAdjustment.debitCreditAdjustInfo || selectedAdjustment.debitCreditAdjustInfo.length === 0) {
+        return [];
+      }
+
+      const transactions: PaymentHistoryTransaction[] = [];
+
+      // Get adjustment data from debitCreditAdjustInfo array
+      const debitInfo = selectedAdjustment.debitCreditAdjustInfo[0];
+
+      // Only push initial adjustment transaction if there's actual balance data
+      if (debitInfo && debitInfo.totalBalance > 0) {
+        transactions.push({
+          id: selectedAdjustment.id ?? "",
+          creditDebitAdjId: debitInfo?.liabilityCause?.code ?? "",
+          credit: debitInfo?.type === "credit" ? (debitInfo?.totalBalance ?? 0) : 0,
+          debt: debitInfo?.type === "debit" ? (debitInfo?.totalBalance ?? 0) : 0,
+          balance: debitInfo?.totalBalance ?? 0,
+          outstandingBalance: debitInfo?.outstandingBalance ?? 0,
+          createdAt: selectedAdjustment.createdAt ?? "",
+        });
+      }
+
+      // Only add payment transactions if there are payments
+      if (debitInfo?.payment && debitInfo.payment.length > 0) {
+        let runningBalance = debitInfo?.totalBalance ?? 0;
+        (debitInfo.payment)
+          .filter(
+            (pay): pay is Required<Payment> & { createdAt: string } =>
+              !!pay.createdAt,
+          )
+          .sort(
+            (a, b) =>
+              new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+          )
+          .forEach((pay) => {
+            runningBalance -= pay.credit;
+            transactions.push({
+              id: pay.id ?? "",
+              creditDebitAdjId: "",
+              credit: pay.credit,
+              debt: 0,
+              balance: runningBalance,
+              outstandingBalance: runningBalance,
+              createdAt: pay.createdAt ?? "",
+            });
+          });
+      }
+
+      return transactions;
+    } catch (error) {
+      console.error("Error computing nested transactions:", error);
       return [];
     }
-
-    const transactions: PaymentHistoryTransaction[] = [];
-
-    // Get adjustment data from debitCreditAdjustInfo array
-    const debitInfo = selectedAdjustment.debitCreditAdjustInfo[0];
-
-    // Only push initial adjustment transaction if there's actual balance data
-    if (debitInfo && debitInfo.totalBalance > 0) {
-      transactions.push({
-        id: selectedAdjustment.id ?? "",
-        creditDebitAdjId: debitInfo?.liabilityCause?.code ?? "",
-        credit: debitInfo?.type === "credit" ? (debitInfo?.totalBalance ?? 0) : 0,
-        debt: debitInfo?.type === "debit" ? (debitInfo?.totalBalance ?? 0) : 0,
-        balance: debitInfo?.totalBalance ?? 0,
-        outstandingBalance: debitInfo?.outstandingBalance ?? 0,
-        createdAt: selectedAdjustment.createdAt ?? "",
-      });
-    }
-
-    // Only add payment transactions if there are payments
-    if (debitInfo?.payment && debitInfo.payment.length > 0) {
-      let runningBalance = debitInfo?.totalBalance ?? 0;
-      (debitInfo.payment)
-        .filter(
-          (pay): pay is Required<Payment> & { createdAt: string } =>
-            !!pay.createdAt,
-        )
-        .sort(
-          (a, b) =>
-            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-        )
-        .forEach((pay) => {
-          runningBalance -= pay.credit;
-          transactions.push({
-            id: pay.id ?? "",
-            creditDebitAdjId: "",
-            credit: pay.credit,
-            debt: 0,
-            balance: runningBalance,
-            outstandingBalance: runningBalance,
-            createdAt: pay.createdAt ?? "",
-          });
-        });
-    }
-
-    return transactions;
   }, [selectedAdjustment, paymentHistory]);
 
   const colSpan = 6;
@@ -1003,27 +1008,32 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                             >
                               <DropdownMenuItem
                                 onSelect={() => {
-                                  // Find the liability cause ID from customerAdjustments
-                                  const adjustment = customerAdjustments.find(
-                                    (adj) =>
-                                      adj.debitCreditAdjustInfo?.some(
+                                  try {
+                                    // Find the liability cause ID from customerAdjustments
+                                    const adjustment = customerAdjustments.find(
+                                      (adj) =>
+                                        adj.debitCreditAdjustInfo?.some(
+                                          (info) =>
+                                            info.id ===
+                                            transaction.creditDebitAdjId,
+                                        ),
+                                    );
+                                    const liabilityCauseId =
+                                      adjustment?.debitCreditAdjustInfo?.find(
                                         (info) =>
                                           info.id ===
                                           transaction.creditDebitAdjId,
-                                      ),
-                                  );
-                                  const liabilityCauseId =
-                                    adjustment?.debitCreditAdjustInfo?.find(
-                                      (info) =>
-                                        info.id ===
-                                        transaction.creditDebitAdjId,
-                                    )?.liabilityCauseId ?? null;
-                                  setSelectedLiabilityCauseId(
-                                    liabilityCauseId,
-                                  );
-                                  setFetchPaymentHistory(true);
-                                  setIsTransactionsDialogOpen(false);
-                                  setIsNestedDialogOpen(true);
+                                      )?.liabilityCauseId ?? null;
+                                    setSelectedLiabilityCauseId(
+                                      liabilityCauseId,
+                                    );
+                                    setFetchPaymentHistory(true);
+                                    setIsTransactionsDialogOpen(false);
+                                    setIsNestedDialogOpen(true);
+                                  } catch (error) {
+                                    console.error("Error opening payment history:", error);
+                                    toast.error("Failed to load payment history. Please try again.");
+                                  }
                                 }}
                               >
                                 <div className="flex w-fit items-center gap-2">
@@ -1119,16 +1129,21 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                             >
                               <DropdownMenuItem
                                 onSelect={() => {
-                                  // For Transaction type, liabilityCauseId exists directly
-                                  setSelectedLiabilityCauseId(
-                                    transaction?.liabilityCauseId ?? null,
-                                  );
-                                  setSelectedAdjustmentId(
-                                    transaction?.adjustmentId ?? null,
-                                  );
-                                  setFetchPaymentHistory(true);
-                                  setIsTransactionsDialogOpen(false);
-                                  setIsNestedDialogOpen(true);
+                                  try {
+                                    // For Transaction type, liabilityCauseId exists directly
+                                    setSelectedLiabilityCauseId(
+                                      transaction?.liabilityCauseId ?? null,
+                                    );
+                                    setSelectedAdjustmentId(
+                                      transaction?.adjustmentId ?? null,
+                                    );
+                                    setFetchPaymentHistory(true);
+                                    setIsTransactionsDialogOpen(false);
+                                    setIsNestedDialogOpen(true);
+                                  } catch (error) {
+                                    console.error("Error opening payment history:", error);
+                                    toast.error("Failed to load payment history. Please try again.");
+                                  }
                                 }}
                               >
                                 <div className="flex w-fit items-center gap-2">
@@ -1347,7 +1362,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                               : "rounded-full bg-[#FBE9E9] px-2 py-1 text-[#F50202]"
                           }
                         >
-                          {transaction.balance.toLocaleString()}
+                          {transaction.balance?.toLocaleString() ?? "0"}
                         </span>
                       </TableCell>
                     </TableRow>
