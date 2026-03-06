@@ -262,6 +262,9 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
         setAmount("");
         setLiabilityCause("");
         resetSearch();
+        // Invalidate payment history and adjustments queries to refresh data
+        queryClient.invalidateQueries({ queryKey: ["payment-history"] });
+        queryClient.invalidateQueries({ queryKey: ["all-adjustments"] });
       },
     });
   };
@@ -279,6 +282,9 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
         onSuccess: () => {
           setIsReconcileDialogOpen(false);
           setReconcileAmount("");
+          // Invalidate payment history and adjustments queries to refresh data
+          queryClient.invalidateQueries({ queryKey: ["payment-history"] });
+          queryClient.invalidateQueries({ queryKey: ["all-adjustments"] });
         },
       },
     );
@@ -647,7 +653,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                             <Input
                               placeholder="6210009900"
                               value={meterInput}
-                              onChange={(e) => setMeterInput(e.target.value)}
+                              onChange={(e) => setMeterInput(e.target.value.trim())}
                               className="w-55 border-[rgba(228,231,236,1)]"
                             />
                             {isMeterLoading && (
@@ -1027,6 +1033,8 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                                     setSelectedLiabilityCauseId(
                                       liabilityCauseId,
                                     );
+                                    // Invalidate and refetch payment history to get fresh data
+                                    queryClient.invalidateQueries({ queryKey: ["payment-history"] });
                                     setFetchPaymentHistory(true);
                                     setIsTransactionsDialogOpen(false);
                                     setIsNestedDialogOpen(true);
@@ -1137,6 +1145,8 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                                     setSelectedAdjustmentId(
                                       transaction?.adjustmentId ?? null,
                                     );
+                                    // Invalidate and refetch payment history to get fresh data
+                                    queryClient.invalidateQueries({ queryKey: ["payment-history"] });
                                     setFetchPaymentHistory(true);
                                     setIsTransactionsDialogOpen(false);
                                     setIsNestedDialogOpen(true);
