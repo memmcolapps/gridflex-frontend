@@ -40,7 +40,7 @@ const VendingTable = ({ searchQuery = "" }: VendingTableProps = {}) => {
     const { canEdit } = usePermissions();
 
     const { data: transactionsData, isLoading } = useVendingTransactions({
-        page: currentPage - 1, // API uses 0-based indexing
+        page: currentPage,
         size: rowsPerPage,
     });
 
