@@ -130,7 +130,7 @@ const LiabilityTable = ({ view, onViewChange, onDataChange }: LiabilityTableProp
             const bandName = typeof row.band === 'string' ? row.band : (row.band as Band).name;
             const existingBand = bands.find(b => b.name === bandName);
             // Use type assertion to allow Band object in editFormData
-            setEditFormData({ ...row, band: existingBand || bandName } as Partial<TableData>);
+            setEditFormData({ ...row, band: existingBand ?? bandName } as Partial<TableData>);
         } else {
             setEditFormData({ ...row });
         }
@@ -168,7 +168,7 @@ const LiabilityTable = ({ view, onViewChange, onDataChange }: LiabilityTableProp
         if (!bandValue) return "";
         if (typeof bandValue === 'string') return bandValue;
         const bandObj = bandValue as Band;
-        if (bandObj && bandObj.name) return bandObj.name;
+        if (bandObj?.name) return bandObj.name;
         return "";
     };
 
@@ -194,7 +194,7 @@ const LiabilityTable = ({ view, onViewChange, onDataChange }: LiabilityTableProp
             if (typeof editDataAsPercentage.band === 'string') {
                 // If band is still a string, find the Band object from bands array
                 const bandFromList = bands.find(b => b.name === editDataAsPercentage.band);
-                if (!bandFromList || !bandFromList.id) {
+                if (!bandFromList?.id) {
                     toast.error("Band not found or not approved. Please select a valid band.");
                     return;
                 }
