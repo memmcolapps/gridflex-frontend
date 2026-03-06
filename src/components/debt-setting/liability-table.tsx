@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { ArrowUpDown, Ban, EllipsisVertical, Pencil, Search, AlertTriangle, Loader2, Play, CheckCircle } from "lucide-react";
+import { toast } from "sonner";
 import React, { useState, useMemo } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { getStatusStyle } from "../status-style";
@@ -124,7 +125,15 @@ const LiabilityTable = ({ view, onViewChange, onDataChange }: LiabilityTableProp
 
     const handleEditClick = (row: TableData) => {
         setSelectedRow(row);
-        setEditFormData({ ...row });
+        // For percentage range, we need to convert the band name string to a Band object
+        if ("percentage" in row && row.band) {
+            const bandName = typeof row.band === 'string' ? row.band : (row.band as Band).name;
+            const existingBand = bands.find(b => b.name === bandName);
+            // Use type assertion to allow Band object in editFormData
+            setEditFormData({ ...row, band: existingBand ?? bandName } as Partial<TableData>);
+        } else {
+            setEditFormData({ ...row });
+        }
         setIsEditDialogOpen(true);
     };
 
@@ -153,6 +162,16 @@ const LiabilityTable = ({ view, onViewChange, onDataChange }: LiabilityTableProp
         }
     };
 
+    const getBandDisplayValue = () => {
+        const editData = editFormData as Record<string, unknown>;
+        const bandValue = editData.band;
+        if (!bandValue) return "";
+        if (typeof bandValue === 'string') return bandValue;
+        const bandObj = bandValue as Band;
+        if (bandObj?.name) return bandObj.name;
+        return "";
+    };
+
     const handleEditSubmit = () => {
         if (!selectedRow) return;
         if ("liabilityName" in selectedRow) {
@@ -169,12 +188,25 @@ const LiabilityTable = ({ view, onViewChange, onDataChange }: LiabilityTableProp
                 }
             });
         } else if ("percentage" in selectedRow) {
-            const editDataAsPercentage = editFormData as UiPercentageRange & { band: Band };
+            const editDataAsPercentage = editFormData as UiPercentageRange & { band: Band | string };
+            // Handle both string and Band object for band
+            let bandId: string;
+            if (typeof editDataAsPercentage.band === 'string') {
+                // If band is still a string, find the Band object from bands array
+                const bandFromList = bands.find(b => b.name === editDataAsPercentage.band);
+                if (!bandFromList?.id) {
+                    toast.error("Band not found or not approved. Please select a valid band.");
+                    return;
+                }
+                bandId = bandFromList.id;
+            } else {
+                bandId = (editDataAsPercentage.band as Band).id;
+            }
             const payload: UpdatedPercentageRangePayload = {
                 percentageId: editDataAsPercentage.id,
                 percentage: editDataAsPercentage.percentage,
                 code: editDataAsPercentage.percentageCode,
-                bandId: editDataAsPercentage.band.id,
+                bandId,
                 amountStartRange: editDataAsPercentage.amountStartRange,
                 amountEndRange: editDataAsPercentage.amountEndRange,
             };
@@ -552,7 +584,7 @@ const LiabilityTable = ({ view, onViewChange, onDataChange }: LiabilityTableProp
                                     <div>
                                         <Label htmlFor="band" className="mb-2">Band</Label>
                                         <Select
-                                            value={"band" in editFormData ? editFormData.band ?? "" : ""}
+                                            value={getBandDisplayValue()}
                                             onValueChange={handleEditSelectChange}
                                         >
                                             <SelectTrigger className="w-full border-[#bebebe] focus:ring-ring/50 rounded-md h-10 px-3">
