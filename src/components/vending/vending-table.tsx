@@ -16,7 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { EllipsisVertical, Printer } from "lucide-react";
 import { Card } from "../ui/card";
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
     Dialog,
     DialogContent,
@@ -37,33 +37,44 @@ interface VendingTableProps {
 const VendingTable = ({ searchQuery = "" }: VendingTableProps = {}) => {
     const [rowsPerPage, setRowsPerPage] = useState<number>(10);
     const [currentPage, setCurrentPage] = useState<number>(1);
+    const [transactionsData, setTransactionsData] = useState<VendingTransaction[]>([]);
     const { canEdit } = usePermissions();
 
-    const { data: transactionsData, isLoading } = useVendingTransactions({
-        page: currentPage,
-        size: rowsPerPage,
+    const { data: rawTransactionsData, isLoading } = useVendingTransactions({
+        page: 1,
+        size: 1000, // Fetch a large number to handle client-side filtering/pagination
     });
 
-    const transactions = transactionsData?.messages ?? [];
+    // Update transactionsData when rawTransactionsData changes
+    useEffect(() => {
+        if (rawTransactionsData?.messages) {
+            setTransactionsData(rawTransactionsData.messages);
+        }
+    }, [rawTransactionsData]);
 
-    // Filter transactions based on search query (client-side filtering for now)
-    const filteredTransactions = transactions.filter((transaction) => {
-        if (!searchQuery) return true;
+    // Filter transactions based on search query (client-side filtering)
+    const filteredTransactions = useMemo(() => {
+        if (!searchQuery) return transactionsData;
         const searchLower = searchQuery.toLowerCase();
-        return (
+        return transactionsData.filter((transaction) =>
             transaction.meterAccountNumber?.toLowerCase().includes(searchLower) ||
             transaction.meterNumber?.toLowerCase().includes(searchLower) ||
             transaction.tokenType?.toLowerCase().includes(searchLower) ||
             transaction.tariffName?.toLowerCase().includes(searchLower) ||
             transaction.status?.toLowerCase().includes(searchLower)
         );
-    });
+    }, [transactionsData, searchQuery]);
 
-    // Apply pagination to filtered data
-    const paginatedTransactions = filteredTransactions.slice(
-        (currentPage - 1) * rowsPerPage,
-        currentPage * rowsPerPage
-    );
+    // Reset to first page when search query changes
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery]);
+
+    // Calculate pagination values
+    const totalRows = Math.ceil(filteredTransactions.length / rowsPerPage);
+    const startIndex = (currentPage - 1) * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+    const paginatedTransactions = filteredTransactions.slice(startIndex, endIndex);
 
     const getStatusColor = (status: string) => {
         switch (status) {
@@ -133,7 +144,7 @@ const VendingTable = ({ searchQuery = "" }: VendingTableProps = {}) => {
                                     <LoadingAnimation variant="spinner" message="Loading transactions..." size="md" />
                                 </TableCell>
                             </TableRow>
-                        ) : transactions.length === 0 ? (
+                        ) : filteredTransactions.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={11} className="text-center py-8">
                                     No transactions found
@@ -142,7 +153,7 @@ const VendingTable = ({ searchQuery = "" }: VendingTableProps = {}) => {
                         ) : (
                             paginatedTransactions.map((transaction, index) => (
                                 <TableRow key={transaction.transactionId}>
-                                    <TableCell>{(currentPage - 1) * rowsPerPage + index + 1}</TableCell>
+                                    <TableCell>{startIndex + index + 1}</TableCell>
                                     <TableCell>{transaction.meterAccountNumber}</TableCell>
                                     <TableCell>{transaction.meterNumber}</TableCell>
                                     <TableCell>{transaction.tokenType}</TableCell>
