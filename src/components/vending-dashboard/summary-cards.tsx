@@ -54,9 +54,9 @@ export default function SummaryCards({ cardData }: SummaryCardsProps) {
     },
     {
       title: "Total No. Of Transactions",
-      value: formatValue(cardData?.vatAmountSum ?? 0),
-      change: calculateChange(cardData?.vatAmountSum ?? 0, cardData?.previousVatAmountSum ?? 0).change,
-      previous: formatPrevious(cardData?.previousVatAmountSum ?? 0),
+      value: formatValue(cardData?.transactionCount ?? 0),
+      change: calculateChange(cardData?.transactionCount ?? 0, cardData?.previousTransactionCount ?? 0).change,
+      previous: formatPrevious(cardData?.previousTransactionCount?? 0),
       changeIcon: <TrendingUpIcon size={14} className="text-black" />,
       icon: <BadgePercent size={18} className="bg-[#FECACA] rounded-full p-2 text-[#450A0A]" />,
       color: "bg-[#FEE2E2] text-red-800 border border-[#FEE2E2]",

@@ -237,12 +237,13 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
       try {
         const result = await generateCreditTokenMutation.mutateAsync(payload);
         // Merge calculated data with generated data to preserve adjustment info
+        const debitBalance = calculatedTokenData?.totalDebitBalance ? Number(calculatedTokenData.totalDebitBalance) : 0;
         const mergedData = {
           ...result,
-          creditAdjustment: calculatedTokenData?.totalCreditBalance ?? result.creditAdjustment ?? 0,
-          debitAdjustment: calculatedTokenData?.totalDebitBalance ?? result.debitAdjustment ?? 0,
-          creditAdjustmentBalance: calculatedTokenData?.totalCreditBalance ?? 0,
-          debitAdjustmentBalance: calculatedTokenData?.totalDebitBalance ?? 0,
+          creditAdjustment: calculatedTokenData?.totalCreditUnits ?? result.creditAdjustment ?? 0,
+          debitAdjustment: (debitBalance || result.debitAdjustment) ?? 0,
+          creditAdjustmentBalance: calculatedTokenData?.creditUnitsApplied ?? 0,
+          debitAdjustmentBalance: debitBalance,
         };
         setGeneratedTokenData(mergedData);
         setShowTokenDialog(true);
@@ -778,40 +779,44 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
             {showReceipt && tokenType === "creditToken" && (
               <div className="mt-6">
                 <p>
-                  <strong>VAT Rate:</strong> {calculatedTokenData?.data.vat}
+                  <strong>VAT Rate:</strong> {calculatedTokenData?.vat}
                 </p>
                 <p>
                   <strong>VAT Amount:</strong>{" "}
-                  {calculatedTokenData?.data.vatAmount}
+                  {calculatedTokenData?.vatAmount}
                 </p>
                 <p>
                   <strong>Debit Adjustment:</strong>{" "}
                   {calculatedTokenData?.totalDebitBalance}
                 </p>
                 <p>
-                  <strong>Credit Adjustment:</strong>{" "}
-                  {calculatedTokenData?.totalCreditBalance}
+                  <strong>Mode of Payment:</strong>{" "}
+                  {calculatedTokenData?.debitPaymentMode}
                 </p>
-                
-                {/* <p><strong>KVA:</strong>{calculatedTokenData?.}</p> */}
+
+                <p>
+                  <strong>Credit Adjustment:</strong>{" "}
+                  {calculatedTokenData?.creditUnitsApplied}
+                </p>
+              
                     <p>
-                  <strong>Mode Of Payment:</strong>{" "}
-                
+                  <strong>Mode Of Payment:</strong>{" "} 
+                    {calculatedTokenData?.creditPaymentMode}            
                 </p>
                 <p>
                   <strong>Cost Of Unit:</strong>{" "}
-                  {calculatedTokenData?.data.costOfUnit}
+                  {calculatedTokenData?.costOfUnit}
                 </p>
                 <p>
-                  <strong>Units:</strong> {calculatedTokenData?.data.unit}
+                  <strong>Units:</strong> {calculatedTokenData?.unit}
                 </p>
                 <p>
                   <strong>Initial Amount:</strong>{" "}
-                  {calculatedTokenData?.data.initialAmount}
+                  {calculatedTokenData?.initialAmount}
                 </p>
                 <p>
                   <strong>Total Amount Vended:</strong>{" "}
-                  {calculatedTokenData?.data.finalAmount}
+                  {calculatedTokenData?.finalAmount}
                 </p>
               </div>
             )}
