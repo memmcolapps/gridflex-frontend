@@ -276,7 +276,6 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
         meterId: selectedMeterId,
         liabilityCauseId: selectedLiabilityCauseId,
         amount: Number(reconcileAmount),
-      
       },
       {
         onSuccess: () => {
@@ -1054,26 +1053,26 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                               {type === "debit" && (
                                 <DropdownMenuItem
                                   onSelect={() => {
-                                    // Find the liability cause ID from customerAdjustments
+                                    // Find the liability cause ID from customerAdjustments by matching liability cause code
                                     const adjustment = customerAdjustments.find(
                                       (adj) =>
                                         adj.debitCreditAdjustInfo?.some(
                                           (info) =>
-                                            info.id ===
+                                            info.liabilityCause?.code ===
                                             transaction.creditDebitAdjId,
                                         ),
                                     );
-                                    const liabilityCauseId =
-                                      adjustment?.debitCreditAdjustInfo?.find(
-                                        (info) =>
-                                          info.id ===
-                                          transaction.creditDebitAdjId,
-                                      )?.liabilityCauseId ?? null;
+                                    const debitInfo = adjustment?.debitCreditAdjustInfo?.find(
+                                      (info) =>
+                                        info.liabilityCause?.code ===
+                                        transaction.creditDebitAdjId,
+                                    );
+                                    const liabilityCauseId = debitInfo?.liabilityCauseId ?? null;
                                     setSelectedLiabilityCauseId(
                                       liabilityCauseId,
                                     );
                                     setSelectedAdjustmentId(
-                                      transaction?.id ?? null,
+                                      liabilityCauseId,
                                     );
                                     setSelectedCustomer(selectedCustomer);
                                     setIsReconcileDialogOpen(true);
@@ -1166,25 +1165,26 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                               {type === "debit" && (
                                 <DropdownMenuItem
                                   onSelect={() => {
-                                    // Find the liability cause ID from customerAdjustments
+                                    // Find the liability cause ID from customerAdjustments by matching liability cause code
                                     const adjustment = customerAdjustments.find(
                                       (adj) =>
                                         adj.debitCreditAdjustInfo?.some(
                                           (info) =>
-                                            info.id ===
-                                            transaction.adjustmentId,
+                                            info.liabilityCause?.code ===
+                                            transaction.liabilityCode,
                                         ),
                                     );
-                                    const liabilityCauseId =
-                                      adjustment?.debitCreditAdjustInfo?.find(
-                                        (info) =>
-                                          info.id === transaction.adjustmentId,
-                                      )?.liabilityCauseId ?? null;
+                                    const debitInfo = adjustment?.debitCreditAdjustInfo?.find(
+                                      (info) =>
+                                        info.liabilityCause?.code ===
+                                        transaction.liabilityCode,
+                                    );
+                                    const liabilityCauseId = debitInfo?.liabilityCauseId ?? null;
                                     setSelectedLiabilityCauseId(
                                       liabilityCauseId,
                                     );
                                     setSelectedAdjustmentId(
-                                      transaction?.adjustmentId ?? null,
+                                      liabilityCauseId,
                                     );
                                     setSelectedCustomer(selectedCustomer);
                                     setIsReconcileDialogOpen(true);
