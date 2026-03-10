@@ -1,5 +1,7 @@
-import type { HierarchyResponse } from '@/types/hes';
+import type { HierarchyResponse, ScheduleListResponse } from '@/types/hes';
 import { env } from "@/env";
+import { axiosInstance } from "@/lib/axios";
+import { handleApiError } from "@/utils/error-handler";
 
 export const fetchHierarchyData = async (): Promise<HierarchyResponse> => {
   const baseUrl = env.NEXT_PUBLIC_BASE_URL;
@@ -26,4 +28,76 @@ export const fetchHierarchyData = async (): Promise<HierarchyResponse> => {
   }
 
   return response.json();
+};
+
+const CUSTOM_HEADER = env.NEXT_PUBLIC_CUSTOM_HEADER;
+
+export const fetchScheduleData = async (
+  page: number,
+  size: number,
+  search?: string,
+): Promise<
+  | { success: true; data: ScheduleListResponse["responsedata"] }
+  | { success: false; error: string }
+> => {
+  try {
+    const token = localStorage.getItem("auth_token");
+    if (!token) return { success: false, error: "Auth token not found" };
+
+    const params: Record<string, string | number> = { page, size };
+    if (search) params.search = search;
+
+    const response = await axiosInstance.get<ScheduleListResponse>(
+      "/hes/service/data/schedule",
+      {
+        params,
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    if (response.data.responsecode !== "000") {
+      return { success: false, error: response.data.responsedesc };
+    }
+    return { success: true, data: response.data.responsedata };
+  } catch (error) {
+    return { success: false, error: handleApiError(error).message };
+  }
+};
+
+export interface CreateSchedulePayload {
+  eventProfileType: string;
+  timeInterval: number;
+  timeUnit: string;
+  activeDays: string[];
+  obisCodes: string;
+  orgId: string;
+}
+
+export const createSchedule = async (
+  payload: CreateSchedulePayload,
+): Promise<{ success: true } | { success: false; error: string }> => {
+  try {
+    const token = localStorage.getItem("auth_token");
+    if (!token) return { success: false, error: "Auth token not found" };
+
+    await axiosInstance.post(
+      "/data-collection/schedules/create",
+      payload,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: handleApiError(error).message };
+  }
 };

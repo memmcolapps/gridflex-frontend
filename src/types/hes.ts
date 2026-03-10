@@ -42,3 +42,34 @@ export interface HierarchyResponse {
   responsedesc: string;
   responsedata: HierarchyResponseData;
 }
+
+export interface ScheduleItem {
+  name: string;
+  orgId: string;
+  cronExpression: string;
+  cronJob: boolean;
+  description: string;
+  interfaceName: string;
+  jobClass: string;
+  jobGroup: string;
+  jobName: string;
+  jobStatus: string;
+  repeatTime: string;
+  repeatMinutes: string;
+  repeatHours: string;
+  lastRunTime: string;
+  obisCode: string;
+  updatedAt: string;
+}
+
+export interface ScheduleListResponse {
+  responsecode: string;
+  responsedesc: string;
+  responsedata: {
+    totalData: number;
+    data: ScheduleItem[];
+    size: number;
+    totalPages: number;
+    page: number;
+  };
+}

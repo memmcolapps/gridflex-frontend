@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FilterControl } from "@/components/search-control";
 import { Button } from "@/components/ui/button";
 import { ContentHeader } from "@/components/ui/content-header";
@@ -48,17 +48,11 @@ import {
 import SetSyncScheduleDialog from "@/components/hes/controlsconfigs/data-collection-schedule/set-sync-schedule-dialog";
 import { ConfirmDialog } from "@/components/hes/controlsconfigs/data-collection-schedule/confirm-dialog";
 import EditSyncScheduleDialog from "@/components/hes/controlsconfigs/data-collection-schedule/edit-sync-schedule";
+import { fetchScheduleData } from "@/service/hes-service";
+import type { ScheduleItem } from "@/types/hes";
 
 // Define the shape of the filter object using Record
 type FilterType = Record<string, string | boolean>;
-
-// Define the shape of the sync schedule data
-interface SyncScheduleData {
-  eventType: string;
-  timeInterval: string;
-  unit: string;
-  activeDays: string;
-}
 
 // Define the shape of the table data
 interface TableData {
@@ -70,25 +64,16 @@ interface TableData {
   status: "Active" | "Paused";
 }
 
-// Map eventType values to display labels using Record
-const eventTypeLabels: Record<string, string> = {
-  standardEventLog: "Standard Event Log",
-  relayControlLog: "Relay Control Log",
-  powerQualityLog: "Power Quality Log",
-  communicationLog: "Communication Log",
-  tokenEventProfile: "Token Event Profile",
-  energyProfile: "Energy Profile",
-  instantDataProfile: "Instant Data Profile",
-  billingData: "Billing Data",
-  fraudEventLog: "Fraud Event Log",
-};
-
-// Map activeDays values to display labels using Record
-const activeDaysLabels: Record<string, string> = {
-  repeatDaily: "Repeat Daily",
-  repeatMonFri: "Repeat (Mon-Fri)",
-  // repeatOnly: "Repeat Only",
-};
+function mapScheduleItem(item: ScheduleItem, index: number): TableData {
+  return {
+    sNo: (index + 1).toString().padStart(2, "0"),
+    eventType: item.name?.trim() || item.jobName,
+    timeInterval: item.cronExpression,
+    unit: "",
+    activeDays: item.description,
+    status: item.jobStatus === "PAUSED" ? "Paused" : "Active",
+  };
+}
 
 const filterSections = [
   {
@@ -114,96 +99,10 @@ export default function DataCollScheduler() {
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState<boolean>(false);
   const [editData, setEditData] = useState<TableData | null>(null);
-  const [data, setData] = useState<TableData[]>([
-    {
-      sNo: "01",
-      eventType: "standardEventLog",
-      timeInterval: "30 mins",
-      unit: "min",
-      activeDays: "repeatDaily",
-      status: "Active",
-    },
-    {
-      sNo: "02",
-      eventType: "relayControlLog",
-      timeInterval: "30 mins",
-      unit: "min",
-      activeDays: "repeatMonFri",
-      status: "Paused",
-    },
-    {
-      sNo: "03",
-      eventType: "powerQualityLog",
-      timeInterval: "2 mins",
-      unit: "min",
-      activeDays: "repeatDaily",
-      status: "Active",
-    },
-    {
-      sNo: "04",
-      eventType: "communicationLog",
-      timeInterval: "30 mins",
-      unit: "min",
-      activeDays: "repeatMonFri",
-      status: "Active",
-    },
-    {
-      sNo: "05",
-      eventType: "powerQualityLog",
-      timeInterval: "30 mins",
-      unit: "min",
-      activeDays: "repeatDaily",
-      status: "Active",
-    },
-    {
-      sNo: "06",
-      eventType: "tokenEventProfile",
-      timeInterval: "30 mins",
-      unit: "min",
-      activeDays: "repeatMonFri",
-      status: "Active",
-    },
-    {
-      sNo: "07",
-      eventType: "energyProfile",
-      timeInterval: "10 mins",
-      unit: "min",
-      activeDays: "repeatDaily",
-      status: "Active",
-    },
-    {
-      sNo: "08",
-      eventType: "instantDataProfile",
-      timeInterval: "12 mins",
-      unit: "min",
-      activeDays: "repeatMonFri",
-      status: "Paused",
-    },
-    // {
-    //   sNo: "09",
-    //   eventType: "billingData",
-    //   timeInterval: "30 mins",
-    //   unit: "min",
-    //   activeDays: "repeatOnly",
-    //   status: "Paused",
-    // },
-    {
-      sNo: "09",
-      eventType: "fraudEventLog",
-      timeInterval: "30 mins",
-      unit: "min",
-      activeDays: "repeatDaily",
-      status: "Paused",
-    },
-    {
-      sNo: "10",
-      eventType: "fraudEventLog",
-      timeInterval: "30 mins",
-      unit: "min",
-      activeDays: "repeatDaily",
-      status: "Paused",
-    },
-  ]);
+  const [data, setData] = useState<TableData[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [totalData, setTotalData] = useState<number>(0);
   const [confirmDialog, setConfirmDialog] = useState<{
     isOpen: boolean;
     type: "pause" | "continue" | "delete" | null;
@@ -216,41 +115,36 @@ export default function DataCollScheduler() {
     direction: string;
   }>({ key: "", direction: "asc" });
 
-  // Apply search and filters
-  const filteredData = data.filter((item) => {
-    const matchesSearch = searchTerm
-      ? (item.sNo.toLowerCase().includes(searchTerm.toLowerCase()) ??
-        eventTypeLabels[item.eventType]
-          ?.toLowerCase()
-          .includes(searchTerm.toLowerCase()) ??
-        item.timeInterval.toLowerCase().includes(searchTerm.toLowerCase()) ??
-        activeDaysLabels[item.activeDays]
-          ?.toLowerCase()
-          .includes(searchTerm.toLowerCase()) ??
-        item.status.toLowerCase().includes(searchTerm.toLowerCase()))
-      : true;
-    return matchesSearch;
-  });
+  useEffect(() => {
+    const delay = setTimeout(async () => {
+      setIsLoading(true);
+      const result = await fetchScheduleData(
+        currentPage - 1,
+        rowsPerPage,
+        searchTerm || undefined,
+      );
+      if (result.success) {
+        setData(result.data.data.map(mapScheduleItem));
+        setTotalData(result.data.totalData);
+        setTotalPages(result.data.totalPages);
+      }
+      setIsLoading(false);
+    }, 400);
+    return () => clearTimeout(delay);
+  }, [currentPage, rowsPerPage, searchTerm]);
 
-  // Apply sorting
-  const sortedData = [...filteredData].sort((a, b) => {
+  // Apply sorting on the already-fetched page data
+  const sortedData = [...data].sort((a, b) => {
     if (!sortConfig.key) return 0;
     const aValue = a[sortConfig.key as keyof TableData] ?? "";
     const bValue = b[sortConfig.key as keyof TableData] ?? "";
     if (typeof aValue === "string" && typeof bValue === "string") {
       return sortConfig.direction === "asc"
         ? aValue.localeCompare(bValue)
-        : bValue.localeCompare(bValue);
+        : bValue.localeCompare(aValue);
     }
     return 0;
   });
-
-  // Calculate paginated data
-  const totalPages = Math.ceil(sortedData.length / rowsPerPage);
-  const paginatedData = sortedData.slice(
-    (currentPage - 1) * rowsPerPage,
-    currentPage * rowsPerPage,
-  );
 
   const handlePrevious = () => {
     setCurrentPage((prev) => Math.max(prev - 1, 1));
@@ -267,29 +161,16 @@ export default function DataCollScheduler() {
 
   const handleSetActiveFilters = (filters: FilterType) => {
     console.log("Filters applied:", filters);
-    setCurrentPage(1); // Reset to first page on filter change
+    setCurrentPage(1);
   };
 
   const handleSortChange = (sortType: string) => {
-    console.log("Sort by:", sortType);
-    setSortConfig({ key: "sNo", direction: sortType }); // Example: sort by sNo; adjust key as needed
-    setCurrentPage(1); // Reset to first page on sort change
+    setSortConfig({ key: "sNo", direction: sortType });
   };
 
-  const handleDialogSubmit = (formData: SyncScheduleData) => {
-    console.log("Sync schedule set:", formData);
-    setData((prevData) => [
-      ...prevData,
-      {
-        sNo: (prevData.length + 1).toString().padStart(2, "0"),
-        eventType: formData.eventType,
-        timeInterval: `${formData.timeInterval} ${formData.unit}`,
-        unit: formData.unit,
-        activeDays: formData.activeDays,
-        status: "Active",
-      },
-    ]);
-    setCurrentPage(1); // Reset to first page on new data addition
+  const handleDialogSubmit = () => {
+    setCurrentPage(1);
+    setSearchTerm("");
   };
 
   const handleEditDialogSubmit = (formData: SyncScheduleData) => {
@@ -324,8 +205,8 @@ export default function DataCollScheduler() {
 
   const handleDelete = (sNo: string) => {
     setData((prevData) => prevData.filter((item) => item.sNo !== sNo));
-    if (paginatedData.length === 1 && currentPage > 1) {
-      setCurrentPage(currentPage - 1); // Go to previous page if last item on page is deleted
+    if (data.length === 1 && currentPage > 1) {
+      setCurrentPage(currentPage - 1);
     }
   };
 
@@ -406,6 +287,9 @@ export default function DataCollScheduler() {
     }
   };
 
+  const startRow = totalData === 0 ? 0 : (currentPage - 1) * rowsPerPage + 1;
+  const endRow = Math.min(currentPage * rowsPerPage, totalData);
+
   return (
     <div className="flex h-screen w-full flex-col overflow-y-auto p-6">
       <div className="mb-8 flex flex-col items-center justify-between gap-4 md:flex-row">
@@ -441,7 +325,10 @@ export default function DataCollScheduler() {
             placeholder="Search by meter no., account no..."
             className="w-full border-gray-300 pl-10 focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
           />
         </div>
         <FilterControl
@@ -487,10 +374,10 @@ export default function DataCollScheduler() {
                 Event/Profile Type
               </TableHead>
               <TableHead className="p-2 text-left text-sm font-medium text-gray-600">
-                Time Interval
+                Cron Expression
               </TableHead>
               <TableHead className="p-2 text-left text-sm font-medium text-gray-600">
-                Active Days
+                Description
               </TableHead>
               <TableHead className="p-2 text-left text-sm font-medium text-gray-600">
                 Status
@@ -501,7 +388,17 @@ export default function DataCollScheduler() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginatedData.length === 0 ? (
+            {isLoading ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <TableRow key={i}>
+                  {Array.from({ length: 6 }).map((__, j) => (
+                    <TableCell key={j} className="p-2">
+                      <div className="h-4 w-full animate-pulse rounded bg-gray-200" />
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : sortedData.length === 0 ? (
               <TableRow>
                 <TableCell
                   colSpan={6}
@@ -511,7 +408,7 @@ export default function DataCollScheduler() {
                 </TableCell>
               </TableRow>
             ) : (
-              paginatedData.map((item, index) => (
+              sortedData.map((item, index) => (
                 <TableRow
                   key={item.sNo}
                   className="cursor-pointer hover:bg-gray-50"
@@ -520,13 +417,13 @@ export default function DataCollScheduler() {
                     {index + 1 + (currentPage - 1) * rowsPerPage}
                   </TableCell>
                   <TableCell className="p-2 text-sm text-gray-800">
-                    {eventTypeLabels[item.eventType] ?? item.eventType}
+                    {item.eventType}
                   </TableCell>
-                  <TableCell className="p-2 text-sm text-gray-800">
+                  <TableCell className="p-2 font-mono text-xs text-gray-800">
                     {item.timeInterval}
                   </TableCell>
                   <TableCell className="p-2 text-sm text-[#161CCA]">
-                    {activeDaysLabels[item.activeDays] ?? item.activeDays}
+                    {item.activeDays}
                   </TableCell>
                   <TableCell className="p-2 text-sm">
                     <span
@@ -640,9 +537,7 @@ export default function DataCollScheduler() {
               </SelectContent>
             </Select>
             <span className="text-sm font-medium">
-              {(currentPage - 1) * rowsPerPage + 1}-
-              {Math.min(currentPage * rowsPerPage, sortedData.length)} of{" "}
-              {sortedData.length}
+              {startRow}-{endRow} of {totalData}
             </span>
           </div>
           <PaginationContent>
