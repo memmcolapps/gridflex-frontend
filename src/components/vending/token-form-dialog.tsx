@@ -787,7 +787,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                 </p>
                 <p>
                   <strong>Debit Adjustment:</strong>{" "}
-                  {calculatedTokenData?.totalDebitBalance}
+                  {calculatedTokenData?.debitDeducted}
                 </p>
                 <p>
                   <strong>Mode of Payment:</strong>{" "}
@@ -875,25 +875,25 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
               <p>
                 <strong>Customer Name:</strong>
               </p>
-              <p>{generatedTokenData?.customerFullname ?? "N/A"}</p>
+              <p>{calculatedTokenData?.data?.customerName ?? "N/A"}</p>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <p>
                 <strong>Meter Number:</strong>
               </p>
-              <p>{generatedTokenData?.meterNumber ?? "N/A"}</p>
+              <p>{calculatedTokenData?.data?.meterNumber ?? "N/A"}</p>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <p>
                 <strong>Account No:</strong>
               </p>
-              <p>{generatedTokenData?.meterAccountNumber ?? "N/A"}</p>
+              <p>{calculatedTokenData?.data?.accountNo ?? "N/A"}</p>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <p>
                 <strong>Operator:</strong>
               </p>
-              <p>{generatedTokenData?.userFullname ?? "N/A"}</p>
+              <p>{calculatedTokenData?.data?.operator ?? "N/A"}</p>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <p>

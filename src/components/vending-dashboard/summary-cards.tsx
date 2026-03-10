@@ -22,7 +22,6 @@ const calculateChange = (current: number, previous: number) => {
 
 const formatValue = (value: number) => value.toLocaleString();
 const formatPrevious = (value: number) => value.toLocaleString();
-
 export default function SummaryCards({ cardData }: SummaryCardsProps) {
   const summaryData = [
     {
@@ -45,18 +44,16 @@ export default function SummaryCards({ cardData }: SummaryCardsProps) {
     },
     {
       title: "Highest B.Hub Transaction",
-      value: formatValue(cardData?.totalProfit ?? 0),
-      change: calculateChange(cardData?.totalProfit ?? 0, cardData?.previousTotalProfit ?? 0).change,
-      previous: formatPrevious(cardData?.previousTotalProfit ?? 0),
-      changeIcon: <TrendingDownIcon size={14} className="text-black" />,
+      value: formatValue(cardData?.topBhub.totalAmount ?? 0),
       icon: <HandCoins size={18} className="bg-[#FEE78A] text-[#423606] rounded-full p-2" />,
       color: "bg-[#FEF2C3] text-yellow-800 border border-[#FEF2C3]",
+      highestBhub: (cardData?.topBhub.bhubName ?? "N/A"),
     },
     {
       title: "Total No. Of Transactions",
       value: formatValue(cardData?.transactionCount ?? 0),
       change: calculateChange(cardData?.transactionCount ?? 0, cardData?.previousTransactionCount ?? 0).change,
-      previous: formatPrevious(cardData?.previousTransactionCount?? 0),
+      previous: formatPrevious(cardData?.previousTransactionCount ?? 0),
       changeIcon: <TrendingUpIcon size={14} className="text-black" />,
       icon: <BadgePercent size={18} className="bg-[#FECACA] rounded-full p-2 text-[#450A0A]" />,
       color: "bg-[#FEE2E2] text-red-800 border border-[#FEE2E2]",
@@ -82,8 +79,14 @@ export default function SummaryCards({ cardData }: SummaryCardsProps) {
             </div>
             <span className="w-full border-t border-gray-300" />
             <div className="flex justify-between text-sm text-gray-500 text-muted-foreground">
-              <span>Previous Year</span>
-              <span>{item.previous}</span>
+              {idx === 2 ? (
+                <span>{item.highestBhub}</span>
+              ) : (
+                <>
+                  <span>Previous Year</span>
+                  <span>{item.previous}</span>
+                </>
+              )}
             </div>
           </CardContent>
         </Card>

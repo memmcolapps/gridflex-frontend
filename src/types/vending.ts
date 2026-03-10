@@ -96,6 +96,12 @@ export interface CalculateCreditTokenResponse {
   responsedata: {
     totalDebitBalance: string;
     meterNumber: string;
+    data: {
+      meterNumber: string;
+      accountNo: string;
+      customerName: string;
+      operator: string;
+    };
     creditUnitsApplied: number;
     vat: number;
     costOfUnit: number;
@@ -188,6 +194,13 @@ export interface CardData {
   unitCostSum: number;
   vatAmountSum: number;
   transactionSum: number;
+  topBhub: {
+    totalAmount: number;
+    bhubName: string;
+    previousTotalAmount: number;
+    transactionCount: number;
+    previousTransactionCount: number;
+  };
   previousVatAmountSum: number;
   previousTotalProfit: number;
   previousUnitCostSum: number;
@@ -195,8 +208,6 @@ export interface CardData {
   transactionCount: number;
   previousTransactionCount: number;
 }
-
-
 
 export interface TokenDistribution {
   kctToken: string;
