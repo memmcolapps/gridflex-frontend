@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-misused-promises */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -53,6 +54,14 @@ import type { ScheduleItem } from "@/types/hes";
 
 // Define the shape of the filter object using Record
 type FilterType = Record<string, string | boolean>;
+
+// Define the shape of the sync schedule data (used by edit dialog)
+interface SyncScheduleData {
+  eventType: string;
+  timeInterval: string;
+  unit: string;
+  activeDays: string;
+}
 
 // Define the shape of the table data
 interface TableData {
@@ -498,7 +507,9 @@ export default function DataCollScheduler() {
                         {canEdit && (
                           <DropdownMenuItem
                             className="flex cursor-pointer items-center gap-2"
-                            onClick={() => openConfirmDialog("delete", item.sNo)}
+                            onClick={() =>
+                              openConfirmDialog("delete", item.sNo)
+                            }
                           >
                             <Trash2 size={14} className="text-gray-500" />
                             <span className="text-sm whitespace-nowrap text-black">

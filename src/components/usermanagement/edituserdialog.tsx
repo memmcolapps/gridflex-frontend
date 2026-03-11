@@ -85,7 +85,8 @@ export default function EditUserDialog({
             nodes: {
               ...prev.nodes,
               id: e,
-              name: selectedUnit?.label ?? prev.nodes?.name ?? "",
+              name: selectedUnit?.label  
+              ?? prev.nodes?.name ?? "",
             },
           }));
         } else {

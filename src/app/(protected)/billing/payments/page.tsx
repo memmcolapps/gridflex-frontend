@@ -13,11 +13,9 @@ import {
 } from "@/components/ui/select";
 import { Search, SquareArrowOutUpRight, SendHorizontal } from "lucide-react";
 import { useState } from "react";
-import { usePermissions } from "@/hooks/use-permissions";
 import PaymentHistoryTable from "@/components/billing/payment-history/payment-history-table";
 
 export default function PaymentHistoryPage() {
-  const { canEdit } = usePermissions();
   const [isLoading] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [sortConfig, setSortConfig] = useState<string>("");
@@ -25,25 +23,25 @@ export default function PaymentHistoryPage() {
   const [selectedYear, setSelectedYear] = useState<string>("2025");
   const [, setSelectedRowIds] = useState<Set<number>>(new Set());
 
-   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-   const handleGetPayment = () => {
-     setIsDialogOpen(true);
-   };
+  const handleGetPayment = () => {
+    setIsDialogOpen(true);
+  };
 
-   const handleDialogClose = () => {
-     setIsDialogOpen(false);
-   };
+  const handleDialogClose = () => {
+    setIsDialogOpen(false);
+  };
 
-   const handleSubmitPayment = (paymentData: {
-     paymentType: string;
-     accountNo: string;
-     amount: string;
-     paymentDate: string;
-   }) => {
-     console.log("Payment Data Submitted:", paymentData);
-     // Implement the actual payment submission logic here (e.g., API call)
-   };
+  const handleSubmitPayment = (paymentData: {
+    paymentType: string;
+    accountNo: string;
+    amount: string;
+    paymentDate: string;
+  }) => {
+    console.log("Payment Data Submitted:", paymentData);
+    // Implement the actual payment submission logic here (e.g., API call)
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setInputValue(e.target.value);
@@ -89,9 +87,9 @@ export default function PaymentHistoryPage() {
   };
 
   return (
-    <div className="p-6 bg-transparent">
+    <div className="bg-transparent p-6">
       {/* Content Header */}
-      <div className="mb-8 flex flex-col items-center justify-between gap-4 md:flex-row bg-transparent">
+      <div className="mb-8 flex flex-col items-center justify-between gap-4 bg-transparent md:flex-row">
         <ContentHeader
           title="Payments"
           description="Track bill payments with amount, and status."

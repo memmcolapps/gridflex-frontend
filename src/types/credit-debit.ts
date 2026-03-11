@@ -1,5 +1,3 @@
-import OutstandingBalance from "@/app/(protected)/frequently-used-reports/billing-table/outstand-balance-table";
-
 export interface LiabilityCause {
   id: string;
   name: string;
