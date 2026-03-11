@@ -2,10 +2,11 @@
 
 import { generateCreditToken, printToken, calculateCreditToken, generateKCTToken, generateClearTamperToken, generateClearCreditToken, generateKCTAndClearTamperToken, generateCompensationToken, getVendingDashboardData, getVendingTransactions } from "@/service/vending-service";
 import type { GenerateCreditTokenPayload, PrintTokenPayload, GenerateKCTPayload, GenerateClearTamperPayload, GenerateClearCreditPayload, GenerateKCTAndClearTamperPayload, GenerateCompensationPayload, VendingDashboardPayload } from "@/types/vending";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 export const useGenerateCreditToken = () => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (payload: GenerateCreditTokenPayload) => {
       const response = await generateCreditToken(payload);
@@ -16,6 +17,8 @@ export const useGenerateCreditToken = () => {
     },
     onSuccess: () => {
       toast.success("Credit token generated successfully");
+      // Invalidate the transactions query to refresh the table
+      queryClient.invalidateQueries({ queryKey: ["vending-transactions"] });
     },
     onError: (error) => {
       toast.error(error.message || "Failed to generate credit token");
@@ -24,6 +27,7 @@ export const useGenerateCreditToken = () => {
 };
 
 export const usePrintToken = () => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (payload: PrintTokenPayload) => {
       console.log("Hook calling printToken with payload:", payload);
@@ -36,6 +40,8 @@ export const usePrintToken = () => {
     },
     onSuccess: () => {
       toast.success("Token printed successfully");
+      // Invalidate the transactions query to refresh the table
+      queryClient.invalidateQueries({ queryKey: ["vending-transactions"] });
     },
     onError: (error) => {
       toast.error(error.message || "Failed to print token");
@@ -68,6 +74,7 @@ export const useCalculateCreditToken = () => {
 
 
 export const useGenerateKCTToken = () => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (payload: GenerateKCTPayload) => {
       const response = await generateKCTToken(payload);
@@ -78,6 +85,8 @@ export const useGenerateKCTToken = () => {
     },
     onSuccess: () => {
       toast.success("KCT token generated successfully");
+      // Invalidate the transactions query to refresh the table
+      queryClient.invalidateQueries({ queryKey: ["vending-transactions"] });
     },
     onError: (error) => {
       toast.error(error.message || "Failed to generate KCT token");
@@ -86,6 +95,7 @@ export const useGenerateKCTToken = () => {
 };
 
 export const useGenerateClearTamperToken = () => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (payload: GenerateClearTamperPayload) => {
       const response = await generateClearTamperToken(payload);
@@ -96,6 +106,8 @@ export const useGenerateClearTamperToken = () => {
     },
     onSuccess: () => {
       toast.success("Clear Tamper token generated successfully");
+      // Invalidate the transactions query to refresh the table
+      queryClient.invalidateQueries({ queryKey: ["vending-transactions"] });
     },
     onError: (error) => {
       toast.error(error.message || "Failed to generate Clear Tamper token");
@@ -104,6 +116,7 @@ export const useGenerateClearTamperToken = () => {
 };
 
 export const useGenerateClearCreditToken = () => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (payload: GenerateClearCreditPayload) => {
       const response = await generateClearCreditToken(payload);
@@ -114,6 +127,8 @@ export const useGenerateClearCreditToken = () => {
     },
     onSuccess: () => {
       toast.success("Clear Credit token generated successfully");
+      // Invalidate the transactions query to refresh the table
+      queryClient.invalidateQueries({ queryKey: ["vending-transactions"] });
     },
     onError: (error) => {
       toast.error(error.message || "Failed to generate Clear Credit token");
@@ -122,6 +137,7 @@ export const useGenerateClearCreditToken = () => {
 };
 
 export const useGenerateKCTAndClearTamperToken = () => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (payload: GenerateKCTAndClearTamperPayload) => {
       const response = await generateKCTAndClearTamperToken(payload);
@@ -132,6 +148,8 @@ export const useGenerateKCTAndClearTamperToken = () => {
     },
     onSuccess: () => {
       toast.success("KCT and Clear Tamper token generated successfully");
+      // Invalidate the transactions query to refresh the table
+      queryClient.invalidateQueries({ queryKey: ["vending-transactions"] });
     },
     onError: (error) => {
       toast.error(error.message || "Failed to generate KCT and Clear Tamper token");
@@ -140,6 +158,7 @@ export const useGenerateKCTAndClearTamperToken = () => {
 };
 
 export const useGenerateCompensationToken = () => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (payload: GenerateCompensationPayload) => {
       const response = await generateCompensationToken(payload);
@@ -150,6 +169,8 @@ export const useGenerateCompensationToken = () => {
     },
     onSuccess: () => {
       toast.success("Compensation token generated successfully");
+      // Invalidate the transactions query to refresh the table
+      queryClient.invalidateQueries({ queryKey: ["vending-transactions"] });
     },
     onError: (error) => {
       toast.error(error.message || "Failed to generate Compensation token");
