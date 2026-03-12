@@ -73,7 +73,6 @@ export interface CreateSchedulePayload {
   timeInterval: number;
   timeUnit: string;
   activeDays: string[];
-  obisCodes: string;
   orgId: string;
 }
 

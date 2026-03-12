@@ -53,7 +53,6 @@ const SetSyncScheduleDialog: React.FC<SetSyncScheduleDialogProps> = ({
   const [timeInterval, setTimeInterval] = useState("");
   const [unit, setUnit] = useState("min");
   const [activeDays, setActiveDays] = useState("");
-  const [obisCodes, setObisCodes] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -62,7 +61,6 @@ const SetSyncScheduleDialog: React.FC<SetSyncScheduleDialogProps> = ({
     setTimeInterval("");
     setUnit("min");
     setActiveDays("");
-    setObisCodes("");
     setError(null);
   };
 
@@ -81,7 +79,6 @@ const SetSyncScheduleDialog: React.FC<SetSyncScheduleDialogProps> = ({
       timeInterval: parseInt(timeInterval, 10),
       timeUnit: unit === "min" ? "MINS" : "HRS",
       activeDays: activeDaysMap[activeDays] ?? [],
-      obisCodes,
       orgId: user?.orgId ?? "",
     });
 
@@ -173,21 +170,6 @@ const SetSyncScheduleDialog: React.FC<SetSyncScheduleDialogProps> = ({
               </Select>
             </div>
 
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="obisCodes">
-                OBIS Code <span className="text-red-600">*</span>
-              </Label>
-              <Input
-                id="obisCodes"
-                type="text"
-                value={obisCodes}
-                onChange={(e) => setObisCodes(e.target.value)}
-                placeholder="e.g. 1.0.1.8.0.255"
-                required
-                className="border border-gray-200"
-              />
-            </div>
-
             {error && (
               <p className="text-sm text-red-600">{error}</p>
             )}
@@ -205,7 +187,7 @@ const SetSyncScheduleDialog: React.FC<SetSyncScheduleDialogProps> = ({
             <Button
               type="submit"
               className="bg-[#161CCA] text-white cursor-pointer"
-              disabled={!eventType || !timeInterval || !activeDays || !obisCodes || isLoading}
+              disabled={!eventType || !timeInterval || !activeDays || isLoading}
             >
               {isLoading ? (
                 <>
