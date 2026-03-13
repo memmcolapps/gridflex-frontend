@@ -242,7 +242,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
           ...result,
           creditAdjustment: calculatedTokenData?.totalCreditUnits ?? result.creditAdjustment ?? 0,
           debitAdjustment: (debitBalance || result.debitAdjustment) ?? 0,
-          creditAdjustmentBalance: calculatedTokenData?.creditUnitsApplied ?? 0,
+          creditAdjustmentBalance: calculatedTokenData?.creditDeducted ?? 0,
           debitAdjustmentBalance: debitBalance,
         };
         setGeneratedTokenData(mergedData);
@@ -796,7 +796,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
 
                 <p>
                   <strong>Credit Adjustment:</strong>{" "}
-                  {calculatedTokenData?.creditUnitsApplied}
+                  {calculatedTokenData?.creditDeducted}
                 </p>
               
                     <p>

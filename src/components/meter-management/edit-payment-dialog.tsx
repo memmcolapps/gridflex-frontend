@@ -101,9 +101,9 @@ export function EditPaymentDialog({
         },
         paymentMode: {
           debitPaymentMode: debitMop,
-          debitPaymentPlan: debitMop === "one-off" ? "" : (debitMop === "percentage" || debitMop === "no-payment" ? "no-payment" : debitPaymentPlan),
+          debitPaymentPlan: debitMop === "one-off" || debitMop === "percentage" || debitMop === "no-payment" || debitMop === "no payment" ? "" : debitPaymentPlan,
           creditPaymentMode: creditMop,
-          creditPaymentPlan: creditMop === "one-off" ? "" : (creditMop === "percentage" || creditMop === "no-payment" ? "no-payment" : creditPaymentPlan),
+          creditPaymentPlan: creditMop === "one-off" || creditMop === "percentage" || creditMop === "no-payment" || creditMop === "no payment" ? "" : creditPaymentPlan,
         },
       };
     } else {
@@ -125,9 +125,9 @@ export function EditPaymentDialog({
         },
         paymentMode: {
           debitPaymentMode: debitMop,
-          debitPaymentPlan: debitMop === "one-off" ? "" : (debitMop === "percentage" || debitMop === "no-payment" ? "no-payment" : debitPaymentPlan),
+          debitPaymentPlan: debitMop === "one-off" || debitMop === "percentage" || debitMop === "no-payment" || debitMop === "no payment" ? "" : debitPaymentPlan,
           creditPaymentMode: creditMop,
-          creditPaymentPlan: creditMop === "one-off" ? "" : (creditMop === "percentage" || creditMop === "no-payment" ? "no-payment" : creditPaymentPlan),
+          creditPaymentPlan: creditMop === "one-off" || creditMop === "percentage" || creditMop === "no-payment" || creditMop === "no payment" ? "" : creditPaymentPlan,
         },
       };
     }
@@ -147,10 +147,7 @@ export function EditPaymentDialog({
 
   // Get payment plan options based on mode of payment
   const getDebitPaymentPlanOptions = () => {
-    if (debitMop === "one-off") return null;
-    if (debitMop === "percentage" || debitMop === "no-payment") {
-      return <SelectItem value="no-payment">No Payment</SelectItem>;
-    }
+    if (debitMop === "one-off" || debitMop === "percentage" || debitMop === "no-payment" || debitMop === "no payment") return null;
     // monthly - show 6 and 3
     return (
       <>
@@ -161,10 +158,7 @@ export function EditPaymentDialog({
   };
 
   const getCreditPaymentPlanOptions = () => {
-    if (creditMop === "one-off") return null;
-    if (creditMop === "percentage" || creditMop === "no-payment") {
-      return <SelectItem value="no-payment">No Payment</SelectItem>;
-    }
+    if (creditMop === "one-off" || creditMop === "percentage" || creditMop === "no-payment" || creditMop === "no payment" || creditMop === "no payment") return null;
     // monthly - show 6 and 3
     return (
       <>
@@ -174,25 +168,21 @@ export function EditPaymentDialog({
     );
   };
 
-  // Check if payment plan should be disabled
-  const isDebitPaymentPlanDisabled = debitMop === "one-off";
-  const isCreditPaymentPlanDisabled = creditMop === "one-off";
+  // Check if payment plan should be disabled (for one-off, percentage, and no-payment/no payment)
+  const isDebitPaymentPlanDisabled = debitMop === "one-off" || debitMop === "percentage" || debitMop === "no-payment" || debitMop === "no payment";
+  const isCreditPaymentPlanDisabled = creditMop === "one-off" || creditMop === "percentage" || creditMop === "no-payment" || creditMop === "no payment" || creditMop === "no payment";
 
   // Get default value for payment plan based on mode
   const getDebitPaymentPlanValue = () => {
-    // If mop is one-off, no payment plan
-    if (debitMop === "one-off") return "";
-    // If mop is percentage or no-payment, return no-payment
-    if (debitMop === "percentage" || debitMop === "no-payment") return "no-payment";
+    // If mop is one-off, percentage, or no-payment/no payment, show placeholder
+    if (debitMop === "one-off" || debitMop === "percentage" || debitMop === "no-payment" || debitMop === "no payment") return "";
     // For monthly, return the actual payment plan value, or default to "6" if empty
     return debitPaymentPlan || "6";
   };
 
   const getCreditPaymentPlanValue = () => {
-    // If mop is one-off, no payment plan
-    if (creditMop === "one-off") return "";
-    // If mop is percentage or no-payment, return no-payment
-    if (creditMop === "percentage" || creditMop === "no-payment") return "no-payment";
+    // If mop is one-off, percentage, or no-payment/no payment, show placeholder
+    if (creditMop === "one-off" || creditMop === "percentage" || creditMop === "no-payment" || creditMop === "no payment" || creditMop === "no payment") return "";
     // For monthly, return the actual payment plan value, or default to "6" if empty
     return creditPaymentPlan || "6";
   };
@@ -225,6 +215,8 @@ export function EditPaymentDialog({
                     <SelectItem value="one-off">One off</SelectItem>
                     <SelectItem value="percentage">Percentage</SelectItem>
                   
+                  <SelectItem value="no payment">No Payment</SelectItem>
+                  
                   </SelectContent>
                 </Select>
               </div>
@@ -248,6 +240,8 @@ export function EditPaymentDialog({
                     <SelectItem value="monthly">Monthly</SelectItem>
                     <SelectItem value="one-off">One off</SelectItem>
                     <SelectItem value="percentage">Percentage</SelectItem>
+                 
+                  <SelectItem value="no payment">No Payment</SelectItem>
                  
                   </SelectContent>
                 </Select>

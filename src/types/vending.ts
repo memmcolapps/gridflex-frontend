@@ -102,7 +102,7 @@ export interface CalculateCreditTokenResponse {
       customerName: string;
       operator: string;
     };
-    creditUnitsApplied: number;
+    creditDeducted: number;
     vat: number;
     costOfUnit: number;
     totalCreditUnits: number;
