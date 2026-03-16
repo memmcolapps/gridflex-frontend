@@ -24,7 +24,7 @@ import {
   getUnitsForHierarchy,
   flattenOrganizationNodes,
   matchNodeTypeToHierarchy,
-  HierarchyType,
+  type HierarchyType,
 } from "@/utils/hierarchy-utils";
 
 type EditUserDialogProps = {
@@ -45,20 +45,27 @@ export default function EditUserDialog({
   const { nodes: orgData, isLoading: isLoadingOrg } = useOrg();
 
   const [formData, setFormData] = useState<GetUsersUser>(user);
-  const [selectedHierarchy, setSelectedHierarchy] = useState<string>(
-    user.nodes?.nodeInfo?.type
-      ? (matchNodeTypeToHierarchy(user.nodes.nodeInfo.type) ?? "")
-      : "",
+
+  const rootNodeId = orgData?.[0]?.id ?? "";
+  const rootNodeName = orgData?.[0]?.name ?? "";
+
+  const deriveHierarchy = useCallback(
+    (u: GetUsersUser): string => {
+      if (!u.nodes?.nodeInfo?.type) return "";
+      if (u.nodeId === rootNodeId) return "root";
+      return matchNodeTypeToHierarchy(u.nodes.nodeInfo.type) ?? "";
+    },
+    [rootNodeId],
+  );
+
+  const [selectedHierarchy, setSelectedHierarchy] = useState<string>(() =>
+    deriveHierarchy(user),
   );
 
   useEffect(() => {
     setFormData(user);
-    setSelectedHierarchy(
-      user.nodes?.nodeInfo?.type
-        ? (matchNodeTypeToHierarchy(user.nodes.nodeInfo.type) ?? "")
-        : "",
-    );
-  }, [user]);
+    setSelectedHierarchy(deriveHierarchy(user));
+  }, [user, deriveHierarchy]);
 
   const hierarchyOptions = [
     { label: "Head Office", value: "root" },
@@ -66,13 +73,6 @@ export default function EditUserDialog({
   ];
 
   const flattenedNodes = flattenOrganizationNodes(orgData);
-
-  const currentHierarchyType = user.nodes?.nodeInfo?.type
-    ? matchNodeTypeToHierarchy(user.nodes.nodeInfo.type)
-    : null;
-
-  const rootNodeId = orgData?.[0]?.id ?? "";
-  const rootNodeName = orgData?.[0]?.name ?? "";
 
   const availableUnits =
     selectedHierarchy && selectedHierarchy !== "root"
@@ -250,7 +250,7 @@ export default function EditUserDialog({
                 Organizational Hierarchy <span className="text-red-500">*</span>
               </Label>
               <Select
-                value={currentHierarchyType ?? ""}
+                value={selectedHierarchy}
                 onValueChange={(value) => handleChange(value, "hierarchy")}
               >
                 <SelectTrigger className="w-full border-[rgba(228,231,236,1)]">
@@ -281,6 +281,7 @@ export default function EditUserDialog({
                   value={formData.nodeId || ""}
                   onValueChange={(value) => handleChange(value, "unitName")}
                   required
+                  disabled={!selectedHierarchy || isLoadingOrg}
                 >
                   <SelectTrigger className="w-full border-[rgba(228,231,236,1)]">
                     <SelectValue placeholder="Select unit name" />
