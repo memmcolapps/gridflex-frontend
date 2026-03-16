@@ -24,6 +24,7 @@ import {
   getUnitsForHierarchy,
   flattenOrganizationNodes,
   matchNodeTypeToHierarchy,
+  HierarchyType,
 } from "@/utils/hierarchy-utils";
 
 type EditUserDialogProps = {
@@ -44,12 +45,25 @@ export default function EditUserDialog({
   const { nodes: orgData, isLoading: isLoadingOrg } = useOrg();
 
   const [formData, setFormData] = useState<GetUsersUser>(user);
+  const [selectedHierarchy, setSelectedHierarchy] = useState<string>(
+    user.nodes?.nodeInfo?.type
+      ? (matchNodeTypeToHierarchy(user.nodes.nodeInfo.type) ?? "")
+      : "",
+  );
 
   useEffect(() => {
     setFormData(user);
+    setSelectedHierarchy(
+      user.nodes?.nodeInfo?.type
+        ? (matchNodeTypeToHierarchy(user.nodes.nodeInfo.type) ?? "")
+        : "",
+    );
   }, [user]);
 
-  const hierarchyOptions = getHierarchyOptions();
+  const hierarchyOptions = [
+    { label: "Head Office", value: "root" },
+    ...getHierarchyOptions().slice(0, 3),
+  ];
 
   const flattenedNodes = flattenOrganizationNodes(orgData);
 
@@ -57,9 +71,13 @@ export default function EditUserDialog({
     ? matchNodeTypeToHierarchy(user.nodes.nodeInfo.type)
     : null;
 
-  const availableUnits = currentHierarchyType
-    ? getUnitsForHierarchy(flattenedNodes, currentHierarchyType)
-    : [];
+  const rootNodeId = orgData?.[0]?.id ?? "";
+  const rootNodeName = orgData?.[0]?.name ?? "";
+
+  const availableUnits =
+    selectedHierarchy && selectedHierarchy !== "root"
+      ? getUnitsForHierarchy(flattenedNodes, selectedHierarchy as HierarchyType)
+      : [];
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement> | string, field?: string) => {
@@ -76,8 +94,30 @@ export default function EditUserDialog({
               },
             }));
           }
+        } else if (field === "hierarchy") {
+          setSelectedHierarchy(e);
+          if (e === "root") {
+            setFormData((prev) => ({
+              ...prev,
+              nodeId: rootNodeId,
+              nodes: {
+                ...prev.nodes,
+                id: rootNodeId,
+                name: rootNodeName,
+              },
+            }));
+          } else {
+            setFormData((prev) => ({
+              ...prev,
+              nodeId: "",
+              nodes: {
+                ...prev.nodes,
+                id: "",
+                name: "",
+              },
+            }));
+          }
         } else if (field === "unitName") {
-          // Update the nodeId and find the corresponding unit name
           const selectedUnit = availableUnits.find((unit) => unit.value === e);
           setFormData((prev) => ({
             ...prev,
@@ -85,8 +125,7 @@ export default function EditUserDialog({
             nodes: {
               ...prev.nodes,
               id: e,
-              name: selectedUnit?.label  
-              ?? prev.nodes?.name ?? "",
+              name: selectedUnit?.label ?? prev.nodes?.name ?? "",
             },
           }));
         } else {
@@ -103,7 +142,7 @@ export default function EditUserDialog({
         }));
       }
     },
-    [groupPermissions, availableUnits],
+    [groupPermissions, availableUnits, rootNodeId, rootNodeName],
   );
 
   const handleSubmit = useCallback(
@@ -230,32 +269,41 @@ export default function EditUserDialog({
               <Label htmlFor="unitName">
                 Unit Name <span className="text-red-500">*</span>
               </Label>
-              <Select
-                value={formData.nodeId || ""}
-                onValueChange={(value) => handleChange(value, "unitName")}
-                required
-              >
-                <SelectTrigger className="w-full border-[rgba(228,231,236,1)]">
-                  <SelectValue placeholder="Select unit name" />
-                </SelectTrigger>
-                <SelectContent>
-                  {isLoadingOrg ? (
-                    <SelectItem value="loading" disabled>
-                      Loading units...
-                    </SelectItem>
-                  ) : availableUnits.length === 0 ? (
-                    <SelectItem value="no-units" disabled>
-                      No units available for this hierarchy
-                    </SelectItem>
-                  ) : (
-                    availableUnits.map((unit) => (
-                      <SelectItem key={unit.value} value={unit.value}>
-                        {unit.label}
+              {selectedHierarchy === "root" ? (
+                <Input
+                  id="unitName"
+                  value={rootNodeName || rootNodeId}
+                  readOnly
+                  className="cursor-not-allowed border-[rgba(228,231,236,1)] bg-gray-50 text-gray-500"
+                />
+              ) : (
+                <Select
+                  value={formData.nodeId || ""}
+                  onValueChange={(value) => handleChange(value, "unitName")}
+                  required
+                >
+                  <SelectTrigger className="w-full border-[rgba(228,231,236,1)]">
+                    <SelectValue placeholder="Select unit name" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {isLoadingOrg ? (
+                      <SelectItem value="loading" disabled>
+                        Loading units...
                       </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
+                    ) : availableUnits.length === 0 ? (
+                      <SelectItem value="no-units" disabled>
+                        No units available for this hierarchy
+                      </SelectItem>
+                    ) : (
+                      availableUnits.map((unit) => (
+                        <SelectItem key={unit.value} value={unit.value}>
+                          {unit.label}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
           </div>
           <div className="mt-12 flex justify-between gap-3">
