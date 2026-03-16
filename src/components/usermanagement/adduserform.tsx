@@ -53,6 +53,8 @@ export default function AddUserForm({
   const { data: groupPermissions, isLoading: isLoadingGroupPermissions } =
     useGroupPermissions();
   const { nodes: orgData, isLoading: isLoadingOrg } = useOrg();
+  const rootId = orgData?.[0]?.id
+  const rootName = orgData?.[0]?.name
 
   const [isOpen, setIsOpen] = useState(false);
   const [formData, setFormData] = useState<User>({
@@ -67,7 +69,10 @@ export default function AddUserForm({
   });
 
   // Get hierarchy options using the utility
-  const hierarchyOptions = getHierarchyOptions();
+  const hierarchyOptions = [
+    { label: "Head Office", value: "root" },
+    ...getHierarchyOptions().slice(0, 3),
+  ];
 
   // Flatten all organization nodes for unit lookup
   const flattenedNodes = flattenOrganizationNodes(orgData);
@@ -87,7 +92,7 @@ export default function AddUserForm({
           };
 
           if (field === "hierarchy") {
-            newData.unitName = "";
+            newData.unitName = e === 'root' ? (rootId ?? "") : "";
           }
 
           return newData;
@@ -100,7 +105,7 @@ export default function AddUserForm({
         }));
       }
     },
-    [],
+    [rootId],
   );
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -258,39 +263,48 @@ export default function AddUserForm({
               <Label htmlFor="unitName">
                 Unit Name <span className="text-red-500">*</span>
               </Label>
-              <Select
-                value={formData.unitName}
-                onValueChange={(value) => handleChange(value, "unitName")}
-                required
-                disabled={!formData.hierarchy || isLoadingOrg}
-              >
-                <SelectTrigger className="w-full border-[rgba(228,231,236,1)]">
-                  <SelectValue
-                    placeholder={
-                      !formData.hierarchy
-                        ? "Select hierarchy first"
-                        : "Select unit name"
-                    }
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {isLoadingOrg ? (
-                    <SelectItem value="loading" disabled>
-                      Loading units...
-                    </SelectItem>
-                  ) : availableUnits.length === 0 ? (
-                    <SelectItem value="no-units" disabled>
-                      No units available
-                    </SelectItem>
-                  ) : (
-                    availableUnits.map((unit) => (
-                      <SelectItem key={unit.value} value={unit.value}>
-                        {unit.label}
+              {formData.hierarchy === "root" ? (
+                <Input
+                  id="unitName"
+                  name="unitName"
+                  value={rootName ?? ""}
+                  className="cursor-not-allowed border-[rgba(228,231,236,1)] bg-gray-50 text-gray-500"
+                />
+              ) : (
+                <Select
+                  value={formData.unitName}
+                  onValueChange={(value) => handleChange(value, "unitName")}
+                  required
+                  disabled={!formData.hierarchy || isLoadingOrg}
+                >
+                  <SelectTrigger className="w-full border-[rgba(228,231,236,1)]">
+                    <SelectValue
+                      placeholder={
+                        !formData.hierarchy
+                          ? "Select hierarchy first"
+                          : "Select unit name"
+                      }
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {isLoadingOrg ? (
+                      <SelectItem value="loading" disabled>
+                        Loading units...
                       </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
+                    ) : availableUnits.length === 0 ? (
+                      <SelectItem value="no-units" disabled>
+                        No units available
+                      </SelectItem>
+                    ) : (
+                      availableUnits.map((unit) => (
+                        <SelectItem key={unit.value} value={unit.value}>
+                          {unit.label}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
             <div className="col-span-2 space-y-2">
               <Label htmlFor="defaultPassword">
