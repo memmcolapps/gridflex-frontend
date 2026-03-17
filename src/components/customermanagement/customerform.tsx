@@ -87,7 +87,8 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
     }, [isOpen, mode, customer, states]);
 
     useEffect(() => {
-        if (mode === "edit" && customer && cities && formData.state) {
+        // Only set city when dialog is open, cities are loaded, and city is empty
+        if (isOpen && mode === "edit" && customer && cities && cities.length > 0 && formData.state) {
             if (!formData.city) {
                 const customerCity = cities.find(c => c.name === customer.city);
                 if (customerCity) {
@@ -98,7 +99,7 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
                 }
             }
         }
-    }, [mode, customer, cities, formData.state, formData.city]);
+    }, [isOpen, mode, customer, cities, formData.state, formData.city]);
 
     const cleanUpOverlay = useCallback(() => {
         const overlays = document.querySelectorAll("[data-radix-dialog-overlay]");
