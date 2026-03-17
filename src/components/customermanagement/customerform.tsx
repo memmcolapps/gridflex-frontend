@@ -88,15 +88,17 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
 
     useEffect(() => {
         if (mode === "edit" && customer && cities && formData.state) {
-            const customerCity = cities.find(c => c.name === customer.city);
-            if (customerCity) {
-                setFormData(prev => ({
-                    ...prev,
-                    city: customerCity.id,
-                }));
+            if (!formData.city) {
+                const customerCity = cities.find(c => c.name === customer.city);
+                if (customerCity) {
+                    setFormData(prev => ({
+                        ...prev,
+                        city: customerCity.id,
+                    }));
+                }
             }
         }
-    }, [mode, customer, cities, formData.state]);
+    }, [mode, customer, cities, formData.state, formData.city]);
 
     const cleanUpOverlay = useCallback(() => {
         const overlays = document.querySelectorAll("[data-radix-dialog-overlay]");
