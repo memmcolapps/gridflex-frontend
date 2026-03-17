@@ -40,6 +40,7 @@ import { formatDistanceToNow, format, parseISO } from "date-fns";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { LoadingAnimation } from "@/components/ui/loading-animation";
 import { usePermissions } from "@/hooks/use-permissions";
+import { useAuth } from "@/context/auth-context";
 
 const parseTimestamp = (timestamp: string): Date => {
   // Convert format "2025-10-22 10:32:15.338908-05" to ISO 8601
@@ -59,19 +60,19 @@ const formatDateAdded = (date: Date) => {
 };
 
 export default function UserManagement() {
-   const [searchTerm, setSearchTerm] = useState("");
-   const [sortConfig, setSortConfig] = useState<{
-     key: keyof GetUsersUser;
-     direction: "ascending" | "descending";
-   } | null>(null);
-   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
-   const [editingUser, setEditingUser] = useState<GetUsersUser | null>(null);
-   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortConfig, setSortConfig] = useState<{
+    key: keyof GetUsersUser;
+    direction: "ascending" | "descending";
+  } | null>(null);
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const [editingUser, setEditingUser] = useState<GetUsersUser | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
-   const { data: users, isLoading } = useGetUsers(searchTerm);
-   const { mutate: createUser } = useCreateUser();
-   const { mutate: editUser } = useEditUser();
-   const { canEdit } = usePermissions();
+  const { data: users, isLoading } = useGetUsers(searchTerm);
+  const { mutate: createUser } = useCreateUser();
+  const { mutate: editUser } = useEditUser();
+  const { canEdit } = usePermissions();
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -91,8 +92,8 @@ export default function UserManagement() {
   };
 
   const handleEditUser = (user: GetUsersUser) => {
-    setEditingUser(user);
-    setIsEditDialogOpen(true);
+    // setEditingUser(user);
+    // setIsEditDialogOpen(true);
 
     const editPayload: EditUserPayload = {
       user: {
@@ -100,7 +101,7 @@ export default function UserManagement() {
         firstname: user.firstname,
         lastname: user.lastname,
         email: user.email,
-        nodeId: user.nodes.nodeInfo.nodeId,
+        nodeId: user.nodeId,
       },
       groupId: user.groups.id,
     };
@@ -169,6 +170,7 @@ export default function UserManagement() {
   const startIndex = (currentPage - 1) * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
   const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
+  const { user: currentUser } = useAuth();
 
   const handlePageSizeChange = (newPageSize: number) => {
     setRowsPerPage(newPageSize);
@@ -395,7 +397,7 @@ export default function UserManagement() {
                     {formatDateAdded(new Date(user.createdAt))}
                   </TableCell>
                   <TableCell>
-                    {canEdit && (
+                    {canEdit && user?.id !== currentUser?.id && (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild disabled={isEditDialogOpen}>
                           <Button
