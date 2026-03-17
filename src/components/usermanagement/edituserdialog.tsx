@@ -251,7 +251,7 @@ export default function EditUserDialog({
               </Label>
               <Select
                 value={selectedHierarchy}
-                // onValueChange={(value) => handleChange(value, "hierarchy")}
+                onValueChange={(value) => handleChange(value, "hierarchy")}
               >
                 <SelectTrigger className="w-full border-[rgba(228,231,236,1)]">
                   <SelectValue placeholder="Select hierarchy" />
