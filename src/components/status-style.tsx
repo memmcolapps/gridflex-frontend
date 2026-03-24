@@ -1,5 +1,6 @@
 export const statusStyles: Record<string, string> = {
   pending: "bg-[#FFF5EA] text-[#C86900] py-2 px-3 rounded-full",
+  assignedited: "bg-[#FFF5EA] text-[#C86900] py-2 px-3 rounded-full",
   unassigned: "bg-[#E9F6FF] text-[#161CCA] py-2 px-2 rounded-full",
   rejected: "bg-[#FBE9E9] text-[#F50202] py-2 px-3 rounded-full",
   deactivated: "bg-[#FBE9E9] text-[#F50202] py-2 px-3 rounded-full",
@@ -39,6 +40,7 @@ const statusMappings: Record<string, string> = {
   "pending-edited": "pending",
   "pending-activated": "pending",
   "pending-deactivated": "pendingdeactivated",
+  "assign-edited": "assignedited"
 };
 
 export const getStatusStyle = (status: string | undefined): string => {

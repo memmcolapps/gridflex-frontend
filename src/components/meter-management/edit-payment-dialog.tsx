@@ -45,6 +45,7 @@ interface EditPaymentDialogProps {
   isPaymentFormComplete: boolean;
   onProceed: () => void;
   onBack: () => void;
+  onSuccess?: () => void;
 }
 
 export function EditPaymentDialog({
@@ -71,6 +72,7 @@ export function EditPaymentDialog({
   isPaymentFormComplete,
   onProceed,
   onBack,
+  onSuccess,
 }: EditPaymentDialogProps) {
   const editAssignedMeterMutation = useEditAssignedMeter();
 
@@ -135,6 +137,7 @@ export function EditPaymentDialog({
     editAssignedMeterMutation.mutate(payload, {
       onSuccess: () => {
         toast.success("Meter updated successfully!");
+        if (onSuccess) onSuccess();
         onOpenChange(false);
         if (onProceed) onProceed();
       },
@@ -145,46 +148,30 @@ export function EditPaymentDialog({
     });
   };
 
-  // Get payment plan options based on mode of payment
-  const getDebitPaymentPlanOptions = () => {
-    if (debitMop === "one-off" || debitMop === "percentage" || debitMop === "no-payment" || debitMop === "no payment") return null;
-    // monthly - show 6 and 3
-    return (
-      <>
-        <SelectItem value="6">6</SelectItem>
-        <SelectItem value="3">3</SelectItem>
-      </>
-    );
-  };
+  // Get payment plan options (1-12) for monthly payment mode
+  const getPaymentPlanOptions = () =>
+    Array.from({ length: 12 }, (_, i) => (
+      <SelectItem key={i + 1} value={String(i + 1)}>
+        {i + 1}
+      </SelectItem>
+    ));
 
-  const getCreditPaymentPlanOptions = () => {
-    if (creditMop === "one-off" || creditMop === "percentage" || creditMop === "no-payment" || creditMop === "no payment" || creditMop === "no payment") return null;
-    // monthly - show 6 and 3
-    return (
-      <>
-        <SelectItem value="6">6</SelectItem>
-        <SelectItem value="3">3</SelectItem>
-      </>
-    );
-  };
-
-  // Check if payment plan should be disabled (for one-off, percentage, and no-payment/no payment)
   const isDebitPaymentPlanDisabled = debitMop === "one-off" || debitMop === "percentage" || debitMop === "no-payment" || debitMop === "no payment";
-  const isCreditPaymentPlanDisabled = creditMop === "one-off" || creditMop === "percentage" || creditMop === "no-payment" || creditMop === "no payment" || creditMop === "no payment";
+  const isCreditPaymentPlanDisabled = creditMop === "one-off" || creditMop === "percentage" || creditMop === "no-payment" || creditMop === "no payment";
 
   // Get default value for payment plan based on mode
   const getDebitPaymentPlanValue = () => {
     // If mop is one-off, percentage, or no-payment/no payment, show placeholder
     if (debitMop === "one-off" || debitMop === "percentage" || debitMop === "no-payment" || debitMop === "no payment") return "";
     // For monthly, return the actual payment plan value, or default to "6" if empty
-    return debitPaymentPlan || "6";
+    return debitPaymentPlan;
   };
 
   const getCreditPaymentPlanValue = () => {
     // If mop is one-off, percentage, or no-payment/no payment, show placeholder
     if (creditMop === "one-off" || creditMop === "percentage" || creditMop === "no-payment" || creditMop === "no payment" || creditMop === "no payment") return "";
     // For monthly, return the actual payment plan value, or default to "6" if empty
-    return creditPaymentPlan || "6";
+    return creditPaymentPlan;
   };
 
   return (
@@ -260,7 +247,7 @@ export function EditPaymentDialog({
                   <SelectValue placeholder="Select payment plan" />
                 </SelectTrigger>
                 <SelectContent>
-                  {getDebitPaymentPlanOptions()}
+                  {getPaymentPlanOptions()}
                 </SelectContent>
               </Select>
             </div>
@@ -277,7 +264,7 @@ export function EditPaymentDialog({
                   <SelectValue placeholder="Select payment plan" />
                 </SelectTrigger>
                 <SelectContent>
-                  {getCreditPaymentPlanOptions()}
+                  {getPaymentPlanOptions()}
                 </SelectContent>
               </Select>
             </div>
