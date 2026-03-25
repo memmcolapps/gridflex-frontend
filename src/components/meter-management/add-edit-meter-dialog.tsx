@@ -63,7 +63,6 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
   const isPending = isCreatePending || isUpdatePending;
 
   useEffect(() => {
-    console.log("editMeter received:", editMeter);
     if (editMeter && isOpen) {
       setFormData({
         id: editMeter.id ?? "", // Set meter ID for update
@@ -312,13 +311,10 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Failed to update meter due to an unknown error.";
         
-        console.error("Full error details:", error);
-        console.error("Payload being sent:", payload);
         
         toast.error(`Update failed: ${errorMessage}`, {
           duration: 5000,
         });
-        console.error("Update meter error:", error);
       }
 
     } else {
@@ -409,15 +405,10 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
         });
         setErrors({});
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : "Failed to save meter due to an unknown error.";
-
-        console.error("Full error details:", error);
-        console.error("Payload being sent:", payload);
-        
+        const errorMessage = error instanceof Error ? error.message : "Failed to save meter due to an unknown error.";        
         toast.error(`Save failed: ${errorMessage}`, {
           duration: 5000,
         });
-        console.error("Save meter error:", error);
       }
     }
   };
@@ -432,8 +423,6 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
   } else {
     step1ButtonText = shouldShowNext ? "Next" : "Add Meter";
   }
-
-  console.log("formData.meterManufacturer:", formData.meterManufacturer);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

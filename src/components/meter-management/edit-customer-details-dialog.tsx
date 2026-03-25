@@ -649,12 +649,6 @@ export function EditCustomerDetailsDialog({
         setCreditPaymentPlan={setCreditPaymentPlan}
         isPaymentFormComplete={isPaymentFormComplete}
         onProceed={() => {
-          console.log("Payment mode saved", {
-            debitMop,
-            creditMop,
-            debitPaymentPlan,
-            creditPaymentPlan,
-          });
           setShowPaymentDialog(false);
           if (onSuccess) onSuccess();
         }}
