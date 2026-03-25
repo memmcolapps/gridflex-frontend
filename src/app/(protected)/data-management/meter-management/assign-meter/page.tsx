@@ -45,9 +45,7 @@ import type { MeterInventoryItem } from "@/types/meter-inventory";
 import {
   ArrowUpDown,
   Database,
-  Loader2,
   MoreVertical,
-  Navigation,
   Pencil,
   Search,
   SquareArrowOutUpRight,
@@ -152,7 +150,7 @@ export default function AssignMeterPage() {
   const { tariffs, isLoading: isLoadingTariffs } = useTariff();
 
   // Fetch meter data using the API
-  const { data: metersData, isLoading } = useMeters({
+  const { data: metersData, isLoading, refetch } = useMeters({
     page: 1,
     pageSize: 1000, // Fetch a large number to handle client-side filtering/pagination
     searchTerm,
@@ -510,6 +508,8 @@ export default function AssignMeterPage() {
     };
     editAssignedMeterMutation.mutate(updatePayload, {
       onSuccess: (data) => {
+        // Refetch to get updated data from server
+        refetch();
 
         setMeterData((prev) =>
           prev.map((item) =>
@@ -1052,6 +1052,7 @@ export default function AssignMeterPage() {
         isFormComplete={isFormComplete}
         onProceed={handleProceedFromEdit}
         onNextToPayment={handleNextToPayment}
+        onSuccess={() => refetch()}
       />
       <SetPaymentModeDialog
         isOpen={isSetPaymentModalOpen}

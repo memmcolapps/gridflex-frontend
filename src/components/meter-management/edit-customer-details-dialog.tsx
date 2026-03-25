@@ -74,6 +74,7 @@ interface EditCustomerDetailsDialogProps {
   isFormComplete: boolean;
   onProceed: () => void;
   onNextToPayment: () => void;
+  onSuccess?: () => void;
 }
 
 export function EditCustomerDetailsDialog({
@@ -108,6 +109,7 @@ export function EditCustomerDetailsDialog({
   isFormComplete,
   onProceed,
   onNextToPayment,
+  onSuccess,
 }: EditCustomerDetailsDialogProps) {
   const [showPaymentDialog, setShowPaymentDialog] = useState(false);
 
@@ -647,13 +649,8 @@ export function EditCustomerDetailsDialog({
         setCreditPaymentPlan={setCreditPaymentPlan}
         isPaymentFormComplete={isPaymentFormComplete}
         onProceed={() => {
-          console.log("Payment mode saved", {
-            debitMop,
-            creditMop,
-            debitPaymentPlan,
-            creditPaymentPlan,
-          });
           setShowPaymentDialog(false);
+          if (onSuccess) onSuccess();
         }}
         onBack={handleBackToCustomerDetails}
       />
