@@ -17,7 +17,7 @@ import { useEffect } from "react"; // Added useEffect to reset state for better 
 interface ViewMeterDetailsDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  selectedRow: Meter;
+  selectedRow: Meter | null;
   onApprove: (item: Meter) => void;
   onReject: (item: Meter) => void;
 }
