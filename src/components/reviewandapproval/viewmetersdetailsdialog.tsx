@@ -846,23 +846,23 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
 
               {
                 label: "Debit Payment Mode:",
-                oldValue: selectedRow.oldMeterInfo?.paymentMode?.debitPaymentMode || "-",
-                newValue: selectedRow.paymentMode?.debitPaymentMode || "-",
+                oldValue: selectedRow.oldMeterInfo?.paymentMode?.debitPaymentMode ?? "-",
+                newValue: selectedRow.paymentMode?.debitPaymentMode ?? "-",
               },
               {
                 label: "Debit Payment Plan:",
-                oldValue: selectedRow.oldMeterInfo?.paymentMode?.debitPaymentPlan || "-",
-                newValue: selectedRow.paymentMode?.debitPaymentPlan || "-",
+                oldValue: selectedRow.oldMeterInfo?.paymentMode?.debitPaymentPlan ?? "-",
+                newValue: selectedRow.paymentMode?.debitPaymentPlan ?? "-",
               },
               {
                 label: "Credit Payment Mode:",
-                oldValue: selectedRow.oldMeterInfo?.paymentMode?.creditPaymentMode,
-                newValue: selectedRow.paymentMode?.creditPaymentMode || "-",
+                oldValue: selectedRow.oldMeterInfo?.paymentMode?.creditPaymentMode ?? "-",
+                newValue: selectedRow.paymentMode?.creditPaymentMode ?? "-",
               },
                   {
                 label: "Credit Payment Plan:",
-                oldValue: selectedRow.oldMeterInfo?.paymentMode?.creditPaymentPlan || "-",
-                newValue: selectedRow.paymentMode?.creditPaymentPlan || "-",
+                oldValue: selectedRow.oldMeterInfo?.paymentMode?.creditPaymentPlan ?? "-",
+                newValue: selectedRow.paymentMode?.creditPaymentPlan ?? "-",
               },
             ].map(({ label, oldValue, newValue }) => (
               <div

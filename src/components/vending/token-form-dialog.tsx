@@ -272,7 +272,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
           kctAndClearTamper: "kct-clear-tamper",
           compensation: "compensation",
         };
-        const apiTokenType = tokenTypeMap[tokenType] || tokenType;
+        const apiTokenType = tokenTypeMap[tokenType] ?? tokenType;
         
         const result = await printTokenMutation.mutateAsync({
           id: generatedTokenData.transactionId,
