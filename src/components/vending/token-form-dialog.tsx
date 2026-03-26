@@ -62,7 +62,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
   const [units, setUnits] = useState("");
   const [showReceipt, setShowReceipt] = useState(false);
   const [showTokenDialog, setShowTokenDialog] = useState(false);
-  const [isFormDialogOpen, setIsFormDialogOpen] = useState(false); // Control form dialog
+  const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
   const [generatedTokenData, setGeneratedTokenData] =
     useState<VendingTransaction | null>(null);
   const [calculatedTokenData, setCalculatedTokenData] = useState<
@@ -882,30 +882,61 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
             <DialogTitle>{getTitleCase(tokenType)}</DialogTitle>
           </DialogHeader>
           <div className="grid gap-6 py-4">
-            <div className="grid grid-cols-2 gap-4">
-              <p>
-                <strong>Customer Name:</strong>
-              </p>
-              <p>{generatedTokenData?.customerFullname ?? "N/A"}</p>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <p>
-                <strong>Meter Number:</strong>
-              </p>
-              <p>{generatedTokenData?.meterNumber ?? "N/A"}</p>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <p>
-                <strong>Account No:</strong>
-              </p>
-              <p>{generatedTokenData?.meterAccountNumber ?? "N/A"}</p>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <p>
-                <strong>Operator:</strong>
-              </p>
-              <p>{generatedTokenData?.userFullname ?? "N/A"}</p>
-            </div>
+            {tokenType === "creditToken" ? (
+              <>
+                <div className="grid grid-cols-2 gap-4">
+                  <p>
+                    <strong>Customer Name:</strong>
+                  </p>
+                  <p>{generatedTokenData?.customerFullname ?? "N/A"}</p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <p>
+                    <strong>Meter Number:</strong>
+                  </p>
+                  <p>{generatedTokenData?.meterNumber ?? "N/A"}</p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <p>
+                    <strong>Account No:</strong>
+                  </p>
+                  <p>{generatedTokenData?.meterAccountNumber ?? "N/A"}</p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <p>
+                    <strong>Operator:</strong>
+                  </p>
+                  <p>{generatedTokenData?.userFullname ?? "N/A"}</p>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 gap-4">
+                  <p>
+                    <strong>Customer Name:</strong>
+                  </p>
+                  <p>{generatedTokenData?.customerFullname ?? "N/A"}</p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <p>
+                    <strong>Meter Number:</strong>
+                  </p>
+                  <p>{generatedTokenData?.meterNumber ?? "N/A"}</p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <p>
+                    <strong>Account No:</strong>
+                  </p>
+                  <p>{generatedTokenData?.meterAccountNumber ?? "N/A"}</p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <p>
+                    <strong>Operator:</strong>
+                  </p>
+                  <p>{generatedTokenData?.userFullname ?? "N/A"}</p>
+                </div>
+              </>
+            )}
             <div className="grid grid-cols-2 gap-4">
               <p>
                 <strong>Transaction date:</strong>
