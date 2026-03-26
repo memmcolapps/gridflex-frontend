@@ -206,8 +206,11 @@ export function SetPaymentModeDialog(props: SetPaymentModeDialogPropsCombined) {
                       <SelectValue placeholder="Select payment plan" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="6">6</SelectItem>
-                      <SelectItem value="3">3</SelectItem>
+                      {Array.from({ length: 12 }, (_, i) => (
+                        <SelectItem key={i + 1} value={String(i + 1)}>
+                          {i + 1}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -248,8 +251,11 @@ export function SetPaymentModeDialog(props: SetPaymentModeDialogPropsCombined) {
                       <SelectValue placeholder="Select payment plan" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="6">6</SelectItem>
-                      <SelectItem value="3">3</SelectItem>
+                      {Array.from({ length: 12 }, (_, i) => (
+                        <SelectItem key={i + 1} value={String(i + 1)}>
+                          {i + 1}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -366,8 +372,11 @@ export function SetPaymentModeDialog(props: SetPaymentModeDialogPropsCombined) {
                     <SelectValue placeholder="Select payment plan" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="6">6</SelectItem>
-                    <SelectItem value="3">3</SelectItem>
+                    {Array.from({ length: 12 }, (_, i) => (
+                      <SelectItem key={i + 1} value={String(i + 1)}>
+                        {i + 1}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -408,8 +417,11 @@ export function SetPaymentModeDialog(props: SetPaymentModeDialogPropsCombined) {
                     <SelectValue placeholder="Select payment plan" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="6">6</SelectItem>
-                    <SelectItem value="3">3</SelectItem>
+                    {Array.from({ length: 12 }, (_, i) => (
+                      <SelectItem key={i + 1} value={String(i + 1)}>
+                        {i + 1}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
