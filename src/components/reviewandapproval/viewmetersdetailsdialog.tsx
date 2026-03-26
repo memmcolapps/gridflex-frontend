@@ -17,9 +17,9 @@ import { useEffect } from "react"; // Added useEffect to reset state for better 
 interface ViewMeterDetailsDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  selectedRow: Meter | null;
-  onApprove: (item: Meter | null) => void;
-  onReject: (item: Meter | null) => void;
+  selectedRow: Meter;
+  onApprove: (item: Meter) => void;
+  onReject: (item: Meter) => void;
 }
 
 const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
@@ -40,14 +40,15 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
     }
   }, [isOpen, selectedRow]);
 
-const isMeterAllocated = selectedRow?.description?.toLowerCase() === "meter allocated";
-const isMeterAssigned = selectedRow?.description?.toLowerCase() === "meter assigned";
-const isMeterDeactivated = selectedRow?.description?.toLowerCase() === "meter deactivated";
-const isMeterActivated = selectedRow?.description?.toLowerCase() === "meter activated";
-const isMeterDetached = selectedRow?.description?.toLowerCase() === "meter detached";
-const isMeterMigrated = selectedRow?.description?.toLowerCase() === "meter migrated";
-const isNewlyAdded = selectedRow?.description?.toLowerCase() === "newly added";
-const isMeterEdited = selectedRow?.description?.toLowerCase() === "meter edited";
+  const isMeterAllocated = selectedRow?.description?.toLowerCase() === "meter allocated";
+  const isMeterAssigned = selectedRow?.description?.toLowerCase() === "meter assigned";
+  const isMeterDeactivated = selectedRow?.description?.toLowerCase() === "meter deactivated";
+  const isMeterActivated = selectedRow?.description?.toLowerCase() === "meter activated";
+  const isMeterDetached = selectedRow?.description?.toLowerCase() === "meter detached";
+  const isMeterMigrated = selectedRow?.description?.toLowerCase() === "meter migrated";
+  const isNewlyAdded = selectedRow?.description?.toLowerCase() === "newly added";
+  const isMeterEdited = selectedRow?.description?.toLowerCase() === "meter edited";
+  const isAssignEdited = selectedRow?.description?.toLowerCase() === "assign-edited";
 
   const renderContent = () => {
     if (!selectedRow) {
@@ -71,7 +72,7 @@ const isMeterEdited = selectedRow?.description?.toLowerCase() === "meter edited"
           </DialogHeader>
 
           <div className="flex w-150 flex-col gap-3 py-4 sm:py-6">
-            <div className="flex items-center gap-4 p-2">
+            <div className="flex items- gap-4 p-2">
               <div className="flex-1 text-sm font-bold text-gray-900 sm:text-base">
                 {selectedRow.meterNumber}
               </div>
@@ -304,7 +305,7 @@ const isMeterEdited = selectedRow?.description?.toLowerCase() === "meter edited"
                     disabled={!selectedRow}
                   >
                     Reject
-                    
+
                   </Button>
                   <Button
                     onClick={() => selectedRow && onApprove(selectedRow)}
@@ -768,6 +769,128 @@ const isMeterEdited = selectedRow?.description?.toLowerCase() === "meter edited"
         </>
       );
     }
+
+    if (isAssignEdited) {
+      return (
+        <>
+          <DialogHeader>
+            <DialogTitle className="truncate text-left text-base font-semibold text-gray-900 sm:text-lg">
+               Assigned Meter Edited
+            </DialogTitle>
+            <span className="text-sm text-gray-500 sm:text-base">
+              Operator:{" "}
+              {user?.business?.businessName?.toUpperCase() ?? "BUSINESS NAME"}
+            </span>
+          </DialogHeader>
+          <div className="flex items-center gap-4 p-2 mt-6 w-150">
+            <div className="flex-1 text-sm font-bold text-gray-900 sm:text-base ">
+              {selectedRow.meterNumber}
+            </div>
+            <div className="flex flex-1 items-center gap-2 text-sm font-bold text-gray-900 sm:text-base mr-3">
+              <MoveRight
+                className="mr-4 scale-x-250 text-gray-900"
+                size={10}
+              />
+              <span>{selectedRow.customer.customerId}</span>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-3 py-4 sm:py-6">
+            <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+
+              <div className="w-[140px] text-sm font-medium whitespace-nowrap text-gray-700 sm:w-[160px] sm:text-base">
+                {/* Empty header for label column */}
+              </div>
+              <div className="ml-20 w-full text-sm font-medium whitespace-nowrap text-gray-700 sm:w-[120px] sm:text-base lg:max-w-[700px]">
+                From
+              </div>
+              <div className="ml-10 flex items-start text-sm font-medium whitespace-nowrap text-gray-700 sm:text-base">
+                To
+              </div>
+            </div>
+            {[
+              {
+                label: "Account No:",
+                oldValue: selectedRow.oldMeterInfo?.accountNumber,
+                newValue: selectedRow.accountNumber,
+              },
+              {
+                label: "Tariff:",
+                oldValue: selectedRow.oldMeterInfo?.tariffInfo?.name,
+                newValue: selectedRow.tariff,
+              },
+              {
+                label: "CIN:",
+                oldValue: selectedRow.oldMeterInfo?.cin,
+                newValue: selectedRow.cin,
+              },
+              {
+                label: "Feeder:",
+                oldValue: "No object",
+                newValue: selectedRow.feederInfo?.name,
+              },
+              {
+                label: "DSS:",
+                oldValue: selectedRow.oldMeterInfo?.dssInfo?.name,
+                newValue: selectedRow.dssInfo?.name,
+              },
+              {
+                label: "Service Address:",
+                oldValue: selectedRow.oldMeterInfo?.meterAssignLocation
+                  ? `${selectedRow.oldMeterInfo.meterAssignLocation.houseNo} ${selectedRow.oldMeterInfo.meterAssignLocation.streetName}`
+                  : "N/A",
+                newValue: selectedRow.meterAssignLocation
+                  ? `${selectedRow.meterAssignLocation.houseNo} ${selectedRow.meterAssignLocation.streetName}`
+                  : "N/A",
+              },
+
+              {
+                label: "Debit Payment Mode:",
+                oldValue: selectedRow.oldMeterInfo?.paymentMode?.debitPaymentMode || "-",
+                newValue: selectedRow.paymentMode?.debitPaymentMode || "-",
+              },
+              {
+                label: "Debit Payment Plan:",
+                oldValue: selectedRow.oldMeterInfo?.paymentMode?.debitPaymentPlan || "-",
+                newValue: selectedRow.paymentMode?.debitPaymentPlan || "-",
+              },
+              {
+                label: "Credit Payment Mode:",
+                oldValue: selectedRow.oldMeterInfo?.paymentMode?.creditPaymentMode,
+                newValue: selectedRow.paymentMode?.creditPaymentMode || "-",
+              },
+                  {
+                label: "Credit Payment Plan:",
+                oldValue: selectedRow.oldMeterInfo?.paymentMode?.creditPaymentPlan || "-",
+                newValue: selectedRow.paymentMode?.creditPaymentPlan || "-",
+              },
+            ].map(({ label, oldValue, newValue }) => (
+              <div
+                key={label}
+                className="flex flex-col items-start gap-4 sm:flex-row sm:items-center"
+              >
+                <div className="w-[140px] text-sm font-medium whitespace-nowrap text-gray-700 sm:w-[160px] sm:text-base">
+                  {label}
+                </div>
+                <div className="ml-20 w-full text-sm font-bold whitespace-nowrap text-gray-900 sm:w-[120px] sm:text-base lg:max-w-[700px]">
+                  {oldValue ?? "N/A"}
+                </div>
+                {newValue && (
+                  <div className="ml-10 flex items-start text-sm whitespace-nowrap text-gray-900 sm:text-base">
+                    <MoveRight
+                      className="mr-4 scale-x-185 text-gray-900"
+                      size={16}
+                    />
+                    <span className="truncate font-bold">{newValue}</span>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </>
+      );
+    }
+
     // Default case for unknown changeDescription
     return (
       <VisuallyHidden>

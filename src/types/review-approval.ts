@@ -172,10 +172,21 @@ export interface Meter {
   address: string;
   phoneNo: string;
   id: string;
+  nodeId?: string;
   meterId: string;
   orgId: string;
   meterNumber: string;
+  accountNumber?: string;
+  simNumber: string;
+  cin?: string;
+  tariff?: string;
+  type?: string;
+  root?: string;
+  region?: string;
   meterType: string;
+  meterCategory?: string;
+  meterClass?: string;
+  meterManufacturer?: string;
   manufacturer: {
     id: string;
     orgId: string;
@@ -193,6 +204,8 @@ export interface Meter {
   customer: {
     id: string;
     orgId: string;
+    region?: string;
+    root?: string;
     firstname: string;
     lastname: string;
     customerId?: string;
@@ -208,29 +221,52 @@ export interface Meter {
     createdAt: string;
     updatedAt: string;
   };
-   meterAssignLocation: {
-      id: string;
-      orgId: string;
-      meterId: string;
-      state: string;
-      city: string;
-      houseNo: string;
-      streetName: string;
-      createdAt: string;
-      updatedAt: string;
-    };
+  meterAssignLocation: {
+    id: string;
+    orgId: string;
+    meterId: string;
+    state: string;
+    city: string;
+    houseNo: string;
+    streetName: string;
+    createdBy?: string;
+    description?: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+  paymentMode?: {
+    id: string;
+    orgId: string;
+    meterId: string;
+    status: boolean;
+    creditPaymentMode: string;
+    creditPaymentPlan: string;
+    debitPaymentMode: string;
+    debitPaymentPlan: string;
+    meterStage: string;
+    description: string;
+    createdAt: string;
+    updatedAt: string;
+  };
   oldMeterInfo: {
     id: string;
     orgId: string;
+    nodeId?: string;
     meterNumber: string;
+    accountNumber?: string;
     simNumber: string;
+    cin?: string;
     type: string;
+    root?: string;
+    region?: string;
+    feeder?: string;
     meterCategory: string;
     meterClass: string;
     meterType: string;
     meterStage: string;
     status: string;
     smartStatus: boolean;
+    customerId?: string;
     oldSgc: string;
     newSgc: string;
     oldKrn: string;
@@ -247,6 +283,21 @@ export interface Meter {
       streetName: string;
       createdAt: string;
       updatedAt: string;
+    };
+    mdMeterInfo?: {
+      id: string;
+      meterId: string;
+      orgId: string;
+      ctRatioNum: string;
+      ctRatioDenom: string;
+      voltRatioNum: string;
+      voltRatioDenom: string;
+      multiplier: string;
+      meterRating: string;
+      initialReading: string;
+      dial: string;
+      latitude: string;
+      longitude: string;
     };
     manufacturer: {
       id: string;
@@ -265,6 +316,8 @@ export interface Meter {
     customer: {
       id: string;
       orgId: string;
+      region?: string;
+      root?: string;
       firstname: string;
       lastname: string;
       customerId?: string;
@@ -280,6 +333,18 @@ export interface Meter {
       createdAt: string;
       updatedAt: string;
     };
+    paymentMode?: {
+      id: string;
+      orgId: string;
+      meterId: string;
+      status: boolean;
+      creditPaymentMode: string;
+      creditPaymentPlan: string;
+      debitPaymentMode: string;
+      debitPaymentPlan: string;
+      createdAt: string;
+      updatedAt: string;
+    };
     smartMeterInfo?: {
       id: string;
       meterId: string;
@@ -291,21 +356,70 @@ export interface Meter {
       createdAt: string;
       updatedAt: string;
     };
+    tariffInfo?: {
+      id: string;
+      name: string;
+      org_id: string;
+      tariff_type: string;
+      effective_date: string;
+      tariff_rate: string;
+      band_id: string;
+      approve_status: string;
+      band: {
+        id: string;
+        orgId: string;
+        name: string;
+        hour: string;
+        approveStatus: string;
+        createdAt: string;
+        updatedAt: string;
+      };
+      created_at: string;
+      updated_at: string;
+    };
+    dssInfo?: {
+      nodeId: string;
+      parentId: string;
+      assetId: string;
+      name: string;
+      type: string;
+      createdAt: string;
+      updatedAt: string;
+    };
     createdAt: string;
     updatedAt: string;
   };
   nodeInfo: {
     id: string;
+    nodeId?: string;
     regionId: string;
     name: string;
-    email: string;
+    email?: string;
     address: string;
     type: string;
     createdAt: string;
     updatedAt: string;
   };
-  meterCategory: string;
+  feederInfo?: {
+    nodeId: string;
+    parentId: string;
+    assetId: string;
+    name: string;
+    type: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+  dssInfo?: {
+    nodeId: string;
+    parentId: string;
+    assetId: string;
+    name: string;
+    type: string;
+    createdAt: string;
+    updatedAt: string;
+  }; 
   status: boolean | string;
+  smartStatus?: boolean;
   approveStatus: string;
   createdBy: string;
   description: string;
@@ -313,10 +427,8 @@ export interface Meter {
   updatedAt: string;
   customerId: string;
   customerName: string;
-  simNumber: string;
   oldSgc: string;
   newSgc: string;
-  meterClass: string;
   meterStage: string;
   reason?: string;
   oldKrn?: string;

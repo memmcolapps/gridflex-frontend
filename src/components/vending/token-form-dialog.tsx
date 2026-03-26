@@ -70,7 +70,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
   >(null);
 
   const handleVendByChange = (value: string) => setVendBy(value);
-
+ 
   const getDynamicLabel = () =>
     vendBy === "meterNumber" ? "Meter Number" : "Account Number";
 
@@ -263,9 +263,20 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
   const handleReprintToken = async () => {
     if (generatedTokenData?.transactionId) {
       try {
+        // Convert tokenType prop to API format
+        const tokenTypeMap: Record<string, string> = {
+          creditToken: "credit-token",
+          kct: "kct",
+          clearTamper: "clear-tamper",
+          clearCredit: "clear-credit",
+          kctAndClearTamper: "kct-clear-tamper",
+          compensation: "compensation",
+        };
+        const apiTokenType = tokenTypeMap[tokenType] || tokenType;
+        
         const result = await printTokenMutation.mutateAsync({
           id: generatedTokenData.transactionId,
-          tokenType: "credit-token",
+          tokenType: apiTokenType,
         });
         console.log("Print token result:", result);
 
@@ -875,25 +886,25 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
               <p>
                 <strong>Customer Name:</strong>
               </p>
-              <p>{calculatedTokenData?.data?.customerName ?? "N/A"}</p>
+              <p>{generatedTokenData?.customerFullname ?? "N/A"}</p>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <p>
                 <strong>Meter Number:</strong>
               </p>
-              <p>{calculatedTokenData?.data?.meterNumber ?? "N/A"}</p>
+              <p>{generatedTokenData?.meterNumber ?? "N/A"}</p>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <p>
                 <strong>Account No:</strong>
               </p>
-              <p>{calculatedTokenData?.data?.accountNo ?? "N/A"}</p>
+              <p>{generatedTokenData?.meterAccountNumber ?? "N/A"}</p>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <p>
                 <strong>Operator:</strong>
               </p>
-              <p>{calculatedTokenData?.data?.operator ?? "N/A"}</p>
+              <p>{generatedTokenData?.userFullname ?? "N/A"}</p>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <p>
