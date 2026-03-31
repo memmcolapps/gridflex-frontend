@@ -111,8 +111,12 @@ export function AuditLog() {
                         </span>
                       </TableCell>
                       <TableCell>{row.groupPermission}</TableCell>
-                      <TableCell>{row.activity}</TableCell>
-                      <TableCell>{row.userAgent}</TableCell>
+                      <TableCell className="max-w-xs truncate" title={row.activity}>
+                        {row.activity}
+                      </TableCell>
+                      <TableCell className="max-w-xs truncate" title={row.userAgent}>
+                        {row.userAgent}
+                      </TableCell>
                       <TableCell>{row.ipAddress}</TableCell>
                       <TableCell>
                         {typeof row.timeStamp === "string" ||

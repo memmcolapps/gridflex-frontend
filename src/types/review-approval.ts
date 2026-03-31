@@ -248,6 +248,27 @@ export interface Meter {
     createdAt: string;
     updatedAt: string;
   };
+  tariffInfo: {
+    id: string;
+    name: string;
+    org_id: string;
+    tariff_type: string;
+    effective_date: string;
+    tariff_rate: string;
+    band_id: string;
+    approve_status: string;
+    band: {
+      id: string;
+      orgId: string;
+      name: string;
+      hour: string;
+      approveStatus: string;
+      createdAt: string;
+      updatedAt: string;
+    };
+    created_at: string;
+    updated_at: string;
+  };
   oldMeterInfo: {
     id: string;
     orgId: string;
@@ -356,6 +377,15 @@ export interface Meter {
       createdAt: string;
       updatedAt: string;
     };
+    feederInfo: {
+      nodeId: string;
+      parentId: string;
+      assetId: string;
+      name: string;
+      type: string;
+      createdAt: string;
+      updatedAt: string;
+    };
     tariffInfo?: {
       id: string;
       name: string;
@@ -417,7 +447,7 @@ export interface Meter {
     type: string;
     createdAt: string;
     updatedAt: string;
-  }; 
+  };
   status: boolean | string;
   smartStatus?: boolean;
   approveStatus: string;

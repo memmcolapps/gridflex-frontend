@@ -817,7 +817,7 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
               {
                 label: "Tariff:",
                 oldValue: selectedRow.oldMeterInfo?.tariffInfo?.name,
-                newValue: selectedRow.tariff,
+                newValue: selectedRow.tariffInfo?.name,
               },
               {
                 label: "CIN:",
@@ -826,7 +826,7 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
               },
               {
                 label: "Feeder:",
-                oldValue: "No object",
+                oldValue: selectedRow.oldMeterInfo?.feederInfo?.name,
                 newValue: selectedRow.feederInfo?.name,
               },
               {

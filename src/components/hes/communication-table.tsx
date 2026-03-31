@@ -42,7 +42,7 @@ export function CommunicationTable({ searchQuery = "", activeTab = 'MD' }: Commu
 
     const { data: communicationReport, isLoading } = useAllCommunicationReports({
         type: activeTab,  
-        page: currentPage - 1,  
+        page: Math.max(0, currentPage - 1),  
         size: rowsPerPage,
         search: searchQuery
     });
