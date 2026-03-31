@@ -68,6 +68,7 @@ interface TableData {
   sNo: string;
   eventType: string;
   timeInterval: string;
+  repeatTime: string;
   unit: string;
   activeDays: string;
   status: "Active" | "Paused";
@@ -78,6 +79,7 @@ function mapScheduleItem(item: ScheduleItem, index: number): TableData {
     sNo: (index + 1).toString().padStart(2, "0"),
     eventType: item.name?.trim() || item.jobName,
     timeInterval: item.cronExpression,
+    repeatTime: item.repeatTime,
     unit: "",
     activeDays: item.description,
     status: item.jobStatus === "PAUSED" ? "Paused" : "Active",
@@ -385,6 +387,9 @@ export default function DataCollScheduler() {
               <TableHead className="p-2 text-left text-sm font-medium text-gray-600">
                 Cron Expression
               </TableHead>
+                <TableHead className="p-2 text-left text-sm font-medium text-gray-600">
+                Repeat Time
+              </TableHead>
               <TableHead className="p-2 text-left text-sm font-medium text-gray-600">
                 Description
               </TableHead>
@@ -430,6 +435,9 @@ export default function DataCollScheduler() {
                   </TableCell>
                   <TableCell className="p-2 font-mono text-xs text-gray-800">
                     {item.timeInterval}
+                  </TableCell>
+                   <TableCell className="p-2 font-mono text-xs text-gray-800">
+                    {item.repeatTime}
                   </TableCell>
                   <TableCell className="p-2 text-sm text-[#161CCA]">
                     {item.activeDays}

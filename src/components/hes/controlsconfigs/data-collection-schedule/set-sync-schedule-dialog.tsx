@@ -25,11 +25,12 @@ const eventTypeLabels: Record<string, string> = {
   relayControlLog: "Relay Control Log",
   powerQualityLog: "Power Quality Log",
   communicationLog: "Communication Log",
-  tokenEventProfile: "Token Event Profile",
-  energyProfile: "Energy Profile",
-  instantDataProfile: "Instant Data Profile",
-  billingData: "Billing Data",
   fraudEventLog: "Fraud Event Log",
+  tokenEventProfile: "Token Event Profile",
+  loadProfile1: "Load Profile 1",
+  loadProfile2: "Load Profile 2",
+  dailyBilling: "Daily Billing",
+  monthlyBilling: "Monthly Billing",
 };
 
 const activeDaysMap: Record<string, string[]> = {
@@ -95,7 +96,7 @@ const SetSyncScheduleDialog: React.FC<SetSyncScheduleDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[425px] h-fit bg-white">
+      <DialogContent className="h-fit bg-white sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Set Sync Schedule</DialogTitle>
         </DialogHeader>
@@ -110,15 +111,28 @@ const SetSyncScheduleDialog: React.FC<SetSyncScheduleDialogProps> = ({
                   <SelectValue placeholder="Select Event/Profile Type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="standardEventLog">Standard Event Log</SelectItem>
-                  <SelectItem value="relayControlLog">Relay Control Log</SelectItem>
-                  <SelectItem value="powerQualityLog">Power Quality Log</SelectItem>
-                  <SelectItem value="communicationLog">Communication Log</SelectItem>
-                  <SelectItem value="tokenEventProfile">Token Event Profile</SelectItem>
-                  <SelectItem value="energyProfile">Energy Profile</SelectItem>
-                  <SelectItem value="instantDataProfile">Instant Data Profile</SelectItem>
-                  <SelectItem value="billingData">Billing Data</SelectItem>
+                  <SelectItem value="standardEventLog">
+                    Standard Event Log
+                  </SelectItem>
+                  <SelectItem value="relayControlLog">
+                    Relay Control Log
+                  </SelectItem>
+                  <SelectItem value="powerQualityLog">
+                    Power Quality Log
+                  </SelectItem>
+                  <SelectItem value="communicationLog">
+                    Communication Log
+                  </SelectItem>
                   <SelectItem value="fraudEventLog">Fraud Event Log</SelectItem>
+                  <SelectItem value="tokenEventProfile">
+                    Token Event Log
+                  </SelectItem>
+                  <SelectItem value="loadProfile1">Load Profile 1</SelectItem>
+                  <SelectItem value="loadProfile2">Load Profile 2</SelectItem>
+                  <SelectItem value="dailyBilling">Daily Billing</SelectItem>
+                  <SelectItem value="monthlyBilling">
+                    Monthly Billing
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -148,6 +162,7 @@ const SetSyncScheduleDialog: React.FC<SetSyncScheduleDialogProps> = ({
                     <SelectValue placeholder="Select Unit" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="secs">Seconds</SelectItem>
                     <SelectItem value="min">Minutes</SelectItem>
                     <SelectItem value="hrs">Hours</SelectItem>
                   </SelectContent>
@@ -155,7 +170,7 @@ const SetSyncScheduleDialog: React.FC<SetSyncScheduleDialogProps> = ({
               </div>
             </div>
 
-            <div className="flex flex-col gap-2">
+            {/* <div className="flex flex-col gap-2">
               <Label htmlFor="activeDays">
                 Active Days <span className="text-red-600">*</span>
               </Label>
@@ -168,11 +183,9 @@ const SetSyncScheduleDialog: React.FC<SetSyncScheduleDialogProps> = ({
                   <SelectItem value="repeatMonFri">Repeat (Mon-Fri)</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
+            </div> */}
 
-            {error && (
-              <p className="text-sm text-red-600">{error}</p>
-            )}
+            {error && <p className="text-sm text-red-600">{error}</p>}
           </div>
 
           <DialogFooter className="flex justify-between">
@@ -180,13 +193,13 @@ const SetSyncScheduleDialog: React.FC<SetSyncScheduleDialogProps> = ({
               variant="outline"
               onClick={handleClose}
               type="button"
-              className="border-[#161CCA] text-[#161CCA] cursor-pointer"
+              className="cursor-pointer border-[#161CCA] text-[#161CCA]"
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              className="bg-[#161CCA] text-white cursor-pointer"
+              className="cursor-pointer bg-[#161CCA] text-white"
               disabled={!eventType || !timeInterval || !activeDays || isLoading}
             >
               {isLoading ? (
