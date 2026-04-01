@@ -158,7 +158,7 @@ export function DataTable({ data, reading, loading }: DataTableProps) {
     const columns = ['S/N', 'Meter Serial Number', 'Time', ...dynamicColumns];
 
     return (
-        <Card className="border-none w-full fixed">
+        <Card className="border-none w-full">
             {/* ✅ Ensure only the table scrolls */}
             <div className="w-full overflow-x-auto">
                 <Table className="min-w-max">

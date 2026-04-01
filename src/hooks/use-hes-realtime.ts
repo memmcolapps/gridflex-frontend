@@ -48,6 +48,7 @@ export function useMeterConnections(selectedMeters: string[]) {
 
   // SSE for meter status
   const statusUrl = baseUrl ? `${baseUrl}/hes/service/meter-status/stream` : '';
+  const statusHasMeters = selectedMeters.length > 0;
   const { data: _statusData, isConnected: _statusConnected, error: _statusError } = useSSE(statusUrl, {
     onOpen: () => {
       console.log('Meter status SSE connected');
@@ -84,11 +85,13 @@ export function useMeterConnections(selectedMeters: string[]) {
           parsedData.status === 'CONNECTED'
         );
       }
-    }
-  });
+    },
+    reconnectAttempts: 0
+  }, statusHasMeters);
 
   // SSE for real-time data
   const dataUrl = baseUrl ? `${baseUrl}/hes/service/stream` : '';
+  const dataHasMeters = selectedMeters.length > 0;
   const { data: _realtimeData, isConnected: _dataConnected, error: _dataError } = useSSE(dataUrl, {
     onOpen: () => {
       console.log('Real-time data SSE connected');
@@ -125,8 +128,9 @@ export function useMeterConnections(selectedMeters: string[]) {
           })
         );
       }
-    }
-  });
+    },
+    reconnectAttempts: 0
+  }, dataHasMeters);
 
   useEffect(() => {
     // Update connection status in query cache
