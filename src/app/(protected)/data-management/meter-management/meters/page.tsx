@@ -4,6 +4,7 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { ExportButton } from "@/components/ui/export-button";
 import {
   Table,
   TableHeader,
@@ -58,7 +59,6 @@ import {
   useDownloadAssignCsvTemplate,
   useDownloadAssignExcelTemplate,
   useBulkAssignMeters,
-  useExportActualMeters,
 } from "@/hooks/use-meter-bulk";
 import { toast } from "sonner";
 import { usePermissions } from "@/hooks/use-permissions";
@@ -172,7 +172,6 @@ export default function MeterManagementPage() {
   const bulkAssignMutation = useBulkAssignMeters();
   const downloadAssignCsvTemplateMutation = useDownloadAssignCsvTemplate();
   const downloadAssignExcelTemplateMutation = useDownloadAssignExcelTemplate();
-  const exportActualMetersMutation = useExportActualMeters();
 
   const handleOpenCustomerIdModal = () => {
     setCustomerIdInput("");
@@ -690,6 +689,8 @@ export default function MeterManagementPage() {
     });
   };
 
+
+
   const isFormComplete =
     meterNumber.trim() !== "" &&
     cin.trim() !== "" &&
@@ -798,32 +799,20 @@ export default function MeterManagementPage() {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          <Button
-            variant="outline"
-            size="lg"
-            className="cursor-pointer gap-2 border border-[#161CCA] font-medium text-[#161CCA]"
-            onClick={() => {
-              exportActualMetersMutation.mutate(undefined, {
-                onSuccess: () => {
-                  toast.success("Actual meters exported successfully");
-                },
-                onError: (error) => {
-                  console.error("Export failed:", error);
-                  toast.error("Failed to export actual meters");
-                },
-              });
-            }}
-            disabled={exportActualMetersMutation.isPending}
-          >
-            <SquareArrowOutUpRight
-              className="text-[#161CCA]"
-              size={12}
-              strokeWidth={2.3}
-            />
-            <span className="text-sm font-medium lg:text-base">
-              {exportActualMetersMutation.isPending ? "Exporting..." : "Export"}
-            </span>
-          </Button>
+          <ExportButton
+            data={processedData}
+            columns={[
+              { key: "meterNumber", label: "Meter Number" },
+              { key: "simNumber", label: "SIM Number" },
+              { key: "oldSgc", label: "Old SGC" },
+              { key: "newSgc", label: "New SGC" },
+              { key: "manufacturer.name", label: "Manufacturer" },
+              { key: "meterClass", label: "Class" },
+              { key: "status", label: "Activation Status" },
+              { key: "meterStage", label: "Meter Stage" },
+            ]}
+            fileName="meters"
+          />
         </div>
         <Card className="min-h-[calc(100vh-300px)] overflow-x-auto border-none bg-transparent shadow-none">
           <Table className="w-full table-auto bg-transparent">

@@ -1,6 +1,6 @@
 "use client";
-import React, { useState } from "react";
-import { Check, SquareArrowOutUpRight } from "lucide-react";
+import React, { useState, useMemo } from "react";
+import { Check } from "lucide-react";
 import { CheckCircle, XCircle, AlertTriangle } from "lucide-react";
 import { Button } from "../ui/button";
 import { ContentHeader } from "../ui/content-header";
@@ -12,10 +12,11 @@ import LiabilityCauseTable from "./liabilitycausetable";
 import BandTable from "./bandtable";
 import TariffTable from "./tarifftable";
 import MeterTable from "./metertable";
-import { useMeters } from "@/hooks/use-ReviewApproval";
+import { useMeters, usePercentageRanges, useLiabilities, useBands, useTariffs } from "@/hooks/use-ReviewApproval";
 import { useBulkApproveBands } from "@/hooks/use-band";
 import { useBulkApproveTariffs } from "@/hooks/use-tarrif";
 import { useBulkApproveLiabilityCauses, useBulkApprovePercentageRanges } from "@/hooks/use-debit-settings";
+import { ExportButton } from "@/components/ui/export-button";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -44,6 +45,22 @@ export function ReviewApprovalTabs() {
       failedRecords: string[];
     } | null>(null);
 
+    // Fetch data for all tables
+    const fetchParams = {
+        page: 1,
+        pageSize: 1000, // Get all data for export
+        searchTerm: '',
+        sortBy: null,
+        sortDirection: null,
+        type: 'pending-state',
+    };
+
+    const { percentageRanges } = usePercentageRanges(fetchParams);
+    const { liabilities } = useLiabilities(fetchParams);
+    const { bands } = useBands(fetchParams);
+    const { tariffs } = useTariffs(fetchParams);
+    const { meters } = useMeters(fetchParams);
+
     // Use the useMeters hook to get the bulkApproveMutation
     const { bulkApproveMutation } = useMeters({
         page: 1,
@@ -65,6 +82,104 @@ export function ReviewApprovalTabs() {
 
     // Use the useBulkApproveLiabilityCauses hook for liability cause bulk approve
     const bulkApproveLiabilityCausesMutation = useBulkApproveLiabilityCauses();
+
+    // Filter data for export - only pending items
+    const filteredPercentageRanges = useMemo(() => 
+        (percentageRanges || []).filter(item => item.approveStatus !== 'Approved'),
+        [percentageRanges]
+    );
+    const filteredLiabilities = useMemo(() => 
+        (liabilities || []).filter(item => item.approveStatus !== 'Approved'),
+        [liabilities]
+    );
+    const filteredBands = useMemo(() => 
+        (bands || []).filter(item => item.approveStatus !== 'Approved'),
+        [bands]
+    );
+    const filteredTariffs = useMemo(() => 
+        (tariffs || []).filter(item => item.approve_status !== 'Approved'),
+        [tariffs]
+    );
+    const filteredMeters = useMemo(() => 
+        (meters || []).filter(item => item.approveStatus !== 'Approved'),
+        [meters]
+    );
+
+    // Determine export data and columns based on active tab
+    const { exportData, exportColumns, exportFileName } = useMemo(() => {
+        switch (activeTab) {
+            case 'percentage':
+                return {
+                    exportData: filteredPercentageRanges,
+                    exportColumns: [
+                        { key: 'percentage', label: 'Percentage' },
+                        { key: 'code', label: 'Percentage Code' },
+                        { key: 'band.name', label: 'Band' },
+                        { key: 'amountStartRange', label: 'Amount Start' },
+                        { key: 'amountEndRange', label: 'Amount End' },
+                        { key: 'description', label: 'Change Description' },
+                        { key: 'approveStatus', label: 'Approval Status' },
+                    ],
+                    exportFileName: 'percentage_ranges'
+                };
+            case 'liability cause':
+                return {
+                    exportData: filteredLiabilities,
+                    exportColumns: [
+                        { key: 'name', label: 'Name' },
+                        { key: 'code', label: 'Code' },
+                        { key: 'description', label: 'Description' },
+                        { key: 'approveStatus', label: 'Approval Status' },
+                    ],
+                    exportFileName: 'liability_causes'
+                };
+            case 'band':
+                return {
+                    exportData: filteredBands,
+                    exportColumns: [
+                        { key: 'name', label: 'Name' },
+                        { key: 'hour', label: 'Hour' },
+                        { key: 'description', label: 'Description' },
+                        { key: 'approveStatus', label: 'Approval Status' },
+                    ],
+                    exportFileName: 'bands'
+                };
+            case 'tariff':
+                return {
+                    exportData: filteredTariffs,
+                    exportColumns: [
+                        { key: 'name', label: 'Name' },
+                        { key: 'tariff_type', label: 'Tariff Type' },
+                        { key: 'band.name', label: 'Band' },
+                        { key: 'tariff_rate', label: 'Tariff Rate' },
+                        { key: 'effective_date', label: 'Effective Date' },
+                        { key: 'description', label: 'Description' },
+                        { key: 'approve_status', label: 'Approval Status' },
+                    ],
+                    exportFileName: 'tariffs'
+                };
+            case 'meter':
+                return {
+                    exportData: filteredMeters,
+                    exportColumns: [
+                        { key: 'meterNumber', label: 'Meter Number' },
+                        { key: 'simNumber', label: 'SIM Number' },
+                        { key: 'type', label: 'Meter Type' },
+                        { key: 'customerName', label: 'Customer Name' },
+                        { key: 'accountNumber', label: 'Account Number' },
+                        { key: 'nodeInfo.name', label: 'Location' },
+                        { key: 'approveStatus', label: 'Approval Status' },
+                    ],
+                    exportFileName: 'meters'
+                };
+            default:
+                return {
+                    exportData: [],
+                    exportColumns: [],
+                    exportFileName: 'export'
+                };
+        }
+    }, [activeTab, filteredPercentageRanges, filteredLiabilities, filteredBands, filteredTariffs, filteredMeters]);
 
     const filterSections = [
         {
@@ -228,136 +343,12 @@ export function ReviewApprovalTabs() {
                             {bulkApproveMutation.isPending || bulkApproveBandsMutation.isPending || bulkApproveTariffsMutation.isPending || bulkApprovePercentageRangesMutation.isPending || bulkApproveLiabilityCausesMutation.isPending ? "Approving..." : "Bulk Approve"}
                         </span>
                     </Button>
-                    <Button
-                        variant="outline"
-                        size="lg"
-                        className="gap-2 border border-[#161CCA] text-[#161CCA] font-medium w-full lg:w-auto cursor-pointer mt-1"
-                    >
-                        <SquareArrowOutUpRight className="text-[#161CCA]" size={15} strokeWidth={2.3} />
-                        <span className="text-sm lg:text-base font-medium">Export</span>
-                    </Button>
-                </div>
-            </div>
-
-
-            <Card className="p-4 mb-4 border-none shadow-none bg-transparent">
-                <Tabs value={activeTab} onValueChange={(v) => changeTab(v)}>
-                    <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-                        <TabsList style={{ border: '2px solid #161CCA' }} className="h-12 w-fit">
-                            <TabsTrigger
-                                value="percentage"
-                                className="data-[state=active]:bg-[#161CCA] cursor-pointer data-[state=active]:text-white p-4"
-                            >
-                                Percentage Range
-                            </TabsTrigger>
-                            <TabsTrigger
-                                value="liability cause"
-                                className="data-[state=active]:bg-[#161CCA] cursor-pointer data-[state=active]:text-white p-4"
-                            >
-                                Liability Cause
-                            </TabsTrigger>
-                            <TabsTrigger
-                                value="band"
-                                className="data-[state=active]:bg-[#161CCA] cursor-pointer data-[state=active]:text-white p-4"
-                            >
-                                Band
-                            </TabsTrigger>
-                            <TabsTrigger
-                                value="tariff"
-                                className="data-[state=active]:bg-[#161CCA] cursor-pointer data-[state=active]:text-white p-4"
-                            >
-                                Tariff
-                            </TabsTrigger>
-                            <TabsTrigger
-                                value="meter"
-                                className="data-[state=active]:bg-[#161CCA] cursor-pointer data-[state=active]:text-white p-4"
-                            >
-                                Meter
-                            </TabsTrigger>
-                        </TabsList>
-
-                        <div className="flex items-center gap-2 w-full lg:w-auto">
-                            <SearchControl
-                                onSearchChange={handleSearchChange}
-                                value={searchTerm}
-                                placeholder="Search by percentage, code, or description..."
-                            />
-                            <FilterControl
-                                sections={filterSections}
-                                onApply={(filters) => setActiveFilters(filters)}
-                                onReset={() => setActiveFilters({})}
-                            />
-                            <SortControl
-                                onSortChange={handleSortChange}
-                                currentSort={sortConfig.key ? `${sortConfig.key} (${sortConfig.direction})` : ''}
-                            />
-
-                        </div>
-                    </div>
-                    <TabsContent value="percentage" className="overflow-x-hidden">
-                        <PercentageRangeTable
-                            selectedPercentageRangeCodes={selectedPercentageRangeCodes}
-                            setSelectedPercentageRangeCodes={setSelectedPercentageRangeCodes}
-                        />
-                    </TabsContent>
-                    <TabsContent value="liability cause" className="overflow-x-hidden">
-                        <LiabilityCauseTable
-                            selectedLiabilityCauseNames={selectedLiabilityCauseNames}
-                            setSelectedLiabilityCauseNames={setSelectedLiabilityCauseNames}
-                        />
-                    </TabsContent>
-                    <TabsContent value="band" className="overflow-x-hidden">
-                        <BandTable
-                            selectedBandNames={selectedBandNames}
-                            setSelectedBandNames={setSelectedBandNames}
-                        />
-                    </TabsContent>
-                    <TabsContent value="tariff" className="overflow-x-hidden">
-                        <TariffTable
-                            selectedTariffNames={selectedTariffNames}
-                            setSelectedTariffNames={setSelectedTariffNames}
-                        />
-                    </TabsContent>
-                    <TabsContent value="meter" className="overflow-x-hidden">
-                        <MeterTable
-                            selectedMeterNumbers={selectedMeterNumbers}
-                            setSelectedMeterNumbers={setSelectedMeterNumbers}
-                        />
-                    </TabsContent>
-                </Tabs>
-            </Card>
-
-        </div>
-    );
-
-    return (
-        <div className="p-6 max-h-screen overflow-auto bg-transparent">
-            <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4 bg-transparent">
-                <ContentHeader
-                    title="Review & Approval"
-                    description="Check submissions and approve or reject meters"
-                />
-                <div className="flex flex-col md:flex-row gap-2">
-                    <Button
-                        className="flex items-center gap-2 border font-medium border-green-500 text-white w-full md:w-auto cursor-pointer bg-green-500 h-12"
-                        variant="outline"
-                        size="lg"
-                        onClick={handleBulkApprove}
-                        disabled={bulkApproveMutation.isPending || bulkApproveBandsMutation.isPending || bulkApproveTariffsMutation.isPending || bulkApprovePercentageRangesMutation.isPending || bulkApproveLiabilityCausesMutation.isPending}
-                    >
-                        <Check size={18} strokeWidth={2.3} className="h-4 w-4" />
-                        <span className="text-sm md:text-base text-white">
-                            {bulkApproveMutation.isPending || bulkApproveBandsMutation.isPending || bulkApproveTariffsMutation.isPending || bulkApprovePercentageRangesMutation.isPending || bulkApproveLiabilityCausesMutation.isPending ? "Approving..." : "Bulk Approve"}
-                        </span>
-                    </Button>
-                    <Button
-                        variant="outline"
-                        size="lg"
-                        className="gap-2 border border-[#161CCA] text-[#161CCA] font-medium w-full lg:w-auto cursor-pointer mt-1"
-                    >
-                        <SquareArrowOutUpRight className="text-[#161CCA]" size={15} strokeWidth={2.3} />
-                        <span className="text-sm lg:text-base font-medium">Export</span>
-                    </Button>
+                    <ExportButton
+                        data={exportData}
+                        columns={exportColumns}
+                        fileName={exportFileName}
+                        className="h-12 w-full md:w-auto"
+                    />
                 </div>
             </div>
 

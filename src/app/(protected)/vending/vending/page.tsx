@@ -3,13 +3,52 @@ import { Button } from "@/components/ui/button";
 import { ContentHeader } from "@/components/ui/content-header";
 import VendTokenDialog from "@/components/vending/vending-dialog";
 import VendingTable from "@/components/vending/vending-table";
-import { ArrowUpDown, ListFilter, Search, SquareArrowOutUpRight } from "lucide-react";
-import { useState } from "react";
+import { ExportButton } from "@/components/ui/export-button";
+import { ArrowUpDown, ListFilter, Search } from "lucide-react";
+import { useState, useMemo } from "react";
 import { usePermissions } from "@/hooks/use-permissions";
+import { useVendingTransactions } from "@/hooks/use-vending";
 
 export default function VendingPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const { canEdit } = usePermissions();
+
+    // Fetch transactions data for export
+    const { data: rawTransactionsData } = useVendingTransactions({
+        page: 1,
+        size: 1000,
+    });
+
+    const transactionsData = useMemo(() => {
+        return rawTransactionsData?.messages ?? [];
+    }, [rawTransactionsData]);
+
+    // Filter transactions based on search query (same as table)
+    const filteredTransactions = useMemo(() => {
+        if (!searchQuery) return transactionsData;
+        const searchLower = searchQuery.toLowerCase();
+        return transactionsData.filter((transaction) =>
+            transaction.meterAccountNumber?.toLowerCase().includes(searchLower) ||
+            transaction.meterNumber?.toLowerCase().includes(searchLower) ||
+            transaction.tokenType?.toLowerCase().includes(searchLower) ||
+            transaction.tariffName?.toLowerCase().includes(searchLower) ||
+            transaction.status?.toLowerCase().includes(searchLower)
+        );
+    }, [transactionsData, searchQuery]);
+
+    // Export columns
+    const exportColumns = [
+        { key: 'meterAccountNumber', label: 'Account Number' },
+        { key: 'meterNumber', label: 'Meter Number' },
+        { key: 'tokenType', label: 'Token Type' },
+        { key: 'tariffName', label: 'Tariff' },
+        { key: 'initialAmount', label: 'Amount' },
+        { key: 'unitCost', label: 'Unit Cost' },
+        { key: 'vatAmount', label: 'VAT' },
+        { key: 'unit', label: 'Units' },
+        { key: 'status', label: 'Status' },
+    ];
+
     return (
         <div className="p-6">
             {/* header */}
@@ -53,17 +92,15 @@ export default function VendingPage() {
                     </div>
                 </div>
                 <div className="flex gap-5">
-                    <Button
-                        variant={"default"}
-                        className="text-md cursor-pointer gap-2 border px-8 py-5 font-semibold text-[rgba(22,28,202,1)]"
-                    >
-                        <SquareArrowOutUpRight size={14} />
-                        Export
-                    </Button>
+                    <ExportButton
+                        data={filteredTransactions}
+                        columns={exportColumns}
+                        fileName="vending_transactions"
+                    />
                 </div>
             </div>
             {/* Table section */}
-            <VendingTable searchQuery={searchQuery} />
+            <VendingTable searchQuery={searchQuery} transactionsData={transactionsData} />
         </div>
     );
 }

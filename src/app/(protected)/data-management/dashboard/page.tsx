@@ -15,7 +15,7 @@ import { EditCompleteProfileModal } from "@/components/profile/editcompleteprofi
 export default function DashboardPage() {
   const [selectedBand, setSelectedBand] = useState("All Bands");
   const [selectedYear, setSelectedYear] = useState("All Years");
-  const [selectedMeterCategory, setSelectedMeterCategory] = useState("Meter Category");
+  const [selectedMeterClass, setSelectedMeterClass] = useState("Meter Class");
   const [showCompleteProfileModal, setShowCompleteProfileModal] =
     useState(false);
   const [showEditCompleteProfileModal, setShowEditCompleteProfileModal] =
@@ -36,7 +36,7 @@ export default function DashboardPage() {
   const filters = {
     band: selectedBand,
     year: selectedYear,
-    meterCategory: selectedMeterCategory,
+    meterClass: selectedMeterClass,
   };
   const { data: statusCardData, isLoading: statusCardLoading } = useDashboard(filters); // For status cards only
 
@@ -181,8 +181,8 @@ export default function DashboardPage() {
             setSelectedBand={setSelectedBand}
             selectedYear={selectedYear}
             setSelectedYear={setSelectedYear}
-            selectedMeterCategory={selectedMeterCategory}
-            setSelectedMeterCategory={setSelectedMeterCategory}
+            selectedMeterClass={selectedMeterClass}
+            setSelectedMeterClass={setSelectedMeterClass}
           />
         </section>
 
