@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import type { Meter } from "@/types/meter";
+import { useSetIpPort } from "@/hooks/use-configure-meter";
 
 // interface Meter {
 //     id: string;
@@ -31,10 +32,18 @@ export default function ConfigureIPDialog({ isOpen, onClose, meter }: ConfigureI
     // Check if both fields are filled
     const isFormValid = ipAddress.trim() !== "" && port.trim() !== "";
 
+    const { mutate: IpAddress, isPending} = useSetIpPort()
+
     const handleConfigure = () => {
         // Handle IP and port configuration logic
-        console.log("Configuring IP:", { ipAddress, port, meter });
-        onClose();
+        if(!meter?.meterNumber) return;
+
+        IpAddress ({
+            serials: meter?.meterNumber,
+            ip: String(ipAddress),
+            port: Number(port)
+        })
+        // console.log("Configuring IP:", { ipAddress, port, meter });
     };
 
     return (
