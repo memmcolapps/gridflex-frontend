@@ -47,7 +47,7 @@ const VendingTable = ({ searchQuery = "", transactionsData: externalData }: Vend
     });
 
     // Use external data if provided, otherwise use internal data
-    const transactionsData = externalData || internalData;
+    const transactionsData = externalData ?? internalData;
 
     // Update transactionsData when rawTransactionsData changes
     useEffect(() => {

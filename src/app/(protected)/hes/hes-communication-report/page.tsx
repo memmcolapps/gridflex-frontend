@@ -28,7 +28,7 @@ export default function CommunicationReportPage() {
     });
 
     const communicationData = useMemo(() => {
-        return allCommunicationData || [];
+        return allCommunicationData ?? [];
     }, [allCommunicationData]);
 
     // Filter data based on search query
@@ -36,7 +36,7 @@ export default function CommunicationReportPage() {
         if (!searchQuery) return communicationData;
         const searchLower = searchQuery.toLowerCase();
         return communicationData.filter((item) =>
-            item.meterNo?.toLowerCase().includes(searchLower) ||
+            item.meterNo?.toLowerCase().includes(searchLower) ??
             item.connectionType?.toLowerCase().includes(searchLower)
         );
     }, [communicationData, searchQuery]);

@@ -48,7 +48,7 @@ export function CommunicationTable({ searchQuery = "", activeTab = 'MD', communi
         search: searchQuery
     });
 
-    const communicationReport = externalData || internalData;
+    const communicationReport = externalData ?? internalData;
 
     const filteredData = useMemo(() => {
         return communicationReport ?? [];

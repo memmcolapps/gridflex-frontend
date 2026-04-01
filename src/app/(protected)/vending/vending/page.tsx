@@ -20,7 +20,7 @@ export default function VendingPage() {
     });
 
     const transactionsData = useMemo(() => {
-        return rawTransactionsData?.messages || [];
+        return rawTransactionsData?.messages ?? [];
     }, [rawTransactionsData]);
 
     // Filter transactions based on search query (same as table)
