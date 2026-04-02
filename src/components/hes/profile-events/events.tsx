@@ -108,7 +108,7 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
   const { mutate: fetchEvents, isPending: isLoading } = useEvents();
   const { data: profileEventsData } = useProfileEventsData();
   const { data: metersData } = useMeters({
-    page: 1,
+    page: 0,
     pageSize: 1000,
     searchTerm: "",
     sortBy: null,

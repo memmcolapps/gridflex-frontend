@@ -23,7 +23,7 @@ export async function fetchAllCommunicationReports(
 
     const params = new URLSearchParams();
     // API expects 0-based page index (page 0 = first page), UI uses 1-based
-    params.append("page", String(page - 1));
+    params.append("page", String(page));
     params.append("size", size.toString());
     params.append("type", type);
     if (search) {

@@ -16,6 +16,7 @@ import { Profile } from "@/components/hes/profile-events/profile";
 import { SquareArrowOutUpRight, Check, ChevronDown, Grid2X2, Building, Wrench, Database, Zap, Lightbulb } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { useProfileEventsData } from "@/hooks/use-profile-events";
+import { toast } from "sonner";
 
 type ExportFormat = "CSV" | "XLSX" | "PDF" | null;
 
@@ -66,6 +67,7 @@ export default function HesProfileEvents() {
     useState<ExportFormat>(null);
   const [selectedHierarchy, setSelectedHierarchy] = useState<string | null>(null);
   const [selectedUnits, setSelectedUnits] = useState<string>(""); // assetId
+  const [activeTab, setActiveTab] = useState<string>("events");
 
   const { data: profileEventsData } = useProfileEventsData();
 
@@ -197,7 +199,7 @@ export default function HesProfileEvents() {
 
       {/* Tabs Card */}
       <Card className="mb-4 border-none bg-transparent p-4 shadow-none">
-        <Tabs defaultValue="events" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-4 overflow-hidden h-auto">
             <TabsList style={{ border: "2px solid #161CCA" }} className="h-12">
               <TabsTrigger

@@ -49,7 +49,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { BulkUploadDialog } from "@/components/meter-management/bulk-upload";
 import { toast } from "sonner";
 
 // Define the possible dialog types
@@ -313,7 +312,6 @@ export default function MeterRemoteConfigPage() {
                 })),
             ]);
             setCurrentPage(1);
-            setIsBulkUploadOpen(false);
         }
     };
 
@@ -404,15 +402,6 @@ export default function MeterRemoteConfigPage() {
                     description="Enable remote setup and management of meter settings for efficient monitoring."
                 />
                 <div className="flex gap-2">
-                    <Button
-                        className="flex w-full cursor-pointer items-center gap-2 border bg-white font-medium text-[#161CCA] md:w-auto"
-                        variant="outline"
-                        size="lg"
-                        onClick={() => setIsBulkUploadOpen(true)}
-                    >
-                        <Settings2 size={14} strokeWidth={2.3} className="h-4 w-4 text-[#161CCA]" />
-                        <span className="text-sm md:text-base">Bulk Upload</span>
-                    </Button>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button
@@ -711,33 +700,6 @@ export default function MeterRemoteConfigPage() {
                     </PaginationContent>
                 </Pagination>
             </Card>
-
-            {/* Bulk Upload Dialog */}
-            <BulkUploadDialog<Meter>
-                isOpen={isBulkUploadOpen}
-                onClose={() => setIsBulkUploadOpen(false)}
-                onSave={handleBulkUploadSave}
-                title="Bulk Upload Meters"
-                description="Click the link to download the required document format. Please ensure your file follows the structure before uploading."
-                requiredColumns={[
-                    "sN",
-                    "meterNumber",
-                    "simNo",
-                    "businessHub",
-                    "class",
-                    "category",
-                    "manufacturer",
-                    "model",
-                    "status",
-                    "region",
-                    "serviceCenter",
-                    "feeder",
-                    "transformer",
-                    "lastSync",
-                ]}
-                templateUrl="/meter-template.xlsx"
-                maxFileSizeMb={10}
-            />
 
             {isDialogOpen && dialogType === "apn" && selectedMeter && (
                 <ConfigureAPNDialog

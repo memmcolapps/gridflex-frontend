@@ -32,12 +32,13 @@ import { usePermissions } from "@/hooks/use-permissions";
 
 interface VendingTableProps {
     searchQuery?: string;
+    transactionsData?: VendingTransaction[];
 }
 
-const VendingTable = ({ searchQuery = "" }: VendingTableProps = {}) => {
+const VendingTable = ({ searchQuery = "", transactionsData: externalData }: VendingTableProps = {}) => {
     const [rowsPerPage, setRowsPerPage] = useState<number>(10);
     const [currentPage, setCurrentPage] = useState<number>(1);
-    const [transactionsData, setTransactionsData] = useState<VendingTransaction[]>([]);
+    const [internalData, setInternalData] = useState<VendingTransaction[]>([]);
     const { canEdit } = usePermissions();
 
     const { data: rawTransactionsData, isLoading } = useVendingTransactions({
@@ -45,10 +46,13 @@ const VendingTable = ({ searchQuery = "" }: VendingTableProps = {}) => {
         size: 1000, // Fetch a large number to handle client-side filtering/pagination
     });
 
+    // Use external data if provided, otherwise use internal data
+    const transactionsData = externalData ?? internalData;
+
     // Update transactionsData when rawTransactionsData changes
     useEffect(() => {
         if (rawTransactionsData?.messages) {
-            setTransactionsData(rawTransactionsData.messages);
+            setInternalData(rawTransactionsData.messages);
         }
     }, [rawTransactionsData]);
 

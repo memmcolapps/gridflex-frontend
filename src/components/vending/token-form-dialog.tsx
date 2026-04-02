@@ -261,7 +261,8 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
   };
 
   const handleReprintToken = async () => {
-    if (generatedTokenData?.transactionId) {
+    console.log("handleReprintToken called", { generatedTokenData, tokenType });
+    if (generatedTokenData?.transactionId || generatedTokenData?.id) {
       try {
         // Convert tokenType prop to API format
         const tokenTypeMap: Record<string, string> = {
@@ -275,7 +276,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
         const apiTokenType = tokenTypeMap[tokenType] ?? tokenType;
         
         const result = await printTokenMutation.mutateAsync({
-          id: generatedTokenData.transactionId,
+          id: generatedTokenData.transactionId ?? generatedTokenData.id,
           tokenType: apiTokenType,
         });
         console.log("Print token result:", result);
@@ -1014,7 +1015,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                   <p>{generatedTokenData?.token}</p>
                 </div>
               </>
-            )}
+            )}   
             {tokenType === "compensation" && (
               <div className="grid grid-cols-2 gap-4">
                 <p>

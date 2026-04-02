@@ -22,7 +22,8 @@ export interface SSEHookOptions {
 
 export function useSSE(
   url: string,
-  options: SSEHookOptions = {}
+  options: SSEHookOptions = {},
+  enabled = true
 ): {
   data: Record<string, unknown>[];
   isConnected: boolean;
@@ -120,13 +121,17 @@ export function useSSE(
   };
 
   useEffect(() => {
+    if (!enabled || !url) {
+      return;
+    }
+
     connect();
 
     return () => {
       close();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [url]);
+  }, [url, enabled]);
 
   return {
     data,

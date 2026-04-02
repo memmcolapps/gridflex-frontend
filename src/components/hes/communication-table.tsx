@@ -24,9 +24,10 @@ import { type CommunicationReportData } from '@/types/reports';
 interface CommunicationTableProps {
     searchQuery?: string;
     activeTab?: 'MD' | 'Non-MD';
+    communicationData?: CommunicationReportData[];
 }
 
-export function CommunicationTable({ searchQuery = "", activeTab = 'MD' }: CommunicationTableProps) {
+export function CommunicationTable({ searchQuery = "", activeTab = 'MD', communicationData: externalData }: CommunicationTableProps) {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [selectedRow, setSelectedRow] = useState<CommunicationReportData | null>(null);
     const [selectedRows, setSelectedRows] = useState<string[]>([]);
@@ -39,13 +40,15 @@ export function CommunicationTable({ searchQuery = "", activeTab = 'MD' }: Commu
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(10)
 
-
-    const { data: communicationReport, isLoading } = useAllCommunicationReports({
+    // Use external data if provided, otherwise fetch internally
+    const { data: internalData, isLoading } = useAllCommunicationReports({
         type: activeTab,  
-        page: currentPage - 1,  
+        page: Math.max(0, currentPage - 1),  
         size: rowsPerPage,
         search: searchQuery
     });
+
+    const communicationReport = externalData ?? internalData;
 
     const filteredData = useMemo(() => {
         return communicationReport ?? [];
@@ -120,9 +123,8 @@ export function CommunicationTable({ searchQuery = "", activeTab = 'MD' }: Commu
                         <TableHead>Meter No.</TableHead>
                         {hasMeterModel && <TableHead>Meter Model</TableHead>}
                         <TableHead>Connection Type</TableHead>
-                        <TableHead>Online Time</TableHead>
-                        <TableHead>Offline Time</TableHead>
-                        <TableHead>Last Updated</TableHead>
+                      
+                        <TableHead>Last Sync</TableHead>
                         <TableHead>Actions</TableHead>
                     </TableRow>
                 </TableHeader>
@@ -152,8 +154,6 @@ export function CommunicationTable({ searchQuery = "", activeTab = 'MD' }: Commu
                                     {row.connectionType}
                                 </span>
                             </TableCell>
-                            <TableCell>{row.onlineTime ? new Date(row.onlineTime).toLocaleString() : '-'}</TableCell>
-                            <TableCell>{row.offlineTime ? new Date(row.offlineTime).toLocaleString() : '-'}</TableCell>
                             <TableCell>{row.updatedAt ? new Date(row.updatedAt).toLocaleString() : '-'}</TableCell>
                             <TableCell onClick={(e) => e.stopPropagation()}>
                                 <DropdownMenu>
@@ -219,7 +219,7 @@ export function CommunicationTable({ searchQuery = "", activeTab = 'MD' }: Commu
                                 <span>{selectedRow.offlineTime ? new Date(selectedRow.offlineTime).toLocaleString() : '-'}</span>
                             </div>
                             <div className="grid grid-cols-2 gap-2">
-                                <Label className="font-semibold">Last Updated:</Label>
+                                <Label className="font-semibold">Last Sync:</Label>
                                 <span>{selectedRow.updatedAt ? new Date(selectedRow.updatedAt).toLocaleString() : '-'}</span>
                             </div>
                             {selectedRow.meter && (

@@ -12,6 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { ExportButton } from "@/components/ui/export-button";
 import {
   Dialog,
   DialogContent,
@@ -37,7 +38,6 @@ import {
 import {
   PlusCircle,
   Eye,
-  SquareArrowOutUpRight,
   Printer,
   Wallet,
   MoreVertical,
@@ -301,6 +301,8 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
     setRowsPerPage(Number(value));
     setCurrentPage(1);
   };
+
+
 
   const handleRowClick = (
     customer: Customer,
@@ -818,19 +820,17 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
             />
           </div>
           <div>
-            <Button variant="outline" className="gap-1 border-[#161CCA]">
-              <SquareArrowOutUpRight
-                className="text-[#161CCA]"
-                strokeWidth={2.5}
-                size={12}
-              />
-              <Label
-                htmlFor="sortCheckbox"
-                className="cursor-pointer text-[#161CCA]"
-              >
-                Export
-              </Label>
-            </Button>
+            <ExportButton
+              data={processedData}
+              columns={[
+                { key: "accountNo", label: "Account No." },
+                { key: "customerId", label: "Customer ID" },
+                { key: "name", label: "Customer Name" },
+                { key: "meterNo", label: "Meter No." },
+                { key: "balance", label: type === "credit" ? "Credit Balance" : "Debit Balance" },
+              ]}
+              fileName={`${type}_adjustments`}
+            />
           </div>
         </div>
         <Card className="h-4/6 overflow-x-hidden border-none bg-transparent shadow-none">
