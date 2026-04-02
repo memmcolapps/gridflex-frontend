@@ -315,7 +315,7 @@ export interface GenerateCompensationPayload {
   meterAccountNumber?: string;
   tokenType: string;
   reason: string;
-  units: number;
+  unit: number;
 }
 
 export interface GenerateCompensationResponse {
