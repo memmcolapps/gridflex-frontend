@@ -60,6 +60,8 @@ export interface CommunicationReport {
   meterModel: string;
   status: string;
   lastSync: string;
+  connectionType?: string;
+  updatedAt?: string;
   tamperState: string;
   tamperSync: string;
   relayControl: string;
@@ -88,5 +90,5 @@ export interface HesResponseData {
 export interface HesDashboardApiResponse {
   responsecode: string;
   responsedesc?: string;
-  responsedata: HesResponseData
+  responsedata: HesResponseData;
 }
