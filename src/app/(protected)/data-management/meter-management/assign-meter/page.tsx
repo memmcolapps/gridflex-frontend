@@ -48,13 +48,13 @@ import {
   MoreVertical,
   Pencil,
   Search,
-  SquareArrowOutUpRight,
   Unlink,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { LoadingAnimation } from "@/components/ui/loading-animation";
 import { useAllCustomerIds } from "@/hooks/use-customer";
 import { fetchCustomerRecord } from "@/service/customer-service";
+import { ExportButton, ExportColumn } from "@/components/ui/export-button";
 
 // Define filter sections
 const filterSections = [
@@ -150,7 +150,11 @@ export default function AssignMeterPage() {
   const { tariffs, isLoading: isLoadingTariffs } = useTariff();
 
   // Fetch meter data using the API
-  const { data: metersData, isLoading, refetch } = useMeters({
+  const {
+    data: metersData,
+    isLoading,
+    refetch,
+  } = useMeters({
     page: 1,
     pageSize: 1000, // Fetch a large number to handle client-side filtering/pagination
     searchTerm,
@@ -329,12 +333,12 @@ export default function AssignMeterPage() {
   const handleEditDetails = (
     customer: MeterInventoryItem | VirtualMeterData,
   ) => {
-   
     const customerState = (customer as any).meterAssignLocation?.state ?? "";
     const customerCity = (customer as any).meterAssignLocation?.city ?? "";
-    const customerStreetName = (customer as any).meterAssignLocation?.streetName ?? "";
-    const customerHouseNo = (customer as any).meterAssignLocation?.houseNo ?? "";
-
+    const customerStreetName =
+      (customer as any).meterAssignLocation?.streetName ?? "";
+    const customerHouseNo =
+      (customer as any).meterAssignLocation?.houseNo ?? "";
 
     if ("meterManufacturer" in customer) {
       // Try to find tariff ID by name, only if tariffs are loaded
@@ -368,7 +372,7 @@ export default function AssignMeterPage() {
       }
       setTariff(tariffId);
       setFeeder(customer.feederInfo?.assetId ?? customer.feederLine ?? "");
-   
+
       setDss(customer.dssInfo?.assetId ?? customer.dss ?? "");
       setState(customerState);
       setCity(customerCity);
@@ -474,18 +478,17 @@ export default function AssignMeterPage() {
   };
 
   const handleConfirmEditFromSetPayment = () => {
-    
     const customerIdValue = editCustomer?.id;
     if (!customerIdValue) {
-   
       return;
     }
 
-   
     const customer = editCustomer!;
 
-   
-    const meterAssignId = (editCustomer as any).meterAssignLocation?.id ?? editCustomer?.id ?? editCustomer?.customerId;
+    const meterAssignId =
+      (editCustomer as any).meterAssignLocation?.id ??
+      editCustomer?.id ??
+      editCustomer?.customerId;
     const updatePayload = {
       id: meterAssignId,
       tariff: tariff,
@@ -786,20 +789,21 @@ export default function AssignMeterPage() {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        <div>
-          <Button
-            variant="outline"
-            size="lg"
-            className="w-full cursor-pointer gap-2 border border-[#161CCA] font-medium text-[#161CCA] lg:w-auto"
-          >
-            <SquareArrowOutUpRight
-              className="text-[#161CCA]"
-              size={12}
-              strokeWidth={2.3}
-            />
-            <span className="text-sm font-medium lg:text-base">Export</span>
-          </Button>
-        </div>
+        <ExportButton
+          data={meterData}
+          columns={[
+            { key: "customerId", label: "Customer ID" },
+            { key: "meterNumber", label: "Meter Number" },
+            { key: "accountNumber", label: "Account Number" },
+            { key: "cin", label: "CIN" },
+            { key: "debitMop", label: "Debit MOP" },
+            { key: "debitPaymentPlan", label: "Debit Payment Plan" },
+            { key: "creditMop", label: "Credit MOP" },
+            { key: "creditPaymentPlan", label: "Credit Payment Plan" },
+            { key: "meterStage", label: "Meter Stage" },
+          ]}
+          fileName="assigned-meters"
+        />
       </div>
       <Table>
         <TableHeader className="bg-transparent">

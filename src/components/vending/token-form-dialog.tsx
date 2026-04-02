@@ -59,7 +59,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
   const [newKrn, setNewKrn] = useState("");
   const [oldTariffIndex, setOldTariffIndex] = useState("");
   const [newTariffIndex, setNewTariffIndex] = useState("");
-  const [units, setUnits] = useState("");
+  const [unit, setUnit] = useState("");
   const [showReceipt, setShowReceipt] = useState(false);
   const [showTokenDialog, setShowTokenDialog] = useState(false);
   const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
@@ -195,7 +195,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
           meterNumber,
         tokenType: "compensation",
         reason,
-        units: parseInt(units) || 0,
+        unit: parseInt(unit) || 0,
       };
 
       try {
@@ -221,7 +221,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
     setNewKrn("");
     setOldTariffIndex("");
     setNewTariffIndex("");
-    setUnits("");
+    setUnit("");
     setIsFormDialogOpen(false); // Close form dialog
   };
 
@@ -698,8 +698,8 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                     id="units"
                     className="border border-gray-300"
                     placeholder="Enter Units"
-                    value={units}
-                    onChange={(e) => setUnits(e.target.value)}
+                    value={unit}
+                    onChange={(e) => setUnit(e.target.value)}
                   />
                 </div>
               </div>
