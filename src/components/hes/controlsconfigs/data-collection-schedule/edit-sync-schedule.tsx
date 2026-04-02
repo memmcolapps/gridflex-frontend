@@ -18,23 +18,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { createSchedule } from "@/service/hes-service";
+import { Loader2 } from "lucide-react";
+
+export interface EditScheduleInitialData {
+  sNo: string;
+  eventType: string;
+  jobName: string;
+  jobGroup: string;
+  timeInterval: string;
+  unit: string;
+}
 
 interface EditSyncScheduleDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: {
-    eventType: string;
-    timeInterval: string;
-    unit: string;
-    activeDays: string;
-  }) => void;
-  initialData: {
-    sNo: string;
-    eventType: string;
-    timeInterval: string;
-    unit: string;
-    activeDays: string;
-  };
+  onSubmit: () => void; 
+  initialData: EditScheduleInitialData;
 }
 
 const EditSyncScheduleDialog: React.FC<EditSyncScheduleDialogProps> = ({
@@ -43,69 +43,61 @@ const EditSyncScheduleDialog: React.FC<EditSyncScheduleDialogProps> = ({
   onSubmit,
   initialData,
 }) => {
-  const [eventType, setEventType] = useState(initialData.eventType);
-  const [timeInterval, setTimeInterval] = useState(
-    initialData.timeInterval.replace(/\D/g, "") || "",
-  );
-  const [unit, setUnit] = useState(initialData.unit);
-  const [activeDays, setActiveDays] = useState(initialData.activeDays);
+  const [timeInterval, setTimeInterval] = useState("");
+  const [unit, setUnit] = useState("minutes");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setEventType(initialData.eventType || "");
-    setTimeInterval(initialData.timeInterval.replace(/\D/g, "") || "");
-    setUnit(initialData.unit || "");
-    setActiveDays(initialData.activeDays || "");
-  }, [initialData]);
+    setTimeInterval("");
+    setUnit("minutes");
+    setError(null);
+  }, [initialData.sNo]);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleClose = () => {
+    setTimeInterval("");
+    setUnit("minutes");
+    setError(null);
+    onClose();
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (eventType && timeInterval && unit && activeDays) {
-      onSubmit({ eventType, timeInterval, unit, activeDays });
-      onClose();
+    setIsLoading(true);
+    setError(null);
+
+    const result = await createSchedule({
+      jobGroup: initialData.jobGroup,
+      jobName: initialData.jobName,
+      timeInterval: parseInt(timeInterval, 10),
+      unit,
+    });
+
+    setIsLoading(false);
+
+    if (result.success) {
+      onSubmit(); // refresh table
+      handleClose();
+    } else {
+      setError(result.error);
     }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="h-fit bg-white sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Edit Sync Schedule</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
+
+            {/* Read-only — shows which schedule is being edited */}
             <div className="flex flex-col gap-2">
-              <Label htmlFor="eventType">
-                Event/Profile Type <span className="text-red-600">*</span>
-              </Label>
-              <Select onValueChange={setEventType} value={eventType}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select Event/Profile Type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="standardEventLog">
-                    Standard Event Log
-                  </SelectItem>
-                  <SelectItem value="relayControlLog">
-                    Relay Control Log
-                  </SelectItem>
-                  <SelectItem value="powerQualityLog">
-                    Power Quality Log
-                  </SelectItem>
-                  <SelectItem value="communicationLog">
-                    Communication Log
-                  </SelectItem>
-                  <SelectItem value="fraudEventLog">Fraud Event Log</SelectItem>
-                  <SelectItem value="tokenEventProfile">
-                    Token Event Profile
-                  </SelectItem>
-                  <SelectItem value="loadProfile1">Load Profile 1</SelectItem>
-                  <SelectItem value="loadProfile2">Load Profile 2</SelectItem>
-                  <SelectItem value="dailyBilling">Daily Billing</SelectItem>
-                  <SelectItem value="monthlyBilling">
-                    Monthly Billing
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+              <Label>Event/Profile Type</Label>
+              <div className="rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700">
+                {initialData.eventType || "—"}
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -133,35 +125,21 @@ const EditSyncScheduleDialog: React.FC<EditSyncScheduleDialogProps> = ({
                     <SelectValue placeholder="Select Unit" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="secs">Seconds</SelectItem>
-                    <SelectItem value="min">Minutes</SelectItem>
-                    <SelectItem value="hrs">Hours</SelectItem>
+                    <SelectItem value="seconds">Seconds</SelectItem>
+                    <SelectItem value="minutes">Minutes</SelectItem>
+                    <SelectItem value="hours">Hours</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
 
-            {/* <div className="flex flex-col gap-2">
-              <Label htmlFor="activeDays">
-                Active Days <span className="text-red-600">*</span>
-              </Label>
-              <Select onValueChange={setActiveDays} value={activeDays}>
-                <SelectTrigger className="w-full text-gray-800 [&_[data-placeholder]]:text-gray-400">
-                  <SelectValue placeholder="Select Active Days" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="repeatDaily">Repeat Daily</SelectItem>
-                  <SelectItem value="repeatMonFri">Repeat (Mon-Fri)</SelectItem>
-                  <SelectItem value="repeatOnly">Repeat Only</SelectItem>
-                </SelectContent>
-              </Select>
-            </div> */}
+            {error && <p className="text-sm text-red-600">{error}</p>}
           </div>
 
           <DialogFooter className="flex justify-between">
             <Button
               variant="outline"
-              onClick={onClose}
+              onClick={handleClose}
               type="button"
               className="cursor-pointer border-[#161CCA] text-[#161CCA]"
             >
@@ -170,9 +148,16 @@ const EditSyncScheduleDialog: React.FC<EditSyncScheduleDialogProps> = ({
             <Button
               type="submit"
               className="cursor-pointer bg-[#161CCA] text-white"
-              disabled={!eventType || !timeInterval || !unit || !activeDays}
+              disabled={!timeInterval || !unit || isLoading}
             >
-              Save
+              {isLoading ? (
+                <>
+                  <Loader2 size={14} className="animate-spin" />
+                  <span>Saving...</span>
+                </>
+              ) : (
+                "Save Changes"
+              )}
             </Button>
           </DialogFooter>
         </form>

@@ -73,3 +73,40 @@ export interface ScheduleListResponse {
     page: number;
   };
 }
+
+export interface CreateSchedulePayload {
+  eventProfileType?: string;
+  timeInterval?: number;
+  timeUnit?: string;
+  activeDays?: string[];
+  orgId?: string;
+  jobGroup?: string;
+  jobName?: string; 
+  unit?: string;
+}
+
+export interface ProfileEvent {
+  name: string;
+  jobGroup: string;
+  jobName: string;
+  obisCode: string;
+  updatedAt: string;
+}
+
+export interface ProfileEventsResponse {
+  responsecode: string;
+  responsedesc: string;
+  responsedata: ProfileEvent[];
+}
+
+export interface ResetCronPayload {
+  jobName: string;
+  jobGroup: string;
+  frequency: string;
+  interval?: number;
+  unit?: string;
+  time?: string;
+  daysOfWeek?: string[];
+  daysOfMonth?: number[];
+  monthsOfYear?: number[];
+}

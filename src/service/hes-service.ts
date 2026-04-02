@@ -1,30 +1,37 @@
-import type { HierarchyResponse, ScheduleListResponse } from '@/types/hes';
+import type {
+  CreateSchedulePayload,
+  HierarchyResponse,
+  ProfileEvent,
+  ProfileEventsResponse,
+  ResetCronPayload,
+  ScheduleListResponse,
+} from "@/types/hes";
 import { env } from "@/env";
 import { axiosInstance } from "@/lib/axios";
 import { handleApiError } from "@/utils/error-handler";
 
 export const fetchHierarchyData = async (): Promise<HierarchyResponse> => {
   const baseUrl = env.NEXT_PUBLIC_BASE_URL;
-  const token = localStorage.getItem('auth_token');
+  const token = localStorage.getItem("auth_token");
 
   if (!baseUrl) {
-    throw new Error('NEXT_PUBLIC_BASE_URL is not configured');
+    throw new Error("NEXT_PUBLIC_BASE_URL is not configured");
   }
 
   if (!token) {
-    throw new Error('No authorization token found');
+    throw new Error("No authorization token found");
   }
 
   const response = await fetch(`${baseUrl}/hes/service/model`, {
-    method: 'GET',
+    method: "GET",
     headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
     },
   });
 
   if (!response.ok) {
-    throw new Error('Failed to fetch hierarchy data');
+    throw new Error("Failed to fetch hierarchy data");
   }
 
   return response.json();
@@ -68,14 +75,6 @@ export const fetchScheduleData = async (
   }
 };
 
-export interface CreateSchedulePayload {
-  eventProfileType: string;
-  timeInterval: number;
-  timeUnit: string;
-  activeDays: string[];
-  orgId: string;
-}
-
 export const createSchedule = async (
   payload: CreateSchedulePayload,
 ): Promise<{ success: true } | { success: false; error: string }> => {
@@ -83,9 +82,44 @@ export const createSchedule = async (
     const token = localStorage.getItem("auth_token");
     if (!token) return { success: false, error: "Auth token not found" };
 
-    await axiosInstance.post(
-      "/data-collection/schedules/create",
-      payload,
+    const response = await axiosInstance.post(
+      "/hes/service/set/schedule",
+      null, 
+      {
+        params: {
+          jobGroup: payload.jobGroup,
+          jobName: payload.jobName,
+          timeInterval: payload.timeInterval,
+          unit: payload.unit,
+        },
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    if (response.data.responsecode !== "000") {
+      return { success: false, error: response.data.responsedesc };
+    }
+
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: handleApiError(error).message };
+  }
+};
+
+
+export const fetchProfileEvents = async (): Promise<
+  { success: true; data: ProfileEvent[] } | { success: false; error: string }
+> => {
+  try {
+    const token = localStorage.getItem("auth_token");
+    if (!token) return { success: false, error: "Auth token not found" };
+
+    const response = await axiosInstance.get<ProfileEventsResponse>(
+      "/hes/service/profile-events",
       {
         headers: {
           "Content-Type": "application/json",
@@ -94,6 +128,39 @@ export const createSchedule = async (
         },
       },
     );
+
+    if (response.data.responsecode !== "000") {
+      return { success: false, error: response.data.responsedesc };
+    }
+
+    return { success: true, data: response.data.responsedata };
+  } catch (error) {
+    return { success: false, error: handleApiError(error).message };
+  }
+};
+
+export const resetCronSchedule = async (
+  payload: ResetCronPayload,
+): Promise<{ success: true } | { success: false; error: string }> => {
+  try {
+    const token = localStorage.getItem("auth_token");
+    if (!token) return { success: false, error: "Auth token not found" };
+
+    const response = await axiosInstance.post(
+      "/hes/service/set/cron",
+      payload, 
+      {
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    if (response.data.responsecode !== "000") {
+      return { success: false, error: response.data.responsedesc };
+    }
 
     return { success: true };
   } catch (error) {

@@ -22,6 +22,7 @@ import {
   Search,
   Trash2,
   Play,
+  RotateCcw,
 } from "lucide-react";
 import {
   Table,
@@ -49,8 +50,10 @@ import {
 import SetSyncScheduleDialog from "@/components/hes/controlsconfigs/data-collection-schedule/set-sync-schedule-dialog";
 import { ConfirmDialog } from "@/components/hes/controlsconfigs/data-collection-schedule/confirm-dialog";
 import EditSyncScheduleDialog from "@/components/hes/controlsconfigs/data-collection-schedule/edit-sync-schedule";
+import type { EditScheduleInitialData } from "@/components/hes/controlsconfigs/data-collection-schedule/edit-sync-schedule";
 import { fetchScheduleData } from "@/service/hes-service";
 import type { ScheduleItem } from "@/types/hes";
+import SetCronScheduleDialog from "@/components/hes/controlsconfigs/data-collection-schedule/set-cron-schedule";
 
 // Define the shape of the filter object using Record
 type FilterType = Record<string, string | boolean>;
@@ -67,6 +70,8 @@ interface SyncScheduleData {
 interface TableData {
   sNo: string;
   eventType: string;
+  jobGroup: string;
+  jobName: string;
   timeInterval: string;
   repeatTime: string;
   unit: string;
@@ -78,10 +83,12 @@ function mapScheduleItem(item: ScheduleItem, index: number): TableData {
   return {
     sNo: (index + 1).toString().padStart(2, "0"),
     eventType: item.name?.trim() || item.jobName,
-    timeInterval: item.cronExpression,
-    repeatTime: item.repeatTime,
+    jobGroup: item.jobGroup ?? "",
+    jobName: item.jobName ?? "",
+    timeInterval: item.cronExpression ?? "",
+    repeatTime: item.repeatTime ?? "",
     unit: "",
-    activeDays: item.description,
+    activeDays: item.description ?? "",
     status: item.jobStatus === "PAUSED" ? "Paused" : "Active",
   };
 }
@@ -104,10 +111,20 @@ const filterSections = [
   },
 ];
 
+const EDIT_DIALOG_DEFAULT: EditScheduleInitialData = {
+  sNo: "",
+  eventType: "",
+  jobName: "",
+  jobGroup: "",
+  timeInterval: "",
+  unit: "minutes",
+};
+
 export default function DataCollScheduler() {
   const { canEdit } = usePermissions();
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+  const [isCronDialogOpen, setIsCronDialogOpen] = useState<boolean>(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState<boolean>(false);
   const [editData, setEditData] = useState<TableData | null>(null);
   const [data, setData] = useState<TableData[]>([]);
@@ -234,6 +251,10 @@ export default function DataCollScheduler() {
       setEditData(item);
       setIsEditDialogOpen(true);
     }
+  };
+
+  const openSetSyncScheduleDialog = () => {
+    setIsCronDialogOpen(true);
   };
 
   const closeConfirmDialog = () => {
@@ -387,7 +408,7 @@ export default function DataCollScheduler() {
               <TableHead className="p-2 text-left text-sm font-medium text-gray-600">
                 Cron Expression
               </TableHead>
-                <TableHead className="p-2 text-left text-sm font-medium text-gray-600">
+              <TableHead className="p-2 text-left text-sm font-medium text-gray-600">
                 Repeat Time
               </TableHead>
               <TableHead className="p-2 text-left text-sm font-medium text-gray-600">
@@ -436,7 +457,7 @@ export default function DataCollScheduler() {
                   <TableCell className="p-2 font-mono text-xs text-gray-800">
                     {item.timeInterval}
                   </TableCell>
-                   <TableCell className="p-2 font-mono text-xs text-gray-800">
+                  <TableCell className="p-2 font-mono text-xs text-gray-800">
                     {item.repeatTime}
                   </TableCell>
                   <TableCell className="p-2 text-sm text-[#161CCA]">
@@ -522,6 +543,17 @@ export default function DataCollScheduler() {
                             <Trash2 size={14} className="text-gray-500" />
                             <span className="text-sm whitespace-nowrap text-black">
                               Delete Sync Schedule
+                            </span>
+                          </DropdownMenuItem>
+                        )}
+                        {canEdit && (
+                          <DropdownMenuItem
+                            className="flex cursor-pointer items-center gap-2"
+                            onClick={() => openSetSyncScheduleDialog()}
+                          >
+                            <RotateCcw size={14} className="text-gray-500" />
+                            <span className="text-sm whitespace-nowrap text-black">
+                              Reset Cron Schedule
                             </span>
                           </DropdownMenuItem>
                         )}
@@ -613,16 +645,17 @@ export default function DataCollScheduler() {
           setIsEditDialogOpen(false);
           setEditData(null);
         }}
-        onSubmit={handleEditDialogSubmit}
-        initialData={
-          editData ?? {
-            sNo: "",
-            eventType: "",
-            timeInterval: "",
-            unit: "min",
-            activeDays: "",
-          }
-        }
+        onSubmit={handleDialogSubmit}
+        initialData={editData ?? EDIT_DIALOG_DEFAULT}
+      />
+
+      <SetCronScheduleDialog
+        isOpen={isCronDialogOpen}
+        onClose={() => {
+          setIsCronDialogOpen(false);
+          setEditData(null);
+        }}
+        onSubmit={handleDialogSubmit}
       />
     </div>
   );

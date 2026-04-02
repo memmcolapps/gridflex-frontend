@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -17,26 +17,27 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useAuth } from "@/context/auth-context";
-import { createSchedule } from "@/service/hes-service";
+import { createSchedule, fetchProfileEvents } from "@/service/hes-service";
 import { Loader2 } from "lucide-react";
+import { type ProfileEvent } from "@/types/hes";
 
-const eventTypeLabels: Record<string, string> = {
-  standardEventLog: "Standard Event Log",
-  relayControlLog: "Relay Control Log",
-  powerQualityLog: "Power Quality Log",
-  communicationLog: "Communication Log",
-  fraudEventLog: "Fraud Event Log",
-  tokenEventProfile: "Token Event Profile",
-  loadProfile1: "Load Profile 1",
-  loadProfile2: "Load Profile 2",
-  dailyBilling: "Daily Billing",
-  monthlyBilling: "Monthly Billing",
-};
+// const eventTypeLabels: Record<string, string> = {
+//   standardEventLog: "Standard Event Log",
+//   relayControlLog: "Relay Control Log",
+//   powerQualityLog: "Power Quality Log",
+//   communicationLog: "Communication Log",
+//   fraudEventLog: "Fraud Event Log",
+//   tokenEventProfile: "Token Event Profile",
+//   loadProfile1: "Load Profile 1",
+//   loadProfile2: "Load Profile 2",
+//   dailyBilling: "Daily Billing",
+//   monthlyBilling: "Monthly Billing",
+// };
 
-const activeDaysMap: Record<string, string[]> = {
-  repeatDaily: ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"],
-  repeatMonFri: ["MON", "TUE", "WED", "THU", "FRI"],
-};
+// const activeDaysMap: Record<string, string[]> = {
+//   repeatDaily: ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"],
+//   repeatMonFri: ["MON", "TUE", "WED", "THU", "FRI"],
+// };
 
 interface SetSyncScheduleDialogProps {
   isOpen: boolean;
@@ -56,6 +57,20 @@ const SetSyncScheduleDialog: React.FC<SetSyncScheduleDialogProps> = ({
   const [activeDays, setActiveDays] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [profileEvents, setProfileEvents] = useState<ProfileEvent[]>([]);
+  const [isLoadingEvents, setIsLoadingEvents] = useState(false);
+
+  useEffect(() => {
+    const load = async () => {
+      setIsLoadingEvents(true);
+      const result = await fetchProfileEvents();
+      if (result.success) {
+        setProfileEvents(result.data);
+      }
+      setIsLoadingEvents(false);
+    };
+    void load();
+  }, []);
 
   const resetForm = () => {
     setEventType("");
@@ -75,12 +90,15 @@ const SetSyncScheduleDialog: React.FC<SetSyncScheduleDialogProps> = ({
     setIsLoading(true);
     setError(null);
 
+    const selectedEvent = profileEvents.find(
+      (event) => event.jobName === eventType,
+    );
+
     const result = await createSchedule({
-      eventProfileType: eventTypeLabels[eventType] ?? eventType,
+      jobGroup: selectedEvent?.jobGroup ?? "",
+      jobName: selectedEvent?.jobName ?? "",
       timeInterval: parseInt(timeInterval, 10),
-      timeUnit: unit === "min" ? "MINS" : "HRS",
-      activeDays: activeDaysMap[activeDays] ?? [],
-      orgId: user?.orgId ?? "",
+      unit: unit === "min" ? "minutes" : unit === "hrs" ? "hours" : "seconds",
     });
 
     setIsLoading(false);
@@ -108,31 +126,30 @@ const SetSyncScheduleDialog: React.FC<SetSyncScheduleDialogProps> = ({
               </Label>
               <Select onValueChange={setEventType} value={eventType}>
                 <SelectTrigger className="w-full text-gray-400">
-                  <SelectValue placeholder="Select Event/Profile Type" />
+                  <SelectValue
+                    placeholder={
+                      isLoadingEvents
+                        ? "Loading..."
+                        : "Select Event/Profile Type"
+                    }
+                  />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="standardEventLog">
-                    Standard Event Log
-                  </SelectItem>
-                  <SelectItem value="relayControlLog">
-                    Relay Control Log
-                  </SelectItem>
-                  <SelectItem value="powerQualityLog">
-                    Power Quality Log
-                  </SelectItem>
-                  <SelectItem value="communicationLog">
-                    Communication Log
-                  </SelectItem>
-                  <SelectItem value="fraudEventLog">Fraud Event Log</SelectItem>
-                  <SelectItem value="tokenEventProfile">
-                    Token Event Log
-                  </SelectItem>
-                  <SelectItem value="loadProfile1">Load Profile 1</SelectItem>
-                  <SelectItem value="loadProfile2">Load Profile 2</SelectItem>
-                  <SelectItem value="dailyBilling">Daily Billing</SelectItem>
-                  <SelectItem value="monthlyBilling">
-                    Monthly Billing
-                  </SelectItem>
+                  {isLoadingEvents ? (
+                    <SelectItem value="loading" disabled>
+                      Loading...
+                    </SelectItem>
+                  ) : profileEvents.length === 0 ? (
+                    <SelectItem value="empty" disabled>
+                      No events available
+                    </SelectItem>
+                  ) : (
+                    profileEvents.map((event) => (
+                      <SelectItem key={event.jobName} value={event.jobName}>
+                        {event.name}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -200,7 +217,7 @@ const SetSyncScheduleDialog: React.FC<SetSyncScheduleDialogProps> = ({
             <Button
               type="submit"
               className="cursor-pointer bg-[#161CCA] text-white"
-              disabled={!eventType || !timeInterval || !activeDays || isLoading}
+              disabled={!eventType || !timeInterval || isLoading}
             >
               {isLoading ? (
                 <>
