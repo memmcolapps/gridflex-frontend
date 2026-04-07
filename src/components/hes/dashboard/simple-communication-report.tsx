@@ -22,37 +22,6 @@ interface SimpleCommunicationReportProps {
   data?: ReportData[];
 }
 
-// const defaultData: ReportData[] = [
-//   {
-//     serialNumber: "01",
-//     meterNo: "6212456987",
-//     meterModel: "MMX 310 -NG",
-//     status: "Offline",
-//     lastSync: "1 mins ago",
-//   },
-//   {
-//     serialNumber: "02",
-//     meterNo: "6212456987",
-//     meterModel: "MMX 110 -NG",
-//     status: "Online",
-//     lastSync: "2 hours ago",
-//   },
-//   {
-//     serialNumber: "03",
-//     meterNo: "6212456987",
-//     meterModel: "MMX 110 -NG",
-//     status: "Offline",
-//     lastSync: "2 hours ago",
-//   },
-//   {
-//     serialNumber: "04",
-//     meterNo: "6212456987",
-//     meterModel: "MMX 110 -NG",
-//     status: "Online",
-//     lastSync: "2 hours ago",
-//   },
-// ];
-
 const getStatusStyle = (status: "Online" | "Offline") => {
   if (status === "Online") {
     return "inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-50 text-green-600";

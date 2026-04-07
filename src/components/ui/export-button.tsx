@@ -18,6 +18,7 @@ export interface ExportButtonProps {
   fileName?: string;
   disabled?: boolean;
   className?: string;
+  variant?: "default" | "adjustment";
 }
 
 export function ExportButton({
@@ -26,6 +27,7 @@ export function ExportButton({
   fileName = "export",
   disabled = false,
   className = "",
+  variant = "default",
 }: ExportButtonProps) {
   const handleExport = () => {
     if (!data || data.length === 0) {
@@ -34,8 +36,9 @@ export function ExportButton({
     }
 
     // Prepare data for Excel export
-    const excelData = data.map((item) => {
+    const excelData = data.map((item, index) => {
       const row: Record<string, unknown> = {};
+      row["S/N"] = index + 1;
       columns.forEach((col) => {
         // Handle nested properties (e.g., "manufacturer.name")
         const keys = col.key.split(".");
@@ -63,18 +66,23 @@ export function ExportButton({
     toast.success("Data exported successfully!");
   };
 
+  const buttonClass =
+    variant === "adjustment"
+      ? `gap-1 bg-[#161CCA] text-white hover:bg-[#121eb3] ${className}`
+      : `gap-1 bg-white text-[#161CCA] hover:bg-gray-50 border border-[#161CCA] ${className}`;
+
   return (
-    <Button
-      className={`gap-1 bg-[#161CCA] text-white hover:bg-[#121eb3] ${className}`}
-      onClick={handleExport}
-      disabled={disabled}
-    >
+    <Button className={buttonClass} onClick={handleExport} disabled={disabled}>
       <SquareArrowOutUpRight
-        className="text-white"
+        className={variant === "adjustment" ? "text-white" : "text-[#161CCA]"}
         strokeWidth={2.5}
         size={12}
       />
-      <Label className="cursor-pointer text-white">Export</Label>
+      <Label
+        className={`cursor-pointer ${variant === "adjustment" ? "text-white" : "text-[#161CCA]"}`}
+      >
+        Export
+      </Label>
     </Button>
   );
 }

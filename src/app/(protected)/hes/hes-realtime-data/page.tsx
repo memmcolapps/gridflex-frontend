@@ -144,7 +144,7 @@ export default function RealtimeDataPage() {
       </div>
       <div className="flex flex-row justify-between">
         <Tabs defaultValue="MD" className="mb-4" onValueChange={setActiveTab}>
-          <TabsList>
+          <TabsList style={{ border: "2px solid #161CCA" }} className="h-12">
             <TabsTrigger
               value="MD"
               className={

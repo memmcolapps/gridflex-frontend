@@ -823,25 +823,17 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
           </div>
           <div>
             <ExportButton
-              data={
-                nestedTransactions.length > 0
-                  ? nestedTransactions
-                  : liabilityTransactions
-              }
+              data={processedData}
               columns={[
-                {
-                  key: "createdAt",
-                  label: "Date",
-                  transform: (value) =>
-                    (typeof value === "string" ? value.split(" ")[0] : "")!,
-                },
-                { key: "creditDebitAdjId", label: "Liability Code" },
-                { key: "credit", label: "Credit" },
-                { key: "debt", label: "Debit" },
+                { key: "accountNo", label: "Account No." },
+                { key: "customerId", label: "Customer ID" },
+                { key: "name", label: "Customer Name" },
+                { key: "meterNo", label: "Meter No." },
                 {
                   key: "balance",
-                  label: "Balance",
-                  transform: (value) => String(value ?? 0)!,
+                  label: `${type === "credit" ? "Credit" : "Debit"} Balance`,
+                  transform: (value) =>
+                    typeof value === "number" ? value.toLocaleString() : "0",
                 },
               ]}
               fileName={`${type}_adjustments`}
@@ -1246,26 +1238,36 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
             <ExportButton
               data={
                 nestedTransactions.length > 0
-                  ? nestedTransactions
-                  : liabilityTransactions
+                  ? nestedTransactions.map((t) => ({
+                      ...t,
+                      liabilityName:
+                        selectedAdjustment?.debitCreditAdjustInfo?.[0]
+                          ?.liabilityCause?.name ?? "N/A",
+                    }))
+                  : liabilityTransactions.map((t) => ({
+                      ...t,
+                      liabilityName: t.liabilityCause,
+                      liabilityCode: t.liabilityCode,
+                    }))
               }
               columns={[
+                { key: "liabilityName", label: "Liability Name" },
                 {
-                  key: "createdAt",
-                  label: "Date",
-                  transform: (value) =>
-                    (typeof value === "string" ? value.split(" ")[0] : "")!,
+                  key:
+                    nestedTransactions.length > 0
+                      ? "creditDebitAdjId"
+                      : "liabilityCode",
+                  label: "Liability Code",
                 },
-                { key: "creditDebitAdjId", label: "Liability Code" },
-                { key: "credit", label: "Credit" },
-                { key: "debt", label: "Debit" },
                 {
                   key: "balance",
-                  label: "Balance",
-                  transform: (value) => String(value ?? 0)!,
+                  label: `${type === "credit" ? "Credit Balance" : "Debit Balance"}`,
+                  transform: (value) =>
+                    typeof value === "number" ? value.toLocaleString() : "0",
                 },
               ]}
               fileName={`${type}_transactions`}
+              variant="adjustment"
             />
           </div>
         </DialogContent>
@@ -1449,18 +1451,29 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                   key: "createdAt",
                   label: "Date",
                   transform: (value) =>
-                    (typeof value === "string" ? value.split(" ")[0] : "")!,
+                    typeof value === "string" ? value.split(" ")[0] ?? "" : "",
                 },
-                { key: "creditDebitAdjId", label: "Liability Code" },
-                { key: "credit", label: "Credit" },
-                { key: "debt", label: "Debit" },
+                {
+                  key: "credit",
+                  label: type === "credit" ? "Credit" : "Debit",
+                  transform: (value) =>
+                    typeof value === "number" ? value.toLocaleString() : "0",
+                },
+                {
+                  key: "debt",
+                  label: type === "debit" ? "Credit" : "Debit",
+                  transform: (value) =>
+                    typeof value === "number" ? value.toLocaleString() : "0",
+                },
                 {
                   key: "balance",
                   label: "Balance",
-                  transform: (value) => String(value ?? 0)!,
+                  transform: (value) =>
+                    typeof value === "number" ? value.toLocaleString() : "0",
                 },
               ]}
               fileName={`${type}_payment_history`}
+              variant="adjustment"
             />
           </div>
         </DialogContent>
