@@ -35,14 +35,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  PlusCircle,
-  Eye,
-  Printer,
-  Wallet,
-  MoreVertical,
-  Loader2,
-} from "lucide-react";
+import { PlusCircle, Eye, Wallet, MoreVertical, Loader2 } from "lucide-react";
 import { SearchControl, SortControl } from "../search-control";
 import { ContentHeader } from "../ui/content-header";
 import { usePermissions } from "@/hooks/use-permissions";
@@ -91,7 +84,10 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
 
     allAdjustments.forEach((adj) => {
       // Skip adjustments without debitCreditAdjustInfo or with no balance
-      if (!adj.debitCreditAdjustInfo || adj.debitCreditAdjustInfo.length === 0) {
+      if (
+        !adj.debitCreditAdjustInfo ||
+        adj.debitCreditAdjustInfo.length === 0
+      ) {
         return;
       }
 
@@ -270,7 +266,8 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
   };
 
   const handleReconcileDebit = () => {
-    if (!selectedMeterId || !selectedLiabilityCauseId || !selectedCustomer) return;
+    if (!selectedMeterId || !selectedLiabilityCauseId || !selectedCustomer)
+      return;
     reconcileDebitMutation.mutate(
       {
         meterId: selectedMeterId,
@@ -301,8 +298,6 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
     setRowsPerPage(Number(value));
     setCurrentPage(1);
   };
-
-
 
   const handleRowClick = (
     customer: Customer,
@@ -363,7 +358,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
   // Find the specific debit credit adjust info based on selected adjustment ID or liability cause ID
   const selectedDebitInfo = useMemo(() => {
     if (!selectedAdjustment?.debitCreditAdjustInfo) return null;
-    
+
     // First try to find by adjustment ID
     if (selectedAdjustmentId) {
       const foundById = selectedAdjustment.debitCreditAdjustInfo.find(
@@ -371,7 +366,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
       );
       if (foundById) return foundById;
     }
-    
+
     // Then try to find by liability cause ID
     if (selectedLiabilityCauseId) {
       const foundByLiabilityId = selectedAdjustment.debitCreditAdjustInfo.find(
@@ -379,7 +374,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
       );
       if (foundByLiabilityId) return foundByLiabilityId;
     }
-    
+
     // Fallback to first item
     return selectedAdjustment.debitCreditAdjustInfo[0] ?? null;
   }, [selectedAdjustment, selectedAdjustmentId, selectedLiabilityCauseId]);
@@ -396,7 +391,10 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
       if (!selectedAdjustment) return [];
 
       // Check if debitCreditAdjustInfo exists and has items
-      if (!selectedAdjustment.debitCreditAdjustInfo || selectedAdjustment.debitCreditAdjustInfo.length === 0) {
+      if (
+        !selectedAdjustment.debitCreditAdjustInfo ||
+        selectedAdjustment.debitCreditAdjustInfo.length === 0
+      ) {
         return [];
       }
 
@@ -410,8 +408,10 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
         transactions.push({
           id: selectedAdjustment.id ?? "",
           creditDebitAdjId: debitInfo?.liabilityCause?.code ?? "",
-          credit: debitInfo?.type === "credit" ? (debitInfo?.totalBalance ?? 0) : 0,
-          debt: debitInfo?.type === "debit" ? (debitInfo?.totalBalance ?? 0) : 0,
+          credit:
+            debitInfo?.type === "credit" ? (debitInfo?.totalBalance ?? 0) : 0,
+          debt:
+            debitInfo?.type === "debit" ? (debitInfo?.totalBalance ?? 0) : 0,
           balance: debitInfo?.totalBalance ?? 0,
           outstandingBalance: debitInfo?.outstandingBalance ?? 0,
           createdAt: selectedAdjustment.createdAt ?? "",
@@ -421,7 +421,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
       // Only add payment transactions if there are payments
       if (debitInfo?.payment && debitInfo.payment.length > 0) {
         let runningBalance = debitInfo?.totalBalance ?? 0;
-        (debitInfo.payment)
+        debitInfo.payment
           .filter(
             (pay): pay is Required<Payment> & { createdAt: string } =>
               !!pay.createdAt,
@@ -654,7 +654,9 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                             <Input
                               placeholder="6210009900"
                               value={meterInput}
-                              onChange={(e) => setMeterInput(e.target.value.trim())}
+                              onChange={(e) =>
+                                setMeterInput(e.target.value.trim())
+                              }
                               className="w-55 border-[rgba(228,231,236,1)]"
                             />
                             {isMeterLoading && (
@@ -821,13 +823,26 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
           </div>
           <div>
             <ExportButton
-              data={processedData}
+              data={
+                nestedTransactions.length > 0
+                  ? nestedTransactions
+                  : liabilityTransactions
+              }
               columns={[
-                { key: "accountNo", label: "Account No." },
-                { key: "customerId", label: "Customer ID" },
-                { key: "name", label: "Customer Name" },
-                { key: "meterNo", label: "Meter No." },
-                { key: "balance", label: type === "credit" ? "Credit Balance" : "Debit Balance" },
+                {
+                  key: "createdAt",
+                  label: "Date",
+                  transform: (value) =>
+                    (typeof value === "string" ? value.split(" ")[0] : "")!,
+                },
+                { key: "creditDebitAdjId", label: "Liability Code" },
+                { key: "credit", label: "Credit" },
+                { key: "debt", label: "Debit" },
+                {
+                  key: "balance",
+                  label: "Balance",
+                  transform: (value) => String(value ?? 0)!,
+                },
               ]}
               fileName={`${type}_adjustments`}
             />
@@ -1033,13 +1048,20 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                                       liabilityCauseId,
                                     );
                                     // Invalidate and refetch payment history to get fresh data
-                                    queryClient.invalidateQueries({ queryKey: ["payment-history"] });
+                                    queryClient.invalidateQueries({
+                                      queryKey: ["payment-history"],
+                                    });
                                     setFetchPaymentHistory(true);
                                     setIsTransactionsDialogOpen(false);
                                     setIsNestedDialogOpen(true);
                                   } catch (error) {
-                                    console.error("Error opening payment history:", error);
-                                    toast.error("Failed to load payment history. Please try again.");
+                                    console.error(
+                                      "Error opening payment history:",
+                                      error,
+                                    );
+                                    toast.error(
+                                      "Failed to load payment history. Please try again.",
+                                    );
                                   }
                                 }}
                               >
@@ -1062,18 +1084,18 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                                             transaction.creditDebitAdjId,
                                         ),
                                     );
-                                    const debitInfo = adjustment?.debitCreditAdjustInfo?.find(
-                                      (info) =>
-                                        info.liabilityCause?.code ===
-                                        transaction.creditDebitAdjId,
-                                    );
-                                    const liabilityCauseId = debitInfo?.liabilityCauseId ?? null;
+                                    const debitInfo =
+                                      adjustment?.debitCreditAdjustInfo?.find(
+                                        (info) =>
+                                          info.liabilityCause?.code ===
+                                          transaction.creditDebitAdjId,
+                                      );
+                                    const liabilityCauseId =
+                                      debitInfo?.liabilityCauseId ?? null;
                                     setSelectedLiabilityCauseId(
                                       liabilityCauseId,
                                     );
-                                    setSelectedAdjustmentId(
-                                      liabilityCauseId,
-                                    );
+                                    setSelectedAdjustmentId(liabilityCauseId);
                                     setSelectedCustomer(selectedCustomer);
                                     setIsReconcileDialogOpen(true);
                                   }}
@@ -1145,13 +1167,20 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                                       transaction?.adjustmentId ?? null,
                                     );
                                     // Invalidate and refetch payment history to get fresh data
-                                    queryClient.invalidateQueries({ queryKey: ["payment-history"] });
+                                    queryClient.invalidateQueries({
+                                      queryKey: ["payment-history"],
+                                    });
                                     setFetchPaymentHistory(true);
                                     setIsTransactionsDialogOpen(false);
                                     setIsNestedDialogOpen(true);
                                   } catch (error) {
-                                    console.error("Error opening payment history:", error);
-                                    toast.error("Failed to load payment history. Please try again.");
+                                    console.error(
+                                      "Error opening payment history:",
+                                      error,
+                                    );
+                                    toast.error(
+                                      "Failed to load payment history. Please try again.",
+                                    );
                                   }
                                 }}
                               >
@@ -1174,18 +1203,18 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                                             transaction.liabilityCode,
                                         ),
                                     );
-                                    const debitInfo = adjustment?.debitCreditAdjustInfo?.find(
-                                      (info) =>
-                                        info.liabilityCause?.code ===
-                                        transaction.liabilityCode,
-                                    );
-                                    const liabilityCauseId = debitInfo?.liabilityCauseId ?? null;
+                                    const debitInfo =
+                                      adjustment?.debitCreditAdjustInfo?.find(
+                                        (info) =>
+                                          info.liabilityCause?.code ===
+                                          transaction.liabilityCode,
+                                      );
+                                    const liabilityCauseId =
+                                      debitInfo?.liabilityCauseId ?? null;
                                     setSelectedLiabilityCauseId(
                                       liabilityCauseId,
                                     );
-                                    setSelectedAdjustmentId(
-                                      liabilityCauseId,
-                                    );
+                                    setSelectedAdjustmentId(liabilityCauseId);
                                     setSelectedCustomer(selectedCustomer);
                                     setIsReconcileDialogOpen(true);
                                   }}
@@ -1214,9 +1243,30 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
             >
               Cancel
             </Button>
-            <Button className="cursor-pointer border-[#161CCA] bg-[#161CCA] text-white">
-              <Printer size={14} /> Print
-            </Button>
+            <ExportButton
+              data={
+                nestedTransactions.length > 0
+                  ? nestedTransactions
+                  : liabilityTransactions
+              }
+              columns={[
+                {
+                  key: "createdAt",
+                  label: "Date",
+                  transform: (value) =>
+                    (typeof value === "string" ? value.split(" ")[0] : "")!,
+                },
+                { key: "creditDebitAdjId", label: "Liability Code" },
+                { key: "credit", label: "Credit" },
+                { key: "debt", label: "Debit" },
+                {
+                  key: "balance",
+                  label: "Balance",
+                  transform: (value) => String(value ?? 0)!,
+                },
+              ]}
+              fileName={`${type}_transactions`}
+            />
           </div>
         </DialogContent>
       </Dialog>
@@ -1252,12 +1302,11 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
             </div>
             {/* Display liability cause name and code */}
             <p className="mb-4 ml-4 text-sm">
-              {selectedDebitInfo?.liabilityCause?.name ?? "N/A"}
-              :{" "}
+              {selectedDebitInfo?.liabilityCause?.name ?? "N/A"}:{" "}
               {selectedDebitInfo?.liabilityCause?.code ?? "N/A"}
             </p>
           </DialogHeader>
-          <div className="max-h-[320px] overflow-y-auto overflow-x-hidden">
+          <div className="max-h-[320px] overflow-x-hidden overflow-y-auto">
             <Table className="h-fit w-full">
               <TableHeader>
                 <TableRow className="h-16 py-4">
@@ -1275,7 +1324,11 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {nestedTransactions.length === 0 || (nestedTransactions.length === 1 && nestedTransactions[0]?.credit === 0 && nestedTransactions[0]?.debt === 0 && nestedTransactions[0]?.balance === 0) ? (
+                {nestedTransactions.length === 0 ||
+                (nestedTransactions.length === 1 &&
+                  nestedTransactions[0]?.credit === 0 &&
+                  nestedTransactions[0]?.debt === 0 &&
+                  nestedTransactions[0]?.balance === 0) ? (
                   <TableRow>
                     <TableCell colSpan={5} className="h-24 text-center">
                       <div className="flex flex-col items-center justify-center py-8">
@@ -1389,9 +1442,26 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
             >
               Cancel
             </Button>
-            <Button className="cursor-pointer border-[#161CCA] bg-[#161CCA] text-white">
-              <Printer size={14} /> Print
-            </Button>
+            <ExportButton
+              data={nestedTransactions}
+              columns={[
+                {
+                  key: "createdAt",
+                  label: "Date",
+                  transform: (value) =>
+                    (typeof value === "string" ? value.split(" ")[0] : "")!,
+                },
+                { key: "creditDebitAdjId", label: "Liability Code" },
+                { key: "credit", label: "Credit" },
+                { key: "debt", label: "Debit" },
+                {
+                  key: "balance",
+                  label: "Balance",
+                  transform: (value) => String(value ?? 0)!,
+                },
+              ]}
+              fileName={`${type}_payment_history`}
+            />
           </div>
         </DialogContent>
       </Dialog>

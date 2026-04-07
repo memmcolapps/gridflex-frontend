@@ -59,7 +59,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
   const [newKrn, setNewKrn] = useState("");
   const [oldTariffIndex, setOldTariffIndex] = useState("");
   const [newTariffIndex, setNewTariffIndex] = useState("");
-  const [units, setUnits] = useState("");
+  const [unit, setUnit] = useState("");
   const [showReceipt, setShowReceipt] = useState(false);
   const [showTokenDialog, setShowTokenDialog] = useState(false);
   const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
@@ -70,13 +70,12 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
   >(null);
 
   const handleVendByChange = (value: string) => setVendBy(value);
- 
+
   const getDynamicLabel = () =>
     vendBy === "meterNumber" ? "Meter Number" : "Account Number";
 
   const getDynamicPlaceholder = () =>
     vendBy === "meterNumber" ? "Enter Meter Number" : "Enter Account Number";
-
 
   const handleProceed = async () => {
     if (
@@ -86,24 +85,24 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
       amountTendered
     ) {
       try {
-          const payload =
-        vendBy === "meterNumber"
-          ? {
-              meterNumber: meterNumber,
-              initialAmount: parseInt(amountTendered) || 0,
-            }
-          : {
-              accountNumber: meterNumber, 
-              initialAmount: parseInt(amountTendered) || 0,
-            };
+        const payload =
+          vendBy === "meterNumber"
+            ? {
+                meterNumber: meterNumber,
+                initialAmount: parseInt(amountTendered) || 0,
+              }
+            : {
+                accountNumber: meterNumber,
+                initialAmount: parseInt(amountTendered) || 0,
+              };
 
-     const result = await calculateCreditTokenMutation.mutateAsync(payload);
-      setCalculatedTokenData(result);
-      setShowReceipt(true);
-    } catch (error) {
-      console.error("Failed to calculate token:", error);
-    }
-  }else if (tokenType === "kct") {
+        const result = await calculateCreditTokenMutation.mutateAsync(payload);
+        setCalculatedTokenData(result);
+        setShowReceipt(true);
+      } catch (error) {
+        console.error("Failed to calculate token:", error);
+      }
+    } else if (tokenType === "kct") {
       // For KCT, we need to generate the token first to get customer data
       const payload = {
         [vendBy === "meterNumber" ? "meterNumber" : "accountNumber"]:
@@ -195,7 +194,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
           meterNumber,
         tokenType: "compensation",
         reason,
-        units: parseInt(units) || 0,
+        unit: parseInt(unit) || 0,
       };
 
       try {
@@ -221,7 +220,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
     setNewKrn("");
     setOldTariffIndex("");
     setNewTariffIndex("");
-    setUnits("");
+    setUnit("");
     setIsFormDialogOpen(false); // Close form dialog
   };
 
@@ -237,10 +236,15 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
       try {
         const result = await generateCreditTokenMutation.mutateAsync(payload);
         // Merge calculated data with generated data to preserve adjustment info
-        const debitBalance = calculatedTokenData?.totalDebitBalance ? Number(calculatedTokenData.totalDebitBalance) : 0;
+        const debitBalance = calculatedTokenData?.totalDebitBalance
+          ? Number(calculatedTokenData.totalDebitBalance)
+          : 0;
         const mergedData = {
           ...result,
-          creditAdjustment: calculatedTokenData?.totalCreditUnits ?? result.creditAdjustment ?? 0,
+          creditAdjustment:
+            calculatedTokenData?.totalCreditUnits ??
+            result.creditAdjustment ??
+            0,
           debitAdjustment: (debitBalance || result.debitAdjustment) ?? 0,
           creditAdjustmentBalance: calculatedTokenData?.creditDeducted ?? 0,
           debitAdjustmentBalance: debitBalance,
@@ -274,7 +278,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
           compensation: "compensation",
         };
         const apiTokenType = tokenTypeMap[tokenType] ?? tokenType;
-        
+
         const result = await printTokenMutation.mutateAsync({
           id: generatedTokenData.transactionId ?? generatedTokenData.id,
           tokenType: apiTokenType,
@@ -283,17 +287,27 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
 
         // Calculate adjustment values - handle both number and array types
         // If it's an array, sum up the values; if it's a number, use it; otherwise default to 0
-        const creditAdjustmentValue = Array.isArray(generatedTokenData?.creditAdjustment)
-          ? (generatedTokenData.creditAdjustment.length > 0
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              ? generatedTokenData.creditAdjustment.reduce((sum: number, val: any) => sum + (typeof val === 'number' ? val : 0), 0)
-              : 0)
+        const creditAdjustmentValue = Array.isArray(
+          generatedTokenData?.creditAdjustment,
+        )
+          ? generatedTokenData.creditAdjustment.length > 0
+            ? generatedTokenData.creditAdjustment.reduce(
+                (sum: number, val: unknown) =>
+                  sum + (typeof val === "number" ? val : 0),
+                0,
+              )
+            : 0
           : (generatedTokenData?.creditAdjustment ?? 0);
-        const debitAdjustmentValue = Array.isArray(generatedTokenData?.debitAdjustment)
-          ? (generatedTokenData.debitAdjustment.length > 0
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              ? generatedTokenData.debitAdjustment.reduce((sum: number, val: any) => sum + (typeof val === 'number' ? val : 0), 0)
-              : 0)
+        const debitAdjustmentValue = Array.isArray(
+          generatedTokenData?.debitAdjustment,
+        )
+          ? generatedTokenData.debitAdjustment.length > 0
+            ? generatedTokenData.debitAdjustment.reduce(
+                (sum: number, val: unknown) =>
+                  sum + (typeof val === "number" ? val : 0),
+                0,
+              )
+            : 0
           : (generatedTokenData?.debitAdjustment ?? 0);
 
         // Create HTML content for printing (formatted like a receipt)
@@ -698,8 +712,8 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                     id="units"
                     className="border border-gray-300"
                     placeholder="Enter Units"
-                    value={units}
-                    onChange={(e) => setUnits(e.target.value)}
+                    value={unit}
+                    onChange={(e) => setUnit(e.target.value)}
                   />
                 </div>
               </div>
@@ -794,8 +808,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                   <strong>VAT Rate:</strong> {calculatedTokenData?.vat}
                 </p>
                 <p>
-                  <strong>VAT Amount:</strong>{" "}
-                  {calculatedTokenData?.vatAmount}
+                  <strong>VAT Amount:</strong> {calculatedTokenData?.vatAmount}
                 </p>
                 <p>
                   <strong>Debit Adjustment:</strong>{" "}
@@ -810,10 +823,10 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                   <strong>Credit Adjustment:</strong>{" "}
                   {calculatedTokenData?.creditDeducted}
                 </p>
-              
-                    <p>
-                  <strong>Mode Of Payment:</strong>{" "} 
-                    {calculatedTokenData?.creditPaymentMode}            
+
+                <p>
+                  <strong>Mode Of Payment:</strong>{" "}
+                  {calculatedTokenData?.creditPaymentMode}
                 </p>
                 <p>
                   <strong>Cost Of Unit:</strong>{" "}
@@ -1015,7 +1028,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                   <p>{generatedTokenData?.token}</p>
                 </div>
               </>
-            )}   
+            )}
             {tokenType === "compensation" && (
               <div className="grid grid-cols-2 gap-4">
                 <p>
