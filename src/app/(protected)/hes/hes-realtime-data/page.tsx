@@ -18,7 +18,6 @@ export default function RealtimeDataPage() {
   const [activeTab, setActiveTab] = useState("MD");
   const [selectedMeters, setSelectedMeters] = useState<string[]>([]);
   const [selectedHierarchy] = useState<string>("");
-  // const [selectedUnit, setSelectedUnit] = useState<string>('');
   const [, setUnitOptions] = useState<{ label: string; id: string }[]>([]);
 
   // Use TanStack Query hooks for state management
