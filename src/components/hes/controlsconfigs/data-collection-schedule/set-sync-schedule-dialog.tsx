@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -16,10 +16,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useAuth } from "@/context/auth-context";
-import { createSchedule, fetchProfileEvents } from "@/service/hes-service";
+// import { useAuth } from "@/context/auth-context";
 import { Loader2 } from "lucide-react";
-import { type ProfileEvent } from "@/types/hes";
+import { useCreateSchedule, useProfileEvents } from "@/hooks/use-hes-hierarchy";
 
 // const eventTypeLabels: Record<string, string> = {
 //   standardEventLog: "Standard Event Log",
@@ -50,33 +49,21 @@ const SetSyncScheduleDialog: React.FC<SetSyncScheduleDialogProps> = ({
   onClose,
   onSubmit,
 }) => {
-  const { user } = useAuth();
+  // const { user } = useAuth();
   const [eventType, setEventType] = useState("");
-  const [timeInterval, setTimeInterval] = useState("");
+  const [repeatTime, setRepeatTime] = useState("");
   const [unit, setUnit] = useState("min");
-  const [activeDays, setActiveDays] = useState("");
+  // const [activeDays, setActiveDays] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [profileEvents, setProfileEvents] = useState<ProfileEvent[]>([]);
-  const [isLoadingEvents, setIsLoadingEvents] = useState(false);
-
-  useEffect(() => {
-    const load = async () => {
-      setIsLoadingEvents(true);
-      const result = await fetchProfileEvents();
-      if (result.success) {
-        setProfileEvents(result.data);
-      }
-      setIsLoadingEvents(false);
-    };
-    void load();
-  }, []);
+const { data: profileEvents = [], isLoading: isLoadingEvents } = useProfileEvents();
+const { mutateAsync: submitCreateSchedule } = useCreateSchedule();
 
   const resetForm = () => {
     setEventType("");
-    setTimeInterval("");
+    setRepeatTime("");
     setUnit("min");
-    setActiveDays("");
+    // setActiveDays("");
     setError(null);
   };
 
@@ -85,32 +72,31 @@ const SetSyncScheduleDialog: React.FC<SetSyncScheduleDialogProps> = ({
     onClose();
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError(null);
+const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+  setIsLoading(true);
+  setError(null);
 
-    const selectedEvent = profileEvents.find(
-      (event) => event.jobName === eventType,
-    );
+  const selectedEvent = profileEvents.find(
+    (event) => event.jobName === eventType,
+  );
 
-    const result = await createSchedule({
+  try {
+    await submitCreateSchedule({
       jobGroup: selectedEvent?.jobGroup ?? "",
       jobName: selectedEvent?.jobName ?? "",
-      timeInterval: parseInt(timeInterval, 10),
+      repeatTime: parseInt(repeatTime, 10),
       unit: unit === "min" ? "minutes" : unit === "hrs" ? "hours" : "seconds",
     });
-
-    setIsLoading(false);
-
-    if (result.success) {
-      resetForm();
-      onSubmit();
-      onClose();
-    } else {
-      setError(result.error);
-    }
-  };
+    resetForm();
+    onSubmit();
+    onClose();
+  } catch (err) {
+    setError(err instanceof Error ? err.message : "An unexpected error occurred");
+  } finally {
+    setIsLoading(false); 
+  }
+};
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -162,8 +148,8 @@ const SetSyncScheduleDialog: React.FC<SetSyncScheduleDialogProps> = ({
                 <Input
                   id="timeInterval"
                   type="number"
-                  value={timeInterval}
-                  onChange={(e) => setTimeInterval(e.target.value)}
+                  value={repeatTime}
+                  onChange={(e) => setRepeatTime(e.target.value)}
                   placeholder="Enter Time Interval"
                   required
                   className="border border-gray-200"
@@ -217,7 +203,7 @@ const SetSyncScheduleDialog: React.FC<SetSyncScheduleDialogProps> = ({
             <Button
               type="submit"
               className="cursor-pointer bg-[#161CCA] text-white"
-              disabled={!eventType || !timeInterval || isLoading}
+              disabled={!eventType || !repeatTime || isLoading}
             >
               {isLoading ? (
                 <>

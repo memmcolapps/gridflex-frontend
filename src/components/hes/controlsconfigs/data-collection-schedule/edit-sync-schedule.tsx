@@ -18,22 +18,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { createSchedule } from "@/service/hes-service";
 import { Loader2 } from "lucide-react";
+import { useCreateSchedule, useProfileEvents } from "@/hooks/use-hes-hierarchy";
 
 export interface EditScheduleInitialData {
   sNo: string;
   eventType: string;
   jobName: string;
   jobGroup: string;
-  timeInterval: string;
+  repeatTime: string;
   unit: string;
 }
 
 interface EditSyncScheduleDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: () => void; 
+  onSubmit: () => void;
   initialData: EditScheduleInitialData;
 }
 
@@ -43,19 +43,23 @@ const EditSyncScheduleDialog: React.FC<EditSyncScheduleDialogProps> = ({
   onSubmit,
   initialData,
 }) => {
-  const [timeInterval, setTimeInterval] = useState("");
+  const [repeatTime, setRepeatTime] = useState("");
   const [unit, setUnit] = useState("minutes");
+  const [eventType, setEventType] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { mutateAsync: submitCreateSchedule } = useCreateSchedule();
+  const { data: profileEvents = [], isLoading: isLoadingEvents } =
+    useProfileEvents();
 
   useEffect(() => {
-    setTimeInterval("");
+    setRepeatTime("");
     setUnit("minutes");
     setError(null);
   }, [initialData.sNo]);
 
   const handleClose = () => {
-    setTimeInterval("");
+    setRepeatTime("");
     setUnit("minutes");
     setError(null);
     onClose();
@@ -66,20 +70,19 @@ const EditSyncScheduleDialog: React.FC<EditSyncScheduleDialogProps> = ({
     setIsLoading(true);
     setError(null);
 
-    const result = await createSchedule({
-      jobGroup: initialData.jobGroup,
-      jobName: initialData.jobName,
-      timeInterval: parseInt(timeInterval, 10),
-      unit,
-    });
-
-    setIsLoading(false);
-
-    if (result.success) {
-      onSubmit(); // refresh table
+    try {
+      await submitCreateSchedule({
+        jobGroup: initialData.jobGroup,
+        jobName: initialData.jobName,
+        repeatTime: parseInt(repeatTime, 10),
+        unit,
+      });
+      onSubmit();
       handleClose();
-    } else {
-      setError(result.error);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -91,26 +94,43 @@ const EditSyncScheduleDialog: React.FC<EditSyncScheduleDialogProps> = ({
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
-
-            {/* Read-only — shows which schedule is being edited */}
             <div className="flex flex-col gap-2">
-              <Label>Event/Profile Type</Label>
-              <div className="rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700">
-                {initialData.eventType || "—"}
-              </div>
+              <Label htmlFor="eventType">Event/Profile Type</Label>
+              <Select onValueChange={setEventType} value={eventType}>
+                <SelectTrigger className="w-full text-gray-700">
+                  <SelectValue placeholder={initialData.eventType || "—"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {isLoadingEvents ? (
+                    <SelectItem value="loading" disabled>
+                      Loading...
+                    </SelectItem>
+                  ) : profileEvents.length === 0 ? (
+                    <SelectItem value="empty" disabled>
+                      No events available
+                    </SelectItem>
+                  ) : (
+                    profileEvents.map((event) => (
+                      <SelectItem key={event.jobName} value={event.jobName}>
+                        {event.name}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-2">
-                <Label htmlFor="timeInterval">
+                <Label htmlFor="repeatTime">
                   Time Interval <span className="text-red-600">*</span>
                 </Label>
                 <Input
-                  id="timeInterval"
+                  id="repeatTime"
                   type="number"
-                  value={timeInterval}
-                  onChange={(e) => setTimeInterval(e.target.value)}
-                  placeholder="Enter Time Interval"
+                  value={repeatTime}
+                  onChange={(e) => setRepeatTime(e.target.value)}
+                  placeholder={initialData.repeatTime || 'Enter time interval'}
                   required
                   className="border border-gray-200"
                 />
@@ -148,7 +168,7 @@ const EditSyncScheduleDialog: React.FC<EditSyncScheduleDialogProps> = ({
             <Button
               type="submit"
               className="cursor-pointer bg-[#161CCA] text-white"
-              disabled={!timeInterval || !unit || isLoading}
+              disabled={!repeatTime || !unit || isLoading}
             >
               {isLoading ? (
                 <>

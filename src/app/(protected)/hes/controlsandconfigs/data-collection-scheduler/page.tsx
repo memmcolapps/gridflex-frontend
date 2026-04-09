@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { FilterControl } from "@/components/search-control";
 import { Button } from "@/components/ui/button";
 import { ContentHeader } from "@/components/ui/content-header";
@@ -51,9 +51,9 @@ import SetSyncScheduleDialog from "@/components/hes/controlsconfigs/data-collect
 import { ConfirmDialog } from "@/components/hes/controlsconfigs/data-collection-schedule/confirm-dialog";
 import EditSyncScheduleDialog from "@/components/hes/controlsconfigs/data-collection-schedule/edit-sync-schedule";
 import type { EditScheduleInitialData } from "@/components/hes/controlsconfigs/data-collection-schedule/edit-sync-schedule";
-import { fetchScheduleData } from "@/service/hes-service";
-import type { ScheduleItem } from "@/types/hes";
 import SetCronScheduleDialog from "@/components/hes/controlsconfigs/data-collection-schedule/set-cron-schedule";
+import type { ScheduleItem } from "@/types/hes";
+import { useScheduleData } from "@/hooks/use-hes-hierarchy";
 
 // Define the shape of the filter object using Record
 type FilterType = Record<string, string | boolean>;
@@ -72,7 +72,7 @@ interface TableData {
   eventType: string;
   jobGroup: string;
   jobName: string;
-  timeInterval: string;
+  cronExpression: string;
   repeatTime: string;
   unit: string;
   activeDays: string;
@@ -85,7 +85,7 @@ function mapScheduleItem(item: ScheduleItem, index: number): TableData {
     eventType: item.name?.trim() || item.jobName,
     jobGroup: item.jobGroup ?? "",
     jobName: item.jobName ?? "",
-    timeInterval: item.cronExpression ?? "",
+    cronExpression: item.cronExpression ?? "",
     repeatTime: item.repeatTime ?? "",
     unit: "",
     activeDays: item.description ?? "",
@@ -116,7 +116,7 @@ const EDIT_DIALOG_DEFAULT: EditScheduleInitialData = {
   eventType: "",
   jobName: "",
   jobGroup: "",
-  timeInterval: "",
+  repeatTime: "",
   unit: "minutes",
 };
 
@@ -126,11 +126,7 @@ export default function DataCollScheduler() {
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   const [isCronDialogOpen, setIsCronDialogOpen] = useState<boolean>(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState<boolean>(false);
-  const [editData, setEditData] = useState<TableData | null>(null);
-  const [data, setData] = useState<TableData[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [totalPages, setTotalPages] = useState<number>(1);
-  const [totalData, setTotalData] = useState<number>(0);
+  const [editData, setEditData] = useState<EditScheduleInitialData | null>(null);
   const [confirmDialog, setConfirmDialog] = useState<{
     isOpen: boolean;
     type: "pause" | "continue" | "delete" | null;
@@ -143,26 +139,22 @@ export default function DataCollScheduler() {
     direction: string;
   }>({ key: "", direction: "asc" });
 
-  useEffect(() => {
-    const delay = setTimeout(async () => {
-      setIsLoading(true);
-      const result = await fetchScheduleData(
-        currentPage - 1,
-        rowsPerPage,
-        searchTerm || undefined,
-      );
-      if (result.success) {
-        setData(result.data.data.map(mapScheduleItem));
-        setTotalData(result.data.totalData);
-        setTotalPages(result.data.totalPages);
-      }
-      setIsLoading(false);
-    }, 400);
-    return () => clearTimeout(delay);
-  }, [currentPage, rowsPerPage, searchTerm]);
+  const {
+    data: scheduleResponse,
+    isLoading,
+    isError,
+  } = useScheduleData(
+    currentPage - 1,
+    rowsPerPage,
+    searchTerm || undefined,
+  );
 
-  // Apply sorting on the already-fetched page data
-  const sortedData = [...data].sort((a, b) => {
+  const rawData: TableData[] = (scheduleResponse?.data ?? []).map(mapScheduleItem);
+  const totalData = scheduleResponse?.totalData ?? 0;
+  const totalPages = scheduleResponse?.totalPages ?? 1;
+
+  // Apply sorting on the fetched page data
+  const sortedData = [...rawData].sort((a, b) => {
     if (!sortConfig.key) return 0;
     const aValue = a[sortConfig.key as keyof TableData] ?? "";
     const bValue = b[sortConfig.key as keyof TableData] ?? "";
@@ -201,43 +193,6 @@ export default function DataCollScheduler() {
     setSearchTerm("");
   };
 
-  const handleEditDialogSubmit = (formData: SyncScheduleData) => {
-    if (editData?.sNo) {
-      setData((prevData) =>
-        prevData.map((item) =>
-          item.sNo === editData.sNo
-            ? {
-                ...item,
-                eventType: formData.eventType,
-                timeInterval: `${formData.timeInterval} ${formData.unit}`,
-                unit: formData.unit,
-                activeDays: formData.activeDays,
-              }
-            : item,
-        ),
-      );
-      setIsEditDialogOpen(false);
-      setEditData(null);
-    }
-  };
-
-  const handleToggleStatus = (sNo: string) => {
-    setData((prevData) =>
-      prevData.map((item) =>
-        item.sNo === sNo
-          ? { ...item, status: item.status === "Active" ? "Paused" : "Active" }
-          : item,
-      ),
-    );
-  };
-
-  const handleDelete = (sNo: string) => {
-    setData((prevData) => prevData.filter((item) => item.sNo !== sNo));
-    if (data.length === 1 && currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
-
   const openConfirmDialog = (
     type: "pause" | "continue" | "delete",
     sNo: string,
@@ -246,15 +201,18 @@ export default function DataCollScheduler() {
   };
 
   const openEditDialog = (sNo: string) => {
-    const item = data.find((d) => d.sNo === sNo);
+    const item = rawData.find((d) => d.sNo === sNo);
     if (item) {
-      setEditData(item);
+      setEditData({
+        sNo: item.sNo,
+        eventType: item.eventType,
+        jobName: item.jobName,
+        jobGroup: item.jobGroup,
+        repeatTime: item.repeatTime,
+        unit: item.unit,
+      });
       setIsEditDialogOpen(true);
     }
-  };
-
-  const openSetSyncScheduleDialog = () => {
-    setIsCronDialogOpen(true);
   };
 
   const closeConfirmDialog = () => {
@@ -262,13 +220,6 @@ export default function DataCollScheduler() {
   };
 
   const handleConfirm = () => {
-    if (confirmDialog.sNo) {
-      if (confirmDialog.type === "pause" || confirmDialog.type === "continue") {
-        handleToggleStatus(confirmDialog.sNo);
-      } else if (confirmDialog.type === "delete") {
-        handleDelete(confirmDialog.sNo);
-      }
-    }
     closeConfirmDialog();
   };
 
@@ -354,7 +305,7 @@ export default function DataCollScheduler() {
           />
           <Input
             type="text"
-            placeholder="Search by meter no., account no..."
+            placeholder="Search by event type..."
             className="w-full border-gray-300 pl-10 focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
             value={searchTerm}
             onChange={(e) => {
@@ -426,19 +377,22 @@ export default function DataCollScheduler() {
             {isLoading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={i}>
-                  {Array.from({ length: 6 }).map((__, j) => (
+                  {Array.from({ length: 7 }).map((__, j) => (
                     <TableCell key={j} className="p-2">
                       <div className="h-4 w-full animate-pulse rounded bg-gray-200" />
                     </TableCell>
                   ))}
                 </TableRow>
               ))
+            ) : isError ? (
+              <TableRow>
+                <TableCell colSpan={7} className="h-24 text-center text-sm text-red-500">
+                  Failed to load schedules. Please try again.
+                </TableCell>
+              </TableRow>
             ) : sortedData.length === 0 ? (
               <TableRow>
-                <TableCell
-                  colSpan={6}
-                  className="h-24 text-center text-sm text-gray-500"
-                >
+                <TableCell colSpan={7} className="h-24 text-center text-sm text-gray-500">
                   No data available
                 </TableCell>
               </TableRow>
@@ -455,7 +409,7 @@ export default function DataCollScheduler() {
                     {item.eventType}
                   </TableCell>
                   <TableCell className="p-2 font-mono text-xs text-gray-800">
-                    {item.timeInterval}
+                    {item.cronExpression || '0 0 * * * ?'}
                   </TableCell>
                   <TableCell className="p-2 font-mono text-xs text-gray-800">
                     {item.repeatTime}
@@ -528,9 +482,7 @@ export default function DataCollScheduler() {
                             onClick={() => openEditDialog(item.sNo)}
                           >
                             <Pencil size={14} className="text-gray-500" />
-                            <span className="text-sm text-black">
-                              Edit Sync Schedule
-                            </span>
+                            <span className="text-sm text-black">Edit Sync Schedule</span>
                           </DropdownMenuItem>
                         )}
                         {canEdit && (
@@ -549,7 +501,7 @@ export default function DataCollScheduler() {
                         {canEdit && (
                           <DropdownMenuItem
                             className="flex cursor-pointer items-center gap-2"
-                            onClick={() => openSetSyncScheduleDialog()}
+                            onClick={() => setIsCronDialogOpen(true)}
                           >
                             <RotateCcw size={14} className="text-gray-500" />
                             <span className="text-sm whitespace-nowrap text-black">

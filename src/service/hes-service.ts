@@ -89,7 +89,7 @@ export const createSchedule = async (
         params: {
           jobGroup: payload.jobGroup,
           jobName: payload.jobName,
-          timeInterval: payload.timeInterval,
+          timeInterval: payload.repeatTime,
           unit: payload.unit,
         },
         headers: {

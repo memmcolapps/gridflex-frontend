@@ -76,7 +76,7 @@ export interface ScheduleListResponse {
 
 export interface CreateSchedulePayload {
   eventProfileType?: string;
-  timeInterval?: number;
+  repeatTime?: number;
   timeUnit?: string;
   activeDays?: string[];
   orgId?: string;

@@ -21,6 +21,10 @@ import {
 import { fetchProfileEvents, resetCronSchedule } from "@/service/hes-service";
 import { ResetCronPayload, type ProfileEvent } from "@/types/hes";
 import { Loader2 } from "lucide-react";
+import {
+  useProfileEvents,
+  useResetCronSchedule,
+} from "@/hooks/use-hes-hierarchy";
 
 type Frequency = "interval" | "daily" | "weekly" | "monthly" | "yearly";
 
@@ -198,8 +202,8 @@ const SetCronScheduleDialog: React.FC<SetCronScheduleDialogProps> = ({
   onClose,
   onSubmit,
 }) => {
-  const [profileEvents, setProfileEvents] = useState<ProfileEvent[]>([]);
-  const [isLoadingEvents, setIsLoadingEvents] = useState(false);
+  // const [profileEvents, setProfileEvents] = useState<ProfileEvent[]>([]);
+  // const [isLoadingEvents, setIsLoadingEvents] = useState(false);
   const [eventType, setEventType] = useState("");
   const [frequency, setFrequency] = useState<Frequency | "">("");
   const [intervalCount, setIntervalCount] = useState("");
@@ -216,16 +220,9 @@ const SetCronScheduleDialog: React.FC<SetCronScheduleDialogProps> = ({
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const load = async () => {
-      setIsLoadingEvents(true);
-      const result = await fetchProfileEvents();
-      if (result.success) setProfileEvents(result.data);
-      setIsLoadingEvents(false);
-    };
-    void load();
-  }, []);
+  const { data: profileEvents = [], isLoading: isLoadingEvents } =
+    useProfileEvents();
+  const { mutateAsync: submitResetCron } = useResetCronSchedule();
 
   const resetForm = () => {
     setEventType("");
