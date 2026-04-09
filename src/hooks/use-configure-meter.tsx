@@ -12,7 +12,7 @@ export const useSetCTPTRatio = () => {
   >({
     mutationFn: setCTPTRatio,
     onSuccess: (data, variables) => {
-      toast.success(`CT & VT ratio configured successfully for meter ${variables.serials}!`);
+      toast.success(`CT & VT ratio configured successfully for meter ${variables.serial}!`);
       queryClient.invalidateQueries({ queryKey: ["meters"] });
     },
     onError: (error: Error) => {
@@ -31,7 +31,7 @@ export const useSetAPN = () => {
   >({
     mutationFn: setAPN,
     onSuccess: (data, variables) => {
-      toast.success(`APN configured successfully for meter ${variables.serials}!`);
+      toast.success(`APN configured successfully for meter ${variables.serial}!`);
       queryClient.invalidateQueries({ queryKey: ["meters"] });
     },
     onError: (error: Error) => {
@@ -49,7 +49,7 @@ export const useSetDateTime = () => {
   >({
     mutationFn: setDateTime,
     onSuccess: (data, variables) => {
-      toast.success(`Date and Time configured successfully for meter ${variables.serials}!`);
+      toast.success(`Date and Time configured successfully for meter ${variables.serial}!`);
       queryClient.invalidateQueries({ queryKey: ["meters"] });
     },
     onError: (error: Error) => {
@@ -67,7 +67,7 @@ export const useSetIpPort = () => {
   >({
     mutationFn: setIpPort,
     onSuccess: (data, variables) => {
-      toast.success(`Ip Address configured successfully for meter ${variables.serials}!`);
+      toast.success(`Ip Address configured successfully for meter ${variables.serial}!`);
       queryClient.invalidateQueries({ queryKey: ["meters"] });
     },
     onError: (error: Error) => {

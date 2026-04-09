@@ -1,5 +1,5 @@
 export interface SetCTPTRatioPayload {
-  serials: string;
+  serial: string;
   ctNumerator: number;
   ctDenominator: number;
   ptNumerator: number;
@@ -7,17 +7,17 @@ export interface SetCTPTRatioPayload {
 }
 
 export interface SetAPNPayload {
-  serials: string;
+  serial: string;
   apn: string;
 }
 
 export interface SetDateTimePayload {
-  serials: string;
+  serial: string;
   dateTime: string;
 }
 
 export interface SetIpPortPayload {
-  serials: string;
+  serial: string;
   ip: string;
   port: number;
 }

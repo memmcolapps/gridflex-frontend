@@ -15,13 +15,13 @@ export async function setCTPTRatio(
       throw new Error("Authentication token not found.");
     }
 
-    const { serials, ctNumerator, ctDenominator, ptNumerator, ptDenominator } = data;
+    const { serial, ctNumerator, ctDenominator, ptNumerator, ptDenominator } = data;
 
     const response = await axiosInstance.post(
       `${API_URL}/hes/service/dlms/set-ctpt`,
       null, 
       {
-        params: { serials, ctNumerator, ctDenominator, ptNumerator, ptDenominator },
+        params: { serial, ctNumerator, ctDenominator, ptNumerator, ptDenominator },
         headers: {
           custom: CUSTOM_HEADER,
           Authorization: `Bearer ${token}`,
@@ -53,13 +53,13 @@ export async function setAPN(
       throw new Error("Authentication token not found.");
     }
 
-    const { serials, apn } = data;
+    const { serial, apn } = data;
 
     const response = await axiosInstance.post(
       `${API_URL}/hes/service/dlms/set-apn`,
       null, 
       {
-        params: { serials, apn },
+        params: { serial, apn },
         headers: {
           custom: CUSTOM_HEADER,
           Authorization: `Bearer ${token}`,
@@ -91,13 +91,13 @@ export async function setDateTime(
       throw new Error("Authentication token not found.");
     }
 
-    const { serials, dateTime } = data;
+    const { serial, dateTime } = data;
 
     const response = await axiosInstance.post(
       `${API_URL}/hes/service/dlms/set-clock`,
       null, 
       {
-        params: { serials, dateTime },
+        params: { serial, dateTime },
         headers: {
           custom: CUSTOM_HEADER,
           Authorization: `Bearer ${token}`,
@@ -129,13 +129,13 @@ export async function setIpPort(
       throw new Error("Authentication token not found.");
     }
 
-    const { serials, ip, port } = data;
+    const { serial, ip, port } = data;
 
     const response = await axiosInstance.post(
       `${API_URL}/hes/service/dlms/set-ip-port`,
       null, 
       {
-        params: { serials, ip, port },
+        params: { serial, ip, port },
         headers: {
           custom: CUSTOM_HEADER,
           Authorization: `Bearer ${token}`,
