@@ -9,7 +9,9 @@ const CUSTOM_HEADER = env.NEXT_PUBLIC_CUSTOM_HEADER;
 
 // --- API Service Functions ---
 
-export async function downloadDebitCreditCsvTemplate(): Promise<Blob> {
+export async function downloadDebitCreditCsvTemplate(
+  type: "credit" | "debit" = "debit",
+): Promise<Blob> {
   try {
     const token = localStorage.getItem("auth_token");
     if (!token) {
@@ -17,7 +19,7 @@ export async function downloadDebitCreditCsvTemplate(): Promise<Blob> {
     }
 
     const response = await axiosInstance.get(
-      `${API_URL}/debit-credit-adjustment/service/download/template/csv`,
+      `${API_URL}/debit-credit-adjustment/service/download/template/csv?type=${type}`,
       {
         responseType: "blob",
         headers: {
@@ -35,7 +37,9 @@ export async function downloadDebitCreditCsvTemplate(): Promise<Blob> {
   }
 }
 
-export async function downloadDebitCreditExcelTemplate(): Promise<Blob> {
+export async function downloadDebitCreditExcelTemplate(
+  type: "credit" | "debit" = "debit",
+): Promise<Blob> {
   try {
     const token = localStorage.getItem("auth_token");
     if (!token) {
@@ -43,7 +47,7 @@ export async function downloadDebitCreditExcelTemplate(): Promise<Blob> {
     }
 
     const response = await axiosInstance.get(
-      `${API_URL}/debit-credit-adjustment/service/download/template/excel`,
+      `${API_URL}/debit-credit-adjustment/service/download/template/excel?type=${type}`,
       {
         responseType: "blob",
         headers: {

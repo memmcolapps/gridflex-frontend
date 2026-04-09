@@ -9,7 +9,8 @@ import {
 
 export const useDownloadDebitCreditCsvTemplate = () => {
   return useMutation({
-    mutationFn: downloadDebitCreditCsvTemplate,
+    mutationFn: (type: "credit" | "debit") =>
+      downloadDebitCreditCsvTemplate(type),
     onSuccess: (blob) => {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
@@ -25,7 +26,8 @@ export const useDownloadDebitCreditCsvTemplate = () => {
 
 export const useDownloadDebitCreditExcelTemplate = () => {
   return useMutation({
-    mutationFn: downloadDebitCreditExcelTemplate,
+    mutationFn: (type: "credit" | "debit") =>
+      downloadDebitCreditExcelTemplate(type),
     onSuccess: (blob) => {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");

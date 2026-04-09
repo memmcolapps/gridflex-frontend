@@ -359,7 +359,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
   };
 
   const downloadCsvTemplate = () => {
-    downloadCsvTemplateMutation.mutate(undefined, {
+    downloadCsvTemplateMutation.mutate(type, {
       onSuccess: () => {
         toast.success("CSV template downloaded successfully");
       },
@@ -372,7 +372,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
   };
 
   const downloadExcelTemplate = () => {
-    downloadExcelTemplateMutation.mutate(undefined, {
+    downloadExcelTemplateMutation.mutate(type, {
       onSuccess: () => {
         toast.success("Excel template downloaded successfully");
       },
