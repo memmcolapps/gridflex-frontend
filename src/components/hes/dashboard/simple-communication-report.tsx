@@ -14,7 +14,7 @@ export interface ReportData {
   serialNumber: string;
   meterNo: string;
   meterModel: string;
-  status: "Online" | "Offline";
+  connectionType: "Online" | "Offline";
   lastSync: string;
 }
 
@@ -22,36 +22,36 @@ interface SimpleCommunicationReportProps {
   data?: ReportData[];
 }
 
-const defaultData: ReportData[] = [
-  {
-    serialNumber: "01",
-    meterNo: "6212456987",
-    meterModel: "MMX 310 -NG",
-    status: "Offline",
-    lastSync: "1 mins ago",
-  },
-  {
-    serialNumber: "02",
-    meterNo: "6212456987",
-    meterModel: "MMX 110 -NG",
-    status: "Online",
-    lastSync: "2 hours ago",
-  },
-  {
-    serialNumber: "03",
-    meterNo: "6212456987",
-    meterModel: "MMX 110 -NG",
-    status: "Offline",
-    lastSync: "2 hours ago",
-  },
-  {
-    serialNumber: "04",
-    meterNo: "6212456987",
-    meterModel: "MMX 110 -NG",
-    status: "Online",
-    lastSync: "2 hours ago",
-  },
-];
+// const defaultData: ReportData[] = [
+//   {
+//     serialNumber: "01",
+//     meterNo: "6212456987",
+//     meterModel: "MMX 310 -NG",
+//     status: "Offline",
+//     lastSync: "1 mins ago",
+//   },
+//   {
+//     serialNumber: "02",
+//     meterNo: "6212456987",
+//     meterModel: "MMX 110 -NG",
+//     status: "Online",
+//     lastSync: "2 hours ago",
+//   },
+//   {
+//     serialNumber: "03",
+//     meterNo: "6212456987",
+//     meterModel: "MMX 110 -NG",
+//     status: "Offline",
+//     lastSync: "2 hours ago",
+//   },
+//   {
+//     serialNumber: "04",
+//     meterNo: "6212456987",
+//     meterModel: "MMX 110 -NG",
+//     status: "Online",
+//     lastSync: "2 hours ago",
+//   },
+// ];
 
 const getStatusStyle = (status: "Online" | "Offline") => {
   if (status === "Online") {
@@ -60,7 +60,7 @@ const getStatusStyle = (status: "Online" | "Offline") => {
   return "inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-50 text-red-500";
 };
 
-const SimpleCommunicationReport = ({ data = defaultData }: SimpleCommunicationReportProps) => {
+const SimpleCommunicationReport = ({ data = [] }: SimpleCommunicationReportProps) => {
   return (
     // h-85 matches the Chart card height
     <Card className="w-full bg-white shadow-sm rounded-lg border border-gray-200 p-4 h-85 flex flex-col">
@@ -87,8 +87,8 @@ const SimpleCommunicationReport = ({ data = defaultData }: SimpleCommunicationRe
                 <TableCell className="text-sm text-gray-700 py-3">{row.meterNo}</TableCell>
                 <TableCell className="text-sm text-gray-700 py-3">{row.meterModel}</TableCell>
                 <TableCell className="py-3">
-                  <span className={getStatusStyle(row.status)}>
-                    {row.status}
+                  <span className={getStatusStyle(row.connectionType)}>
+                    {row.connectionType}
                   </span>
                 </TableCell>
                 <TableCell className="text-sm text-gray-700 py-3">{row.lastSync}</TableCell>
