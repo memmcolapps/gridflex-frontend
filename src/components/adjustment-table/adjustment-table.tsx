@@ -1672,10 +1672,12 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
         onSave={handleBulkUpload}
         title="Bulk Upload Debit/Credit Adjustments"
         requiredColumns={[
-          "meterNumber",
+          "S/N",
           "accountNumber",
-          "amount",
-          "liabilityCauseId",
+          "customerId",
+          "customerName",
+          "meterNumber",
+          type === "credit" ? "creditBalance" : "debitBalance",
         ]}
         sendRawFile={true}
         onTemplateClick={() => {
