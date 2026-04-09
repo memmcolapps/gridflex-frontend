@@ -54,6 +54,12 @@ import {
   useAllLiabilityCauses,
   usePaymentHistory,
 } from "@/hooks/use-adjustment";
+import {
+  useBulkUploadDebitCredit,
+  useDownloadDebitCreditCsvTemplate,
+  useDownloadDebitCreditExcelTemplate,
+} from "@/hooks/use-debit-credit-bulk";
+import { BulkUploadDialog } from "@/components/meter-management/bulk-upload";
 import { Toaster, toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -67,6 +73,15 @@ import {
   type PaymentHistoryTransaction,
 } from "@/types/credit-debit";
 import { Card } from "../ui/card";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+} from "@/components/ui/alert-dialog";
+import { CheckCircle, XCircle, AlertTriangle } from "lucide-react";
 
 const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
   const { canEdit } = usePermissions();
@@ -120,7 +135,6 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
         current.balance += balance;
       }
     });
-
     return Array.from(group.values());
   }, [allAdjustments]);
 
@@ -140,16 +154,6 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
     string | null
   >(null);
   const [fetchPaymentHistory, setFetchPaymentHistory] = useState(false);
-
-  const {
-    data: paymentHistory,
-    isLoading: isPaymentHistoryLoading,
-    error: paymentHistoryError,
-  } = usePaymentHistory(
-    fetchPaymentHistory ? selectedMeterId : null,
-    fetchPaymentHistory ? selectedLiabilityCauseId : null,
-    type,
-  );
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [rowsPerPage, setRowsPerPage] = useState<number>(10);
@@ -169,6 +173,22 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
   } = useSearchMeter();
   const [selectedMeter, setSelectedMeter] = useState<MeterType | null>(null);
 
+  // State for bulk upload
+  const [isBulkUploadDialogOpen, setIsBulkUploadDialogOpen] = useState(false);
+  const [isTemplateDropdownOpen, setIsTemplateDropdownOpen] = useState(false);
+  const [isUploadResultDialogOpen, setIsUploadResultDialogOpen] =
+    useState(false);
+  const [uploadResult, setUploadResult] = useState<{
+    successCount: number;
+    failedCount: number;
+    totalRecords: number;
+    failedRecords: string[];
+  } | null>(null);
+
+  const bulkUploadMutation = useBulkUploadDebitCredit();
+  const downloadCsvTemplateMutation = useDownloadDebitCreditCsvTemplate();
+  const downloadExcelTemplateMutation = useDownloadDebitCreditExcelTemplate();
+
   const [amount, setAmount] = useState("");
   const [liabilityCause, setLiabilityCause] = useState("");
   const [reconcileAmount, setReconcileAmount] = useState("");
@@ -180,6 +200,16 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
     key: keyof Customer | null;
     direction: "asc" | "desc";
   }>({ key: null, direction: "asc" });
+
+  const {
+    data: paymentHistory,
+    isLoading: isPaymentHistoryLoading,
+    error: paymentHistoryError,
+  } = usePaymentHistory(
+    fetchPaymentHistory ? selectedMeterId : null,
+    fetchPaymentHistory ? selectedLiabilityCauseId : null,
+    type,
+  );
 
   const processedData = useMemo(() => {
     let results = customers;
@@ -284,6 +314,74 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
         },
       },
     );
+  };
+
+  const handleBulkUpload = (data: File | unknown[]) => {
+    if (data instanceof File) {
+      bulkUploadMutation.mutate(data, {
+        onSuccess: (response) => {
+          const res = response as {
+            responsecode: string;
+            responsedesc: string;
+            responsedata: {
+              totalRecords: number;
+              failedCount: number;
+              failedRecords: string[];
+              successCount: number;
+            };
+          };
+
+          setIsBulkUploadDialogOpen(false);
+          setIsTemplateDropdownOpen(false);
+
+          setUploadResult(res.responsedata);
+          setIsUploadResultDialogOpen(true);
+
+          if (res.responsedata.successCount > 0) {
+            toast.success(
+              `${res.responsedata.successCount} of ${res.responsedata.totalRecords} records processed successfully!`,
+            );
+            queryClient.invalidateQueries({ queryKey: ["all-adjustments"] });
+          }
+        },
+        onError: (error) => {
+          console.error("Bulk upload failed:", error);
+          const err = error as { message?: string };
+          toast.error(err?.message ?? "Bulk upload failed");
+          setIsBulkUploadDialogOpen(false);
+          setIsTemplateDropdownOpen(false);
+        },
+      });
+    } else {
+      setIsBulkUploadDialogOpen(false);
+      setIsTemplateDropdownOpen(false);
+    }
+  };
+
+  const downloadCsvTemplate = () => {
+    downloadCsvTemplateMutation.mutate(undefined, {
+      onSuccess: () => {
+        toast.success("CSV template downloaded successfully");
+      },
+      onError: (error) => {
+        const err = error as { message?: string };
+        console.error("CSV template download failed:", error);
+        toast.error(err?.message ?? "Failed to download CSV template");
+      },
+    });
+  };
+
+  const downloadExcelTemplate = () => {
+    downloadExcelTemplateMutation.mutate(undefined, {
+      onSuccess: () => {
+        toast.success("Excel template downloaded successfully");
+      },
+      onError: (error) => {
+        const err = error as { message?: string };
+        console.error("Excel template download failed:", error);
+        toast.error(err?.message ?? "Failed to download Excel template");
+      },
+    });
   };
 
   const handlePrevious = () => {
@@ -586,6 +684,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
               <Button
                 variant="outline"
                 className="cursor-pointer border-[#161CCA] text-[#161CCA]"
+                onClick={() => setIsBulkUploadDialogOpen(true)}
               >
                 <div className="flex items-center justify-center p-0.5">
                   <PlusCircle className="text-[#161CCA]" size={12} />
@@ -1451,7 +1550,9 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                   key: "createdAt",
                   label: "Date",
                   transform: (value) =>
-                    typeof value === "string" ? value.split(" ")[0] ?? "" : "",
+                    typeof value === "string"
+                      ? (value.split(" ")[0] ?? "")
+                      : "",
                 },
                 {
                   key: "credit",
@@ -1564,6 +1665,163 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
             </div>
           </DialogContent>
         </Dialog>
+      )}
+      <BulkUploadDialog
+        isOpen={isBulkUploadDialogOpen}
+        onClose={() => setIsBulkUploadDialogOpen(false)}
+        onSave={handleBulkUpload}
+        title="Bulk Upload Debit/Credit Adjustments"
+        requiredColumns={[
+          "meterNumber",
+          "accountNumber",
+          "amount",
+          "liabilityCauseId",
+        ]}
+        sendRawFile={true}
+        onTemplateClick={() => {
+          setIsBulkUploadDialogOpen(false);
+          setIsTemplateDropdownOpen(true);
+        }}
+      />
+      <Dialog
+        open={isTemplateDropdownOpen}
+        onOpenChange={(open) => {
+          setIsTemplateDropdownOpen(open);
+          if (!open) {
+            setIsBulkUploadDialogOpen(false);
+          }
+        }}
+      >
+        <DialogContent className="h-fit max-w-sm bg-white">
+          <DialogHeader>
+            <DialogTitle>Select Template Format</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Button
+              onClick={() => {
+                downloadCsvTemplate();
+                setIsTemplateDropdownOpen(false);
+              }}
+              className="w-full bg-[#161CCA] text-white hover:bg-[#121eb3]"
+              disabled={downloadCsvTemplateMutation.isPending}
+            >
+              {downloadCsvTemplateMutation.isPending
+                ? "Downloading..."
+                : "Download CSV Template"}
+            </Button>
+            <Button
+              onClick={() => {
+                downloadExcelTemplate();
+                setIsTemplateDropdownOpen(false);
+              }}
+              variant="outline"
+              className="w-full border-[#161CCA] text-[#161CCA] hover:bg-[#161CCA] hover:text-white"
+              disabled={downloadExcelTemplateMutation.isPending}
+            >
+              {downloadExcelTemplateMutation.isPending
+                ? "Downloading..."
+                : "Download Excel Template"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {uploadResult && (
+        <AlertDialog
+          open={isUploadResultDialogOpen}
+          onOpenChange={setIsUploadResultDialogOpen}
+        >
+          <AlertDialogContent className="max-h-[80vh] max-w-2xl overflow-y-auto border-none">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center gap-2">
+                {uploadResult.successCount === uploadResult.totalRecords ? (
+                  <>
+                    <CheckCircle className="h-5 w-5 text-green-500" />
+                    Bulk Upload Completed Successfully
+                  </>
+                ) : uploadResult.successCount === 0 ? (
+                  <>
+                    <XCircle className="h-5 w-5 text-red-500" />
+                    Bulk Upload Failed
+                  </>
+                ) : (
+                  <>
+                    <AlertTriangle className="h-5 w-5 text-yellow-500" />
+                    Bulk Upload Completed with Issues
+                  </>
+                )}
+              </AlertDialogTitle>
+              <AlertDialogDescription className="text-left">
+                <div className="space-y-4">
+                  <div className="grid grid-cols-3 gap-4 rounded-lg bg-gray-50 p-4">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-gray-900">
+                        {uploadResult.totalRecords}
+                      </div>
+                      <div className="text-sm text-gray-600">Total Records</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-green-600">
+                        {uploadResult.successCount}
+                      </div>
+                      <div className="text-sm text-gray-600">Successful</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-red-600">
+                        {uploadResult.failedCount}
+                      </div>
+                      <div className="text-sm text-gray-600">Failed</div>
+                    </div>
+                  </div>
+
+                  {uploadResult.successCount > 0 && (
+                    <div className="rounded-lg border border-green-200 bg-green-50 p-3">
+                      <div className="flex items-center gap-2 text-green-800">
+                        <CheckCircle className="h-4 w-4" />
+                        <span className="font-medium">Success</span>
+                      </div>
+                      <p className="mt-1 text-sm text-green-700">
+                        {uploadResult.successCount} record
+                        {uploadResult.successCount !== 1 ? "s" : ""} processed
+                        successfully.
+                      </p>
+                    </div>
+                  )}
+
+                  {uploadResult.failedCount > 0 && (
+                    <div className="rounded-lg border border-red-200 bg-red-50 p-3">
+                      <div className="flex items-center gap-2 text-red-800">
+                        <XCircle className="h-4 w-4" />
+                        <span className="font-medium">Failed Records</span>
+                      </div>
+                      <div className="mt-2 max-h-60 space-y-2 overflow-y-auto">
+                        {uploadResult.failedRecords.map((record, index) => (
+                          <div
+                            key={index}
+                            className="rounded border-l-4 border-red-400 bg-red-100 p-2 text-sm text-red-700"
+                          >
+                            {record}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <Button
+                onClick={() => {
+                  setIsUploadResultDialogOpen(false);
+                  setUploadResult(null);
+                }}
+                className="bg-[#161CCA] text-white hover:bg-[#121eb3]"
+              >
+                Close
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       )}
       <Toaster />
     </div>
