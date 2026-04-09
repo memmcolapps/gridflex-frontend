@@ -18,7 +18,6 @@ export default function RealtimeDataPage() {
   const [activeTab, setActiveTab] = useState("MD");
   const [selectedMeters, setSelectedMeters] = useState<string[]>([]);
   const [selectedHierarchy] = useState<string>("");
-  // const [selectedUnit, setSelectedUnit] = useState<string>('');
   const [, setUnitOptions] = useState<{ label: string; id: string }[]>([]);
 
   // Use TanStack Query hooks for state management
@@ -144,7 +143,7 @@ export default function RealtimeDataPage() {
       </div>
       <div className="flex flex-row justify-between">
         <Tabs defaultValue="MD" className="mb-4" onValueChange={setActiveTab}>
-          <TabsList>
+          <TabsList style={{ border: "2px solid #161CCA" }} className="h-12">
             <TabsTrigger
               value="MD"
               className={
