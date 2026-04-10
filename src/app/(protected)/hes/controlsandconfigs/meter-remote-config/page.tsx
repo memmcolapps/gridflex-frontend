@@ -2,7 +2,6 @@
 
 import { Button } from "@/components/ui/button";
 import { ContentHeader } from "@/components/ui/content-header";
-import { usePermissions } from "@/hooks/use-permissions";
 import { Ban, Eye, MoreVertical, Send, Settings2 } from "lucide-react";
 import { useState } from "react";
 import {
@@ -50,6 +49,8 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
+import { useMeterConfigurations } from "@/hooks/use-configure-meter";
 
 // Define the possible dialog types
 type DialogType = "apn" | "ctvt" | "relay" | "datetime" | "ip" | "viewDetails" | "sendToken";
@@ -80,171 +81,8 @@ const filterSections = [
     },
 ];
 
-// Initial meter data
-const initialMeterData: Meter[] = [
-    {
-        sN: "01",
-        meterNumber: "61245269523",
-        simNo: "89000497699707079",
-        businessHub: "ljeun",
-        class: "MD",
-        category: "Prepaid",
-        manufacturer: "Momas",
-        model: "MX-300",
-        status: "Online",
-        region: "Ogun",
-        serviceCenter: "ljeun",
-        feeder: "ljeun",
-        transformer: "Olowotedo",
-        lastSync: "01:00 am",
-    },
-    {
-        sN: "02",
-        meterNumber: "61245269523",
-        simNo: "89000497699707079",
-        businessHub: "ljeun",
-        class: "Single Phase",
-        category: "Prepaid",
-        manufacturer: "Momas",
-        model: "MX-300",
-        status: "Online",
-        region: "Ogun",
-        serviceCenter: "ljeun",
-        feeder: "ljeun",
-        transformer: "Olowotedo",
-        lastSync: "01:00 am",
-    },
-    {
-        sN: "03",
-        meterNumber: "61245269523",
-        simNo: "89000497699707079",
-        businessHub: "ljeun",
-        class: "Three Phase",
-        category: "Prepaid",
-        manufacturer: "Momas",
-        model: "MX-300",
-        status: "Offline",
-        region: "Ogun",
-        serviceCenter: "ljeun",
-        feeder: "ljeun",
-        transformer: "Olowotedo",
-        lastSync: "01:00 am",
-    },
-    {
-        sN: "04",
-        meterNumber: "61245269523",
-        simNo: "89000497699707079",
-        businessHub: "ljeun",
-        class: "MD",
-        category: "Postpaid",
-        manufacturer: "Momas",
-        model: "MX-300",
-        status: "Offline",
-        region: "Ogun",
-        serviceCenter: "ljeun",
-        feeder: "ljeun",
-        transformer: "Olowotedo",
-        lastSync: "01:00 am",
-    },
-    {
-        sN: "05",
-        meterNumber: "61245269523",
-        simNo: "89000497699707079",
-        businessHub: "ljeun",
-        class: "MD",
-        category: "Postpaid",
-        manufacturer: "Momas",
-        model: "MX-300",
-        status: "Online",
-        region: "Ogun",
-        serviceCenter: "ljeun",
-        feeder: "ljeun",
-        transformer: "Olowotedo",
-        lastSync: "01:00 am",
-    },
-    {
-        sN: "06",
-        meterNumber: "61245269523",
-        simNo: "89000497699707079",
-        businessHub: "ljeun",
-        class: "MD",
-        category: "Postpaid",
-        manufacturer: "Momas",
-        model: "MX-300",
-        status: "Offline",
-        region: "Ogun",
-        serviceCenter: "ljeun",
-        feeder: "ljeun",
-        transformer: "Olowotedo",
-        lastSync: "01:00 am",
-    },
-    {
-        sN: "07",
-        meterNumber: "61245269523",
-        simNo: "89000497699707079",
-        businessHub: "ljeun",
-        class: "MD",
-        category: "Postpaid",
-        manufacturer: "Momas",
-        model: "MX-300",
-        status: "Offline",
-        region: "Ogun",
-        serviceCenter: "ljeun",
-        feeder: "ljeun",
-        transformer: "Olowotedo",
-        lastSync: "01:00 am",
-    },
-    {
-        sN: "08",
-        meterNumber: "61245269523",
-        simNo: "89000497699707079",
-        businessHub: "ljeun",
-        class: "MD",
-        category: "Postpaid",
-        manufacturer: "Momas",
-        model: "MX-300",
-        status: "Online",
-        region: "Ogun",
-        serviceCenter: "ljeun",
-        feeder: "ljeun",
-        transformer: "Olowotedo",
-        lastSync: "01:00 am",
-    },
-    {
-        sN: "09",
-        meterNumber: "61245269523",
-        simNo: "89000497699707079",
-        businessHub: "ljeun",
-        class: "MD",
-        category: "Postpaid",
-        manufacturer: "Momas",
-        model: "MX-300",
-        status: "Online",
-        region: "Ogun",
-        serviceCenter: "ljeun",
-        feeder: "ljeun",
-        transformer: "Olowotedo",
-        lastSync: "01:00 am",
-    },
-    {
-        sN: "10",
-        meterNumber: "61245269523",
-        simNo: "89000497699707079",
-        businessHub: "ljeun",
-        class: "MD",
-        category: "Postpaid",
-        manufacturer: "Momas",
-        model: "MX-300",
-        status: "Online",
-        region: "Ogun",
-        serviceCenter: "ljeun",
-        feeder: "ljeun",
-        transformer: "Olowotedo",
-        lastSync: "01:00 am",
-    },
-];
-
 export default function MeterRemoteConfigPage() {
+
     const [selectedMeter, setSelectedMeter] = useState<Meter | undefined>(undefined);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [dialogType, setDialogType] = useState<DialogType | null>(null);
@@ -256,10 +94,15 @@ export default function MeterRemoteConfigPage() {
     const [selectedMeters, setSelectedMeters] = useState<string[]>([]);
     const [selectedConfigOption, setSelectedConfigOption] = useState<DialogType | null>(null);
     const [showOfflineDialog, setShowOfflineDialog] = useState(false);
-    const [currentPage, setCurrentPage] = useState<number>(1);
+        const [currentPage, setCurrentPage] = useState<number>(1);
     const [rowsPerPage, setRowsPerPage] = useState<number>(10);
-    const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
-    const [meterData, setMeterData] = useState<Meter[]>(initialMeterData);
+    const { data, isLoading, error, refetch } = useMeterConfigurations({
+        page: currentPage - 1, 
+        size: rowsPerPage,
+    });
+    const meterData = data?.meters ?? [];
+    const totalData = data?.totalData ?? 0;
+    const totalPages = data?.totalPages ?? 1;
 
     const handleConfigureAction = (type: DialogType) => {
         if (selectedMeters.length === 0) {
@@ -299,21 +142,21 @@ export default function MeterRemoteConfigPage() {
     };
 
     // Handle bulk upload save
-    const handleBulkUploadSave = (data: File | Meter[]) => {
-        if (data instanceof File) {
-            // Handle raw file if sendRawFile is true, but currently it's false
-            console.warn("Raw file received, but not handled");
-        } else {
-            setMeterData((prevData) => [
-                ...prevData,
-                ...data.map((item, index) => ({
-                    ...item,
-                    sN: (prevData.length + index + 1).toString().padStart(2, "0"),
-                })),
-            ]);
-            setCurrentPage(1);
-        }
-    };
+    // const handleBulkUploadSave = (data: File | Meter[]) => {
+    //     if (data instanceof File) {
+    //         // Handle raw file if sendRawFile is true, but currently it's false
+    //         console.warn("Raw file received, but not handled");
+    //     } else {
+    //         setMeterData((prevData) => [
+    //             ...prevData,
+    //             ...data.map((item, index) => ({
+    //                 ...item,
+    //                 sN: (prevData.length + index + 1).toString().padStart(2, "0"),
+    //             })),
+    //         ]);
+    //         setCurrentPage(1);
+    //     }
+    // };
 
     // Apply search filter
     const filteredData = meterData.filter((meter) => {
@@ -348,13 +191,6 @@ export default function MeterRemoteConfigPage() {
         return 0;
     });
 
-    // Calculate paginated data
-    const totalPages = Math.ceil(sortedData.length / rowsPerPage);
-    const paginatedData = sortedData.slice(
-        (currentPage - 1) * rowsPerPage,
-        currentPage * rowsPerPage,
-    );
-
     const handlePrevious = () => {
         setCurrentPage((prev) => Math.max(prev - 1, 1));
     };
@@ -370,7 +206,6 @@ export default function MeterRemoteConfigPage() {
 
     const handleSortChange = (key: keyof Meter, direction: "asc" | "desc") => {
         setSortConfig({ key, direction });
-        setCurrentPage(1);
     };
 
     const toggleMeterSelection = (sN: string) => {
@@ -380,10 +215,10 @@ export default function MeterRemoteConfigPage() {
     };
 
     const toggleSelectAll = () => {
-        if (selectedMeters.length === paginatedData.length && paginatedData.length > 0) {
+        if (selectedMeters.length === sortedData.length && sortedData.length > 0) {
             setSelectedMeters([]);
         } else {
-            setSelectedMeters(paginatedData.map((meter) => meter.sN));
+            setSelectedMeters(sortedData.map((meter) => meter.sN));
         }
     };
 
@@ -416,13 +251,13 @@ export default function MeterRemoteConfigPage() {
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="w-[200px]">
-                            <DropdownMenuItem
+                                <DropdownMenuItem
                                 onClick={() => handleConfigureAction("ip")}
-                                className="flex items-center justify-between cursor-pointer"
-                            >
+                                    className="flex items-center justify-between cursor-pointer"
+                                >
                                 <span>Configure IP Address</span>
                                 {selectedConfigOption === "ip" && <span className="text-black">✓</span>}
-                            </DropdownMenuItem>
+                                </DropdownMenuItem>
                             <DropdownMenuItem
                                 onClick={() => handleConfigureAction("apn")}
                                 className="flex items-center justify-between cursor-pointer"
@@ -455,6 +290,7 @@ export default function MeterRemoteConfigPage() {
                     </DropdownMenu>
                 </div>
             </div>
+
             <div className="mb-4 flex w-full flex-col items-center gap-4 md:flex-row">
                 <div className="relative w-full md:w-[300px]">
                     <Search
@@ -485,12 +321,12 @@ export default function MeterRemoteConfigPage() {
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="center" className="w-48">
-                        <DropdownMenuItem
+                            <DropdownMenuItem
                             onClick={() => handleSortChange("sN", "asc")}
-                            className="cursor-pointer text-sm hover:bg-gray-100"
-                        >
+                                className="cursor-pointer text-sm hover:bg-gray-100"
+                            >
                             S/N (A-Z)
-                        </DropdownMenuItem>
+                            </DropdownMenuItem>
                         <DropdownMenuItem
                             onClick={() => handleSortChange("sN", "desc")}
                             className="cursor-pointer text-sm hover:bg-gray-100"
@@ -524,6 +360,7 @@ export default function MeterRemoteConfigPage() {
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
+
             <Card className="overflow-x-auto border-none bg-transparent shadow-none">
                 <Table className="w-full table-auto">
                     <TableHeader>
@@ -531,7 +368,10 @@ export default function MeterRemoteConfigPage() {
                             <TableHead className="w-[70px] p-2 text-left text-sm font-medium text-gray-600">
                                 <div className="flex items-center gap-2">
                                     <Checkbox
-                                        checked={selectedMeters.length === paginatedData.length && paginatedData.length > 0}
+                                        checked={
+                                            selectedMeters.length === sortedData.length &&
+                                            sortedData.length > 0
+                                        }
                                         onCheckedChange={toggleSelectAll}
                                         className="border-gray-300"
                                     />
@@ -550,18 +390,27 @@ export default function MeterRemoteConfigPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {paginatedData.length === 0 ? (
+                        {isLoading ? (
                             <TableRow>
-                                <TableCell
-                                    colSpan={10}
-                                    className="h-24 text-center text-sm text-gray-500"
-                                >
+                                <TableCell colSpan={10} className="h-24 text-center">
+                                    <div className="flex items-center justify-center gap-2 text-gray-500">
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                        <span className="text-sm">Loading meters…</span>
+                                    </div>
+                                </TableCell>
+                            </TableRow>
+                        ) : sortedData.length === 0 ? (
+                            <TableRow>
+                                <TableCell colSpan={10} className="h-24 text-center text-sm text-gray-500">
                                     No data available
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            paginatedData.map((meter, index) => (
-                                <TableRow key={meter.sN} className="cursor-pointer hover:bg-gray-50">
+                            sortedData.map((meter, index) => (
+                                <TableRow
+                                    key={meter.sN}
+                                    className="cursor-pointer hover:bg-gray-50"
+                                >
                                     <TableCell className="p-2 text-sm text-gray-800">
                                         <div className="flex items-center gap-2">
                                             <Checkbox
@@ -581,10 +430,10 @@ export default function MeterRemoteConfigPage() {
                                     <TableCell className="p-2 text-sm text-gray-800">{meter.model}</TableCell>
                                     <TableCell className="p-2 text-sm">
                                         <span
-                                            className={`px-2 py-1 rounded ${meter.status === "Online"
-                                                    ? "bg-[#E9FBF0] text-[#059E40] rounded-full"
-                                                    : "bg-[#FBE9E9] text-[#F50202] rounded-full"
-                                                }`}
+                                            className={`px-2 py-1 rounded-full ${meter.status === "Online"
+                                                    ? "bg-[#E9FBF0] text-[#059E40]"
+                                                    : "bg-[#FBE9E9] text-[#F50202]"
+                                            }`}
                                         >
                                             {meter.status}
                                         </span>
@@ -620,9 +469,9 @@ export default function MeterRemoteConfigPage() {
                                                     </div>
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem onSelect={() => {
-                                                    setSelectedMeter(meter);
-                                                    setDialogType("sendToken");
-                                                    setIsDialogOpen(true);
+                                                        setSelectedMeter(meter);
+                                                        setDialogType("sendToken");
+                                                        setIsDialogOpen(true);
                                                 }}>
                                                     <div className="flex items-center w-full gap-2">
                                                         <Send size={14} />
@@ -661,9 +510,13 @@ export default function MeterRemoteConfigPage() {
                             </SelectContent>
                         </Select>
                         <span className="text-sm font-medium">
-                            {(currentPage - 1) * rowsPerPage + 1}-
-                            {Math.min(currentPage * rowsPerPage, sortedData.length)} of{" "}
-                            {sortedData.length}
+                            {totalData === 0
+                                ? "0"
+                                : `${(currentPage - 1) * rowsPerPage + 1}–${Math.min(
+                                      currentPage * rowsPerPage,
+                                      totalData
+                                  )}`}{" "}
+                            of {totalData}
                         </span>
                     </div>
                     <PaginationContent>
