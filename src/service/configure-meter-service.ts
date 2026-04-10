@@ -1,10 +1,47 @@
 import { env } from "@/env";
 import { axiosInstance } from "@/lib/axios";
-import { type SetDateTimePayload, type SetAPNPayload, type SetCTPTRatioPayload, type SetIpPortPayload } from "@/types/configure-meter";
+import { type SetDateTimePayload, type SetAPNPayload, type SetCTPTRatioPayload, type SetIpPortPayload, type FetchMeterConfigParams, type MeterConfigResponse } from "@/types/configure-meter";
 import { handleApiError } from "@/utils/error-handler";
 
 const API_URL = env.NEXT_PUBLIC_BASE_URL;
 const CUSTOM_HEADER = env.NEXT_PUBLIC_CUSTOM_HEADER;
+
+ 
+export async function fetchMeterConfigurations(
+  params: FetchMeterConfigParams = {}
+): Promise<MeterConfigResponse> {
+  try {
+    const token = localStorage.getItem("auth_token");
+    if (!token) {
+      throw new Error("Authentication token not found.");
+    }
+
+    const { page = 0, size = 10 } = params;
+
+    const response = await axiosInstance.get(
+      `${API_URL}/hes/service/meter-configuration`,
+      {
+        params: { page, size },
+        headers: {
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const data: MeterConfigResponse = response.data;
+
+    if (data.responsecode !== "000") {
+      throw new Error(
+        data.responsedesc ?? "Failed to fetch meter configurations."
+      );
+    }
+
+    return data;
+  } catch (error) {
+    throw new Error(handleApiError(error).message);
+  }
+}
 
 export async function setCTPTRatio(
   data: SetCTPTRatioPayload,
@@ -15,13 +52,13 @@ export async function setCTPTRatio(
       throw new Error("Authentication token not found.");
     }
 
-    const { serials, ctNumerator, ctDenominator, ptNumerator, ptDenominator } = data;
+    const { serial, ctNumerator, ctDenominator, ptNumerator, ptDenominator } = data;
 
     const response = await axiosInstance.post(
       `${API_URL}/hes/service/dlms/set-ctpt`,
       null, 
       {
-        params: { serials, ctNumerator, ctDenominator, ptNumerator, ptDenominator },
+        params: { serial, ctNumerator, ctDenominator, ptNumerator, ptDenominator },
         headers: {
           custom: CUSTOM_HEADER,
           Authorization: `Bearer ${token}`,
@@ -53,13 +90,13 @@ export async function setAPN(
       throw new Error("Authentication token not found.");
     }
 
-    const { serials, apn } = data;
+    const { serial, apn } = data;
 
     const response = await axiosInstance.post(
       `${API_URL}/hes/service/dlms/set-apn`,
       null, 
       {
-        params: { serials, apn },
+        params: { serial, apn },
         headers: {
           custom: CUSTOM_HEADER,
           Authorization: `Bearer ${token}`,
@@ -91,13 +128,13 @@ export async function setDateTime(
       throw new Error("Authentication token not found.");
     }
 
-    const { serials, dateTime } = data;
+    const { serial, dateTime } = data;
 
     const response = await axiosInstance.post(
       `${API_URL}/hes/service/dlms/set-clock`,
       null, 
       {
-        params: { serials, dateTime },
+        params: { serial, dateTime },
         headers: {
           custom: CUSTOM_HEADER,
           Authorization: `Bearer ${token}`,
@@ -129,13 +166,13 @@ export async function setIpPort(
       throw new Error("Authentication token not found.");
     }
 
-    const { serials, ip, port } = data;
+    const { serial, ip, port } = data;
 
     const response = await axiosInstance.post(
       `${API_URL}/hes/service/dlms/set-ip-port`,
       null, 
       {
-        params: { serials, ip, port },
+        params: { serial, ip, port },
         headers: {
           custom: CUSTOM_HEADER,
           Authorization: `Bearer ${token}`,

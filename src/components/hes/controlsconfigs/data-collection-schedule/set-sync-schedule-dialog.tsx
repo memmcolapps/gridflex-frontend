@@ -16,26 +16,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useAuth } from "@/context/auth-context";
-import { createSchedule } from "@/service/hes-service";
+// import { useAuth } from "@/context/auth-context";
 import { Loader2 } from "lucide-react";
+import { useCreateSchedule, useProfileEvents } from "@/hooks/use-hes-hierarchy";
 
-const eventTypeLabels: Record<string, string> = {
-  standardEventLog: "Standard Event Log",
-  relayControlLog: "Relay Control Log",
-  powerQualityLog: "Power Quality Log",
-  communicationLog: "Communication Log",
-  tokenEventProfile: "Token Event Profile",
-  energyProfile: "Energy Profile",
-  instantDataProfile: "Instant Data Profile",
-  billingData: "Billing Data",
-  fraudEventLog: "Fraud Event Log",
-};
+// const eventTypeLabels: Record<string, string> = {
+//   standardEventLog: "Standard Event Log",
+//   relayControlLog: "Relay Control Log",
+//   powerQualityLog: "Power Quality Log",
+//   communicationLog: "Communication Log",
+//   fraudEventLog: "Fraud Event Log",
+//   tokenEventProfile: "Token Event Profile",
+//   loadProfile1: "Load Profile 1",
+//   loadProfile2: "Load Profile 2",
+//   dailyBilling: "Daily Billing",
+//   monthlyBilling: "Monthly Billing",
+// };
 
-const activeDaysMap: Record<string, string[]> = {
-  repeatDaily: ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"],
-  repeatMonFri: ["MON", "TUE", "WED", "THU", "FRI"],
-};
+// const activeDaysMap: Record<string, string[]> = {
+//   repeatDaily: ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"],
+//   repeatMonFri: ["MON", "TUE", "WED", "THU", "FRI"],
+// };
 
 interface SetSyncScheduleDialogProps {
   isOpen: boolean;
@@ -48,19 +49,21 @@ const SetSyncScheduleDialog: React.FC<SetSyncScheduleDialogProps> = ({
   onClose,
   onSubmit,
 }) => {
-  const { user } = useAuth();
+  // const { user } = useAuth();
   const [eventType, setEventType] = useState("");
-  const [timeInterval, setTimeInterval] = useState("");
+  const [repeatTime, setRepeatTime] = useState("");
   const [unit, setUnit] = useState("min");
-  const [activeDays, setActiveDays] = useState("");
+  // const [activeDays, setActiveDays] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+const { data: profileEvents = [], isLoading: isLoadingEvents } = useProfileEvents();
+const { mutateAsync: submitCreateSchedule } = useCreateSchedule();
 
   const resetForm = () => {
     setEventType("");
-    setTimeInterval("");
+    setRepeatTime("");
     setUnit("min");
-    setActiveDays("");
+    // setActiveDays("");
     setError(null);
   };
 
@@ -69,33 +72,35 @@ const SetSyncScheduleDialog: React.FC<SetSyncScheduleDialogProps> = ({
     onClose();
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError(null);
+const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+  setIsLoading(true);
+  setError(null);
 
-    const result = await createSchedule({
-      eventProfileType: eventTypeLabels[eventType] ?? eventType,
-      timeInterval: parseInt(timeInterval, 10),
-      timeUnit: unit === "min" ? "MINS" : "HRS",
-      activeDays: activeDaysMap[activeDays] ?? [],
-      orgId: user?.orgId ?? "",
+  const selectedEvent = profileEvents.find(
+    (event) => event.jobName === eventType,
+  );
+
+  try {
+    await submitCreateSchedule({
+      jobGroup: selectedEvent?.jobGroup ?? "",
+      jobName: selectedEvent?.jobName ?? "",
+      repeatTime: parseInt(repeatTime, 10),
+      unit: unit === "min" ? "minutes" : unit === "hrs" ? "hours" : "seconds",
     });
-
-    setIsLoading(false);
-
-    if (result.success) {
-      resetForm();
-      onSubmit();
-      onClose();
-    } else {
-      setError(result.error);
-    }
-  };
+    resetForm();
+    onSubmit();
+    onClose();
+  } catch (err) {
+    setError(err instanceof Error ? err.message : "An unexpected error occurred");
+  } finally {
+    setIsLoading(false); 
+  }
+};
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[425px] h-fit bg-white">
+      <DialogContent className="h-fit bg-white sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Set Sync Schedule</DialogTitle>
         </DialogHeader>
@@ -107,18 +112,30 @@ const SetSyncScheduleDialog: React.FC<SetSyncScheduleDialogProps> = ({
               </Label>
               <Select onValueChange={setEventType} value={eventType}>
                 <SelectTrigger className="w-full text-gray-400">
-                  <SelectValue placeholder="Select Event/Profile Type" />
+                  <SelectValue
+                    placeholder={
+                      isLoadingEvents
+                        ? "Loading..."
+                        : "Select Event/Profile Type"
+                    }
+                  />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="standardEventLog">Standard Event Log</SelectItem>
-                  <SelectItem value="relayControlLog">Relay Control Log</SelectItem>
-                  <SelectItem value="powerQualityLog">Power Quality Log</SelectItem>
-                  <SelectItem value="communicationLog">Communication Log</SelectItem>
-                  <SelectItem value="tokenEventProfile">Token Event Profile</SelectItem>
-                  <SelectItem value="energyProfile">Energy Profile</SelectItem>
-                  <SelectItem value="instantDataProfile">Instant Data Profile</SelectItem>
-                  <SelectItem value="billingData">Billing Data</SelectItem>
-                  <SelectItem value="fraudEventLog">Fraud Event Log</SelectItem>
+                  {isLoadingEvents ? (
+                    <SelectItem value="loading" disabled>
+                      Loading...
+                    </SelectItem>
+                  ) : profileEvents.length === 0 ? (
+                    <SelectItem value="empty" disabled>
+                      No events available
+                    </SelectItem>
+                  ) : (
+                    profileEvents.map((event) => (
+                      <SelectItem key={event.jobName} value={event.jobName}>
+                        {event.name}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -131,8 +148,8 @@ const SetSyncScheduleDialog: React.FC<SetSyncScheduleDialogProps> = ({
                 <Input
                   id="timeInterval"
                   type="number"
-                  value={timeInterval}
-                  onChange={(e) => setTimeInterval(e.target.value)}
+                  value={repeatTime}
+                  onChange={(e) => setRepeatTime(e.target.value)}
                   placeholder="Enter Time Interval"
                   required
                   className="border border-gray-200"
@@ -148,6 +165,7 @@ const SetSyncScheduleDialog: React.FC<SetSyncScheduleDialogProps> = ({
                     <SelectValue placeholder="Select Unit" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="secs">Seconds</SelectItem>
                     <SelectItem value="min">Minutes</SelectItem>
                     <SelectItem value="hrs">Hours</SelectItem>
                   </SelectContent>
@@ -155,7 +173,7 @@ const SetSyncScheduleDialog: React.FC<SetSyncScheduleDialogProps> = ({
               </div>
             </div>
 
-            <div className="flex flex-col gap-2">
+            {/* <div className="flex flex-col gap-2">
               <Label htmlFor="activeDays">
                 Active Days <span className="text-red-600">*</span>
               </Label>
@@ -168,11 +186,9 @@ const SetSyncScheduleDialog: React.FC<SetSyncScheduleDialogProps> = ({
                   <SelectItem value="repeatMonFri">Repeat (Mon-Fri)</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
+            </div> */}
 
-            {error && (
-              <p className="text-sm text-red-600">{error}</p>
-            )}
+            {error && <p className="text-sm text-red-600">{error}</p>}
           </div>
 
           <DialogFooter className="flex justify-between">
@@ -180,14 +196,14 @@ const SetSyncScheduleDialog: React.FC<SetSyncScheduleDialogProps> = ({
               variant="outline"
               onClick={handleClose}
               type="button"
-              className="border-[#161CCA] text-[#161CCA] cursor-pointer"
+              className="cursor-pointer border-[#161CCA] text-[#161CCA]"
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              className="bg-[#161CCA] text-white cursor-pointer"
-              disabled={!eventType || !timeInterval || !activeDays || isLoading}
+              className="cursor-pointer bg-[#161CCA] text-white"
+              disabled={!eventType || !repeatTime || isLoading}
             >
               {isLoading ? (
                 <>

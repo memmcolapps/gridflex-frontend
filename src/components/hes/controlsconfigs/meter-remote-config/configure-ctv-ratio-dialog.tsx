@@ -50,7 +50,7 @@ export default function ConfigureCTVTRatioDialog({
 
     setCTPTRatio(
       {
-        serials: meter?.meterNumber,
+        serial: meter?.meterNumber,
         ctNumerator: Number(ctNumerator),
         ctDenominator: Number(ctDenominator),
         ptNumerator: Number(vtNumerator),

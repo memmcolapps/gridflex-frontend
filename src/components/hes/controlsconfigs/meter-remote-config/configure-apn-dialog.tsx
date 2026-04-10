@@ -43,7 +43,7 @@ export default function ConfigureAPNDialog({
 
     setAPN(
       {
-        serials: meter?.meterNumber,
+        serial: meter?.meterNumber,
         apn,
       },
       {

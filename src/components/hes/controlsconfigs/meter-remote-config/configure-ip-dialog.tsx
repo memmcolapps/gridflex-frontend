@@ -39,7 +39,7 @@ export default function ConfigureIPDialog({ isOpen, onClose, meter }: ConfigureI
         if(!meter?.meterNumber) return;
 
         IpAddress ({
-            serials: meter?.meterNumber,
+            serial: meter?.meterNumber,
             ip: String(ipAddress),
             port: Number(port)
         })

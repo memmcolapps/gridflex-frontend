@@ -63,7 +63,7 @@ export default function SetDateTimeDialog({
 
     setMeterClock(
       {
-        serials: meter?.meterNumber,
+        serial: meter?.meterNumber,
         dateTime,
       },
       {
