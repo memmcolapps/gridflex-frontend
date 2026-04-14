@@ -32,10 +32,12 @@ import {
   AlertDialogFooter,
 } from "@/components/ui/alert-dialog";
 import { CheckCircle, XCircle, AlertTriangle } from "lucide-react";
+import { useAuth } from "@/context/auth-context";
 
 export default function CustomerManagement() {
   const { canEdit } = usePermissions();
   const bulkUploadMutation = useBulkUploadCustomer();
+  const { user } = useAuth();
   const downloadCsvTemplateMutation = useDownloadCustomerCsvTemplate();
   const downloadExcelTemplateMutation = useDownloadCustomerExcelTemplate();
 
@@ -61,6 +63,7 @@ export default function CustomerManagement() {
   const [isTemplateDropdownOpen, setIsTemplateDropdownOpen] = useState(false);
   const [isUploadResultDialogOpen, setIsUploadResultDialogOpen] =
     useState(false);
+  const showAddButton = !['region', 'root'].includes(user?.nodeInfo.type.toLowerCase() ?? '')
   const [uploadResult, setUploadResult] = useState<{
     successCount: number;
     failedCount: number;
@@ -192,15 +195,18 @@ export default function CustomerManagement() {
                 // eslint-disable-next-line @typescript-eslint/no-empty-function
                 onSave={() => {}}
                 triggerButton={
-                  <Button
-                    size={"lg"}
-                    className="flex cursor-pointer items-center gap-2 bg-[#161CCA] py-4 hover:bg-[#121eb3]"
-                  >
-                    <div className="flex items-center justify-center p-0.5">
-                      <PlusCircleIcon className="text-[#FEFEFE]" size={12} />
-                    </div>
-                    <span className="text-white">Add New Customer</span>
-                  </Button>
+                  showAddButton ? (
+                    <Button
+                      size={"lg"}
+                      className="flex cursor-pointer items-center gap-2 bg-[#161CCA] py-4 hover:bg-[#121eb3]"
+                    >
+                      <div className="flex items-center justify-center p-0.5">
+                        <PlusCircleIcon className="text-[#FEFEFE]" size={12} />
+                      </div>
+
+                      <span className="text-white">Add New Customer</span>
+                    </Button>
+                  ) : null
                 }
               />
             </div>
