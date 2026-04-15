@@ -10,6 +10,7 @@ import { useState, useEffect } from "react";
 import {
   useSSEManagement,
   useMeterConnections,
+  useRealtimeStream,
 } from "@/hooks/use-hes-realtime";
 import { useHierarchyData } from "@/hooks/use-hes-hierarchy";
 import type { Node } from "@/types/hes";
@@ -24,6 +25,7 @@ export default function RealtimeDataPage() {
   const { baseUrl } = useSSEManagement();
 
   const { connectionStatus, isConnected } = useMeterConnections(selectedMeters);
+  const { mutateAsync: runRealtimeStream } = useRealtimeStream();
 
   const reconnect = () => {
     // TODO: Implement reconnect functionality
@@ -178,6 +180,7 @@ export default function RealtimeDataPage() {
         selectedMeters={selectedMeters}
         onMeterSelection={handleMeterSelection}
         meterType={activeTab}
+        onRunStream={runRealtimeStream}
       />
     </div>
   );

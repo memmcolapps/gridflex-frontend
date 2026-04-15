@@ -1,8 +1,13 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { useSSE } from './use-sse';
 import { env } from '@/env';
 import { useState, useEffect } from 'react';
 import type { MeterStatusData, RealTimeData } from './use-sse';
+import {
+  triggerRealtimeStream,
+  type RealtimeStreamRequest,
+} from '@/service/hes-service';
 
 // Helper function to get auth token
 const getAuthToken = (): string | null => {
@@ -48,7 +53,7 @@ export function useMeterConnections(selectedMeters: string[]) {
 
   // SSE for meter status
   const statusUrl = baseUrl ? `${baseUrl}/hes/service/meter-status/stream` : '';
-  const statusHasMeters = selectedMeters.length > 0;
+  const statusEnabled = Boolean(baseUrl);
   const { data: _statusData, isConnected: _statusConnected, error: _statusError } = useSSE(statusUrl, {
     onOpen: () => {
       console.log('Meter status SSE connected');
@@ -87,50 +92,7 @@ export function useMeterConnections(selectedMeters: string[]) {
       }
     },
     reconnectAttempts: 0
-  }, statusHasMeters);
-
-  // SSE for real-time data
-  const dataUrl = baseUrl ? `${baseUrl}/hes/service/stream` : '';
-  const dataHasMeters = selectedMeters.length > 0;
-  const { data: _realtimeData, isConnected: _dataConnected, error: _dataError } = useSSE(dataUrl, {
-    onOpen: () => {
-      console.log('Real-time data SSE connected');
-      setConnectionStatus(prev => {
-        const newStatus = { ...prev };
-        selectedMeters.forEach(meterNo => {
-          newStatus[meterNo] = true;
-        });
-        return newStatus;
-      });
-    },
-    onError: () => {
-      console.log('Real-time data SSE error');
-      setConnectionStatus(prev => {
-        const newStatus = { ...prev };
-        selectedMeters.forEach(meterNo => {
-          newStatus[meterNo] = false;
-        });
-        return newStatus;
-      });
-    },
-    onMessage: (data) => {
-      const parsedData = data as unknown as RealTimeData;
-      if (parsedData.meterNo && selectedMeters.includes(parsedData.meterNo)) {
-        console.log(`Meter ${parsedData.meterNo} real-time data:`, parsedData);
-
-        // Update query cache with new real-time data
-        queryClient.setQueryData(
-          hesQueryKeys.realtimeData(parsedData.meterNo),
-          (oldData: RealTimeData | undefined) => ({
-            ...oldData,
-            ...parsedData,
-            timestamp: parsedData.timestamp || new Date().toISOString(),
-          })
-        );
-      }
-    },
-    reconnectAttempts: 0
-  }, dataHasMeters);
+  }, statusEnabled);
 
   useEffect(() => {
     // Update connection status in query cache
@@ -147,6 +109,18 @@ export function useMeterConnections(selectedMeters: string[]) {
     isConnected: Object.values(connectionStatus).some(status => status),
     baseUrl
   };
+}
+
+export function useRealtimeStream() {
+  return useMutation({
+    mutationFn: async (payload: RealtimeStreamRequest) => {
+      const result = await triggerRealtimeStream(payload);
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+      return result.data;
+    },
+  });
 }
 
 // Query hook for fetching meter data (if needed for initial data)

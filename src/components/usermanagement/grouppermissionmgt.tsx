@@ -518,8 +518,8 @@ export default function GroupPermissionManagement() {
                       <DropdownMenuTrigger asChild>
                         <Button
                           size="sm"
-                          variant="ghost"
-                          className="h-8 w-8 p-2"
+                          variant="outline"
+                          className="h-8 w-8 p-2 border-gray-300"
                         >
                           <MoreVertical size={14} />
                         </Button>

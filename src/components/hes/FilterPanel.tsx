@@ -66,6 +66,7 @@ interface FilterPanelProps {
     unit: string;
     meters: MeterId[];
     reading: ReadingKey[];
+    obisCodes: string[];
   }) => void;
 }
 
@@ -530,6 +531,11 @@ const readingOptions: ReadingOption[] = [
   },
 ];
 
+const obisCodeByReadingValue: Record<string, string> = {
+  "meter-logical-device-name": "00000.90878",
+  "meter-serial-number": "99.2300.8890",
+};
+
 export function FilterPanel({ onRun }: FilterPanelProps) {
   const [hierarchy, setHierarchy] = useState<HierarchyType | "">("");
   const [unit, setUnit] = useState<string>("");
@@ -658,9 +664,55 @@ export function FilterPanel({ onRun }: FilterPanelProps) {
   const isFormComplete =
     !!hierarchy && !!unit && meters.length > 0 && reading.length > 0;
 
+  const normalizeText = (value: string) =>
+    value.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+  const isLikelyObisCode = (value: string) => /^\d+(\.\d+)+$/.test(value);
+
+  const resolveObisCode = (readingValue: string): string => {
+    const mappedObisCode = obisCodeByReadingValue[readingValue];
+    if (mappedObisCode) {
+      return mappedObisCode;
+    }
+
+    if (isLikelyObisCode(readingValue)) {
+      return readingValue;
+    }
+
+    const readingLabel = readingOptions
+      .flatMap((group) => group.children)
+      .find((option) => option.value === readingValue)?.label;
+
+    const normalizedReadingValue = normalizeText(readingValue);
+    const normalizedReadingLabel = normalizeText(readingLabel ?? "");
+
+    const eventType = hierarchyData?.responsedata?.event_types?.find((item) => {
+      const normalizedName = normalizeText(item.name ?? "");
+      const normalizedDescription = normalizeText(item.description ?? "");
+      return (
+        normalizedName === normalizedReadingValue ||
+        normalizedDescription === normalizedReadingValue ||
+        normalizedName === normalizedReadingLabel ||
+        normalizedDescription === normalizedReadingLabel ||
+        normalizedName.includes(normalizedReadingValue) ||
+        normalizedDescription.includes(normalizedReadingValue) ||
+        normalizedReadingValue.includes(normalizedName) ||
+        normalizedReadingValue.includes(normalizedDescription)
+      );
+    });
+
+    return eventType?.obisCode ?? readingValue;
+  };
+
   const handleRunClick = () => {
     if (isFormComplete && hierarchy) {
-      onRun({ hierarchy: hierarchy as HierarchyType, unit, meters, reading });
+      onRun({
+        hierarchy: hierarchy as HierarchyType,
+        unit,
+        meters,
+        reading,
+        obisCodes: reading.map(resolveObisCode),
+      });
     }
   };
 
