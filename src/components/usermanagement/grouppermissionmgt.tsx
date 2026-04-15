@@ -343,7 +343,7 @@ export default function GroupPermissionManagement() {
 
   return (
     <div className="h-screen overflow-y-hidden text-black">
-      <h1 className="mb-10 text-2xl font-bold">Group Permission</h1>
+      <h1 className="mb-2 text-2xl font-bold">Group Permission</h1>
 
       {error && (
         <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-4 text-red-800">
@@ -351,7 +351,7 @@ export default function GroupPermissionManagement() {
         </div>
       )}
 
-      <div className="flex justify-between">
+      <div className="mb-10 flex justify-between">
         <p className="text-muted-foreground text-sm">
           Configure group permission, and system accessibility here.
         </p>
@@ -439,7 +439,9 @@ export default function GroupPermissionManagement() {
               <TableHead className="w-28 text-center">Edit</TableHead>
               <TableHead className="w-28 text-center">Approve</TableHead>
               <TableHead className="w-28 text-center">Disable</TableHead>
-              <TableHead className="w-28 text-center">Actions</TableHead>
+              {canEdit && (
+                <TableHead className="w-28 text-center">Actions</TableHead>
+              )}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -516,13 +518,15 @@ export default function GroupPermissionManagement() {
                   <TableCell className="text-center">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-8 w-8 p-2"
-                        >
-                          <MoreVertical size={14} />
-                        </Button>
+                        {canEdit && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-8 w-8 p-2"
+                          >
+                            <MoreVertical size={14} />
+                          </Button>
+                        )}
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="center">
                         <DropdownMenuItem
