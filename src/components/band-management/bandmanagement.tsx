@@ -284,14 +284,18 @@ export default function BandManagement() {
               <TableHead>Approval Status</TableHead>
               <TableHead>Created At</TableHead>
               <TableHead>Updated At</TableHead>
-              <TableHead>Actions</TableHead>
+              {canEdit && <TableHead>Actions</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
                 <TableCell colSpan={7} className="py-12">
-                  <LoadingAnimation variant="spinner" message="Loading bands..." size="md" />
+                  <LoadingAnimation
+                    variant="spinner"
+                    message="Loading bands..."
+                    size="md"
+                  />
                 </TableCell>
               </TableRow>
             ) : bands.length === 0 ? (
@@ -331,7 +335,7 @@ export default function BandManagement() {
                         align="center"
                         className="cursor-pointer bg-white"
                       >
-                        {canEdit && band.approveStatus === "Approved" && (
+                        {band.approveStatus === "Approved" && (
                           <DropdownMenuItem
                             onSelect={() => {
                               handleEditBand(band);
@@ -343,26 +347,24 @@ export default function BandManagement() {
                             </div>
                           </DropdownMenuItem>
                         )}
-                        {canEdit && (
-                          <DropdownMenuItem
-                            onSelect={() => {
-                              handleToggleBandStatus(band);
-                            }}
-                          >
-                            <div className="flex w-full items-center gap-2 p-2">
-                              {band.approveStatus === "Approved" ? (
-                                <Ban size={14} />
-                              ) : (
-                                <CircleCheck size={14} />
-                              )}
-                              <span>
-                                {band.approveStatus === "Approved"
-                                  ? "Deactivate"
-                                  : "Activate"}
-                              </span>
-                            </div>
-                          </DropdownMenuItem>
-                        )}
+                        <DropdownMenuItem
+                          onSelect={() => {
+                            handleToggleBandStatus(band);
+                          }}
+                        >
+                          <div className="flex w-full items-center gap-2 p-2">
+                            {band.approveStatus === "Approved" ? (
+                              <Ban size={14} />
+                            ) : (
+                              <CircleCheck size={14} />
+                            )}
+                            <span>
+                              {band.approveStatus === "Approved"
+                                ? "Deactivate"
+                                : "Activate"}
+                            </span>
+                          </div>
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -462,7 +464,9 @@ export default function BandManagement() {
             {/* Header content */}
             <AlertDialogHeader className="space-y-2 text-center">
               <AlertDialogTitle className="text-xl font-semibold text-gray-900">
-                {bandToToggle?.approveStatus === "Approved" ? "Deactivate" : "Activate"}{" "}
+                {bandToToggle?.approveStatus === "Approved"
+                  ? "Deactivate"
+                  : "Activate"}{" "}
                 Band
               </AlertDialogTitle>
               <AlertDialogDescription className="text-sm text-gray-600">

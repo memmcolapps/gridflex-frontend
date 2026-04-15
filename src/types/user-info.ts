@@ -78,6 +78,19 @@ export interface UserInfo {
   groups: Group;
   business: Business;
   nodes: Node[];
+  nodeInfo: NodeInfo;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface NodeInfo {
+  id: string;
+  nodeId: string;
+  regionId: string;
+  name: string;
+  email: string;
+  address: string;
+  type: string;
   createdAt: string;
   updatedAt: string;
 }

@@ -26,6 +26,7 @@ import { toast } from 'sonner';
 import { useBands } from '@/hooks/use-ReviewApproval';
 import type { FetchParams } from '@/service/reviewapproval-service';
 import { LoadingAnimation } from '@/components/ui/loading-animation';
+import { usePermissions } from '@/hooks/use-permissions';
 
 interface BandTableProps {
     selectedBandNames: string[];
@@ -33,6 +34,7 @@ interface BandTableProps {
 }
 
 const BandTable = ({ selectedBandNames, setSelectedBandNames }: BandTableProps) => {
+    const { canApprove } = usePermissions();
     const [fetchParams, setFetchParams] = useState<FetchParams>({
         page: 1,
         pageSize: 10,
@@ -211,7 +213,9 @@ const BandTable = ({ selectedBandNames, setSelectedBandNames }: BandTableProps) 
                                                 <EyeIcon size={14} />
                                                 <span className="text-sm text-gray-700">View Details</span>
                                             </DropdownMenuItem>
-                                            <DropdownMenuItem
+                                            {canApprove && (
+                                                <>
+                                                   <DropdownMenuItem
                                                 className="flex items-center gap-2 cursor-pointer"
                                                 onSelect={(e) => e.preventDefault()}
                                                 onClick={() => handleApprove(item)}
@@ -227,6 +231,9 @@ const BandTable = ({ selectedBandNames, setSelectedBandNames }: BandTableProps) 
                                                 <Ban size={14} />
                                                 <span className="text-sm text-gray-700">Reject</span>
                                             </DropdownMenuItem>
+                                                </>
+                                            )}
+                                         
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </TableCell>

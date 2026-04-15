@@ -55,6 +55,8 @@ import { LoadingAnimation } from "@/components/ui/loading-animation";
 import { useAllCustomerIds } from "@/hooks/use-customer";
 import { fetchCustomerRecord } from "@/service/customer-service";
 import { ExportButton, ExportColumn } from "@/components/ui/export-button";
+import { useAuth } from "@/context/auth-context";
+import { usePermissions } from "@/hooks/use-permissions";
 
 // Define filter sections
 const filterSections = [
@@ -76,6 +78,7 @@ const filterSections = [
 ];
 
 export default function AssignMeterPage() {
+  const {canEdit} = usePermissions()
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [isCustomerIdModalOpen, setIsCustomerIdModalOpen] = useState(false);
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
@@ -837,7 +840,7 @@ export default function AssignMeterPage() {
               Payment Plan
             </TableHead>
             <TableHead className="text-center">Meter Stage</TableHead>
-            <TableHead>Actions</TableHead>
+            {canEdit && <TableHead>Actions</TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -925,15 +928,17 @@ export default function AssignMeterPage() {
                     ) : (
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            className="h-8 w-8 cursor-pointer p-0"
-                          >
-                            <MoreVertical
-                              size={14}
-                              className="cursor-pointer"
-                            />
-                          </Button>
+                          {canEdit && (
+                            <Button
+                              variant="ghost"
+                              className="h-8 w-8 cursor-pointer p-0"
+                            >
+                              <MoreVertical
+                                size={14}
+                                className="cursor-pointer"
+                              />
+                            </Button>
+                          )}
                         </DropdownMenuTrigger>
                         <DropdownMenuContent
                           align="end"
@@ -946,6 +951,7 @@ export default function AssignMeterPage() {
                             <Pencil size={14} />
                             Edit Details
                           </DropdownMenuItem>
+
                           <DropdownMenuItem
                             onClick={() => handleDetachMeter(meter)}
                             className="flex cursor-pointer items-center gap-2"
