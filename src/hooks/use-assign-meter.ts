@@ -105,6 +105,7 @@ const mapToFrontendMeter = (
     meterClass: apiItem.meterClass,
     meterType: apiItem.meterType,
     meterCategory: apiItem.meterCategory,
+    category: apiItem.meterCategory,
     status: apiItem.status,
     meterStage: apiItem.meterStage,
     simNumber: apiItem.simNumber,
@@ -116,7 +117,7 @@ const mapToFrontendMeter = (
     oldKrn: apiItem.oldKrn,
     newKrn: apiItem.newKrn,
     manufacturer: apiItem.manufacturer,
-    smartStatus: apiItem.meterType === "SMART",
+    smartStatus: apiItem.smartStatus ?? apiItem.meterType === "SMART",
     smartMeterInfo: {
       meterModel: apiItem.smartMeterInfo?.meterModel ?? "N/A",
       protocol: apiItem.smartMeterInfo?.protocol ?? "N/A",
