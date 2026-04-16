@@ -518,15 +518,13 @@ export default function GroupPermissionManagement() {
                   <TableCell className="text-center">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        {canEdit && (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-8 w-8 p-2"
-                          >
-                            <MoreVertical size={14} />
-                          </Button>
-                        )}
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-8 w-8 p-2 border-gray-300"
+                        >
+                          <MoreVertical size={14} />
+                        </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="center">
                         <DropdownMenuItem

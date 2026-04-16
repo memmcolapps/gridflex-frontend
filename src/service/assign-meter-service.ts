@@ -28,6 +28,7 @@ export interface MeterAPIItem {
   meterCategory: string;
   meterClass: string;
   meterType: string;
+  smartStatus?: boolean;
   meterManufacturer: string;
   meterStage: string;
   status: string;

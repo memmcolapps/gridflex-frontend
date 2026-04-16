@@ -9,6 +9,11 @@ export interface InstalledOverMonths {
   count: number;
 }
 
+export interface InstalledOverYear {
+  year: number;
+  count: number;
+}
+
 export interface CardData {
   totalMeter: number;
   assigned: number;
@@ -28,6 +33,7 @@ export interface DashboardResponseData {
   cardData: CardData;
   manufacturers: Manufacturer[];
   installedOverMonths: InstalledOverMonths[];
+  installedOverYear: InstalledOverYear[];
   percentData: PercentData;
 }
 

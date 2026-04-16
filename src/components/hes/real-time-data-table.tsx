@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { FilterPanel } from './FilterPanel';
 import { DataTable } from './DataTable';
 import type { RealTimeData } from '@/hooks/use-sse';
+import type { RealtimeStreamRequest } from '@/service/hes-service';
 
 type MeterId = string;
 
@@ -18,6 +19,7 @@ interface RealTimeDataTableProps {
     selectedMeters?: string[];
     onMeterSelection?: (meters: string[]) => void;
     meterType?: string;
+    onRunStream?: (payload: RealtimeStreamRequest) => Promise<unknown>;
 }
 
 export function RealTimeDataTable({
@@ -25,7 +27,8 @@ export function RealTimeDataTable({
     connectionStatus = {},
     selectedMeters = [],
     onMeterSelection,
-    meterType: _meterType = 'MD'
+    meterType: currentMeterType = 'MD',
+    onRunStream
 }: RealTimeDataTableProps) {
     const [loading, setLoading] = useState<boolean>(false);
     const [data, setData] = useState<MeterData[]>([]);
@@ -66,11 +69,12 @@ export function RealTimeDataTable({
         };
     }, []);
 
-    const handleRun = (filters: {
+    const handleRun = async (filters: {
         hierarchy: string;
         unit: string;
         meters: MeterId[];
         reading: string[];
+        obisCodes: string[];
     }) => {
         setLoading(true);
         setData([]);
@@ -79,6 +83,52 @@ export function RealTimeDataTable({
         // Notify parent component about selected meters
         if (onMeterSelection) {
             onMeterSelection(filters.meters);
+        }
+
+        try {
+            if (onRunStream) {
+                const response = await onRunStream({
+                    meterType: currentMeterType,
+                    meters: filters.meters.map((meterNumber) => ({ meterNumber })),
+                    obisCode: filters.obisCodes.map((code) => ({ code })),
+                });
+
+                const responseData = (response as { responsedata?: unknown })?.responsedata ?? response;
+                const rows = Array.isArray(responseData) ? responseData : [];
+
+                if (rows.length > 0) {
+                    const newData = rows.map((item, index) => {
+                        const rowItem = item as Record<string, unknown>;
+                        const meterNo =
+                            (rowItem.meterNo as string) ??
+                            (rowItem.meterNumber as string) ??
+                            filters.meters[index] ??
+                            "N/A";
+
+                        const row: MeterData = {
+                            meter: meterNo,
+                            time: (rowItem.timestamp as string) ?? new Date().toISOString(),
+                        };
+
+                        filters.reading.forEach((readingCode) => {
+                            row[readingCode] = String(
+                                rowItem[readingCode] ??
+                                rowItem.value ??
+                                rowItem.codeValue ??
+                                "N/A",
+                            );
+                        });
+
+                        return row;
+                    });
+
+                    setData(newData);
+                    setLoading(false);
+                    return;
+                }
+            }
+        } catch {
+            // Fall back to current UI data render logic when API errors.
         }
 
         // Clear any existing timeout to prevent memory leaks

@@ -10,7 +10,7 @@ const CUSTOM_HEADER = env.NEXT_PUBLIC_CUSTOM_HEADER;
 // --- API Service Functions ---
 
 export async function downloadDebitCreditCsvTemplate(
-  type: "credit" | "debit" = "debit",
+  type: "credit" | "debit" ,
 ): Promise<Blob> {
   try {
     const token = localStorage.getItem("auth_token");
@@ -38,7 +38,7 @@ export async function downloadDebitCreditCsvTemplate(
 }
 
 export async function downloadDebitCreditExcelTemplate(
-  type: "credit" | "debit" = "debit",
+  type: "credit" | "debit" ,
 ): Promise<Blob> {
   try {
     const token = localStorage.getItem("auth_token");

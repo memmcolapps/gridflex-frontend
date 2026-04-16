@@ -1,4 +1,11 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import type { MeterInventoryItem } from "@/types/meter-inventory";
 
 // interface MeterData {
@@ -28,64 +35,92 @@ interface ViewMeterDetailsDialogProps {
   meter: MeterInventoryItem | null;
 }
 
-export function ViewMeterDetailsDialog({ isOpen, onClose, meter }: ViewMeterDetailsDialogProps) {
+export function ViewMeterDetailsDialog({
+  isOpen,
+  onClose,
+  meter,
+}: ViewMeterDetailsDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="h-fit overflow-y-auto w-[500px] rounded-lg bg-white">
+      <DialogContent className="h-fit w-[500px] overflow-y-auto rounded-lg bg-white">
         <DialogHeader>
           <DialogTitle>View Meter Details</DialogTitle>
           <DialogDescription />
         </DialogHeader>
         {meter && (
-          <div className="grid gap-4 py-2 px-4">
+          <div className="grid gap-4 px-4 py-2">
             <div className="grid grid-cols-[150px_1fr] items-center gap-16">
               <span className="font-medium text-gray-700">Meter Number:</span>
-              <span className="text-gray-900 font-bold">{meter.meterNumber}</span>
+              <span className="font-bold text-gray-900">
+                {meter.meterNumber}
+              </span>
             </div>
             <div className="grid grid-cols-[150px_1fr] items-center gap-16">
               <span className="font-medium text-gray-700">SIM No:</span>
-              <span className="text-gray-900 font-bold">{meter.simNumber}</span>
+              <span className="font-bold text-gray-900">{meter.simNumber}</span>
             </div>
-           
+
             <div className="grid grid-cols-[150px_1fr] items-center gap-16">
-              <span className="font-medium text-gray-700">Meter Manufacturer:</span>
-              <span className="text-gray-900 font-bold">{meter.manufacturer?.name}</span>
+              <span className="font-medium text-gray-700">
+                Meter Manufacturer:
+              </span>
+              <span className="font-bold text-gray-900">
+                {meter.manufacturer?.name}
+              </span>
             </div>
             <div className="grid grid-cols-[150px_1fr] items-center gap-16">
               <span className="font-medium text-gray-700">Meter Class:</span>
-              <span className="text-gray-900 font-bold">{meter.meterClass}</span>
+              <span className="font-bold text-gray-900">
+                {meter.meterClass}
+              </span>
             </div>
             <div className="grid grid-cols-[150px_1fr] items-center gap-16">
               <span className="font-medium text-gray-700">Meter Category:</span>
-              <span className="text-gray-900 font-bold">{meter.category ?? "-"}</span>
+              <span className="font-bold text-gray-900">
+                {meter.category ?? "-"}
+              </span>
             </div>
             <div className="grid grid-cols-[150px_1fr] items-center gap-16">
               <span className="font-medium text-gray-700">Smart Meter:</span>
-              <span className="text-gray-900 font-bold">{meter.smartStatus ?? "-"}</span>
+              <span className="font-bold text-gray-900">
+                {meter.smartStatus === true
+                  ? "Smart"
+                  : meter.smartStatus === false
+                    ? "Not Smart"
+                    : "-"}
+              </span>
             </div>
             <div className="grid grid-cols-[150px_1fr] items-center gap-16">
               <span className="font-medium text-gray-700">Old SGC:</span>
-              <span className="text-gray-900 font-bold">{meter.oldSgc}</span>
+              <span className="font-bold text-gray-900">{meter.oldSgc}</span>
             </div>
             <div className="grid grid-cols-[150px_1fr] items-center gap-16">
               <span className="font-medium text-gray-700">New SGC:</span>
-              <span className="text-gray-900 font-bold">{meter.newSgc}</span>
+              <span className="font-bold text-gray-900">{meter.newSgc}</span>
             </div>
             <div className="grid grid-cols-[150px_1fr] items-center gap-16">
               <span className="font-medium text-gray-700">Old KRN:</span>
-              <span className="text-gray-900 font-bold">{meter.oldKrn}</span>
+              <span className="font-bold text-gray-900">{meter.oldKrn}</span>
             </div>
             <div className="grid grid-cols-[150px_1fr] items-center gap-16">
               <span className="font-medium text-gray-700">New KRN:</span>
-              <span className="text-gray-900 font-bold">{meter.newKrn}</span>
+              <span className="font-bold text-gray-900">{meter.newKrn}</span>
             </div>
             <div className="grid grid-cols-[150px_1fr] items-center gap-16">
-              <span className="font-medium text-gray-700">Old Tariff Index:</span>
-              <span className="text-gray-900 font-bold">{meter.oldTariffIndex}</span>
+              <span className="font-medium text-gray-700">
+                Old Tariff Index:
+              </span>
+              <span className="font-bold text-gray-900">
+                {meter.oldTariffIndex}
+              </span>
             </div>
             <div className="grid grid-cols-[150px_1fr] items-center gap-16">
-              <span className="font-medium text-gray-700">New Tariff Index:</span>
-              <span className="text-gray-900 font-bold">{meter.newTariffIndex}</span>
+              <span className="font-medium text-gray-700">
+                New Tariff Index:
+              </span>
+              <span className="font-bold text-gray-900">
+                {meter.newTariffIndex}
+              </span>
             </div>
           </div>
         )}

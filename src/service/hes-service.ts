@@ -39,6 +39,33 @@ export const fetchHierarchyData = async (): Promise<HierarchyResponse> => {
 
 const CUSTOM_HEADER = env.NEXT_PUBLIC_CUSTOM_HEADER;
 
+export interface RealtimeStreamRequest {
+  meterType: string;
+  meters: { meterNumber: string }[];
+  obisCode: { code: string }[];
+}
+
+export const triggerRealtimeStream = async (
+  payload: RealtimeStreamRequest,
+): Promise<{ success: true; data: unknown } | { success: false; error: string }> => {
+  try {
+    const token = localStorage.getItem("auth_token");
+    if (!token) return { success: false, error: "Auth token not found" };
+
+    const response = await axiosInstance.post("/hes/service/stream", payload, {
+      headers: {
+        "Content-Type": "application/json",
+        custom: CUSTOM_HEADER,
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return { success: true, data: response.data };
+  } catch (error) {
+    return { success: false, error: handleApiError(error).message };
+  }
+};
+
 export const fetchScheduleData = async (
   page: number,
   size: number,

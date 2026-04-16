@@ -19,13 +19,18 @@ export const MetersInstalledChart = () => {
      const { data: dashboardData } = useDashboard(); // Uses unfiltered data
 
     const apiMonthlyData = dashboardData?.installedOverMonths?.map(item => ({
-        month: item.month,
+        period: item.month,
+        value: item.count,
+    })) ?? [];
+
+    const apiYearlyData = dashboardData?.installedOverYear?.map(item => ({
+        period: String(item.year),
         value: item.count,
     })) ?? [];
 
     const dataByType = {
         monthly: apiMonthlyData,
-        yearly: [], // No yearly data from API, can be removed or handled differently
+        yearly: apiYearlyData,
     };
 
     const currentData = dataByType[activeChart];
@@ -63,12 +68,14 @@ export const MetersInstalledChart = () => {
                     >
                         <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
                         <XAxis
-                            dataKey="month"
+                            dataKey="period"
                             tick={{ fill: '#6b7280' }}
                             tickMargin={12}
                         />
                         <YAxis
                             tick={{ fill: '#6b7280' }}
+                            domain={[1, 'dataMax']}
+                            allowDecimals={false}
                             tickFormatter={(value) => `${value}`}
                         />
                         <Tooltip
@@ -76,7 +83,7 @@ export const MetersInstalledChart = () => {
                                 if (!active || !payload?.length) return null;
                                 return (
                                     <div className="bg-white p-3 border rounded-md shadow-sm">
-                                        <p className="font-medium">{payload?.[0]?.payload?.month ?? 'N/A'}</p>
+                                        <p className="font-medium">{payload?.[0]?.payload?.period ?? 'N/A'}</p>
                                         <p className="text-sm">
                                             {payload[0]?.value ?? 'N/A'} meters installed
                                         </p>

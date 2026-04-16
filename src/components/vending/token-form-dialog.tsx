@@ -250,17 +250,17 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
           debitAdjustmentBalance: debitBalance,
         };
         setGeneratedTokenData(mergedData);
-        setShowTokenDialog(true);
         setShowReceipt(false);
         setIsFormDialogOpen(false);
+        setShowTokenDialog(true);
       } catch (error) {
         // Error is handled by the mutation's onError
         console.error("Failed to generate token:", error);
       }
     } else {
-      setShowTokenDialog(true);
       setShowReceipt(false);
       setIsFormDialogOpen(false);
+      setShowTokenDialog(true);
     }
   };
 
