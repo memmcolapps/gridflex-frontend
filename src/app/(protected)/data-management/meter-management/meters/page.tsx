@@ -51,7 +51,10 @@ import {
   useAssignMeter,
   useChangeMeterState,
 } from "@/hooks/use-assign-meter";
-import { useCustomerRecordQuery, useAllCustomerIds } from "@/hooks/use-customer";
+import {
+  useCustomerRecordQuery,
+  useAllCustomerIds,
+} from "@/hooks/use-customer";
 import type { AssignMeterPayload } from "@/service/assign-meter-service";
 import { fetchCustomerRecord } from "@/service/customer-service";
 import { LoadingAnimation } from "@/components/ui/loading-animation";
@@ -689,8 +692,6 @@ export default function MeterManagementPage() {
     });
   };
 
-
-
   const isFormComplete =
     meterNumber.trim() !== "" &&
     cin.trim() !== "" &&
@@ -718,12 +719,23 @@ export default function MeterManagementPage() {
   };
 
   // Helper function to check if meter is in pending state
-  const isPendingState = (status: string) => {
-    return [
+  const isPendingState = (status: string, meterStage?: string) => {
+    const pendingStatuses = [
       "pending-activated",
       "pending-deactivated",
       "pending-assign",
-    ].includes(status.toLowerCase());
+      "pending-edited",
+      "assigned-edited",
+    ];
+    const pendingStages = [
+      "pending-assigned",
+      "assigned-edited",
+      "pending-edited",
+    ];
+    return (
+      pendingStatuses.includes(status.toLowerCase()) ||
+      (meterStage && pendingStages.includes(meterStage.toLowerCase()))
+    );
   };
 
   return (
@@ -932,7 +944,10 @@ export default function MeterManagementPage() {
                     key={item.id ?? item.customerId ?? `actual-${index}`}
                     className={cn(
                       "cursor-pointer hover:bg-gray-50",
-                      isPendingState(item.assignedStatus ?? item.status ?? "")
+                      isPendingState(
+                        item.assignedStatus ?? item.status ?? "",
+                        item.meterStage,
+                      )
                         ? "bg-gray-100 opacity-50"
                         : "",
                     )}
@@ -950,6 +965,7 @@ export default function MeterManagementPage() {
                           }
                           disabled={isPendingState(
                             item.assignedStatus ?? item.status ?? "",
+                            item.meterStage,
                           )}
                         />
                         <span className="text-sm text-gray-900">
@@ -975,7 +991,7 @@ export default function MeterManagementPage() {
                     <TableCell className="px-4 py-3 text-sm text-gray-900">
                       {item.meterClass}
                     </TableCell>
-                   
+
                     <TableCell className="px-4 py-3 text-center">
                       <span
                         className={cn(
@@ -1013,6 +1029,7 @@ export default function MeterManagementPage() {
                         >
                           {isPendingState(
                             item.assignedStatus ?? item.status ?? "",
+                            item.meterStage,
                           ) ? (
                             <DropdownMenuItem
                               disabled
@@ -1038,47 +1055,47 @@ export default function MeterManagementPage() {
                                   View Details
                                 </span>
                               </DropdownMenuItem>
-                              {canEdit && item.meterStage !== "Assigned" && (
-                                <DropdownMenuItem
-                                  className="flex cursor-pointer items-center gap-2"
-                                  onClick={(event) => {
-                                    event.stopPropagation();
-                                    setSelectedMeter(item);
-                                    setEditMeter(item);
-                                    setIsAddMeterDialogOpen(true);
-                                  }}
-                                >
-                                  <Pencil size={14} />
-                                  <span className="text-sm text-gray-700">
-                                    Edit Meter
-                                  </span>
-                                </DropdownMenuItem>
-                              )}
-                              {canEdit && (
-                                <DropdownMenuItem
-                                  className="flex cursor-pointer items-center gap-2"
-                                  onClick={(event) => {
-                                    event.stopPropagation();
-                                    setSelectedMeter(item);
-                                    setIsDeactivateDialogOpen(true);
-                                  }}
-                                >
-                                  {item.status === "Deactivated" ? (
-                                    <>
-                                      <CheckCircle size={14} />
-                                      <span className="text-sm text-gray-700">
-                                        Activate
-                                      </span>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Ban size={14} />
-                                      <span className="text-sm text-gray-700">
-                                        Deactivate
-                                      </span>
-                                    </>
-                                  )}
-                                </DropdownMenuItem>
+                              {canEdit && item.meterStage === "Unassigned" && (
+                                <>
+                                  <DropdownMenuItem
+                                    className="flex cursor-pointer items-center gap-2"
+                                    onClick={(event) => {
+                                      event.stopPropagation();
+                                      setSelectedMeter(item);
+                                      setEditMeter(item);
+                                      setIsAddMeterDialogOpen(true);
+                                    }}
+                                  >
+                                    <Pencil size={14} />
+                                    <span className="text-sm text-gray-700">
+                                      Edit Meter
+                                    </span>
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    className="flex cursor-pointer items-center gap-2"
+                                    onClick={(event) => {
+                                      event.stopPropagation();
+                                      setSelectedMeter(item);
+                                      setIsDeactivateDialogOpen(true);
+                                    }}
+                                  >
+                                    {item.status === "Deactivated" ? (
+                                      <>
+                                        <CheckCircle size={14} />
+                                        <span className="text-sm text-gray-700">
+                                          Activate
+                                        </span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Ban size={14} />
+                                        <span className="text-sm text-gray-700">
+                                          Deactivate
+                                        </span>
+                                      </>
+                                    )}
+                                  </DropdownMenuItem>
+                                </>
                               )}
                             </>
                           )}

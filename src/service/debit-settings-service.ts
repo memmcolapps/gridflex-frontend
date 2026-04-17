@@ -18,7 +18,9 @@ const CUSTOM_HEADER = env.NEXT_PUBLIC_CUSTOM_HEADER;
 
 // --- Liability Cause API Calls ---
 
-export const fetchAllLiabilityCauses = async (searchTerm?: string): Promise<
+export const fetchAllLiabilityCauses = async (
+  searchTerm?: string,
+): Promise<
   { success: true; data: LiabilityCause[] } | { success: false; error: string }
 > => {
   try {
@@ -42,7 +44,8 @@ export const fetchAllLiabilityCauses = async (searchTerm?: string): Promise<
     if (response.data?.responsecode !== "000") {
       return {
         success: false,
-        error: response.data?.responsedesc || "Failed to fetch liability causes.",
+        error:
+          response.data?.responsedesc || "Failed to fetch liability causes.",
       };
     }
 
@@ -79,7 +82,8 @@ export const createLiabilityCause = async (
     if (response.data?.responsecode !== "000") {
       return {
         success: false,
-        error: response.data?.responsedesc || "Failed to create liability cause.",
+        error:
+          response.data?.responsedesc || "Failed to create liability cause.",
       };
     }
 
@@ -115,7 +119,8 @@ export const updateLiabilityCause = async (
     if (response.data?.responsecode !== "000") {
       return {
         success: false,
-        error: response.data?.responsedesc || "Failed to update liability cause.",
+        error:
+          response.data?.responsedesc || "Failed to update liability cause.",
       };
     }
 
@@ -157,7 +162,8 @@ export const changeLiabilityCauseStatus = async (
     if (response.data?.responsecode !== "000") {
       return {
         success: false,
-        error: response.data?.responsedesc ||
+        error:
+          response.data?.responsedesc ||
           `Failed to ${status ? "activate" : "deactivate"} liability cause.`,
       };
     }
@@ -175,7 +181,9 @@ export const changeLiabilityCauseStatus = async (
 
 // --- Percentage Range API Calls ---
 
-export const fetchAllPercentageRanges = async (searchTerm?: string): Promise<
+export const fetchAllPercentageRanges = async (
+  searchTerm?: string,
+): Promise<
   { success: true; data: PercentageRange[] } | { success: false; error: string }
 > => {
   try {
@@ -199,7 +207,8 @@ export const fetchAllPercentageRanges = async (searchTerm?: string): Promise<
     if (response.data?.responsecode !== "000") {
       return {
         success: false,
-        error: response.data?.responsedesc || "Failed to fetch percentage ranges.",
+        error:
+          response.data?.responsedesc || "Failed to fetch percentage ranges.",
       };
     }
 
@@ -217,7 +226,7 @@ export const fetchAllPercentageRanges = async (searchTerm?: string): Promise<
 
 export const createPercentageRange = async (
   payload: PercentageRangePayload,
-): Promise<{ success: true } | { success: false; error: string }> => {
+): Promise<{ success: true }> => {
   try {
     const token = localStorage.getItem("auth_token");
 
@@ -234,26 +243,22 @@ export const createPercentageRange = async (
     );
 
     if (response.data?.responsecode !== "000") {
-      return {
-        success: false,
-        error: response.data?.responsedesc || "Failed to create percentage range.",
-      };
+      throw new Error(
+        response.data?.responsedesc || "Failed to create percentage range.",
+      );
     }
 
     return {
       success: true,
     };
   } catch (error) {
-    return {
-      success: false,
-      error: handleApiError(error).message,
-    };
+    throw new Error(handleApiError(error).message);
   }
 };
 
 export const updatePercentageRange = async (
   payload: UpdatedPercentageRangePayload,
-): Promise<{ success: true } | { success: false; error: string }> => {
+): Promise<{ success: true }> => {
   try {
     const token = localStorage.getItem("auth_token");
 
@@ -270,20 +275,16 @@ export const updatePercentageRange = async (
     );
 
     if (response.data?.responsecode !== "000") {
-      return {
-        success: false,
-        error: response.data?.responsedesc || "Failed to update percentage range.",
-      };
+      throw new Error(
+        response.data?.responsedesc || "Failed to update percentage range.",
+      );
     }
 
     return {
       success: true,
     };
   } catch (error) {
-    return {
-      success: false,
-      error: handleApiError(error).message,
-    };
+    throw new Error(handleApiError(error).message);
   }
 };
 
@@ -291,7 +292,7 @@ export const updatePercentageRange = async (
 export const changePercentageRangeStatus = async (
   id: string,
   status: boolean,
-): Promise<{ success: true } | { success: false; error: string }> => {
+): Promise<{ success: true }> => {
   try {
     const token = localStorage.getItem("auth_token");
 
@@ -312,21 +313,17 @@ export const changePercentageRangeStatus = async (
     );
 
     if (response.data?.responsecode !== "000") {
-      return {
-        success: false,
-        error: response.data?.responsedesc ||
+      throw new Error(
+        response.data?.responsedesc ||
           `Failed to ${status ? "activate" : "deactivate"} percentage range.`,
-      };
+      );
     }
 
     return {
       success: true,
     };
   } catch (error) {
-    return {
-      success: false,
-      error: handleApiError(error).message,
-    };
+    throw new Error(handleApiError(error).message);
   }
 };
 
@@ -334,7 +331,16 @@ export const changePercentageRangeStatus = async (
 export const bulkApproveLiabilityCauses = async (
   liabilityCauses: { name: string }[],
 ): Promise<
-  { success: true; data: { successCount: number; failedCount: number; totalRecords: number; failedRecords: string[] } } | { success: false; error: string }
+  | {
+      success: true;
+      data: {
+        successCount: number;
+        failedCount: number;
+        totalRecords: number;
+        failedRecords: string[];
+      };
+    }
+  | { success: false; error: string }
 > => {
   try {
     const token = localStorage.getItem("auth_token");
@@ -346,18 +352,23 @@ export const bulkApproveLiabilityCauses = async (
         totalRecords: number;
         failedRecords: string[];
       }>
-    >(`${API_URL}/debt-setting/service/liability-cause/bulk-approve`, liabilityCauses, {
-      headers: {
-        "Content-Type": "application/json",
-        custom: CUSTOM_HEADER,
-        Authorization: `Bearer ${token}`,
+    >(
+      `${API_URL}/debt-setting/service/liability-cause/bulk-approve`,
+      liabilityCauses,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
       },
-    });
+    );
 
     if (response.data?.responsecode !== "000") {
       return {
         success: false,
-        error: response.data?.responsedesc ||
+        error:
+          response.data?.responsedesc ||
           "Failed to bulk approve liability causes.",
       };
     }
@@ -378,7 +389,16 @@ export const bulkApproveLiabilityCauses = async (
 export const bulkApprovePercentageRanges = async (
   percentageRanges: { code: string }[],
 ): Promise<
-  { success: true; data: { successCount: number; failedCount: number; totalRecords: number; failedRecords: string[] } } | { success: false; error: string }
+  | {
+      success: true;
+      data: {
+        successCount: number;
+        failedCount: number;
+        totalRecords: number;
+        failedRecords: string[];
+      };
+    }
+  | { success: false; error: string }
 > => {
   try {
     const token = localStorage.getItem("auth_token");
@@ -390,18 +410,23 @@ export const bulkApprovePercentageRanges = async (
         totalRecords: number;
         failedRecords: string[];
       }>
-    >(`${API_URL}/debt-setting/service/percentage-range/bulk-approve`, percentageRanges, {
-      headers: {
-        "Content-Type": "application/json",
-        custom: CUSTOM_HEADER,
-        Authorization: `Bearer ${token}`,
+    >(
+      `${API_URL}/debt-setting/service/percentage-range/bulk-approve`,
+      percentageRanges,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
       },
-    });
+    );
 
     if (response.data?.responsecode !== "000") {
       return {
         success: false,
-        error: response.data?.responsedesc ||
+        error:
+          response.data?.responsedesc ||
           "Failed to bulk approve percentage ranges.",
       };
     }

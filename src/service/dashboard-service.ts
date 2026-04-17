@@ -13,6 +13,7 @@ export interface DashboardFilters {
   band?: string;
   year?: string;
   meterCategory?: string;
+  meterClass?: string;
 }
 
 export async function getDashboard(
@@ -45,6 +46,9 @@ export async function getDashboard(
       filters.meterCategory !== "All Categories"
     ) {
       params.append("meterCategory", filters.meterCategory);
+    }
+    if (filters?.meterClass && filters.meterClass !== "Meter Class") {
+      params.append("meterClass", filters.meterClass);
     }
 
     const queryString = params.toString();
