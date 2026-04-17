@@ -963,10 +963,12 @@ export default function MeterManagementPage() {
                           onCheckedChange={() =>
                             toggleSelection(item.id ?? item.customerId ?? "")
                           }
-                          disabled={isPendingState(
-                            item.assignedStatus ?? item.status ?? "",
-                            item.meterStage,
-                          )}
+                          disabled={
+                            !!isPendingState(
+                              item.assignedStatus ?? item.status ?? "",
+                              item.meterStage,
+                            )
+                          }
                         />
                         <span className="text-sm text-gray-900">
                           {index + 1 + (currentPage - 1) * rowsPerPage}
