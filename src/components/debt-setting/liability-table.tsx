@@ -31,10 +31,26 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { ArrowUpDown, Ban, EllipsisVertical, Pencil, Search, AlertTriangle, Loader2, Play, CheckCircle } from "lucide-react";
+import {
+  ArrowUpDown,
+  Ban,
+  EllipsisVertical,
+  Pencil,
+  Search,
+  AlertTriangle,
+  Loader2,
+  Play,
+  CheckCircle,
+} from "lucide-react";
 import { toast } from "sonner";
 import React, { useState, useMemo } from "react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 import { getStatusStyle } from "../status-style";
 import {
   useAllLiabilityCauses,
@@ -342,7 +358,7 @@ const LiabilityTable = ({
         },
         {
           id: "actions",
-          header: `${canEdit ? "Actions" : ''}`,
+          header: `${canEdit ? "Actions" : ""}`,
           cell: ({ row }) => (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -444,20 +460,22 @@ const LiabilityTable = ({
         },
         {
           id: "actions",
-          header: "Actions",
+          header: `${canEdit ? "Actions" : ""}`,
           cell: ({ row }) => (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button
-                  variant="secondary"
-                  className="cursor-pointer border-none p-1 text-gray-600 ring-[rgba(22,28,202,0)] hover:text-gray-800 focus:outline-none"
-                >
-                  <EllipsisVertical
-                    size={14}
-                    strokeWidth={2.7}
-                    className="rounded-lg border border-gray-500 p-1"
-                  />
-                </Button>
+                {canEdit && (
+                  <Button
+                    variant="secondary"
+                    className="cursor-pointer border-none p-1 text-gray-600 ring-[rgba(22,28,202,0)] hover:text-gray-800 focus:outline-none"
+                  >
+                    <EllipsisVertical
+                      size={14}
+                      strokeWidth={2.7}
+                      className="rounded-lg border border-gray-500 p-1"
+                    />
+                  </Button>
+                )}
               </DropdownMenuTrigger>
               <DropdownMenuContent>
                 {row.original.approvalStatus.toLowerCase() === "deactivated" ? (
