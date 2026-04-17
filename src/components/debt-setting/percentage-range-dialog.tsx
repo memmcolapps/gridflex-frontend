@@ -32,7 +32,9 @@ const AddPercentageRangeDialog = () => {
   const { mutate, isPending } = useCreatePercentageRange();
 
   // Filter the bands to only include those with an 'Approved' status.
-  const approvedBands = bands.filter(band => band.approveStatus === "Approved");
+  const approvedBands = bands.filter(
+    (band) => band.approveStatus === "Approved",
+  );
 
   const handleSubmit = () => {
     const startRange = amountStartRange;
@@ -55,7 +57,7 @@ const AddPercentageRangeDialog = () => {
           amountEndRange: endRange,
         },
         {
-          onSuccess: (_response) => {
+          onSuccess: () => {
             setPercentage("");
             setPercentageCode("");
             setBand("");
@@ -63,9 +65,6 @@ const AddPercentageRangeDialog = () => {
             setAmountEndRange("");
             setOpen(false);
             toast.success("Percentage range created successfully!");
-          },
-          onError: (error) => {
-            toast.error(error.message);
           },
         },
       );
