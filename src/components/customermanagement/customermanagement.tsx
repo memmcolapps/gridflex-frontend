@@ -63,7 +63,9 @@ export default function CustomerManagement() {
   const [isTemplateDropdownOpen, setIsTemplateDropdownOpen] = useState(false);
   const [isUploadResultDialogOpen, setIsUploadResultDialogOpen] =
     useState(false);
-  const showAddButton = !['region', 'root'].includes(user?.nodeInfo.type.toLowerCase() ?? '')
+  const showAddButton = !["region", "root"].includes(
+    user?.nodeInfo.type.toLowerCase() ?? "",
+  );
   const [uploadResult, setUploadResult] = useState<{
     successCount: number;
     failedCount: number;
@@ -177,7 +179,7 @@ export default function CustomerManagement() {
             title="Customer Management"
             description="Manage And Access Customer Records"
           />
-          {canEdit && (
+          {showAddButton && (
             <div className="flex gap-4">
               <Button
                 onClick={() => setIsBulkUploadDialogOpen(true)}
@@ -195,18 +197,16 @@ export default function CustomerManagement() {
                 // eslint-disable-next-line @typescript-eslint/no-empty-function
                 onSave={() => {}}
                 triggerButton={
-                  showAddButton ? (
-                    <Button
-                      size={"lg"}
-                      className="flex cursor-pointer items-center gap-2 bg-[#161CCA] py-4 hover:bg-[#121eb3]"
-                    >
-                      <div className="flex items-center justify-center p-0.5">
-                        <PlusCircleIcon className="text-[#FEFEFE]" size={12} />
-                      </div>
+                  <Button
+                    size={"lg"}
+                    className="flex cursor-pointer items-center gap-2 bg-[#161CCA] py-4 hover:bg-[#121eb3]"
+                  >
+                    <div className="flex items-center justify-center p-0.5">
+                      <PlusCircleIcon className="text-[#FEFEFE]" size={12} />
+                    </div>
 
-                      <span className="text-white">Add New Customer</span>
-                    </Button>
-                  ) : null
+                    <span className="text-white">Add New Customer</span>
+                  </Button>
                 }
               />
             </div>

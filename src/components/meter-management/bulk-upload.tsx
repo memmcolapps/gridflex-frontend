@@ -3,184 +3,193 @@
 
 import React, { useRef, useState } from "react";
 import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { UploadIcon } from "lucide-react";
-import * as XLSX from "xlsx";
+import * as XLSX from "xlsx-js-style";
 
 interface BulkUploadDialogProps<T> {
-    isOpen: boolean;
-    onClose: () => void;
-    onSave: (data: T[] | File) => void;
-    title?: string;
-    description?: string;
-    requiredColumns?: string[];
-    templateUrl?: string;
-    maxFileSizeMb?: number;
-    sendRawFile?: boolean;
-    onTemplateClick?: () => void;
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (data: T[] | File) => void;
+  title?: string;
+  description?: string;
+  requiredColumns?: string[];
+  templateUrl?: string;
+  maxFileSizeMb?: number;
+  sendRawFile?: boolean;
+  onTemplateClick?: () => void;
 }
 
 export function BulkUploadDialog<T>({
-    isOpen,
-    onClose,
-    onSave,
-    title = "Upload File",
-    description = "Click the link to download the required document format. Please ensure your file follows the structure before uploading.",
-    requiredColumns = [],
-    templateUrl = "/template.xlsx",
-    maxFileSizeMb = 10,
-    sendRawFile = false,
-    onTemplateClick,
+  isOpen,
+  onClose,
+  onSave,
+  title = "Upload File",
+  description = "Click the link to download the required document format. Please ensure your file follows the structure before uploading.",
+  requiredColumns = [],
+  templateUrl = "/template.xlsx",
+  maxFileSizeMb = 10,
+  sendRawFile = false,
+  onTemplateClick,
 }: BulkUploadDialogProps<T>) {
-    const [file, setFile] = useState<File | null>(null);
-    const [error, setError] = useState<string | null>(null);
-    const fileInputRef = useRef<HTMLInputElement>(null);
+  const [file, setFile] = useState<File | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const selectedFile = event.target.files?.[0];
-        if (
-            selectedFile &&
-            (selectedFile.type === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
-                selectedFile.type === "text/csv")
-        ) {
-            if (selectedFile.size > maxFileSizeMb * 1024 * 1024) {
-                setFile(null);
-                setError(`File size exceeds ${maxFileSizeMb}MB limit`);
-                return;
-            }
-            setFile(selectedFile);
-            setError(null);
-        } else {
-            setFile(null);
-            setError("Please upload a valid .xlsx or .csv file");
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = event.target.files?.[0];
+    if (
+      selectedFile &&
+      (selectedFile.type ===
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
+        selectedFile.type === "text/csv")
+    ) {
+      if (selectedFile.size > maxFileSizeMb * 1024 * 1024) {
+        setFile(null);
+        setError(`File size exceeds ${maxFileSizeMb}MB limit`);
+        return;
+      }
+      setFile(selectedFile);
+      setError(null);
+    } else {
+      setFile(null);
+      setError("Please upload a valid .xlsx or .csv file");
+    }
+  };
+
+  const handleUpload = (_data: unknown) => {
+    if (!file) {
+      setError("Please select a file first");
+      return;
+    }
+
+    if (sendRawFile) {
+      onSave(file);
+      onClose();
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const data = e.target?.result;
+      try {
+        const workbook = XLSX.read(data, { type: "binary" });
+        const sheetName = workbook.SheetNames[0];
+        const sheet = sheetName ? workbook.Sheets[sheetName] : undefined;
+        if (!sheet) {
+          setError("Error: The selected file does not contain any sheet.");
+          return;
         }
+        const worksheet = XLSX.utils.sheet_to_json<string[]>(sheet, {
+          header: 1,
+        });
+        const headers = worksheet[0]!;
+        const rows = worksheet.slice(1);
+
+        // Validate required columns
+        const missingColumns = requiredColumns.filter(
+          (col) => !headers.includes(col),
+        );
+        if (missingColumns.length > 0) {
+          setError(`Missing required columns: ${missingColumns.join(", ")}`);
+          return;
+        }
+
+        // Map rows to generic data
+        const newData: T[] = rows.map((row: (string | undefined)[]) => {
+          const item: Record<string, string> = {};
+          requiredColumns.forEach((col) => {
+            const index = headers.indexOf(col);
+            item[col] = row[index]?.toString() ?? "";
+          });
+          return item as T;
+        });
+
+        onSave(newData);
+        onClose();
+      } catch {
+        setError("Error processing file");
+      }
     };
+    reader.onerror = () => setError("Error reading file");
+    reader.readAsBinaryString(file);
+  };
 
-    const handleUpload = (_data: unknown) => {
-        if (!file) {
-            setError("Please select a file first");
-            return;
-        }
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="h-fit max-w-md rounded-lg bg-white p-6">
+        <DialogHeader>
+          <DialogTitle className="text-lg font-semibold text-gray-900">
+            {title}
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <p className="text-sm text-gray-700">
+            {description.split("link to download").map((part, index) =>
+              index === 0 ? (
+                <span key={index}>{part}</span>
+              ) : (
+                <React.Fragment key={index}>
+                  <button
+                    onClick={onTemplateClick}
+                    className="cursor-pointer font-medium text-[#161CCA] hover:underline"
+                  >
+                    link to download
+                  </button>
+                  {part}
+                </React.Fragment>
+              ),
+            )}
+          </p>
 
-        if (sendRawFile) {
-            onSave(file);
-            onClose();
-            return;
-        }
+          <div
+            onClick={() => fileInputRef.current?.click()}
+            className={cn(
+              "flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-[#161CCA] px-4 py-10 text-center transition hover:border-[#161CCA]",
+            )}
+          >
+            <UploadIcon className="h-8 w-8 text-[#161CCA]" />
+            <p>
+              Click <span className="text-[#161CCA] underline">here</span> to
+              upload file or Drag and Drop
+            </p>
+            <p className="text-xs text-gray-500">
+              Supported file format: <strong>.xlsx, .csv</strong> <br />
+              Maximum file size: <strong>{maxFileSizeMb}MB</strong>
+            </p>
+          </div>
 
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const data = e.target?.result;
-            try {
-                const workbook = XLSX.read(data, { type: "binary" });
-                const sheetName = workbook.SheetNames[0];
-                const sheet = sheetName ? workbook.Sheets[sheetName] : undefined;
-                if (!sheet) {
-                    setError("Error: The selected file does not contain any sheet.");
-                    return;
-                }
-                const worksheet = XLSX.utils.sheet_to_json<string[]>(sheet, { header: 1 });
-                const headers = worksheet[0]!;
-                const rows = worksheet.slice(1);
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".xlsx, .csv"
+            onChange={handleFileChange}
+            className="hidden"
+          />
 
-                // Validate required columns
-                const missingColumns = requiredColumns.filter((col) => !headers.includes(col));
-                if (missingColumns.length > 0) {
-                    setError(`Missing required columns: ${missingColumns.join(", ")}`);
-                    return;
-                }
+          {file && (
+            <div className="flex items-center justify-between rounded-lg bg-gray-50 p-3">
+              <span className="truncate text-sm text-gray-700">
+                {file.name}
+              </span>
+              <Button
+                onClick={handleUpload}
+                className="bg-[#161CCA] text-white hover:bg-[#121eb3]"
+              >
+                Proceed
+              </Button>
+            </div>
+          )}
 
-                // Map rows to generic data
-                const newData: T[] = rows.map((row: (string | undefined)[]) => {
-                    const item: Record<string, string> = {};
-                    requiredColumns.forEach((col) => {
-                        const index = headers.indexOf(col);
-                        item[col] = row[index]?.toString() ?? "";
-                    });
-                    return item as T;
-                });
-
-                onSave(newData);
-                onClose();
-            } catch {
-                setError("Error processing file");
-            }
-        };
-        reader.onerror = () => setError("Error reading file");
-        reader.readAsBinaryString(file);
-    };
-
-    return (
-        <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-md rounded-lg p-6 h-fit bg-white">
-                <DialogHeader>
-                    <DialogTitle className="text-lg font-semibold text-gray-900">{title}</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                    <p className="text-sm text-gray-700">
-                        {description.split("link to download").map((part, index) =>
-                            index === 0 ? (
-                                <span key={index}>{part}</span>
-                            ) : (
-                                <React.Fragment key={index}>
-                                    <button
-                                        onClick={onTemplateClick}
-                                        className="text-[#161CCA] font-medium hover:underline cursor-pointer"
-                                    >
-                                        link to download
-                                    </button>
-                                    {part}
-                                </React.Fragment>
-                            )
-                        )}
-                    </p>
-
-                    <div
-                        onClick={() => fileInputRef.current?.click()}
-                        className={cn(
-                            "cursor-pointer border border-dashed border-[#161CCA] rounded-lg py-10 px-4 text-center flex flex-col items-center justify-center gap-2 hover:border-[#161CCA] transition"
-                        )}
-                    >
-                        <UploadIcon className="text-[#161CCA] w-8 h-8" />
-                        <p>
-                            Click <span className="text-[#161CCA] underline">here</span> to upload file or Drag and Drop
-                        </p>
-                        <p className="text-xs text-gray-500">
-                            Supported file format: <strong>.xlsx, .csv</strong> <br />
-                            Maximum file size: <strong>{maxFileSizeMb}MB</strong>
-                        </p>
-                    </div>
-
-                    <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept=".xlsx, .csv"
-                        onChange={handleFileChange}
-                        className="hidden"
-                    />
-
-                    {file && (
-                        <div className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
-                            <span className="text-sm text-gray-700 truncate">{file.name}</span>
-                            <Button
-                                onClick={handleUpload}
-                                className="bg-[#161CCA] hover:bg-[#121eb3] text-white"
-                            >
-                                Proceed
-                            </Button>
-                        </div>
-                    )}
-
-                    {error && <p className="text-sm text-red-600">{error}</p>}
-                </div>
-
-            </DialogContent>
-        </Dialog>
-    );
+          {error && <p className="text-sm text-red-600">{error}</p>}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
 }
