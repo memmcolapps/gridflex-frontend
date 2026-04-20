@@ -1554,18 +1554,43 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
                       ? (value.split(" ")[0] ?? "")
                       : "",
                 },
-                {
-                  key: "credit",
-                  label: type === "credit" ? "Credit" : "Debit",
-                  transform: (value) =>
-                    typeof value === "number" ? value.toLocaleString() : "0",
-                },
-                {
-                  key: "debt",
-                  label: type === "debit" ? "Credit" : "Debit",
-                  transform: (value) =>
-                    typeof value === "number" ? value.toLocaleString() : "0",
-                },
+                ...(type === "credit"
+                  ? [
+                      {
+                        key: "credit",
+                        label: "Credit",
+                        transform: (value: unknown) =>
+                          typeof value === "number"
+                            ? value.toLocaleString()
+                            : "0",
+                      },
+                      {
+                        key: "debt",
+                        label: "Debit",
+                        transform: (value: unknown) =>
+                          typeof value === "number"
+                            ? value.toLocaleString()
+                            : "0",
+                      },
+                    ]
+                  : [
+                      {
+                        key: "debt",
+                        label: "Debit",
+                        transform: (value: unknown) =>
+                          typeof value === "number"
+                            ? value.toLocaleString()
+                            : "0",
+                      },
+                      {
+                        key: "credit",
+                        label: "Credit",
+                        transform: (value: unknown) =>
+                          typeof value === "number"
+                            ? value.toLocaleString()
+                            : "0",
+                      },
+                    ]),
                 {
                   key: "balance",
                   label: "Balance",
