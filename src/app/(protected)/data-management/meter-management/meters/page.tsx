@@ -80,9 +80,11 @@ import {
   AlertDialogFooter,
 } from "@/components/ui/alert-dialog";
 import { ContentHeader } from "@/components/ui/content-header";
+import { useAuth } from "@/context/auth-context";
 
 export default function MeterManagementPage() {
   const [searchTerm, setSearchTerm] = useState("");
+  const { user } = useAuth();
   const [selectedTariffs, setSelectedTariffs] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -139,6 +141,7 @@ export default function MeterManagementPage() {
   const [uploadedImage, setUploadedImage] = useState<File | null>(null);
   const [isViewActualDetailsOpen, setIsViewActualDetailsOpen] = useState(false);
   const [isBulkAssignDialogOpen, setIsBulkAssignDialogOpen] = useState(false);
+  const showEditButton = user?.nodeInfo?.type === "business hub";
   const [isAssignTemplateDropdownOpen, setIsAssignTemplateDropdownOpen] =
     useState(false);
   const [isAssignResultDialogOpen, setIsAssignResultDialogOpen] =
@@ -1059,20 +1062,23 @@ export default function MeterManagementPage() {
                               </DropdownMenuItem>
                               {canEdit && item.meterStage === "Unassigned" && (
                                 <>
-                                  <DropdownMenuItem
-                                    className="flex cursor-pointer items-center gap-2"
-                                    onClick={(event) => {
-                                      event.stopPropagation();
-                                      setSelectedMeter(item);
-                                      setEditMeter(item);
-                                      setIsAddMeterDialogOpen(true);
-                                    }}
-                                  >
-                                    <Pencil size={14} />
-                                    <span className="text-sm text-gray-700">
-                                      Edit Meter
-                                    </span>
-                                  </DropdownMenuItem>
+                                  {showEditButton ? (
+                                    <DropdownMenuItem
+                                      className="flex cursor-pointer items-center gap-2"
+                                      onClick={(event) => {
+                                        event.stopPropagation();
+                                        setSelectedMeter(item);
+                                        setEditMeter(item);
+                                        setIsAddMeterDialogOpen(true);
+                                      }}
+                                    >
+                                      <Pencil size={14} />
+                                      <span className="text-sm text-gray-700">
+                                        Edit Meter
+                                      </span>
+                                    </DropdownMenuItem>
+                                  ): null}
+
                                   <DropdownMenuItem
                                     className="flex cursor-pointer items-center gap-2"
                                     onClick={(event) => {

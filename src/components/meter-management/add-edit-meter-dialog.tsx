@@ -43,7 +43,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
     ctRatioDenom: "",
     voltRatioNum: "",
     voltRatioDenom: "",
-    multiplier: "",
+    // multiplier: "",
     meterRating: "",
     initialReading: "",
     dial: "",
@@ -85,7 +85,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
         ctRatioDenom: String(editMeter.mdMeterInfo?.ctRatioDenom ?? ""),
         voltRatioNum: String(editMeter.mdMeterInfo?.voltRatioNum ?? ""),
         voltRatioDenom: String(editMeter.mdMeterInfo?.voltRatioDenom ?? ""),
-        multiplier: String(editMeter.mdMeterInfo?.multiplier ?? ""),
+        // multiplier: String(editMeter.mdMeterInfo?.multiplier ?? ""),
         meterRating: String(editMeter.mdMeterInfo?.meterRating ?? ""),
         initialReading: String(editMeter.mdMeterInfo?.initialReading ?? ""),
         dial: String(editMeter.mdMeterInfo?.dial ?? ""),
@@ -122,7 +122,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
         ctRatioDenom: "",
         voltRatioNum: "",
         voltRatioDenom: "",
-        multiplier: "",
+        // multiplier: "",
         meterRating: "",
         initialReading: "",
         dial: "",
@@ -163,7 +163,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
       if (!formData.ctRatioDenom) newErrors.ctRatioDenom = "CT Ratio Denominator is required";
       if (!formData.voltRatioNum) newErrors.voltRatioNum = "Voltage Ratio Numerator is required";
       if (!formData.voltRatioDenom) newErrors.voltRatioDenom = "Voltage Ratio Denominator is required";
-      if (!formData.multiplier) newErrors.multiplier = "Multiplier is required";
+      // if (!formData.multiplier) newErrors.multiplier = "Multiplier is required";
       if (!formData.meterRating) newErrors.meterRating = "Meter Rating is required";
       if (!formData.initialReading) newErrors.initialReading = "Initial Reading is required";
       if (!formData.dial) newErrors.dial = "Dial is required";
@@ -279,7 +279,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
             ctRatioDenom: formData.ctRatioDenom,
             voltRatioNum: formData.voltRatioNum,
             voltRatioDenom: formData.voltRatioDenom,
-            multiplier: formData.multiplier,
+            // multiplier: formData.multiplier,
             meterRating: formData.meterRating,
             initialReading: formData.initialReading,
             dial: formData.dial,
@@ -339,7 +339,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
             ctRatioDenom: formData.ctRatioDenom,
             voltRatioNum: formData.voltRatioNum,
             voltRatioDenom: formData.voltRatioDenom,
-            multiplier: formData.multiplier,
+            // multiplier: formData.multiplier,
             meterRating: formData.meterRating,
             initialReading: formData.initialReading,
             dial: formData.dial,
@@ -391,7 +391,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
           ctRatioDenom: "",
           voltRatioNum: "",
           voltRatioDenom: "",
-          multiplier: "",
+          // multiplier: "",
           meterRating: "",
           initialReading: "",
           dial: "",
@@ -731,7 +731,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                   <p className="text-xs text-red-500 mt-1">{errors.voltRatioDenom}</p>
                 )}
               </div>
-              <div className="space-y-1">
+              {/* <div className="space-y-1">
                 <Label htmlFor="multiplier" className="text-sm font-medium text-gray-700">
                   Multiplier <span className="text-red-500">*</span>
                 </Label>
@@ -747,7 +747,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                   required
                 />
                 {errors.multiplier && <p className="text-xs text-red-500 mt-1">{errors.multiplier}</p>}
-              </div>
+              </div> */}
               <div className="space-y-1">
                 <Label htmlFor="meterRating" className="text-sm font-medium text-gray-700">
                   Meter Rating <span className="text-red-500">*</span>
@@ -959,7 +959,7 @@ export function AddMeterDialog({ isOpen, onClose, onSaveMeter, editMeter }: AddM
                       !formData.ctRatioDenom ||
                       !formData.voltRatioNum ||
                       !formData.voltRatioDenom ||
-                      !formData.multiplier ||
+                      // !formData.multiplier ||
                       !formData.meterRating ||
                       !formData.initialReading ||
                       !formData.dial ||

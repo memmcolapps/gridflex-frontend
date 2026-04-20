@@ -9,6 +9,7 @@ import {
   Lightbulb,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,6 +34,7 @@ import {
 import { fetchHierarchyData } from "@/service/hes-service";
 import { type HierarchyResponse } from "@/types/hes";
 import { useMeters } from "@/hooks/use-assign-meter";
+import { useAuth } from "@/context/auth-context";
 
 type MeterId =
   | "62124022443"
@@ -43,7 +45,6 @@ type MeterId =
   | "62124023359"
   | "62124027822";
 type ReadingKey = string;
-
 
 interface UnitOption {
   value: string;
@@ -102,8 +103,6 @@ const hierarchyOptionsWithIcons = getHierarchyOptions().map((option) => {
     icon,
   };
 });
-
-
 
 const readingOptions: ReadingOption[] = [
   {
@@ -537,11 +536,15 @@ const obisCodeByReadingValue: Record<string, string> = {
 };
 
 export function FilterPanel({ onRun }: FilterPanelProps) {
-  const [hierarchy, setHierarchy] = useState<HierarchyType | "">("");
-  const [unit, setUnit] = useState<string>("");
+  const { user } = useAuth();
+  const [hierarchy, setHierarchy] =
+    useState<HierarchyType | "">(user?.nodeInfo.type as HierarchyType) ?? "";
+  const [unit, setUnit] = useState<string>(user?.nodeInfo.name ?? "");
   const [meters, setMeters] = useState<MeterId[]>([]);
   const [reading, setReading] = useState<ReadingKey[]>([]);
-  const [hierarchyData, setHierarchyData] = useState<HierarchyResponse | null>(null);
+  const [hierarchyData, setHierarchyData] = useState<HierarchyResponse | null>(
+    null,
+  );
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -561,7 +564,9 @@ export function FilterPanel({ onRun }: FilterPanelProps) {
         const data = await fetchHierarchyData();
         setHierarchyData(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch hierarchy data');
+        setError(
+          err instanceof Error ? err.message : "Failed to fetch hierarchy data",
+        );
       } finally {
         setLoading(false);
       }
@@ -573,14 +578,29 @@ export function FilterPanel({ onRun }: FilterPanelProps) {
     setUnit("");
   }, [hierarchy]);
 
-  const allNodes = hierarchyData ? flattenOrganizationNodes(hierarchyData.responsedata.nodes) : [];
-  const unitOptions: UnitOption[] = hierarchy ? getUnitsForHierarchy(allNodes, hierarchy).map(option => ({ value: option.label.toLowerCase(), label: option.label })) : [];
+  const allNodes = hierarchyData
+    ? flattenOrganizationNodes(hierarchyData.responsedata.nodes)
+    : [];
+  const unitOptions: UnitOption[] = hierarchy
+    ? getUnitsForHierarchy(allNodes, hierarchy).map((option) => ({
+        value: option.label.toLowerCase(),
+        label: option.label,
+      }))
+    : [];
 
-  const metersOptions: MeterOption[] = metersData ? [
-    { value: "all-meters", label: "All Meters" },
-    ...metersData.actualMeters.map(m => ({ value: m.meterNumber as MeterId, label: m.meterNumber })),
-    ...metersData.virtualMeters.map(m => ({ value: m.meterNumber as MeterId, label: m.meterNumber })),
-  ] : [];
+  const metersOptions: MeterOption[] = metersData
+    ? [
+        { value: "all-meters", label: "All Meters" },
+        ...metersData.actualMeters.map((m) => ({
+          value: m.meterNumber as MeterId,
+          label: m.meterNumber,
+        })),
+        ...metersData.virtualMeters.map((m) => ({
+          value: m.meterNumber as MeterId,
+          label: m.meterNumber,
+        })),
+      ]
+    : [];
 
   const getHierarchyLabel = () => {
     return hierarchy
@@ -725,36 +745,11 @@ export function FilterPanel({ onRun }: FilterPanelProps) {
         >
           Hierarchy <span className="text-red-500">*</span>
         </Label>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="outline"
-              className="h-12 w-full justify-between text-left text-base"
-            >
-              <span>{getHierarchyLabel()}</span>
-              <ChevronDown size={16} />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-full">
-            <DropdownMenuRadioGroup
-              value={hierarchy}
-              onValueChange={(value) => setHierarchy(value as HierarchyType)}
-            >
-              {hierarchyOptionsWithIcons.map((option) => (
-                <DropdownMenuRadioItem
-                  key={option.value}
-                  value={option.value}
-                  className="py-2 text-base"
-                >
-                  <div className="flex items-center gap-3">
-                    <option.icon size={14} />
-                    {option.label}
-                  </div>
-                </DropdownMenuRadioItem>
-              ))}
-            </DropdownMenuRadioGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <Input
+          readOnly
+          value={user?.nodeInfo?.type ? user.nodeInfo.type.charAt(0).toUpperCase() + user.nodeInfo.type.slice(1) : ""}
+          className="h-12 w-full cursor-default border-gray-200 text-gray-600 bg-transparent text-base"
+        />
       </div>
 
       <div>
@@ -764,31 +759,11 @@ export function FilterPanel({ onRun }: FilterPanelProps) {
         >
           Unit <span className="text-red-500">*</span>
         </Label>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="outline"
-              className="h-12 w-full justify-between text-left text-base"
-              disabled={loading || !hierarchy}
-            >
-              <span>{getUnitLabel()}</span>
-              <ChevronDown size={16} />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-full">
-            <DropdownMenuRadioGroup value={unit} onValueChange={setUnit}>
-              {unitOptions.map((option) => (
-                <DropdownMenuRadioItem
-                  key={option.value}
-                  value={option.value}
-                  className="py-2 text-base"
-                >
-                  {option.label}
-                </DropdownMenuRadioItem>
-              ))}
-            </DropdownMenuRadioGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <Input
+          readOnly
+          value={user?.nodeInfo?.name ? user.nodeInfo.name.charAt(0).toUpperCase() + user.nodeInfo.name.slice(1) : ""}
+          className="h-12 w-full cursor-default border-gray-200 text-gray-600 bg-transparent text-base"
+        />
       </div>
 
       <div>

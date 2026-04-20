@@ -35,7 +35,6 @@ import { CheckCircle, XCircle, AlertTriangle } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
 
 export default function CustomerManagement() {
-  const { canEdit } = usePermissions();
   const bulkUploadMutation = useBulkUploadCustomer();
   const { user } = useAuth();
   const downloadCsvTemplateMutation = useDownloadCustomerCsvTemplate();
