@@ -93,9 +93,6 @@ export interface MeterInventoryItem {
     longitude?: string;
     latitude?: string;
   };
-  // meterModel?: string;
-  protocol?: string;
-  authentication?: string;
   password?: string;
   customerId?: string | null;
   accountNumber?: string;

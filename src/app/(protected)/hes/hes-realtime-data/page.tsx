@@ -15,6 +15,7 @@ import {
 import { useHierarchyData } from "@/hooks/use-hes-hierarchy";
 import type { Node } from "@/types/hes";
 import type { RealTimeData } from "@/hooks/use-sse";
+
 export default function RealtimeDataPage() {
   const [activeTab, setActiveTab] = useState("MD");
   const [selectedMeters, setSelectedMeters] = useState<string[]>([]);
