@@ -39,7 +39,7 @@ export default function DashboardPage() {
     band: selectedBand !== "All Bands" ? selectedBand : undefined,
     year: selectedYear !== "All Years" ? selectedYear : undefined,
     meterClass:
-      selectedMeterClass !== "Meter Class" && selectedMeterClass !== "All"
+      selectedMeterClass !== "Meter Class" && selectedMeterClass !== "All Meter Class"
         ? selectedMeterClass
         : undefined,
   };

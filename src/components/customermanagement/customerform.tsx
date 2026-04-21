@@ -268,7 +268,7 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
                                 name="phoneNumber"
                                 value={formData.phoneNumber}
                                 onChange={handleChange}
-                                required
+
                                 placeholder="Enter phone number"
                                 className="border-[rgba(228,231,236,1)]"
                             />

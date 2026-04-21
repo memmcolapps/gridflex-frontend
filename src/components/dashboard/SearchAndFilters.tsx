@@ -126,9 +126,9 @@ export const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({
             value={selectedMeterClass ?? ""}
             onValueChange={(value) => {
               if (typeof value === "string") {
-                if (value === "All") {
+                if (value === "All Meter Class") {
                   // Show 'All' label on the button, but treat as unfiltered in API via mapping on page load
-                  setSelectedMeterClass?.("All");
+                  setSelectedMeterClass?.("All Meter Class");
                 } else {
                   setSelectedMeterClass?.(value);
                 }
@@ -141,7 +141,7 @@ export const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="All">All</SelectItem>
+              <SelectItem value="All Meter Class">All Meter Class</SelectItem>
               <SelectItem value="MD">MD</SelectItem>
               <SelectItem value="Single-Phase">Single-Phase</SelectItem>
               <SelectItem value="Three-Phase">Three-Phase</SelectItem>
