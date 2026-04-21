@@ -262,7 +262,7 @@ export default function CustomerForm({ mode, customer, onSave, triggerButton, is
                     </div>
                     <div className="grid grid-cols-3 gap-6 mt-6">
                         <div className="space-y-2">
-                            <Label htmlFor="phoneNumber">Phone Number<span className="text-red-600">*</span></Label>
+                            <Label htmlFor="phoneNumber">Phone Number</Label>
                             <Input
                                 id="phoneNumber"
                                 name="phoneNumber"
