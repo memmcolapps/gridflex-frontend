@@ -141,7 +141,9 @@ export default function MeterManagementPage() {
   const [uploadedImage, setUploadedImage] = useState<File | null>(null);
   const [isViewActualDetailsOpen, setIsViewActualDetailsOpen] = useState(false);
   const [isBulkAssignDialogOpen, setIsBulkAssignDialogOpen] = useState(false);
-  const showEditButton = user?.nodeInfo?.type === "business hub";
+   const showEditButton = !["region", "root"].includes(
+    user?.nodeInfo.type.toLowerCase() ?? "",
+  );
   const [isAssignTemplateDropdownOpen, setIsAssignTemplateDropdownOpen] =
     useState(false);
   const [isAssignResultDialogOpen, setIsAssignResultDialogOpen] =
