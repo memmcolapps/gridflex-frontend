@@ -18,8 +18,10 @@ export default function VendingDashboard() {
   const payload = {
     band: selectedBand !== "Band" ? selectedBand : undefined,
     year: selectedYear !== "Year" ? selectedYear : undefined,
-    meterClass:
-      selectedMeterClass !== "Meter Class" ? selectedMeterClass : undefined,
+   meterClass:
+      selectedMeterClass !== "Meter Class" && selectedMeterClass !== "All Meter Class"
+        ? selectedMeterClass
+        : undefined,
   };
 
   const {
