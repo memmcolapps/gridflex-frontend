@@ -71,7 +71,6 @@ function isNewInterface(props: SetPaymentModeDialogPropsCombined): props is SetP
 }
 
 export function SetPaymentModeDialog(props: SetPaymentModeDialogPropsCombined) {
-  console.log("=== SetPaymentModeDialog rendered ===", { isOpen: props.isOpen, hasDebitMop: 'debitMop' in props });
   const editAssignedMeterMutation = useEditAssignedMeter();
   
   // Handle both old and new interfaces

@@ -40,9 +40,14 @@ export function ViewMeterDetailsDialog({
   onClose,
   meter,
 }: ViewMeterDetailsDialogProps) {
+  const hasSmartInfo = meter?.smartStatus === true;
+  //   && !!meter?.smartMeterInfo;
+  const isMdMeter = meter?.meterClass === "MD";
+  //    && !!meter?.mdMeterInfo;
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="h-fit w-[500px] overflow-y-auto rounded-lg bg-white">
+      <DialogContent className="h-fit max-h-[400px] w-[500px] overflow-y-auto rounded-lg bg-white">
         <DialogHeader>
           <DialogTitle>View Meter Details</DialogTitle>
           <DialogDescription />
@@ -122,6 +127,116 @@ export function ViewMeterDetailsDialog({
                 {meter.newTariffIndex}
               </span>
             </div>
+            {isMdMeter && (
+              <>
+                <div className="grid grid-cols-[150px_1fr] items-center gap-16">
+                  <span className="font-medium text-gray-700">
+                    CT Ratio Numerator :
+                  </span>
+                  <span className="font-bold text-gray-900">
+                    {meter.mdMeterInfo?.ctRatioNum}
+                  </span>
+                </div>
+                <div className="grid grid-cols-[150px_1fr] items-center gap-16">
+                  <span className="font-medium text-gray-700">
+                    CT Ratio Denominator :
+                  </span>
+                  <span className="font-bold text-gray-900">
+                    {meter.mdMeterInfo?.ctRatioDenom}
+                  </span>
+                </div>
+                <div className="grid grid-cols-[150px_1fr] items-center gap-16">
+                  <span className="font-medium text-gray-700">
+                    Voltage Ratio Numerator:
+                  </span>
+                  <span className="font-bold text-gray-900">
+                    {meter.mdMeterInfo?.voltRatioNum}
+                  </span>
+                </div>
+                <div className="grid grid-cols-[150px_1fr] items-center gap-16">
+                  <span className="font-medium text-gray-700">
+                    Voltage Ratio Denominator:
+                  </span>
+                  <span className="font-bold text-gray-900">
+                    {meter.mdMeterInfo?.voltRatioDenom}
+                  </span>
+                </div>
+                <div className="grid grid-cols-[150px_1fr] items-center gap-16">
+                  <span className="font-medium text-gray-700">Multiplier:</span>
+                  <span className="font-bold text-gray-900">
+                    {meter.mdMeterInfo?.multiplier}
+                  </span>
+                </div>
+                <div className="grid grid-cols-[150px_1fr] items-center gap-16">
+                  <span className="font-medium text-gray-700">
+                    Meter Rating:
+                  </span>
+                  <span className="font-bold text-gray-900">
+                    {meter.mdMeterInfo?.meterRating}
+                  </span>
+                </div>
+                <div className="grid grid-cols-[150px_1fr] items-center gap-16">
+                  <span className="font-medium text-gray-700">
+                    Initial Reading:
+                  </span>
+                  <span className="font-bold text-gray-900">
+                    {meter.mdMeterInfo?.initialReading}
+                  </span>
+                </div>
+                <div className="grid grid-cols-[150px_1fr] items-center gap-16">
+                  <span className="font-medium text-gray-700">Dial:</span>
+                  <span className="font-bold text-gray-900">
+                    {meter.mdMeterInfo?.dial}
+                  </span>
+                </div>
+                <div className="grid grid-cols-[150px_1fr] items-center gap-16">
+                  <span className="font-medium text-gray-700">Longitude:</span>
+                  <span className="font-bold text-gray-900">
+                    {meter.mdMeterInfo?.longitude}
+                  </span>
+                </div>
+                <div className="grid grid-cols-[150px_1fr] items-center gap-16">
+                  <span className="font-medium text-gray-700">Latitude:</span>
+                  <span className="font-bold text-gray-900">
+                    {meter.mdMeterInfo?.latitude}
+                  </span>
+                </div>
+              </>
+            )}
+            {hasSmartInfo && (
+              <>
+                <div className="grid grid-cols-[150px_1fr] items-center gap-16">
+                  <span className="font-medium text-gray-700">
+                    Meter Model:
+                  </span>
+                  <span className="font-bold text-gray-900">
+                    {meter.smartMeterInfo?.meterModel}
+                  </span>
+                </div>
+                <div className="grid grid-cols-[150px_1fr] items-center gap-16">
+                  <span className="font-medium text-gray-700">Protocol:</span>
+                  <span className="font-bold text-gray-900">
+                    {meter.smartMeterInfo?.protocol}
+                  </span>
+                </div>
+                <div className="grid grid-cols-[150px_1fr] items-center gap-16">
+                  <span className="font-medium text-gray-700">
+                    Authentication:
+                  </span>
+                  <span className="font-bold text-gray-900">
+                    {meter.smartMeterInfo?.authentication}
+                  </span>
+                </div>
+                <div className="grid grid-cols-[150px_1fr] items-center gap-16">
+                  <span className="font-medium text-gray-700">
+                    Meter Password:
+                  </span>
+                  <span className="font-bold text-gray-900">
+                    {meter.smartMeterInfo?.password}
+                  </span>
+                </div>
+              </>
+            )}
           </div>
         )}
         <DialogFooter />

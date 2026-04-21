@@ -329,7 +329,7 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
               <Button
                 variant="outline"
                 className="w-full justify-between border-gray-300"
-                disabled={!selectedHierarchy || !selectedUnits}
+                // disabled={!selectedHierarchy || !selectedUnits}
               >
                 {selectedMeterModels.length > 0
                   ? `${selectedMeterModels.length} selected`

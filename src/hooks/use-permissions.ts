@@ -12,10 +12,16 @@ export function usePermissions() {
   const canApprove = checkUserPermission(user, "approve");
   const canDisable = checkUserPermission(user, "disable");
 
+    const showEditButton = ["region", "root"].includes(
+    user?.nodeInfo?.type?.toLowerCase() ?? ""
+  );
+
+
   return {
     canEdit,
     canView,
     canApprove,
     canDisable,
+    showEditButton,
   };
 }

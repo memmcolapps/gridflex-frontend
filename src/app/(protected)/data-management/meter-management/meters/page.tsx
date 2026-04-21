@@ -84,7 +84,7 @@ import { useAuth } from "@/context/auth-context";
 
 export default function MeterManagementPage() {
   const [searchTerm, setSearchTerm] = useState("");
-  const { user } = useAuth();
+  const { showEditButton } = usePermissions();
   const [selectedTariffs, setSelectedTariffs] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -141,7 +141,6 @@ export default function MeterManagementPage() {
   const [uploadedImage, setUploadedImage] = useState<File | null>(null);
   const [isViewActualDetailsOpen, setIsViewActualDetailsOpen] = useState(false);
   const [isBulkAssignDialogOpen, setIsBulkAssignDialogOpen] = useState(false);
-  const showEditButton = user?.nodeInfo?.type === "business hub";
   const [isAssignTemplateDropdownOpen, setIsAssignTemplateDropdownOpen] =
     useState(false);
   const [isAssignResultDialogOpen, setIsAssignResultDialogOpen] =

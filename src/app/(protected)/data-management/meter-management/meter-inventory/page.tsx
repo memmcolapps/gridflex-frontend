@@ -111,10 +111,8 @@ const mapMeterInventoryToMeterData = (meter: MeterInventoryItem): MeterInventory
 
 export default function MeterInventoryPage() {
   const { user } = useAuth();
-  const { canEdit } = usePermissions();
-
+  const { canEdit , showEditButton} = usePermissions();
   const userOrgId = user?.orgId;
-
   const [selectedMeters, setSelectedMeters] = useState<string[]>([]);
   const [rowsPerPage, setRowsPerPage] = useState<number>(10);
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -766,7 +764,7 @@ export default function MeterInventoryPage() {
                           <Eye size={14} />
                           View Details
                         </DropdownMenuItem>
-                        {canEdit && (
+                        {canEdit && showEditButton && (
                           <DropdownMenuItem
                             onClick={() => handleEditMeter(mapMeterInventoryToMeterData(meter))}
                             className="cursor-pointer text-sm hover:bg-gray-100"

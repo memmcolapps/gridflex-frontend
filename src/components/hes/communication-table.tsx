@@ -10,7 +10,7 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { EllipsisVertical, SendIcon } from 'lucide-react';
+import { EllipsisVertical, Eye, SendIcon } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -165,9 +165,9 @@ export function CommunicationTable({ searchQuery = "", activeTab = 'MD', communi
                                     <DropdownMenuContent className="w-full p-3 shadow-lg">
                                         <DropdownMenuItem
                                             className="cursor-pointer"
-                                            onClick={() => handleSendToken(row.meterNo ?? '')}
+                                            onClick={() => handleRowClick(row)}
                                         >
-                                            <SendIcon size={14} className="mr-2" /> Send Token
+                                            <Eye size={14} className="mr-2" /> View Details
                                         </DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>

@@ -375,24 +375,6 @@ export function AssignMeterDialog({
 
   const isPaymentFormComplete = paymentMode !== "" && paymentType !== "";
 
-  // Debug: Log form completion state
-  console.log("Form completion check:", {
-    meterNumber,
-    cin,
-    accountNumber,
-    tariff,
-    feeder,
-    dss,
-    state,
-    city,
-    streetName,
-    houseNo,
-    customerPhone:
-      (customer as CustomerDisplay)?.phone ??
-      (customer as CustomerDisplay)?.phoneNumber,
-    isFormComplete,
-  });
-
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onOpenChange}>
