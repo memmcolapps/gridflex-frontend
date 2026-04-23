@@ -81,18 +81,8 @@ export interface MeterInventoryItem {
   newTariffIndex?: number;
   simNumber?: string;
   smartStatus: boolean;
-  mdMeterInfo?: {
-    ctRatioNum?: string;
-    ctRatioDenom?: string;
-    voltRatioNum?: string;
-    voltRatioDenom?: string;
-    multiplier?: string;
-    meterRating?: string;
-    initialReading?: string;
-    dial?: string;
-    longitude?: string;
-    latitude?: string;
-  };
+  mdMeterInfo?: mdMeterInfo;
+  mdMeterVersionInfo?: mdMeterVersionInfo;
   password?: string;
   customerId?: string | null;
   accountNumber?: string;
@@ -104,7 +94,6 @@ export interface MeterInventoryItem {
   phone?: string;
   debitMop?: string; // Deprecated - use paymentMode instead
   creditMop?: string; // Deprecated - use paymentMode instead
- 
   debitPaymentPlan?: string; // Deprecated - use paymentPlan instead
   creditPaymentPlan?: string; // Deprecated - use paymentPlan instead
   paymentPlan?: string; // Unified payment plan (replaces debitPaymentPlan/creditPaymentPlan)
@@ -122,14 +111,37 @@ export interface MeterInventoryItem {
   manufacturer?: ManufacturerDetails;
   category?: string;
   type?: string;
-  smartMeterInfo: {
-    meterModel: string;
-    protocol: string;
-    authentication: string;
-    password: string;
-  };
+  smartMeterInfo?: smartMeterInfo;
+  smartMeterVersionInfo?: smartMeterVersionInfo;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface smartMeterInfo {
+  id?: string;
+  meterId?: string;
+  orgId?: string;
+  meterModel?: string;
+  protocol?: string;
+  authentication?: string;
+  password?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface smartMeterVersionInfo {
+  id: string;
+  meterId?: string;
+  orgId?: string;
+  createdBy?: string;
+  meterModel?: string;
+  protocol?: string;
+  authentication?: string;
+  password?: string;
+  description?: string;
+  meterStage?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 // MD Meter specific information
@@ -144,6 +156,25 @@ export interface mdMeterInfo {
   dial?: string;
   latitude?: string;
   longitude?: string;
+}
+
+export interface mdMeterVersionInfo {
+  id?: string;
+  meterId?: string;
+  orgId?: string;
+  ctRatioNum?: string;
+  ctRatioDenom?: string;
+  voltRatioNum?: string;
+  voltRatioDenom?: string;
+  multiplier?: string;
+  meterRating?: string;
+  initialReading?: string;
+  dial?: string;
+  latitude?: string;
+  longitude?: string;
+  createdBy?: string;
+  description?: string;
+  meterStage?: string;
 }
 
 // Smart meter info (aligned with expected structure)

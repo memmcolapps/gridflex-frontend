@@ -145,7 +145,7 @@ const EditSyncScheduleDialog: React.FC<EditSyncScheduleDialogProps> = ({
                     <SelectValue placeholder="Select Unit" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="seconds">Seconds</SelectItem>
+                    {/* <SelectItem value="seconds">Seconds</SelectItem> */}
                     <SelectItem value="minutes">Minutes</SelectItem>
                     <SelectItem value="hours">Hours</SelectItem>
                   </SelectContent>

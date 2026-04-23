@@ -165,7 +165,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
                     <SelectValue placeholder="Select Unit" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="secs">Seconds</SelectItem>
+                    {/* <SelectItem value="secs">Seconds</SelectItem> */}
                     <SelectItem value="min">Minutes</SelectItem>
                     <SelectItem value="hrs">Hours</SelectItem>
                   </SelectContent>

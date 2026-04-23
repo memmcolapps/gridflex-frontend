@@ -131,9 +131,19 @@ export default function HesProfileEvents() {
     return units;
   }, [profileEventsData, selectedHierarchy]);
 
-  useEffect(() => {
+    useEffect(() => {
     setSelectedUnits("");
   }, [selectedHierarchy]);
+  
+  useEffect(() => {
+    if (user?.nodeInfo?.type) {
+      setSelectedHierarchy(user.nodeInfo.type);
+    }
+    if (user?.nodeInfo?.name) {
+      setSelectedUnits(user.nodeInfo.name);
+    }
+  }, [user]);
+
 
   const handleExportFormatSelect = (format: ExportFormat) => {
     setSelectedExportFormat(format);

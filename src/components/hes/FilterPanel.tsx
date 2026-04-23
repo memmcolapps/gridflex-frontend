@@ -578,6 +578,15 @@ export function FilterPanel({ onRun }: FilterPanelProps) {
     setUnit("");
   }, [hierarchy]);
 
+  useEffect(() => {
+    if (user?.nodeInfo?.type) {
+      setHierarchy(user.nodeInfo.type as HierarchyType);
+    }
+    if (user?.nodeInfo?.name) {
+      setUnit(user.nodeInfo.name);
+    }
+  }, [user]);
+
   const allNodes = hierarchyData
     ? flattenOrganizationNodes(hierarchyData.responsedata.nodes)
     : [];
@@ -747,8 +756,13 @@ export function FilterPanel({ onRun }: FilterPanelProps) {
         </Label>
         <Input
           readOnly
-          value={user?.nodeInfo?.type ? user.nodeInfo.type.charAt(0).toUpperCase() + user.nodeInfo.type.slice(1) : ""}
-          className="h-12 w-full cursor-default border-gray-200 text-gray-600 bg-transparent text-base"
+          value={
+            user?.nodeInfo?.type
+              ? user.nodeInfo.type.charAt(0).toUpperCase() +
+                user.nodeInfo.type.slice(1)
+              : ""
+          }
+          className="h-12 w-full cursor-default border-gray-200 bg-transparent text-base text-gray-600"
         />
       </div>
 
@@ -761,8 +775,13 @@ export function FilterPanel({ onRun }: FilterPanelProps) {
         </Label>
         <Input
           readOnly
-          value={user?.nodeInfo?.name ? user.nodeInfo.name.charAt(0).toUpperCase() + user.nodeInfo.name.slice(1) : ""}
-          className="h-12 w-full cursor-default border-gray-200 text-gray-600 bg-transparent text-base"
+          value={
+            user?.nodeInfo?.name
+              ? user.nodeInfo.name.charAt(0).toUpperCase() +
+                user.nodeInfo.name.slice(1)
+              : ""
+          }
+          className="h-12 w-full cursor-default border-gray-200 bg-transparent text-base text-gray-600"
         />
       </div>
 
@@ -778,7 +797,7 @@ export function FilterPanel({ onRun }: FilterPanelProps) {
             <Button
               variant="outline"
               className="h-12 w-full justify-between text-left text-base"
-              disabled={metersLoading || !unit}
+              disabled={metersLoading}
             >
               <span>{getMetersLabel()}</span>
               <ChevronDown size={16} />
@@ -889,7 +908,7 @@ export function FilterPanel({ onRun }: FilterPanelProps) {
         </Label>
         <Button
           onClick={handleRunClick}
-          disabled={!isFormComplete}
+          // disabled={!isFormComplete}
           className={`h-12 w-full text-base ${isFormComplete ? "bg-[#161cca]" : "cursor-not-allowed bg-[#161cca]/50"} text-white`}
         >
           Run
