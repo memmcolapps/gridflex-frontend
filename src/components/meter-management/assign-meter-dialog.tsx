@@ -233,7 +233,7 @@ export function AssignMeterDialog({
     // Create payload for the API call
     // Use image from pendingAssignmentPayload if available (for continue assignment)
     const imageToUse = isContinuation ? pendingAssignmentPayload?.image ?? null : uploadedImage;
-    
+
     const payload: AssignMeterPayload = {
       meterNumber,
       customerId: customer?.customerId ?? "",
@@ -253,7 +253,7 @@ export function AssignMeterDialog({
       forceAssign,
       image: imageToUse,
     };
-    
+
     // Always use FormData since the API requires multipart/form-data
     const formData = new FormData();
     Object.entries(payload).forEach(([key, value]) => {
@@ -265,7 +265,7 @@ export function AssignMeterDialog({
     console.log("Assignment payload: FormData with image:", !!imageToUse);
 
     try {
-      const response = isContinuation 
+      const response = isContinuation
         ? await continueAssignMeterMutation.mutateAsync(formData)
         : await assignMeterMutation.mutateAsync(formData);
       console.log("Assignment response:", response);
@@ -434,7 +434,7 @@ export function AssignMeterDialog({
               </div>
               <div className="space-y-2">
                 <Label>
-                  Phone Number<span className="text-red-700">*</span>
+                  Phone Number
                 </Label>
                 <Input
                   value={
