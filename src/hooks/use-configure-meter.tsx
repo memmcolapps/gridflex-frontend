@@ -71,7 +71,10 @@ export const useSetCTPTRatio = () => {
       queryClient.invalidateQueries({ queryKey: ["meters"] });
     },
     onError: (error: Error) => {
-      toast.error(`Failed to configure CT & VT ratio: ${error.message}`);
+      // toast.error(`Failed to configure CT & VT ratio: ${error.message}`);
+      const match = /"details":"([^"]+)"/.exec(error.message);
+      const friendlyMsg = match?.[1] ?? error.message;
+      toast.error(friendlyMsg);
     },
   });
 };
@@ -91,7 +94,10 @@ export const useSetAPN = () => {
       queryClient.invalidateQueries({ queryKey: ["meters"] });
     },
     onError: (error: Error) => {
-      toast.error(`Failed to configure APN: ${error.message}`);
+      // toast.error(`Failed to configure APN: ${error.message}`);
+      const match = /"details":"([^"]+)"/.exec(error.message);
+      const friendlyMsg = match?.[1] ?? error.message;
+      toast.error(friendlyMsg);
     },
   });
 };
@@ -111,7 +117,10 @@ export const useSetDateTime = () => {
       queryClient.invalidateQueries({ queryKey: ["meters"] });
     },
     onError: (error: Error) => {
-      toast.error(`Failed to configure Date and Time: ${error.message}`);
+      // toast.error(`Failed to configure Date and Time: ${error.message}`);
+      const match = /"details":"([^"]+)"/.exec(error.message);
+      const friendlyMsg = match?.[1] ?? error.message;
+      toast.error(friendlyMsg);
     },
   });
 };
@@ -131,7 +140,10 @@ export const useSetIpPort = () => {
       queryClient.invalidateQueries({ queryKey: ["meters"] });
     },
     onError: (error: Error) => {
-      toast.error(`Failed to configure Ip Address: ${error.message}`);
+      // toast.error(`Failed to configure Ip Address: ${error.message}`);
+      const match = /"details":"([^"]+)"/.exec(error.message);
+      const friendlyMsg = match?.[1] ?? error.message;
+      toast.error(friendlyMsg);
     },
   });
 };

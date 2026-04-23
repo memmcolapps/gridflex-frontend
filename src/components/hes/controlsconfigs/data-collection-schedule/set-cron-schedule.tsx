@@ -25,6 +25,8 @@ import {
   useProfileEvents,
   useResetCronSchedule,
 } from "@/hooks/use-hes-hierarchy";
+import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
 
 type Frequency = "interval" | "daily" | "weekly" | "monthly" | "yearly";
 
@@ -32,6 +34,9 @@ interface SetCronScheduleDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: () => void;
+  selectedJobName: string;
+  selectedJobGroup: string;
+  selectedEventType?: string;
 }
 
 const INTERVAL_COUNTS = Array.from({ length: 10 }, (_, i) => i + 1);
@@ -201,6 +206,9 @@ const SetCronScheduleDialog: React.FC<SetCronScheduleDialogProps> = ({
   isOpen,
   onClose,
   onSubmit,
+  selectedJobGroup = "",
+  selectedJobName = "",
+  selectedEventType = ''
 }) => {
   // const [profileEvents, setProfileEvents] = useState<ProfileEvent[]>([]);
   // const [isLoadingEvents, setIsLoadingEvents] = useState(false);
@@ -247,7 +255,7 @@ const SetCronScheduleDialog: React.FC<SetCronScheduleDialogProps> = ({
   };
 
   const isValid = (() => {
-    if (!eventType || !frequency) return false;
+    if (!frequency) return false;
     switch (frequency) {
       case "interval":
         return !!intervalCount && !!intervalUnit;
@@ -274,8 +282,8 @@ const SetCronScheduleDialog: React.FC<SetCronScheduleDialogProps> = ({
     const selectedEvent = profileEvents.find((ev) => ev.jobName === eventType);
 
     let payload: ResetCronPayload = {
-      jobName: selectedEvent?.jobName ?? "",
-      jobGroup: selectedEvent?.jobGroup ?? "",
+      jobName: selectedJobName,
+      jobGroup: selectedJobGroup,
       frequency,
     };
 
@@ -331,6 +339,7 @@ const SetCronScheduleDialog: React.FC<SetCronScheduleDialogProps> = ({
     setIsLoading(false);
 
     if (result.success) {
+      toast.success("Cron schedule reset successfully!");
       resetForm();
       onSubmit();
       onClose();
@@ -352,7 +361,12 @@ const SetCronScheduleDialog: React.FC<SetCronScheduleDialogProps> = ({
               <Label>
                 Event/Profile Type <span className="text-red-600">*</span>
               </Label>
-              <Select onValueChange={setEventType} value={eventType}>
+              <Input
+                readOnly
+                value={selectedEventType}
+                className="h-10 w-full cursor-default rounded-md border border-gray-200 bg-transparent px-3 text-sm text-gray-600"
+              />
+              {/* <Select onValueChange={setEventType} value={eventType}>
                 <SelectTrigger className="w-full text-gray-400">
                   <SelectValue
                     placeholder={
@@ -379,7 +393,7 @@ const SetCronScheduleDialog: React.FC<SetCronScheduleDialogProps> = ({
                     ))
                   )}
                 </SelectContent>
-              </Select>
+              </Select> */}
             </div>
 
             <div className="flex flex-col gap-2">

@@ -47,7 +47,9 @@ export interface RealtimeStreamRequest {
 
 export const triggerRealtimeStream = async (
   payload: RealtimeStreamRequest,
-): Promise<{ success: true; data: unknown } | { success: false; error: string }> => {
+): Promise<
+  { success: true; data: unknown } | { success: false; error: string }
+> => {
   try {
     const token = localStorage.getItem("auth_token");
     if (!token) return { success: false, error: "Auth token not found" };
@@ -111,7 +113,7 @@ export const createSchedule = async (
 
     const response = await axiosInstance.post(
       "/hes/service/set/schedule",
-      null, 
+      null,
       {
         params: {
           jobGroup: payload.jobGroup,
@@ -127,16 +129,14 @@ export const createSchedule = async (
       },
     );
 
-    if (response.data.responsecode !== "000") {
+    if (response.data.responsecode !== "000" && response.status !== 200) {
       return { success: false, error: response.data.responsedesc };
     }
-
     return { success: true };
   } catch (error) {
     return { success: false, error: handleApiError(error).message };
   }
 };
-
 
 export const fetchProfileEvents = async (): Promise<
   { success: true; data: ProfileEvent[] } | { success: false; error: string }
@@ -175,7 +175,7 @@ export const resetCronSchedule = async (
 
     const response = await axiosInstance.post(
       "/hes/service/set/cron",
-      payload, 
+      payload,
       {
         headers: {
           "Content-Type": "application/json",
@@ -185,10 +185,10 @@ export const resetCronSchedule = async (
       },
     );
 
-    if (response.data.responsecode !== "000") {
+  if (response.data.responsecode !== "000" && response.status !== 200) {
       return { success: false, error: response.data.responsedesc };
     }
-
+    
     return { success: true };
   } catch (error) {
     return { success: false, error: handleApiError(error).message };
