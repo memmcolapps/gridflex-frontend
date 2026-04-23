@@ -19,6 +19,7 @@ import {
 // import { useAuth } from "@/context/auth-context";
 import { Loader2 } from "lucide-react";
 import { useCreateSchedule, useProfileEvents } from "@/hooks/use-hes-hierarchy";
+import { toast } from "sonner";
 
 // const eventTypeLabels: Record<string, string> = {
 //   standardEventLog: "Standard Event Log",
@@ -88,6 +89,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
       repeatTime: parseInt(repeatTime, 10),
       unit: unit === "min" ? "minutes" : unit === "hrs" ? "hours" : "seconds",
     });
+    toast.success("Sync schedule set successfully!");
     resetForm();
     onSubmit();
     onClose();
@@ -188,7 +190,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
               </Select>
             </div> */}
 
-            {error && <p className="text-sm text-red-600">{error}</p>}
+            {/* {error && <p className="text-sm text-red-600">{error}</p>} */}
           </div>
 
           <DialogFooter className="flex justify-between">

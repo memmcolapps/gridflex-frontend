@@ -126,7 +126,9 @@ export default function DataCollScheduler() {
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   const [isCronDialogOpen, setIsCronDialogOpen] = useState<boolean>(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState<boolean>(false);
-  const [editData, setEditData] = useState<EditScheduleInitialData | null>(null);
+  const [editData, setEditData] = useState<EditScheduleInitialData | null>(
+    null,
+  );
   const [confirmDialog, setConfirmDialog] = useState<{
     isOpen: boolean;
     type: "pause" | "continue" | "delete" | null;
@@ -138,18 +140,21 @@ export default function DataCollScheduler() {
     key: string;
     direction: string;
   }>({ key: "", direction: "asc" });
+  const [cronDialogEvent, setCronDialogEvent] = useState<{
+    jobName: string;
+    jobGroup: string;
+    eventType: string;
+  }>({ jobName: "", jobGroup: "", eventType: ""});
 
   const {
     data: scheduleResponse,
     isLoading,
     isError,
-  } = useScheduleData(
-    currentPage - 1,
-    rowsPerPage,
-    searchTerm || undefined,
-  );
+  } = useScheduleData(currentPage - 1, rowsPerPage, searchTerm || undefined);
 
-  const rawData: TableData[] = (scheduleResponse?.data ?? []).map(mapScheduleItem);
+  const rawData: TableData[] = (scheduleResponse?.data ?? []).map(
+    mapScheduleItem,
+  );
   const totalData = scheduleResponse?.totalData ?? 0;
   const totalPages = scheduleResponse?.totalPages ?? 1;
 
@@ -386,13 +391,19 @@ export default function DataCollScheduler() {
               ))
             ) : isError ? (
               <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center text-sm text-red-500">
+                <TableCell
+                  colSpan={7}
+                  className="h-24 text-center text-sm text-red-500"
+                >
                   Failed to load schedules. Please try again.
                 </TableCell>
               </TableRow>
             ) : sortedData.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center text-sm text-gray-500">
+                <TableCell
+                  colSpan={7}
+                  className="h-24 text-center text-sm text-gray-500"
+                >
                   No data available
                 </TableCell>
               </TableRow>
@@ -409,7 +420,7 @@ export default function DataCollScheduler() {
                     {item.eventType}
                   </TableCell>
                   <TableCell className="p-2 font-mono text-xs text-gray-800">
-                    {item.cronExpression || '0 0 * * * ?'}
+                    {item.cronExpression || "0 0 * * * ?"}
                   </TableCell>
                   <TableCell className="p-2 font-mono text-xs text-gray-800">
                     {item.repeatTime}
@@ -482,7 +493,9 @@ export default function DataCollScheduler() {
                             onClick={() => openEditDialog(item.sNo)}
                           >
                             <Pencil size={14} className="text-gray-500" />
-                            <span className="text-sm text-black">Edit Sync Schedule</span>
+                            <span className="text-sm text-black">
+                              Edit Sync Schedule
+                            </span>
                           </DropdownMenuItem>
                         )}
                         {canEdit && (
@@ -501,7 +514,14 @@ export default function DataCollScheduler() {
                         {canEdit && (
                           <DropdownMenuItem
                             className="flex cursor-pointer items-center gap-2"
-                            onClick={() => setIsCronDialogOpen(true)}
+                            onClick={() => {
+                              setCronDialogEvent({
+                                jobName: item.jobName,
+                                jobGroup: item.jobGroup,
+                                eventType: item.eventType,
+                              });
+                              setIsCronDialogOpen(true);
+                            }}
                           >
                             <RotateCcw size={14} className="text-gray-500" />
                             <span className="text-sm whitespace-nowrap text-black">
@@ -608,6 +628,9 @@ export default function DataCollScheduler() {
           setEditData(null);
         }}
         onSubmit={handleDialogSubmit}
+        selectedJobName={cronDialogEvent.jobName}
+        selectedJobGroup={cronDialogEvent.jobGroup}
+        selectedEventType={cronDialogEvent.eventType}
       />
     </div>
   );
