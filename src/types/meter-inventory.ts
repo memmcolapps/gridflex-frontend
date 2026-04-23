@@ -118,30 +118,30 @@ export interface MeterInventoryItem {
 }
 
 export interface smartMeterInfo {
-  id: string;
-  meterId: string;
-  orgId: string;
-  meterModel: string;
-  protocol: string;
-  authentication: string;
-  password: string;
-  createdAt: string;
-  updatedAt: string;
+  id?: string;
+  meterId?: string;
+  orgId?: string;
+  meterModel?: string;
+  protocol?: string;
+  authentication?: string;
+  password?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface smartMeterVersionInfo {
   id: string;
-  meterId: string;
-  orgId: string;
-  createdBy: string;
-  meterModel: string;
-  protocol: string;
-  authentication: string;
-  password: string;
-  description: string;
-  meterStage: string;
-  createdAt: string;
-  updatedAt: string;
+  meterId?: string;
+  orgId?: string;
+  createdBy?: string;
+  meterModel?: string;
+  protocol?: string;
+  authentication?: string;
+  password?: string;
+  description?: string;
+  meterStage?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 // MD Meter specific information
