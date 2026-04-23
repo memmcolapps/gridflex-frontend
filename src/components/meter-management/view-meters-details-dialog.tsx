@@ -40,8 +40,9 @@ export function ViewMeterDetailsDialog({
   onClose,
   meter,
 }: ViewMeterDetailsDialogProps) {
-  const hasSmartInfo = meter?.smartStatus === true;
-  //   && !!meter?.smartMeterInfo;
+  const hasSmartInfo = meter?.smartStatus === true
+    && !!meter?.smartMeterInfo;
+    console.log("Meter in Details Dialog:", meter?.smartMeterInfo);
   const isMdMeter = meter?.meterClass === "MD";
   //    && !!meter?.mdMeterInfo;
 
