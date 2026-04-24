@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { MoreVertical } from "lucide-react";
+import { Eye, Link, Lock, MoreVertical, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -33,6 +33,7 @@ interface CustomerTableProps {
   onViewCustomer: (customer: Customer) => void;
   onViewMeter: (customer: Customer) => void;
   onBlockCustomer: (customer: Customer) => void;
+  onAssignMeter: (customer: Customer) => void;
 }
 
 export default function CustomerTable({
@@ -40,6 +41,7 @@ export default function CustomerTable({
   onViewCustomer,
   onViewMeter,
   onBlockCustomer,
+  onAssignMeter,
 }: CustomerTableProps) {
   const { canEdit } = usePermissions();
   const [searchTerm, setSearchTerm] = useState("");
@@ -100,7 +102,11 @@ export default function CustomerTable({
         <TableRow>
           <TableCell colSpan={colSpan} className="h-24 text-center">
             <div className="flex flex-col items-center justify-center py-8">
-              <LoadingAnimation variant="spinner" message="Fetching customer data..." size="md" />
+              <LoadingAnimation
+                variant="spinner"
+                message="Fetching customer data..."
+                size="md"
+              />
             </div>
           </TableCell>
         </TableRow>
@@ -188,20 +194,35 @@ export default function CustomerTable({
                     className="w-fit"
                   >
                     <div className="flex w-fit items-center gap-2">
-                      <span className="w-fit cursor-pointer">Edit Customer</span>
+                       <Pencil size={14} />
+                      <span className="w-fit cursor-pointer">
+                        Edit Customer
+                      </span>
                     </div>
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuItem onSelect={() => onViewMeter(customer)}>
                   <div className="flex w-full items-center gap-2">
+                    <Eye size={14} />
                     <span className="cursor-pointer">View Meter</span>
                   </div>
                 </DropdownMenuItem>
                 {canEdit && (
+                  <DropdownMenuItem onSelect={() => onAssignMeter(customer)}>
+                    <div className="flex w-full items-center gap-2">
+                       <Link size={14} />
+                      <span className="cursor-pointer">Assign Meter</span>
+                    </div>
+                  </DropdownMenuItem>
+                )}
+                {canEdit && (
                   <DropdownMenuItem onSelect={() => onBlockCustomer(customer)}>
                     <div className="flex w-full items-center gap-2">
+                       <Lock size={14} />
                       <span className="cursor-pointer">
-                        {customer.status.toString() === 'Block' ? 'Unblock' : 'Block'}
+                        {customer.status.toString() === "Block"
+                          ? "Unblock"
+                          : "Block"}
                       </span>
                     </div>
                   </DropdownMenuItem>
@@ -217,7 +238,7 @@ export default function CustomerTable({
   return (
     <div className="flex h-screen flex-col">
       <div className="mb-6 flex items-center gap-4">
-        <div className="relative  w-full md:w-[300px]">
+        <div className="relative w-full md:w-[300px]">
           <SearchControl
             value={searchTerm}
             onChange={handleSearch}
