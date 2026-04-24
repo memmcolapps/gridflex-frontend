@@ -7,6 +7,7 @@ import CustomerTable from "./customer-table";
 import ViewCustomerDialog from "./view-customer-dialog";
 import BlockCustomerDialog from "./block-customer-dialog";
 import MeterDetailsDialog from "./meter-details-dialog";
+import { AssignMeterDialog } from "@/components/meter-management/assign-meter-dialog";
 import { ContentHeader } from "@/components/ui/content-header";
 import { BulkUploadDialog } from "@/components/meter-management/bulk-upload";
 import {
@@ -14,6 +15,7 @@ import {
   useDownloadCustomerCsvTemplate,
   useDownloadCustomerExcelTemplate,
 } from "@/hooks/use-customer";
+import { useAssignMeter } from "@/hooks/use-assign-meter";
 import { type Customer } from "@/types/customer-types";
 import { toast } from "sonner";
 import { usePermissions } from "@/hooks/use-permissions";
@@ -33,9 +35,11 @@ import {
 } from "@/components/ui/alert-dialog";
 import { CheckCircle, XCircle, AlertTriangle } from "lucide-react";
 import { useAuth } from "@/context/auth-context";
+import { fetchCustomerRecord } from "@/service/customer-service";
 
 export default function CustomerManagement() {
   const bulkUploadMutation = useBulkUploadCustomer();
+  const assignMeterMutation = useAssignMeter();
   const { user } = useAuth();
   const downloadCsvTemplateMutation = useDownloadCustomerCsvTemplate();
   const downloadExcelTemplateMutation = useDownloadCustomerExcelTemplate();
@@ -59,6 +63,21 @@ export default function CustomerManagement() {
   const [selectedMeterCustomer, setSelectedMeterCustomer] =
     useState<Customer | null>(null);
   const [isBulkUploadDialogOpen, setIsBulkUploadDialogOpen] = useState(false);
+  const [isAssignMeterDialogOpen, setIsAssignMeterDialogOpen] = useState(false);
+  const [assignMeterCustomer, setAssignMeterCustomer] =
+    useState<Customer | null>(null);
+  const [assignMeterNumber, setAssignMeterNumber] = useState("");
+  const [assignCin, setAssignCin] = useState("");
+  const [assignAccountNumber, setAssignAccountNumber] = useState("");
+  const [assignTariff, setAssignTariff] = useState("");
+  const [assignFeeder, setAssignFeeder] = useState("");
+  const [assignDss, setAssignDss] = useState("");
+  const [assignState, setAssignState] = useState("");
+  const [assignCity, setAssignCity] = useState("");
+  const [assignStreetName, setAssignStreetName] = useState("");
+  const [assignHouseNo, setAssignHouseNo] = useState("");
+  const [assignCategory, setAssignCategory] = useState("");
+  const [assignPhone, setAssignPhone] = useState("");
   const [isTemplateDropdownOpen, setIsTemplateDropdownOpen] = useState(false);
   const [isUploadResultDialogOpen, setIsUploadResultDialogOpen] =
     useState(false);
@@ -80,6 +99,32 @@ export default function CustomerManagement() {
   const handleViewMeter = (customer: Customer) => {
     setSelectedMeterCustomer(customer);
     setIsMeterDialogOpen(true);
+  };
+
+  const handleAssignMeter = async (customer: Customer) => {
+    setAssignMeterCustomer(customer);
+    setIsAssignMeterDialogOpen(true);
+    // Reset form states
+    setAssignMeterNumber("");
+    setAssignCin("");
+    setAssignTariff("");
+    setAssignFeeder("");
+    setAssignDss("");
+    setAssignState("");
+    setAssignCity("");
+    setAssignStreetName("");
+    setAssignHouseNo("");
+    setAssignCategory("");
+    setAssignPhone(customer.phoneNumber ?? "");
+
+    // Fetch account number from customer record
+    try {
+      const customerRecord = await fetchCustomerRecord(customer.customerId);
+      setAssignAccountNumber(customerRecord.GeneratedAccountNumber ?? "");
+    } catch (error) {
+      console.error("Failed to fetch account number:", error);
+      setAssignAccountNumber("");
+    }
   };
 
   const handleViewCustomer = (customer: Customer) => {
@@ -225,6 +270,7 @@ export default function CustomerManagement() {
           onViewCustomer={handleViewCustomer}
           onViewMeter={handleViewMeter}
           onBlockCustomer={handleBlockCustomer}
+          onAssignMeter={handleAssignMeter}
         />
 
         {editingCustomer && (
@@ -265,6 +311,57 @@ export default function CustomerManagement() {
           isOpen={isMeterDialogOpen}
           onOpenChange={setIsMeterDialogOpen}
           customer={selectedMeterCustomer}
+        />
+
+        <AssignMeterDialog
+          isOpen={isAssignMeterDialogOpen}
+          onOpenChange={setIsAssignMeterDialogOpen}
+          customer={assignMeterCustomer}
+          meterNumber={assignMeterNumber}
+          setMeterNumber={setAssignMeterNumber}
+          cin={assignCin}
+          setCin={setAssignCin}
+          accountNumber={assignAccountNumber}
+          setAccountNumber={setAssignAccountNumber}
+          tariff={assignTariff}
+          setTariff={setAssignTariff}
+          feeder={assignFeeder}
+          setFeeder={setAssignFeeder}
+          dss={assignDss}
+          setDss={setAssignDss}
+          state={assignState}
+          setState={setAssignState}
+          city={assignCity}
+          setCity={setAssignCity}
+          streetName={assignStreetName}
+          setStreetName={setAssignStreetName}
+          houseNo={assignHouseNo}
+          setHouseNo={setAssignHouseNo}
+          category={assignCategory}
+          setCategory={setAssignCategory}
+          phone={assignPhone}
+          setPhone={setAssignPhone}
+          onProceed={() => {
+            // Handle proceed from assign meter dialog
+            console.log("Proceed from assign meter");
+          }}
+          isFormComplete={
+            assignMeterNumber.trim() !== "" &&
+            assignCin.trim() !== "" &&
+            assignAccountNumber.trim() !== "" &&
+            assignTariff.trim() !== "" &&
+            assignFeeder.trim() !== "" &&
+            assignDss.trim() !== "" &&
+            assignState.trim() !== "" &&
+            assignCity.trim() !== "" &&
+            assignStreetName.trim() !== "" &&
+            assignHouseNo.trim() !== ""
+          }
+          progress={50}
+          onConfirmAssignment={() => {
+            setIsAssignMeterDialogOpen(false);
+            setAssignMeterCustomer(null);
+          }}
         />
 
         <BulkUploadDialog
