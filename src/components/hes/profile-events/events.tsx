@@ -224,6 +224,13 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
               node: event.meter.nodeId || "",
             }),
           );
+          transformedData.sort((a,b) => {
+            const aLevel = parseInt(a.criticalLevel ?? '')
+            const bLevel = parseInt(b.criticalLevel ?? '')
+            if (isNaN(aLevel)) return 1;
+            if (isNaN(bLevel)) return -1;
+            return aLevel - bLevel
+          })
           setTableData(transformedData);
         },
         onError: (error) => {
