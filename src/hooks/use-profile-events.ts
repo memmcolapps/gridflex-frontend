@@ -3,6 +3,8 @@ import {
   getProfileEventsData,
   getEvents,
   getProfiles,
+  getEventNames,
+  getProfileNames,
 } from "../service/profile-events-service";
 import type {
   ProfileEventsApiResponse,
@@ -10,6 +12,8 @@ import type {
   ProfilesApiResponse,
   GetEventsParams,
   GetProfilesParams,
+  EventNameApiResponse,
+  ProfileNameApiResponse,
 } from "../types/profile-events";
 
 export const useProfileEventsData = () => {
@@ -17,6 +21,24 @@ export const useProfileEventsData = () => {
     queryKey: ["profile-events-data"],
     queryFn: () => getProfileEventsData(),
     staleTime: 1000 * 60 * 5, // 5 minutes
+    refetchOnWindowFocus: false,
+  });
+};
+
+export const useEventNames = () => {
+  return useQuery<EventNameApiResponse, Error>({
+    queryKey: ["event-names"],
+    queryFn: getEventNames,
+    staleTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: false,
+  });
+};
+
+export const useProfileNames = () => {
+  return useQuery<ProfileNameApiResponse, Error>({
+    queryKey: ["profile-names"],
+    queryFn: getProfileNames,
+    staleTime: 1000 * 60 * 5,
     refetchOnWindowFocus: false,
   });
 };

@@ -81,18 +81,14 @@ export default function HESDashboardPage() {
           </section>
 
           {/* Loading Skeleton for Charts and Tables */}
-          <section className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <div className="h-[300px] rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-              <div className="mb-4 h-6 w-48 animate-pulse rounded bg-gray-200"></div>
-              <div className="h-[200px] animate-pulse rounded bg-gray-100"></div>
-            </div>
-            <div className="h-[300px] rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+          <section className="flex gap-6">
+            <div className="h-full w-full rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
               <div className="mb-4 h-6 w-24 animate-pulse rounded bg-gray-200"></div>
               <div className="space-y-3">
                 {[1, 2, 3, 4].map((i) => (
                   <div
                     key={i}
-                    className="h-8 animate-pulse rounded bg-gray-100"
+                    className="h-15 animate-pulse rounded bg-gray-100"
                   ></div>
                 ))}
               </div>
@@ -165,12 +161,7 @@ export default function HESDashboardPage() {
       </div>
 
       {/* Middle Section - Real-time Communication Logs and Events */}
-      <div className="mt-6 grid w-full grid-cols-1 gap-6 md:grid-cols-2">
-        <ChartCard
-          title="Real-time Communication Logs"
-          chartType="line"
-          data={hesDashboardData?.communicationLogs}
-        />
+      <div className="mt-6 rounded-xl border-1 border-gray-200 p-5 shadow-lg">
         <div className="mt-4">
           <EventsTable
             data={
@@ -182,6 +173,8 @@ export default function HESDashboardPage() {
                   : "N/A",
                 eventType: event.eventTypeName || "Unknown",
                 event: event.eventName || "Unknown Event",
+                eventTypeId: event.eventTypeId?.toString() ?? "",
+                criticalLevel: event.criticalLevel ?? 0,
               })) ?? []
             }
           />

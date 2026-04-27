@@ -130,26 +130,19 @@ export default function HesProfileEvents() {
     traverseNodes(profileEventsData.responsedata.nodes);
     return units;
   }, [profileEventsData, selectedHierarchy]);
-
-    useEffect(() => {
-    setSelectedUnits("");
-  }, [selectedHierarchy]);
   
   useEffect(() => {
     if (user?.nodeInfo?.type) {
       setSelectedHierarchy(user.nodeInfo.type);
     }
-    if (user?.nodeInfo?.name) {
-      setSelectedUnits(user.nodeInfo.name);
+    if (user?.nodeInfo?.regionId) {
+      setSelectedUnits(user.nodeInfo?.regionId);
     }
   }, [user]);
 
 
   const handleExportFormatSelect = (format: ExportFormat) => {
     setSelectedExportFormat(format);
-    // Here you can add the actual export logic based on the format
-    console.log(`Exporting as ${format}...`);
-
     // Add your export logic here
     switch (format) {
       case "CSV":

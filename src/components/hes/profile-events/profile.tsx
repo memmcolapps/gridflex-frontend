@@ -50,7 +50,11 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { PaginationControls } from "@/components/ui/pagination-controls";
-import { useProfileEventsData, useProfiles } from "@/hooks/use-profile-events";
+import {
+  useProfileEventsData,
+  useProfileNames,
+  useProfiles,
+} from "@/hooks/use-profile-events";
 import { useMeters } from "@/hooks/use-assign-meter";
 import {
   Command,
@@ -76,13 +80,6 @@ const mockProfileData: ProfileData[] = [
   // Add your mock data here when you have it
 ];
 
-const profileTypes = [
-  { label: "Load Profile 1", value: "load-profile-one" },
-  { label: "Load Profile 2", value: "load-profile-two" },
-  { label: "Daily Billing", value: "daily-billing-profile" },
-  { label: "Monthly Billing", value: "monthly-billing-profile" },
-];
-
 interface ProfileProps {
   selectedHierarchy: string | null;
   selectedUnits: string;
@@ -96,9 +93,9 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
   const [startTimeValue, setStartTimeValue] = useState<string>("00:00:00");
   const [endTimeValue, setEndTimeValue] = useState<string>("00:00:00");
   const [selectedMeterNos, setSelectedMeterNos] = useState<string[]>([]);
-  const [selectedProfileTypes, setSelectedProfileTypes] = useState<string | null>(
-    null
-  );
+  const [selectedProfileTypes, setSelectedProfileTypes] = useState<
+    string | null
+  >(null);
   const [selectedProfiles, setSelectedProfiles] = useState<string[]>([]);
   const [availableProfileOptions, setAvailableProfileOptions] = useState<
     string[]
@@ -113,6 +110,7 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
   const [meterDropdownOpen, setMeterDropdownOpen] = useState(false);
 
   const { data: profileEventsData } = useProfileEventsData();
+  const { data: profileTypesData } = useProfileNames();
   const { data: metersData } = useMeters({
     page: 1,
     pageSize: 1000,
@@ -123,6 +121,9 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
   });
   const { mutate: fetchProfiles, isPending: isLoading } = useProfiles();
 
+  const profileTypes = (profileTypesData?.responsedata ?? []).filter(
+    (p) => p.name,
+  );
   const filteredMeters =
     metersData?.actualMeters.filter((meter) => meter.type !== "VIRTUAL") ?? [];
 
@@ -136,11 +137,11 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
 
     // Get all unique profile options from selected profile types
     const optionsSet = new Set<string>();
-      profileEventsData?.responsedata.event_types.forEach((eventType) => {
-        if (eventType.name.includes(selectedProfileTypes)) {
-          optionsSet.add(eventType.name);
-        }
-      });
+    profileEventsData?.responsedata.event_types.forEach((eventType) => {
+      if (eventType.name.includes(selectedProfileTypes)) {
+        optionsSet.add(eventType.name);
+      }
+    });
 
     // Reset selected profiles when profile types change
     setSelectedProfiles([]);
@@ -148,9 +149,9 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
 
   // Handle Profile Type selection
   const handleProfileTypeChange = (profileType: string) => {
-    setSelectedProfileTypes(profileType)
-    setProfilesDropdownOpen(false)
-  }
+    setSelectedProfileTypes(profileType);
+    setProfilesDropdownOpen(false);
+  };
 
   // Handle Profiles selection
   const handleProfilesChange = (profile: string) => {
@@ -178,19 +179,10 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
   // Get display text for dropdowns
   const getProfileTypeDisplayText = () => {
     if (!selectedProfileTypes) return "Select Profile";
-      const pt = profileTypes.find((p) => p.value === selectedProfileTypes[0]);
-      return pt ? pt.label : selectedProfileTypes;
-  };
-
-  const getProfilesDisplayText = () => {
-    if (selectedProfiles.length === 0) return "Select Profiles";
-    if (selectedProfiles.length === 1) return selectedProfiles[0];
-    if (
-      selectedProfiles.length === availableProfileOptions.length &&
-      availableProfileOptions.length > 0
-    )
-      return "All Profiles";
-    return `${selectedProfiles.length} Profiles`;
+    return (
+      profileTypes.find((et) => et.jobName === selectedProfileTypes)?.name ??
+      selectedProfileTypes
+    );
   };
 
   // Handle time change for start date
@@ -239,7 +231,7 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
         profile: selectedProfileTypes,
         model: selectedMeterModels.join(","),
         search: selectedMeterNos.join(","),
-        node: selectedUnits,
+        node: selectedUnits ?? "",
       },
       {
         onSuccess: (data) => {
@@ -597,15 +589,15 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
               align="start"
             >
               {profileTypes.map((type, index) => (
-                <div key={type.value}>
+                <div key={type.name}>
                   <DropdownMenuItem
                     onSelect={(e) => e.preventDefault()}
-                    onClick={() => handleProfileTypeChange(type.value)}
+                    onClick={() => handleProfileTypeChange(type.jobName)}
                     className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-50"
                   >
-                    <span className="text-sm">{type.label}</span>
+                    <span className="text-sm">{type.name}</span>
                     <div className="flex h-4 w-4 items-center justify-center">
-                      {selectedProfileTypes?.includes(type.value) ? (
+                      {selectedProfileTypes?.includes(type.jobName) ? (
                         <div className="flex h-4 w-4 items-center justify-center rounded-sm bg-green-100">
                           <Check size={12} className="text-green-600" />
                         </div>

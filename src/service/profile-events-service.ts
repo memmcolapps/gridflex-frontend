@@ -7,6 +7,8 @@ import type {
   GetEventsParams,
   ProfilesApiResponse,
   GetProfilesParams,
+  EventNameApiResponse,
+  ProfileNameApiResponse,
 } from "@/types/profile-events";
 
 const API_URL = env.NEXT_PUBLIC_BASE_URL;
@@ -39,6 +41,64 @@ export async function getProfileEventsData(): Promise<ProfileEventsApiResponse> 
   }
 }
 
+export async function getEventNames(): Promise<EventNameApiResponse> {
+  try {
+    const token = localStorage.getItem("auth_token");
+    if (!token) throw new Error("Authentication token not found.");
+
+    const response = await axiosInstance.get(
+      `${API_URL}/hes/service/profile-event-name`,
+      {
+        params: { type: "event" },
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    if (response.data.responsecode !== "000") {
+      throw new Error(
+        response.data.responsedesc ?? "Failed to fetch event names.",
+      );
+    }
+
+    return response.data;
+  } catch (error) {
+    throw new Error(handleApiError(error));
+  }
+}
+
+export async function getProfileNames(): Promise<ProfileNameApiResponse> {
+  try {
+    const token = localStorage.getItem("auth_token");
+    if (!token) throw new Error("Authentication token not found.");
+
+    const response = await axiosInstance.get(
+      `${API_URL}/hes/service/profile-event-name`,
+      {
+        params: { type: "profile" },
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    if (response.data.responsecode !== "000") {
+      throw new Error(
+        response.data.responsedesc ?? "Failed to fetch profile names.",
+      );
+    }
+
+    return response.data;
+  } catch (error) {
+    throw new Error(handleApiError(error));
+  }
+}
+
 export async function getEvents({
   page,
   size,
@@ -47,8 +107,8 @@ export async function getEvents({
   meterNumber,
   eventTypeName,
   model,
-  search,
   node,
+  eventTypeId,
 }: GetEventsParams): Promise<EventsApiResponse> {
   try {
     const token = localStorage.getItem("auth_token");
@@ -63,10 +123,10 @@ export async function getEvents({
     params.append("startDate", startDate);
     params.append("endDate", endDate);
     params.append("meterNumber", meterNumber);
-    params.append("eventTypeName", eventTypeName);
+    // params.append("eventTypeName", eventTypeName);
     params.append("model", model);
-    params.append("search", search);
     params.append("node", node);
+    params.append("eventTypeId", eventTypeId ?? ""); 
 
     const response = await axiosInstance.get(`${API_URL}/hes/service/event`, {
       params,
