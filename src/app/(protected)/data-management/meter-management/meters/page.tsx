@@ -704,8 +704,7 @@ export default function MeterManagementPage() {
     state.trim() !== "" &&
     city.trim() !== "" &&
     streetName.trim() !== "" &&
-    houseNo.trim() !== "" &&
-    selectedCustomer?.phone?.trim() !== "";
+    houseNo.trim() !== "";
 
   const totalPages = Math.ceil(
     (metersData?.actualMeters?.length ?? 0) / rowsPerPage,
@@ -1076,7 +1075,7 @@ export default function MeterManagementPage() {
                                         Edit Meter
                                       </span>
                                     </DropdownMenuItem>
-                                  ): null}
+                                  ) : null}
 
                                   <DropdownMenuItem
                                     className="flex cursor-pointer items-center gap-2"
