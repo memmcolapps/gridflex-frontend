@@ -111,7 +111,6 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
 
   const { data: profileEventsData } = useProfileEventsData();
   const { data: profileTypesData } = useProfileNames();
-  console.log('TableData' , tableData)
   const { data: metersData } = useMeters({
     page: 1,
     pageSize: 1000,
@@ -394,7 +393,7 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
         {/* Meter No */}
         <div className="flex min-w-[140px] flex-1 flex-col gap-2">
           <Label className="text-sm font-medium">
-            Meter No. <span className="text-red-500">*</span>
+            Meter No. 
           </Label>
           <Popover open={meterDropdownOpen} onOpenChange={setMeterDropdownOpen}>
             <PopoverTrigger asChild>
@@ -478,7 +477,7 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
         {/* Meter Model */}
         <div className="flex min-w-[140px] flex-1 flex-col gap-2">
           <Label className="text-sm font-medium">
-            Meter Model <span className="text-red-500">*</span>
+            Meter Model 
           </Label>
           <DropdownMenu
             open={meterModelDropdownOpen}
@@ -588,29 +587,31 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
               className="max-h-60 w-[var(--radix-dropdown-menu-trigger-width)] min-w-[160px] overflow-y-auto"
               align="start"
             >
-              {profileTypes.map((type, index) => (
-                <div key={type.name}>
-                  <DropdownMenuItem
-                    onSelect={(e) => e.preventDefault()}
-                    onClick={() => handleProfileTypeChange(type.jobName)}
-                    className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-50"
-                  >
-                    <span className="text-sm">{type.name}</span>
-                    <div className="flex h-4 w-4 items-center justify-center">
-                      {selectedProfileTypes?.includes(type.jobName) ? (
-                        <div className="flex h-4 w-4 items-center justify-center rounded-sm bg-green-100">
-                          <Check size={12} className="text-green-600" />
-                        </div>
-                      ) : (
-                        <Square size={14} className="text-gray-400" />
-                      )}
-                    </div>
-                  </DropdownMenuItem>
-                  {index < profileTypes.length - 1 && (
-                    <div className="mx-2 border-t border-dotted border-[#4ECDC4]" />
-                  )}
-                </div>
-              ))}
+              {profileTypes.map((type, index) => {
+                return (
+                  <div key={type.name}>
+                    <DropdownMenuItem
+                      onSelect={(e) => e.preventDefault()}
+                      onClick={() => handleProfileTypeChange(type.jobName)}
+                      className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-50"
+                    >
+                      <span className="text-sm">{type.name}</span>
+                      <div className="flex h-4 w-4 items-center justify-center">
+                        {selectedProfileTypes?.includes(type.jobName) ? (
+                          <div className="flex h-4 w-4 items-center justify-center rounded-sm bg-green-100">
+                            <Check size={12} className="text-green-600" />
+                          </div>
+                        ) : (
+                          <Square size={14} className="text-gray-400" />
+                        )}
+                      </div>
+                    </DropdownMenuItem>
+                    {index < profileTypes.length - 1 && (
+                      <div className="mx-2 border-t border-dotted border-[#4ECDC4]" />
+                    )}
+                  </div>
+                );
+              })}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -620,10 +621,10 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
           <Button
             className="cursor-pointer bg-[#161CCA] px-8 font-medium text-white hover:bg-[#161CCA]/90"
             onClick={handleRun}
-              disabled={
+            disabled={
               !startDate ||
               !endDate ||
-              selectedProfileTypes?.length === 0 ||
+              !selectedProfileTypes ||
               (selectedMeterNos.length === 0 &&
                 selectedMeterModels.length === 0) ||
               isLoading
