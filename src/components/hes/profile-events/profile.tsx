@@ -111,7 +111,6 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
 
   const { data: profileEventsData } = useProfileEventsData();
   const { data: profileTypesData } = useProfileNames();
-  console.log('TableData' , tableData)
   const { data: metersData } = useMeters({
     page: 1,
     pageSize: 1000,
