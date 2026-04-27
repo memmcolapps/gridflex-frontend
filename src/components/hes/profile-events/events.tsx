@@ -49,7 +49,11 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { PaginationControls } from "@/components/ui/pagination-controls";
-import { useEvents, useProfileEventsData } from "@/hooks/use-profile-events";
+import {
+  useEventNames,
+  useEvents,
+  useProfileEventsData,
+} from "@/hooks/use-profile-events";
 import { useMeters } from "@/hooks/use-assign-meter";
 import { toast } from "sonner";
 import {
@@ -69,19 +73,12 @@ interface EventData {
   time: string;
   eventType: string;
   event: string;
+  eventTypeId?: string;
+  criticalLevel?: string;
 }
 
 const mockEventData: EventData[] = [
   // Add your mock data here when you have it
-];
-
-const eventTypes = [
-  "Standard Event Log",
-  "Relay Control Log",
-  "Power Quality Log",
-  "Communication Log",
-  "Fraud Event Log",
-  "Token Event Log",
 ];
 
 interface EventsProps {
@@ -98,7 +95,7 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
   const [endTimeValue, setEndTimeValue] = useState<string>("00:00:00");
   const [selectedMeterNos, setSelectedMeterNos] = useState<string[]>([]);
   const [selectedMeterModels, setSelectedMeterModels] = useState<string[]>([]);
-  const [selectedEventTypes, setSelectedEventTypes] = useState<string[]>([]);
+  const [selectedEventTypes, setSelectedEventTypes] = useState<number[]>([]);
   const [tableData, setTableData] = useState<EventData[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -107,6 +104,7 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
 
   const { mutate: fetchEvents, isPending: isLoading } = useEvents();
   const { data: profileEventsData } = useProfileEventsData();
+  const { data: eventTypesData } = useEventNames();
   const { data: metersData } = useMeters({
     page: 0,
     pageSize: 1000,
@@ -116,36 +114,45 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
     type: "assigned",
   });
 
+  const eventTypes = eventTypesData?.responsedata ?? [];
+
+  const getCriticalLevelStyle = (criticalLevel: string) => {
+    switch (criticalLevel) {
+      case "1":
+        return { dot: "bg-blue-500", label: "Lv 1" };
+      case "2":
+        return { dot: "bg-green-500", label: "Lv 2" };
+      case "3":
+        return { dot: "bg-yellow-500", label: "Lv 3" };
+      case "4":
+        return { dot: "bg-orange-500", label: "Lv 4" };
+      case "5":
+        return { dot: "bg-red-500", label: "Lv 5" };
+      default:
+        return { dot: "bg-gray-400", label: "N/A" };
+    }
+  };
+
   const filteredMeters =
     metersData?.actualMeters.filter((meter) => meter.type !== "VIRTUAL") ?? [];
 
   // Handle Event Type selection
-  const handleEventTypeChange = (eventType: string) => {
-    if (eventType === "Select All") {
-      if (selectedEventTypes.length === eventTypes.length) {
-        // If all are selected, deselect all
-        setSelectedEventTypes([]);
-      } else {
-        // Select all event types
-        setSelectedEventTypes([...eventTypes]);
-      }
-    } else {
-      setSelectedEventTypes((prev) => {
-        if (prev.includes(eventType)) {
-          // Remove if already selected
-          return prev.filter((type) => type !== eventType);
-        } else {
-          // Add if not selected
-          return [...prev, eventType];
-        }
-      });
-    }
+  const handleEventTypeChange = (eventTypeId: number) => {
+    setSelectedEventTypes((prev) =>
+      prev.includes(eventTypeId)
+        ? prev.filter((id) => id !== eventTypeId)
+        : [...prev, eventTypeId],
+    );
   };
 
   // Get display text for dropdowns
   const getEventsDisplayText = () => {
     if (selectedEventTypes.length === 0) return "Select Events";
-    if (selectedEventTypes.length === 1) return selectedEventTypes[0];
+    if (selectedEventTypes.length === 1) {
+      return (
+        eventTypes.find((et) => et.id === selectedEventTypes[0])?.name ?? ""
+      );
+    }
     if (selectedEventTypes.length === eventTypes.length) return "All Events";
     return `${selectedEventTypes.length} Events`;
   };
@@ -186,6 +193,8 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
     const startDateStr = format(startDate, "yyyy-MM-dd HH:mm:ss");
     const endDateStr = format(endDate, "yyyy-MM-dd HH:mm:ss");
 
+    const eventTypeIds = selectedEventTypes.join(",");
+
     fetchEvents(
       {
         page: 0,
@@ -193,10 +202,10 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
         startDate: startDateStr,
         endDate: endDateStr,
         meterNumber: selectedMeterNos.join(","),
-        eventTypeName: selectedEventTypes.join(","),
+        eventTypeName: "",
+        eventTypeId: eventTypeIds,
         model: selectedMeterModels.join(","),
-        search: selectedMeterNos.join(","),
-        node: selectedUnits,
+        node: selectedUnits ?? "",
       },
       {
         onSuccess: (data) => {
@@ -210,6 +219,9 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
               time: event.eventTime,
               eventType: event.eventType.name,
               event: event.eventName,
+              eventTypeId: event.eventType.id?.toString() ?? "",
+              criticalLevel: event.criticalLevel?.toString() ?? "",
+              node: event.meter.nodeId || "",
             }),
           );
           setTableData(transformedData);
@@ -516,7 +528,13 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
               {/* Select All Option */}
               <DropdownMenuItem
                 onSelect={(e) => e.preventDefault()}
-                onClick={() => handleEventTypeChange("Select All")}
+                onClick={() => {
+                  if (selectedEventTypes.length === eventTypes.length) {
+                    setSelectedEventTypes([]);
+                  } else {
+                    setSelectedEventTypes(eventTypes.map((et) => et.id));
+                  }
+                }}
                 className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-50"
               >
                 <span className="text-sm">Select All</span>
@@ -535,15 +553,15 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
               <div className="mx-2 border-t border-dotted border-[#4ECDC4]" />
 
               {eventTypes.map((type) => (
-                <div key={type}>
+                <div key={type.id}>
                   <DropdownMenuItem
                     onSelect={(e) => e.preventDefault()}
-                    onClick={() => handleEventTypeChange(type)}
+                    onClick={() => handleEventTypeChange(type.id)}
                     className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-50"
                   >
-                    <span className="text-sm">{type}</span>
+                    <span className="text-sm">{type.name}</span>
                     <div className="flex h-4 w-4 items-center justify-center">
-                      {selectedEventTypes.includes(type) ? (
+                      {selectedEventTypes.includes(type.id) ? (
                         <div className="flex h-4 w-4 items-center justify-center rounded-sm bg-green-100">
                           <Check size={12} className="text-green-600" />
                         </div>
@@ -594,12 +612,18 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
               <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">
                 Event
               </TableHead>
+              <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">
+                Critical Level
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               Array.from({ length: rowsPerPage }).map((_, index) => (
                 <TableRow key={index}>
+                  <TableCell className="px-4 py-3 text-sm text-gray-900">
+                    <div className="h-4 animate-pulse rounded bg-gray-200"></div>
+                  </TableCell>
                   <TableCell className="px-4 py-3 text-sm text-gray-900">
                     <div className="h-4 animate-pulse rounded bg-gray-200"></div>
                   </TableCell>
@@ -646,12 +670,29 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
                     <TableCell className="px-4 py-3 text-sm text-gray-900">
                       {row.event}
                     </TableCell>
+                    <TableCell className="px-4 py-3 text-sm text-gray-900">
+                      {row.criticalLevel
+                        ? (() => {
+                            const { dot, label } = getCriticalLevelStyle(
+                              row.criticalLevel,
+                            );
+                            return (
+                              <div className="flex items-center gap-2">
+                                <span
+                                  className={`h-2.5 w-2.5 rounded-full ${dot}`}
+                                />
+                                <span>{label}</span>
+                              </div>
+                            );
+                          })()
+                        : "N/A"}
+                    </TableCell>
                   </TableRow>
                 ))
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={6}
+                  colSpan={7}
                   className="py-8 text-center text-sm text-gray-500"
                 >
                   No data available. Click &ldquo;Search&rdquo; to fetch events.

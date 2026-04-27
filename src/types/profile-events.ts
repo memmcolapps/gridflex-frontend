@@ -112,6 +112,7 @@ export interface EventRecord {
   meterModel: string;
   eventTypeId: string;
   eventTime: string;
+  criticalLevel: number;
   eventName: string;
   eventType: {
     id: number;
@@ -187,9 +188,9 @@ export interface GetEventsParams {
   startDate: string;
   endDate: string;
   meterNumber: string;
-  eventTypeName: string;
+  eventTypeName?: string;
   model: string;
-  search: string;
+  eventTypeId?: string;
   node: string;
 }
 
@@ -276,4 +277,32 @@ export interface GetProfilesParams {
   model: string;
   search: string;
   node: string;
+}
+
+export interface EventTypeItem {
+  id: number;
+  name: string;
+  obisCode: string;
+  description: string;
+}
+
+export interface ProfileEventItem {
+  name?: string;
+  cronExpression: string;
+  jobGroup: string;
+  jobName: string;
+  obisCode: string;
+  updatedAt: string;
+}
+
+export interface EventNameApiResponse {
+  responsecode: string;
+  responsedesc: string;
+  responsedata: EventTypeItem[];
+}
+
+export interface ProfileNameApiResponse {
+  responsecode: string;
+  responsedesc: string;
+  responsedata: ProfileEventItem[];
 }

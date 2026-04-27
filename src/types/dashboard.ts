@@ -78,6 +78,7 @@ export interface EventLog {
   meterNumber: string;
   meterModel: string;
   eventTypeId: string;
+  criticalLevel: number;
   eventTime: string;
   eventName: string;
   eventTypeName: string;

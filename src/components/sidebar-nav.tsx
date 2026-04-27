@@ -185,22 +185,26 @@ const navItems: NavItemProps[] = [
       },
       { title: "Realtime Data", href: "/hes/hes-realtime-data" },
       { title: "Profile and Events", href: "/hes/profile-and-events" },
-
       {
-        title: "Controls and Confirguration",
-        href: "/hes/controlsandconfigs",
-        hasSubmenu: true,
-        submenuItems: [
-          {
-            title: "Data Collection Scheduler",
-            href: "/hes/controlsandconfigs/data-collection-scheduler",
-          },
-          {
-            title: "Meter Remote Configuration",
-            href: "/hes/controlsandconfigs/meter-remote-config",
-          },
-        ],
+        title: "Meter Remote Configuration",
+        href: "/hes/controlsandconfigs/meter-remote-config",
       },
+
+      // {
+      //   title: "Controls and Confirguration",
+      //   href: "/hes/controlsandconfigs",
+      //   hasSubmenu: true,
+      //   submenuItems: [
+      //     {
+      //       title: "Data Collection Scheduler",
+      //       href: "/hes/controlsandconfigs/data-collection-scheduler",
+      //     },
+      //     {
+      //       title: "Meter Remote Configuration",
+      //       href: "/hes/controlsandconfigs/meter-remote-config",
+      //     },
+      //   ],
+      // },
     ],
   },
   {
@@ -281,102 +285,20 @@ export function SidebarNav() {
     }));
   };
 
-const filteredNavItems = useMemo(() => {
-  if (!user) return [];
+  const filteredNavItems = useMemo(() => {
+    if (!user) return [];
 
-  const restrictedRoles = ["business hub", "service center"];
-  const isRestrictedRole = restrictedRoles.includes(
-    user?.nodeInfo?.type?.toLowerCase() || "",
-  );
-
-  const filterMeterInventory = (items: NavItemProps[]): NavItemProps[] => {
-    return items.map((item) => {
-      if (item.title === "Data Management" && item.submenuItems) {
-        return {
-          ...item,
-          submenuItems: item.submenuItems.map((subItem) => {
-            if (
-              subItem.title === "Meter Management" &&
-              subItem.submenuItems &&
-              isRestrictedRole
-            ) {
-              return {
-                ...subItem,
-                submenuItems: subItem.submenuItems.filter(
-                  (nested) => nested.title !== "Meter Inventory",
-                ),
-              };
-            }
-            return subItem;
-          }),
-        };
-      }
-      return item;
-    });
-  };
-
-  // SuperAdmin can see everything  
-  if (user.groups?.groupTitle?.toLowerCase() === "super admin") {
-    return isRestrictedRole ? filterMeterInventory(navItems) : navItems;
-  }
-  const hasModuleAccess = (moduleName: string): boolean => {
-    if (!user?.groups?.modules) return false;
-
-    const normalizedModuleName = normalizeModuleName(moduleName);
-
-    if (normalizedModuleName === "auditlog") return true;
-
-    return user.groups.modules.some((module) => {
-      const normalizedApiModuleName = normalizeModuleName(module.name);
-
-        return (
-          normalizedApiModuleName === normalizedModuleName && module.access
-        );
-    });
-  };
-
-  const hasSubModuleAccess = (
-    parentModuleName: string,
-    subModuleName: string,
-  ): boolean => {
-    if (!user?.groups?.modules) return false;
-
-    const normalizedParentModuleName = normalizeModuleName(parentModuleName);
-    const normalizedSubModuleName = normalizeModuleName(subModuleName);
-
-    const parentModule = user.groups.modules.find(
-      (module) =>
-        normalizeModuleName(module.name) === normalizedParentModuleName &&
-        module.access,
+    const restrictedRoles = ["business hub", "service center"];
+    const isRestrictedRole = restrictedRoles.includes(
+      user?.nodeInfo?.type?.toLowerCase() || "",
     );
 
-    if (!parentModule) return false;
-
-    return parentModule.subModules.some(
-      (subModule) =>
-        normalizeModuleName(subModule.name) === normalizedSubModuleName &&
-        subModule.access,
-    );
-  };
-
-  return navItems
-    .filter((item) => {
-      if (item.title === "Audit Log") return true;
-
-      return hasModuleAccess(item.title);
-    })
-    .map((item) => {
-        // For Data Management, filter submenu items based on submodule access
-      if (item.title === "Data Management" && item.submenuItems) {
-        return {
-          ...item,
-            submenuItems: item.submenuItems.filter((subItem) => {
-              // Dashboard is always visible if user has access to Data Management module
-              if (subItem.title === "Dashboard") return true;
-              // Filter other submenu items based on submodule access
-              return hasSubModuleAccess("Data Management", subItem.title);
-            })
-            .map((subItem) => {
+    const filterMeterInventory = (items: NavItemProps[]): NavItemProps[] => {
+      return items.map((item) => {
+        if (item.title === "Data Management" && item.submenuItems) {
+          return {
+            ...item,
+            submenuItems: item.submenuItems.map((subItem) => {
               if (
                 subItem.title === "Meter Management" &&
                 subItem.submenuItems &&
@@ -391,12 +313,95 @@ const filteredNavItems = useMemo(() => {
               }
               return subItem;
             }),
-        };
-      }
+          };
+        }
+        return item;
+      });
+    };
 
-      return item;
-    });
-}, [user]);
+    // SuperAdmin can see everything
+    if (user.groups?.groupTitle?.toLowerCase() === "super admin") {
+      return isRestrictedRole ? filterMeterInventory(navItems) : navItems;
+    }
+    const hasModuleAccess = (moduleName: string): boolean => {
+      if (!user?.groups?.modules) return false;
+
+      const normalizedModuleName = normalizeModuleName(moduleName);
+
+      if (normalizedModuleName === "auditlog") return true;
+
+      return user.groups.modules.some((module) => {
+        const normalizedApiModuleName = normalizeModuleName(module.name);
+
+        return (
+          normalizedApiModuleName === normalizedModuleName && module.access
+        );
+      });
+    };
+
+    const hasSubModuleAccess = (
+      parentModuleName: string,
+      subModuleName: string,
+    ): boolean => {
+      if (!user?.groups?.modules) return false;
+
+      const normalizedParentModuleName = normalizeModuleName(parentModuleName);
+      const normalizedSubModuleName = normalizeModuleName(subModuleName);
+
+      const parentModule = user.groups.modules.find(
+        (module) =>
+          normalizeModuleName(module.name) === normalizedParentModuleName &&
+          module.access,
+      );
+
+      if (!parentModule) return false;
+
+      return parentModule.subModules.some(
+        (subModule) =>
+          normalizeModuleName(subModule.name) === normalizedSubModuleName &&
+          subModule.access,
+      );
+    };
+
+    return navItems
+      .filter((item) => {
+        if (item.title === "Audit Log") return true;
+
+        return hasModuleAccess(item.title);
+      })
+      .map((item) => {
+        // For Data Management, filter submenu items based on submodule access
+        if (item.title === "Data Management" && item.submenuItems) {
+          return {
+            ...item,
+            submenuItems: item.submenuItems
+              .filter((subItem) => {
+                // Dashboard is always visible if user has access to Data Management module
+                if (subItem.title === "Dashboard") return true;
+                // Filter other submenu items based on submodule access
+                return hasSubModuleAccess("Data Management", subItem.title);
+              })
+              .map((subItem) => {
+                if (
+                  subItem.title === "Meter Management" &&
+                  subItem.submenuItems &&
+                  isRestrictedRole
+                ) {
+                  return {
+                    ...subItem,
+                    submenuItems: subItem.submenuItems.filter(
+                      (nested) => nested.title !== "Meter Inventory",
+                    ),
+                  };
+                }
+                return subItem;
+              }),
+          };
+        }
+
+        return item;
+      });
+  }, [user]);
 
   return (
     <Sidebar className="fixed top-0 left-0 z-40 hidden h-screen w-80 overflow-y-auto border-r border-gray-200 md:block">
