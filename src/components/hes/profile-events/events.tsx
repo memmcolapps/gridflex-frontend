@@ -182,9 +182,8 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
     if (
       !startDate ||
       !endDate ||
-      selectedMeterNos.length === 0 ||
-      (isMeterModelRequired && selectedMeterModels.length === 0) ||
-      selectedEventTypes.length === 0
+      selectedEventTypes.length === 0 ||
+      (selectedMeterNos.length === 0 && selectedMeterModels.length === 0)
     ) {
       toast.error("Please fill in all required fields");
       return;
@@ -212,25 +211,30 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
           toast.success("Events fetched successfully!");
           // Transform the data to match EventData interface
           const transformedData: EventData[] = data.responsedata.data.map(
-            (event, index) => ({
-              sn: index + 1,
-              meterNo: event.meterNumber,
-              feeder: event.meter.flatNode?.feederName || "N/A",
-              time: event.eventTime,
-              eventType: event.eventType.name,
-              event: event.eventName,
-              eventTypeId: event.eventType.id?.toString() ?? "",
-              criticalLevel: event.criticalLevel?.toString() ?? "",
-              node: event.meter.nodeId || "",
-            }),
+            (event, index) => {
+              return {
+                sn: index + 1,
+                meterNo: event.meterNumber,
+                feeder: event.meter.flatNode?.feederName || "N/A",
+                time: event.eventTime,
+                eventType:
+                  typeof event.eventType === "string"
+                    ? event.eventType
+                    : (event.eventType?.name ?? "N/A"),
+                event: event.event,
+                eventTypeId: event.eventType.id?.toString() ?? "",
+                criticalLevel: event.criticalLevel?.toString() ?? "",
+                node: event.meter.nodeId || "",
+              };
+            },
           );
-          transformedData.sort((a,b) => {
-            const aLevel = parseInt(a.criticalLevel ?? '')
-            const bLevel = parseInt(b.criticalLevel ?? '')
+          transformedData.sort((a, b) => {
+            const aLevel = parseInt(a.criticalLevel ?? "");
+            const bLevel = parseInt(b.criticalLevel ?? "");
             if (isNaN(aLevel)) return 1;
             if (isNaN(bLevel)) return -1;
-            return aLevel - bLevel
-          })
+            return bLevel - aLevel;
+          });
           setTableData(transformedData);
         },
         onError: (error) => {
@@ -340,9 +344,7 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
 
         {/* Meter Model */}
         <div className="flex min-w-[140px] flex-1 flex-col gap-2">
-          <Label className="text-sm font-medium">
-            Meter Model <span className="text-red-500">*</span>
-          </Label>
+          <Label className="text-sm font-medium">Meter Model</Label>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -428,9 +430,7 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
 
         {/* Meter No */}
         <div className="flex min-w-[140px] flex-1 flex-col gap-2">
-          <Label className="text-sm font-medium">
-            Meter No. <span className="text-red-500">*</span>
-          </Label>
+          <Label className="text-sm font-medium">Meter No.</Label>
           <Popover open={meterDropdownOpen} onOpenChange={setMeterDropdownOpen}>
             <PopoverTrigger asChild>
               <Button
@@ -589,7 +589,14 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
           <Button
             className="cursor-pointer bg-[#161CCA] px-8 font-medium text-white hover:bg-[#161CCA]/90"
             onClick={handleRun}
-            disabled={isLoading}
+            disabled={
+              !startDate ||
+              !endDate ||
+              selectedEventTypes.length === 0 ||
+              (selectedMeterNos.length === 0 &&
+                selectedMeterModels.length === 0) ||
+              isLoading
+            }
           >
             {isLoading ? "Searching..." : "Search"}
           </Button>
@@ -675,7 +682,7 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
                       {row.eventType}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-sm text-gray-900">
-                      {row.event}
+                      {row.event ?? "-"}
                     </TableCell>
                     <TableCell className="px-4 py-3 text-sm text-gray-900">
                       {row.criticalLevel

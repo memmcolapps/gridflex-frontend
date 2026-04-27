@@ -111,6 +111,7 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
 
   const { data: profileEventsData } = useProfileEventsData();
   const { data: profileTypesData } = useProfileNames();
+  console.log('TableData' , tableData)
   const { data: metersData } = useMeters({
     page: 1,
     pageSize: 1000,
@@ -210,8 +211,7 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
     if (
       !startDate ||
       !endDate ||
-      selectedMeterNos.length === 0 ||
-      (isMeterModelRequired && selectedMeterModels.length === 0) ||
+      (selectedMeterModels.length && selectedMeterNos.length === 0) ||
       !selectedProfileTypes
     ) {
       toast.error("Please fill in all required fields");
@@ -620,7 +620,14 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
           <Button
             className="cursor-pointer bg-[#161CCA] px-8 font-medium text-white hover:bg-[#161CCA]/90"
             onClick={handleRun}
-            disabled={isLoading}
+              disabled={
+              !startDate ||
+              !endDate ||
+              selectedProfileTypes?.length === 0 ||
+              (selectedMeterNos.length === 0 &&
+                selectedMeterModels.length === 0) ||
+              isLoading
+            }
           >
             {isLoading ? "Searching..." : "Search"}
           </Button>
