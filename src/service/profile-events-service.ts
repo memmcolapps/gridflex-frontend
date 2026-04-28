@@ -9,6 +9,7 @@ import type {
   GetProfilesParams,
   EventNameApiResponse,
   ProfileNameApiResponse,
+  ModuleAccessApiResponse,
 } from "@/types/profile-events";
 
 const API_URL = env.NEXT_PUBLIC_BASE_URL;
@@ -90,6 +91,35 @@ export async function getProfileNames(): Promise<ProfileNameApiResponse> {
     if (response.data.responsecode !== "000") {
       throw new Error(
         response.data.responsedesc ?? "Failed to fetch profile names.",
+      );
+    }
+
+    return response.data;
+  } catch (error) {
+    throw new Error(handleApiError(error));
+  }
+}
+
+
+export async function getModuleAccess(): Promise<ModuleAccessApiResponse> {
+  try {
+    const token = localStorage.getItem("auth_token");
+    if (!token) throw new Error("Authentication token not found.");
+
+    const response = await axiosInstance.get(
+      `${API_URL}/user/service/module-access`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (response.data.responsecode !== "000") {
+      throw new Error(
+        response.data.responsedesc ?? "Failed to fetch module access."
       );
     }
 

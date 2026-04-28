@@ -72,7 +72,7 @@ export default function CommunicationReportPage() {
           title="Communication Report"
           description="View and analyze detailed historical data from your smart meter"
         />
-        <div className="flex items-center space-x-2">
+        {/* <div className="flex items-center space-x-2">
           <Button
             className="cursor-pointer border-none bg-[#161CCA] py-6 font-medium text-white"
             variant="secondary"
@@ -82,7 +82,7 @@ export default function CommunicationReportPage() {
             <NotepadText size={14} />
             Get Report
           </Button>
-        </div>
+        </div> */}
       </div>
 
       <Tabs

@@ -5,6 +5,7 @@ import {
   getProfiles,
   getEventNames,
   getProfileNames,
+  getModuleAccess,
 } from "../service/profile-events-service";
 import type {
   ProfileEventsApiResponse,
@@ -14,6 +15,7 @@ import type {
   GetProfilesParams,
   EventNameApiResponse,
   ProfileNameApiResponse,
+  ModuleAccessApiResponse,
 } from "../types/profile-events";
 
 export const useProfileEventsData = () => {
@@ -38,6 +40,15 @@ export const useProfileNames = () => {
   return useQuery<ProfileNameApiResponse, Error>({
     queryKey: ["profile-names"],
     queryFn: getProfileNames,
+    staleTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: false,
+  });
+};
+
+export const useModuleAccess = () => {
+  return useQuery<ModuleAccessApiResponse, Error>({
+    queryKey: ["module-access"],
+    queryFn: getModuleAccess,
     staleTime: 1000 * 60 * 5,
     refetchOnWindowFocus: false,
   });

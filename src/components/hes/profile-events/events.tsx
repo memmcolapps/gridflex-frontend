@@ -604,7 +604,7 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
       </div>
 
       {/* Table */}
-      <div className="rounded-lg border border-gray-200">
+      <div className="rounded-lg border border-gray-200 overflow-y-auto">
         <Table>
           <TableHeader>
             <TableRow>
