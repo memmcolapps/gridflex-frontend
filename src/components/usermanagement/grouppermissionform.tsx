@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ChevronDown, ChevronRight } from "lucide-react";
+import { useModuleAccess } from "@/hooks/use-profile-events";
 
 interface GroupPermissionForm {
   groupTitle: string;
@@ -23,6 +24,12 @@ interface GroupPermissionFormProps {
   onSave: (data: GroupPermissionForm) => void;
   triggerButton: React.ReactNode;
 }
+
+const MODULE_LABEL_MAP: Record<string, string> = {
+  DATA_MANAGEMENT: "Data Management",
+  HES: "HES",
+  VENDING: "Vending",
+};
 
 export default function GroupPermissionForm({
   onSave,
@@ -43,47 +50,25 @@ export default function GroupPermissionForm({
     accessLevel?: string;
   }>({});
 
-  const moduleAccessOptions = [
-    {
-      value: "organization",
-      label: "Organization",
-      group: "Data Management",
-    },
-    {
-      value: "meter-management",
-      label: "Meter Management",
-      group: "Data Management",
-    },
-    {
-      value: "customer-management",
-      label: "Customer Management",
-      group: "Data Management",
-    },
-    {
-      value: "tarrif",
-      label: "Tariff",
-      group: "Data Management",
-    },
-    {
-      value: "band-management",
-      label: "Band Management",
-      group: "Data Management",
-    },
-    {
-      value: "reviewandapproval",
-      label: "Review and Approval",
-      group: "Data Management",
-    },
-    {
-      value: "debt-management",
-      label: "Debt Management",
-      group: "Data Management",
-    },
-    { value: "billing", label: "Billing", group: null },
-    { value: "vending", label: "Vending", group: null },
-    { value: "hes", label: "HES", group: null },
-    { value: "user-management", label: "User Management", group: null },
+  const { data: moduleAccessData, isLoading: isLoadingModules } = useModuleAccess();
+
+  const activeModules = (moduleAccessData?.responsedata ?? []).filter(
+    (m) => m.status,
+  );
+
+  const dataManagementSubItems = [
+    { value: "organization", label: "Organization" },
+    { value: "meter-management", label: "Meter Management" },
+    { value: "customer-management", label: "Customer Management" },
+    { value: "tarrif", label: "Tariff" },
+    { value: "band-management", label: "Band Management" },
+    { value: "reviewandapproval", label: "Review and Approval" },
+    { value: "debt-management", label: "Debt Management" },
   ];
+
+  const hasDataManagement = activeModules.some(
+    (m) => m.module === "DATA_MANAGEMENT",
+  );
 
   const accessLevelOptions = [
     { value: "view-only", label: "View only" },
@@ -93,27 +78,18 @@ export default function GroupPermissionForm({
   ];
 
   const handleModuleSelection = (value: string) => {
-    if (selectedModules.includes(value)) {
-      setSelectedModules(selectedModules.filter((item) => item !== value));
-    } else {
-      setSelectedModules([...selectedModules, value]);
-    }
-
-    // Clear module access error when selection is made
+    setSelectedModules((prev) =>
+      prev.includes(value) ? prev.filter((item) => item !== value) : [...prev, value],
+    );
     if (errors.moduleAccess) {
       setErrors((prev) => ({ ...prev, moduleAccess: undefined }));
     }
   };
 
   const handleAccessLevelSelection = (value: string) => {
-    if (selectedAccessLevels.includes(value)) {
-      setSelectedAccessLevels(
-        selectedAccessLevels.filter((item) => item !== value),
-      );
-    } else {
-      setSelectedAccessLevels([...selectedAccessLevels, value]);
-    }
-
+    setSelectedAccessLevels((prev) =>
+      prev.includes(value) ? prev.filter((item) => item !== value) : [...prev, value],
+    );
     if (errors.accessLevel) {
       setErrors((prev) => ({ ...prev, accessLevel: undefined }));
     }
@@ -147,39 +123,22 @@ export default function GroupPermissionForm({
   };
 
   const handleSubmit = () => {
-    if (!validateForm()) {
-      return;
-    }
-
-    const formData: GroupPermissionForm = {
-      groupTitle,
-      moduleAccess: selectedModules,
-      accessLevel: selectedAccessLevels,
-    };
-
-    onSave(formData);
+    if (!validateForm()) return;
+    onSave({ groupTitle, moduleAccess: selectedModules, accessLevel: selectedAccessLevels });
     setOpen(false);
     resetForm();
   };
 
   const getSelectedModulesDisplay = () => {
     if (selectedModules.length === 0) return "Select module access";
-    if (selectedModules.length === 1) {
-      const option = moduleAccessOptions.find(
-        (opt) => opt.value === selectedModules[0],
-      );
-      return option?.label ?? selectedModules[0];
-    }
+    if (selectedModules.length === 1) return selectedModules[0];
     return `${selectedModules.length} modules selected`;
   };
 
   const getSelectedAccessLevelsDisplay = () => {
     if (selectedAccessLevels.length === 0) return "Select access level";
     if (selectedAccessLevels.length === 1) {
-      const option = accessLevelOptions.find(
-        (opt) => opt.value === selectedAccessLevels[0],
-      );
-      return option?.label ?? selectedAccessLevels[0];
+      return accessLevelOptions.find((opt) => opt.value === selectedAccessLevels[0])?.label ?? selectedAccessLevels[0];
     }
     return `${selectedAccessLevels.length} levels selected`;
   };
@@ -224,12 +183,8 @@ export default function GroupPermissionForm({
                   className={`flex w-[390px] cursor-pointer items-center justify-between rounded-md border border-gray-300 px-3 py-2 ${errors.moduleAccess ? "border-red-500" : ""}`}
                   onClick={() => setIsModuleDropdownOpen(!isModuleDropdownOpen)}
                 >
-                  <span
-                    className={
-                      selectedModules.length === 0 ? "text-gray-500" : ""
-                    }
-                  >
-                    {getSelectedModulesDisplay()}
+                  <span className={selectedModules.length === 0 ? "text-gray-500" : ""}>
+                    {isLoadingModules ? "Loading modules..." : getSelectedModulesDisplay()}
                   </span>
                   <ChevronDown
                     size={16}
@@ -237,67 +192,51 @@ export default function GroupPermissionForm({
                   />
                 </div>
 
-                {isModuleDropdownOpen && (
+                {isModuleDropdownOpen && !isLoadingModules && (
                   <div className="absolute top-full right-0 left-0 z-50 mt-1 max-h-64 overflow-y-auto rounded-md border border-gray-300 bg-white shadow-lg">
-                    {moduleAccessOptions
-                      .filter((opt) => opt.value === "all-access")
-                      .map((option) => (
+
+                    {hasDataManagement && (
+                      <>
                         <div
-                          key={option.value}
-                          className="flex cursor-pointer items-center justify-between border-0 px-3 py-2 hover:bg-gray-100"
-                          onClick={() => handleModuleSelection(option.value)}
-                        >
-                          <span>{option.label}</span>
-                          <Checkbox
-                            checked={selectedModules.includes(option.value)}
-                            className="border-gray-200 data-[state=checked]:bg-green-500 data-[state=checked]:text-white"
-                          />
-                        </div>
-                      ))}
-
-                    {/* Data Management */}
-                    <div
-                      className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-100"
-                      onClick={() =>
-                        setIsDataManagementOpen(!isDataManagementOpen)
-                      }
-                    >
-                      <span className="font-medium">Data Management</span>
-                      {isDataManagementOpen ? (
-                        <ChevronDown size={12} />
-                      ) : (
-                        <ChevronRight size={12} />
-                      )}
-                    </div>
-
-                    {isDataManagementOpen &&
-                      moduleAccessOptions
-                        .filter((opt) => opt.group === "Data Management")
-                        .map((option) => (
-                          <div
-                            key={option.value}
-                            className="flex cursor-pointer items-center justify-between border-0 px-3 py-2 pl-6 hover:bg-gray-100"
-                            onClick={() => handleModuleSelection(option.value)}
-                          >
-                            <span>{option.label}</span>
-                            <Checkbox
-                              checked={selectedModules.includes(option.value)}
-                              className="border-gray-200 data-[state=checked]:bg-green-500 data-[state=checked]:text-white"
-                            />
-                          </div>
-                        ))}
-
-                    {moduleAccessOptions
-                      .filter((opt) => !opt.group && opt.value !== "all-access")
-                      .map((option) => (
-                        <div
-                          key={option.value}
                           className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-100"
-                          onClick={() => handleModuleSelection(option.value)}
+                          onClick={() => setIsDataManagementOpen(!isDataManagementOpen)}
                         >
-                          <span>{option.label}</span>
+                          <span className="font-medium">Data Management</span>
+                          {isDataManagementOpen ? (
+                            <ChevronDown size={12} />
+                          ) : (
+                            <ChevronRight size={12} />
+                          )}
+                        </div>
+
+                        {isDataManagementOpen &&
+                          dataManagementSubItems.map((option) => (
+                            <div
+                              key={option.value}
+                              className="flex cursor-pointer items-center justify-between px-3 py-2 pl-6 hover:bg-gray-100"
+                              onClick={() => handleModuleSelection(option.value)}
+                            >
+                              <span>{option.label}</span>
+                              <Checkbox
+                                checked={selectedModules.includes(option.value)}
+                                className="border-gray-200 data-[state=checked]:bg-green-500 data-[state=checked]:text-white"
+                              />
+                            </div>
+                          ))}
+                      </>
+                    )}
+
+                    {activeModules
+                      .filter((m) => m.module !== "DATA_MANAGEMENT")
+                      .map((m) => (
+                        <div
+                          key={m.id}
+                          className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-100"
+                          onClick={() => handleModuleSelection(m.module)}
+                        >
+                          <span>{MODULE_LABEL_MAP[m.module] ?? m.module}</span>
                           <Checkbox
-                            checked={selectedModules.includes(option.value)}
+                            checked={selectedModules.includes(m.module)}
                             className="border-gray-200 data-[state=checked]:bg-green-500 data-[state=checked]:text-white"
                           />
                         </div>
@@ -318,11 +257,7 @@ export default function GroupPermissionForm({
                   className={`flex w-[390px] cursor-pointer items-center justify-between rounded-md border border-gray-300 px-3 py-2 ${errors.accessLevel ? "border-red-500" : ""}`}
                   onClick={() => setIsAccessDropdownOpen(!isAccessDropdownOpen)}
                 >
-                  <span
-                    className={
-                      selectedAccessLevels.length === 0 ? "text-gray-500" : ""
-                    }
-                  >
+                  <span className={selectedAccessLevels.length === 0 ? "text-gray-500" : ""}>
                     {getSelectedAccessLevelsDisplay()}
                   </span>
                   <ChevronDown

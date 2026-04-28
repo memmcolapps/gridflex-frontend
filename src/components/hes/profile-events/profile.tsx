@@ -180,7 +180,7 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
   const getProfileTypeDisplayText = () => {
     if (!selectedProfileTypes) return "Select Profile";
     return (
-      profileTypes.find((et) => et.jobName === selectedProfileTypes)?.name ??
+      profileTypes.find((et) => et.profileType === selectedProfileTypes)?.name ??
       selectedProfileTypes
     );
   };
@@ -210,7 +210,6 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
     if (
       !startDate ||
       !endDate ||
-      (selectedMeterModels.length && selectedMeterNos.length === 0) ||
       !selectedProfileTypes
     ) {
       toast.error("Please fill in all required fields");
@@ -592,12 +591,12 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
                   <div key={type.name}>
                     <DropdownMenuItem
                       onSelect={(e) => e.preventDefault()}
-                      onClick={() => handleProfileTypeChange(type.jobName)}
+                      onClick={() => handleProfileTypeChange(type.profileType)}
                       className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-50"
                     >
                       <span className="text-sm">{type.name}</span>
                       <div className="flex h-4 w-4 items-center justify-center">
-                        {selectedProfileTypes?.includes(type.jobName) ? (
+                        {selectedProfileTypes === type.profileType ? (
                           <div className="flex h-4 w-4 items-center justify-center rounded-sm bg-green-100">
                             <Check size={12} className="text-green-600" />
                           </div>
@@ -625,8 +624,6 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
               !startDate ||
               !endDate ||
               !selectedProfileTypes ||
-              (selectedMeterNos.length === 0 &&
-                selectedMeterModels.length === 0) ||
               isLoading
             }
           >

@@ -290,6 +290,7 @@ export interface EventTypeItem {
 export interface ProfileEventItem {
   name?: string;
   cronExpression: string;
+  profileType: string;
   jobGroup: string;
   jobName: string;
   obisCode: string;
@@ -306,4 +307,16 @@ export interface ProfileNameApiResponse {
   responsecode: string;
   responsedesc: string;
   responsedata: ProfileEventItem[];
+}
+
+export interface ModuleAccess {
+  id: string;
+  module: "DATA_MANAGEMENT" | "HES" | "VENDING" | string;
+  status: boolean;
+}
+
+export interface ModuleAccessApiResponse {
+  responsecode: string;
+  responsedesc: string;
+  responsedata: ModuleAccess[];
 }

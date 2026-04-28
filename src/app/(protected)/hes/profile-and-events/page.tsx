@@ -160,7 +160,7 @@ export default function HesProfileEvents() {
   };
 
   return (
-    <div className="h-screen overflow-hidden bg-transparent p-6">
+    <div className="h-screen overflow-y-auto bg-transparent p-6">
       {/* Header */}
       <div className="mb-8 flex flex-col items-center justify-between gap-4 md:flex-row">
         <ContentHeader
