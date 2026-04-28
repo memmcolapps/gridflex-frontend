@@ -105,7 +105,7 @@ export default function ViewDetailsDialog({
               <span className="font-medium text-gray-700">Last Sync:</span>
               <span className="font-bold text-gray-900">
                 {meter.updatedAt
-                  ? new Date(meter.updatedAt).toLocaleTimeString()
+                  ? new Date(meter.updatedAt).toLocaleString()
                   : ""}
               </span>
             </div>
