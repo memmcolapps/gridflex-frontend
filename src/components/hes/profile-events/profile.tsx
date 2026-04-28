@@ -315,7 +315,7 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
   };
 
   return (
-    <div className="space-y-6 overflow-y-auto">
+    <div className="space-y-6">
       {/* Filter Controls */}
       <div className="flex w-full flex-wrap items-end gap-4">
         {/* Start Date */}
