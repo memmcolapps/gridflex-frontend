@@ -1,14 +1,20 @@
 import { env } from "@/env";
 import { axiosInstance } from "@/lib/axios";
-import { type SetDateTimePayload, type SetAPNPayload, type SetCTPTRatioPayload, type SetIpPortPayload, type FetchMeterConfigParams, type MeterConfigResponse } from "@/types/configure-meter";
+import {
+  type SetDateTimePayload,
+  type SetAPNPayload,
+  type SetCTPTRatioPayload,
+  type SetIpPortPayload,
+  type FetchMeterConfigParams,
+  type MeterConfigResponse,
+} from "@/types/configure-meter";
 import { handleApiError } from "@/utils/error-handler";
 
 const API_URL = env.NEXT_PUBLIC_BASE_URL;
 const CUSTOM_HEADER = env.NEXT_PUBLIC_CUSTOM_HEADER;
 
- 
 export async function fetchMeterConfigurations(
-  params: FetchMeterConfigParams = {}
+  params: FetchMeterConfigParams = {},
 ): Promise<MeterConfigResponse> {
   try {
     const token = localStorage.getItem("auth_token");
@@ -26,14 +32,14 @@ export async function fetchMeterConfigurations(
           custom: CUSTOM_HEADER,
           Authorization: `Bearer ${token}`,
         },
-      }
+      },
     );
 
     const data: MeterConfigResponse = response.data;
 
     if (data.responsecode !== "000") {
       throw new Error(
-        data.responsedesc ?? "Failed to fetch meter configurations."
+        data.responsedesc ?? "Failed to fetch meter configurations.",
       );
     }
 
@@ -52,13 +58,20 @@ export async function setCTPTRatio(
       throw new Error("Authentication token not found.");
     }
 
-    const { serial, ctNumerator, ctDenominator, ptNumerator, ptDenominator } = data;
+    const { serial, ctNumerator, ctDenominator, ptNumerator, ptDenominator } =
+      data;
 
     const response = await axiosInstance.post(
       `${API_URL}/hes/service/dlms/set-ctpt`,
-      null, 
+      null,
       {
-        params: { serial, ctNumerator, ctDenominator, ptNumerator, ptDenominator },
+        params: {
+          serial,
+          ctNumerator,
+          ctDenominator,
+          ptNumerator,
+          ptDenominator,
+        },
         headers: {
           custom: CUSTOM_HEADER,
           Authorization: `Bearer ${token}`,
@@ -67,9 +80,9 @@ export async function setCTPTRatio(
     );
 
     if (
-  response.data.responsecode !== "000" &&
-  response.data.responsecode !== "131" 
-) {
+      response.data.responsecode !== "000" &&
+      response.data.responsecode !== "131"
+    ) {
       throw new Error(
         response.data.responsedesc ?? "Failed to configure CT & VT ratio.",
       );
@@ -94,7 +107,7 @@ export async function setAPN(
 
     const response = await axiosInstance.post(
       `${API_URL}/hes/service/dlms/set-apn`,
-      null, 
+      null,
       {
         params: { serial, apn },
         headers: {
@@ -105,12 +118,10 @@ export async function setAPN(
     );
 
     if (
-  response.data.responsecode !== "000" &&
-  response.data.responsecode !== "131" 
-) {
-      throw new Error(
-        response.data.responsedesc ?? "Failed to configure APN.",
-      );
+      response.data.responsecode !== "000" &&
+      response.data.responsecode !== "131"
+    ) {
+      throw new Error(response.data.responsedesc ?? "Failed to configure APN.");
     }
 
     return response.data;
@@ -132,7 +143,7 @@ export async function setDateTime(
 
     const response = await axiosInstance.post(
       `${API_URL}/hes/service/dlms/set-clock`,
-      null, 
+      null,
       {
         params: { serial, dateTime },
         headers: {
@@ -143,9 +154,9 @@ export async function setDateTime(
     );
 
     if (
-  response.data.responsecode !== "000" &&
-  response.data.responsecode !== "131" 
-) {
+      response.data.responsecode !== "000" &&
+      response.data.responsecode !== "131"
+    ) {
       throw new Error(
         response.data.responsedesc ?? "Failed to configure Date and Time.",
       );
@@ -170,7 +181,7 @@ export async function setIpPort(
 
     const response = await axiosInstance.post(
       `${API_URL}/hes/service/dlms/set-ip-port`,
-      null, 
+      null,
       {
         params: { serial, ip, port },
         headers: {
@@ -181,9 +192,9 @@ export async function setIpPort(
     );
 
     if (
-  response.data.responsecode !== "000" &&
-  response.data.responsecode !== "131" 
-) {
+      response.data.responsecode !== "000" &&
+      response.data.responsecode !== "131"
+    ) {
       throw new Error(
         response.data.responsedesc ?? "Failed to configure Ip Address.",
       );

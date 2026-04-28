@@ -7,31 +7,12 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-
-// Define a type for better safety
-interface MeterData {
-  id?: string;
-  meterNumber: string;
-  simNo?: string;
-  class: string;
-  category?: string;
-  meterType?: string;
-  manufacturer?: string;
-  model?: string;
-  region?: string;
-  businessHub?: string;
-  serviceCenter?: string;
-  feeder?: string;
-  transformer?: string;
-  serviceLocation?: string;
-  status?: string;
-  lastSync?: string;
-}
+import type { Meter } from "@/types/meter";
 
 interface ViewDetailsDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  meter: MeterData | undefined;
+  meter: Meter | undefined;
 }
 
 export default function ViewDetailsDialog({
@@ -39,69 +20,94 @@ export default function ViewDetailsDialog({
   onClose,
   meter,
 }: ViewDetailsDialogProps) {
+  const meterDetail = meter?.meter;
+  const flatNode = meterDetail?.flatNode;
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="h-fit overflow-y-auto bg-white w-[700px] rounded-lg">
+      <DialogContent className="h-fit w-[700px] overflow-y-auto rounded-lg bg-white">
         <DialogHeader>
           <DialogTitle>View Meter Details</DialogTitle>
           <DialogDescription />
         </DialogHeader>
 
         {meter && (
-          <div className="grid gap-4 py-2 px-4">
+          <div className="grid gap-4 px-4 py-2">
             <div className="grid grid-cols-[150px_1fr] items-center gap-16">
               <span className="font-medium text-gray-700">Meter Number:</span>
-              <span className="text-gray-900 font-bold">{meter.meterNumber}</span>
+              <span className="font-bold text-gray-900">
+                {meter.meterNumber}
+              </span>
             </div>
             <div className="grid grid-cols-[150px_1fr] items-center gap-16">
-              <span className="font-medium text-gray-700">Meter Manufacturer:</span>
-              <span className="text-gray-900 font-bold">{meter.manufacturer}</span>
+              <span className="font-medium text-gray-700">
+                Meter Manufacturer:
+              </span>
+              <span className="font-bold text-gray-900">
+                {meterDetail?.meterManufacturerName}
+              </span>
             </div>
             <div className="grid grid-cols-[150px_1fr] items-center gap-16">
               <span className="font-medium text-gray-700">Meter Class:</span>
-              <span className="text-gray-900 font-bold">{meter.class}</span>
+              <span className="font-bold text-gray-900">
+                {meterDetail?.meterClass}
+              </span>
             </div>
             <div className="grid grid-cols-[150px_1fr] items-center gap-16">
               <span className="font-medium text-gray-700">Meter Category:</span>
-              <span className="text-gray-900 font-bold">{meter.category}</span>
+              <span className="font-bold text-gray-900">
+                {meterDetail?.meterCategory}
+              </span>
             </div>
             <div className="grid grid-cols-[150px_1fr] items-center gap-16">
               <span className="font-medium text-gray-700">Meter Model:</span>
-              <span className="text-gray-900 font-bold">{meter.model}</span>
+              <span className="font-bold text-gray-900">
+                {meterDetail?.smartMeterInfo?.meterModel}
+              </span>
             </div>
             <div className="grid grid-cols-[150px_1fr] items-center gap-16">
               <span className="font-medium text-gray-700">Region:</span>
-              <span className="text-gray-900 font-bold">{meter.region}</span>
+              <span className="font-bold text-gray-900">
+                {flatNode?.regionName}
+              </span>
             </div>
             <div className="grid grid-cols-[150px_1fr] items-center gap-16">
               <span className="font-medium text-gray-700">Business Hub:</span>
-              <span className="text-gray-900 font-bold">{meter.businessHub}</span>
+              <span className="font-bold text-gray-900">
+                {flatNode?.businessName}
+              </span>
             </div>
             <div className="grid grid-cols-[150px_1fr] items-center gap-16">
               <span className="font-medium text-gray-700">Service Center:</span>
-              <span className="text-gray-900 font-bold">{meter.serviceCenter}</span>
+              <span className="font-bold text-gray-900">
+                {flatNode?.serviceName}
+              </span>
             </div>
             <div className="grid grid-cols-[150px_1fr] items-center gap-16">
               <span className="font-medium text-gray-700">Feeder:</span>
-              <span className="text-gray-900 font-bold">{meter.feeder}</span>
+              <span className="font-bold text-gray-900">
+                {flatNode?.feederName}
+              </span>
             </div>
             <div className="grid grid-cols-[150px_1fr] items-center gap-16">
               <span className="font-medium text-gray-700">Transformer:</span>
-              <span className="text-gray-900 font-bold">{meter.transformer }</span>
-            </div>
-            <div className="grid grid-cols-[150px_1fr] items-center gap-16">
-              <span className="font-medium text-gray-700">Service Location:</span>
-              <span className="text-gray-900 font-bold">
-                {meter.serviceLocation ?? `KM 40, Lagos - Ibadan Expressway, ${meter.region}`}
+              <span className="font-bold text-gray-900">
+                {flatNode?.dssName}
               </span>
             </div>
             <div className="grid grid-cols-[150px_1fr] items-center gap-16">
               <span className="font-medium text-gray-700">Status:</span>
-              <span className="text-gray-900 font-bold">{meter.status}</span>
+              <span className="font-bold text-gray-900">
+                {meter.connectionType}
+              </span>
             </div>
             <div className="grid grid-cols-[150px_1fr] items-center gap-16">
               <span className="font-medium text-gray-700">Last Sync:</span>
-              <span className="text-gray-900 font-bold">{meter.lastSync}</span>
+              <span className="font-bold text-gray-900">
+                {meter.updatedAt
+                  ? new Date(meter.updatedAt).toLocaleTimeString()
+                  : ""}
+              </span>
             </div>
           </div>
         )}

@@ -203,8 +203,76 @@ export interface GetMeterInventoryResponse {
   responsedesc: string;
   responsedata: MeterInventoryResponse;
 }
-// types/meter.ts
+export interface FlatNode {
+  rootId: string;
+  rootName: string;
+  regionId: string;
+  regionName: string;
+  regionNodeId: string;
+  regionParentId: string;
+  regionRegionId: string;
+  businessId: string;
+  businessNodeId: string;
+  businessParentId: string;
+  businessRegionId: string;
+  businessName: string;
+  serviceId: string;
+  serviceNodeId: string;
+  serviceParentId: string;
+  serviceRegionId: string;
+  serviceName: string;
+  feederId: string;
+  feederNodeId: string;
+  feederParentId: string;
+  feederAssetId: string;
+  feederName: string;
+  dssId: string;
+  dssNodeId: string;
+  dssParentId: string;
+  dssAssetId: string;
+  dssName: string;
+}
+
+export interface SmartMeterInfoResponse {
+  meterModel: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MeterDetailNested {
+  orgId: string;
+  nodeId: string;
+  meterId: string;
+  meterNumber: string;
+  simNumber: string;
+  region: string;
+  dss: string;
+  meterCategory: string;
+  meterClass: string;
+  meterManufacturerName: string;
+  meterStage: string;
+  customerId: string;
+  oldSgc: string;
+  newSgc: string;
+  oldKrn: string;
+  newKrn: string;
+  oldTariffIndex: number;
+  newTariffIndex: number;
+  smartMeterInfo: SmartMeterInfoResponse;
+  flatNode: FlatNode;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Meter {
+  meterNo: string;
+  connectionType: "ONLINE" | "OFFLINE";
+  onlineTime: string;
+  offlineTime: string;
+  updatedAt: string;
+  businessName: string;
+  meter: MeterDetailNested;
+  // Legacy fields for backward compatibility
   sN: string;
   meterNumber: string;
   simNo: string;
@@ -302,20 +370,22 @@ export interface CreateMeterPayload {
   approvedStatus?: string;
   meterStage?: string;
   type?: string;
-  manufacturer?: string | {
-    id: string;
-    orgId: string;
-    manufacturerId: string;
-    name: string;
-    contactPerson: string;
-    state: string;
-    city: string;
-    street: string;
-    email: string;
-    phoneNo: string;
-    createdAt: string;
-    updatedAt: string;
-  };
+  manufacturer?:
+    | string
+    | {
+        id: string;
+        orgId: string;
+        manufacturerId: string;
+        name: string;
+        contactPerson: string;
+        state: string;
+        city: string;
+        street: string;
+        email: string;
+        phoneNo: string;
+        createdAt: string;
+        updatedAt: string;
+      };
   smartMeterInfo?: {
     meterModel: string;
     protocol: string;
