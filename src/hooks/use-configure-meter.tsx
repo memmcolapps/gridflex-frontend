@@ -13,32 +13,64 @@ import {
   type FetchMeterConfigParams,
   type MeterConfigItem,
 } from "@/types/configure-meter";
-import { type Meter } from "@/types/meter";
+import {
+  type Meter,
+  type MeterDetailNested,
+  type FlatNode,
+  type SmartMeterInfoResponse,
+} from "@/types/meter";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-function mapToMeter(item: MeterConfigItem, index: number): Meter {
+function mapToMeter(item: MeterConfigItem): Meter {
+  const meterDetail = item.meter;
+
   return {
-    sN: String(index + 1).padStart(2, "0"),
-    meterNumber: item.meter.meterNumber,
-    simNo: item.meter.simNumber,
+    meterNo: item.meterNo,
+    connectionType: item.connectionType,
+    onlineTime: item.onlineTime ?? "",
+    offlineTime: item.offlineTime ?? "",
+    updatedAt: item.updatedAt ?? "",
+    businessName: item.businessName,
+    meter: {
+      orgId: meterDetail.orgId,
+      nodeId: meterDetail.nodeId,
+      meterId: meterDetail.meterId,
+      meterNumber: meterDetail.meterNumber,
+      simNumber: meterDetail.simNumber,
+      region: meterDetail.region,
+      dss: meterDetail.dss,
+      meterCategory: meterDetail.meterCategory,
+      meterClass: meterDetail.meterClass,
+      meterManufacturerName: meterDetail.meterManufacturerName,
+      meterStage: meterDetail.meterStage,
+      customerId: meterDetail.customerId,
+      oldSgc: meterDetail.oldSgc,
+      newSgc: meterDetail.newSgc,
+      oldKrn: meterDetail.oldKrn,
+      newKrn: meterDetail.newKrn,
+      oldTariffIndex: meterDetail.oldTariffIndex,
+      newTariffIndex: meterDetail.newTariffIndex,
+      smartMeterInfo: meterDetail.smartMeterInfo,
+      flatNode: meterDetail.flatNode,
+      createdAt: meterDetail.createdAt ?? "",
+      updatedAt: meterDetail.updatedAt ?? "",
+    },
+    // Legacy fields for backward compatibility
+    sN: item.meterNo,
+    meterNumber: meterDetail.meterNumber,
+    simNo: meterDetail.simNumber,
     businessHub: item.businessName,
-    class: item.meter.meterClass,
-    category: item.meter.meterCategory,
-    manufacturer: item.meter.meterManufacturerName,
-    model: item.meter.smartMeterInfo?.meterModel ?? "—",
+    class: meterDetail.meterClass,
+    category: meterDetail.meterCategory,
+    manufacturer: meterDetail.meterManufacturerName,
+    model: meterDetail.smartMeterInfo?.meterModel ?? "",
     status: item.connectionType === "ONLINE" ? "Online" : "Offline",
-    region: item.meter.region,
-    serviceCenter: item.businessName,
-    feeder: item.meter.dss,
-    transformer: item.meter.dss,
-    lastSync: item.updatedAt
-      ? new Date(item.updatedAt).toLocaleTimeString("en-US", {
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: true,
-        })
-      : "—",
+    region: meterDetail.flatNode?.regionName ?? meterDetail.region ?? "",
+    serviceCenter: meterDetail.flatNode?.serviceName ?? item.businessName,
+    feeder: meterDetail.flatNode?.feederName ?? meterDetail.dss ?? "",
+    transformer: meterDetail.flatNode?.dssName ?? "",
+    lastSync: item.onlineTime ?? item.offlineTime ?? "",
   };
 }
 
