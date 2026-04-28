@@ -112,6 +112,7 @@ export interface EventRecord {
   meterModel: string;
   eventTypeId: string;
   eventTime: string;
+  event: string;
   criticalLevel: number;
   eventName: string;
   eventType: {
