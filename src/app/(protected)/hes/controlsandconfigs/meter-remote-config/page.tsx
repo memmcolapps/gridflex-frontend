@@ -2,21 +2,28 @@
 
 import { Button } from "@/components/ui/button";
 import { ContentHeader } from "@/components/ui/content-header";
-import { Ban, Eye, MoreVertical, Send, Settings2 } from "lucide-react";
+import {
+  Ban,
+  Eye,
+  MoreVertical,
+  Send,
+  Settings2,
+  Search as SearchIcon,
+} from "lucide-react";
 import { useState } from "react";
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import ConfigureAPNDialog from "@/components/hes/controlsconfigs/meter-remote-config/configure-apn-dialog";
 import ConfigureCTVTRatioDialog from "@/components/hes/controlsconfigs/meter-remote-config/configure-ctv-ratio-dialog";
@@ -24,6 +31,11 @@ import ChangeRelayModeDialog from "@/components/hes/controlsconfigs/meter-remote
 import SetDateTimeDialog from "@/components/hes/controlsconfigs/meter-remote-config/set-date-time-dialog";
 import ConfigureIPDialog from "@/components/hes/controlsconfigs/meter-remote-config/configure-ip-dialog";
 import ViewDetailsDialog from "@/components/hes/controlsconfigs/meter-remote-config/view-details-dialog";
+import ReadIPDialog from "@/components/hes/controlsconfigs/meter-remote-config/read-ip-dialog";
+import ReadAPNDialog from "@/components/hes/controlsconfigs/meter-remote-config/read-apn-dialog";
+import ReadCTVTRatioDialog from "@/components/hes/controlsconfigs/meter-remote-config/read-ctv-ratio-dialog";
+import ReadRelayModeDialog from "@/components/hes/controlsconfigs/meter-remote-config/read-relay-mode-dialog";
+import ReadDateTimeDialog from "@/components/hes/controlsconfigs/meter-remote-config/read-date-time-dialog";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { ArrowUpDown } from "lucide-react";
@@ -35,583 +47,767 @@ import SendTokenDialog from "@/components/hes/dashboard/send-token-dialog";
 import type { Meter } from "@/types/meter";
 import { Card } from "@/components/ui/card";
 import {
-    Pagination,
-    PaginationContent,
-    PaginationItem,
-    PaginationPrevious,
-    PaginationNext,
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationPrevious,
+  PaginationNext,
 } from "@/components/ui/pagination";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { useMeterConfigurations } from "@/hooks/use-configure-meter";
 
 // Define the possible dialog types
-type DialogType = "apn" | "ctvt" | "relay" | "datetime" | "ip" | "viewDetails" | "sendToken";
+type DialogType =
+  | "apn"
+  | "ctvt"
+  | "relay"
+  | "datetime"
+  | "ip"
+  | "viewDetails"
+  | "sendToken"
+  | "readIp"
+  | "readApn"
+  | "readCtv"
+  | "readRelay"
+  | "readDatetime";
 
 // Define filter sections
 const filterSections = [
-    {
-        title: "Meter Class",
-        options: [
-            { label: "Single Phase", id: "singlePhase" },
-            { label: "Three Phase", id: "threePhase" },
-            { label: "MD", id: "md" },
-        ],
-    },
-    {
-        title: "Meter Category",
-        options: [
-            { label: "Prepaid", id: "prepaid" },
-            { label: "Postpaid", id: "postpaid" },
-        ],
-    },
-    {
-        title: "Status",
-        options: [
-            { label: "Online", id: "online" },
-            { label: "Offline", id: "offline" },
-        ],
-    },
+  {
+    title: "Meter Class",
+    options: [
+      { label: "Single Phase", id: "singlePhase" },
+      { label: "Three Phase", id: "threePhase" },
+      { label: "MD", id: "md" },
+    ],
+  },
+  {
+    title: "Meter Category",
+    options: [
+      { label: "Prepaid", id: "prepaid" },
+      { label: "Postpaid", id: "postpaid" },
+    ],
+  },
+  {
+    title: "Status",
+    options: [
+      { label: "Online", id: "online" },
+      { label: "Offline", id: "offline" },
+    ],
+  },
 ];
 
 export default function MeterRemoteConfigPage() {
+  const [selectedMeter, setSelectedMeter] = useState<Meter | undefined>(
+    undefined,
+  );
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [dialogType, setDialogType] = useState<DialogType | null>(null);
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [sortConfig, setSortConfig] = useState<{
+    key: keyof Meter;
+    direction: "asc" | "desc";
+  }>({ key: "sN", direction: "asc" });
+  const [selectedMeters, setSelectedMeters] = useState<string[]>([]);
+  const [selectedConfigOption, setSelectedConfigOption] =
+    useState<DialogType | null>(null);
+  const [showOfflineDialog, setShowOfflineDialog] = useState(false);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [rowsPerPage, setRowsPerPage] = useState<number>(10);
+  const { data, isLoading, error, refetch } = useMeterConfigurations({
+    page: currentPage - 1,
+    size: rowsPerPage,
+  });
+  const meterData = data?.meters ?? [];
+  const totalData = data?.totalData ?? 0;
+  const totalPages = data?.totalPages ?? 1;
 
-    const [selectedMeter, setSelectedMeter] = useState<Meter | undefined>(undefined);
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [dialogType, setDialogType] = useState<DialogType | null>(null);
-    const [searchTerm, setSearchTerm] = useState<string>("");
-    const [sortConfig, setSortConfig] = useState<{
-        key: keyof Meter;
-        direction: "asc" | "desc";
-    }>({ key: "sN", direction: "asc" });
-    const [selectedMeters, setSelectedMeters] = useState<string[]>([]);
-    const [selectedConfigOption, setSelectedConfigOption] = useState<DialogType | null>(null);
-    const [showOfflineDialog, setShowOfflineDialog] = useState(false);
-        const [currentPage, setCurrentPage] = useState<number>(1);
-    const [rowsPerPage, setRowsPerPage] = useState<number>(10);
-    const { data, isLoading, error, refetch } = useMeterConfigurations({
-        page: currentPage - 1, 
-        size: rowsPerPage,
-    });
-    const meterData = data?.meters ?? [];
-    const totalData = data?.totalData ?? 0;
-    const totalPages = data?.totalPages ?? 1;
+  const handleConfigureAction = (type: DialogType) => {
+    if (selectedMeters.length === 0) {
+      return;
+    }
 
-    const handleConfigureAction = (type: DialogType) => {
-        if (selectedMeters.length === 0) {
-            return;
-        }
-
-        const offlineMeters = meterData.filter(m => selectedMeters.includes(m.sN) && m.status === "Offline");
-        if (offlineMeters.length > 0) {
-            setShowOfflineDialog(true);
-            setIsDialogOpen(false);
-        } else {
-            // For now, we'll configure the first selected meter.
-            // A more complex implementation would handle bulk configurations.
-            const meterToConfigure = meterData.find(m => m.sN === selectedMeters[0]);
-            if (meterToConfigure) {
-                setSelectedMeter(meterToConfigure);
-                setDialogType(type);
-                setIsDialogOpen(true);
-                setSelectedConfigOption(type);
-            }
-        }
-    };
-
-    const handleViewDetails = (meter: Meter) => {
-        setSelectedMeter(meter);
-        setDialogType("viewDetails");
-        setIsDialogOpen(true);
-        setShowOfflineDialog(false);
-    };
-
-    const closeDialog = () => {
-        setIsDialogOpen(false);
-        setSelectedMeter(undefined);
-        setDialogType(null);
-        setShowOfflineDialog(false);
-        setSelectedConfigOption(null);
-    };
-
-    // Handle bulk upload save
-    // const handleBulkUploadSave = (data: File | Meter[]) => {
-    //     if (data instanceof File) {
-    //         // Handle raw file if sendRawFile is true, but currently it's false
-    //         console.warn("Raw file received, but not handled");
-    //     } else {
-    //         setMeterData((prevData) => [
-    //             ...prevData,
-    //             ...data.map((item, index) => ({
-    //                 ...item,
-    //                 sN: (prevData.length + index + 1).toString().padStart(2, "0"),
-    //             })),
-    //         ]);
-    //         setCurrentPage(1);
-    //     }
-    // };
-
-    // Apply search filter
-    const filteredData = meterData.filter((meter) => {
-        const searchLower = searchTerm.toLowerCase();
-        return (
-            meter.sN.toLowerCase().includes(searchLower) ||
-            meter.meterNumber.toLowerCase().includes(searchLower) ||
-            meter.simNo.toLowerCase().includes(searchLower) ||
-            meter.businessHub.toLowerCase().includes(searchLower) ||
-            meter.class.toLowerCase().includes(searchLower) ||
-            meter.category.toLowerCase().includes(searchLower) ||
-            meter.manufacturer.toLowerCase().includes(searchLower) ||
-            meter.model.toLowerCase().includes(searchLower) ||
-            meter.status.toLowerCase().includes(searchLower) ||
-            meter.region.toLowerCase().includes(searchLower) ||
-            meter.serviceCenter.toLowerCase().includes(searchLower) ||
-            meter.feeder.toLowerCase().includes(searchLower) ||
-            meter.transformer.toLowerCase().includes(searchLower) ||
-            meter.lastSync.toLowerCase().includes(searchLower)
-        );
-    });
-
-    // Apply sorting
-    const sortedData = [...filteredData].sort((a, b) => {
-        const aValue = a[sortConfig.key];
-        const bValue = b[sortConfig.key];
-        if (typeof aValue === "string" && typeof bValue === "string") {
-            return sortConfig.direction === "asc"
-                ? aValue.localeCompare(bValue)
-                : bValue.localeCompare(aValue);
-        }
-        return 0;
-    });
-
-    const handlePrevious = () => {
-        setCurrentPage((prev) => Math.max(prev - 1, 1));
-    };
-
-    const handleNext = () => {
-        setCurrentPage((prev) => Math.min(prev + 1, totalPages));
-    };
-
-    const handleRowsPerPageChange = (value: string) => {
-        setRowsPerPage(Number(value));
-        setCurrentPage(1);
-    };
-
-    const handleSortChange = (key: keyof Meter, direction: "asc" | "desc") => {
-        setSortConfig({ key, direction });
-    };
-
-    const toggleMeterSelection = (sN: string) => {
-        setSelectedMeters((prev) =>
-            prev.includes(sN) ? prev.filter((id) => id !== sN) : [...prev, sN]
-        );
-    };
-
-    const toggleSelectAll = () => {
-        if (selectedMeters.length === sortedData.length && sortedData.length > 0) {
-            setSelectedMeters([]);
-        } else {
-            setSelectedMeters(sortedData.map((meter) => meter.sN));
-        }
-    };
-
-    const handleSetActiveFilters = (filters: Record<string, string | boolean>) => {
-        console.log("Filters applied:", filters);
-        setCurrentPage(1);
-    };
-
-    const isConfigureButtonDisabled = selectedMeters.length === 0;
-
-    return (
-        <div className="p-6 overflow-y-auto h-screen w-full flex flex-col">
-            <div className="mb-8 flex flex-col items-center justify-between gap-4 md:flex-row">
-                <ContentHeader
-                    title="Meter Remote Configuration"
-                    description="Enable remote setup and management of meter settings for efficient monitoring."
-                />
-                <div className="flex gap-2">
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button
-                                className="flex w-full cursor-pointer items-center gap-2 border bg-[#161CCA] font-medium text-white md:w-auto"
-                                variant="outline"
-                                size="lg"
-                                disabled={isConfigureButtonDisabled}
-                            >
-                                <Settings2 size={14} strokeWidth={2.3} className="h-4 w-4 text-white" />
-                                <span className="text-sm md:text-base">Configure Meter</span>
-                                <ChevronDown size={14} className="h-4 w-4 text-white" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="w-[200px]">
-                                <DropdownMenuItem
-                                onClick={() => handleConfigureAction("ip")}
-                                    className="flex items-center justify-between cursor-pointer"
-                                >
-                                <span>Configure IP Address</span>
-                                {selectedConfigOption === "ip" && <span className="text-black">✓</span>}
-                                </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onClick={() => handleConfigureAction("apn")}
-                                className="flex items-center justify-between cursor-pointer"
-                            >
-                                <span>Configure APN</span>
-                                {selectedConfigOption === "apn" && <span className="text-black">✓</span>}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onClick={() => handleConfigureAction("ctvt")}
-                                className="flex items-center justify-between cursor-pointer"
-                            >
-                                <span>Configure CT & VT Ratio</span>
-                                {selectedConfigOption === "ctvt" && <span className="text-black">✓</span>}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onClick={() => handleConfigureAction("relay")}
-                                className="flex items-center justify-between cursor-pointer"
-                            >
-                                <span>Change Relay Mode</span>
-                                {selectedConfigOption === "relay" && <span className="text-black">✓</span>}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                onClick={() => handleConfigureAction("datetime")}
-                                className="flex items-center justify-between cursor-pointer"
-                            >
-                                <span>Set Date and Time</span>
-                                {selectedConfigOption === "datetime" && <span className="text-black">✓</span>}
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
-            </div>
-
-            <div className="mb-4 flex w-full flex-col items-center gap-4 md:flex-row">
-                <div className="relative w-full md:w-[300px]">
-                    <Search
-                        size={14}
-                        className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400"
-                    />
-                    <Input
-                        type="text"
-                        placeholder="Search by meter no., sim no, etc..."
-                        className="w-full border-gray-300 pl-10 focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                </div>
-                <FilterControl
-                    sections={filterSections}
-                    onApply={handleSetActiveFilters}
-                    onReset={() => handleSetActiveFilters({})}
-                />
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button
-                            variant="outline"
-                            className="w-full cursor-pointer gap-2 border-gray-300 sm:w-auto"
-                        >
-                            <ArrowUpDown className="text-gray-500" size={14} />
-                            <span className="hidden text-gray-800 sm:inline">Sort</span>
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="center" className="w-48">
-                            <DropdownMenuItem
-                            onClick={() => handleSortChange("sN", "asc")}
-                                className="cursor-pointer text-sm hover:bg-gray-100"
-                            >
-                            S/N (A-Z)
-                            </DropdownMenuItem>
-                        <DropdownMenuItem
-                            onClick={() => handleSortChange("sN", "desc")}
-                            className="cursor-pointer text-sm hover:bg-gray-100"
-                        >
-                            S/N (Z-A)
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                            onClick={() => handleSortChange("meterNumber", "asc")}
-                            className="cursor-pointer text-sm hover:bg-gray-100"
-                        >
-                            Meter Number (A-Z)
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                            onClick={() => handleSortChange("meterNumber", "desc")}
-                            className="cursor-pointer text-sm hover:bg-gray-100"
-                        >
-                            Meter Number (Z-A)
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                            onClick={() => handleSortChange("status", "asc")}
-                            className="cursor-pointer text-sm hover:bg-gray-100"
-                        >
-                            Status (A-Z)
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                            onClick={() => handleSortChange("status", "desc")}
-                            className="cursor-pointer text-sm hover:bg-gray-100"
-                        >
-                            Status (Z-A)
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            </div>
-
-            <Card className="overflow-x-auto border-none bg-transparent shadow-none">
-                <Table className="w-full table-auto">
-                    <TableHeader>
-                        <TableRow className="bg-gray-200">
-                            <TableHead className="w-[70px] p-2 text-left text-sm font-medium text-gray-600">
-                                <div className="flex items-center gap-2">
-                                    <Checkbox
-                                        checked={
-                                            selectedMeters.length === sortedData.length &&
-                                            sortedData.length > 0
-                                        }
-                                        onCheckedChange={toggleSelectAll}
-                                        className="border-gray-300"
-                                    />
-                                    <span>S/N</span>
-                                </div>
-                            </TableHead>
-                            <TableHead className="p-2 text-left text-sm font-medium text-gray-600">Meter Number</TableHead>
-                            <TableHead className="p-2 text-left text-sm font-medium text-gray-600">SIM No</TableHead>
-                            <TableHead className="p-2 text-left text-sm font-medium text-gray-600">Business Hub</TableHead>
-                            <TableHead className="p-2 text-left text-sm font-medium text-gray-600">Class</TableHead>
-                            <TableHead className="p-2 text-left text-sm font-medium text-gray-600">Category</TableHead>
-                            <TableHead className="p-2 text-left text-sm font-medium text-gray-600">Manufacturer</TableHead>
-                            <TableHead className="p-2 text-left text-sm font-medium text-gray-600">Model</TableHead>
-                            <TableHead className="p-2 text-left text-sm font-medium text-gray-600">Status</TableHead>
-                            <TableHead className="p-2 text-left text-sm font-medium text-gray-600">Actions</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {isLoading ? (
-                            <TableRow>
-                                <TableCell colSpan={10} className="h-24 text-center">
-                                    <div className="flex items-center justify-center gap-2 text-gray-500">
-                                        <Loader2 className="h-4 w-4 animate-spin" />
-                                        <span className="text-sm">Loading meters…</span>
-                                    </div>
-                                </TableCell>
-                            </TableRow>
-                        ) : sortedData.length === 0 ? (
-                            <TableRow>
-                                <TableCell colSpan={10} className="h-24 text-center text-sm text-gray-500">
-                                    No data available
-                                </TableCell>
-                            </TableRow>
-                        ) : (
-                            sortedData.map((meter, index) => (
-                                <TableRow
-                                    key={meter.sN}
-                                    className="cursor-pointer hover:bg-gray-50"
-                                >
-                                    <TableCell className="p-2 text-sm text-gray-800">
-                                        <div className="flex items-center gap-2">
-                                            <Checkbox
-                                                checked={selectedMeters.includes(meter.sN)}
-                                                onCheckedChange={() => toggleMeterSelection(meter.sN)}
-                                                className="border-gray-300"
-                                            />
-                                            <span>{index + 1 + (currentPage - 1) * rowsPerPage}</span>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="p-2 text-sm text-gray-800">{meter.meterNumber}</TableCell>
-                                    <TableCell className="p-2 text-sm text-gray-800">{meter.simNo}</TableCell>
-                                    <TableCell className="p-2 text-sm text-gray-800">{meter.businessHub}</TableCell>
-                                    <TableCell className="p-2 text-sm text-gray-800">{meter.class}</TableCell>
-                                    <TableCell className="p-2 text-sm text-gray-800">{meter.category}</TableCell>
-                                    <TableCell className="p-2 text-sm text-gray-800">{meter.manufacturer}</TableCell>
-                                    <TableCell className="p-2 text-sm text-gray-800">{meter.model}</TableCell>
-                                    <TableCell className="p-2 text-sm">
-                                        <span
-                                            className={`px-2 py-1 rounded-full ${meter.status === "Online"
-                                                    ? "bg-[#E9FBF0] text-[#059E40]"
-                                                    : "bg-[#FBE9E9] text-[#F50202]"
-                                            }`}
-                                        >
-                                            {meter.status}
-                                        </span>
-                                    </TableCell>
-                                    <TableCell className="p-2 text-sm text-gray-800">
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button
-                                                    variant="default"
-                                                    size="sm"
-                                                    className="cursor-pointer border-gray-200 focus:ring-gray-500/0"
-                                                    onClick={() => setSelectedMeter(meter)}
-                                                >
-                                                    <MoreVertical size={16} className="border-gray-200 text-gray-500" />
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent>
-                                                <DropdownMenuItem onSelect={() => handleViewDetails(meter)}>
-                                                    <div className="flex items-center w-full gap-2">
-                                                        <Eye size={14} />
-                                                        <span className="cursor-pointer">View Meter</span>
-                                                    </div>
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem onSelect={() => {
-                                                    const action = meter.status === "Online" ? "disconnected" : "connected";
-                                                    toast.success(`Meter ${meter.meterNumber} relay ${action} successfully`);
-                                                }}>
-                                                    <div className="flex items-center w-full gap-2">
-                                                        <Ban size={14} />
-                                                        <span className="cursor-pointer">
-                                                            {meter.status === "Online" ? "Disconnect Relay" : "Connect Relay"}
-                                                        </span>
-                                                    </div>
-                                                </DropdownMenuItem>
-                                                <DropdownMenuItem onSelect={() => {
-                                                        setSelectedMeter(meter);
-                                                        setDialogType("sendToken");
-                                                        setIsDialogOpen(true);
-                                                }}>
-                                                    <div className="flex items-center w-full gap-2">
-                                                        <Send size={14} />
-                                                        <span className="cursor-pointer">Send Token</span>
-                                                    </div>
-                                                </DropdownMenuItem>
-
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    </TableCell>
-                                </TableRow>
-                            ))
-                        )}
-                    </TableBody>
-                </Table>
-
-                <Pagination className="mt-4 flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                        <span className="text-sm font-medium">Rows per page</span>
-                        <Select
-                            value={rowsPerPage.toString()}
-                            onValueChange={handleRowsPerPageChange}
-                        >
-                            <SelectTrigger className="h-8 w-[70px]">
-                                <SelectValue placeholder={rowsPerPage.toString()} />
-                            </SelectTrigger>
-                            <SelectContent
-                                position="popper"
-                                side="top"
-                                align="center"
-                                className="mb-1 ring-gray-50"
-                            >
-                                <SelectItem value="10">10</SelectItem>
-                                <SelectItem value="24">24</SelectItem>
-                                <SelectItem value="48">48</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        <span className="text-sm font-medium">
-                            {totalData === 0
-                                ? "0"
-                                : `${(currentPage - 1) * rowsPerPage + 1}–${Math.min(
-                                      currentPage * rowsPerPage,
-                                      totalData
-                                  )}`}{" "}
-                            of {totalData}
-                        </span>
-                    </div>
-                    <PaginationContent>
-                        <PaginationItem>
-                            <PaginationPrevious
-                                href="#"
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    handlePrevious();
-                                }}
-                                aria-disabled={currentPage === 1}
-                                className={
-                                    currentPage === 1
-                                        ? "pointer-events-none opacity-50"
-                                        : "cursor-pointer"
-                                }
-                            />
-                        </PaginationItem>
-                        <PaginationItem>
-                            <PaginationNext
-                                href="#"
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    handleNext();
-                                }}
-                                aria-disabled={currentPage === totalPages}
-                                className={
-                                    currentPage === totalPages
-                                        ? "pointer-events-none opacity-50"
-                                        : "cursor-pointer"
-                                }
-                            />
-                        </PaginationItem>
-                    </PaginationContent>
-                </Pagination>
-            </Card>
-
-            {isDialogOpen && dialogType === "apn" && selectedMeter && (
-                <ConfigureAPNDialog
-                    isOpen={true}
-                    onClose={closeDialog}
-                    meter={selectedMeter}
-                />
-            )}
-            {isDialogOpen && dialogType === "ctvt" && selectedMeter && (
-                <ConfigureCTVTRatioDialog
-                    isOpen={true}
-                    onClose={closeDialog}
-                    meter={selectedMeter}
-                />
-            )}
-            {isDialogOpen && dialogType === "relay" && selectedMeter && (
-                <ChangeRelayModeDialog
-                    isOpen={true}
-                    onClose={closeDialog}
-                    meter={selectedMeter}
-                />
-            )}
-            {isDialogOpen && dialogType === "datetime" && selectedMeter && (
-                <SetDateTimeDialog
-                    isOpen={true}
-                    onClose={closeDialog}
-                    meter={selectedMeter}
-                />
-            )}
-            {isDialogOpen && dialogType === "ip" && selectedMeter && (
-                <ConfigureIPDialog
-                    isOpen={true}
-                    onClose={closeDialog}
-                    meter={selectedMeter}
-                />
-            )}
-            {isDialogOpen && dialogType === "viewDetails" && selectedMeter && (
-                <ViewDetailsDialog
-                    isOpen={true}
-                    onClose={closeDialog}
-                    meter={selectedMeter}
-                />
-            )}
-            {isDialogOpen && dialogType === "sendToken" && selectedMeter && (
-                <SendTokenDialog
-                    isOpen={true}
-                    onClose={closeDialog}
-                    onSubmit={(token) => {
-                        console.log("Sending token to meter:", selectedMeter.meterNumber, "Token:", token);
-                        closeDialog();
-                    }}
-                />
-            )}
-            {showOfflineDialog && (
-                <OfflineDialog
-                    isOpen={true}
-                    onClose={closeDialog}
-                />
-            )}
-        </div>
+    const offlineMeters = meterData.filter(
+      (m) => selectedMeters.includes(m.sN) && m.status === "Offline",
     );
+    if (offlineMeters.length > 0) {
+      setShowOfflineDialog(true);
+      setIsDialogOpen(false);
+    } else {
+      // For now, we'll configure the first selected meter.
+      // A more complex implementation would handle bulk configurations.
+      const meterToConfigure = meterData.find(
+        (m) => m.sN === selectedMeters[0],
+      );
+      if (meterToConfigure) {
+        setSelectedMeter(meterToConfigure);
+        setDialogType(type);
+        setIsDialogOpen(true);
+        setSelectedConfigOption(type);
+      }
+    }
+  };
+
+  const handleViewDetails = (meter: Meter) => {
+    setSelectedMeter(meter);
+    setDialogType("viewDetails");
+    setIsDialogOpen(true);
+    setShowOfflineDialog(false);
+  };
+
+  const handleReadAction = (type: DialogType) => {
+    if (selectedMeters.length === 0) {
+      return;
+    }
+    const meterToRead = meterData.find((m) => m.sN === selectedMeters[0]);
+    if (meterToRead) {
+      setSelectedMeter(meterToRead);
+      setDialogType(type);
+      setIsDialogOpen(true);
+    }
+  };
+
+  const closeDialog = () => {
+    setIsDialogOpen(false);
+    setSelectedMeter(undefined);
+    setDialogType(null);
+    setShowOfflineDialog(false);
+    setSelectedConfigOption(null);
+  };
+
+  // Handle bulk upload save
+  // const handleBulkUploadSave = (data: File | Meter[]) => {
+  //     if (data instanceof File) {
+  //         // Handle raw file if sendRawFile is true, but currently it's false
+  //         console.warn("Raw file received, but not handled");
+  //     } else {
+  //         setMeterData((prevData) => [
+  //             ...prevData,
+  //             ...data.map((item, index) => ({
+  //                 ...item,
+  //                 sN: (prevData.length + index + 1).toString().padStart(2, "0"),
+  //             })),
+  //         ]);
+  //         setCurrentPage(1);
+  //     }
+  // };
+
+  // Apply search filter
+  const filteredData = meterData.filter((meter) => {
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      meter.sN.toLowerCase().includes(searchLower) ||
+      meter.meterNumber.toLowerCase().includes(searchLower) ||
+      meter.simNo.toLowerCase().includes(searchLower) ||
+      meter.businessHub.toLowerCase().includes(searchLower) ||
+      meter.class.toLowerCase().includes(searchLower) ||
+      meter.category.toLowerCase().includes(searchLower) ||
+      meter.manufacturer.toLowerCase().includes(searchLower) ||
+      meter.model.toLowerCase().includes(searchLower) ||
+      meter.status.toLowerCase().includes(searchLower) ||
+      meter.region.toLowerCase().includes(searchLower) ||
+      meter.serviceCenter.toLowerCase().includes(searchLower) ||
+      meter.feeder.toLowerCase().includes(searchLower) ||
+      meter.transformer.toLowerCase().includes(searchLower) ||
+      meter.lastSync.toLowerCase().includes(searchLower)
+    );
+  });
+
+  // Apply sorting
+  const sortedData = [...filteredData].sort((a, b) => {
+    const aValue = a[sortConfig.key];
+    const bValue = b[sortConfig.key];
+    if (typeof aValue === "string" && typeof bValue === "string") {
+      return sortConfig.direction === "asc"
+        ? aValue.localeCompare(bValue)
+        : bValue.localeCompare(aValue);
+    }
+    return 0;
+  });
+
+  const handlePrevious = () => {
+    setCurrentPage((prev) => Math.max(prev - 1, 1));
+  };
+
+  const handleNext = () => {
+    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+  };
+
+  const handleRowsPerPageChange = (value: string) => {
+    setRowsPerPage(Number(value));
+    setCurrentPage(1);
+  };
+
+  const handleSortChange = (key: keyof Meter, direction: "asc" | "desc") => {
+    setSortConfig({ key, direction });
+  };
+
+  const toggleMeterSelection = (sN: string) => {
+    setSelectedMeters((prev) =>
+      prev.includes(sN) ? prev.filter((id) => id !== sN) : [...prev, sN],
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedMeters.length === sortedData.length && sortedData.length > 0) {
+      setSelectedMeters([]);
+    } else {
+      setSelectedMeters(sortedData.map((meter) => meter.sN));
+    }
+  };
+
+  const handleSetActiveFilters = (
+    filters: Record<string, string | boolean>,
+  ) => {
+    console.log("Filters applied:", filters);
+    setCurrentPage(1);
+  };
+
+  const isConfigureButtonDisabled = selectedMeters.length === 0;
+
+  return (
+    <div className="flex h-screen w-full flex-col overflow-y-auto p-6">
+      <div className="mb-8 flex flex-col items-center justify-between gap-4 md:flex-row">
+        <ContentHeader
+          title="Meter Remote Configuration"
+          description="Enable remote setup and management of meter settings for efficient monitoring."
+        />
+        <div className="flex gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                className="flex w-full cursor-pointer items-center gap-2 border border-[#161CCA] bg-white font-medium text-[#161CCA] md:w-auto"
+                variant="outline"
+                size="lg"
+                disabled={isConfigureButtonDisabled}
+              >
+                <SearchIcon
+                  size={14}
+                  strokeWidth={2.3}
+                  className="h-4 w-4 text-[#161CCA]"
+                />
+                <span className="text-sm md:text-base">Read Meter</span>
+                <ChevronDown size={14} className="h-4 w-4 text-[#161CCA]" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-[200px]">
+              <DropdownMenuItem
+                onClick={() => handleReadAction("readIp")}
+                className="flex cursor-pointer items-center justify-between"
+              >
+                <span>Read IP Address</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => handleReadAction("readApn")}
+                className="flex cursor-pointer items-center justify-between"
+              >
+                <span>Read APN</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => handleReadAction("readCtv")}
+                className="flex cursor-pointer items-center justify-between"
+              >
+                <span>Read CT & VT Ratio</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => handleReadAction("readRelay")}
+                className="flex cursor-pointer items-center justify-between"
+              >
+                <span>Read Relay Mode</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => handleReadAction("readDatetime")}
+                className="flex cursor-pointer items-center justify-between"
+              >
+                <span>Read Date and Time</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                className="flex w-full cursor-pointer items-center gap-2 border bg-[#161CCA] font-medium text-white md:w-auto"
+                variant="outline"
+                size="lg"
+                disabled={isConfigureButtonDisabled}
+              >
+                <Settings2
+                  size={14}
+                  strokeWidth={2.3}
+                  className="h-4 w-4 text-white"
+                />
+                <span className="text-sm md:text-base">Configure Meter</span>
+                <ChevronDown size={14} className="h-4 w-4 text-white" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-[200px]">
+              <DropdownMenuItem
+                onClick={() => handleConfigureAction("ip")}
+                className="flex cursor-pointer items-center justify-between"
+              >
+                <span>Configure IP Address</span>
+                {selectedConfigOption === "ip" && (
+                  <span className="text-black">✓</span>
+                )}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => handleConfigureAction("apn")}
+                className="flex cursor-pointer items-center justify-between"
+              >
+                <span>Configure APN</span>
+                {selectedConfigOption === "apn" && (
+                  <span className="text-black">✓</span>
+                )}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => handleConfigureAction("ctvt")}
+                className="flex cursor-pointer items-center justify-between"
+              >
+                <span>Configure CT & VT Ratio</span>
+                {selectedConfigOption === "ctvt" && (
+                  <span className="text-black">✓</span>
+                )}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => handleConfigureAction("relay")}
+                className="flex cursor-pointer items-center justify-between"
+              >
+                <span>Change Relay Mode</span>
+                {selectedConfigOption === "relay" && (
+                  <span className="text-black">✓</span>
+                )}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => handleConfigureAction("datetime")}
+                className="flex cursor-pointer items-center justify-between"
+              >
+                <span>Set Date and Time</span>
+                {selectedConfigOption === "datetime" && (
+                  <span className="text-black">✓</span>
+                )}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
+
+      <div className="mb-4 flex w-full flex-col items-center gap-4 md:flex-row">
+        <div className="relative w-full md:w-[300px]">
+          <Search
+            size={14}
+            className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400"
+          />
+          <Input
+            type="text"
+            placeholder="Search by meter no., sim no, etc..."
+            className="w-full border-gray-300 pl-10 focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        <FilterControl
+          sections={filterSections}
+          onApply={handleSetActiveFilters}
+          onReset={() => handleSetActiveFilters({})}
+        />
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              className="w-full cursor-pointer gap-2 border-gray-300 sm:w-auto"
+            >
+              <ArrowUpDown className="text-gray-500" size={14} />
+              <span className="hidden text-gray-800 sm:inline">Sort</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="center" className="w-48">
+            <DropdownMenuItem
+              onClick={() => handleSortChange("sN", "asc")}
+              className="cursor-pointer text-sm hover:bg-gray-100"
+            >
+              S/N (A-Z)
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => handleSortChange("sN", "desc")}
+              className="cursor-pointer text-sm hover:bg-gray-100"
+            >
+              S/N (Z-A)
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => handleSortChange("meterNumber", "asc")}
+              className="cursor-pointer text-sm hover:bg-gray-100"
+            >
+              Meter Number (A-Z)
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => handleSortChange("meterNumber", "desc")}
+              className="cursor-pointer text-sm hover:bg-gray-100"
+            >
+              Meter Number (Z-A)
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => handleSortChange("status", "asc")}
+              className="cursor-pointer text-sm hover:bg-gray-100"
+            >
+              Status (A-Z)
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => handleSortChange("status", "desc")}
+              className="cursor-pointer text-sm hover:bg-gray-100"
+            >
+              Status (Z-A)
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      <Card className="overflow-x-auto border-none bg-transparent shadow-none">
+        <Table className="w-full table-auto">
+          <TableHeader>
+            <TableRow className="bg-gray-200">
+              <TableHead className="w-[70px] p-2 text-left text-sm font-medium text-gray-600">
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    checked={
+                      selectedMeters.length === sortedData.length &&
+                      sortedData.length > 0
+                    }
+                    onCheckedChange={toggleSelectAll}
+                    className="border-gray-300"
+                  />
+                  <span>S/N</span>
+                </div>
+              </TableHead>
+              <TableHead className="p-2 text-left text-sm font-medium text-gray-600">
+                Meter Number
+              </TableHead>
+              <TableHead className="p-2 text-left text-sm font-medium text-gray-600">
+                SIM No
+              </TableHead>
+              <TableHead className="p-2 text-left text-sm font-medium text-gray-600">
+                Business Hub
+              </TableHead>
+              <TableHead className="p-2 text-left text-sm font-medium text-gray-600">
+                Class
+              </TableHead>
+              <TableHead className="p-2 text-left text-sm font-medium text-gray-600">
+                Category
+              </TableHead>
+              <TableHead className="p-2 text-left text-sm font-medium text-gray-600">
+                Manufacturer
+              </TableHead>
+              <TableHead className="p-2 text-left text-sm font-medium text-gray-600">
+                Model
+              </TableHead>
+              <TableHead className="p-2 text-left text-sm font-medium text-gray-600">
+                Status
+              </TableHead>
+              <TableHead className="p-2 text-left text-sm font-medium text-gray-600">
+                Actions
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={10} className="h-24 text-center">
+                  <div className="flex items-center justify-center gap-2 text-gray-500">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span className="text-sm">Loading meters…</span>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : sortedData.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  colSpan={10}
+                  className="h-24 text-center text-sm text-gray-500"
+                >
+                  No data available
+                </TableCell>
+              </TableRow>
+            ) : (
+              sortedData.map((meter, index) => (
+                <TableRow
+                  key={meter.sN}
+                  className="cursor-pointer hover:bg-gray-50"
+                >
+                  <TableCell className="p-2 text-sm text-gray-800">
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        checked={selectedMeters.includes(meter.sN)}
+                        onCheckedChange={() => toggleMeterSelection(meter.sN)}
+                        className="border-gray-300"
+                      />
+                      <span>{index + 1 + (currentPage - 1) * rowsPerPage}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="p-2 text-sm text-gray-800">
+                    {meter.meterNumber}
+                  </TableCell>
+                  <TableCell className="p-2 text-sm text-gray-800">
+                    {meter.simNo}
+                  </TableCell>
+                  <TableCell className="p-2 text-sm text-gray-800">
+                    {meter.businessHub}
+                  </TableCell>
+                  <TableCell className="p-2 text-sm text-gray-800">
+                    {meter.class}
+                  </TableCell>
+                  <TableCell className="p-2 text-sm text-gray-800">
+                    {meter.category}
+                  </TableCell>
+                  <TableCell className="p-2 text-sm text-gray-800">
+                    {meter.manufacturer}
+                  </TableCell>
+                  <TableCell className="p-2 text-sm text-gray-800">
+                    {meter.model}
+                  </TableCell>
+                  <TableCell className="p-2 text-sm">
+                    <span
+                      className={`rounded-full px-2 py-1 ${
+                        meter.status === "Online"
+                          ? "bg-[#E9FBF0] text-[#059E40]"
+                          : "bg-[#FBE9E9] text-[#F50202]"
+                      }`}
+                    >
+                      {meter.status}
+                    </span>
+                  </TableCell>
+                  <TableCell className="p-2 text-sm text-gray-800">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="default"
+                          size="sm"
+                          className="cursor-pointer border-gray-200 focus:ring-gray-500/0"
+                          onClick={() => setSelectedMeter(meter)}
+                        >
+                          <MoreVertical
+                            size={16}
+                            className="border-gray-200 text-gray-500"
+                          />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <DropdownMenuItem
+                          onSelect={() => handleViewDetails(meter)}
+                        >
+                          <div className="flex w-full items-center gap-2">
+                            <Eye size={14} />
+                            <span className="cursor-pointer">View Meter</span>
+                          </div>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onSelect={() => {
+                            const action =
+                              meter.status === "Online"
+                                ? "disconnected"
+                                : "connected";
+                            toast.success(
+                              `Meter ${meter.meterNumber} relay ${action} successfully`,
+                            );
+                          }}
+                        >
+                          <div className="flex w-full items-center gap-2">
+                            <Ban size={14} />
+                            <span className="cursor-pointer">
+                              {meter.status === "Online"
+                                ? "Disconnect Relay"
+                                : "Connect Relay"}
+                            </span>
+                          </div>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onSelect={() => {
+                            setSelectedMeter(meter);
+                            setDialogType("sendToken");
+                            setIsDialogOpen(true);
+                          }}
+                        >
+                          <div className="flex w-full items-center gap-2">
+                            <Send size={14} />
+                            <span className="cursor-pointer">Send Token</span>
+                          </div>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+
+        <Pagination className="mt-4 flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <span className="text-sm font-medium">Rows per page</span>
+            <Select
+              value={rowsPerPage.toString()}
+              onValueChange={handleRowsPerPageChange}
+            >
+              <SelectTrigger className="h-8 w-[70px]">
+                <SelectValue placeholder={rowsPerPage.toString()} />
+              </SelectTrigger>
+              <SelectContent
+                position="popper"
+                side="top"
+                align="center"
+                className="mb-1 ring-gray-50"
+              >
+                <SelectItem value="10">10</SelectItem>
+                <SelectItem value="24">24</SelectItem>
+                <SelectItem value="48">48</SelectItem>
+              </SelectContent>
+            </Select>
+            <span className="text-sm font-medium">
+              {totalData === 0
+                ? "0"
+                : `${(currentPage - 1) * rowsPerPage + 1}–${Math.min(
+                    currentPage * rowsPerPage,
+                    totalData,
+                  )}`}{" "}
+              of {totalData}
+            </span>
+          </div>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handlePrevious();
+                }}
+                aria-disabled={currentPage === 1}
+                className={
+                  currentPage === 1
+                    ? "pointer-events-none opacity-50"
+                    : "cursor-pointer"
+                }
+              />
+            </PaginationItem>
+            <PaginationItem>
+              <PaginationNext
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleNext();
+                }}
+                aria-disabled={currentPage === totalPages}
+                className={
+                  currentPage === totalPages
+                    ? "pointer-events-none opacity-50"
+                    : "cursor-pointer"
+                }
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      </Card>
+
+      {isDialogOpen && dialogType === "apn" && selectedMeter && (
+        <ConfigureAPNDialog
+          isOpen={true}
+          onClose={closeDialog}
+          meter={selectedMeter}
+        />
+      )}
+      {isDialogOpen && dialogType === "ctvt" && selectedMeter && (
+        <ConfigureCTVTRatioDialog
+          isOpen={true}
+          onClose={closeDialog}
+          meter={selectedMeter}
+        />
+      )}
+      {isDialogOpen && dialogType === "relay" && selectedMeter && (
+        <ChangeRelayModeDialog
+          isOpen={true}
+          onClose={closeDialog}
+          meter={selectedMeter}
+        />
+      )}
+      {isDialogOpen && dialogType === "datetime" && selectedMeter && (
+        <SetDateTimeDialog
+          isOpen={true}
+          onClose={closeDialog}
+          meter={selectedMeter}
+        />
+      )}
+      {isDialogOpen && dialogType === "ip" && selectedMeter && (
+        <ConfigureIPDialog
+          isOpen={true}
+          onClose={closeDialog}
+          meter={selectedMeter}
+        />
+      )}
+      {isDialogOpen && dialogType === "viewDetails" && selectedMeter && (
+        <ViewDetailsDialog
+          isOpen={true}
+          onClose={closeDialog}
+          meter={selectedMeter}
+        />
+      )}
+      {isDialogOpen && dialogType === "sendToken" && selectedMeter && (
+        <SendTokenDialog
+          isOpen={true}
+          onClose={closeDialog}
+          onSubmit={(token) => {
+            console.log(
+              "Sending token to meter:",
+              selectedMeter.meterNumber,
+              "Token:",
+              token,
+            );
+            closeDialog();
+          }}
+        />
+      )}
+      {isDialogOpen && dialogType === "readIp" && selectedMeter && (
+        <ReadIPDialog
+          isOpen={true}
+          onClose={closeDialog}
+          meter={selectedMeter}
+        />
+      )}
+      {isDialogOpen && dialogType === "readApn" && selectedMeter && (
+        <ReadAPNDialog
+          isOpen={true}
+          onClose={closeDialog}
+          meter={selectedMeter}
+        />
+      )}
+      {isDialogOpen && dialogType === "readCtv" && selectedMeter && (
+        <ReadCTVTRatioDialog
+          isOpen={true}
+          onClose={closeDialog}
+          meter={selectedMeter}
+        />
+      )}
+      {isDialogOpen && dialogType === "readRelay" && selectedMeter && (
+        <ReadRelayModeDialog
+          isOpen={true}
+          onClose={closeDialog}
+          meter={selectedMeter}
+        />
+      )}
+      {isDialogOpen && dialogType === "readDatetime" && selectedMeter && (
+        <ReadDateTimeDialog
+          isOpen={true}
+          onClose={closeDialog}
+          meter={selectedMeter}
+        />
+      )}
+      {showOfflineDialog && (
+        <OfflineDialog isOpen={true} onClose={closeDialog} />
+      )}
+    </div>
+  );
 }
