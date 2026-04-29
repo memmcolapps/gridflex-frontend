@@ -187,7 +187,7 @@ export async function getProfiles({
   meterNumber,
   profile,
   model,
-  search,
+  // search,
   node,
 }: GetProfilesParams): Promise<ProfilesApiResponse> {
   try {
@@ -205,7 +205,7 @@ export async function getProfiles({
     params.append("meterNumber", meterNumber);
     params.append("profile", profile);
     params.append("model", model);
-    params.append("search", search);
+    // params.append("search", search);
     params.append("node", node);
 
     const response = await axiosInstance.get(`${API_URL}/hes/service/profile`, {

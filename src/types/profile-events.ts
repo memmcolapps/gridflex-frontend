@@ -276,7 +276,7 @@ export interface GetProfilesParams {
   meterNumber: string;
   profile: string;
   model: string;
-  search: string;
+  // search: string;
   node: string;
 }
 
