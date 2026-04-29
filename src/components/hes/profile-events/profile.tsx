@@ -226,7 +226,7 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
         meterNumber: selectedMeterNos.join(","),
         profile: selectedProfileTypes,
         model: selectedMeterModels.join(","),
-        search: selectedMeterNos.join(","),
+        // search: selectedMeterNos.join(","),
         node: selectedUnits ?? "",
       },
       {
@@ -389,7 +389,7 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
                 className="w-full justify-between border-gray-300"
               >
                 {selectedMeterNos.length > 0
-                  ? `${selectedMeterNos.length} selected`
+                  ? selectedMeterNos[0]
                   : "Select meter numbers..."}
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
@@ -403,40 +403,13 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
                 <CommandList>
                   <CommandEmpty>No meter found.</CommandEmpty>
                   <CommandGroup>
-                    <CommandItem
-                      onSelect={() => {
-                        if (selectedMeterNos.length === filteredMeters.length) {
-                          setSelectedMeterNos([]);
-                        } else {
-                          setSelectedMeterNos(
-                            filteredMeters.map((m) => m.meterNumber),
-                          );
-                        }
-                      }}
-                      className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-50"
-                    >
-                      <span className="text-sm">Select All</span>
-                      <div className="flex h-4 w-4 items-center justify-center">
-                        {selectedMeterNos.length === filteredMeters.length ? (
-                          <div className="flex h-4 w-4 items-center justify-center rounded-sm bg-green-100">
-                            <Check size={12} className="text-green-600" />
-                          </div>
-                        ) : (
-                          <Square size={14} className="text-gray-400" />
-                        )}
-                      </div>
-                    </CommandItem>
-                    <div className="mx-2 border-t border-dotted border-[#4ECDC4]" />
                     {filteredMeters.map((meter) => (
                       <CommandItem
                         key={meter.id ?? meter.meterNumber}
                         value={meter.meterNumber}
                         onSelect={() => {
-                          setSelectedMeterNos((prev) =>
-                            prev.includes(meter.meterNumber)
-                              ? prev.filter((m) => m !== meter.meterNumber)
-                              : [...prev, meter.meterNumber],
-                          );
+                          setSelectedMeterNos([meter.meterNumber]);
+                          setMeterDropdownOpen(false); 
                         }}
                         className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-50"
                       >
