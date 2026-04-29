@@ -206,7 +206,7 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
     // Implementation removed as function is not used
   };
 
-  const handleRun = (page: number = 0, size?: number) => {
+  const handleRun = (page = 0, size?: number) => {
     const effectiveSize = size ?? rowsPerPage;
     const isMeterModelRequired = selectedHierarchy && selectedUnits;
     if (!startDate || !endDate || !selectedProfileTypes) {
