@@ -102,7 +102,8 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
   >([]);
   const [tableData, setTableData] = useState<ProfileData[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(1000);
+  const [totalRecords, setTotalRecords] = useState(0);
   const [profileTypeDropdownOpen, setProfileTypeDropdownOpen] = useState(false);
   const [profilesDropdownOpen, setProfilesDropdownOpen] = useState(false);
   const [selectedMeterModels, setSelectedMeterModels] = useState<string[]>([]);
@@ -180,8 +181,8 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
   const getProfileTypeDisplayText = () => {
     if (!selectedProfileTypes) return "Select Profile";
     return (
-      profileTypes.find((et) => et.profileType === selectedProfileTypes)?.name ??
-      selectedProfileTypes
+      profileTypes.find((et) => et.profileType === selectedProfileTypes)
+        ?.name ?? selectedProfileTypes
     );
   };
 
@@ -205,13 +206,10 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
     // Implementation removed as function is not used
   };
 
-  const handleRun = () => {
+  const handleRun = (page = 0, size?: number) => {
+    const effectiveSize = size ?? rowsPerPage;
     const isMeterModelRequired = selectedHierarchy && selectedUnits;
-    if (
-      !startDate ||
-      !endDate ||
-      !selectedProfileTypes
-    ) {
+    if (!startDate || !endDate || !selectedProfileTypes) {
       toast.error("Please fill in all required fields");
       return;
     }
@@ -221,8 +219,8 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
 
     fetchProfiles(
       {
-        page: 0,
-        size: 2000,
+        page,
+        size: effectiveSize,
         startDate: startDateStr,
         endDate: endDateStr,
         meterNumber: selectedMeterNos.join(","),
@@ -234,17 +232,17 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
       {
         onSuccess: (data) => {
           toast.success("Profiles fetched successfully!");
-          // Transform the data to match ProfileData interface
+          setTotalRecords(data.responsedata.totalData);
+          const startSn = page * effectiveSize + 1;
           const transformedData: ProfileData[] = [];
           data.responsedata.data.forEach((profile, index) => {
             const baseData = {
-              sn: index + 1,
+              sn: startSn + index,
               meterNo: profile.meterNumber,
               feeder: profile.meter.flatNode?.feederName || "N/A",
               time: profile.entryTimestamp,
             };
 
-            // Add rows for each energy type
             transformedData.push({
               ...baseData,
               profileType: "Energy Profile",
@@ -283,6 +281,7 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
             });
           });
           setTableData(transformedData);
+          setCurrentPage(page + 1);
         },
         onError: (error) => {
           toast.error(`Failed to fetch profiles: ${error.message}`);
@@ -291,27 +290,16 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
     );
   };
 
-  const totalRows = tableData.length;
-  const totalPages = Math.ceil(totalRows / rowsPerPage);
-  const startRow = (currentPage - 1) * rowsPerPage + 1;
-  const endRow = Math.min(currentPage * rowsPerPage, totalRows);
-
-  const handleRowsPerPageChange = (value: string) => {
-    setRowsPerPage(Number(value));
-    setCurrentPage(1);
-  };
-
-  const handlePrevious = () => {
-    setCurrentPage((prev) => Math.max(prev - 1, 1));
-  };
-
-  const handleNext = () => {
-    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
-  };
-
   const handlePageSizeChange = (newPageSize: number) => {
     setRowsPerPage(newPageSize);
     setCurrentPage(1);
+    handleRun(0, newPageSize);
+  };
+
+  const handlePageChange = (page: number) => {
+    if (page < 1) return;
+    setCurrentPage(page);
+    handleRun(page - 1);
   };
 
   return (
@@ -391,9 +379,7 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
 
         {/* Meter No */}
         <div className="flex min-w-[140px] flex-1 flex-col gap-2">
-          <Label className="text-sm font-medium">
-            Meter No. 
-          </Label>
+          <Label className="text-sm font-medium">Meter No.</Label>
           <Popover open={meterDropdownOpen} onOpenChange={setMeterDropdownOpen}>
             <PopoverTrigger asChild>
               <Button
@@ -475,9 +461,7 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
 
         {/* Meter Model */}
         <div className="flex min-w-[140px] flex-1 flex-col gap-2">
-          <Label className="text-sm font-medium">
-            Meter Model 
-          </Label>
+          <Label className="text-sm font-medium">Meter Model</Label>
           <DropdownMenu
             open={meterModelDropdownOpen}
             onOpenChange={setMeterModelDropdownOpen}
@@ -619,12 +603,9 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
         <div className="flex items-end">
           <Button
             className="cursor-pointer bg-[#161CCA] px-8 font-medium text-white hover:bg-[#161CCA]/90"
-            onClick={handleRun}
+            onClick={() => handleRun(0)}
             disabled={
-              !startDate ||
-              !endDate ||
-              !selectedProfileTypes ||
-              isLoading
+              !startDate || !endDate || !selectedProfileTypes || isLoading
             }
           >
             {isLoading ? "Searching..." : "Search"}
@@ -688,36 +669,31 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
                 </TableRow>
               ))
             ) : tableData.length > 0 ? (
-              tableData
-                .slice(
-                  (currentPage - 1) * rowsPerPage,
-                  currentPage * rowsPerPage,
-                )
-                .map((row, index) => (
-                  <TableRow key={index} className="hover:bg-gray-50">
-                    <TableCell className="px-4 py-3 text-sm text-gray-900">
-                      {index + 1 + (currentPage - 1) * rowsPerPage}
-                    </TableCell>
-                    <TableCell className="px-4 py-3 text-sm text-gray-900">
-                      {row.meterNo}
-                    </TableCell>
-                    <TableCell className="px-4 py-3 text-sm text-gray-900">
-                      {row.feeder}
-                    </TableCell>
-                    <TableCell className="px-4 py-3 text-sm text-gray-900">
-                      {row.time}
-                    </TableCell>
-                    <TableCell className="px-4 py-3 text-sm text-gray-900">
-                      {row.profileType}
-                    </TableCell>
-                    <TableCell className="px-4 py-3 text-sm text-gray-900">
-                      {row.profile}
-                    </TableCell>
-                    <TableCell className="px-4 py-3 text-sm text-gray-900">
-                      {row.value}
-                    </TableCell>
-                  </TableRow>
-                ))
+              tableData.map((row, index) => (
+                <TableRow key={index} className="hover:bg-gray-50">
+                  <TableCell className="px-4 py-3 text-sm text-gray-900">
+                    {row.sn}
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-sm text-gray-900">
+                    {row.meterNo}
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-sm text-gray-900">
+                    {row.feeder}
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-sm text-gray-900">
+                    {row.time}
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-sm text-gray-900">
+                    {row.profileType}
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-sm text-gray-900">
+                    {row.profile}
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-sm text-gray-900">
+                    {row.value}
+                  </TableCell>
+                </TableRow>
+              ))
             ) : (
               <TableRow>
                 <TableCell
@@ -736,10 +712,11 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
       {/* Pagination */}
       <PaginationControls
         currentPage={currentPage}
-        totalItems={tableData.length}
+        totalItems={totalRecords}
         pageSize={rowsPerPage}
-        onPageChange={setCurrentPage}
+        onPageChange={handlePageChange}
         onPageSizeChange={handlePageSizeChange}
+        zeroBasedIndexing={false}
       />
     </div>
   );

@@ -98,7 +98,8 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
   const [selectedEventTypes, setSelectedEventTypes] = useState<number[]>([]);
   const [tableData, setTableData] = useState<EventData[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [rowsPerPage, setRowsPerPage] = useState(1000);
+  const [totalRecords, setTotalRecords] = useState(0);
   const [eventTypeDropdownOpen, setEventTypeDropdownOpen] = useState(false);
   const [meterDropdownOpen, setMeterDropdownOpen] = useState(false);
 
@@ -177,7 +178,8 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
     // Implementation removed as function is not used
   };
 
-  const handleRun = () => {
+  const handleRun = (page = 0, size?: number) => {
+    const effectiveSize = size ?? rowsPerPage;
     const isMeterModelRequired = selectedHierarchy && selectedUnits;
     if (
       !startDate ||
@@ -196,8 +198,8 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
 
     fetchEvents(
       {
-        page: 0,
-        size: 100,
+        page,
+        size: effectiveSize,
         startDate: startDateStr,
         endDate: endDateStr,
         meterNumber: selectedMeterNos.join(","),
@@ -209,11 +211,11 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
       {
         onSuccess: (data) => {
           toast.success("Events fetched successfully!");
-          // Transform the data to match EventData interface
+          setTotalRecords(data.responsedata.totalData);
           const transformedData: EventData[] = data.responsedata.data.map(
-            (event, index) => {
+            (event) => {
               return {
-                sn: index + 1,
+                sn: 0,
                 meterNo: event.meterNumber,
                 feeder: event.meter.flatNode?.feederName || "N/A",
                 time: event.eventTime,
@@ -235,7 +237,12 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
             if (isNaN(bLevel)) return -1;
             return bLevel - aLevel;
           });
+          const startSn = page * effectiveSize + 1;
+          transformedData.forEach((item, index) => {
+            item.sn = startSn + index;
+          });
           setTableData(transformedData);
+          setCurrentPage(page + 1);
         },
         onError: (error) => {
           toast.error(`Failed to fetch events: ${error.message}`);
@@ -244,27 +251,16 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
     );
   };
 
-  const totalRows = tableData.length;
-  const totalPages = Math.ceil(totalRows / rowsPerPage);
-  const startRow = (currentPage - 1) * rowsPerPage + 1;
-  const endRow = Math.min(currentPage * rowsPerPage, totalRows);
-
-  const handleRowsPerPageChange = (value: string) => {
-    setRowsPerPage(Number(value));
-    setCurrentPage(1);
-  };
-
-  const handlePrevious = () => {
-    setCurrentPage((prev) => Math.max(prev - 1, 1));
-  };
-
-  const handleNext = () => {
-    setCurrentPage((prev) => Math.min(prev + 1, totalPages));
-  };
-
   const handlePageSizeChange = (newPageSize: number) => {
     setRowsPerPage(newPageSize);
     setCurrentPage(1);
+    handleRun(0, newPageSize);
+  };
+
+  const handlePageChange = (page: number) => {
+    if (page < 1) return;
+    setCurrentPage(page);
+    handleRun(page - 1);
   };
 
   return (
@@ -588,7 +584,7 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
         <div className="flex items-end">
           <Button
             className="cursor-pointer bg-[#161CCA] px-8 font-medium text-white hover:bg-[#161CCA]/90"
-            onClick={handleRun}
+            onClick={() => handleRun(0)}
             disabled={
               !startDate ||
               !endDate ||
@@ -659,50 +655,45 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
                 </TableRow>
               ))
             ) : tableData.length > 0 ? (
-              tableData
-                .slice(
-                  (currentPage - 1) * rowsPerPage,
-                  currentPage * rowsPerPage,
-                )
-                .map((row, index) => (
-                  <TableRow key={index} className="hover:bg-gray-50">
-                    <TableCell className="px-4 py-3 text-sm text-gray-900">
-                      {index + 1 + (currentPage - 1) * rowsPerPage}
-                    </TableCell>
-                    <TableCell className="px-4 py-3 text-sm text-gray-900">
-                      {row.meterNo}
-                    </TableCell>
-                    <TableCell className="px-4 py-3 text-sm text-gray-900">
-                      {row.feeder}
-                    </TableCell>
-                    <TableCell className="px-4 py-3 text-sm text-gray-900">
-                      {row.time}
-                    </TableCell>
-                    <TableCell className="px-4 py-3 text-sm text-gray-900">
-                      {row.eventType}
-                    </TableCell>
-                    <TableCell className="px-4 py-3 text-sm text-gray-900">
-                      {row.event ?? "-"}
-                    </TableCell>
-                    <TableCell className="px-4 py-3 text-sm text-gray-900">
-                      {row.criticalLevel
-                        ? (() => {
-                            const { dot, label } = getCriticalLevelStyle(
-                              row.criticalLevel,
-                            );
-                            return (
-                              <div className="flex items-center gap-2">
-                                <span
-                                  className={`h-2.5 w-2.5 rounded-full ${dot}`}
-                                />
-                                <span>{label}</span>
-                              </div>
-                            );
-                          })()
-                        : "N/A"}
-                    </TableCell>
-                  </TableRow>
-                ))
+              tableData.map((row, index) => (
+                <TableRow key={index} className="hover:bg-gray-50">
+                  <TableCell className="px-4 py-3 text-sm text-gray-900">
+                    {row.sn}
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-sm text-gray-900">
+                    {row.meterNo}
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-sm text-gray-900">
+                    {row.feeder}
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-sm text-gray-900">
+                    {row.time}
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-sm text-gray-900">
+                    {row.eventType}
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-sm text-gray-900">
+                    {row.event ?? "-"}
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-sm text-gray-900">
+                    {row.criticalLevel
+                      ? (() => {
+                          const { dot, label } = getCriticalLevelStyle(
+                            row.criticalLevel,
+                          );
+                          return (
+                            <div className="flex items-center gap-2">
+                              <span
+                                className={`h-2.5 w-2.5 rounded-full ${dot}`}
+                              />
+                              <span>{label}</span>
+                            </div>
+                          );
+                        })()
+                      : "N/A"}
+                  </TableCell>
+                </TableRow>
+              ))
             ) : (
               <TableRow>
                 <TableCell
@@ -720,10 +711,11 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
       {/* Pagination */}
       <PaginationControls
         currentPage={currentPage}
-        totalItems={tableData.length}
+        totalItems={totalRecords}
         pageSize={rowsPerPage}
-        onPageChange={setCurrentPage}
+        onPageChange={handlePageChange}
         onPageSizeChange={handlePageSizeChange}
+        zeroBasedIndexing={false}
       />
     </div>
   );
