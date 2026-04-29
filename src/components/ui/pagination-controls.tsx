@@ -36,7 +36,7 @@ export function PaginationControls({
   pageSize,
   onPageChange,
   onPageSizeChange,
-  pageSizeOptions = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+  pageSizeOptions = [10, 20, 50, 100, 200, 500, 1000, 2000, 5000],
   className = "",
   showPageSizeSelector = true,
   showRange = true,
