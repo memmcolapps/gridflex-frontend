@@ -162,7 +162,7 @@ export function DataTable({ data, reading, loading }: DataTableProps) {
             {/* ✅ Ensure only the table scrolls */}
             <div className="w-full overflow-x-auto">
                 <Table className="min-w-max">
-                    <TableHeader>
+                    <TableHeader className='bg-transparent'>
                         <TableRow>
                             {columns.map((col, index) => (
                                 <TableHead
