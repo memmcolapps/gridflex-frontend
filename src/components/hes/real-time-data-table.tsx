@@ -164,12 +164,12 @@ export function RealTimeDataTable({
 
     return (
         <div className="mx-auto max-w-screen overflow-x-hidden px-4 space-y-6">
-            <div className="py-8">
+            <div className="pt-8 pb-4">
                 <FilterPanel onRun={handleRun} />
             </div>
             
             {/* Connection Status Indicator */}
-            {selectedMeters.length > 0 && (
+            {/* {selectedMeters.length > 0 && (
                 <div className="bg-gray-50 p-4 rounded-lg">
                     <h3 className="text-sm font-medium text-gray-700 mb-2">Connection Status</h3>
                     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
@@ -183,9 +183,9 @@ export function RealTimeDataTable({
                         ))}
                     </div>
                 </div>
-            )}
+            )} */}
             
-            <div className="py-8">
+            <div>
                 {(loading || data.length > 0) && (
                     <DataTable
                         data={data}
