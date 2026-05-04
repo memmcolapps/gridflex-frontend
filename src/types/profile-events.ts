@@ -42,6 +42,7 @@ export interface ProfileEventsApiResponse {
 }
 
 export interface ProfileDataItem {
+  meterHealthIndicator: string;
   meterNumber: string;
   meterModel: string;
   entryTimestamp: string;

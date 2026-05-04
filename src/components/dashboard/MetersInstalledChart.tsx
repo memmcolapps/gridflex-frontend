@@ -52,6 +52,16 @@ export const MetersInstalledChart = () => {
 
   const currentData = dataByType[activeChart];
 
+  const maxValue = Math.max(...currentData.map((d) => d.value), 0);
+  const roundedMax = Math.ceil(maxValue / 5) * 5 || 5; 
+
+  const dynamicTicks = Array.from(
+    { length: roundedMax / 5 + 1 },
+    (_, i) => i * 5,
+  );
+
+  const yearlyTicks = [0, 20, 40, 60, 80, 100, 120, 140, 160];
+
   return (
     <Card className="w-full max-w-full border-none border-gray-100 bg-transparent shadow-xs">
       <CardHeader className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
@@ -107,12 +117,8 @@ export const MetersInstalledChart = () => {
               />
               <YAxis
                 tick={{ fill: "#6b7280" }}
-                domain={isMonthly ? [0, 4] : [0, 160]}
-                ticks={
-                  isMonthly
-                    ? [0, 1, 2, 3, 4]
-                    : [0, 20, 40, 60, 80, 100, 120, 140, 160]
-                }
+                domain={isMonthly ? [0, roundedMax] : [0, 160]}
+                ticks={isMonthly ? dynamicTicks : yearlyTicks}
                 interval={0}
                 allowDecimals={false}
                 tickFormatter={(value) => `${value}`}

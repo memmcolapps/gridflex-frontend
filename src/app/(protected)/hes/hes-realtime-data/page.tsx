@@ -78,18 +78,18 @@ export default function RealtimeDataPage() {
     setSelectedMeters(meters);
   };
 
-  const getConnectionStatusIcon = () => {
-    if (!baseUrl) {
-      return <WifiOff className="h-4 w-4 text-yellow-500" />;
-    }
-    if (
-      isConnected ||
-      Object.values(connectionStatus).some((status) => status)
-    ) {
-      return <Wifi className="h-4 w-4 text-green-500" />;
-    }
-    return <WifiOff className="h-4 w-4 text-red-500" />;
-  };
+  // const getConnectionStatusIcon = () => {
+  //   if (!baseUrl) {
+  //     return <WifiOff className="h-4 w-4 text-yellow-500" />;
+  //   }
+  //   if (
+  //     isConnected ||
+  //     Object.values(connectionStatus).some((status) => status)
+  //   ) {
+  //     return <Wifi className="h-4 w-4 text-green-500" />;
+  //   }
+  //   return <WifiOff className="h-4 w-4 text-red-500" />;
+  // };
 
   return (
     <div className="w-full">
@@ -101,6 +101,40 @@ export default function RealtimeDataPage() {
           description="Remotely read data directly from the meter in real time"
         />
         <div className="flex items-center space-x-4">
+          {/* <div className="flex items-center space-x-2">
+            {getConnectionStatusIcon()}
+            <span className="text-sm text-gray-600">
+              {!baseUrl
+                ? "Configuration Missing"
+                : isConnected
+                  ? "Connected"
+                  : "Disconnected"}
+            </span>
+            {baseUrl && (
+              <span
+                className="text-xs text-gray-400"
+                title={`API Base URL: ${baseUrl}`}
+              >
+                API:{" "}
+                {(() => {
+                  try {
+                    return new URL(baseUrl).hostname;
+                  } catch {
+                    return "Invalid URL";
+                  }
+                })()}
+              </span>
+            )}
+          </div> */}
+          {/* <Button
+            variant="outline"
+            className="border-[#161CCA] py-4 text-[#161CCA]"
+            onClick={reconnect}
+            disabled={isConnected || !baseUrl}
+          >
+            <ExternalLink size={14} />
+            Reconnect
+          </Button> */}
           <Button
             variant="outline"
             className="border-[#161CCA] py-4 text-[#161CCA]"

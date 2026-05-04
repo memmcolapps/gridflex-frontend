@@ -36,7 +36,7 @@ export default function HESDashboardPage() {
   // const [selectedBand, setSelectedBand] = useState("Band");
   // const [selectedMeterType, setSelectedMeterType] = useState("Meter Type");
   // API call enabled with new JSON format
-  const { data: hesDashboardData, isLoading } = useHesDashboard();
+  const { data: hesDashboardData, isLoading, refetch } = useHesDashboard();
 
   if (isLoading) {
     return (
@@ -203,6 +203,7 @@ export default function HESDashboardPage() {
             hesDashboardData?.communicationReport?.map(convertToReportData) ??
             []
           }
+          onRefresh={refetch}
         />
       </div>
     </div>
