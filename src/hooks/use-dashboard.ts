@@ -16,7 +16,7 @@ export const useDashboard = (filters?: DashboardFilters) => {
 };
 
 export const useHesDashboard = () => {
-  const { data, error, isLoading } = useQuery({
+  const { data, error, isLoading, refetch } = useQuery({
     queryKey: ["hesdashboard"],
     queryFn: () => getHesDashboard(),
   });
@@ -25,5 +25,6 @@ export const useHesDashboard = () => {
     data: data?.success ? data.data : null,
     error: data?.success === false ? data.error : error?.message ?? null,
     isLoading,
+    refetch,
   };
 };

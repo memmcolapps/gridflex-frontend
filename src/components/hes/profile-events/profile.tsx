@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { ChangeEventHandler } from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -69,16 +69,16 @@ import { toast } from "sonner";
 interface ProfileData {
   sn: number;
   meterNo: string;
-  feeder: string;
+  meterHealthIndicator?: string;
+  meterModel: string;
   time: string;
-  profileType: string;
-  profile: string;
-  value: string;
+  t1ActiveEnergy: string;
+  t2ActiveEnergy: string;
+  t3ActiveEnergy: string;
+  t4ActiveEnergy: string;
+  totalActiveEnergy: string;
+  totalApparentEnergy: string;
 }
-
-const mockProfileData: ProfileData[] = [
-  // Add your mock data here when you have it
-];
 
 interface ProfileProps {
   selectedHierarchy: string | null;
@@ -100,16 +100,17 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
   const [availableProfileOptions, setAvailableProfileOptions] = useState<
     string[]
   >([]);
+  const [hasNextPage, setHasNextPage] = useState(false);
   const [tableData, setTableData] = useState<ProfileData[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(1000);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalRecords, setTotalRecords] = useState(0);
   const [profileTypeDropdownOpen, setProfileTypeDropdownOpen] = useState(false);
   const [profilesDropdownOpen, setProfilesDropdownOpen] = useState(false);
   const [selectedMeterModels, setSelectedMeterModels] = useState<string[]>([]);
   const [meterModelDropdownOpen, setMeterModelDropdownOpen] = useState(false);
   const [meterDropdownOpen, setMeterDropdownOpen] = useState(false);
-
+  const rowsPerPageRef = useRef(rowsPerPage);
   const { data: profileEventsData } = useProfileEventsData();
   const { data: profileTypesData } = useProfileNames();
   const { data: metersData } = useMeters({
@@ -145,6 +146,7 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
     });
 
     // Reset selected profiles when profile types change
+    setAvailableProfileOptions([...optionsSet]);
     setSelectedProfiles([]);
   }, [selectedProfileTypes, profileEventsData?.responsedata.event_types]);
 
@@ -207,7 +209,7 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
   };
 
   const handleRun = (page = 0, size?: number) => {
-    const effectiveSize = size ?? rowsPerPage;
+    const effectiveSize = size ?? rowsPerPageRef.current;
     const isMeterModelRequired = selectedHierarchy && selectedUnits;
     if (!startDate || !endDate || !selectedProfileTypes) {
       toast.error("Please fill in all required fields");
@@ -232,54 +234,25 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
       {
         onSuccess: (data) => {
           toast.success("Profiles fetched successfully!");
+          const records = data.responsedata.data;
+          setHasNextPage(records.length === effectiveSize);
           setTotalRecords(data.responsedata.totalData);
           const startSn = page * effectiveSize + 1;
-          const transformedData: ProfileData[] = [];
-          data.responsedata.data.forEach((profile, index) => {
-            const baseData = {
+          const transformedData: ProfileData[] = records.map(
+            (profile, index) => ({
               sn: startSn + index,
               meterNo: profile.meterNumber,
-              feeder: profile.meter.flatNode?.feederName || "N/A",
               time: profile.entryTimestamp,
-            };
-
-            transformedData.push({
-              ...baseData,
-              profileType: "Energy Profile",
-              profile: "T1 Active Energy",
-              value: profile.t1ActiveEnergy,
-            });
-            transformedData.push({
-              ...baseData,
-              profileType: "Energy Profile",
-              profile: "T2 Active Energy",
-              value: profile.t2ActiveEnergy,
-            });
-            transformedData.push({
-              ...baseData,
-              profileType: "Energy Profile",
-              profile: "T3 Active Energy",
-              value: profile.t3ActiveEnergy,
-            });
-            transformedData.push({
-              ...baseData,
-              profileType: "Energy Profile",
-              profile: "T4 Active Energy",
-              value: profile.t4ActiveEnergy,
-            });
-            transformedData.push({
-              ...baseData,
-              profileType: "Energy Profile",
-              profile: "Total Active Energy",
-              value: profile.totalActiveEnergy,
-            });
-            transformedData.push({
-              ...baseData,
-              profileType: "Energy Profile",
-              profile: "Total Apparent Energy",
-              value: profile.totalApparentEnergy,
-            });
-          });
+              meterModel: profile.meterModel,
+              t1ActiveEnergy: profile.t1ActiveEnergy,
+              t2ActiveEnergy: profile.t2ActiveEnergy,
+              t3ActiveEnergy: profile.t3ActiveEnergy,
+              t4ActiveEnergy: profile.t4ActiveEnergy,
+              totalActiveEnergy: profile.totalActiveEnergy,
+              totalApparentEnergy: profile.totalApparentEnergy,
+              meterHealthIndicator: profile.meterHealthIndicator,
+            }),
+          );
           setTableData(transformedData);
           setCurrentPage(page + 1);
         },
@@ -291,6 +264,7 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
   };
 
   const handlePageSizeChange = (newPageSize: number) => {
+    rowsPerPageRef.current = newPageSize;
     setRowsPerPage(newPageSize);
     setCurrentPage(1);
     handleRun(0, newPageSize);
@@ -299,7 +273,7 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
   const handlePageChange = (page: number) => {
     if (page < 1) return;
     setCurrentPage(page);
-    handleRun(page - 1);
+    handleRun(page - 1, rowsPerPageRef.current);
   };
 
   return (
@@ -409,7 +383,7 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
                         value={meter.meterNumber}
                         onSelect={() => {
                           setSelectedMeterNos([meter.meterNumber]);
-                          setMeterDropdownOpen(false); 
+                          setMeterDropdownOpen(false);
                         }}
                         className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-50"
                       >
@@ -598,19 +572,31 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
                 Meter No.
               </TableHead>
               <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">
-                Feeder
-              </TableHead>
-              <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">
                 Time
               </TableHead>
               <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">
-                Profile Type
+                Meter Model
               </TableHead>
               <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">
-                Profile
+                Meter Health Indicator
               </TableHead>
               <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">
-                Value
+                T1 Active Energy
+              </TableHead>
+              <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">
+                T2 Active Energy
+              </TableHead>
+              <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">
+                T3 Active Energy
+              </TableHead>
+              <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">
+                T4 Active Energy
+              </TableHead>
+              <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">
+                Total Active Energy
+              </TableHead>
+              <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">
+                Total Apparent Energy
               </TableHead>
             </TableRow>
           </TableHeader>
@@ -650,20 +636,32 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
                   <TableCell className="px-4 py-3 text-sm text-gray-900">
                     {row.meterNo}
                   </TableCell>
-                  <TableCell className="px-4 py-3 text-sm text-gray-900">
-                    {row.feeder}
-                  </TableCell>
-                  <TableCell className="px-4 py-3 text-sm text-gray-900">
+                    <TableCell className="px-4 py-3 text-sm text-gray-900">
                     {row.time}
                   </TableCell>
                   <TableCell className="px-4 py-3 text-sm text-gray-900">
-                    {row.profileType}
+                    {row.meterModel}
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-sm text-center text-gray-900">
+                    {row.meterHealthIndicator}
                   </TableCell>
                   <TableCell className="px-4 py-3 text-sm text-gray-900">
-                    {row.profile}
+                    {row.t1ActiveEnergy}
                   </TableCell>
                   <TableCell className="px-4 py-3 text-sm text-gray-900">
-                    {row.value}
+                    {row.t2ActiveEnergy}
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-sm text-gray-900">
+                    {row.t3ActiveEnergy}
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-sm text-gray-900">
+                    {row.t4ActiveEnergy}
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-sm text-gray-900">
+                    {row.totalActiveEnergy}
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-sm text-gray-900">
+                    {row.totalApparentEnergy}
                   </TableCell>
                 </TableRow>
               ))
@@ -685,10 +683,15 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
       {/* Pagination */}
       <PaginationControls
         currentPage={currentPage}
-        totalItems={totalRecords}
+        totalItems={
+          hasNextPage
+            ? currentPage * rowsPerPage + 1
+            : (currentPage - 1) * rowsPerPage + tableData.length / 6
+        }
         pageSize={rowsPerPage}
         onPageChange={handlePageChange}
         onPageSizeChange={handlePageSizeChange}
+        showRange={false}
         zeroBasedIndexing={false}
       />
     </div>

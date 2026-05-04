@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { ChangeEventHandler } from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -91,6 +91,7 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
   const [endDateOpen, setEndDateOpen] = useState(false);
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
+  const [hasNextPage, setHasNextPage] = useState(false);
   const [startTimeValue, setStartTimeValue] = useState<string>("00:00:00");
   const [endTimeValue, setEndTimeValue] = useState<string>("00:00:00");
   const [selectedMeterNos, setSelectedMeterNos] = useState<string[]>([]);
@@ -98,11 +99,11 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
   const [selectedEventTypes, setSelectedEventTypes] = useState<number[]>([]);
   const [tableData, setTableData] = useState<EventData[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(1000);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalRecords, setTotalRecords] = useState(0);
   const [eventTypeDropdownOpen, setEventTypeDropdownOpen] = useState(false);
   const [meterDropdownOpen, setMeterDropdownOpen] = useState(false);
-
+  const rowsPerPageRef = useRef(rowsPerPage);
   const { mutate: fetchEvents, isPending: isLoading } = useEvents();
   const { data: profileEventsData } = useProfileEventsData();
   const { data: eventTypesData } = useEventNames();
@@ -130,7 +131,7 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
       case "5":
         return { dot: "bg-red-500", label: "Lv 5" };
       default:
-        return { dot: "bg-gray-400", label: "N/A" };
+        return { dot: "bg-gray-400", label: "No level" };
     }
   };
 
@@ -211,6 +212,8 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
       {
         onSuccess: (data) => {
           toast.success("Events fetched successfully!");
+          const records = data.responsedata.data;
+          setHasNextPage(records.length === effectiveSize);
           setTotalRecords(data.responsedata.totalData);
           const transformedData: EventData[] = data.responsedata.data.map(
             (event) => {
@@ -252,6 +255,7 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
   };
 
   const handlePageSizeChange = (newPageSize: number) => {
+    rowsPerPageRef.current = newPageSize;
     setRowsPerPage(newPageSize);
     setCurrentPage(1);
     handleRun(0, newPageSize);
@@ -260,7 +264,7 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
   const handlePageChange = (page: number) => {
     if (page < 1) return;
     setCurrentPage(page);
-    handleRun(page - 1);
+    handleRun(page - 1,  rowsPerPageRef.current);
   };
 
   return (
@@ -711,9 +715,13 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
       {/* Pagination */}
       <PaginationControls
         currentPage={currentPage}
-        totalItems={totalRecords}
+        totalItems={
+          hasNextPage ? currentPage * rowsPerPage + 1 
+          : (currentPage - 1) * rowsPerPage + tableData.length / 6
+        }
         pageSize={rowsPerPage}
         onPageChange={handlePageChange}
+        showRange={false}
         onPageSizeChange={handlePageSizeChange}
         zeroBasedIndexing={false}
       />
