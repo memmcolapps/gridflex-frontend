@@ -42,17 +42,38 @@ export interface ProfileEventsApiResponse {
 }
 
 export interface ProfileDataItem {
-  meterHealthIndicator: string;
   meterNumber: string;
-  meterModel: string;
+  meterModel?: string;
   entryTimestamp: string;
   receivedAt: string;
-  t1ActiveEnergy: string;
-  t2ActiveEnergy: string;
-  t3ActiveEnergy: string;
-  t4ActiveEnergy: string;
-  totalActiveEnergy: string;
-  totalApparentEnergy: string;
+  t1ActiveEnergy?: string;
+  t2ActiveEnergy?: string;
+  t3ActiveEnergy?: string;
+  t4ActiveEnergy?: string;
+  totalActiveEnergy?: string;
+  totalApparentEnergy?: string;
+  t1TotalApparentEnergy?: string;
+  t3TotalApparentEnergy?: string;
+  t4TotalApparentEnergy?: string;
+  meterHealthIndicator?: string;
+  instantaneousVoltageL1?: string;
+  instantaneousVoltageL2?: string;
+  instantaneousVoltageL3?: string;
+  instantaneousCurrentL1?: string;
+  instantaneousCurrentL2?: string;
+  instantaneousCurrentL3?: string;
+  instantaneousActivePower?: string;
+  instantaneousReactiveImport?: string;
+  instantaneousReactiveExport?: string;
+  instantaneousPowerFactor?: string;
+  instantaneousApparentPower?: string;
+  instantaneousNetFrequency?: string;
+  totalExportActiveEnergy?: string;
+  activeEnergyImport?: string;
+  reactiveEnergyImport?: string;
+  reactiveEnergyExport?: string;
+  apparentEnergyImport?: string;
+  apparentEnergyExport?: string;
   meter: {
     id: string;
     orgId: string;
@@ -60,11 +81,12 @@ export interface ProfileDataItem {
     meterNumber: string;
     accountNumber: string;
     simNumber: string;
-    fixedEnergy: string;
+    fixedEnergy?: string;
     dss: string;
     meterCategory: string;
     meterClass: string;
     meterType: string;
+    meterStage?: string;
     smartStatus: boolean;
     customerId: string;
     oldSgc: string;

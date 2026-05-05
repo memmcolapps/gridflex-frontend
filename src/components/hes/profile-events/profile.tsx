@@ -68,18 +68,58 @@ import { toast } from "sonner";
 
 interface ProfileData {
   sn: number;
-  meterNo: string;
-  meterHealthIndicator?: string;
-  meterModel: string;
+  meterNumber: string;
   time: string;
-  t1ActiveEnergy: string;
-  t2ActiveEnergy: string;
-  t3ActiveEnergy: string;
-  t4ActiveEnergy: string;
-  totalActiveEnergy: string;
-  totalApparentEnergy: string;
+  [key: string]: string | number;
 }
 
+const profileColumns: Record<string, { key: string; label: string }[]> = {
+  "monthly-billing-profile": [
+    { key: "meterModel", label: "Meter Model" },
+    { key: "t1ActiveEnergy", label: "T1 Active Energy" },
+    { key: "t2ActiveEnergy", label: "T2 Active Energy" },
+    { key: "t3ActiveEnergy", label: "T3 Active Energy" },
+    { key: "t4ActiveEnergy", label: "T4 Active Energy" },
+    { key: "totalActiveEnergy", label: "Total Active Energy" },
+    { key: "totalApparentEnergy", label: "Total Apparent Energy" },
+  ],
+  "load-profile-one": [
+    { key: "meterModel", label: "Meter Model" },
+    { key: "meterHealthIndicator", label: "Meter Health Indicator" },
+    { key: "instantaneousVoltageL1", label: "Voltage L1" },
+    { key: "instantaneousVoltageL2", label: "Voltage L2" },
+    { key: "instantaneousVoltageL3", label: "Voltage L3" },
+    { key: "instantaneousCurrentL1", label: "Current L1" },
+    { key: "instantaneousCurrentL2", label: "Current L2" },
+    { key: "instantaneousCurrentL3", label: "Current L3" },
+    { key: "instantaneousActivePower", label: "Active Power" },
+    { key: "instantaneousReactiveImport", label: "Reactive Import" },
+    { key: "instantaneousReactiveExport", label: "Reactive Export" },
+    { key: "instantaneousPowerFactor", label: "Power Factor" },
+    { key: "instantaneousApparentPower", label: "Apparent Power" },
+    { key: "instantaneousNetFrequency", label: "Net Frequency" },
+  ],
+  "daily-billing-profile": [
+    { key: "meterModel", label: "Meter Model" },
+    { key: "t1ActiveEnergy", label: "T1 Active Energy" },
+    { key: "t2ActiveEnergy", label: "T2 Active Energy" },
+    { key: "t3ActiveEnergy", label: "T3 Active Energy" },
+    { key: "t4ActiveEnergy", label: "T4 Active Energy" },
+    { key: "totalActiveEnergy", label: "Total Active Energy" },
+    { key: "totalApparentEnergy", label: "Total Apparent Energy" },
+    { key: "t1TotalApparentEnergy", label: "T1 Total Apparent Energy" },
+    { key: "t3TotalApparentEnergy", label: "T3 Total Apparent Energy" },
+    { key: "t4TotalApparentEnergy", label: "T4 Total Apparent Energy" },
+  ],
+  "load-profile-two": [
+    { key: "totalExportActiveEnergy", label: "Total Export Active Energy" },
+    { key: "activeEnergyImport", label: "Active Energy Import" },
+    { key: "reactiveEnergyImport", label: "Reactive Energy Import" },
+    { key: "reactiveEnergyExport", label: "Reactive Energy Export" },
+    { key: "apparentEnergyImport", label: "Apparent Energy Import" },
+    { key: "apparentEnergyExport", label: "Apparent Energy Export" },
+  ],
+};
 interface ProfileProps {
   selectedHierarchy: string | null;
   selectedUnits: string;
@@ -239,19 +279,15 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
           setTotalRecords(data.responsedata.totalData);
           const startSn = page * effectiveSize + 1;
           const transformedData: ProfileData[] = records.map(
-            (profile, index) => ({
-              sn: startSn + index,
-              meterNo: profile.meterNumber,
-              time: profile.entryTimestamp,
-              meterModel: profile.meterModel,
-              t1ActiveEnergy: profile.t1ActiveEnergy,
-              t2ActiveEnergy: profile.t2ActiveEnergy,
-              t3ActiveEnergy: profile.t3ActiveEnergy,
-              t4ActiveEnergy: profile.t4ActiveEnergy,
-              totalActiveEnergy: profile.totalActiveEnergy,
-              totalApparentEnergy: profile.totalApparentEnergy,
-              meterHealthIndicator: profile.meterHealthIndicator,
-            }),
+            (profile, index) => {
+              const { meter, ...rest } = profile;
+              return {
+                sn: startSn + index,
+                meterNo: profile.meterNumber,
+                time: profile.entryTimestamp,
+                ...rest,
+              };
+            },
           );
           setTableData(transformedData);
           setCurrentPage(page + 1);
@@ -574,30 +610,17 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
               <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">
                 Time
               </TableHead>
-              <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">
+              {/* <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">
                 Meter Model
-              </TableHead>
-              <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">
-                Meter Health Indicator
-              </TableHead>
-              <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">
-                T1 Active Energy
-              </TableHead>
-              <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">
-                T2 Active Energy
-              </TableHead>
-              <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">
-                T3 Active Energy
-              </TableHead>
-              <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">
-                T4 Active Energy
-              </TableHead>
-              <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">
-                Total Active Energy
-              </TableHead>
-              <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">
-                Total Apparent Energy
-              </TableHead>
+              </TableHead> */}
+              {(profileColumns[selectedProfileTypes ?? ""] ?? []).map((col) => (
+                <TableHead
+                  key={col.key}
+                  className="px-4 py-3 text-sm font-medium whitespace-nowrap text-gray-900"
+                >
+                  {col.label}
+                </TableHead>
+              ))}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -613,18 +636,18 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
                   <TableCell className="px-4 py-3 text-sm text-gray-900">
                     <div className="h-4 animate-pulse rounded bg-gray-200"></div>
                   </TableCell>
-                  <TableCell className="px-4 py-3 text-sm text-gray-900">
-                    <div className="h-4 animate-pulse rounded bg-gray-200"></div>
-                  </TableCell>
-                  <TableCell className="px-4 py-3 text-sm text-gray-900">
-                    <div className="h-4 animate-pulse rounded bg-gray-200"></div>
-                  </TableCell>
-                  <TableCell className="px-4 py-3 text-sm text-gray-900">
-                    <div className="h-4 animate-pulse rounded bg-gray-200"></div>
-                  </TableCell>
-                  <TableCell className="px-4 py-3 text-sm text-gray-900">
-                    <div className="h-4 animate-pulse rounded bg-gray-200"></div>
-                  </TableCell>
+                  {Array.from({
+                    length:
+                      (profileColumns[selectedProfileTypes ?? ""] ?? [])
+                        .length + 1,
+                  }).map((_, i) => (
+                    <TableCell
+                      key={i}
+                      className="px-4 py-3 text-sm text-gray-900"
+                    >
+                      <div className="h-4 animate-pulse rounded bg-gray-200"></div>
+                    </TableCell>
+                  ))}
                 </TableRow>
               ))
             ) : tableData.length > 0 ? (
@@ -636,33 +659,19 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
                   <TableCell className="px-4 py-3 text-sm text-gray-900">
                     {row.meterNo}
                   </TableCell>
-                    <TableCell className="px-4 py-3 text-sm text-gray-900">
+                  <TableCell className="px-4 py-3 text-sm text-gray-900">
                     {row.time}
                   </TableCell>
-                  <TableCell className="px-4 py-3 text-sm text-gray-900">
-                    {row.meterModel}
-                  </TableCell>
-                  <TableCell className="px-4 py-3 text-sm text-center text-gray-900">
-                    {row.meterHealthIndicator}
-                  </TableCell>
-                  <TableCell className="px-4 py-3 text-sm text-gray-900">
-                    {row.t1ActiveEnergy}
-                  </TableCell>
-                  <TableCell className="px-4 py-3 text-sm text-gray-900">
-                    {row.t2ActiveEnergy}
-                  </TableCell>
-                  <TableCell className="px-4 py-3 text-sm text-gray-900">
-                    {row.t3ActiveEnergy}
-                  </TableCell>
-                  <TableCell className="px-4 py-3 text-sm text-gray-900">
-                    {row.t4ActiveEnergy}
-                  </TableCell>
-                  <TableCell className="px-4 py-3 text-sm text-gray-900">
-                    {row.totalActiveEnergy}
-                  </TableCell>
-                  <TableCell className="px-4 py-3 text-sm text-gray-900">
-                    {row.totalApparentEnergy}
-                  </TableCell>
+                  {(profileColumns[selectedProfileTypes ?? ""] ?? []).map(
+                    (col) => (
+                      <TableCell
+                        key={col.key}
+                        className="px-4 py-3 text-center text-sm whitespace-nowrap text-gray-900"
+                      >
+                        {row[col.key] ?? "—"}
+                      </TableCell>
+                    ),
+                  )}
                 </TableRow>
               ))
             ) : (
@@ -691,7 +700,6 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
         pageSize={rowsPerPage}
         onPageChange={handlePageChange}
         onPageSizeChange={handlePageSizeChange}
-        showRange={false}
         zeroBasedIndexing={false}
       />
     </div>
