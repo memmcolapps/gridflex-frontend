@@ -458,7 +458,7 @@ export function FilterPanel({ onRun, meterType = 'MD' }: FilterPanelProps) {
                         onCheckedChange={(checked) =>
                           handleGroupSelect(group.label, checked as boolean)
                         }
-                        className="h-5 w-5 border-gray-300 data-[state=checked]:border-green-500 data-[state=checked]:bg-green-500"
+                        className="h-5 w-5 border-gray-300 data-[state=checked]:border-green-500 rounded-lg dark:data-[state=checked]:bg-green-500"
                       />
                     </div>
                   </AccordionTrigger>
@@ -472,7 +472,7 @@ export function FilterPanel({ onRun, meterType = 'MD' }: FilterPanelProps) {
                         <span>{option.label}</span>
                         <Checkbox
                           checked={reading.includes(option.value as ReadingKey)}
-                          className="h-5 w-5 border-gray-300 data-[state=checked]:border-green-500 data-[state=checked]:bg-green-500"
+                          className="h-5 w-5 border-gray-300 data-[state=checked]:border-green-500 rounded-lg dark:data-[state=checked]:bg-green-500"
                         />
                       </div>
                     ))}
