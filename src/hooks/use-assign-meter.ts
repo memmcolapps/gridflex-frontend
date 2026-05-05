@@ -122,7 +122,7 @@ const mapToFrontendMeter = (
       meterModel: apiItem.smartMeterInfo?.meterModel ?? "N/A",
       protocol: apiItem.smartMeterInfo?.protocol ?? "N/A",
       authentication: apiItem.smartMeterInfo?.authentication ?? "N/A",
-      password: "N/A",
+      password: apiItem.smartMeterInfo?.password ?? "N/A",
     },
     customerId: apiItem.customerId,
     accountNumber: apiItem.accountNumber,

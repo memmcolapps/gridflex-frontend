@@ -721,7 +721,6 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
         }
         pageSize={rowsPerPage}
         onPageChange={handlePageChange}
-        showRange={false}
         onPageSizeChange={handlePageSizeChange}
         zeroBasedIndexing={false}
       />
