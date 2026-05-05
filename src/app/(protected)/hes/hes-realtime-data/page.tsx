@@ -78,6 +78,11 @@ export default function RealtimeDataPage() {
     setSelectedMeters(meters);
   };
 
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    setSelectedMeters([]);
+  };
+
   // const getConnectionStatusIcon = () => {
   //   if (!baseUrl) {
   //     return <WifiOff className="h-4 w-4 text-yellow-500" />;
@@ -145,7 +150,11 @@ export default function RealtimeDataPage() {
         </div>
       </div>
       <div className="flex flex-row justify-between">
-        <Tabs defaultValue="MD" className="mb-4" onValueChange={setActiveTab}>
+        <Tabs
+          defaultValue="MD"
+          className="mb-4"
+          onValueChange={handleTabChange}
+        >
           <TabsList style={{ border: "2px solid #161CCA" }} className="h-12">
             <TabsTrigger
               value="MD"
@@ -176,6 +185,7 @@ export default function RealtimeDataPage() {
         </div>
       </div>
       <RealTimeDataTable
+        key={activeTab}
         sseData={sseData}
         connectionStatus={connectionStatus}
         selectedMeters={selectedMeters}
