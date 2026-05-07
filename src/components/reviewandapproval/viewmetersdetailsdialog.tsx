@@ -60,11 +60,9 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
   const isAssignEdited =
     selectedRow?.description?.toLowerCase() === "assign-edited";
 
-  const {
-    blobUrl,
-    loading: imageLoading,
-    error: imageError,
-  } = useAuthImage(selectedRow?.image ?? null);
+const { data: blobUrl, isLoading: imageLoading, error: imageError } = useAuthImage(
+  isOpen && isMeterAssigned ? selectedRow?.image ?? null : null  // ← only fetch when relevant
+);
 
   const renderContent = () => {
     if (!selectedRow) {
@@ -314,7 +312,7 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
                             <Image
                               src={blobUrl}
                               alt={selectedRow.customerName ?? "Meter Image"}
-                              className="h-[150px] w-[150px] cursor-pointer rounded-md object-cover transition hover:opacity-90"
+                              className="h-[150px] w-[1500px] cursor-pointer rounded-md object-cover transition hover:opacity-90"
                               width={200}
                               height={150}
                               onClick={(e) => {
