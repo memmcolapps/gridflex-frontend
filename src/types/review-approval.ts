@@ -465,5 +465,5 @@ export interface Meter {
   newKrn?: string;
   oldTariffIndex?: string;
   newTariffIndex?: string;
-  imageUrl?: string;
+  image?: string;
 }

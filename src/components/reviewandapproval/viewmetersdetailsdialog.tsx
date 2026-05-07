@@ -13,6 +13,7 @@ import type { Meter } from "@/types/review-approval";
 import { useAuth } from "@/context/auth-context";
 import { useState } from "react"; // Keep this import
 import { useEffect } from "react"; // Added useEffect to reset state for better UX
+import { useAuthImage } from "@/hooks/use-auth-image";
 
 interface ViewMeterDetailsDialogProps {
   isOpen: boolean;
@@ -40,15 +41,30 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
     }
   }, [isOpen, selectedRow]);
 
-  const isMeterAllocated = selectedRow?.description?.toLowerCase() === "meter allocated";
-  const isMeterAssigned = selectedRow?.description?.toLowerCase() === "meter assigned";
-  const isMeterDeactivated = selectedRow?.description?.toLowerCase() === "meter deactivated";
-  const isMeterActivated = selectedRow?.description?.toLowerCase() === "meter activated";
-  const isMeterDetached = selectedRow?.description?.toLowerCase() === "meter detached";
-  const isMeterMigrated = selectedRow?.description?.toLowerCase() === "meter migrated";
-  const isNewlyAdded = selectedRow?.description?.toLowerCase() === "newly added";
-  const isMeterEdited = selectedRow?.description?.toLowerCase() === "meter edited";
-  const isAssignEdited = selectedRow?.description?.toLowerCase() === "assign-edited";
+  const isMeterAllocated =
+    selectedRow?.description?.toLowerCase() === "meter allocated";
+  const isMeterAssigned =
+    selectedRow?.description?.toLowerCase() === "meter assigned";
+  const isMeterDeactivated =
+    selectedRow?.description?.toLowerCase() === "meter deactivated";
+  const isMeterActivated =
+    selectedRow?.description?.toLowerCase() === "meter activated";
+  const isMeterDetached =
+    selectedRow?.description?.toLowerCase() === "meter detached";
+  const isMeterMigrated =
+    selectedRow?.description?.toLowerCase() === "meter migrated";
+  const isNewlyAdded =
+    selectedRow?.description?.toLowerCase() === "newly added";
+  const isMeterEdited =
+    selectedRow?.description?.toLowerCase() === "meter edited";
+  const isAssignEdited =
+    selectedRow?.description?.toLowerCase() === "assign-edited";
+
+  const {
+    blobUrl,
+    loading: imageLoading,
+    error: imageError,
+  } = useAuthImage(selectedRow?.image ?? null);
 
   const renderContent = () => {
     if (!selectedRow) {
@@ -72,7 +88,7 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
           </DialogHeader>
 
           <div className="flex w-150 flex-col gap-3 py-4 sm:py-6">
-            <div className="flex items- gap-4 p-2">
+            <div className="items- flex gap-4 p-2">
               <div className="flex-1 text-sm font-bold text-gray-900 sm:text-base">
                 {selectedRow.meterNumber}
               </div>
@@ -160,14 +176,20 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
                   <MoveRight className="rotate-180" size={16} />
                   <span>Back</span>
                 </div>
-                <div className="mt-8 rounded-b-full">
-                  <Image
-                    src="/images/mdj.jpg"
-                    alt="Full Meter Image"
-                    width={280}
-                    height={200}
-                    className="h-fit max-h-screen w-fit object-contain"
-                  />
+                <div className="mt-8 rounded-b-full p-10 max-w-full">
+                  {blobUrl && !imageLoading && (
+                    <Image
+                      src={blobUrl}
+                      alt={selectedRow.customerName ?? "Meter Image"}
+                      className="h-[250px] w-[250px] cursor-pointer rounded-md object-cover transition hover:opacity-90"
+                      width={200}
+                      height={150}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsImageDialogOpen(true);
+                      }}
+                    />
+                  )}
                 </div>
               </div>
             ) : (
@@ -280,18 +302,27 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
                           <span className="font-medium">Uploaded Image:</span>
                         </div>
                         <div className="flex-1 font-bold text-gray-900">
-                          <Image
-                            src="/images/mdj.jpg"
-                            alt={selectedRow.customerName ?? "Meter Image"}
-                            className="h-[150px] w-[200px] cursor-pointer rounded-md object-cover transition hover:opacity-90"
-                            width={150}
-                            height={150}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              console.log("Switching to full image view");
-                              setIsImageDialogOpen(true);
-                            }}
-                          />
+                          {imageLoading && (
+                            <div className="h-[150px] w-[200px] animate-pulse rounded-md bg-gray-200" />
+                          )}
+                          {imageError && (
+                            <div className="flex h-[150px] w-[200px] items-center justify-center rounded-md bg-red-50 text-xs text-red-500">
+                              Failed to load image
+                            </div>
+                          )}
+                          {blobUrl && !imageLoading && (
+                            <Image
+                              src={blobUrl}
+                              alt={selectedRow.customerName ?? "Meter Image"}
+                              className="h-[150px] w-[150px] cursor-pointer rounded-md object-cover transition hover:opacity-90"
+                              width={200}
+                              height={150}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setIsImageDialogOpen(true);
+                              }}
+                            />
+                          )}
                         </div>
                       </div>
                     </div>
@@ -305,7 +336,6 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
                     disabled={!selectedRow}
                   >
                     Reject
-
                   </Button>
                   <Button
                     onClick={() => selectedRow && onApprove(selectedRow)}
@@ -775,29 +805,25 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
         <>
           <DialogHeader>
             <DialogTitle className="truncate text-left text-base font-semibold text-gray-900 sm:text-lg">
-               Assigned Meter Edited
+              Assigned Meter Edited
             </DialogTitle>
             <span className="text-sm text-gray-500 sm:text-base">
               Operator:{" "}
               {user?.business?.businessName?.toUpperCase() ?? "BUSINESS NAME"}
             </span>
           </DialogHeader>
-          <div className="flex items-center gap-4 p-2 mt-6 w-150">
-            <div className="flex-1 text-sm font-bold text-gray-900 sm:text-base ">
+          <div className="mt-6 flex w-150 items-center gap-4 p-2">
+            <div className="flex-1 text-sm font-bold text-gray-900 sm:text-base">
               {selectedRow.meterNumber}
             </div>
-            <div className="flex flex-1 items-center gap-2 text-sm font-bold text-gray-900 sm:text-base mr-3">
-              <MoveRight
-                className="mr-4 scale-x-250 text-gray-900"
-                size={10}
-              />
+            <div className="mr-3 flex flex-1 items-center gap-2 text-sm font-bold text-gray-900 sm:text-base">
+              <MoveRight className="mr-4 scale-x-250 text-gray-900" size={10} />
               <span>{selectedRow.customer.customerId}</span>
             </div>
           </div>
 
           <div className="flex flex-col gap-3 py-4 sm:py-6">
             <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-
               <div className="w-[140px] text-sm font-medium whitespace-nowrap text-gray-700 sm:w-[160px] sm:text-base">
                 {/* Empty header for label column */}
               </div>
@@ -846,22 +872,30 @@ const ViewMeterDetailsDialog: React.FC<ViewMeterDetailsDialogProps> = ({
 
               {
                 label: "Debit Payment Mode:",
-                oldValue: selectedRow.oldMeterInfo?.paymentMode?.debitPaymentMode ?? "-",
+                oldValue:
+                  selectedRow.oldMeterInfo?.paymentMode?.debitPaymentMode ??
+                  "-",
                 newValue: selectedRow.paymentMode?.debitPaymentMode ?? "-",
               },
               {
                 label: "Debit Payment Plan:",
-                oldValue: selectedRow.oldMeterInfo?.paymentMode?.debitPaymentPlan ?? "-",
+                oldValue:
+                  selectedRow.oldMeterInfo?.paymentMode?.debitPaymentPlan ??
+                  "-",
                 newValue: selectedRow.paymentMode?.debitPaymentPlan ?? "-",
               },
               {
                 label: "Credit Payment Mode:",
-                oldValue: selectedRow.oldMeterInfo?.paymentMode?.creditPaymentMode ?? "-",
+                oldValue:
+                  selectedRow.oldMeterInfo?.paymentMode?.creditPaymentMode ??
+                  "-",
                 newValue: selectedRow.paymentMode?.creditPaymentMode ?? "-",
               },
-                  {
+              {
                 label: "Credit Payment Plan:",
-                oldValue: selectedRow.oldMeterInfo?.paymentMode?.creditPaymentPlan ?? "-",
+                oldValue:
+                  selectedRow.oldMeterInfo?.paymentMode?.creditPaymentPlan ??
+                  "-",
                 newValue: selectedRow.paymentMode?.creditPaymentPlan ?? "-",
               },
             ].map(({ label, oldValue, newValue }) => (
