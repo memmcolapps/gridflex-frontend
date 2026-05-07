@@ -264,7 +264,7 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
   const handlePageChange = (page: number) => {
     if (page < 1) return;
     setCurrentPage(page);
-    handleRun(page - 1,  rowsPerPageRef.current);
+    handleRun(page - 1, rowsPerPageRef.current);
   };
 
   return (
@@ -715,10 +715,7 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
       {/* Pagination */}
       <PaginationControls
         currentPage={currentPage}
-        totalItems={
-          hasNextPage ? currentPage * rowsPerPage + 1 
-          : (currentPage - 1) * rowsPerPage + tableData.length / 6
-        }
+        totalItems={totalRecords}
         pageSize={rowsPerPage}
         onPageChange={handlePageChange}
         onPageSizeChange={handlePageSizeChange}
