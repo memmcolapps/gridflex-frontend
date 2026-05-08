@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -9,14 +8,9 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { useReadMeter } from "@/hooks/use-configure-meter";
 import type { Meter } from "@/types/meter";
+import { useEffect } from "react";
 
 interface ReadDateTimeDialogProps {
   isOpen: boolean;
@@ -24,30 +18,46 @@ interface ReadDateTimeDialogProps {
   meter?: Meter | undefined;
 }
 
+const MONTH_NAMES = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+
+function parseDateTimeValue(value?: string) {
+  if (!value) return null;
+
+  const [datePart, timePart] = value.split(" ");
+  if (!datePart || !timePart) return null;
+
+  const [year, month, day] = datePart.split("-");
+  const [hour, minute] = timePart.split(":");
+
+  const monthIndex = month ? parseInt(month, 10) - 1 : -1;
+
+  return {
+    year: year ?? "",
+    month: monthIndex >= 0 ? (MONTH_NAMES[monthIndex] ?? "") : "",
+    day: day ? String(parseInt(day, 10)) : "",
+    hour: hour ?? "",
+    minute: minute ?? "",
+  };
+}
+
 export default function ReadDateTimeDialog({
   isOpen,
   onClose,
   meter,
 }: ReadDateTimeDialogProps) {
-  const dateOptions = Array.from({ length: 31 }, (_, i) => ({
-    value: (i + 1).toString(),
-    label: (i + 1).toString(),
-  }));
+  const { mutate: readMeter, data, isPending } = useReadMeter();
 
-  const monthOptions = [
-    { value: "1", label: "January" },
-    { value: "2", label: "February" },
-    { value: "3", label: "March" },
-    { value: "4", label: "April" },
-    { value: "5", label: "May" },
-    { value: "6", label: "June" },
-    { value: "7", label: "July" },
-    { value: "8", label: "August" },
-    { value: "9", label: "September" },
-    { value: "10", label: "October" },
-    { value: "11", label: "November" },
-    { value: "12", label: "December" },
-  ];
+  useEffect(() => {
+    if (isOpen && meter?.meterNumber) {
+      readMeter({ serial: meter.meter?.meterNumber, type: "Clock" });
+    }
+  }, [isOpen]);
+
+  const parsed = parseDateTimeValue(String(data?.responsedata?.value));
+  const isLoading = isPending ? "Loading..." : "No data available";
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -68,7 +78,8 @@ export default function ReadDateTimeDialog({
                 id="hour-input"
                 type="text"
                 readOnly
-                placeholder="--"
+                value={parsed?.hour ?? ""}
+                placeholder={isLoading}
                 className="border border-gray-200"
               />
             </div>
@@ -83,7 +94,8 @@ export default function ReadDateTimeDialog({
                 id="minute-input"
                 type="text"
                 readOnly
-                placeholder="--"
+                value={parsed?.minute ?? ""}
+                placeholder={isLoading}
                 className="border border-gray-200"
               />
             </div>
@@ -96,18 +108,14 @@ export default function ReadDateTimeDialog({
               >
                 Date
               </Label>
-              <Select>
-                <SelectTrigger className="w-full border border-gray-200 text-gray-400">
-                  <SelectValue placeholder="--" />
-                </SelectTrigger>
-                <SelectContent>
-                  {dateOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Input
+                id="date-input"
+                type="text"
+                readOnly
+                value={parsed?.day ?? ""}
+                placeholder={isLoading}
+                className="border border-gray-200"
+              />
             </div>
             <div className="w-1/3">
               <Label
@@ -116,18 +124,14 @@ export default function ReadDateTimeDialog({
               >
                 Month
               </Label>
-              <Select>
-                <SelectTrigger className="w-full border border-gray-200 text-gray-400">
-                  <SelectValue placeholder="--" />
-                </SelectTrigger>
-                <SelectContent>
-                  {monthOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Input
+                id="month-input"
+                type="text"
+                readOnly
+                value={parsed?.month ?? ""}
+                placeholder={isLoading}
+                className="border border-gray-200"
+              />
             </div>
             <div className="w-1/3">
               <Label
@@ -140,7 +144,8 @@ export default function ReadDateTimeDialog({
                 id="year-input"
                 type="text"
                 readOnly
-                placeholder="--"
+                value={parsed?.year ?? ""}
+                placeholder={isLoading}
                 className="border border-gray-200"
               />
             </div>

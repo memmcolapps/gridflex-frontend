@@ -1,5 +1,6 @@
 import {
   fetchMeterConfigurations,
+  readMeter,
   setAPN,
   setCTPTRatio,
   setDateTime,
@@ -12,12 +13,15 @@ import {
   type SetIpPortPayload,
   type FetchMeterConfigParams,
   type MeterConfigItem,
+  type ReadMeterResponse,
+  type ReadMeterPayload,
+
 } from "@/types/configure-meter";
 import {
   type Meter,
-  type MeterDetailNested,
-  type FlatNode,
-  type SmartMeterInfoResponse,
+  // type MeterDetailNested,
+  // type FlatNode,
+  // type SmartMeterInfoResponse,
 } from "@/types/meter";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -87,6 +91,11 @@ export const useMeterConfigurations = (params: FetchMeterConfigParams = {}) => {
     },
   });
 };
+
+export const useReadMeter = () =>
+  useMutation<ReadMeterResponse, Error, ReadMeterPayload>({
+    mutationFn: (data: ReadMeterPayload) => readMeter(data),
+  });
 
 export const useSetCTPTRatio = () => {
   const queryClient = useQueryClient();

@@ -7,6 +7,8 @@ import {
   type SetIpPortPayload,
   type FetchMeterConfigParams,
   type MeterConfigResponse,
+  type ReadMeterResponse,
+  type ReadMeterPayload,
 } from "@/types/configure-meter";
 import { handleApiError } from "@/utils/error-handler";
 
@@ -198,6 +200,38 @@ export async function setIpPort(
       throw new Error(
         response.data.responsedesc ?? "Failed to configure Ip Address.",
       );
+    }
+
+    return response.data;
+  } catch (error) {
+    throw new Error(handleApiError(error).message);
+  }
+}
+
+export async function readMeter(
+  data: ReadMeterPayload,               
+): Promise<ReadMeterResponse> {        
+  try {
+    const token = localStorage.getItem("auth_token");
+    if (!token) {
+      throw new Error("Authentication token not found.");
+    }
+
+    const { serial, type } = data;
+
+    const response = await axiosInstance.get(
+      `${API_URL}/hes/service/dlms/read-meter`,
+      {
+        params: { serial, type },
+        headers: {
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    if (response.data.responsecode !== "000") {
+      throw new Error(response.data.responsedesc ?? "Meter cannot be read.");
     }
 
     return response.data;
