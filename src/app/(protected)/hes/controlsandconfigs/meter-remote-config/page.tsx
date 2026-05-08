@@ -23,6 +23,9 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import ConfigureAPNDialog from "@/components/hes/controlsconfigs/meter-remote-config/configure-apn-dialog";
@@ -163,16 +166,10 @@ export default function MeterRemoteConfigPage() {
     setShowOfflineDialog(false);
   };
 
-  const handleReadAction = (type: DialogType) => {
-    if (selectedMeters.length === 0) {
-      return;
-    }
-    const meterToRead = meterData.find((m) => m.sN === selectedMeters[0]);
-    if (meterToRead) {
-      setSelectedMeter(meterToRead);
-      setDialogType(type);
-      setIsDialogOpen(true);
-    }
+  const handleReadAction = (meter: Meter, type: DialogType) => {
+    setSelectedMeter(meter);
+    setDialogType(type);
+    setIsDialogOpen(true);
   };
 
   const closeDialog = () => {
@@ -281,56 +278,6 @@ export default function MeterRemoteConfigPage() {
           description="Enable remote setup and management of meter settings for efficient monitoring."
         />
         <div className="flex gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                className="flex w-full cursor-pointer items-center gap-2 border border-[#161CCA] bg-white font-medium text-[#161CCA] md:w-auto"
-                variant="outline"
-                size="lg"
-                disabled={isConfigureButtonDisabled}
-              >
-                <SearchIcon
-                  size={14}
-                  strokeWidth={2.3}
-                  className="h-4 w-4 text-[#161CCA]"
-                />
-                <span className="text-sm md:text-base">Read Meter</span>
-                <ChevronDown size={14} className="h-4 w-4 text-[#161CCA]" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-[200px]">
-              <DropdownMenuItem
-                onClick={() => handleReadAction("readIp")}
-                className="flex cursor-pointer items-center justify-between"
-              >
-                <span>Read IP Address</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => handleReadAction("readApn")}
-                className="flex cursor-pointer items-center justify-between"
-              >
-                <span>Read APN</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => handleReadAction("readCtv")}
-                className="flex cursor-pointer items-center justify-between"
-              >
-                <span>Read CT & VT Ratio</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => handleReadAction("readRelay")}
-                className="flex cursor-pointer items-center justify-between"
-              >
-                <span>Read Relay Mode</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => handleReadAction("readDatetime")}
-                className="flex cursor-pointer items-center justify-between"
-              >
-                <span>Read Date and Time</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -638,6 +585,56 @@ export default function MeterRemoteConfigPage() {
                             <span className="cursor-pointer">Send Token</span>
                           </div>
                         </DropdownMenuItem>
+
+                        <DropdownMenuSub>
+                          <DropdownMenuSubTrigger className="flex w-full items-center gap-2">
+                            <SearchIcon
+                              size={14}
+                              strokeWidth={2.3}
+                              className="h-4 w-4"
+                            />
+                            <span className="text-sm md:text-base">
+                              Read Meter
+                            </span>
+                          </DropdownMenuSubTrigger>
+
+                          <DropdownMenuSubContent className="w-[200px] space-y-2 border-0 bg-white text-gray-700">
+                            <DropdownMenuItem
+                              onClick={() => handleReadAction(meter, "readIp")}
+                              className="flex cursor-pointer items-center justify-between"
+                            >
+                              <span>Read IP Address</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleReadAction(meter, "readApn")}
+                              className="flex cursor-pointer items-center justify-between"
+                            >
+                              <span>Read APN</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleReadAction(meter, "readCtv")}
+                              className="flex cursor-pointer items-center justify-between"
+                            >
+                              <span>Read CT & VT Ratio</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleReadAction(meter, "readRelay")
+                              }
+                              className="flex cursor-pointer items-center justify-between"
+                            >
+                              <span>Read Relay Mode</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleReadAction(meter, "readDatetime")
+                              }
+                              className="flex cursor-pointer items-center justify-between"
+                            >
+                              <span>Read Date and Time</span>
+                            </DropdownMenuItem>
+                          </DropdownMenuSubContent>
+                        </DropdownMenuSub>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>

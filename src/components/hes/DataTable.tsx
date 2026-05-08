@@ -25,6 +25,7 @@ interface DataTableProps {
 const readingLabels: Record<string, string> = {
   "meter-logical-device-name": "Meter Logical Device Name",
   "meter-serial-number": "Meter Serial Number",
+  "timezone": "Time Zone",
   "meter-hardware-version": "Meter Hardware Version",
   "meter-firmware-version": "Meter Firmware Version",
   "meter-firmware-checksum": "Meter Firmware Checksum",
@@ -185,313 +186,124 @@ const readingLabels: Record<string, string> = {
 
   "firmware-version": "Firmware Version",
   "firmware-checksum": "Firmware Checksum",
-  "Total absolute active kWh": "Total absolute active kWh",
+  "Active energy Import (+A)": "Active energy Import (+A)",
 
-  "T1 absolute active kWh": "T1 absolute active kWh",
+  "Active energy Import (+A) of public grid ": "Active energy Import (+A) of public grid ",
 
-  "T2 absolute active kWh": "T2 absolute active kWh",
+  "Active energy Import (+A) of private grid": "Active energy Import (+A) of private grid",
 
-  "T3 absolute active kWh": "T3 absolute active kWh",
+  "Active energy Export (-A)": "Active energy Export (-A)",
 
-  "T4 absolute active kWh": "T4 absolute active kWh",
+  "Active energy Export (-A) of public grid ": "Active energy Export (-A) of public grid ",
 
-  "Total algebraic active kWh": "Total algebraic active kWh",
+  "Active energy Export (-A) of private grid": "Active energy Export (-A) of private grid",
 
-  "T1 algebraic active kWh": "T1 algebraic active kWh",
+  "Reactive energy Import (+A)": "Reactive energy Import (+A)",
 
-  "T2 algebraic active kWh": "T2 algebraic active kWh",
+  "Reactive energy Import (+A) of public grid ": "Reactive energy Import (+A) of public grid ",
 
-  "T3 algebraic active kWh": "T3 algebraic active kWh",
+  "Reactive energy Import (+A) of private grid": "Reactive energy Import (+A) of private grid",
 
-  "T4 algebraic active kWh": "T4 algebraic active kWh",
+  "Reactive energy Export (-A)": "Reactive energy Export (-A)",
 
-  "Total import active kWh": "Total import active kWh",
+  "Reactive energy Export (-A) of public grid ": "Reactive energy Export (-A) of public grid ",
 
-  "T1 import active kWh": "T1 import active kWh",
+  "Reactive energy Export (-A) of private grid": "Reactive energy Export (-A) of private grid",
 
-  "T2 import active kWh": "T2 import active kWh",
+  " Active energy import (+A) && occurring time":
+    " Active energy import (+A) && occurring time",
 
-  "T3 import active kWh": "T3 import active kWh",
+  "Active energy import (+A) && occurring time of public grid ":
+    "Active energy import (+A) && occurring time of public grid ",
 
-  "T4 import active kWh": "T4 import active kWh",
+  "Active energy import (+A) && occurring time of private grid":
+    "Active energy import (+A) && occurring time of private grid",
 
-  "Total export active kWh": "Total export active kWh",
+  "Active energy export (-A) && occurring time":
+    "Active energy export (-A) && occurring time",
 
-  "T1 export active kWh": "T1 export active kWh",
+  "Active energy export (-A) && occurring time of public grid ":
+    "Active energy export (-A) && occurring time of public grid ",
 
-  "T2 export active kWh": "T2 export active kWh",
+  "Active energy export (-A) && occurring time of private grid":
+    "Active energy export (-A) && occurring time of private grid",
 
-  "T3 export active kWh": "T3 export active kWh",
+  "Reactive energy import (+A) && occurring time":
+    "Reactive energy import (+A) && occurring time",
 
-  "T4 export active kWh": "T4 export active kWh",
+  " Reactive energy import (+A) && occurring time of public grid ":
+    " Reactive energy import (+A) && occurring time of public grid ",
 
-  "Total import reactive kVAh": "Total import reactive kVAh",
+  "Reactive energy import (+A) && occurring time of private grid":
+    "Reactive energy import (+A) && occurring time of private grid",
+  "Reactive energy export (-A) && occurring time":
+    "Reactive energy export (-A) && occurring time",
 
-  "T1 import reactive kVAh": "T1 import reactive kVAh",
+  "Reactive energy export (-A) && occurring time of public grid ":
+    "Reactive energy export (-A) && occurring time of public grid ",
 
-  "T2 import reactive kVAh": "T2 import reactive kVAh",
+  "Reactive energy export (-A) && occurring time of private grid":
+    "Reactive energy export (-A) && occurring time of private grid",
 
-  "T3 import reactive kVAh": "T3 import reactive kVAh",
+  "Apparent energy import (+A) && occurring time":
+    "Apparent energy import (+A) && occurring time",
 
-  "T4 import reactive kVAh": "T4 import reactive kVAh",
+  "Apparent energy import (+A) && occurring time of public grid ":
+    "Apparent energy import (+A) && occurring time of public grid ",
 
-  "Total export reactive kVAh": "Total export reactive kVAh",
+  "Apparent energy import (+A) && occurring time of private grid":
+    "Apparent energy import (+A) && occurring time of private grid",
 
-  "T1 export reactive kVAh": "T1 export reactive kVAh",
+  "Apparent energy export (-A) && occurring time":
+    "Apparent energy export (-A) && occurring time",
 
-  "T2 export reactive kVAh": "T2 export reactive kVAh",
+  "Apparent energy export (-A) && occurring time of public grid ":
+    "Apparent energy export (-A) && occurring time of public grid ",
 
-  "T3 export reactive kVAh": "T3 export reactive kVAh",
+  "Apparent energy export (-A) && occurring time of private grid":
+    "Apparent energy export (-A) && occurring time of private grid",
+  "Voltage in phase L1": "Voltage in phase L1",
 
-  "T4 export reactive kVAh": "T4 export reactive kVAh",
+  "Voltage in phase L2": "Voltage in phase L2",
 
-  "Total import apparent kVAh": "Total import apparent kVAh",
+  "Voltage in phase L3 ": "Voltage in phase L3 ",
 
-  "T1 import apparent kVAh": "T1 import apparent kVAh",
+  "Current in phase L1": "Current in phase L1",
 
-  "T2 import apparent kVAh": "T2 import apparent kVAh",
+  "Current in phase L2": "Current in phase L2",
 
-  "T3 import apparent kVAh": "T3 import apparent kVAh",
+  "Current in phase L3": "Current in phase L3",
 
-  "T4 import apparent kVAh": "T4 import apparent kVAh",
+  "Total active power":
+    "Total active power",
 
-  "Total export apparent kVAh": "Total export apparent kVAh",
+  "Active power in phase L1": "Active power in phase L1",
+  "Active power in phase L2": "Active power in phase L2",
 
-  "T1 export apparent kVAh": "T1 export apparent kVAh",
+  "Active power in phase L3": "Active power in phase L3",
 
-  "T2 export apparent kVAh": "T2 export apparent kVAh",
+  "Total reactive power": "Total reactive power",
 
-  "T3 export apparent kVAh": "T3 export apparent kVAh",
+  "Reactive power in phase L1": "Reactive power in phase L1",
 
-  "T4 export apparent kVAh": "T4 export apparent kVAh",
+  "Reactive power in phase L2": "Reactive power in phase L2",
 
-  "Total import active MD (kW) /(Datetime)":
-    "Total import active MD (kW) /(Datetime)",
+  "Reactive power in phase L3": "Reactive power in phase L3",
 
-  "T1 import active MD (kW) /(Datetime)":
-    "T1 import active MD (kW) /(Datetime)",
+  "Total apparent power ": "Total apparent power ",
+    "Apparent power in phase L1": "Apparent power in phase L1",
 
-  "T2 import active MD (kW) /(Datetime)":
-    "T2 import active MD (kW) /(Datetime)",
+  "Apparent power in phase L2": "Apparent power in phase L2",
 
-  "T3 import active MD (kW) /(Datetime)":
-    "T3 import active MD (kW) /(Datetime)",
+  "Apparent power in phase L3": "Apparent power in phase L3",
 
-  "T4 import active MD (kW) /(Datetime)":
-    "T4 import active MD (kW) /(Datetime)",
+  "Total power factor": "Total power factor",
 
-  "Total export active MD (kW) /(Datetime)":
-    "Total export active MD (kW) /(Datetime)",
+  "Power factor in phase L1": "Power factor in phase L1",
 
-  "T1 export active MD (kW) /(Datetime)":
-    "T1 export active MD (kW) /(Datetime)",
+  "Power factor in phase L2": "Power factor in phase L2",
 
-  "T2 export active MD (kW) /(Datetime)":
-    "T2 export active MD (kW) /(Datetime)",
-
-  "T3 export active MD (kW) /(Datetime)":
-    "T3 export active MD (kW) /(Datetime)",
-  "T4 export active MD (kW) /(Datetime)":
-    "T4 export active MD (kW) /(Datetime)",
-
-  "Total import reactive MD (kvar) /(Datetime)":
-    "Total import reactive MD (kvar) /(Datetime)",
-
-  "T1 import reactive MD (kvar) /(Datetime)":
-    "T1 import reactive MD (kvar) /(Datetime)",
-
-  "T2 import reactive MD (kvar) /(Datetime)":
-    "T2 import reactive MD (kvar) /(Datetime)",
-
-  "T3 import reactive MD (kvar) /(Datetime)":
-    "T3 import reactive MD (kvar) /(Datetime)",
-
-  "T4 import reactive MD (kvar) /(Datetime)":
-    "T4 import reactive MD (kvar) /(Datetime)",
-
-  "Total export reactive MD (kvar) /(Datetime)":
-    "Total export reactive MD (kvar) /(Datetime)",
-
-  "T1 export reactive MD (kvar) /(Datetime)":
-    "T1 export reactive MD (kvar) /(Datetime)",
-
-  "T2 export reactive MD (kvar) /(Datetime)":
-    "T2 export reactive MD (kvar) /(Datetime)",
-
-  "T3 export reactive MD (kvar) /(Datetime)":
-    "T3 export reactive MD (kvar) /(Datetime)",
-
-  "T4 export reactive MD (kvar) /(Datetime)":
-    "T4 export reactive MD (kvar) /(Datetime)",
-
-  "Total import apparent MD (kVA) /(Datetime)":
-    "Total import apparent MD (kVA) /(Datetime)",
-
-  "T1 import apparent MD (kVA) /(Datetime)":
-    "T1 import apparent MD (kVA) /(Datetime)",
-
-  "T2 import apparent MD (kVA) /(Datetime)":
-    "T2 import apparent MD (kVA) /(Datetime)",
-
-  "T3 import apparent MD (kVA) /(Datetime)":
-    "T3 import apparent MD (kVA) /(Datetime)",
-
-  "T4 import apparent MD (kVA) /(Datetime)":
-    "T4 import apparent MD (kVA) /(Datetime)",
-
-  "Total export apparent MD (kVA) /(Datetime)":
-    "Total export apparent MD (kVA) /(Datetime)",
-
-  "T1 export apparent MD (kVA) /(Datetime)":
-    "T1 export apparent MD (kVA) /(Datetime)",
-
-  "T2 export apparent MD (kVA) /(Datetime)":
-    "T2 export apparent MD (kVA) /(Datetime)",
-
-  "T3 export apparent MD (kVA) /(Datetime)":
-    "T3 export apparent MD (kVA) /(Datetime)",
-
-  "T4 export apparent MD (kVA) /(Datetime)":
-    "T4 export apparent MD (kVA) /(Datetime)",
-
-  "Sum Li total  power factor": "Sum Li total  power factor",
-
-  "Sum Li total  active power (kW) ": "Sum Li total  active power (kW) ",
-
-  "Sum Li import  active power (kW) ": "Sum Li import  active power (kW) ",
-
-  "Sum Li export  active power (kW) ": "Sum Li export  active power (kW) ",
-
-  "Sum Li import  reactive power (kvar) ":
-    "Sum Li import  reactive power (kvar) ",
-
-  "Sum Li export  reactive power (kvar) ":
-    "Sum Li export  reactive power (kvar) ",
-
-  "Sum Li import  apparent power (kVA)  ":
-    "Sum Li import  apparent power (kVA)  ",
-
-  "Sum Li export  apparent power (kVA)  ":
-    "Sum Li export  apparent power (kVA)  ",
-  "L1 Current (A)": "L1 Current (A)",
-  "L1 Voltage (V)": "L1 Voltage (V)",
-
-  "L1 total power factor ": "L1 total power factor ",
-
-  "L1 total active power (kW) ": "L1 total active power (kW) ",
-
-  "L1 import active power (kvar) ": "L1 import active power (kvar) ",
-
-  "L1 import reactive power (kvar)": "L1 import reactive power (kvar)",
-
-  "L1 import apparent power (kvar)": "L1 import apparent power (kvar)",
-
-  "L2 Current (A)": "L2 Current (A)",
-  "L2 Voltage (V)": "L2 Voltage (V)",
-
-  "L2 total power factor ": "L2 total power factor ",
-
-  "L2 total active power (kW) ": "L2 total active power (kW) ",
-
-  "L2 import active power (kvar) ": "L2 import active power (kvar) ",
-
-  "L2 import reactive power (kvar)": "L2 import reactive power (kvar)",
-
-  "L2 import apparent power (kvar)": "L2 import apparent power (kvar)",
-
-  "L3 Current (A)": "L3 Current (A)",
-  "L3 Voltage (V)": "L3 Voltage (V)",
-
-  "L3 total power factor ": "L3 total power factor ",
-
-  "L3 total active power (kW) ": "L3 total active power (kW) ",
-
-  "L3 import active power (kvar) ": "L3 import active power (kvar) ",
-
-  "L3 import reactive power (kvar)": "L3 import reactive power (kvar)",
-
-  "L3 import apparent power (kvar)": "L3 import apparent power (kvar)",
-
-  "Neutral Current (A)": "Neutral Current (A)",
-  "Phase Angle U(L2) - U(L1) (°)": "Phase Angle U(L2) - U(L1) (°)",
-
-  "Phase Angle U(L3) - U(L1) (°)": "Phase Angle U(L3) - U(L1) (°)",
-
-  "Phase Angle U(L2) - U(L3) (°)": "Phase Angle U(L2) - U(L3) (°)",
-
-  "Phase Angle U(L1) - I(L1) (°)": "Phase Angle U(L1) - I(L1) (°)",
-
-  "Phase Angle U(L2) - I(L2) (°)": "Phase Angle U(L2) - I(L2) (°)",
-
-  "Phase Angle U(L3) - I(L3) (°)": "Phase Angle U(L3) - I(L3) (°)",
-
-  "Actual quadrant": "Actual quadrant",
-
-  "Ambient temperature (°C) ": "Ambient temperature (°C) ",
-
-  "Battery voltage (V)": "Battery voltage (V)",
-
-  "Battery installation date and time": "Battery installation date and time",
-
-  "Battery estimated remaining capacity (%)":
-    "Battery estimated remaining capacity (%)",
-
-  "Counter of programming": "Counter of programming",
-
-  "Counter of clock adjusted": "Counter of clock adjusted",
-
-  "Counter of module cover open": "Counter of module cover open",
-
-  "Total counter of Tamper": "Total counter of Tamper",
-
-  "Counter of overloading": "Counter of overloading",
-
-  "Counter of low power factor": "Counter of low power factor",
-
-  "Counter of relay remote disconnected":
-    "Counter of relay remote disconnected",
-
-  "Counter of relay remote connected": "Counter of relay remote connected",
-
-  "Counter of relay local disconnected": "Counter of relay local disconnected",
-
-  "Counter of relay local connected": "Counter of relay local connected",
-
-  "Counter of L1 under  voltage": "Counter of L1 under  voltage",
-
-  "Counter of L2 under  voltage": "Counter of L2 under  voltage",
-
-  "Counter of L3 under  voltage": "Counter of L3 under  voltage",
-
-  "Counter of L1 over  voltage": "Counter of L1 over  voltage",
-
-  "Counter of L2 over  voltage": "Counter of L2 over  voltage",
-
-  "Counter of L3 over  voltage": "Counter of L3 over  voltage",
-
-  "Counter of power failures": "Counter of power failures",
-
-  "Counter of L1 current reverse": "Counter of L1 current reverse",
-
-  "Counter of L2 current reverse": "Counter of L2 current reverse",
-
-  "Counter of L3 current reverse": "Counter of L3 current reverse",
-
-  "Main disconnector": "Main disconnector ",
-  "Relay operations reason": "Relay operations reason",
-
-  "Billing period counter": "Billing period counter",
-
-  "Billing period reset lockout time (Min)":
-    "Billing period reset lockout time (Min)",
-
-  "Current month cumulative running hours":
-    "Current month cumulative running hours",
-
-  "Load profile 3": "Load profile 3",
-  "Load profile 4": "Load profile 4",
-  "Load profile 5": "Load profile 5",
-  "Load profile 6": "Load profile 6",
+  "Power factor in phase L3": "Power factor in phase L3",
 
   "Balance (kWh)": "Balance (kWh)",
   "Estimated remaining days": "Estimated remaining days",
@@ -500,37 +312,20 @@ const readingLabels: Record<string, string> = {
   "Alarm Level 1 of remainder days": "Alarm Level 1 of remainder days",
   "Alarm Level 2 of remainder days": "Alarm Level 2 of remainder days",
   "Alarm Level 3 of remainder days": "Alarm Level 3 of remainder days",
-
   "Actual tariff indicator": "Actual tariff indicator",
   "Activity calendar setup": "Activity calendar setup",
   "Special days table": "Special days table",
-
-  "Maximum Demand-period (s)": "Maximum Demand-period (s)",
-
-  "Maximum Demand- Number of periods": "Maximum Demand- Number of periods",
-
-  "Threshold of under voltage (V)": "Threshold of under voltage (V)",
-
-  "Time threshold of under voltage (s)": "Time threshold of under voltage (s)",
-
-  "Threshold of swell voltage (V)": "Threshold of swell voltage (V)",
-
-  "Time threshold of swell voltage (s)": "Time threshold of swell voltage (s)",
-
-  "Threshold of overloading (W)": "Threshold of overloading (W)",
-
-  "Time threshold of overloading (s)": "Time threshold of overloading (s)",
-
-  "Time threshold of overloading stop (s)":
-    "Time threshold of overloading stop (s)",
-
-  "Time threshold of overloading recover  (s)":
-    "Time threshold of overloading recover  (s)",
-
-  "Threshold of meter high temperature (°C)":
-    "Threshold of meter high temperature (°C)",
-
   "Firmware upgrade": "Firmware upgrade",
+  "Public Grid Credit ": "Public Grid Credit ",
+  "Private Grid Credit ": "Private Grid Credit ",
+  "Tariff index": "Tariff index",
+  "Public Grid  SGC code": "Public Grid  SGC code",
+  "Private Grid  SGC code": "Private Grid  SGC code",
+  "Public Grid Cumulative power purchase credit [kWh]": "Public Grid Cumulative power purchase credit [kWh]",
+  "Private Grid Cumulative power purchase credit [kWh]": "Private Grid Cumulative power purchase credit [kWh]",
+  "Current month consumed credit [kWh]": "Current month consumed credit [kWh]",
+  "Maximum vend limit [kWh]": "Maximum vend limit [kWh]",
+
 };
 
 export function DataTable({ data, reading, loading }: DataTableProps) {

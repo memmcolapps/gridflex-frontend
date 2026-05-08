@@ -692,11 +692,7 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
       {/* Pagination */}
       <PaginationControls
         currentPage={currentPage}
-        totalItems={
-          hasNextPage
-            ? currentPage * rowsPerPage + 1
-            : (currentPage - 1) * rowsPerPage + tableData.length / 6
-        }
+        totalItems={totalRecords}
         pageSize={rowsPerPage}
         onPageChange={handlePageChange}
         onPageSizeChange={handlePageSizeChange}
