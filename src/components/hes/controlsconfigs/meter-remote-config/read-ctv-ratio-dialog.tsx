@@ -9,7 +9,9 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useReadMeter } from "@/hooks/use-configure-meter";
 import type { Meter } from "@/types/meter";
+import { useEffect } from "react";
 
 interface ReadCTVTRatioDialogProps {
   isOpen: boolean;
@@ -22,6 +24,16 @@ export default function ReadCTVTRatioDialog({
   onClose,
   meter,
 }: ReadCTVTRatioDialogProps) {
+   const { mutate: readMeter, data, isPending, reset } = useReadMeter();
+  
+      useEffect(() => {
+        if (isOpen && meter?.meterNumber) {
+          readMeter({ serial: meter.meter?.meterNumber, type: "Ratio" });
+        }
+      }, [isOpen]);
+
+      const ratioValue = data?.responsedata?.value ?? 0;
+      
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="h-fit bg-white">
@@ -41,7 +53,8 @@ export default function ReadCTVTRatioDialog({
                 id="ct-numerator"
                 type="text"
                 readOnly
-                placeholder="--"
+                value={ratioValue}
+                placeholder={isPending ? "Loading..." : "No data available"}
                 className="w-full border border-gray-200"
               />
             </div>

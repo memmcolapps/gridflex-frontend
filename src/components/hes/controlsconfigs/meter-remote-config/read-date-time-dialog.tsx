@@ -16,7 +16,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useReadMeter } from "@/hooks/use-configure-meter";
 import type { Meter } from "@/types/meter";
+import { useEffect } from "react";
 
 interface ReadDateTimeDialogProps {
   isOpen: boolean;
@@ -29,6 +31,15 @@ export default function ReadDateTimeDialog({
   onClose,
   meter,
 }: ReadDateTimeDialogProps) {
+  const { mutate: readMeter, data, isPending, reset } = useReadMeter();
+
+    useEffect(() => {
+      if (isOpen && meter?.meterNumber) {
+        readMeter({ serial: meter.meter?.meterNumber, type: "Clock" });
+      }
+    }, [isOpen]);
+
+    const clockValue = String(data?.responsedata?.value ?? "");
   const dateOptions = Array.from({ length: 31 }, (_, i) => ({
     value: (i + 1).toString(),
     label: (i + 1).toString(),
@@ -68,7 +79,8 @@ export default function ReadDateTimeDialog({
                 id="hour-input"
                 type="text"
                 readOnly
-                placeholder="--"
+                placeholder={isPending ? "Loading..." : "No data available"}
+                value={clockValue}
                 className="border border-gray-200"
               />
             </div>

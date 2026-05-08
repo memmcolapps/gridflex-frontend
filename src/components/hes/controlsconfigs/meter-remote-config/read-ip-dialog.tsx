@@ -9,7 +9,9 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useReadMeter } from "@/hooks/use-configure-meter";
 import type { Meter } from "@/types/meter";
+import { useEffect } from "react";
 
 interface ReadIPDialogProps {
   isOpen: boolean;
@@ -22,6 +24,15 @@ export default function ReadIPDialog({
   onClose,
   meter,
 }: ReadIPDialogProps) {
+  const { mutate: readMeter, data, isPending, reset } = useReadMeter();
+  const [ipAddress, port] = String(data?.responsedata?.value ?? "").split(":");
+
+  useEffect(() => {
+    if (isOpen && meter?.meterNumber) {
+      readMeter({ serial: meter.meter?.meterNumber, type: "ip" });
+    }
+  }, [isOpen]);
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="h-fit bg-white">
@@ -40,7 +51,8 @@ export default function ReadIPDialog({
               id="ip-address"
               type="text"
               readOnly
-              placeholder="--"
+              value={ipAddress}
+              placeholder={isPending ? "Loading..." : "No data available"}
               className="w-full border border-gray-200"
             />
           </div>
@@ -55,7 +67,8 @@ export default function ReadIPDialog({
               id="port"
               type="text"
               readOnly
-              placeholder="--"
+              placeholder={isPending ? "Loading..." : "No data available"}
+              value={port}
               className="w-full border border-gray-200"
             />
           </div>

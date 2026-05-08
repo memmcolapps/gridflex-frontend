@@ -11,6 +11,27 @@ export interface SetAPNPayload {
   apn: string;
 }
 
+export interface ReadMeterPayload {
+  serial: string;
+  type: "Ratio" | "ip" | "Clock" | "Relay" | "APN";
+}
+
+interface ReadMeterResponseData {
+  meterNo: string;
+  obisCode: string;
+  attributeIndex: number;
+  dataIndex: number;
+  value: number;
+  scaler: number;
+  unit: string;
+}
+
+export interface ReadMeterResponse {
+  responsecode: string;
+  responsedesc: string;
+  responsedata: ReadMeterResponseData;
+}
+
 export interface SetDateTimePayload {
   serial: string;
   dateTime: string;
