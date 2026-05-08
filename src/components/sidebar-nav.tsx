@@ -19,7 +19,6 @@ import {
   Building2,
   ChevronDown,
   ClipboardList,
-  CreditCard,
   Cylinder,
   Users,
   Zap,
@@ -38,6 +37,7 @@ interface NavItemProps {
   title: string;
   href: string;
   icon: LucideIcon;
+  permission: NavPermission;
   isActive?: boolean;
   hasSubmenu?: boolean;
   submenuItems?: SubMenuItemProps[];
@@ -46,8 +46,14 @@ interface NavItemProps {
 interface SubMenuItemProps {
   title: string;
   href: string;
+  permission: NavPermission;
   hasSubmenu?: boolean;
-  submenuItems?: { title: string; href: string }[];
+  submenuItems?: SubMenuItemProps[];
+}
+
+interface NavPermission {
+  module: string;
+  subModules?: string[];
 }
 
 const navItems: NavItemProps[] = [
@@ -55,61 +61,125 @@ const navItems: NavItemProps[] = [
     title: "Data Management",
     href: "/data-management",
     icon: Cylinder,
+    permission: { module: "Data Management" },
     hasSubmenu: true,
     submenuItems: [
-      { title: "Dashboard", href: "/data-management/dashboard" },
-      { title: "Organization", href: "/data-management/organization" },
+      {
+        title: "Dashboard",
+        href: "/data-management/dashboard",
+        permission: { module: "Data Management" },
+      },
+      {
+        title: "Organization",
+        href: "/data-management/organization",
+        permission: { module: "Data Management", subModules: ["Organization"] },
+      },
       {
         title: "Meter Management",
         href: "/data-management/meter-management",
+        permission: {
+          module: "Data Management",
+          subModules: ["Meter Management"],
+        },
         hasSubmenu: true,
         submenuItems: [
           {
             title: "Meter Manufacturers",
             href: "/data-management/meter-management/meter-manufacturer",
+            permission: {
+              module: "Data Management",
+              subModules: ["Meter Management"],
+            },
           },
           {
             title: "Meter Inventory",
             href: "/data-management/meter-management/meter-inventory",
+            permission: {
+              module: "Data Management",
+              subModules: ["Meter Management"],
+            },
           },
           {
             title: "Meters",
             href: "/data-management/meter-management/meters",
+            permission: {
+              module: "Data Management",
+              subModules: ["Meter Management"],
+            },
           },
           {
             title: "Assigned Meter",
             href: "/data-management/meter-management/assign-meter",
+            permission: {
+              module: "Data Management",
+              subModules: ["Meter Management"],
+            },
           },
         ],
       },
       {
         title: "Customer Management",
         href: "/data-management/customer-management",
+        permission: {
+          module: "Data Management",
+          subModules: ["Customer Management"],
+        },
       },
-      { title: "Band Management", href: "/data-management/band-management" },
-      { title: "Tariff Rate", href: "/data-management/tarrif-rate" },
+      {
+        title: "Band Management",
+        href: "/data-management/band-management",
+        permission: {
+          module: "Data Management",
+          subModules: ["Band Management"],
+        },
+      },
+      {
+        title: "Tariff Rate",
+        href: "/data-management/tarrif-rate",
+        permission: { module: "Data Management", subModules: ["Tariff"] },
+      },
       {
         title: "Debt Management",
         href: "/data-management/debt-management",
+        permission: {
+          module: "Data Management",
+          subModules: ["Debt Management"],
+        },
         hasSubmenu: true,
         submenuItems: [
           {
             title: "Debt Setting",
             href: "/data-management/debt-management/debt-settings",
+            permission: {
+              module: "Data Management",
+              subModules: ["Debt Management"],
+            },
           },
           {
             title: "Debit Adjustment",
             href: "/data-management/debt-management/debit-adjustment",
+            permission: {
+              module: "Data Management",
+              subModules: ["Debt Management"],
+            },
           },
           {
             title: "Credit Adjustment",
             href: "/data-management/debt-management/credit-adjustment",
+            permission: {
+              module: "Data Management",
+              subModules: ["Debt Management"],
+            },
           },
         ],
       },
       {
         title: "Review and Approval",
         href: "/data-management/reviewandapproval",
+        permission: {
+          module: "Data Management",
+          subModules: ["Review and Approval"],
+        },
       },
     ],
   },
@@ -166,28 +236,52 @@ const navItems: NavItemProps[] = [
     title: "Vending",
     href: "/vending",
     icon: Zap,
+    permission: { module: "Vending" },
     hasSubmenu: true,
     submenuItems: [
-      { title: "Dashboard", href: "/vending/vending-dashboard" },
-      { title: "Vending", href: "/vending/vending" },
+      {
+        title: "Dashboard",
+        href: "/vending/vending-dashboard",
+        permission: { module: "Vending" },
+      },
+      {
+        title: "Vending",
+        href: "/vending/vending",
+        permission: { module: "Vending", subModules: ["Vending"] },
+      },
     ],
   },
   {
     title: "HES",
     href: "/hes",
     icon: Building2,
+    permission: { module: "HES" },
     hasSubmenu: true,
     submenuItems: [
-      { title: "Dashboard", href: "/hes/dashboard" },
+      {
+        title: "Dashboard",
+        href: "/hes/dashboard",
+        permission: { module: "HES" },
+      },
       {
         title: "Communication Report",
         href: "/hes/hes-communication-report",
+        permission: { module: "HES", subModules: ["HES"] },
       },
-      { title: "Realtime Data", href: "/hes/hes-realtime-data" },
-      { title: "Profile and Events", href: "/hes/profile-and-events" },
+      {
+        title: "Realtime Data",
+        href: "/hes/hes-realtime-data",
+        permission: { module: "HES", subModules: ["HES"] },
+      },
+      {
+        title: "Profile and Events",
+        href: "/hes/profile-and-events",
+        permission: { module: "HES", subModules: ["HES"] },
+      },
       {
         title: "Meter Remote Configuration",
         href: "/hes/controlsandconfigs/meter-remote-config",
+        permission: { module: "HES", subModules: ["HES"] },
       },
 
       // {
@@ -211,31 +305,46 @@ const navItems: NavItemProps[] = [
     title: "User Management",
     href: "/user-management",
     icon: Users,
+    permission: { module: "User Management" },
     hasSubmenu: true,
     submenuItems: [
       {
         title: "Group Permission",
         href: "/user-management/group-permission",
+        permission: {
+          module: "User Management",
+          subModules: ["User Management"],
+        },
       },
-      { title: "Users", href: "/user-management" },
+      {
+        title: "Users",
+        href: "/user-management",
+        permission: {
+          module: "User Management",
+          subModules: ["User Management"],
+        },
+      },
     ],
   },
   {
     title: "Audit Log",
     href: "/audit-log",
     icon: Activity,
+    permission: { module: "Audit Log" },
     hasSubmenu: false,
   },
   {
     title: "Report Summary",
     href: "/customized-report",
     icon: ClipboardList,
+    permission: { module: "Report Summary" },
     hasSubmenu: false,
   },
   {
     title: "Incident Report",
     href: "/incident-report",
     icon: CircleAlert,
+    permission: { module: "Incident Report" },
     hasSubmenu: false,
   },
 
@@ -243,12 +352,14 @@ const navItems: NavItemProps[] = [
     title: "Change Log",
     href: "/change-log",
     icon: MessageSquareMore,
+    permission: { module: "Change Log" },
     hasSubmenu: false,
   },
   {
     title: "About Us",
     href: "/about-us",
     icon: Info,
+    permission: { module: "About Us" },
     hasSubmenu: false,
   },
 ];
@@ -260,8 +371,8 @@ export function SidebarNav() {
     {},
   );
 
-  const normalizeModuleName = (name: string): string => {
-    return name.toLowerCase().replace(/\s+/g, "");
+  const normalizePermissionName = (name: string): string => {
+    return name.toLowerCase().replace(/[\s_-]+/g, "");
   };
 
   const isItemActive = (href: string, subItems?: SubMenuItemProps[]) => {
@@ -293,6 +404,32 @@ export function SidebarNav() {
       user?.nodeInfo?.type?.toLowerCase() || "",
     );
 
+    const canAccess = (permission: NavPermission): boolean => {
+      if (!user?.groups?.modules) return false;
+
+      const normalizedModuleName = normalizePermissionName(permission.module);
+      const allowedSubModules = permission.subModules?.map((subModule) =>
+        normalizePermissionName(subModule),
+      );
+
+      return user.groups.modules.some((module) => {
+        if (
+          normalizePermissionName(module.name) !== normalizedModuleName ||
+          !module.access
+        ) {
+          return false;
+        }
+
+        if (!allowedSubModules?.length) return true;
+
+        return module.subModules.some(
+          (subModule) =>
+            allowedSubModules.includes(normalizePermissionName(subModule.name)) &&
+            subModule.access,
+        );
+      });
+    };
+
     const filterMeterInventory = (items: NavItemProps[]): NavItemProps[] => {
       return items.map((item) => {
         if (item.title === "Data Management" && item.submenuItems) {
@@ -319,78 +456,20 @@ export function SidebarNav() {
       });
     };
 
-    // SuperAdmin can see everything
-    if (user.groups?.groupTitle?.toLowerCase() === "super admin") {
-      return isRestrictedRole ? filterMeterInventory(navItems) : navItems;
-    }
-    const hasModuleAccess = (moduleName: string): boolean => {
-      if (!user?.groups?.modules) return false;
-
-      const normalizedModuleName = normalizeModuleName(moduleName);
-
-      if (normalizedModuleName === "auditlog") return true;
-
-      return user.groups.modules.some((module) => {
-        const normalizedApiModuleName = normalizeModuleName(module.name);
-
-        return (
-          normalizedApiModuleName === normalizedModuleName && module.access
-        );
-      });
-    };
-
-    const hasSubModuleAccess = (
-      parentModuleName: string,
-      subModuleName: string,
-    ): boolean => {
-      if (!user?.groups?.modules) return false;
-
-      const normalizedParentModuleName = normalizeModuleName(parentModuleName);
-      const normalizedSubModuleName = normalizeModuleName(subModuleName);
-
-      const parentModule = user.groups.modules.find(
-        (module) =>
-          normalizeModuleName(module.name) === normalizedParentModuleName &&
-          module.access,
-      );
-
-      if (!parentModule) return false;
-
-      return parentModule.subModules.some(
-        (subModule) =>
-          normalizeModuleName(subModule.name) === normalizedSubModuleName &&
-          subModule.access,
-      );
-    };
-
-    return navItems
-      .filter((item) => {
-        if (item.title === "Audit Log") return true;
-
-        return hasModuleAccess(item.title);
-      })
+    const filteredItems = navItems
+      .filter((item) => canAccess(item.permission))
       .map((item) => {
-        // For Data Management, filter submenu items based on submodule access
-        if (item.title === "Data Management" && item.submenuItems) {
+        if (item.submenuItems) {
           return {
             ...item,
             submenuItems: item.submenuItems
-              .filter((subItem) => {
-                // Dashboard is always visible if user has access to Data Management module
-                if (subItem.title === "Dashboard") return true;
-                // Filter other submenu items based on submodule access
-                return hasSubModuleAccess("Data Management", subItem.title);
-              })
+              .filter((subItem) => canAccess(subItem.permission))
               .map((subItem) => {
-                if (
-                  subItem.title === "Meter Management" &&
-                  subItem.submenuItems &&
-                  isRestrictedRole
-                ) {
+                if (subItem.submenuItems) {
                   return {
                     ...subItem,
-                    submenuItems: subItem.submenuItems.filter(
-                      (nested) => nested.title !== "Meter Inventory",
+                    submenuItems: subItem.submenuItems.filter((nested) =>
+                      canAccess(nested.permission),
                     ),
                   };
                 }
@@ -401,6 +480,8 @@ export function SidebarNav() {
 
         return item;
       });
+
+    return isRestrictedRole ? filterMeterInventory(filteredItems) : filteredItems;
   }, [user]);
 
   return (
