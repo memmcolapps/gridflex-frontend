@@ -38,6 +38,7 @@ interface NavItemProps {
   href: string;
   icon: LucideIcon;
   permission: NavPermission;
+  alwaysVisible?: boolean;
   isActive?: boolean;
   hasSubmenu?: boolean;
   submenuItems?: SubMenuItemProps[];
@@ -331,6 +332,7 @@ const navItems: NavItemProps[] = [
     href: "/audit-log",
     icon: Activity,
     permission: { module: "Audit Log" },
+    alwaysVisible: true,
     hasSubmenu: false,
   },
   {
@@ -345,6 +347,7 @@ const navItems: NavItemProps[] = [
     href: "/incident-report",
     icon: CircleAlert,
     permission: { module: "Incident Report" },
+    alwaysVisible: true,
     hasSubmenu: false,
   },
 
@@ -457,7 +460,7 @@ export function SidebarNav() {
     };
 
     const filteredItems = navItems
-      .filter((item) => canAccess(item.permission))
+      .filter((item) => item.alwaysVisible || canAccess(item.permission))
       .map((item) => {
         if (item.submenuItems) {
           return {
