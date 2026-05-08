@@ -33,6 +33,8 @@ export default function ReadIPDialog({
     }
   }, [isOpen]);
 
+  const isLoading = isPending ? "Loading..." : "No data available";
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="h-fit bg-white">
@@ -52,7 +54,7 @@ export default function ReadIPDialog({
               type="text"
               readOnly
               value={ipAddress}
-              placeholder={isPending ? "Loading..." : "No data available"}
+              placeholder={isLoading}
               className="w-full border border-gray-200"
             />
           </div>
@@ -67,7 +69,7 @@ export default function ReadIPDialog({
               id="port"
               type="text"
               readOnly
-              placeholder={isPending ? "Loading..." : "No data available"}
+              placeholder={isLoading}
               value={port}
               className="w-full border border-gray-200"
             />

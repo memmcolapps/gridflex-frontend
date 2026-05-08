@@ -24,16 +24,31 @@ export default function ReadCTVTRatioDialog({
   onClose,
   meter,
 }: ReadCTVTRatioDialogProps) {
-   const { mutate: readMeter, data, isPending, reset } = useReadMeter();
-  
-      useEffect(() => {
-        if (isOpen && meter?.meterNumber) {
-          readMeter({ serial: meter.meter?.meterNumber, type: "Ratio" });
-        }
-      }, [isOpen]);
+  const { mutate: readMeter, data, isPending, reset } = useReadMeter();
 
-      const ratioValue = data?.responsedata?.value ?? 0;
-      
+  useEffect(() => {
+    if (isOpen && meter?.meterNumber) {
+      readMeter({ serial: meter.meter?.meterNumber, type: "Ratio" });
+    }
+  }, [isOpen]);
+
+  const responseValue = Array.isArray(data?.responsedata) ? data.responsedata : [];
+
+  const getValueByDescription = (description: string): string => {
+    const item = responseValue.find(
+      (entry: { description: string; value: number }) =>
+        entry.description?.toLowerCase() === description.toLowerCase()
+    );
+    return item?.value !== undefined ? String(item.value) : "";
+  };
+
+  const ctNumerator = getValueByDescription("Numerator of CT ratio");
+  const ctDenominator = getValueByDescription("Denominator of CT ratio");
+  const vtNumerator = getValueByDescription("Numerator of PT ratio");
+  const vtDenominator = getValueByDescription("Denominator of PT ratio");
+
+  const isLoading = isPending ? "Loading..." : "No data available";
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="h-fit bg-white">
@@ -53,8 +68,8 @@ export default function ReadCTVTRatioDialog({
                 id="ct-numerator"
                 type="text"
                 readOnly
-                value={ratioValue}
-                placeholder={isPending ? "Loading..." : "No data available"}
+                value={ctNumerator}
+                placeholder={isLoading}
                 className="w-full border border-gray-200"
               />
             </div>
@@ -69,7 +84,8 @@ export default function ReadCTVTRatioDialog({
                 id="ct-denominator"
                 type="text"
                 readOnly
-                placeholder="--"
+                value={ctDenominator}
+                placeholder={isLoading}
                 className="w-full border border-gray-200"
               />
             </div>
@@ -86,7 +102,8 @@ export default function ReadCTVTRatioDialog({
                 id="vt-numerator"
                 type="text"
                 readOnly
-                placeholder="--"
+                value={vtNumerator}
+                placeholder={isLoading}
                 className="w-full border border-gray-200"
               />
             </div>
@@ -101,7 +118,8 @@ export default function ReadCTVTRatioDialog({
                 id="vt-denominator"
                 type="text"
                 readOnly
-                placeholder="--"
+                value={vtDenominator}
+                placeholder={isLoading}
                 className="w-full border border-gray-200"
               />
             </div>
