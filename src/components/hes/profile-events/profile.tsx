@@ -82,6 +82,9 @@ const profileColumns: Record<string, { key: string; label: string }[]> = {
     { key: "t4ActiveEnergy", label: "T4 Active Energy" },
     { key: "totalActiveEnergy", label: "Total Active Energy" },
     { key: "totalApparentEnergy", label: "Total Apparent Energy" },
+    { key: "activeMaximumDemand", label: "Active Maximum Demand" },
+    { key: "totalApparentDemand", label: "Total Apparent Demand" },
+    { key: "totalApparentDemandTime", label: "Total Apparent Demand Time" },
   ],
   "load-profile-one": [
     { key: "meterModel", label: "Meter Model" },
@@ -118,6 +121,47 @@ const profileColumns: Record<string, { key: string; label: string }[]> = {
     { key: "reactiveEnergyExport", label: "Reactive Energy Export" },
     { key: "apparentEnergyImport", label: "Apparent Energy Import" },
     { key: "apparentEnergyExport", label: "Apparent Energy Export" },
+  ],
+  "load-profile-one-household": [
+    { key: "meterModel", label: "Meter Model" },
+    { key: "meterHealthIndicator", label: "Meter Health Indicator" },
+    { key: "activeEnergyImportOngrid", label: "Active Energy Import Ongrid" },
+    { key: "activeEnergyImportOffgrid", label: "Active Energy Import Offgrid" },
+    { key: "activeEnergyExport", label: "Active Energy Export" },
+    { key: "activeEnergyExportOngrid", label: "Active Energy Export Ongrid" },
+    { key: "activeEnergyExportOffgrid", label: "Active Energy Export Offgrid" },
+  ],
+  "load-profile-two-household": [
+    { key: "voltageL1", label: "Voltage L1" },
+    { key: "currentL1", label: "Current L1" },
+    { key: "currentL2", label: "Current L2" },
+  ],
+  "daily-billing-data-household": [
+    { key: "meterModel", label: "Meter Model" },
+    { key: "creditOngrid", label: "Credit Ongrid" },
+    { key: "creditffgrid", label: "Credit Offgrid" },
+  ],
+  "monthly-billing-data-household": [
+    { key: "meterModel", label: "Meter Model" },
+    { key: "creditOngrid", label: "Credit Ongrid" },
+    { key: "creditffgrid", label: "Credit Offgrid" },
+  ],
+  "daily-billing-energy-household": [
+    { key: "meterModel", label: "Meter Model" },
+    { key: "activeEnergyImport", label: "Active Energy Import" },
+    { key: "activeEnergyImportOngrid", label: "Active Energy Import Ongrid" },
+    { key: "activeEnergyExport", label: "Active Energy Export" },
+    { key: "activeEnergyExportOngrid", label: "Active Energy Export Ongrid" },
+    { key: "activeEnergyExportOffgrid", label: "Active Energy Export Offgrid" },
+  ],
+  "monthly-billing-energy-household": [
+    { key: "meterModel", label: "Meter Model" },
+    { key: "activeEnergyImport", label: "Active Energy Import" },
+    { key: "activeEnergyImportOngrid", label: "Active Energy Import Ongrid" },
+    { key: "activeEnergyImportOffgrid", label: "Active Energy Import Offgrid" },
+    { key: "activeEnergyExport", label: "Active Energy Export" },
+    { key: "activeEnergyExportOngrid", label: "Active Energy Export Ongrid" },
+    { key: "activeEnergyExportOffgrid", label: "Active Energy Export Offgrid" },
   ],
 };
 interface ProfileProps {

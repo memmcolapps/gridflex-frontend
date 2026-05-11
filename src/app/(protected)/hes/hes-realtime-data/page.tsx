@@ -181,12 +181,12 @@ export default function RealtimeDataPage() {
         </div>
       </div>
       <RealTimeDataTable
-        sseData={sseData}
+        // sseData={sseData}
         // connectionStatus={connectionStatus}
-        selectedMeters={selectedMeters}
+        // selectedMeters={selectedMeters}
         onMeterSelection={handleMeterSelection}
         meterType={activeTab} 
-        onRunStream={runRealtimeStream}
+        // onRunStream={runRealtimeStream}
       />
     </div>
   );
