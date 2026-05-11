@@ -90,12 +90,12 @@ export default function ConfigureIPDialog({ isOpen, onClose, meter }: ConfigureI
                     </Button>
                     <Button
                         onClick={handleConfigure}
-                        disabled={!isFormValid} // Disable when form is invalid
+                        disabled={!isFormValid || isPending} // Disable when form is invalid
                         className={`bg-[#161CCA] text-white ${
                             !isFormValid ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
                         }`}
                     >
-                        Configure
+                        {isPending ? "Configuring..." : "Configure"}
                     </Button>
                 </div>
             </DialogContent>
