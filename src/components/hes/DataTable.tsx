@@ -327,7 +327,7 @@ export function DataTable({ data, reading, loading }: DataTableProps) {
           <TableHeader className="bg-transparent">
             <TableRow>
               {columns.map((col, i) => (
-                <TableHead key={i} className="py-4 text-base whitespace-nowrap">
+                <TableHead key={i} className="py-4 text-center text-base whitespace-nowrap">
                   {col}
                 </TableHead>
               ))}
@@ -349,7 +349,7 @@ export function DataTable({ data, reading, loading }: DataTableProps) {
               </TableRow>
             ) : (
               data.map((row, idx) => (
-                <TableRow key={idx} className="text-base">
+                <TableRow key={idx} className="text-base text-center">
                   <TableCell className="py-4 whitespace-nowrap">
                     {(idx + 1).toString().padStart(2, "0")}
                   </TableCell>
