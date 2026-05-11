@@ -79,9 +79,9 @@ export default function RealtimeDataPage() {
   };
 
   const handleTabChange = (tab: string) => {
-    setActiveTab(tab);
-    setSelectedMeters([]);
-  };
+  setActiveTab(tab);
+  setSelectedMeters([]); // clear meters on tab switch
+};
 
   // const getConnectionStatusIcon = () => {
   //   if (!baseUrl) {
@@ -150,11 +150,7 @@ export default function RealtimeDataPage() {
         </div>
       </div>
       <div className="flex flex-row justify-between">
-        <Tabs
-          defaultValue="MD"
-          className="mb-4"
-          onValueChange={handleTabChange}
-        >
+        <Tabs defaultValue="MD" className="mb-4" onValueChange={setActiveTab}>
           <TabsList style={{ border: "2px solid #161CCA" }} className="h-12">
             <TabsTrigger
               value="MD"
@@ -185,13 +181,12 @@ export default function RealtimeDataPage() {
         </div>
       </div>
       <RealTimeDataTable
-        key={activeTab}
-        sseData={sseData}
-        connectionStatus={connectionStatus}
-        selectedMeters={selectedMeters}
+        // sseData={sseData}
+        // connectionStatus={connectionStatus}
+        // selectedMeters={selectedMeters}
         onMeterSelection={handleMeterSelection}
-        meterType={activeTab}
-        onRunStream={runRealtimeStream}
+        meterType={activeTab} 
+        // onRunStream={runRealtimeStream}
       />
     </div>
   );

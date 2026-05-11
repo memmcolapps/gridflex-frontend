@@ -1,168 +1,88 @@
-import { useState, useEffect, useRef } from 'react';
-import { fetchEventSource } from '@microsoft/fetch-event-source';
-import { env } from '@/env';
-
-export interface MeterStatusData {
-  meterNo: string;
-  lastSeen: string;
-  status: 'CONNECTED' | 'DISCONNECTED' | 'UNKNOWN';
-}
+import { useState, useEffect, useRef } from "react";
+import { fetchEventSource } from "@microsoft/fetch-event-source";
+import { env } from "@/env";
 
 export interface RealTimeData {
   meterNo: string;
+  obisString: string;
+  value?: string;
+  statuscode: number;
   timestamp: string;
-  [key: string]: unknown; // For dynamic meter readings
+  desc?: string;
 }
 
-export interface SSEHookOptions {
-  onMessage?: (data: Record<string, unknown>) => void;
-  onError?: (error: Event) => void;
-  onOpen?: (event: Event) => void;
-  reconnectInterval?: number;
-  reconnectAttempts?: number;
+export interface MeterStatusData {
+  meterNo: string;
+  status: 'CONNECTED' | 'DISCONNECTED';
+  timestamp: string;
 }
 
-export function useSSE(
-  url: string,
-  options: SSEHookOptions = {},
-  enabled = true
-): {
-  data: Record<string, unknown>[];
-  isConnected: boolean;
-  error: string | null;
-  reconnect: () => void;
-  close: () => void;
-} {
-  const [data, setData] = useState<Record<string, unknown>[]>([]);
+export function useSSE(url: string, p0: { onOpen: () => void; onError: () => void; onMessage: (data: unknown) => void; reconnectAttempts: number; }, enabled = true) {
+  const [data, setData] = useState<RealTimeData[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const abortControllerRef = useRef<AbortController | null>(null);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const reconnectAttemptRef = useRef(0);
-  
-  const {
-    onMessage,
-    onError,
-    onOpen,
-    reconnectInterval = 5000,
-    reconnectAttempts = 5
-  } = options;
 
-  const reconnect = () => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-      abortControllerRef.current = null;
-    }
-    setError(null);
-    reconnectAttemptRef.current = 0;
-    connect();
-  };
-
-  const close = () => {
-    if (reconnectTimeoutRef.current) {
-      clearTimeout(reconnectTimeoutRef.current);
-    }
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-      abortControllerRef.current = null;
-    }
-    setIsConnected(false);
-  };
+  const controllerRef = useRef<AbortController | null>(null);
 
   const connect = () => {
-    if (!url) return;
-    if (typeof window === 'undefined') return;
+    if (!url || typeof window === "undefined") return;
 
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
-      setError('Authentication token not found');
-      setIsConnected(false);
-      return;
-    }
+    const token = localStorage.getItem("auth_token");
 
-    try {
-      const controller = new AbortController();
-      abortControllerRef.current = controller;
+    const controller = new AbortController();
+    controllerRef.current = controller;
 
-      void fetchEventSource(url, {
-        method: 'GET',
-        headers: {
-          Accept: 'text/event-stream',
-          Authorization: `Bearer ${token}`,
-          custom: env.NEXT_PUBLIC_CUSTOM_HEADER,
-        },
-        signal: controller.signal,
-        openWhenHidden: true,
-        onopen: async (response) => {
-          if (!response.ok) {
-            throw new Error(`Connection failed with status ${response.status}`);
-          }
-          setIsConnected(true);
-          setError(null);
-          reconnectAttemptRef.current = 0;
-          onOpen?.(new Event('open'));
-        },
-        onmessage: (event) => {
-          try {
-            const parsedData = JSON.parse(event.data);
-            if (event.event === 'meter-status') {
-              setData(prev => [...prev, { type: 'meter-status', ...parsedData }]);
-            } else {
-              setData(prev => [...prev, parsedData]);
-            }
-            onMessage?.(parsedData);
-          } catch (err) {
-            console.error('Failed to parse SSE data:', err);
-          }
-        },
-        onclose: () => {
-          throw new Error('SSE connection closed');
-        },
-        onerror: (err) => {
-          throw err;
-        },
-      }).catch(() => {
-        if (controller.signal.aborted) return;
-        setIsConnected(false);
-        setError('Connection failed');
-        onError?.(new Event('error'));
+    fetchEventSource(url, {
+      method: "GET",
+      signal: controller.signal,
+      headers: {
+        Accept: "text/event-stream",
+        Authorization: `Bearer ${token}`,
+        custom: env.NEXT_PUBLIC_CUSTOM_HEADER,
+      },
 
-        const shouldReconnect =
-          reconnectAttempts === 0 ||
-          reconnectAttemptRef.current < reconnectAttempts;
+      onopen: async (res) => {
+        if (!res.ok) throw new Error("SSE failed");
+        setIsConnected(true);
+        setError(null);
+      },
 
-        if (shouldReconnect) {
-          reconnectAttemptRef.current += 1;
-          reconnectTimeoutRef.current = setTimeout(() => {
-            connect();
-          }, reconnectInterval);
+      onmessage: (event) => {
+        try {
+          if (!event.data) return;
+
+          const parsed = JSON.parse(event.data);
+
+          const normalized: RealTimeData = {
+            meterNo: parsed.meterNo,
+            obisString: parsed.obisString,
+            value: parsed.value,
+            statuscode: parsed.statuscode,
+            timestamp: parsed.timestamp,
+            desc: parsed.desc,
+          };
+
+          setData((prev) => [...prev, normalized]);
+        } catch (e) {
+          console.error("SSE parse error:", e);
         }
-      });
-    } catch (err) {
-      console.error('Failed to create EventSource:', err);
-      setError('Failed to connect');
-      setIsConnected(false);
-    }
+      },
+
+      onerror: () => {
+        setIsConnected(false);
+        setError("SSE error");
+        throw new Error("SSE crashed");
+      },
+    });
   };
 
   useEffect(() => {
-    if (!enabled || !url) {
-      return;
-    }
-
-    connect();
+    if (enabled) connect();
 
     return () => {
-      close();
+      controllerRef.current?.abort();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [url, enabled]);
 
-  return {
-    data,
-    isConnected,
-    error,
-    reconnect,
-    close
-  };
+  return { data, isConnected, error };
 }

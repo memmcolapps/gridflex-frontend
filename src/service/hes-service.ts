@@ -1,6 +1,8 @@
 import type {
   CreateSchedulePayload,
   HierarchyResponse,
+  OnlineMeterPayload,
+  OnlineMetersResponse,
   ProfileEvent,
   ProfileEventsResponse,
   ResetCronPayload,
@@ -41,8 +43,8 @@ const CUSTOM_HEADER = env.NEXT_PUBLIC_CUSTOM_HEADER;
 
 export interface RealtimeStreamRequest {
   meterType: string;
-  meters: { meterNumber: string }[];
-  obisCode: { code: string }[];
+  meters: string[];
+  obisString: string[];
 }
 
 export const triggerRealtimeStream = async (
@@ -190,6 +192,33 @@ export const resetCronSchedule = async (
     }
     
     return { success: true };
+  } catch (error) {
+    return { success: false, error: handleApiError(error).message };
+  }
+};
+
+export const getOnlineMeters = async (): Promise <
+  { success: true; data: OnlineMeterPayload[] } | { success: false; error: string }
+> => {
+  try {
+    const token = localStorage.getItem("auth_token");
+    if (!token) return { success: false, error: "Auth token not found" };
+
+    const response = await axiosInstance.get<OnlineMetersResponse>(
+      `/hes/service/online-meter`,
+      {
+        headers: {
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    if (response.data.responsecode !== "000") {
+      return { success: false, error: response.data.responsedesc };
+    }
+
+    return { success: true, data: response.data.responsedata };
   } catch (error) {
     return { success: false, error: handleApiError(error).message };
   }
