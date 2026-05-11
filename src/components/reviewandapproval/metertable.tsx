@@ -27,6 +27,7 @@ import type { FetchParams } from "@/service/reviewapproval-service";
 import { toast } from "sonner";
 import { LoadingAnimation } from "@/components/ui/loading-animation";
 import { usePermissions } from "@/hooks/use-permissions";
+import { usePrefetchAuthImage } from "@/hooks/use-auth-image";
 
 interface MeterTableProps {
   selectedMeterNumbers: string[];
@@ -113,6 +114,8 @@ const MeterTable = ({
     setConfirmAction(null);
     setSelectedItem(null);
   };
+
+  const prefetchImage = usePrefetchAuthImage()
 
   if (isLoading)
     return (
@@ -201,6 +204,7 @@ const MeterTable = ({
             paginatedData.map((item, index) => (
               <TableRow
                 key={item.id}
+                onMouseEnter={() => prefetchImage(item.image)}
                 className="cursor-pointer hover:bg-gray-50"
               >
                 <TableCell className="px-4 py-3">

@@ -9,7 +9,9 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useReadMeter } from "@/hooks/use-configure-meter";
 import type { Meter } from "@/types/meter";
+import { useEffect } from "react";
 
 interface ReadRelayModeDialogProps {
   isOpen: boolean;
@@ -22,6 +24,15 @@ export default function ReadRelayModeDialog({
   onClose,
   meter,
 }: ReadRelayModeDialogProps) {
+  const { mutate: readMeter, data, isPending, reset } = useReadMeter();
+
+  useEffect(() => {
+    if (isOpen && meter?.meterNumber) {
+      readMeter({ serial: meter.meter?.meterNumber, type: "Relay" });
+    }
+  }, [isOpen]);
+
+  const relayValue = String(data?.responsedata?.value ?? "");
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="h-fit bg-white">
@@ -39,7 +50,8 @@ export default function ReadRelayModeDialog({
             id="relay-mode"
             type="text"
             readOnly
-            placeholder="--"
+            placeholder={isPending ? "Loading..." : "No data available"}
+            value={relayValue}
             className="w-full border border-gray-200"
           />
         </div>

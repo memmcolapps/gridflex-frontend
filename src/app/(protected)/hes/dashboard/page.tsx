@@ -188,14 +188,7 @@ export default function HESDashboardPage() {
             hesDashboardData?.communicationLogs?.map((log) => ({
               period: log.timeLabel,
               value: log.value,
-            })) ?? [
-              { period: "4 hrs", value: 0 },
-              { period: "8 hrs", value: 0 },
-              { period: "12 hrs", value: 0 },
-              { period: "16 hrs", value: 0 },
-              { period: "20 hrs", value: 0 },
-              { period: "24 hrs", value: 0 },
-            ]
+            }))
           }
         />
         <SimpleCommunicationReport

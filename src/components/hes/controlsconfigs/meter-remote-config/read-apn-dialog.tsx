@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -9,7 +8,9 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useReadMeter } from "@/hooks/use-configure-meter";
 import type { Meter } from "@/types/meter";
+import { useEffect } from "react";
 
 interface ReadAPNDialogProps {
   isOpen: boolean;
@@ -22,6 +23,17 @@ export default function ReadAPNDialog({
   onClose,
   meter,
 }: ReadAPNDialogProps) {
+  const { mutate: readMeter, data, isPending, reset } = useReadMeter();
+
+  useEffect(() => {
+    if (isOpen && meter?.meterNumber) {
+      readMeter({ serial: meter.meter?.meterNumber, type: "APN" });
+    }
+    if (!isOpen) reset();
+  }, [isOpen]);
+
+  const apnValue = data?.responsedata?.value ?? "";
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="h-fit bg-white">
@@ -39,7 +51,8 @@ export default function ReadAPNDialog({
             id="apn-input"
             type="text"
             readOnly
-            placeholder="--"
+            placeholder={isPending ? "Loading..." : "No data available"}
+            value={apnValue}
             className="w-full border border-gray-200"
           />
         </div>
