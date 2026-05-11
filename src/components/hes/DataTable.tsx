@@ -35,6 +35,8 @@ const readingLabels: Record<string, string> = {
     "Total absolute cumulative active energy register",
   "T1 absolute cumulative active energy register":
     "T1 absolute cumulative active energy register",
+  "T2 absolute cumulative active energy register":
+    "T2 absolute cumulative active energy register",
   "T3 absolute cumulative active energy register":
     "T3 absolute cumulative active energy register",
   "T4 absolute cumulative active energy register":
@@ -180,7 +182,8 @@ const readingLabels: Record<string, string> = {
   "Time threshold of over loading": "Time threshold of over loading",
   "Time threshold of over loading end": "Time threshold of over loading end",
   "Thereshold of meter high temperature": "Thereshold of meter high temperature",
-  "Time thereshold of meter high temperature recover": "Time thereshold of meter high temperature recover",
+  "Time thereshold of meter high temperature recover":
+    "Time thereshold of meter high temperature recover",
   "logical-device-name": "Logical Device Name",
   "firmware-version": "Firmware Version",
   "firmware-checksum": "Firmware Checksum",
@@ -191,62 +194,49 @@ const readingLabels: Record<string, string> = {
   "Active energy Export (-A) of public grid ": "Active energy Export (-A) of public grid ",
   "Active energy Export (-A) of private grid": "Active energy Export (-A) of private grid",
   "Reactive energy Import (+A)": "Reactive energy Import (+A)",
-  "Reactive energy Import (+A) of public grid ": "Reactive energy Import (+A) of public grid ",
-  "Reactive energy Import (+A) of private grid": "Reactive energy Import (+A) of private grid",
+  "Reactive energy Import (+A) of public grid ":
+    "Reactive energy Import (+A) of public grid ",
+  "Reactive energy Import (+A) of private grid":
+    "Reactive energy Import (+A) of private grid",
   "Reactive energy Export (-A)": "Reactive energy Export (-A)",
-  "Reactive energy Export (-A) of public grid ": "Reactive energy Export (-A) of public grid ",
-  "Reactive energy Export (-A) of private grid": "Reactive energy Export (-A) of private grid",
-
+  "Reactive energy Export (-A) of public grid ":
+    "Reactive energy Export (-A) of public grid ",
+  "Reactive energy Export (-A) of private grid":
+    "Reactive energy Export (-A) of private grid",
   " Active energy import (+A) && occurring time":
     " Active energy import (+A) && occurring time",
-
   "Active energy import (+A) && occurring time of public grid ":
     "Active energy import (+A) && occurring time of public grid ",
-
   "Active energy import (+A) && occurring time of private grid":
     "Active energy import (+A) && occurring time of private grid",
-
   "Active energy export (-A) && occurring time":
     "Active energy export (-A) && occurring time",
-
-  "Active energy export (-A) && occurring time of public grid ":
-    "Active energy export (-A) && occurring time of public grid ",
-
+  "Active energy export (-A) && occurring time of public grid ":
+    "Active energy export (-A) && occurring time of public grid ",
   "Active energy export (-A) && occurring time of private grid":
     "Active energy export (-A) && occurring time of private grid",
-
   "Reactive energy import (+A) && occurring time":
     "Reactive energy import (+A) && occurring time",
-
-  " Reactive energy import (+A) && occurring time of public grid ":
-    " Reactive energy import (+A) && occurring time of public grid ",
-
+  " Reactive energy import (+A) && occurring time of public grid ":
+    " Reactive energy import (+A) && occurring time of public grid ",
   "Reactive energy import (+A) && occurring time of private grid":
     "Reactive energy import (+A) && occurring time of private grid",
   "Reactive energy export (-A) && occurring time":
     "Reactive energy export (-A) && occurring time",
-
-  "Reactive energy export (-A) && occurring time of public grid ":
-    "Reactive energy export (-A) && occurring time of public grid ",
-
+  "Reactive energy export (-A) && occurring time of public grid ":
+    "Reactive energy export (-A) && occurring time of public grid ",
   "Reactive energy export (-A) && occurring time of private grid":
     "Reactive energy export (-A) && occurring time of private grid",
-
   "Apparent energy import (+A) && occurring time":
     "Apparent energy import (+A) && occurring time",
-
-  "Apparent energy import (+A) && occurring time of public grid ":
-    "Apparent energy import (+A) && occurring time of public grid ",
-
+  "Apparent energy import (+A) && occurring time of public grid ":
+    "Apparent energy import (+A) && occurring time of public grid ",
   "Apparent energy import (+A) && occurring time of private grid":
     "Apparent energy import (+A) && occurring time of private grid",
-
   "Apparent energy export (-A) && occurring time":
     "Apparent energy export (-A) && occurring time",
-
-  "Apparent energy export (-A) && occurring time of public grid ":
-    "Apparent energy export (-A) && occurring time of public grid ",
-
+  "Apparent energy export (-A) && occurring time of public grid ":
+    "Apparent energy export (-A) && occurring time of public grid ",
   "Apparent energy export (-A) && occurring time of private grid":
     "Apparent energy export (-A) && occurring time of private grid",
   "Voltage in phase L1": "Voltage in phase L1",
@@ -282,13 +272,15 @@ const readingLabels: Record<string, string> = {
   "Activity calendar setup": "Activity calendar setup",
   "Special days table": "Special days table",
   "Firmware upgrade": "Firmware upgrade",
-  "Public Grid Credit ": "Public Grid Credit ",
-  "Private Grid Credit ": "Private Grid Credit ",
+  "Public Grid Credit ": "Public Grid Credit ",
+  "Private Grid Credit ": "Private Grid Credit ",
   "Tariff index": "Tariff index",
-  "Public Grid  SGC code": "Public Grid  SGC code",
-  "Private Grid  SGC code": "Private Grid  SGC code",
-  "Public Grid Cumulative power purchase credit [kWh]": "Public Grid Cumulative power purchase credit [kWh]",
-  "Private Grid Cumulative power purchase credit [kWh]": "Private Grid Cumulative power purchase credit [kWh]",
+  "Public Grid  SGC code": "Public Grid  SGC code",
+  "Private Grid  SGC code": "Private Grid  SGC code",
+  "Public Grid Cumulative power purchase credit [kWh]":
+    "Public Grid Cumulative power purchase credit [kWh]",
+  "Private Grid Cumulative power purchase credit [kWh]":
+    "Private Grid Cumulative power purchase credit [kWh]",
   "Current month consumed credit [kWh]": "Current month consumed credit [kWh]",
   "Maximum vend limit [kWh]": "Maximum vend limit [kWh]",
 };
@@ -298,18 +290,22 @@ type CellState = "spinner" | "idle" | "failed" | "success";
 function getCellState(
   row: MeterData,
   readingKey: string,
-  activeReadings: string[],
+  activeReadings: string[]
 ): CellState {
   const status = row[`${readingKey}__status`];
   const value = row[readingKey];
+  const isLoadingDone = row[`${readingKey}__loading`] === "false";
 
   if (status === "-1") return "failed";
-  if (value !== undefined && value !== "" && row[`${readingKey}__loading`] === "false") return "success";
+  if (value !== undefined && value !== "" && isLoadingDone) return "success";
 
-  const firstPending = activeReadings.find(r => {
+  // Pending — check if this is the first unresolved column
+  const firstPending = activeReadings.find((r) => {
     const s = row[`${r}__status`];
     const v = row[r];
-    const done = (s === "-1") || (v !== undefined && v !== "" && row[`${r}__loading`] === "false");
+    const done =
+      s === "-1" ||
+      (v !== undefined && v !== "" && row[`${r}__loading`] === "false");
     return !done;
   });
 
@@ -318,10 +314,10 @@ function getCellState(
 
 export function DataTable({ data, reading, loading }: DataTableProps) {
   const activeReadings = reading.filter(
-    r => r !== "meter-serial-number" && r !== "clock object"
+    (r) => r !== "meter-serial-number" && r !== "clock object"
   );
 
-  const dynamicColumns = activeReadings.map(r => readingLabels[r] ?? r);
+  const dynamicColumns = activeReadings.map((r) => readingLabels[r] ?? r);
   const columns = ["S/N", "Meter Serial Number", "Time", ...dynamicColumns];
 
   return (
@@ -340,7 +336,10 @@ export function DataTable({ data, reading, loading }: DataTableProps) {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={columns.length} className="py-8 text-center">
+                <TableCell
+                  colSpan={columns.length}
+                  className="py-8 text-center"
+                >
                   <LoadingAnimation
                     variant="spinner"
                     message="Loading meter data..."
@@ -363,7 +362,7 @@ export function DataTable({ data, reading, loading }: DataTableProps) {
                     {row.time}
                   </TableCell>
 
-                  {activeReadings.map(r => {
+                  {activeReadings.map((r) => {
                     const state = getCellState(row, r, activeReadings);
 
                     if (state === "spinner") {
@@ -379,7 +378,10 @@ export function DataTable({ data, reading, loading }: DataTableProps) {
 
                     if (state === "idle") {
                       return (
-                        <TableCell key={r} className="py-4 whitespace-nowrap text-gray-300">
+                        <TableCell
+                          key={r}
+                          className="py-4 whitespace-nowrap text-gray-300"
+                        >
                           —
                         </TableCell>
                       );
@@ -392,7 +394,7 @@ export function DataTable({ data, reading, loading }: DataTableProps) {
                           className="py-4 whitespace-nowrap text-red-500"
                           title="Failed to read from meter"
                         >
-                          N/A
+                          failed
                         </TableCell>
                       );
                     }
