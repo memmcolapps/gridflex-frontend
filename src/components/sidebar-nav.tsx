@@ -427,8 +427,9 @@ export function SidebarNav() {
 
         return module.subModules.some(
           (subModule) =>
-            allowedSubModules.includes(normalizePermissionName(subModule.name)) &&
-            subModule.access,
+            allowedSubModules.includes(
+              normalizePermissionName(subModule.name),
+            ) && subModule.access,
         );
       });
     };
@@ -460,7 +461,7 @@ export function SidebarNav() {
     };
 
     const filteredItems = navItems
-      .filter((item) => item.alwaysVisible || canAccess(item.permission))
+      .filter((item) => item.alwaysVisible ?? canAccess(item.permission))
       .map((item) => {
         if (item.submenuItems) {
           return {
@@ -484,7 +485,9 @@ export function SidebarNav() {
         return item;
       });
 
-    return isRestrictedRole ? filterMeterInventory(filteredItems) : filteredItems;
+    return isRestrictedRole
+      ? filterMeterInventory(filteredItems)
+      : filteredItems;
   }, [user]);
 
   return (
@@ -514,7 +517,7 @@ export function SidebarNav() {
                   <SidebarMenuItem
                     key={item.title}
                     className={cn(
-                      "px-2.5 py-5  text-xl",
+                      "px-2.5 py-5 text-xl",
                       isActive
                         ? "rounded-md bg-[#161CCA] text-white"
                         : "rounded-md hover:bg-gray-100",
