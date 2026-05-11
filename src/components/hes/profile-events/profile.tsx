@@ -399,7 +399,7 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
                 className="w-full justify-between border-gray-300"
               >
                 {selectedMeterNos.length > 0
-                  ? selectedMeterNos[0]
+                  ? `${selectedMeterNos.length} selected`
                   : "Select meter numbers..."}
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
@@ -417,9 +417,12 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
                       <CommandItem
                         key={meter.id ?? meter.meterNumber}
                         value={meter.meterNumber}
-                        onSelect={() => {
-                          setSelectedMeterNos([meter.meterNumber]);
-                          setMeterDropdownOpen(false);
+                        onSelect={(e) => {
+                          setSelectedMeterNos((prev) =>
+                            prev.includes(meter.meterNumber)
+                              ? prev.filter((n) => n !== meter.meterNumber)
+                              : [...prev, meter.meterNumber],
+                          );
                         }}
                         className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-50"
                       >
