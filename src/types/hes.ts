@@ -110,3 +110,14 @@ export interface ResetCronPayload {
   daysOfMonth?: number[];
   monthsOfYear?: number[];
 }
+
+export interface OnlineMeterPayload {
+  meterNumber: string;
+  connectionType: string;
+}
+
+export interface OnlineMetersResponse {
+  responsecode: string;
+  responsedesc: string;
+  responsedata: OnlineMeterPayload[];
+}

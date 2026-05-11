@@ -4,7 +4,8 @@ import {
   fetchProfileEvents,
   createSchedule,
   resetCronSchedule,
-  fetchHierarchyData
+  fetchHierarchyData,
+  getOnlineMeters
 } from "@/service/hes-service";
 import type { CreateSchedulePayload, ResetCronPayload } from "@/types/hes";
 import { toast } from "sonner";
@@ -83,3 +84,16 @@ export function useResetCronSchedule() {
     },
   });
 }
+
+export const useOnlineMeters = () => {
+  return useQuery({
+    queryKey: ["online-meters"],
+    queryFn: async () => {
+      const response = await getOnlineMeters();
+      if (!response.success) {
+        throw new Error(response.error);
+      }
+      return response.data;
+    },
+  });
+};

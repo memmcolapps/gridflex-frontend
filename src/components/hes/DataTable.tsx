@@ -9,8 +9,9 @@ import {
 } from "@/components/ui/table";
 import { Card } from "../ui/card";
 import { LoadingAnimation } from "@/components/ui/loading-animation";
+import { Loader2 } from "lucide-react";
 
-interface MeterData {
+export interface MeterData {
   [key: string]: string;
   meter: string;
   time: string;
@@ -178,36 +179,22 @@ const readingLabels: Record<string, string> = {
   "Threshold of over loading": "Threshold of over loading",
   "Time threshold of over loading": "Time threshold of over loading",
   "Time threshold of over loading end": "Time threshold of over loading end",
-  "Thereshold of meter high temperature":
-    "Thereshold of meter high temperature",
-  "Time thereshold of meter high temperature recover":
-    "Time thereshold of meter high temperature recover",
+  "Thereshold of meter high temperature": "Thereshold of meter high temperature",
+  "Time thereshold of meter high temperature recover": "Time thereshold of meter high temperature recover",
   "logical-device-name": "Logical Device Name",
-
   "firmware-version": "Firmware Version",
   "firmware-checksum": "Firmware Checksum",
   "Active energy Import (+A)": "Active energy Import (+A)",
-
   "Active energy Import (+A) of public grid ": "Active energy Import (+A) of public grid ",
-
   "Active energy Import (+A) of private grid": "Active energy Import (+A) of private grid",
-
   "Active energy Export (-A)": "Active energy Export (-A)",
-
   "Active energy Export (-A) of public grid ": "Active energy Export (-A) of public grid ",
-
   "Active energy Export (-A) of private grid": "Active energy Export (-A) of private grid",
-
   "Reactive energy Import (+A)": "Reactive energy Import (+A)",
-
   "Reactive energy Import (+A) of public grid ": "Reactive energy Import (+A) of public grid ",
-
   "Reactive energy Import (+A) of private grid": "Reactive energy Import (+A) of private grid",
-
   "Reactive energy Export (-A)": "Reactive energy Export (-A)",
-
   "Reactive energy Export (-A) of public grid ": "Reactive energy Export (-A) of public grid ",
-
   "Reactive energy Export (-A) of private grid": "Reactive energy Export (-A) of private grid",
 
   " Active energy import (+A) && occurring time":
@@ -263,48 +250,27 @@ const readingLabels: Record<string, string> = {
   "Apparent energy export (-A) && occurring time of private grid":
     "Apparent energy export (-A) && occurring time of private grid",
   "Voltage in phase L1": "Voltage in phase L1",
-
   "Voltage in phase L2": "Voltage in phase L2",
-
   "Voltage in phase L3 ": "Voltage in phase L3 ",
-
   "Current in phase L1": "Current in phase L1",
-
   "Current in phase L2": "Current in phase L2",
-
   "Current in phase L3": "Current in phase L3",
-
-  "Total active power":
-    "Total active power",
-
+  "Total active power": "Total active power",
   "Active power in phase L1": "Active power in phase L1",
   "Active power in phase L2": "Active power in phase L2",
-
   "Active power in phase L3": "Active power in phase L3",
-
   "Total reactive power": "Total reactive power",
-
   "Reactive power in phase L1": "Reactive power in phase L1",
-
   "Reactive power in phase L2": "Reactive power in phase L2",
-
   "Reactive power in phase L3": "Reactive power in phase L3",
-
-  "Total apparent power ": "Total apparent power ",
-    "Apparent power in phase L1": "Apparent power in phase L1",
-
+  "Total apparent power ": "Total apparent power ",
+  "Apparent power in phase L1": "Apparent power in phase L1",
   "Apparent power in phase L2": "Apparent power in phase L2",
-
   "Apparent power in phase L3": "Apparent power in phase L3",
-
   "Total power factor": "Total power factor",
-
   "Power factor in phase L1": "Power factor in phase L1",
-
   "Power factor in phase L2": "Power factor in phase L2",
-
   "Power factor in phase L3": "Power factor in phase L3",
-
   "Balance (kWh)": "Balance (kWh)",
   "Estimated remaining days": "Estimated remaining days",
   "Actual recharged amount(kWh)": "Actual recharged amount(kWh)",
@@ -325,27 +291,47 @@ const readingLabels: Record<string, string> = {
   "Private Grid Cumulative power purchase credit [kWh]": "Private Grid Cumulative power purchase credit [kWh]",
   "Current month consumed credit [kWh]": "Current month consumed credit [kWh]",
   "Maximum vend limit [kWh]": "Maximum vend limit [kWh]",
-
 };
 
+type CellState = "spinner" | "idle" | "failed" | "success";
+
+function getCellState(
+  row: MeterData,
+  readingKey: string,
+  activeReadings: string[],
+): CellState {
+  const status = row[`${readingKey}__status`];
+  const value = row[readingKey];
+
+  if (status === "-1") return "failed";
+  if (value !== undefined && value !== "" && row[`${readingKey}__loading`] === "false") return "success";
+
+  const firstPending = activeReadings.find(r => {
+    const s = row[`${r}__status`];
+    const v = row[r];
+    const done = (s === "-1") || (v !== undefined && v !== "" && row[`${r}__loading`] === "false");
+    return !done;
+  });
+
+  return firstPending === readingKey ? "spinner" : "idle";
+}
+
 export function DataTable({ data, reading, loading }: DataTableProps) {
-  const dynamicColumns = reading
-    .filter((r) => r !== "meter-serial-number" && r !== "clock object")
-    .map((r) => readingLabels[r]);
+  const activeReadings = reading.filter(
+    r => r !== "meter-serial-number" && r !== "clock object"
+  );
+
+  const dynamicColumns = activeReadings.map(r => readingLabels[r] ?? r);
   const columns = ["S/N", "Meter Serial Number", "Time", ...dynamicColumns];
 
   return (
     <Card className="w-full border-none">
-      {/* ✅ Ensure only the table scrolls */}
       <div className="w-full overflow-x-auto">
         <Table className="min-w-max">
           <TableHeader className="bg-transparent">
             <TableRow>
-              {columns.map((col, index) => (
-                <TableHead
-                  key={index}
-                  className="py-4 text-base whitespace-nowrap"
-                >
+              {columns.map((col, i) => (
+                <TableHead key={i} className="py-4 text-base whitespace-nowrap">
                   {col}
                 </TableHead>
               ))}
@@ -354,10 +340,7 @@ export function DataTable({ data, reading, loading }: DataTableProps) {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="py-8 text-center"
-                >
+                <TableCell colSpan={columns.length} className="py-8 text-center">
                   <LoadingAnimation
                     variant="spinner"
                     message="Loading meter data..."
@@ -366,27 +349,60 @@ export function DataTable({ data, reading, loading }: DataTableProps) {
                 </TableCell>
               </TableRow>
             ) : (
-              data.map((row, index) => (
-                <TableRow key={index} className="text-base">
+              data.map((row, idx) => (
+                <TableRow key={idx} className="text-base">
                   <TableCell className="py-4 whitespace-nowrap">
-                    {(index + 1).toString().padStart(2, "0")}
+                    {(idx + 1).toString().padStart(2, "0")}
                   </TableCell>
+
                   <TableCell className="py-4 whitespace-nowrap">
                     {row.meter}
                   </TableCell>
+
                   <TableCell className="py-4 whitespace-nowrap">
                     {row.time}
                   </TableCell>
-                  {reading
-                    .filter(
-                      (r) =>
-                        r !== "meter-serial-number" && r !== "clock object",
-                    )
-                    .map((r) => (
+
+                  {activeReadings.map(r => {
+                    const state = getCellState(row, r, activeReadings);
+
+                    if (state === "spinner") {
+                      return (
+                        <TableCell key={r} className="py-4 whitespace-nowrap">
+                          <Loader2
+                            size={16}
+                            className="animate-spin text-gray-400"
+                          />
+                        </TableCell>
+                      );
+                    }
+
+                    if (state === "idle") {
+                      return (
+                        <TableCell key={r} className="py-4 whitespace-nowrap text-gray-300">
+                          —
+                        </TableCell>
+                      );
+                    }
+
+                    if (state === "failed") {
+                      return (
+                        <TableCell
+                          key={r}
+                          className="py-4 whitespace-nowrap text-red-500"
+                          title="Failed to read from meter"
+                        >
+                          N/A
+                        </TableCell>
+                      );
+                    }
+
+                    return (
                       <TableCell key={r} className="py-4 whitespace-nowrap">
                         {row[r]}
                       </TableCell>
-                    ))}
+                    );
+                  })}
                 </TableRow>
               ))
             )}
