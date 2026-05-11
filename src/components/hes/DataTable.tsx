@@ -367,7 +367,7 @@ export function DataTable({ data, reading, loading }: DataTableProps) {
 
                     if (state === "spinner") {
                       return (
-                        <TableCell key={r} className="py-4 whitespace-nowrap">
+                        <TableCell key={r} className="py-4 flex justify-center whitespace-nowrap">
                           <Loader2
                             size={16}
                             className="animate-spin text-gray-400"
