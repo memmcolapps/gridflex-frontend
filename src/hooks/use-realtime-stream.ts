@@ -81,7 +81,7 @@ export function useRealtimeStream() {
       );
 
       if (!response.ok || !response.body) {
-        setError(`Stream failed: ${response.status}`);
+        // setError(`Stream failed: ${response.status}`);
         setIsStreaming(false);
         return;
       }
