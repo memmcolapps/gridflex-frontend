@@ -1,6 +1,7 @@
 import type {
   CreateSchedulePayload,
   HierarchyResponse,
+  ObisDataResponse,
   OnlineMeterPayload,
   OnlineMetersResponse,
   ProfileEvent,
@@ -224,6 +225,36 @@ export const getOnlineMeters = async (
     }
 
     return { success: true, data: response.data.responsedata };
+  } catch (error) {
+    return { success: false, error: handleApiError(error).message };
+  }
+};
+
+export const getObisData = async (
+  type: 'MD' | 'Non-MD',
+): Promise <
+  { success: true; data: ObisDataResponse } | { success: false; error: string }
+> => {
+  try {
+    const token = localStorage.getItem("auth_token");
+    if (!token) return { success: false, error: "Auth token not found" };
+
+    const response = await axiosInstance.get<ObisDataResponse>(
+      `/hes/service/obis-data`,
+      {
+        headers: {
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+        params: { type },
+      },
+    );
+
+    if (response.data.responsecode !== "000") {
+      return { success: false, error: response.data.responsedesc };
+    }
+
+    return { success: true, data: response.data };
   } catch (error) {
     return { success: false, error: handleApiError(error).message };
   }
