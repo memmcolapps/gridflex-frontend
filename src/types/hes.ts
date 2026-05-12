@@ -121,3 +121,18 @@ export interface OnlineMetersResponse {
   responsedesc: string;
   responsedata: OnlineMeterPayload[];
 }
+
+export interface ObisItem {
+  obisCodeCombined?: string;
+  obisType: string;
+  meterType?: string;
+  description: string;
+  groupName: string;
+  obisCode?: string;
+}
+
+export interface ObisDataResponse {
+  responsecode: string;
+  responsedesc: string;
+  responsedata: Record<string, ObisItem[]>;
+}

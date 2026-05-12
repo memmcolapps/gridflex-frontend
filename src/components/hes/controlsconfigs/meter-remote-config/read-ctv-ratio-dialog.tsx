@@ -10,6 +10,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useReadMeter } from "@/hooks/use-configure-meter";
+import { getValueByDescription } from "@/lib/utils";
 import type { Meter } from "@/types/meter";
 import { useEffect } from "react";
 
@@ -34,18 +35,10 @@ export default function ReadCTVTRatioDialog({
 
   const responseValue = Array.isArray(data?.responsedata) ? data.responsedata : [];
 
-  const getValueByDescription = (description: string): string => {
-    const item = responseValue.find(
-      (entry: { description: string; value: number }) =>
-        entry.description?.toLowerCase() === description.toLowerCase()
-    );
-    return item?.value !== undefined ? String(item.value) : "";
-  };
-
-  const ctNumerator = getValueByDescription("Numerator of CT ratio");
-  const ctDenominator = getValueByDescription("Denominator of CT ratio");
-  const vtNumerator = getValueByDescription("Numerator of PT ratio");
-  const vtDenominator = getValueByDescription("Denominator of PT ratio");
+  const ctNumerator = getValueByDescription(responseValue, "Numerator of CT ratio");
+  const ctDenominator = getValueByDescription(responseValue, "Denominator of CT ratio");
+  const vtNumerator = getValueByDescription(responseValue, "Numerator of PT ratio");
+  const vtDenominator = getValueByDescription(responseValue, "Denominator of PT ratio");
 
   const isLoading = isPending ? "Loading..." : "No data available";
 

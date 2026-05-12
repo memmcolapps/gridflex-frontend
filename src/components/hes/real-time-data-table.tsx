@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { FilterPanel } from "./FilterPanel";
 import { DataTable } from "./DataTable";
 import { useRealtimeStream } from "@/hooks/use-realtime-stream";
+import { useObisData } from "@/hooks/use-hes-hierarchy";
 
 interface RealTimeDataTableProps {
   meterType?: string;
@@ -13,6 +14,19 @@ export function RealTimeDataTable({
   onMeterSelection,
 }: RealTimeDataTableProps) {
   const { data, selectedReading, isStreaming, error, run } = useRealtimeStream();
+
+  const { data: obisData } = useObisData(currentMeterType as 'MD' | 'Non-MD');
+
+  const readingLabelMap = useMemo(() => {
+    if (!obisData) return {};
+    const map: Record<string, string> = {};
+    Object.values(obisData.responsedata).flat().forEach((item) => {
+      if (item.obisCodeCombined) {
+        map[item.obisCodeCombined] = item.description;
+      }
+    });
+    return map;
+  }, [obisData]);
 
   const handleRun = async (filters: {
     hierarchy: string;
@@ -46,6 +60,7 @@ export function RealTimeDataTable({
           <DataTable
             data={data}
             reading={selectedReading}
+            readingLabelMap={readingLabelMap}
             loading={false}
           />
         )}

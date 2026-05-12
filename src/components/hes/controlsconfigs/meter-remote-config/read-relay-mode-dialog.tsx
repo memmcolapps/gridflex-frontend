@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -10,6 +9,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useReadMeter } from "@/hooks/use-configure-meter";
+import { getValueByDescription } from "@/lib/utils";
 import type { Meter } from "@/types/meter";
 import { useEffect } from "react";
 
@@ -32,7 +32,9 @@ export default function ReadRelayModeDialog({
     }
   }, [isOpen]);
 
-  const relayValue = String(data?.responsedata?.value ?? "");
+  const relayValue = Array.isArray(data?.responsedata) ? data.responsedata : [];
+
+  const relayModeDesc = getValueByDescription(relayValue, "Control mode")
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="h-fit bg-white">
@@ -51,7 +53,7 @@ export default function ReadRelayModeDialog({
             type="text"
             readOnly
             placeholder={isPending ? "Loading..." : "No data available"}
-            value={relayValue}
+            value={relayModeDesc}
             className="w-full border border-gray-200"
           />
         </div>

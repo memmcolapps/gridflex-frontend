@@ -32,8 +32,8 @@ import {
 import { fetchHierarchyData } from "@/service/hes-service";
 import { type HierarchyResponse } from "@/types/hes";
 import { useAuth } from "@/context/auth-context";
-import { MD_READING_OPTIONS, NON_MD_READING_OPTIONS } from "@/constants";
-import { useOnlineMeters } from "@/hooks/use-hes-hierarchy";
+import { useObisData, useOnlineMeters } from "@/hooks/use-hes-hierarchy";
+import { type ReadingOption, transformObisDataToReadingOptions } from "@/utils/obis-utils";
 
 interface UnitOption {
   value: string;
@@ -43,11 +43,6 @@ interface UnitOption {
 interface MeterOption {
   value: string;
   label: string;
-}
-
-interface ReadingOption {
-  label: string;
-  children: { value: string; label: string }[];
 }
 
 interface FilterPanelProps {
@@ -94,22 +89,6 @@ const hierarchyOptionsWithIcons = getHierarchyOptions().map((option) => {
   };
 });
 
-const obisCodeByReadingValue: Record<string, string> = {
-  "meter-logical-device-name": "3;1.0.1.8.0.255;2;0",
-  "meter-serial-number": "3;1.0.1.8.1.255;2;0",
-  "meter-hardware-version": "3;1.0.1.8.2.255;2;0",
-  "meter-firmware-version": "3;1.0.2.8.0.255;2;0",
-  "meter-firmware-checksum": "3;1.0.2.8.1.255;2;0",
-  "clock object": "3;1.0.2.8.2.255;2;0",
-  "Total absolute cumulative active energy register": "3;1.0:33.7.0.255;2;0",
-  "T1 absolute cumulative active energy register": "3;1.0:29.7.0.255;2;0",
-  "T3 absolute cumulative active energy register": "3;1.0:23.7.0.255;2;0",
-  "T4 absolute cumulative active energy register": "3;1.0:21.7.0.255;2;0",
-  "Total import active energy register": "3;1.0:14.7.0.255;2;0",
-  "T1 import active energy register": "3;1.0:91.7.0.255;2;0",
-  "T2 import active energy register": "3;1.0:31.7.0.255;2;0",
-  "T3 import active energy register": ";1.0:32.7.0.255;2;0",
-};
 
 export function FilterPanel({ onRun, meterType = "MD" }: FilterPanelProps) {
   const { user } = useAuth();
@@ -124,14 +103,22 @@ export function FilterPanel({ onRun, meterType = "MD" }: FilterPanelProps) {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const { data: metersData, isLoading: metersLoading } = useOnlineMeters();
+  const { data: metersData, isLoading: metersLoading } = useOnlineMeters(
+    meterType as 'MD' | 'Non-MD'
+  );
+
+  const { data: obisData } = useObisData(
+  meterType as 'MD' | 'Non-MD'
+);
 
   useEffect(() => {
     setReading([]);
+    setMeters([]);
   }, [meterType]);
 
-  const readingOptions: ReadingOption[] =
-    meterType === "MD" ? MD_READING_OPTIONS : NON_MD_READING_OPTIONS;
+const readingOptions: ReadingOption[] = obisData
+  ? transformObisDataToReadingOptions(obisData)
+  : [];
 
   useEffect(() => {
     const fetchData = async () => {
@@ -270,40 +257,6 @@ export function FilterPanel({ onRun, meterType = "MD" }: FilterPanelProps) {
 
   const isLikelyObisCode = (value: string) => /^\d+(\.\d+)+$/.test(value);
 
-  const resolveObisCode = (readingValue: string): string => {
-    const mappedObisCode = obisCodeByReadingValue[readingValue];
-    if (mappedObisCode) {
-      return mappedObisCode;
-    }
-
-    if (isLikelyObisCode(readingValue)) {
-      return readingValue;
-    }
-
-    const readingLabel = readingOptions
-      .flatMap((group) => group.children)
-      .find((option) => option.value === readingValue)?.label;
-
-    const normalizedReadingValue = normalizeText(readingValue);
-    const normalizedReadingLabel = normalizeText(readingLabel ?? "");
-
-    const eventType = hierarchyData?.responsedata?.event_types?.find((item) => {
-      const normalizedName = normalizeText(item.name ?? "");
-      const normalizedDescription = normalizeText(item.description ?? "");
-      return (
-        normalizedName === normalizedReadingValue ||
-        normalizedDescription === normalizedReadingValue ||
-        normalizedName === normalizedReadingLabel ||
-        normalizedDescription === normalizedReadingLabel ||
-        normalizedName.includes(normalizedReadingValue) ||
-        normalizedDescription.includes(normalizedReadingValue) ||
-        normalizedReadingValue.includes(normalizedName) ||
-        normalizedReadingValue.includes(normalizedDescription)
-      );
-    });
-
-    return eventType?.obisCode ?? readingValue;
-  };
 
   const handleRunClick = () => {
     if (isFormComplete && hierarchy) {
@@ -312,7 +265,7 @@ export function FilterPanel({ onRun, meterType = "MD" }: FilterPanelProps) {
         unit,
         meters,
         reading,
-        obisCodes: reading.map(resolveObisCode),
+        obisCodes: reading,
       });
     }
   };
