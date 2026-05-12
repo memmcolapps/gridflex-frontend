@@ -124,10 +124,13 @@ export function FilterPanel({ onRun, meterType = "MD" }: FilterPanelProps) {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const { data: metersData, isLoading: metersLoading } = useOnlineMeters();
+  const { data: metersData, isLoading: metersLoading } = useOnlineMeters(
+    meterType as 'MD' | 'Non-MD'
+  );
 
   useEffect(() => {
     setReading([]);
+    setMeters([]);
   }, [meterType]);
 
   const readingOptions: ReadingOption[] =

@@ -197,7 +197,9 @@ export const resetCronSchedule = async (
   }
 };
 
-export const getOnlineMeters = async (): Promise <
+export const getOnlineMeters = async (
+  type: 'MD' | 'Non-MD',
+): Promise <
   { success: true; data: OnlineMeterPayload[] } | { success: false; error: string }
 > => {
   try {
@@ -211,6 +213,9 @@ export const getOnlineMeters = async (): Promise <
           custom: CUSTOM_HEADER,
           Authorization: `Bearer ${token}`,
         },
+        params: {
+            type
+          }
       },
     );
 

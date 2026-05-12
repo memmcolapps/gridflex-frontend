@@ -85,11 +85,11 @@ export function useResetCronSchedule() {
   });
 }
 
-export const useOnlineMeters = () => {
+export const useOnlineMeters = (type: 'MD' | 'Non-MD') => {
   return useQuery({
-    queryKey: ["online-meters"],
+    queryKey: ["online-meters", type],
     queryFn: async () => {
-      const response = await getOnlineMeters();
+      const response = await getOnlineMeters(type);
       if (!response.success) {
         throw new Error(response.error);
       }
