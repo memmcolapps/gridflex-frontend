@@ -9,6 +9,7 @@ import {
   type MeterConfigResponse,
   type ReadMeterResponse,
   type ReadMeterPayload,
+  type RelayControlPayload,
 } from "@/types/configure-meter";
 import { handleApiError } from "@/utils/error-handler";
 
@@ -232,6 +233,44 @@ export async function readMeter(
 
     if (response.data.responsecode !== "000") {
       throw new Error(response.data.responsedesc ?? "Meter cannot be read.");
+    }
+
+    return response.data;
+  } catch (error) {
+    throw new Error(handleApiError(error).message);
+  }
+}
+
+export async function relayControl(
+  data: RelayControlPayload,
+): Promise<{ responsecode: string; responsedesc: string }> {
+  try {
+    const token = localStorage.getItem("auth_token");
+    if (!token) {
+      throw new Error("Authentication token not found.");
+    }
+
+    const { serial, state } = data;
+
+    const response = await axiosInstance.post(
+      `${API_URL}/hes/service/dlms/relay-control`,
+      null,
+      {
+        params: { serial, state },
+        headers: {
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    if (
+      response.data.responsecode !== "000" &&
+      response.data.responsecode !== "131"
+    ) {
+      throw new Error(
+        response.data.responsedesc ?? "Failed to control relay.",
+      );
     }
 
     return response.data;

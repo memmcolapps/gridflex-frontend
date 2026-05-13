@@ -110,3 +110,29 @@ export interface ResetCronPayload {
   daysOfMonth?: number[];
   monthsOfYear?: number[];
 }
+
+export interface OnlineMeterPayload {
+  meterNumber: string;
+  connectionType: string;
+}
+
+export interface OnlineMetersResponse {
+  responsecode: string;
+  responsedesc: string;
+  responsedata: OnlineMeterPayload[];
+}
+
+export interface ObisItem {
+  obisCodeCombined?: string;
+  obisType: string;
+  meterType?: string;
+  description: string;
+  groupName: string;
+  obisCode?: string;
+}
+
+export interface ObisDataResponse {
+  responsecode: string;
+  responsedesc: string;
+  responsedata: Record<string, ObisItem[]>;
+}

@@ -13,8 +13,6 @@ import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Label } from "@/components/ui/label";
@@ -33,19 +31,9 @@ import {
 } from "@/utils/hierarchy-utils";
 import { fetchHierarchyData } from "@/service/hes-service";
 import { type HierarchyResponse } from "@/types/hes";
-import { useMeters } from "@/hooks/use-assign-meter";
 import { useAuth } from "@/context/auth-context";
-import { MD_READING_OPTIONS, NON_MD_READING_OPTIONS } from "@/constants";
-
-type MeterId =
-  | "62124022443"
-  | "62124569871"
-  | "62224029918"
-  | "62224039487"
-  | "62124095803"
-  | "62124023359"
-  | "62124027822";
-type ReadingKey = string;
+import { useObisData, useOnlineMeters } from "@/hooks/use-hes-hierarchy";
+import { type ReadingOption, transformObisDataToReadingOptions } from "@/utils/obis-utils";
 
 interface UnitOption {
   value: string;
@@ -57,21 +45,15 @@ interface MeterOption {
   label: string;
 }
 
-interface ReadingOption {
-  label: string;
-  children: { value: string; label: string }[];
-}
-
 interface FilterPanelProps {
   onRun: (filters: {
     hierarchy: HierarchyType;
     unit: string;
-    meters: MeterId[];
-    reading: ReadingKey[];
+    meters: string[];
+    reading: string[];
     obisCodes: string[];
   }) => void;
-  meterType?: string
-
+  meterType?: string;
 }
 
 // Get hierarchy options from the utility function
@@ -108,39 +90,35 @@ const hierarchyOptionsWithIcons = getHierarchyOptions().map((option) => {
 });
 
 
-const obisCodeByReadingValue: Record<string, string> = {
-  "meter-logical-device-name": "00000.90878",
-  "meter-serial-number": "99.2300.8890",
-};
-
-export function FilterPanel({ onRun, meterType = 'MD' }: FilterPanelProps) {
+export function FilterPanel({ onRun, meterType = "MD" }: FilterPanelProps) {
   const { user } = useAuth();
   const [hierarchy, setHierarchy] =
     useState<HierarchyType | "">(user?.nodeInfo.type as HierarchyType) ?? "";
   const [unit, setUnit] = useState<string>(user?.nodeInfo.name ?? "");
-  const [meters, setMeters] = useState<MeterId[]>([]);
-  const [reading, setReading] = useState<ReadingKey[]>([]);
+  const [meters, setMeters] = useState<string[]>([]);
+  const [reading, setReading] = useState<string[]>([]);
   const [hierarchyData, setHierarchyData] = useState<HierarchyResponse | null>(
     null,
   );
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const { data: metersData, isLoading: metersLoading } = useMeters({
-    page: 1,
-    pageSize: 1000,
-    searchTerm: "",
-    sortBy: null,
-    sortDirection: null,
-    type: "assigned",
-  });
+  const { data: metersData, isLoading: metersLoading } = useOnlineMeters(
+    meterType as 'MD' | 'Non-MD'
+  );
 
-   useEffect(() => {
+  const { data: obisData } = useObisData(
+  meterType as 'MD' | 'Non-MD'
+);
+
+  useEffect(() => {
     setReading([]);
+    setMeters([]);
   }, [meterType]);
 
-    const readingOptions: ReadingOption[] =
-    meterType === "MD" ? MD_READING_OPTIONS : NON_MD_READING_OPTIONS;
+const readingOptions: ReadingOption[] = obisData
+  ? transformObisDataToReadingOptions(obisData)
+  : [];
 
   useEffect(() => {
     const fetchData = async () => {
@@ -185,12 +163,8 @@ export function FilterPanel({ onRun, meterType = 'MD' }: FilterPanelProps) {
   const metersOptions: MeterOption[] = metersData
     ? [
         { value: "all-meters", label: "All Meters" },
-        ...metersData.actualMeters.map((m) => ({
-          value: m.meterNumber as MeterId,
-          label: m.meterNumber,
-        })),
-        ...metersData.virtualMeters.map((m) => ({
-          value: m.meterNumber as MeterId,
+        ...metersData.map((m) => ({
+          value: m.meterNumber as string,
           label: m.meterNumber,
         })),
       ]
@@ -213,13 +187,13 @@ export function FilterPanel({ onRun, meterType = 'MD' }: FilterPanelProps) {
     if (meterValue === "all-meters") {
       const allMeters = metersOptions
         .filter((o) => o.value !== "all-meters")
-        .map((o) => o.value as MeterId);
+        .map((o) => o.value as string);
       setMeters(meters.length === allMeters.length ? [] : allMeters);
     } else {
       setMeters((prevMeters) =>
-        prevMeters.includes(meterValue as MeterId)
+        prevMeters.includes(meterValue as string)
           ? prevMeters.filter((id) => id !== meterValue)
-          : [...prevMeters, meterValue as MeterId],
+          : [...prevMeters, meterValue as string],
       );
     }
   };
@@ -233,9 +207,9 @@ export function FilterPanel({ onRun, meterType = 'MD' }: FilterPanelProps) {
 
   const handleReadingSelect = (readingValue: string) => {
     setReading((prevReading) =>
-      prevReading.includes(readingValue as ReadingKey)
+      prevReading.includes(readingValue as string)
         ? prevReading.filter((id) => id !== readingValue)
-        : [...prevReading, readingValue as ReadingKey],
+        : [...prevReading, readingValue as string],
     );
   };
 
@@ -243,7 +217,7 @@ export function FilterPanel({ onRun, meterType = 'MD' }: FilterPanelProps) {
     const group = readingOptions.find((g) => g.label === groupLabel);
     if (group) {
       const childrenValues = group.children.map(
-        (child) => child.value as ReadingKey,
+        (child) => child.value as string,
       );
       setReading((prevReading) =>
         isChecked
@@ -257,7 +231,7 @@ export function FilterPanel({ onRun, meterType = 'MD' }: FilterPanelProps) {
     const group = readingOptions.find((g) => g.label === groupLabel);
     if (group) {
       const childrenValues = group.children.map(
-        (child) => child.value as ReadingKey,
+        (child) => child.value as string,
       );
       return childrenValues.every((value) => reading.includes(value));
     }
@@ -283,40 +257,6 @@ export function FilterPanel({ onRun, meterType = 'MD' }: FilterPanelProps) {
 
   const isLikelyObisCode = (value: string) => /^\d+(\.\d+)+$/.test(value);
 
-  const resolveObisCode = (readingValue: string): string => {
-    const mappedObisCode = obisCodeByReadingValue[readingValue];
-    if (mappedObisCode) {
-      return mappedObisCode;
-    }
-
-    if (isLikelyObisCode(readingValue)) {
-      return readingValue;
-    }
-
-    const readingLabel = readingOptions
-      .flatMap((group) => group.children)
-      .find((option) => option.value === readingValue)?.label;
-
-    const normalizedReadingValue = normalizeText(readingValue);
-    const normalizedReadingLabel = normalizeText(readingLabel ?? "");
-
-    const eventType = hierarchyData?.responsedata?.event_types?.find((item) => {
-      const normalizedName = normalizeText(item.name ?? "");
-      const normalizedDescription = normalizeText(item.description ?? "");
-      return (
-        normalizedName === normalizedReadingValue ||
-        normalizedDescription === normalizedReadingValue ||
-        normalizedName === normalizedReadingLabel ||
-        normalizedDescription === normalizedReadingLabel ||
-        normalizedName.includes(normalizedReadingValue) ||
-        normalizedDescription.includes(normalizedReadingValue) ||
-        normalizedReadingValue.includes(normalizedName) ||
-        normalizedReadingValue.includes(normalizedDescription)
-      );
-    });
-
-    return eventType?.obisCode ?? readingValue;
-  };
 
   const handleRunClick = () => {
     if (isFormComplete && hierarchy) {
@@ -325,7 +265,7 @@ export function FilterPanel({ onRun, meterType = 'MD' }: FilterPanelProps) {
         unit,
         meters,
         reading,
-        obisCodes: reading.map(resolveObisCode),
+        obisCodes: reading,
       });
     }
   };
@@ -409,7 +349,7 @@ export function FilterPanel({ onRun, meterType = 'MD' }: FilterPanelProps) {
                 >
                   <span>{option.label}</span>
                   <Checkbox
-                    checked={meters.includes(option.value as MeterId)}
+                    checked={meters.includes(option.value as string)}
                     className="h-5 w-5 border-gray-300 data-[state=checked]:border-green-500 data-[state=checked]:bg-green-500"
                   />
                 </div>
@@ -458,7 +398,7 @@ export function FilterPanel({ onRun, meterType = 'MD' }: FilterPanelProps) {
                         onCheckedChange={(checked) =>
                           handleGroupSelect(group.label, checked as boolean)
                         }
-                        className="h-5 w-5 border-gray-300 data-[state=checked]:border-green-500 rounded-lg dark:data-[state=checked]:bg-green-500"
+                        className="h-5 w-5 rounded-lg border-gray-300 data-[state=checked]:border-green-500 dark:data-[state=checked]:bg-green-500"
                       />
                     </div>
                   </AccordionTrigger>
@@ -471,8 +411,8 @@ export function FilterPanel({ onRun, meterType = 'MD' }: FilterPanelProps) {
                       >
                         <span>{option.label}</span>
                         <Checkbox
-                          checked={reading.includes(option.value as ReadingKey)}
-                          className="h-5 w-5 border-gray-300 data-[state=checked]:border-green-500 rounded-lg dark:data-[state=checked]:bg-green-500"
+                          checked={reading.includes(option.value as string)}
+                          className="h-5 w-5 rounded-lg border-gray-300 data-[state=checked]:border-green-500 dark:data-[state=checked]:bg-green-500"
                         />
                       </div>
                     ))}

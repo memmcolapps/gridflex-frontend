@@ -29,7 +29,7 @@ export default function ReadIPDialog({
 
   useEffect(() => {
     if (isOpen && meter?.meterNumber) {
-      readMeter({ serial: meter.meter?.meterNumber, type: "ip" });
+      readMeter({ serial: meter.meter?.meterNumber, type: "READ_IP" });
     }
   }, [isOpen]);
 

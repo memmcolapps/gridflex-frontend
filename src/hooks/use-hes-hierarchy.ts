@@ -4,9 +4,11 @@ import {
   fetchProfileEvents,
   createSchedule,
   resetCronSchedule,
-  fetchHierarchyData
+  fetchHierarchyData,
+  getOnlineMeters,
+  getObisData
 } from "@/service/hes-service";
-import type { CreateSchedulePayload, ResetCronPayload } from "@/types/hes";
+import type { CreateSchedulePayload, ObisDataResponse, ResetCronPayload } from "@/types/hes";
 import { toast } from "sonner";
 
 export const useHierarchyData = () => {
@@ -83,3 +85,29 @@ export function useResetCronSchedule() {
     },
   });
 }
+
+export const useOnlineMeters = (type: 'MD' | 'Non-MD') => {
+  return useQuery({
+    queryKey: ["online-meters", type],
+    queryFn: async () => {
+      const response = await getOnlineMeters(type);
+      if (!response.success) {
+        throw new Error(response.error);
+      }
+      return response.data;
+    },
+  });
+};
+
+export const useObisData = (type: 'MD' | 'Non-MD') => {
+  return useQuery({
+    queryKey: ['obis-data', type],
+    queryFn: async () => {
+      const response = await getObisData(type);
+      if (!response.success) {
+        throw new Error(response.error);
+      }
+      return response.data as ObisDataResponse;
+    },
+  });
+};

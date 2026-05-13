@@ -151,12 +151,12 @@ export default function ConfigureCTVTRatioDialog({
           </Button>
           <Button
             onClick={handleConfigure}
-            disabled={!isFormValid} // Disable when form is invalid
+            disabled={!isFormValid || isPending} // Disable when form is invalid
             className={`bg-[#161CCA] text-white ${
               !isFormValid ? "cursor-not-allowed opacity-50" : "cursor-pointer"
             }`}
           >
-            Configure
+            {isPending ? "Configuring..." : "Configure"}
           </Button>
         </div>
       </DialogContent>

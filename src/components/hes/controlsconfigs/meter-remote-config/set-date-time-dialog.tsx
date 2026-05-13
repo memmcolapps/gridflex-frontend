@@ -211,9 +211,9 @@ export default function SetDateTimeDialog({
                 ? "cursor-not-allowed opacity-50"
                 : "cursor-pointer"
             }`}
-            disabled={!isFormComplete}
+            disabled={!isFormComplete || isPending}
           >
-            Set
+            ${isPending ? "Setting..." : "Set"}
           </Button>
         </div>
       </DialogContent>

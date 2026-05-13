@@ -1247,7 +1247,7 @@ export function AddMeterDialog({
                 }
                 className="cursor-pointer bg-[#161CCA] text-sm font-medium text-white hover:bg-[#1e2abf]"
               >
-                Save
+                {isPending ? "Saving..." : editMeter ? "Update Meter" : "Add Meter"}
               </Button>
             </>
           )}
