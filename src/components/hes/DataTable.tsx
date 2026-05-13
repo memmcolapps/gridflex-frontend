@@ -21,7 +21,7 @@ interface DataTableProps {
   data: MeterData[];
   reading: string[];
   loading: boolean;
-  readingLabelMap?: Record<string, string>; 
+  readingLabelMap?: Record<string, string>;
 }
 
 type CellState = "spinner" | "idle" | "failed" | "success";
@@ -73,7 +73,10 @@ export function DataTable({
           <TableHeader className="bg-transparent">
             <TableRow>
               {columns.map((col, i) => (
-                <TableHead key={i} className="py-4 text-center text-base whitespace-nowrap">
+                <TableHead
+                  key={i}
+                  className="py-4 text-center text-base whitespace-nowrap"
+                >
                   {col}
                 </TableHead>
               ))}
@@ -113,7 +116,10 @@ export function DataTable({
 
                     if (state === "spinner") {
                       return (
-                        <TableCell key={r} className="py-4 flex justify-center whitespace-nowrap">
+                        <TableCell
+                          key={r}
+                          className="py-4 flex justify-center whitespace-nowrap"
+                        >
                           <Loader2
                             size={16}
                             className="animate-spin text-gray-400"
@@ -135,13 +141,13 @@ export function DataTable({
 
                     if (state === "failed") {
                       return (
-                        <TableCell
-                          key={r}
-                          className="py-4 whitespace-nowrap text-red-500"
-                          title="Failed to read from meter"
-                        >
-                          failed
-                        </TableCell>
+	                        <TableCell
+	                          key={r}
+	                          className="py-4 whitespace-nowrap text-red-500"
+	                          title={row[r] || "Failed to read from meter"}
+	                        >
+	                          {row[r] || "failed"}
+	                        </TableCell>
                       );
                     }
 
