@@ -69,7 +69,7 @@ export function useRealtimeStream() {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token ?? ""}`,
-            custom: env.NEXT_PUBLIC_CUSTOM_HEADER,
+            custom: env.NEXT_PUBLIC_CUSTOM_HEADER ?? "",
             Accept: "text/event-stream",
           },
           body: JSON.stringify({
@@ -108,6 +108,7 @@ export function useRealtimeStream() {
         const obisString = parsed.obisString as string;
         const statuscode = parsed.statuscode as number;
         const value = parsed.value as string | undefined;
+        const statusmessage = parsed.statusmessage as string | undefined;
         const timestamp = parsed.timestamp as string | undefined;
 
         if (!meterNo || !obisString) return;
@@ -122,7 +123,7 @@ export function useRealtimeStream() {
 
           const row = next[rowIdx]!;
           const resolvedValue =
-            statuscode === -1 || value === undefined ? "N/A" : value;
+            statuscode === -1 ? (statusmessage ?? "Failed") : (value ?? "N/A");
 
           next[rowIdx] = {
             ...row,
