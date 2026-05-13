@@ -13,7 +13,7 @@ export interface SetAPNPayload {
 
 export interface ReadMeterPayload {
   serial: string;
-  type: "Ratio" | "ip" | "Clock" | "Mode" | "APN";
+  type: "Ratio" | "ip" | "Clock" | "Control mode" | "APN" | "relay";
 }
 
 interface ReadMeterResponseData {
@@ -126,6 +126,11 @@ export interface MeterConfigResponse {
   responsecode: string;
   responsedesc: string;
   responsedata: MeterConfigResponseData;
+}
+
+export interface RelayControlPayload {
+  serial: string;
+  state: 0 | 1;
 }
 
 export interface FetchMeterConfigParams {

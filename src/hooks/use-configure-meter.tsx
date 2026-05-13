@@ -5,6 +5,7 @@ import {
   setCTPTRatio,
   setDateTime,
   setIpPort,
+  relayControl,
 } from "@/service/configure-meter-service";
 import {
   type SetDateTimePayload,
@@ -15,6 +16,7 @@ import {
   type MeterConfigItem,
   type ReadMeterResponse,
   type ReadMeterPayload,
+  type RelayControlPayload,
 
 } from "@/types/configure-meter";
 import {
@@ -182,6 +184,29 @@ export const useSetIpPort = () => {
     },
     onError: (error: Error) => {
       // toast.error(`Failed to configure Ip Address: ${error.message}`);
+      const match = /"details":"([^"]+)"/.exec(error.message);
+      const friendlyMsg = match?.[1] ?? error.message;
+      toast.error(friendlyMsg);
+    },
+  });
+};
+
+export const useRelayControl = () => {
+  const queryClient = useQueryClient();
+  return useMutation<
+    { responsecode: string; responsedesc: string },
+    Error,
+    RelayControlPayload
+  >({
+    mutationFn: relayControl,
+    onSuccess: (data, variables) => {
+      const action = variables.state === 1 ? "connected" : "disconnected";
+      toast.success(
+        `Relay ${action} successfully for meter ${variables.serial}!`,
+      );
+      queryClient.invalidateQueries({ queryKey: ["meters"] });
+    },
+    onError: (error: Error) => {
       const match = /"details":"([^"]+)"/.exec(error.message);
       const friendlyMsg = match?.[1] ?? error.message;
       toast.error(friendlyMsg);
