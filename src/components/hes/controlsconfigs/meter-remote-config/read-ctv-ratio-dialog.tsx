@@ -28,7 +28,7 @@ export default function ReadCTVTRatioDialog({
 
   useEffect(() => {
     if (isOpen && meter?.meterNumber) {
-      readMeter({ serial: meter.meter?.meterNumber, type: "Ratio" });
+      readMeter({ serial: meter.meter?.meterNumber, type: "READ_RATIO" });
     }
   }, [isOpen]);
 

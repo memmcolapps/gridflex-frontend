@@ -13,7 +13,7 @@ export interface SetAPNPayload {
 
 export interface ReadMeterPayload {
   serial: string;
-  type: "Ratio" | "ip" | "Clock" | "Control mode" | "APN" | "relay";
+  type: "READ_RATIO" | "READ_IP" | "READ_CLOCK" | "READ_RELAY_MODE" | "READ_APN" | "READ_RELAY_STATUS";
 }
 
 interface ReadMeterResponseData {

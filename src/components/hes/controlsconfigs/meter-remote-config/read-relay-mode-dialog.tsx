@@ -28,7 +28,7 @@ export default function ReadRelayModeDialog({
 
   useEffect(() => {
     if (isOpen && meter?.meterNumber) {
-      readMeter({ serial: meter.meter?.meterNumber, type: "Control mode" });
+      readMeter({ serial: meter.meter?.meterNumber, type: "READ_RELAY_MODE" });
     }
   }, [isOpen]);
 

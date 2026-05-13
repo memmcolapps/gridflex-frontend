@@ -28,7 +28,7 @@ export default function ReadRelayStatusDialog({
 
   useEffect(() => {
     if (isOpen && meter?.meter?.meterNumber) {
-      readMeter({ serial: meter.meter?.meterNumber, type: "relay" });
+      readMeter({ serial: meter.meter?.meterNumber, type: "READ_RELAY_STATUS" });
     }
   }, [isOpen]);
 
