@@ -15,6 +15,10 @@ import {
 import { useHierarchyData } from "@/hooks/use-hes-hierarchy";
 import type { Node } from "@/types/hes";
 import type { RealTimeData } from "@/hooks/use-sse";
+import type {
+  RealtimeStreamCallbacks,
+  RealtimeStreamRequest,
+} from "@/service/hes-service";
 
 export default function RealtimeDataPage() {
   const [activeTab, setActiveTab] = useState("MD");
@@ -26,7 +30,12 @@ export default function RealtimeDataPage() {
   const { baseUrl } = useSSEManagement();
 
   const { connectionStatus, isConnected } = useMeterConnections(selectedMeters);
-  const { mutateAsync: runRealtimeStream } = useRealtimeStream();
+  const { mutateAsync: runRealtimeStreamMutation } = useRealtimeStream();
+
+  const runRealtimeStream = (
+    payload: RealtimeStreamRequest,
+    callbacks?: RealtimeStreamCallbacks,
+  ) => runRealtimeStreamMutation({ payload, callbacks });
 
   const reconnect = () => {
     // TODO: Implement reconnect functionality

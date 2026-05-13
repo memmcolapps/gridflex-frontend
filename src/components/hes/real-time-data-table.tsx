@@ -3,7 +3,11 @@ import React, { useState, useEffect, useRef } from "react";
 import { FilterPanel } from "./FilterPanel";
 import { DataTable } from "./DataTable";
 import type { RealTimeData } from "@/hooks/use-sse";
-import type { RealtimeStreamRequest } from "@/service/hes-service";
+import type {
+  RealtimeReadingEvent,
+  RealtimeStreamCallbacks,
+  RealtimeStreamRequest,
+} from "@/service/hes-service";
 
 type MeterId = string;
 
@@ -19,7 +23,10 @@ interface RealTimeDataTableProps {
   selectedMeters?: string[];
   onMeterSelection?: (meters: string[]) => void;
   meterType?: string;
-  onRunStream?: (payload: RealtimeStreamRequest) => Promise<unknown>;
+  onRunStream?: (
+    payload: RealtimeStreamRequest,
+    callbacks?: RealtimeStreamCallbacks,
+  ) => Promise<unknown>;
 }
 
 export function RealTimeDataTable({
@@ -35,6 +42,60 @@ export function RealTimeDataTable({
   const [selectedReading, setSelectedReading] = useState<string[]>([]);
   const [realTimeData, setRealTimeData] = useState<Record<string, unknown>>({});
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const buildEmptyRows = (meters: MeterId[]) =>
+    meters.map((meter) => ({
+      meter,
+      time: new Date().toISOString(),
+    }));
+
+  const getReadingValue = (reading: RealtimeReadingEvent) => {
+    if (reading.statuscode === -1) {
+      return reading.statusmessage || "Failed";
+    }
+    if (reading.value === null || reading.value === undefined) {
+      return "N/A";
+    }
+    return String(reading.value);
+  };
+
+  const upsertReading = (
+    reading: RealtimeReadingEvent,
+    columnByObis: Map<string, string>,
+  ) => {
+    const meterNo = reading.meterNo;
+    if (!meterNo) return;
+
+    const obisString = reading.obisString ?? "";
+    const columnKey =
+      columnByObis.get(obisString) ?? reading.desc ?? obisString ?? "value";
+    const value = getReadingValue(reading);
+    const timestamp = reading.timestamp ?? new Date().toISOString();
+
+    setData((prevRows) => {
+      const existingIndex = prevRows.findIndex((row) => row.meter === meterNo);
+      if (existingIndex === -1) {
+        return [
+          ...prevRows,
+          {
+            meter: meterNo,
+            time: timestamp,
+            [columnKey]: value,
+          },
+        ];
+      }
+
+      return prevRows.map((row, index) =>
+        index === existingIndex
+          ? {
+              ...row,
+              time: timestamp,
+              [columnKey]: value,
+            }
+          : row,
+      );
+    });
+  };
 
   // Update real-time data when SSE data changes
   useEffect(() => {
@@ -79,7 +140,7 @@ export function RealTimeDataTable({
     obisCodes: string[];
   }) => {
     setLoading(true);
-    setData([]);
+    setData(buildEmptyRows(filters.meters));
     setSelectedReading(filters.reading);
 
     // Notify parent component about selected meters
@@ -89,17 +150,40 @@ export function RealTimeDataTable({
 
     try {
       if (onRunStream) {
-        const response = await onRunStream({
-          meterType: currentMeterType,
-          meters: filters.meters.map((meterNumber) => ({ meterNumber })),
-          obisCode: filters.obisCodes.map((code) => ({ code })),
-        });
+        let receivedReading = false;
+        const columnByObis = new Map(
+          filters.obisCodes.map((obisCode, index) => [
+            obisCode,
+            filters.reading[index] ?? obisCode,
+          ]),
+        );
+
+        const response = await onRunStream(
+          {
+            meterType: currentMeterType,
+            meters: filters.meters,
+            obisString: filters.obisCodes,
+          },
+          {
+            onReading: (reading) => {
+              receivedReading = true;
+              upsertReading(reading, columnByObis);
+              setLoading(false);
+            },
+            onCompleted: () => {
+              setLoading(false);
+            },
+            onWarning: () => {
+              setLoading(false);
+            },
+          },
+        );
 
         const responseData =
           (response as { responsedata?: unknown })?.responsedata ?? response;
         const rows = Array.isArray(responseData) ? responseData : [];
 
-        if (rows.length > 0) {
+        if (!receivedReading && rows.length > 0) {
           const newData = rows.map((item, index) => {
             const rowItem = item as Record<string, unknown>;
             const meterNo =
@@ -173,20 +257,24 @@ export function RealTimeDataTable({
 
       {/* Connection Status Indicator */}
       {selectedMeters.length > 0 && (
-                <div className="bg-gray-50 p-4 rounded-lg">
-                    <h3 className="text-sm font-medium text-gray-700 mb-2">Connection Status</h3>
-                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
-                        {selectedMeters.map(meterId => (
-                            <div key={meterId} className="flex items-center space-x-2">
-                                <div className={`w-2 h-2 rounded-full ${
-                                    getConnectionStatus(meterId) ? 'bg-green-500' : 'bg-red-500'
-                                }`} />
-                                <span className="text-xs text-gray-600">{meterId}</span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
+        <div className="rounded-lg bg-gray-50 p-4">
+          <h3 className="mb-2 text-sm font-medium text-gray-700">
+            Connection Status
+          </h3>
+          <div className="grid grid-cols-2 gap-2 md:grid-cols-4 lg:grid-cols-7">
+            {selectedMeters.map((meterId) => (
+              <div key={meterId} className="flex items-center space-x-2">
+                <div
+                  className={`h-2 w-2 rounded-full ${
+                    getConnectionStatus(meterId) ? "bg-green-500" : "bg-red-500"
+                  }`}
+                />
+                <span className="text-xs text-gray-600">{meterId}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div>
         {(loading || data.length > 0) && (
