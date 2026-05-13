@@ -15,16 +15,18 @@ export function RealTimeDataTable({
 }: RealTimeDataTableProps) {
   const { data, selectedReading, isStreaming, error, run } = useRealtimeStream();
 
-  const { data: obisData } = useObisData(currentMeterType as 'MD' | 'Non-MD');
+  const { data: obisData } = useObisData(currentMeterType as "MD" | "Non-MD");
 
   const readingLabelMap = useMemo(() => {
     if (!obisData) return {};
     const map: Record<string, string> = {};
-    Object.values(obisData.responsedata).flat().forEach((item) => {
-      if (item.obisCodeCombined) {
-        map[item.obisCodeCombined] = item.description;
-      }
-    });
+    Object.values(obisData.responsedata)
+      .flat()
+      .forEach((item) => {
+        if (item.obisCodeCombined) {
+          map[item.obisCodeCombined] = item.description;
+        }
+      });
     return map;
   }, [obisData]);
 
@@ -51,9 +53,7 @@ export function RealTimeDataTable({
         <FilterPanel onRun={handleRun} meterType={currentMeterType} />
       </div>
 
-      {error && (
-        <p className="text-sm text-red-500">{error}</p>
-      )}
+      {error && <p className="text-sm text-red-500">{error}</p>}
 
       <div>
         {data.length > 0 && (
@@ -61,7 +61,7 @@ export function RealTimeDataTable({
             data={data}
             reading={selectedReading}
             readingLabelMap={readingLabelMap}
-            loading={false}
+            loading={isStreaming}
           />
         )}
       </div>

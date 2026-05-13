@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -12,47 +13,45 @@ import { useReadMeter } from "@/hooks/use-configure-meter";
 import type { Meter } from "@/types/meter";
 import { useEffect } from "react";
 
-interface ReadAPNDialogProps {
+interface ReadRelayStatusDialogProps {
   isOpen: boolean;
   onClose: () => void;
   meter?: Meter | undefined;
 }
 
-export default function ReadAPNDialog({
+export default function ReadRelayStatusDialog({
   isOpen,
   onClose,
   meter,
-}: ReadAPNDialogProps) {
+}: ReadRelayStatusDialogProps) {
   const { mutate: readMeter, data, isPending, reset } = useReadMeter();
 
   useEffect(() => {
-    if (isOpen && meter?.meterNumber) {
-      readMeter({ serial: meter.meter?.meterNumber, type: "READ_APN" });
+    if (isOpen && meter?.meter?.meterNumber) {
+      readMeter({ serial: meter.meter?.meterNumber, type: "READ_RELAY_STATUS" });
     }
-    if (!isOpen) reset();
   }, [isOpen]);
 
-  const apnValue = data?.responsedata?.value ?? "";
-
+  const relayValue = String(data?.responsedata?.value ?? "");
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="h-fit bg-white">
         <DialogHeader>
-          <DialogTitle>Read APN</DialogTitle>
+          <DialogTitle>Read Relay Status</DialogTitle>
         </DialogHeader>
         <div className="py-4">
           <Label
-            htmlFor="apn-input"
+            htmlFor="relay-status"
             className="mb-2 block text-sm font-medium text-gray-700"
           >
-            APN
+            Relay Status
           </Label>
           <Input
-            id="apn-input"
+            id="relay-status"
             type="text"
             readOnly
             placeholder={isPending ? "Loading..." : "No data available"}
-            value={apnValue}
+            value={relayValue}
             className="w-full border border-gray-200"
           />
         </div>
