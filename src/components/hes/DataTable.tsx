@@ -29,7 +29,7 @@ type CellState = "spinner" | "idle" | "failed" | "success";
 function getCellState(
   row: MeterData,
   readingKey: string,
-  activeReadings: string[]
+  activeReadings: string[],
 ): CellState {
   const status = row[`${readingKey}__status`];
   const value = row[readingKey];
@@ -61,9 +61,7 @@ export function DataTable({
     (r) => r !== "meter-serial-number" && r !== "clock object",
   );
 
-  const dynamicColumns = activeReadings.map(
-    (r) => readingLabelMap[r] ?? r,
-  );
+  const dynamicColumns = activeReadings.map((r) => readingLabelMap[r] ?? r);
   const columns = ["S/N", "Meter Serial Number", "Time", ...dynamicColumns];
 
   return (
@@ -98,7 +96,7 @@ export function DataTable({
               </TableRow>
             ) : (
               data.map((row, idx) => (
-                <TableRow key={idx} className="text-base text-center">
+                <TableRow key={idx} className="text-center text-base">
                   <TableCell className="py-4 whitespace-nowrap">
                     {(idx + 1).toString().padStart(2, "0")}
                   </TableCell>
@@ -118,7 +116,7 @@ export function DataTable({
                       return (
                         <TableCell
                           key={r}
-                          className="py-4 flex justify-center whitespace-nowrap"
+                          className="flex justify-center py-4 whitespace-nowrap"
                         >
                           <Loader2
                             size={16}
@@ -141,13 +139,13 @@ export function DataTable({
 
                     if (state === "failed") {
                       return (
-	                        <TableCell
-	                          key={r}
-	                          className="py-4 whitespace-nowrap text-red-500"
-	                          title={row[r] || "Failed to read from meter"}
-	                        >
-	                          {row[r] || "failed"}
-	                        </TableCell>
+                        <TableCell
+                          key={r}
+                          className="py-4 whitespace-nowrap text-red-500"
+                          title={row[r] ?? "Failed to read from meter"}
+                        >
+                          {row[r] ?? "failed"}
+                        </TableCell>
                       );
                     }
 
