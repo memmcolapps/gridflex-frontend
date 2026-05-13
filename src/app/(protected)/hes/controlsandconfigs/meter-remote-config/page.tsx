@@ -38,6 +38,7 @@ import ReadIPDialog from "@/components/hes/controlsconfigs/meter-remote-config/r
 import ReadAPNDialog from "@/components/hes/controlsconfigs/meter-remote-config/read-apn-dialog";
 import ReadCTVTRatioDialog from "@/components/hes/controlsconfigs/meter-remote-config/read-ctv-ratio-dialog";
 import ReadRelayModeDialog from "@/components/hes/controlsconfigs/meter-remote-config/read-relay-mode-dialog";
+import ReadRelayStatusDialog from "@/components/hes/controlsconfigs/meter-remote-config/read-relay-status-dialog";
 import ReadDateTimeDialog from "@/components/hes/controlsconfigs/meter-remote-config/read-date-time-dialog";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
@@ -65,7 +66,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
-import { useMeterConfigurations } from "@/hooks/use-configure-meter";
+import { useMeterConfigurations, useRelayControl } from "@/hooks/use-configure-meter";
 
 // Define the possible dialog types
 type DialogType =
@@ -80,7 +81,8 @@ type DialogType =
   | "readApn"
   | "readCtv"
   | "readRelay"
-  | "readDatetime";
+  | "readDatetime"
+  | "readRelayStatus";
 
 // Define filter sections
 const filterSections = [
@@ -132,6 +134,7 @@ export default function MeterRemoteConfigPage() {
   const meterData = data?.meters ?? [];
   const totalData = data?.totalData ?? 0;
   const totalPages = data?.totalPages ?? 1;
+  const relayControlMutation = useRelayControl();
 
   const handleConfigureAction = (type: DialogType) => {
     if (selectedMeters.length === 0) {
@@ -554,15 +557,16 @@ export default function MeterRemoteConfigPage() {
                           </div>
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                          onSelect={() => {
-                            const action =
-                              meter.status === "Online"
-                                ? "disconnected"
-                                : "connected";
-                            toast.success(
-                              `Meter ${meter.meterNumber} relay ${action} successfully`,
-                            );
+                          onSelect={(e) => {
+                            e.preventDefault();
+                            console.log("Relay control clicked for meter:", meter.sN, "status:", meter.status);
+                            const isOnline = meter.status === "Online";
+                            relayControlMutation.mutate({
+                              serial: meter.sN,
+                              state: isOnline ? 0 : 1,
+                            });
                           }}
+                          disabled={relayControlMutation.isPending}
                         >
                           <div className="flex w-full items-center gap-2">
                             <Ban size={14} />
@@ -624,6 +628,14 @@ export default function MeterRemoteConfigPage() {
                               className="flex cursor-pointer items-center justify-between"
                             >
                               <span>Read Relay Mode</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleReadAction(meter, "readRelayStatus")
+                              }
+                              className="flex cursor-pointer items-center justify-between"
+                            >
+                              <span>Read Relay Status</span>
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={() =>
@@ -802,9 +814,19 @@ export default function MeterRemoteConfigPage() {
           meter={selectedMeter}
         />
       )}
+      {isDialogOpen && dialogType === "readRelayStatus" && selectedMeter && (
+        <ReadRelayStatusDialog
+          isOpen={true}
+          onClose={closeDialog}
+          meter={selectedMeter}
+        />
+      )}
       {showOfflineDialog && (
         <OfflineDialog isOpen={true} onClose={closeDialog} />
       )}
     </div>
   );
 }
+
+
+

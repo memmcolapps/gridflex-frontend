@@ -27,7 +27,7 @@ export default function ReadAPNDialog({
 
   useEffect(() => {
     if (isOpen && meter?.meterNumber) {
-      readMeter({ serial: meter.meter?.meterNumber, type: "APN" });
+      readMeter({ serial: meter.meter?.meterNumber, type: "READ_APN" });
     }
     if (!isOpen) reset();
   }, [isOpen]);

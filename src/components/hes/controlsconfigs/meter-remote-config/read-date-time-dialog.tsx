@@ -52,7 +52,7 @@ export default function ReadDateTimeDialog({
 
   useEffect(() => {
     if (isOpen && meter?.meterNumber) {
-      readMeter({ serial: meter.meter?.meterNumber, type: "Clock" });
+      readMeter({ serial: meter.meter?.meterNumber, type: "READ_CLOCK" });
     }
   }, [isOpen]);
 

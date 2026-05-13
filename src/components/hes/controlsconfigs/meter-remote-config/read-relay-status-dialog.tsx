@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -9,51 +10,48 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useReadMeter } from "@/hooks/use-configure-meter";
-import { getValueByDescription } from "@/lib/utils";
 import type { Meter } from "@/types/meter";
 import { useEffect } from "react";
 
-interface ReadRelayModeDialogProps {
+interface ReadRelayStatusDialogProps {
   isOpen: boolean;
   onClose: () => void;
   meter?: Meter | undefined;
 }
 
-export default function ReadRelayModeDialog({
+export default function ReadRelayStatusDialog({
   isOpen,
   onClose,
   meter,
-}: ReadRelayModeDialogProps) {
+}: ReadRelayStatusDialogProps) {
   const { mutate: readMeter, data, isPending, reset } = useReadMeter();
 
   useEffect(() => {
-    if (isOpen && meter?.meterNumber) {
-      readMeter({ serial: meter.meter?.meterNumber, type: "READ_RELAY_MODE" });
+    if (isOpen && meter?.meter?.meterNumber) {
+      readMeter({ serial: meter.meter?.meterNumber, type: "READ_RELAY_STATUS" });
     }
   }, [isOpen]);
 
-  const relayValue = Array.isArray(data?.responsedata) ? data.responsedata : [];
-
-  const relayModeDesc = getValueByDescription(relayValue, "Control mode")
+  const relayValue = String(data?.responsedata?.value ?? "");
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="h-fit bg-white">
         <DialogHeader>
-          <DialogTitle>Read Relay Mode</DialogTitle>
+          <DialogTitle>Read Relay Status</DialogTitle>
         </DialogHeader>
         <div className="py-4">
           <Label
-            htmlFor="relay-mode"
+            htmlFor="relay-status"
             className="mb-2 block text-sm font-medium text-gray-700"
           >
-            Relay Mode
+            Relay Status
           </Label>
           <Input
-            id="relay-mode"
+            id="relay-status"
             type="text"
             readOnly
             placeholder={isPending ? "Loading..." : "No data available"}
-            value={relayModeDesc}
+            value={relayValue}
             className="w-full border border-gray-200"
           />
         </div>
