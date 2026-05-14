@@ -35,6 +35,11 @@ import { useAuth } from "@/context/auth-context";
 import { useObisData, useOnlineMeters } from "@/hooks/use-hes-hierarchy";
 import { type ReadingOption, transformObisDataToReadingOptions } from "@/utils/obis-utils";
 
+// Must match hes-backend `hes.realtime-read.max-meters` / `max-obis`
+// and the guard in `useRealtimeStream`.
+const MAX_METERS = 20;
+const MAX_READINGS = 50;
+
 interface UnitOption {
   value: string;
   label: string;
@@ -187,14 +192,17 @@ const readingOptions: ReadingOption[] = obisData
     if (meterValue === "all-meters") {
       const allMeters = metersOptions
         .filter((o) => o.value !== "all-meters")
-        .map((o) => o.value as string);
+        .map((o) => o.value as string)
+        .slice(0, MAX_METERS);
       setMeters(meters.length === allMeters.length ? [] : allMeters);
     } else {
-      setMeters((prevMeters) =>
-        prevMeters.includes(meterValue as string)
-          ? prevMeters.filter((id) => id !== meterValue)
-          : [...prevMeters, meterValue as string],
-      );
+      setMeters((prevMeters) => {
+        if (prevMeters.includes(meterValue)) {
+          return prevMeters.filter((id) => id !== meterValue);
+        }
+        if (prevMeters.length >= MAX_METERS) return prevMeters;
+        return [...prevMeters, meterValue];
+      });
     }
   };
 
@@ -206,11 +214,13 @@ const readingOptions: ReadingOption[] = obisData
   };
 
   const handleReadingSelect = (readingValue: string) => {
-    setReading((prevReading) =>
-      prevReading.includes(readingValue as string)
-        ? prevReading.filter((id) => id !== readingValue)
-        : [...prevReading, readingValue as string],
-    );
+    setReading((prevReading) => {
+      if (prevReading.includes(readingValue)) {
+        return prevReading.filter((id) => id !== readingValue);
+      }
+      if (prevReading.length >= MAX_READINGS) return prevReading;
+      return [...prevReading, readingValue];
+    });
   };
 
   const handleGroupSelect = (groupLabel: string, isChecked: boolean) => {
@@ -219,11 +229,13 @@ const readingOptions: ReadingOption[] = obisData
       const childrenValues = group.children.map(
         (child) => child.value as string,
       );
-      setReading((prevReading) =>
-        isChecked
-          ? [...new Set([...prevReading, ...childrenValues])]
-          : prevReading.filter((r) => !childrenValues.includes(r)),
-      );
+      setReading((prevReading) => {
+        if (!isChecked) {
+          return prevReading.filter((r) => !childrenValues.includes(r));
+        }
+        const merged = [...new Set([...prevReading, ...childrenValues])];
+        return merged.slice(0, MAX_READINGS);
+      });
     }
   };
 
@@ -316,6 +328,9 @@ const readingOptions: ReadingOption[] = obisData
           className="mb-2 block text-base font-medium text-gray-700"
         >
           Meters <span className="text-red-500">*</span>
+          <span className="ml-2 text-xs font-normal text-gray-500">
+            ({meters.length}/{MAX_METERS})
+          </span>
         </Label>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -341,19 +356,28 @@ const readingOptions: ReadingOption[] = obisData
             </div>
             {metersOptions
               .filter((o) => o.value !== "all-meters")
-              .map((option) => (
-                <div
-                  key={option.value}
-                  className="flex cursor-pointer items-center justify-between gap-3 px-2 py-2 text-base"
-                  onClick={() => handleMetersSelect(option.value)}
-                >
-                  <span>{option.label}</span>
-                  <Checkbox
-                    checked={meters.includes(option.value as string)}
-                    className="h-5 w-5 border-gray-300 data-[state=checked]:border-green-500 data-[state=checked]:bg-green-500"
-                  />
-                </div>
-              ))}
+              .map((option) => {
+                const isSelected = meters.includes(option.value as string);
+                const atCap = meters.length >= MAX_METERS && !isSelected;
+                return (
+                  <div
+                    key={option.value}
+                    className={`flex items-center justify-between gap-3 px-2 py-2 text-base ${
+                      atCap ? "cursor-not-allowed opacity-50" : "cursor-pointer"
+                    }`}
+                    onClick={() => {
+                      if (!atCap) handleMetersSelect(option.value);
+                    }}
+                  >
+                    <span>{option.label}</span>
+                    <Checkbox
+                      checked={isSelected}
+                      disabled={atCap}
+                      className="h-5 w-5 border-gray-300 data-[state=checked]:border-green-500 data-[state=checked]:bg-green-500"
+                    />
+                  </div>
+                );
+              })}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -364,6 +388,9 @@ const readingOptions: ReadingOption[] = obisData
           className="mb-2 block text-base font-medium text-gray-700"
         >
           Realtime Reading <span className="text-red-500">*</span>
+          <span className="ml-2 text-xs font-normal text-gray-500">
+            ({reading.length}/{MAX_READINGS})
+          </span>
         </Label>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -403,19 +430,28 @@ const readingOptions: ReadingOption[] = obisData
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="px-2">
-                    {group.children.map((option) => (
-                      <div
-                        key={option.value}
-                        className="flex cursor-pointer items-center justify-between gap-3 py-2 pl-4 text-base"
-                        onClick={() => handleReadingSelect(option.value)}
-                      >
-                        <span>{option.label}</span>
-                        <Checkbox
-                          checked={reading.includes(option.value as string)}
-                          className="h-5 w-5 rounded-lg border-gray-300 data-[state=checked]:border-green-500 dark:data-[state=checked]:bg-green-500"
-                        />
-                      </div>
-                    ))}
+                    {group.children.map((option) => {
+                      const isSelected = reading.includes(option.value as string);
+                      const atCap = reading.length >= MAX_READINGS && !isSelected;
+                      return (
+                        <div
+                          key={option.value}
+                          className={`flex items-center justify-between gap-3 py-2 pl-4 text-base ${
+                            atCap ? "cursor-not-allowed opacity-50" : "cursor-pointer"
+                          }`}
+                          onClick={() => {
+                            if (!atCap) handleReadingSelect(option.value);
+                          }}
+                        >
+                          <span>{option.label}</span>
+                          <Checkbox
+                            checked={isSelected}
+                            disabled={atCap}
+                            className="h-5 w-5 rounded-lg border-gray-300 data-[state=checked]:border-green-500 dark:data-[state=checked]:bg-green-500"
+                          />
+                        </div>
+                      );
+                    })}
                     {index < readingOptions.length - 1 && (
                       <div className="my-2 border-b border-gray-200"></div>
                     )}
