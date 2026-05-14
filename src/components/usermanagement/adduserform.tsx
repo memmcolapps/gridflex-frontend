@@ -230,11 +230,13 @@ export default function AddUserForm({
                       Loading group permissions...
                     </SelectItem>
                   ) : (
-                    groupPermissions.map((permission) => (
-                      <SelectItem key={permission.id} value={permission.id}>
-                        {permission.groupTitle}
-                      </SelectItem>
-                    ))
+                    groupPermissions
+                      .filter((permission) => permission.status !== false)
+                      .map((permission) => (
+                        <SelectItem key={permission.id} value={permission.id}>
+                          {permission.groupTitle}
+                        </SelectItem>
+                      ))
                   )}
                 </SelectContent>
               </Select>

@@ -86,12 +86,19 @@ export interface EventLog {
   description: string;
 }
 
+export interface CommunicationSummary {
+  timeRange: string;
+  label: string;
+  meterCount: number;
+}
+
 export interface HesResponseData {
   meterSummary: MeterSummary;
   communicationLogs: CommunicationLogs[];
   eventLogs: EventLog[];
   schedulerRate: ScheduleRate;
   communicationReport: CommunicationReport[];
+  communicationSummary: CommunicationSummary[];
 }
 
 export interface HesDashboardApiResponse {
