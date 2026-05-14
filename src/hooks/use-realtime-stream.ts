@@ -45,9 +45,22 @@ export function useRealtimeStream() {
   // event (network wedge, proxy crash, etc) this guarantees the spinner stops.
   const WALL_CLOCK_TIMEOUT_MS = 90_000;
 
+  // Must match hes-backend `hes.realtime-read.max-meters` / `max-obis`.
+  const MAX_METERS_PER_REQUEST = 20;
+  const MAX_OBIS_PER_REQUEST = 50;
+
   useEffect(() => () => stop(), [stop]);
 
   const run = useCallback(async (filters: RunStreamFilters) => {
+    if (filters.meters.length > MAX_METERS_PER_REQUEST) {
+      setError(`Select at most ${MAX_METERS_PER_REQUEST} meters per realtime read.`);
+      return;
+    }
+    if (filters.obisCodes.length > MAX_OBIS_PER_REQUEST) {
+      setError(`Select at most ${MAX_OBIS_PER_REQUEST} readings per realtime read.`);
+      return;
+    }
+
     stop();
     setError(null);
     setSelectedReading(filters.reading);
