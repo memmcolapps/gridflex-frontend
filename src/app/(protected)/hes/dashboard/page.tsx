@@ -185,9 +185,9 @@ export default function HESDashboardPage() {
       <div className="mt-6 grid w-full grid-cols-1 gap-6 md:grid-cols-2">
         <CommunicationSummaryChart
           data={
-            hesDashboardData?.communicationLogs?.map((log) => ({
-              period: log.timeLabel,
-              value: log.value,
+            hesDashboardData?.communicationSummary?.map((log) => ({
+              period: log.timeRange,
+              value: log.meterCount,
             }))
           }
         />
