@@ -44,6 +44,7 @@ interface GroupPermissionFormData {
 interface GroupPermission {
   id: string;
   groupTitle: string;
+  status?: boolean;
   permissions: {
     id: string;
     view: boolean;
@@ -158,7 +159,7 @@ const transformAccessLevelsToPermissions = (accessLevels: string[]) => {
 export default function GroupPermissionManagement() {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState<{
-    key: keyof GroupPermission;
+    key: "id" | "groupTitle";
     direction: "ascending" | "descending";
   } | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -182,7 +183,7 @@ export default function GroupPermissionManagement() {
     setCurrentPage(1);
   };
 
-  const requestSort = (key: keyof GroupPermission) => {
+  const requestSort = (key: "id" | "groupTitle") => {
     let direction: "ascending" | "descending" = "ascending";
     if (
       sortConfig &&
@@ -243,7 +244,7 @@ export default function GroupPermissionManagement() {
           },
           onError: (error) => {
             console.error("Error creating permission group:", error);
-            toast.error("Error creating permission group");
+            toast.error(error.message || "Error creating permission group");
           },
         },
       );
@@ -461,86 +462,89 @@ export default function GroupPermissionManagement() {
                 </TableCell>
               </TableRow>
             ) : (
-              paginatedGroups.map((group) => (
-                <TableRow
-                  key={group.id}
-                  className="hover:bg-muted/50 bg-transparent"
-                >
-                  <TableCell>
-                    <div>
-                      <div className="font-medium">{group.groupTitle}</div>
-                      <div className="line-clamp-1 text-sm text-gray-500">
-                        {group.modules?.map((m) => m.name).join(", ")}
+              paginatedGroups.map((group) => {
+                const isInactive = !(group.status ?? true);
+                return (
+                  <TableRow
+                    key={group.id}
+                    className={`hover:bg-muted/50 bg-transparent ${isInactive ? "opacity-60 grayscale" : ""}`}
+                  >
+                    <TableCell>
+                      <div>
+                        <div className="font-medium">{group.groupTitle}</div>
+                        <div className="line-clamp-1 text-sm text-gray-500">
+                          {group.modules?.map((m) => m.name).join(", ")}
+                        </div>
                       </div>
-                    </div>
-                  </TableCell>
-                  {/* Body cells match header width and alignment */}
-                  <TableCell className="text-center">
-                    <Checkbox
-                      checked={group.permissions.view}
-                      onCheckedChange={(checked) =>
-                        handleUpdatePermission(group.id, "view", !!checked)
-                      }
-                      className="border-gray-300 data-[state=checked]:bg-green-500"
-                      disabled={!canEdit}
-                    />
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <Checkbox
-                      checked={group.permissions.edit}
-                      onCheckedChange={(checked) =>
-                        handleUpdatePermission(group.id, "edit", !!checked)
-                      }
-                      className="border-gray-300 data-[state=checked]:bg-green-500"
-                      disabled={!canEdit}
-                    />
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <Checkbox
-                      checked={group.permissions.approve}
-                      onCheckedChange={(checked) =>
-                        handleUpdatePermission(group.id, "approve", !!checked)
-                      }
-                      className="border-gray-300 data-[state=checked]:bg-green-500"
-                      disabled={!canEdit}
-                    />
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <Checkbox
-                      checked={group.permissions.disable}
-                      onCheckedChange={(checked) =>
-                        handleUpdatePermission(group.id, "disable", !!checked)
-                      }
-                      className="border-gray-300 data-[state=checked]:bg-green-500"
-                      disabled={!canEdit}
-                    />
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="h-8 w-8 p-2 border-gray-300"
-                        >
-                          <MoreVertical size={14} />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="center">
-                        <DropdownMenuItem
-                          onSelect={() => handleEditGroup(group)}
-                        >
-                          <div className="flex items-center gap-2">
-                            <Pencil size={14} />
-                            <span>Edit Group Permission</span>
-                          </div>
-                        </DropdownMenuItem>
-                        <GroupStatusToggleDropdownItem group={group} />
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))
+                    </TableCell>
+                    {/* Body cells match header width and alignment */}
+                    <TableCell className="text-center">
+                      <Checkbox
+                        checked={group.permissions.view}
+                        onCheckedChange={(checked) =>
+                          handleUpdatePermission(group.id, "view", !!checked)
+                        }
+                        className="border-gray-300 data-[state=checked]:bg-green-500"
+                        disabled={!canEdit}
+                      />
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Checkbox
+                        checked={group.permissions.edit}
+                        onCheckedChange={(checked) =>
+                          handleUpdatePermission(group.id, "edit", !!checked)
+                        }
+                        className="border-gray-300 data-[state=checked]:bg-green-500"
+                        disabled={!canEdit}
+                      />
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Checkbox
+                        checked={group.permissions.approve}
+                        onCheckedChange={(checked) =>
+                          handleUpdatePermission(group.id, "approve", !!checked)
+                        }
+                        className="border-gray-300 data-[state=checked]:bg-green-500"
+                        disabled={!canEdit}
+                      />
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Checkbox
+                        checked={group.permissions.disable}
+                        onCheckedChange={(checked) =>
+                          handleUpdatePermission(group.id, "disable", !!checked)
+                        }
+                        className="border-gray-300 data-[state=checked]:bg-green-500"
+                        disabled={!canEdit}
+                      />
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-8 w-8 border-gray-300 p-2"
+                          >
+                            <MoreVertical size={14} />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="center">
+                          <DropdownMenuItem
+                            onSelect={() => handleEditGroup(group)}
+                          >
+                            <div className="flex items-center gap-2">
+                              <Pencil size={14} />
+                              <span>Edit Group Permission</span>
+                            </div>
+                          </DropdownMenuItem>
+                          <GroupStatusToggleDropdownItem group={group} />
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             )}
           </TableBody>
         </Table>

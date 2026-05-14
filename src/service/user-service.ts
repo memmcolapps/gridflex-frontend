@@ -23,6 +23,7 @@ interface GroupPermissionResponse {
 export interface GroupPermission {
   id: string;
   groupTitle: string;
+  status?: boolean;
   orgId: string;
   permissions: {
     view: boolean;
@@ -40,7 +41,9 @@ export interface GroupPermission {
   }>;
 }
 
-export async function getGroupPermission(searchTerm?: string): Promise<
+export async function getGroupPermission(
+  searchTerm?: string,
+): Promise<
   { success: true; data: GroupPermission[] } | { success: false; error: string }
 > {
   try {
@@ -229,7 +232,9 @@ export async function deactivateOrActivateGroupPermission(
   }
 }
 
-export async function getUsers(searchTerm?: string): Promise<
+export async function getUsers(
+  searchTerm?: string,
+): Promise<
   | { success: true; data: GetUsersResponseData }
   | { success: false; error: string }
 > {
