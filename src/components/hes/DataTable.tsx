@@ -81,7 +81,7 @@ export function DataTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {loading ? (
+            {data.length === 0 && loading ? (
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
