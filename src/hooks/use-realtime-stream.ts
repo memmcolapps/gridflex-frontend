@@ -43,7 +43,7 @@ export function useRealtimeStream() {
 
   // Hard ceiling on a single realtime read. If the stream never sends a terminal
   // event (network wedge, proxy crash, etc) this guarantees the spinner stops.
-  const WALL_CLOCK_TIMEOUT_MS = 90_000;
+  const WALL_CLOCK_TIMEOUT_MS = 150_000;
 
   // Must match hes-backend `hes.realtime-read.max-meters` / `max-obis`.
   const MAX_METERS_PER_REQUEST = 20;
