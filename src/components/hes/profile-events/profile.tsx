@@ -328,7 +328,7 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
               return {
                 sn: startSn + index,
                 meterNo: profile.meterNumber,
-                time: profile.receivedAt,
+                time: profile.entryTimestamp,
                 ...rest,
               };
             },
