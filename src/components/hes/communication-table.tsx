@@ -154,7 +154,7 @@ export function CommunicationTable({ searchQuery = "", activeTab = 'MD', communi
                                     {row.connectionType}
                                 </span>
                             </TableCell>
-                            <TableCell>{row.updatedAt ? new Date(row.updatedAt).toLocaleString() : '-'}</TableCell>
+                            <TableCell>{row.onlineTime ? new Date(row.onlineTime).toLocaleString() : '-'}</TableCell>
                             <TableCell onClick={(e) => e.stopPropagation()}>
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
@@ -219,7 +219,7 @@ export function CommunicationTable({ searchQuery = "", activeTab = 'MD', communi
                                 <span>{selectedRow.offlineTime ? new Date(selectedRow.offlineTime).toLocaleString() : '-'}</span>
                             </div>
                             <div className="grid grid-cols-2 gap-2">
-                                <Label className="font-semibold">Last Sync:</Label>
+                                <Label className="font-semibold">Last Status Update:</Label>
                                 <span>{selectedRow.updatedAt ? new Date(selectedRow.updatedAt).toLocaleString() : '-'}</span>
                             </div>
                             {selectedRow.meter && (
