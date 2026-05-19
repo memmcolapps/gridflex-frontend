@@ -163,6 +163,16 @@ const profileColumns: Record<string, { key: string; label: string }[]> = {
     { key: "activeEnergyExportOngrid", label: "Active Energy Export Ongrid" },
     { key: "activeEnergyExportOffgrid", label: "Active Energy Export Offgrid" },
   ],
+    "load-profile-three-household": [
+    { key: "meterModel", label: "Meter Model" },
+    { key: "activePowerL1", label: "Active Power L1" },
+    { key: "activePowerL2", label: "Active Power L2" },
+    { key: "activePowerL3", label: "Active Power L3" },
+    { key: "powerFactorL1", label: "Power Factor L1" },
+    { key: "powerFactorL2", label: "Power Factor L2" },
+    { key: "powerFactorL3", label: "Power Factor L3" },
+    { key: "gridFrequency", label: "Grid Frequency" },
+  ],
 };
 interface ProfileProps {
   selectedHierarchy: string | null;
@@ -206,7 +216,6 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
     type: "assigned",
   });
   const { mutate: fetchProfiles, isPending: isLoading } = useProfiles();
-
   const profileTypes = (profileTypesData?.responsedata ?? []).filter(
     (p) => p.name,
   );
