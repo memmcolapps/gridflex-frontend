@@ -73,6 +73,96 @@ interface ProfileData {
   [key: string]: string | number;
 }
 
+interface ProfileTableColumn {
+  key: string;
+  label: string;
+}
+
+const profileHeaderCandidates = [
+  "headers",
+  "tableHeaders",
+  "tableHeader",
+  "columns",
+] as const;
+
+const prettifyProfileHeader = (value: string) =>
+  value
+    .replace(/[_-]+/g, " ")
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+
+const normalizeProfileHeaderKey = (key: string) => {
+  const aliases: Record<string, string> = {
+    meterNo: "meterNumber",
+    entryTimestamp: "time",
+    profileTime: "time",
+  };
+
+  return aliases[key] ?? key;
+};
+
+const normalizeProfileTableColumns = (
+  headers: unknown,
+): ProfileTableColumn[] => {
+  if (!headers) return [];
+
+  if (Array.isArray(headers)) {
+    return headers
+      .map((header) => {
+        if (typeof header === "string") {
+          return {
+            key: normalizeProfileHeaderKey(header),
+            label: prettifyProfileHeader(header),
+          };
+        }
+
+        if (header && typeof header === "object") {
+          const headerRecord = header as Record<string, unknown>;
+          const key =
+            headerRecord.key ??
+            headerRecord.field ??
+            headerRecord.name ??
+            headerRecord.value;
+          const label =
+            headerRecord.label ??
+            headerRecord.header ??
+            headerRecord.title ??
+            headerRecord.name ??
+            key;
+
+          if (typeof key === "string") {
+            return {
+              key: normalizeProfileHeaderKey(key),
+              label:
+                typeof label === "string" ? label : prettifyProfileHeader(key),
+            };
+          }
+        }
+
+        return null;
+      })
+      .filter((column): column is ProfileTableColumn => Boolean(column));
+  }
+
+  if (typeof headers === "object") {
+    return Object.entries(headers as Record<string, unknown>).map(
+      ([key, label]) => ({
+        key: normalizeProfileHeaderKey(key),
+        label: typeof label === "string" ? label : prettifyProfileHeader(key),
+      }),
+    );
+  }
+
+  return [];
+};
+
+const formatProfileCellValue = (value: unknown) => {
+  if (value === null || value === undefined || value === "") return "—";
+  if (typeof value === "boolean") return value ? "Yes" : "No";
+  if (typeof value === "object") return "—";
+  return String(value);
+};
+
 const profileColumns: Record<string, { key: string; label: string }[]> = {
   "monthly-billing-profile": [
     { key: "meterModel", label: "Meter Model" },
@@ -163,7 +253,7 @@ const profileColumns: Record<string, { key: string; label: string }[]> = {
     { key: "activeEnergyExportOngrid", label: "Active Energy Export Ongrid" },
     { key: "activeEnergyExportOffgrid", label: "Active Energy Export Offgrid" },
   ],
-    "load-profile-three-household": [
+  "load-profile-three-household": [
     { key: "meterModel", label: "Meter Model" },
     { key: "activePowerL1", label: "Active Power L1" },
     { key: "activePowerL2", label: "Active Power L2" },
@@ -196,6 +286,11 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
   >([]);
   const [hasNextPage, setHasNextPage] = useState(false);
   const [tableData, setTableData] = useState<ProfileData[]>([]);
+  const [tableColumns, setTableColumns] = useState<ProfileTableColumn[]>([
+    { key: "sn", label: "S/N" },
+    { key: "meterNumber", label: "Meter No." },
+    { key: "time", label: "Time" },
+  ]);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalRecords, setTotalRecords] = useState(0);
@@ -330,15 +425,32 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
           const records = data.responsedata.data;
           setHasNextPage(records.length === effectiveSize);
           setTotalRecords(data.responsedata.totalData);
+          const serverColumns =
+            profileHeaderCandidates
+              .map((key) =>
+                normalizeProfileTableColumns(data.responsedata[key]),
+              )
+              .find((columns) => columns.length > 0) ?? [];
+          setTableColumns(
+            serverColumns.length > 0
+              ? serverColumns
+              : [
+                  { key: "sn", label: "S/N" },
+                  { key: "meterNumber", label: "Meter No." },
+                  { key: "time", label: "Time" },
+                  ...(profileColumns[selectedProfileTypes ?? ""] ?? []),
+                ],
+          );
           const startSn = page * effectiveSize + 1;
           const transformedData: ProfileData[] = records.map(
             (profile, index) => {
               const { meter, ...rest } = profile;
               return {
+                ...rest,
                 sn: startSn + index,
+                meterNumber: profile.meterNumber,
                 meterNo: profile.meterNumber,
                 time: profile.entryTimestamp,
-                ...rest,
               };
             },
           );
@@ -657,19 +769,7 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">
-                S/N
-              </TableHead>
-              <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">
-                Meter No.
-              </TableHead>
-              <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">
-                Time
-              </TableHead>
-              {/* <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">
-                Meter Model
-              </TableHead> */}
-              {(profileColumns[selectedProfileTypes ?? ""] ?? []).map((col) => (
+              {tableColumns.map((col) => (
                 <TableHead
                   key={col.key}
                   className="px-4 py-3 text-sm font-medium whitespace-nowrap text-gray-900"
@@ -693,9 +793,7 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
                     <div className="h-4 animate-pulse rounded bg-gray-200"></div>
                   </TableCell>
                   {Array.from({
-                    length:
-                      (profileColumns[selectedProfileTypes ?? ""] ?? [])
-                        .length + 1,
+                    length: Math.max(tableColumns.length - 3, 0),
                   }).map((_, i) => (
                     <TableCell
                       key={i}
@@ -709,31 +807,20 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
             ) : tableData.length > 0 ? (
               tableData.map((row, index) => (
                 <TableRow key={index} className="hover:bg-gray-50">
-                  <TableCell className="px-4 py-3 text-sm text-gray-900">
-                    {row.sn}
-                  </TableCell>
-                  <TableCell className="px-4 py-3 text-sm text-gray-900">
-                    {row.meterNo}
-                  </TableCell>
-                  <TableCell className="px-4 py-3 text-sm text-gray-900">
-                    {row.time}
-                  </TableCell>
-                  {(profileColumns[selectedProfileTypes ?? ""] ?? []).map(
-                    (col) => (
-                      <TableCell
-                        key={col.key}
-                        className="px-4 py-3 text-center text-sm whitespace-nowrap text-gray-900"
-                      >
-                        {row[col.key] ?? "—"}
-                      </TableCell>
-                    ),
-                  )}
+                  {tableColumns.map((col) => (
+                    <TableCell
+                      key={col.key}
+                      className="px-4 py-3 text-center text-sm whitespace-nowrap text-gray-900"
+                    >
+                      {formatProfileCellValue(row[col.key])}
+                    </TableCell>
+                  ))}
                 </TableRow>
               ))
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={7}
+                  colSpan={tableColumns.length}
                   className="py-8 text-center text-sm text-gray-500"
                 >
                   No data available. Click &ldquo;Search&rdquo; to fetch

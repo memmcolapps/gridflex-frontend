@@ -72,14 +72,166 @@ interface EventData {
   feeder: string;
   time: string;
   eventType: string;
-  event: string;
+  event?: string;
   eventTypeId?: string;
   criticalLevel?: string;
+  [key: string]: unknown;
 }
 
-const mockEventData: EventData[] = [
-  // Add your mock data here when you have it
+interface EventTableColumn {
+  key: string;
+  label: string;
+}
+
+const baseEventColumns: EventTableColumn[] = [
+  { key: "sn", label: "S/N" },
+  { key: "meterNo", label: "Meter No." },
+  { key: "feeder", label: "Feeder" },
+  { key: "time", label: "Time" },
+  { key: "eventType", label: "Event Type" },
+  { key: "criticalLevel", label: "Critical Level" },
 ];
+
+const fallbackEventColumns: EventTableColumn[] = [
+  ...baseEventColumns,
+  { key: "event", label: "Event" },
+];
+
+const mappedEventKeys = new Set([
+  "criticalLevel",
+  "eventTime",
+  "eventType",
+  "feederName",
+  "meterNumber",
+]);
+
+const ignoredEventKeys = new Set(["id", "meter"]);
+
+const headerCandidates = [
+  "headers",
+  "tableHeaders",
+  "tableHeader",
+  "columns",
+] as const;
+
+const prettifyHeader = (value: string) =>
+  value
+    .replace(/[_-]+/g, " ")
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+
+const normalizeHeaderKey = (key: string) => {
+  const aliases: Record<string, string> = {
+    meterNumber: "meterNo",
+    eventTime: "time",
+    feederName: "feeder",
+  };
+
+  return aliases[key] ?? key;
+};
+
+const uniqueColumns = (columns: EventTableColumn[]) => {
+  const seen = new Set<string>();
+
+  return columns.filter((column) => {
+    if (seen.has(column.key)) return false;
+    seen.add(column.key);
+    return true;
+  });
+};
+
+const normalizeEventTableColumns = (headers: unknown): EventTableColumn[] => {
+  if (!headers) return [];
+
+  if (Array.isArray(headers)) {
+    return headers
+      .map((header) => {
+        if (typeof header === "string") {
+          return {
+            key: normalizeHeaderKey(header),
+            label: prettifyHeader(header),
+          };
+        }
+
+        if (header && typeof header === "object") {
+          const headerRecord = header as Record<string, unknown>;
+          const key =
+            headerRecord.key ??
+            headerRecord.field ??
+            headerRecord.name ??
+            headerRecord.value;
+          const label =
+            headerRecord.label ??
+            headerRecord.header ??
+            headerRecord.title ??
+            headerRecord.name ??
+            key;
+
+          if (typeof key === "string") {
+            return {
+              key: normalizeHeaderKey(key),
+              label: typeof label === "string" ? label : prettifyHeader(key),
+            };
+          }
+        }
+
+        return null;
+      })
+      .filter((column): column is EventTableColumn => Boolean(column));
+  }
+
+  if (typeof headers === "object") {
+    return Object.entries(headers as Record<string, unknown>).map(
+      ([key, label]) => ({
+        key: normalizeHeaderKey(key),
+        label: typeof label === "string" ? label : prettifyHeader(key),
+      }),
+    );
+  }
+
+  return [];
+};
+
+const inferEventTableColumns = (records: Record<string, unknown>[]) => {
+  if (records.length === 0) return fallbackEventColumns;
+
+  const dynamicColumns = records.flatMap((record) =>
+    Object.keys(record)
+      .filter(
+        (key) =>
+          !mappedEventKeys.has(key) &&
+          !ignoredEventKeys.has(key) &&
+          typeof record[key] !== "object",
+      )
+      .map((key) => ({
+        key: normalizeHeaderKey(key),
+        label: key,
+      })),
+  );
+
+  return uniqueColumns([...baseEventColumns, ...dynamicColumns]);
+};
+
+const resolveEventTableColumns = (
+  serverColumns: EventTableColumn[],
+  records: Record<string, unknown>[],
+) => {
+  const columns = serverColumns.length
+    ? uniqueColumns([
+        ...baseEventColumns,
+        ...serverColumns.filter((column) => column.key !== "feeder"),
+      ])
+    : inferEventTableColumns(records);
+
+  return columns.length ? columns : fallbackEventColumns;
+};
+
+const formatCellValue = (value: unknown) => {
+  if (value === null || value === undefined || value === "") return "-";
+  if (typeof value === "boolean") return value ? "Yes" : "No";
+  if (typeof value === "object") return "-";
+  return String(value);
+};
 
 interface EventsProps {
   selectedHierarchy: string | null;
@@ -96,8 +248,12 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
   const [endTimeValue, setEndTimeValue] = useState<string>("00:00:00");
   const [selectedMeterNos, setSelectedMeterNos] = useState<string[]>([]);
   const [selectedMeterModels, setSelectedMeterModels] = useState<string[]>([]);
-  const [selectedEventTypes, setSelectedEventTypes] = useState<number[]>([]);
+  const [selectedEventType, setSelectedEventType] = useState<number | null>(
+    null,
+  );
   const [tableData, setTableData] = useState<EventData[]>([]);
+  const [tableColumns, setTableColumns] =
+    useState<EventTableColumn[]>(fallbackEventColumns);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalRecords, setTotalRecords] = useState(0);
@@ -138,25 +294,14 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
   const filteredMeters =
     metersData?.actualMeters.filter((meter) => meter.type !== "VIRTUAL") ?? [];
 
-  // Handle Event Type selection
   const handleEventTypeChange = (eventTypeId: number) => {
-    setSelectedEventTypes((prev) =>
-      prev.includes(eventTypeId)
-        ? prev.filter((id) => id !== eventTypeId)
-        : [...prev, eventTypeId],
-    );
+    setSelectedEventType(eventTypeId);
+    setEventTypeDropdownOpen(false);
   };
 
-  // Get display text for dropdowns
   const getEventsDisplayText = () => {
-    if (selectedEventTypes.length === 0) return "Select Events";
-    if (selectedEventTypes.length === 1) {
-      return (
-        eventTypes.find((et) => et.id === selectedEventTypes[0])?.name ?? ""
-      );
-    }
-    if (selectedEventTypes.length === eventTypes.length) return "All Events";
-    return `${selectedEventTypes.length} Events`;
+    if (selectedEventType === null) return "Select Event";
+    return eventTypes.find((et) => et.id === selectedEventType)?.name ?? "";
   };
 
   // Handle time change for start date
@@ -185,7 +330,7 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
     if (
       !startDate ||
       !endDate ||
-      selectedEventTypes.length === 0 ||
+      selectedEventType === null ||
       (selectedMeterNos.length === 0 && selectedMeterModels.length === 0)
     ) {
       toast.error("Please fill in all required fields");
@@ -195,8 +340,6 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
     const startDateStr = format(startDate, "yyyy-MM-dd HH:mm:ss");
     const endDateStr = format(endDate, "yyyy-MM-dd HH:mm:ss");
 
-    const eventTypeIds = selectedEventTypes.join(",");
-
     fetchEvents(
       {
         page,
@@ -205,7 +348,7 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
         endDate: endDateStr,
         meterNumber: selectedMeterNos.join(","),
         eventTypeName: "",
-        eventTypeId: eventTypeIds,
+        eventTypeId: String(selectedEventType),
         model: selectedMeterModels.join(","),
         node: selectedUnits ?? "",
       },
@@ -215,24 +358,36 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
           const records = data.responsedata.data;
           setHasNextPage(records.length === effectiveSize);
           setTotalRecords(data.responsedata.totalData);
-          const transformedData: EventData[] = data.responsedata.data.map(
-            (event) => {
-              return {
-                sn: 0,
-                meterNo: event.meterNumber,
-                feeder: event.meter.flatNode?.feederName || "N/A",
-                time: event.eventTime,
-                eventType:
-                  typeof event.eventType === "string"
-                    ? event.eventType
-                    : (event.eventType?.name ?? "N/A"),
-                event: event.event,
-                eventTypeId: event.eventType.id?.toString() ?? "",
-                criticalLevel: event.criticalLevel?.toString() ?? "",
-                node: event.meter.nodeId || "",
-              };
-            },
+          const serverColumns =
+            headerCandidates
+              .map((key) => normalizeEventTableColumns(data.responsedata[key]))
+              .find((columns) => columns.length > 0) ?? [];
+          setTableColumns(
+            resolveEventTableColumns(
+              serverColumns,
+              records as unknown as Record<string, unknown>[],
+            ),
           );
+          const transformedData: EventData[] = records.map((event) => {
+            const eventTypeName =
+              typeof event.eventType === "string"
+                ? event.eventType
+                : (event.eventType?.name ?? "N/A");
+
+            return {
+              ...event,
+              sn: 0,
+              meterNo: event.meterNumber,
+              feeder: event.meter?.flatNode?.feederName || "N/A",
+              feederName: event.meter?.flatNode?.feederName || "N/A",
+              time: event.eventTime,
+              eventType: eventTypeName,
+              event: event.event ?? event.eventName ?? eventTypeName,
+              eventTypeId: event.eventTypeId?.toString() ?? "",
+              criticalLevel: event.criticalLevel?.toString() ?? "",
+              node: event.meter?.nodeId || "",
+            };
+          });
           transformedData.sort((a, b) => {
             const aLevel = parseInt(a.criticalLevel ?? "");
             const bLevel = parseInt(b.criticalLevel ?? "");
@@ -532,34 +687,7 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
               className="max-h-60 w-[var(--radix-dropdown-menu-trigger-width)] min-w-[160px] overflow-y-auto"
               align="start"
             >
-              {/* Select All Option */}
-              <DropdownMenuItem
-                onSelect={(e) => e.preventDefault()}
-                onClick={() => {
-                  if (selectedEventTypes.length === eventTypes.length) {
-                    setSelectedEventTypes([]);
-                  } else {
-                    setSelectedEventTypes(eventTypes.map((et) => et.id));
-                  }
-                }}
-                className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-50"
-              >
-                <span className="text-sm">Select All</span>
-                <div className="flex h-4 w-4 items-center justify-center">
-                  {selectedEventTypes.length === eventTypes.length ? (
-                    <div className="flex h-4 w-4 items-center justify-center rounded-sm bg-green-100">
-                      <Check size={12} className="text-green-600" />
-                    </div>
-                  ) : (
-                    <Square size={14} className="text-gray-400" />
-                  )}
-                </div>
-              </DropdownMenuItem>
-
-              {/* Dotted separator */}
-              <div className="mx-2 border-t border-dotted border-[#4ECDC4]" />
-
-              {eventTypes.map((type) => (
+              {eventTypes.map((type, index) => (
                 <div key={type.id}>
                   <DropdownMenuItem
                     onSelect={(e) => e.preventDefault()}
@@ -568,7 +696,7 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
                   >
                     <span className="text-sm">{type.name}</span>
                     <div className="flex h-4 w-4 items-center justify-center">
-                      {selectedEventTypes.includes(type.id) ? (
+                      {selectedEventType === type.id ? (
                         <div className="flex h-4 w-4 items-center justify-center rounded-sm bg-green-100">
                           <Check size={12} className="text-green-600" />
                         </div>
@@ -577,7 +705,9 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
                       )}
                     </div>
                   </DropdownMenuItem>
-                  <div className="mx-2 border-t border-dotted border-[#4ECDC4]" />
+                  {index < eventTypes.length - 1 && (
+                    <div className="mx-2 border-t border-dotted border-[#4ECDC4]" />
+                  )}
                 </div>
               ))}
             </DropdownMenuContent>
@@ -592,7 +722,7 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
             disabled={
               !startDate ||
               !endDate ||
-              selectedEventTypes.length === 0 ||
+              selectedEventType === null ||
               (selectedMeterNos.length === 0 &&
                 selectedMeterModels.length === 0) ||
               isLoading
@@ -608,100 +738,61 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">
-                S/N
-              </TableHead>
-              <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">
-                Meter No.
-              </TableHead>
-              <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">
-                Feeder
-              </TableHead>
-              <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">
-                Time
-              </TableHead>
-              <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">
-                Event Type
-              </TableHead>
-              <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">
-                Event
-              </TableHead>
-              <TableHead className="px-4 py-3 text-sm font-medium text-gray-900">
-                Critical Level
-              </TableHead>
+              {tableColumns.map((column) => (
+                <TableHead
+                  key={column.key}
+                  className="px-4 py-3 text-sm font-medium whitespace-nowrap text-gray-900"
+                >
+                  {column.label}
+                </TableHead>
+              ))}
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               Array.from({ length: rowsPerPage }).map((_, index) => (
                 <TableRow key={index}>
-                  <TableCell className="px-4 py-3 text-sm text-gray-900">
-                    <div className="h-4 animate-pulse rounded bg-gray-200"></div>
-                  </TableCell>
-                  <TableCell className="px-4 py-3 text-sm text-gray-900">
-                    <div className="h-4 animate-pulse rounded bg-gray-200"></div>
-                  </TableCell>
-                  <TableCell className="px-4 py-3 text-sm text-gray-900">
-                    <div className="h-4 animate-pulse rounded bg-gray-200"></div>
-                  </TableCell>
-                  <TableCell className="px-4 py-3 text-sm text-gray-900">
-                    <div className="h-4 animate-pulse rounded bg-gray-200"></div>
-                  </TableCell>
-                  <TableCell className="px-4 py-3 text-sm text-gray-900">
-                    <div className="h-4 animate-pulse rounded bg-gray-200"></div>
-                  </TableCell>
-                  <TableCell className="px-4 py-3 text-sm text-gray-900">
-                    <div className="h-4 animate-pulse rounded bg-gray-200"></div>
-                  </TableCell>
-                  <TableCell className="px-4 py-3 text-sm text-gray-900">
-                    <div className="h-4 animate-pulse rounded bg-gray-200"></div>
-                  </TableCell>
+                  {tableColumns.map((column) => (
+                    <TableCell
+                      key={column.key}
+                      className="px-4 py-3 text-sm text-gray-900"
+                    >
+                      <div className="h-4 animate-pulse rounded bg-gray-200"></div>
+                    </TableCell>
+                  ))}
                 </TableRow>
               ))
             ) : tableData.length > 0 ? (
               tableData.map((row, index) => (
                 <TableRow key={index} className="hover:bg-gray-50">
-                  <TableCell className="px-4 py-3 text-sm text-gray-900">
-                    {row.sn}
-                  </TableCell>
-                  <TableCell className="px-4 py-3 text-sm text-gray-900">
-                    {row.meterNo}
-                  </TableCell>
-                  <TableCell className="px-4 py-3 text-sm text-gray-900">
-                    {row.feeder}
-                  </TableCell>
-                  <TableCell className="px-4 py-3 text-sm text-gray-900">
-                    {row.time}
-                  </TableCell>
-                  <TableCell className="px-4 py-3 text-sm text-gray-900">
-                    {row.eventType}
-                  </TableCell>
-                  <TableCell className="px-4 py-3 text-sm text-gray-900">
-                    {row.event ?? "-"}
-                  </TableCell>
-                  <TableCell className="px-4 py-3 text-sm text-gray-900">
-                    {row.criticalLevel
-                      ? (() => {
-                          const { dot, label } = getCriticalLevelStyle(
-                            row.criticalLevel,
-                          );
-                          return (
-                            <div className="flex items-center gap-2">
-                              <span
-                                className={`h-2.5 w-2.5 rounded-full ${dot}`}
-                              />
-                              <span>{label}</span>
-                            </div>
-                          );
-                        })()
-                      : "N/A"}
-                  </TableCell>
+                  {tableColumns.map((column) => (
+                    <TableCell
+                      key={column.key}
+                      className="px-4 py-3 text-sm whitespace-nowrap text-gray-900"
+                    >
+                      {column.key === "criticalLevel" && row.criticalLevel
+                        ? (() => {
+                            const { dot, label } = getCriticalLevelStyle(
+                              row.criticalLevel,
+                            );
+                            return (
+                              <div className="flex items-center gap-2">
+                                <span
+                                  className={`h-2.5 w-2.5 rounded-full ${dot}`}
+                                />
+                                <span>{label}</span>
+                              </div>
+                            );
+                          })()
+                        : formatCellValue(row[column.key])}
+                    </TableCell>
+                  ))}
                 </TableRow>
               ))
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={7}
+                  colSpan={tableColumns.length}
                   className="py-8 text-center text-sm text-gray-500"
                 >
                   No data available. Click &ldquo;Search&rdquo; to fetch events.
