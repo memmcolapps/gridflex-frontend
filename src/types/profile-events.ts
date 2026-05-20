@@ -131,19 +131,24 @@ export interface ProfileDataItem {
 
 export interface EventRecord {
   id: number;
+  srcTable?: string;
   meterNumber: string;
   meterModel: string;
   eventTypeId: string;
   eventTime: string;
-  event: string;
+  event?: string;
+  eventName?: string;
   criticalLevel: number;
-  eventName: string;
-  eventType: {
-    id: number;
-    name: string;
-    obisCode: string;
-    description: string;
-  };
+  eventType:
+    | string
+    | {
+        id: number;
+        name: string;
+        obisCode: string;
+        description: string;
+      };
+  manageTokenType?: string;
+  manageToken?: string;
   meter: {
     orgId: string;
     nodeId: string;
@@ -203,6 +208,13 @@ export interface EventsApiResponse {
   responsedata: {
     totalData: number;
     data: EventRecord[];
+    headers?: unknown;
+    tableHeaders?: unknown;
+    tableHeader?: unknown;
+    columns?: unknown;
+    size?: number;
+    totalPages?: number;
+    page?: number;
   };
 }
 
@@ -285,6 +297,10 @@ export interface ProfilesApiResponse {
   responsedata: {
     totalData: number;
     data: ProfileDataItem[];
+    headers?: unknown;
+    tableHeaders?: unknown;
+    tableHeader?: unknown;
+    columns?: unknown;
     size: number;
     totalPages: number;
     page: number;
