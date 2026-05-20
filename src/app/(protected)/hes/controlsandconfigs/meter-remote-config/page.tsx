@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ContentHeader } from "@/components/ui/content-header";
 import {
   Ban,
+  CircleCheck,
   Eye,
   MoreVertical,
   Send,
@@ -66,7 +67,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
-import { useMeterConfigurations, useRelayControl } from "@/hooks/use-configure-meter";
+import { useMeterConfigurations, useRelayControl, useSetToken } from "@/hooks/use-configure-meter";
 
 // Define the possible dialog types
 type DialogType =
@@ -135,6 +136,7 @@ export default function MeterRemoteConfigPage() {
   const totalData = data?.totalData ?? 0;
   const totalPages = data?.totalPages ?? 1;
   const relayControlMutation = useRelayControl();
+  const setTokenMutation = useSetToken();
 
   const handleConfigureAction = (type: DialogType) => {
     if (selectedMeters.length === 0) {
@@ -559,22 +561,35 @@ export default function MeterRemoteConfigPage() {
                         <DropdownMenuItem
                           onSelect={(e) => {
                             e.preventDefault();
-                            console.log("Relay control clicked for meter:", meter.sN, "status:", meter.status);
-                            const isOnline = meter.status === "Online";
+                            console.log("Connect relay clicked for meter:", meter.sN);
                             relayControlMutation.mutate({
                               serial: meter.sN,
-                              state: isOnline ? 0 : 1,
+                              state: 1,
+                              type: "connect",
+                            });
+                          }}
+                          disabled={relayControlMutation.isPending}
+                        >
+                          <div className="flex w-full items-center gap-2">
+                            <CircleCheck size={14} />
+                            <span className="cursor-pointer">Connect Relay</span>
+                          </div>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onSelect={(e) => {
+                            e.preventDefault();
+                            console.log("Disconnect relay clicked for meter:", meter.sN);
+                            relayControlMutation.mutate({
+                              serial: meter.sN,
+                              state: 0,
+                              type: "disconnect",
                             });
                           }}
                           disabled={relayControlMutation.isPending}
                         >
                           <div className="flex w-full items-center gap-2">
                             <Ban size={14} />
-                            <span className="cursor-pointer">
-                              {meter.status === "Online"
-                                ? "Disconnect Relay"
-                                : "Connect Relay"}
-                            </span>
+                            <span className="cursor-pointer">Disconnect Relay</span>
                           </div>
                         </DropdownMenuItem>
                         <DropdownMenuItem
@@ -769,12 +784,10 @@ export default function MeterRemoteConfigPage() {
           isOpen={true}
           onClose={closeDialog}
           onSubmit={(token) => {
-            console.log(
-              "Sending token to meter:",
-              selectedMeter.meterNumber,
-              "Token:",
-              token,
-            );
+            setTokenMutation.mutate({
+              serial: selectedMeter.meterNumber,
+              credit: token,
+            });
             closeDialog();
           }}
         />

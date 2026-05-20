@@ -32,7 +32,7 @@ export default function ReadRelayStatusDialog({
     }
   }, [isOpen]);
 
-  const relayValue = String(data?.responsedata?.value ?? "");
+  const relayValue = String(data?.responsedata?.message ?? "");
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="h-fit bg-white">

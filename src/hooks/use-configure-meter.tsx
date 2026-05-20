@@ -6,6 +6,7 @@ import {
   setDateTime,
   setIpPort,
   relayControl,
+  setToken,
 } from "@/service/configure-meter-service";
 import {
   type SetDateTimePayload,
@@ -17,7 +18,8 @@ import {
   type ReadMeterResponse,
   type ReadMeterPayload,
   type RelayControlPayload,
-
+  type SetTokenPayload,
+  type SetTokenResponse,
 } from "@/types/configure-meter";
 import {
   type Meter,
@@ -194,17 +196,48 @@ export const useSetIpPort = () => {
 export const useRelayControl = () => {
   const queryClient = useQueryClient();
   return useMutation<
-    { responsecode: string; responsedesc: string },
+    {
+      responsecode: string;
+      responsedesc: string;
+      responsedata: {
+        status: string;
+        message: string;
+        data?: { relayStatus?: string };
+      };
+    },
     Error,
     RelayControlPayload
   >({
     mutationFn: relayControl,
     onSuccess: (data, variables) => {
-      const action = variables.state === 1 ? "connected" : "disconnected";
-      toast.success(
-        `Relay ${action} successfully for meter ${variables.serial}!`,
-      );
+      const { status, message } = data.responsedata;
+
+      if (status === "success") {
+        const relayStatus = data.responsedata.data?.relayStatus ?? "completed";
+        toast.success(`Relay ${variables.type}d successfully! Status: ${relayStatus}`);
+      } else {
+        toast.error(`${variables.type} failed: ${message}`);
+      }
       queryClient.invalidateQueries({ queryKey: ["meters"] });
+    },
+    onError: (error: Error) => {
+      const match = /"details":"([^"]+)"/.exec(error.message);
+      const friendlyMsg = match?.[1] ?? error.message;
+      toast.error(friendlyMsg);
+    },
+  });
+};
+
+export const useSetToken = () => {
+  return useMutation<SetTokenResponse, Error, SetTokenPayload>({
+    mutationFn: setToken,
+    onSuccess: (data) => {
+      const { status, data: responseData } = data.responsedata;
+      if (status === "success") {
+        toast.success(`Token sent successfully! Token Status: ${responseData.tokenStatus}. Credit balance: ${responseData.meterCreditBalance}`);
+      } else {
+        toast.error(`Token failed: ${responseData.message || responseData.tokenStatus}. Credit balance: ${responseData.meterCreditBalance}`);
+      }
     },
     onError: (error: Error) => {
       const match = /"details":"([^"]+)"/.exec(error.message);
