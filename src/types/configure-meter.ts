@@ -24,6 +24,7 @@ interface ReadMeterResponseData {
   value: number;
   scaler: number;
   unit: string;
+  message: string;
 }
 
 export interface ReadMeterResponse {
@@ -131,9 +132,35 @@ export interface MeterConfigResponse {
 export interface RelayControlPayload {
   serial: string;
   state: 0 | 1;
+  type: "connect" | "disconnect";
 }
 
 export interface FetchMeterConfigParams {
   page?: number;
   size?: number;
+}
+
+export interface SetTokenPayload {
+  serial: string;
+  credit: string;
+}
+
+export interface SetTokenResponse {
+  responsecode: string;
+  responsedesc: string;
+  responsedata: {
+    data: {
+      meterSerial: string;
+      creditToken: string;
+      status: string;
+      dlmsStatus: string;
+      message: string;
+      tokenStatus: string;
+      tokenResultCode: number;
+      meterCreditBalance: number;
+      logoutToken: string;
+    };
+    status: string;
+    timestamp: string;
+  };
 }

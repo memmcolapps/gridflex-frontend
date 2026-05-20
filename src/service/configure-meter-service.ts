@@ -10,6 +10,8 @@ import {
   type ReadMeterResponse,
   type ReadMeterPayload,
   type RelayControlPayload,
+  type SetTokenPayload,
+  type SetTokenResponse,
 } from "@/types/configure-meter";
 import { handleApiError } from "@/utils/error-handler";
 
@@ -243,7 +245,15 @@ export async function readMeter(
 
 export async function relayControl(
   data: RelayControlPayload,
-): Promise<{ responsecode: string; responsedesc: string }> {
+): Promise<{
+  responsecode: string;
+  responsedesc: string;
+  responsedata: {
+    status: string;
+    message: string;
+    data?: { relayStatus?: string };
+  };
+}> {
   try {
     const token = localStorage.getItem("auth_token");
     if (!token) {
@@ -270,6 +280,41 @@ export async function relayControl(
     ) {
       throw new Error(
         response.data.responsedesc ?? "Failed to control relay.",
+      );
+    }
+
+    return response.data;
+  } catch (error) {
+    throw new Error(handleApiError(error).message);
+  }
+}
+
+export async function setToken(
+  data: SetTokenPayload,
+): Promise<SetTokenResponse> {
+  try {
+    const token = localStorage.getItem("auth_token");
+    if (!token) {
+      throw new Error("Authentication token not found.");
+    }
+
+    const { serial, credit } = data;
+
+    const response = await axiosInstance.post(
+      `${API_URL}/hes/service/dlms/set-token`,
+      null,
+      {
+        params: { serial, credit },
+        headers: {
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    if (response.data.responsecode !== "000") {
+      throw new Error(
+        response.data.responsedesc ?? "Failed to send token.",
       );
     }
 
