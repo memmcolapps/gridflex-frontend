@@ -46,22 +46,28 @@ export default function CommunicationReportPage() {
     );
   }, [communicationData, searchQuery]);
 
-  // Export columns - try multiple property names for last sync timestamp
+  const formatDateTime = (value: unknown) => {
+    if (!value) return "-";
+    try {
+      return new Date(value as string).toLocaleString();
+    } catch {
+      return String(value);
+    }
+  };
+
   const exportColumns = [
     { key: "meterNo", label: "Meter No." },
     { key: "meter.smartMeterInfo.meterModel", label: "Meter Model" },
     { key: "connectionType", label: "Connection Type" },
     {
+      key: "onlineTime",
+      label: "Last Online At",
+      transform: formatDateTime,
+    },
+    {
       key: "updatedAt",
-      label: "LastSync",
-      transform: (value: unknown) => {
-        if (!value) return "-";
-        try {
-          return new Date(value as string).toLocaleString();
-        } catch {
-          return String(value);
-        }
-      },
+      label: "Last Updated At",
+      transform: formatDateTime,
     },
   ];
 
