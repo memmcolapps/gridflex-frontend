@@ -90,13 +90,13 @@ export function useMeterConnections(selectedMeters: string[]) {
           console.log(`Meter ${parsedData.meterNo} status:`, parsedData);
           setConnectionStatus((prev) => ({
             ...prev,
-            [parsedData.meterNo]: parsedData.status === "CONNECTED",
+            [parsedData.meterNo]: parsedData.status === "ONLINE",
           }));
 
           // Update query cache
           queryClient.setQueryData(
             hesQueryKeys.connectionStatus(parsedData.meterNo),
-            parsedData.status === "CONNECTED",
+            parsedData.status === "ONLINE",
           );
         }
       },
