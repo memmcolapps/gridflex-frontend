@@ -13,11 +13,20 @@ export interface RealTimeData {
 
 export interface MeterStatusData {
   meterNo: string;
-  status: 'CONNECTED' | 'DISCONNECTED';
-  timestamp: string;
+  status: "ONLINE" | "OFFLINE" | "CONNECTED";
+  lastSeen: string;
 }
 
-export function useSSE(url: string, p0: { onOpen: () => void; onError: () => void; onMessage: (data: unknown) => void; reconnectAttempts: number; }, enabled = true) {
+export function useSSE(
+  url: string,
+  p0: {
+    onOpen: () => void;
+    onError: () => void;
+    onMessage: (data: unknown) => void;
+    reconnectAttempts: number;
+  },
+  enabled = true,
+) {
   const [data, setData] = useState<RealTimeData[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);

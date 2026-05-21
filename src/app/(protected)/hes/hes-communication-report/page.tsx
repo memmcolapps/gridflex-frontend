@@ -12,13 +12,42 @@ import { ContentHeader } from "@/components/ui/content-header";
 import { ExportButton } from "@/components/ui/export-button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { NotepadText } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useAllCommunicationReports } from "@/hooks/use-reports";
+import { useMeterStatusStream } from "@/hooks/use-meter-status-stream";
+import type { MeterStatusData } from "@/hooks/use-sse";
+import type { CommunicationReportData } from "@/types/reports";
+
+const applyLiveStatus = (
+  report: CommunicationReportData,
+  status?: MeterStatusData,
+) => {
+  if (!status || status.status === "CONNECTED") return report;
+
+  if (status.status === "ONLINE") {
+    return {
+      ...report,
+      connectionType: status.status,
+      onlineTime: status.lastSeen,
+      updatedAt: status.lastSeen,
+    };
+  }
+
+  return {
+    ...report,
+    connectionType: status.status,
+    offlineTime: status.lastSeen,
+    updatedAt: status.lastSeen,
+  };
+};
 
 export default function CommunicationReportPage() {
   const [openDialog, setOpenDialog] = useState(false);
   const [activeTab, setActiveTab] = useState<"MD" | "Non-MD">("MD");
   const [searchQuery, setSearchQuery] = useState("");
+  const [liveStatuses, setLiveStatuses] = useState<
+    Record<string, MeterStatusData>
+  >({});
 
   const handleOpenDialog = () => {
     setOpenDialog(true);
@@ -31,9 +60,23 @@ export default function CommunicationReportPage() {
     size: 1000,
   });
 
+  const handleLiveStatus = useCallback((status: MeterStatusData) => {
+    setLiveStatuses((previous) => ({
+      ...previous,
+      [status.meterNo]: status,
+    }));
+  }, []);
+
+  useMeterStatusStream(handleLiveStatus);
+
   const communicationData = useMemo(() => {
-    return allCommunicationData ?? [];
-  }, [allCommunicationData]);
+    return (allCommunicationData ?? []).map((report) =>
+      applyLiveStatus(
+        report,
+        report.meterNo ? liveStatuses[report.meterNo] : undefined,
+      ),
+    );
+  }, [allCommunicationData, liveStatuses]);
 
   // Filter data based on search query
   const filteredData = useMemo(() => {
