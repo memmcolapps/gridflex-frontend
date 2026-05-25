@@ -140,6 +140,11 @@ export interface FetchMeterConfigParams {
   size?: number;
 }
 
+export interface SetRelayModePayload {
+  serial: string;
+  mode: string;
+}
+
 export interface SetTokenPayload {
   serial: string;
   credit: string;

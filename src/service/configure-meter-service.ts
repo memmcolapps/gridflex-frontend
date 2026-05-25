@@ -10,6 +10,7 @@ import {
   type ReadMeterResponse,
   type ReadMeterPayload,
   type RelayControlPayload,
+  type SetRelayModePayload,
   type SetTokenPayload,
   type SetTokenResponse,
 } from "@/types/configure-meter";
@@ -280,6 +281,44 @@ export async function relayControl(
     ) {
       throw new Error(
         response.data.responsedesc ?? "Failed to control relay.",
+      );
+    }
+
+    return response.data;
+  } catch (error) {
+    throw new Error(handleApiError(error).message);
+  }
+}
+
+export async function setRelayMode(
+  data: SetRelayModePayload,
+): Promise<{ responsecode: string; responsedesc: string }> {
+  try {
+    const token = localStorage.getItem("auth_token");
+    if (!token) {
+      throw new Error("Authentication token not found.");
+    }
+
+    const { serial, mode } = data;
+
+    const response = await axiosInstance.post(
+      `${API_URL}/hes/service/dlms/relay-mode`,
+      null,
+      {
+        params: { serial, mode },
+        headers: {
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    if (
+      response.data.responsecode !== "000" &&
+      response.data.responsecode !== "131"
+    ) {
+      throw new Error(
+        response.data.responsedesc ?? "Failed to change relay mode.",
       );
     }
 
