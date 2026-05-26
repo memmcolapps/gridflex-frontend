@@ -10,6 +10,7 @@ import {
   setToken,
 } from "@/service/configure-meter-service";
 import {
+  type ConfigureResponse,
   type SetDateTimePayload,
   type SetAPNPayload,
   type SetCTPTRatioPayload,
@@ -105,20 +106,18 @@ export const useReadMeter = () =>
 
 export const useSetCTPTRatio = () => {
   const queryClient = useQueryClient();
-  return useMutation<
-    { responsecode: string; responsedesc: string },
-    Error,
-    SetCTPTRatioPayload
-  >({
+  return useMutation<ConfigureResponse, Error, SetCTPTRatioPayload>({
     mutationFn: setCTPTRatio,
-    onSuccess: (data, variables) => {
-      toast.success(
-        `CT & VT ratio configured successfully for meter ${variables.serial}!`,
-      );
+    onSuccess: (data) => {
+      const { status, message } = data.responsedata.data;
+      if (status === "success") {
+        toast.success(`CT & VT ratio configured: ${message}`);
+      } else {
+        toast.error(`CT & VT ratio failed: ${message}`);
+      }
       queryClient.invalidateQueries({ queryKey: ["meters"] });
     },
     onError: (error: Error) => {
-      // toast.error(`Failed to configure CT & VT ratio: ${error.message}`);
       const match = /"details":"([^"]+)"/.exec(error.message);
       const friendlyMsg = match?.[1] ?? error.message;
       toast.error(friendlyMsg);
@@ -128,20 +127,18 @@ export const useSetCTPTRatio = () => {
 
 export const useSetAPN = () => {
   const queryClient = useQueryClient();
-  return useMutation<
-    { responsecode: string; responsedesc: string },
-    Error,
-    SetAPNPayload
-  >({
+  return useMutation<ConfigureResponse, Error, SetAPNPayload>({
     mutationFn: setAPN,
-    onSuccess: (data, variables) => {
-      toast.success(
-        `APN configured successfully for meter ${variables.serial}!`,
-      );
+    onSuccess: (data) => {
+      const { status, message } = data.responsedata.data;
+      if (status === "success") {
+        toast.success(`APN configured: ${message}`);
+      } else {
+        toast.error(`APN failed: ${message}`);
+      }
       queryClient.invalidateQueries({ queryKey: ["meters"] });
     },
     onError: (error: Error) => {
-      // toast.error(`Failed to configure APN: ${error.message}`);
       const match = /"details":"([^"]+)"/.exec(error.message);
       const friendlyMsg = match?.[1] ?? error.message;
       toast.error(friendlyMsg);
@@ -151,20 +148,18 @@ export const useSetAPN = () => {
 
 export const useSetDateTime = () => {
   const queryClient = useQueryClient();
-  return useMutation<
-    { responsecode: string; responsedesc: string },
-    Error,
-    SetDateTimePayload
-  >({
+  return useMutation<ConfigureResponse, Error, SetDateTimePayload>({
     mutationFn: setDateTime,
-    onSuccess: (data, variables) => {
-      toast.success(
-        `Date and Time configured successfully for meter ${variables.serial}!`,
-      );
+    onSuccess: (data) => {
+      const { status, message } = data.responsedata.data;
+      if (status === "success") {
+        toast.success(`Date and Time configured: ${message}`);
+      } else {
+        toast.error(`Date and Time failed: ${message}`);
+      }
       queryClient.invalidateQueries({ queryKey: ["meters"] });
     },
     onError: (error: Error) => {
-      // toast.error(`Failed to configure Date and Time: ${error.message}`);
       const match = /"details":"([^"]+)"/.exec(error.message);
       const friendlyMsg = match?.[1] ?? error.message;
       toast.error(friendlyMsg);
@@ -174,20 +169,18 @@ export const useSetDateTime = () => {
 
 export const useSetIpPort = () => {
   const queryClient = useQueryClient();
-  return useMutation<
-    { responsecode: string; responsedesc: string },
-    Error,
-    SetIpPortPayload
-  >({
+  return useMutation<ConfigureResponse, Error, SetIpPortPayload>({
     mutationFn: setIpPort,
-    onSuccess: (data, variables) => {
-      toast.success(
-        `Ip Address configured successfully for meter ${variables.serial}!`,
-      );
+    onSuccess: (data) => {
+      const { status, message } = data.responsedata.data;
+      if (status === "success") {
+        toast.success(`IP Address configured: ${message}`);
+      } else {
+        toast.error(`IP Address failed: ${message}`);
+      }
       queryClient.invalidateQueries({ queryKey: ["meters"] });
     },
     onError: (error: Error) => {
-      // toast.error(`Failed to configure Ip Address: ${error.message}`);
       const match = /"details":"([^"]+)"/.exec(error.message);
       const friendlyMsg = match?.[1] ?? error.message;
       toast.error(friendlyMsg);
@@ -232,16 +225,15 @@ export const useRelayControl = () => {
 
 export const useSetRelayMode = () => {
   const queryClient = useQueryClient();
-  return useMutation<
-    { responsecode: string; responsedesc: string },
-    Error,
-    SetRelayModePayload
-  >({
+  return useMutation<ConfigureResponse, Error, SetRelayModePayload>({
     mutationFn: setRelayMode,
-    onSuccess: (data, variables) => {
-      toast.success(
-        `Relay mode changed successfully for meter ${variables.serial}!`,
-      );
+    onSuccess: (data) => {
+      const { status, message } = data.responsedata.data;
+      if (status === "success") {
+        toast.success(`Relay mode changed: ${message}`);
+      } else {
+        toast.error(`Relay mode failed: ${message}`);
+      }
       queryClient.invalidateQueries({ queryKey: ["meters"] });
     },
     onError: (error: Error) => {

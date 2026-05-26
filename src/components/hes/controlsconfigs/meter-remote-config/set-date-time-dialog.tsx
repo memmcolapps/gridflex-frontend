@@ -20,16 +20,10 @@ import {
 import type { Meter } from "@/types/meter";
 import { useSetDateTime } from "@/hooks/use-configure-meter";
 
-// interface Meter {
-//     id: string;
-//     name?: string;
-//     // Add other properties as needed
-// }
-
 interface SetDateTimeDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  meter?: Meter; // Replaced 'any' with 'Meter'
+  meter?: Meter;
 }
 
 export default function SetDateTimeDialog({
@@ -43,9 +37,8 @@ export default function SetDateTimeDialog({
   const [month, setMonth] = useState("");
   const [year, setYear] = useState("");
 
-  const {mutate: setMeterClock, isPending } = useSetDateTime()
+  const { mutate: setMeterClock, isPending } = useSetDateTime();
 
-  // Check if all fields are filled
   const isFormComplete =
     hour.trim() !== "" &&
     minute.trim() !== "" &&
@@ -54,33 +47,30 @@ export default function SetDateTimeDialog({
     year.trim() !== "";
 
   const handleSet = () => {
-    // Handle date and time set logic
     if (!meter?.meterNumber) return;
-
     const formattedDate = `${year}-${month.padStart(2, "0")}-${date.padStart(2, "0")}`;
     const formattedTime = `${hour.padStart(2, "0")}:${minute.padStart(2, "0")}:00`;
     const dateTime = `${formattedDate} ${formattedTime}`;
-
     setMeterClock(
-      {
-        serial: meter?.meterNumber,
-        dateTime,
-      },
+      { serial: meter.meterNumber, dateTime },
       {
         onSuccess: () => {
+          setHour(""); setMinute(""); setDate(""); setMonth(""); setYear("");
           onClose();
         },
       },
     );
-    // console.log("Setting Date and Time:", { hour, minute, date, month, year, meter });
   };
 
-  // Date options (1-31)
+  const resetForm = () => {
+    setHour(""); setMinute(""); setDate(""); setMonth(""); setYear("");
+    onClose();
+  };
+
   const dateOptions = Array.from({ length: 31 }, (_, i) => ({
     value: (i + 1).toString(),
     label: (i + 1).toString(),
   }));
-  // Month options
   const monthOptions = [
     { value: "1", label: "January" },
     { value: "2", label: "February" },
@@ -97,7 +87,7 @@ export default function SetDateTimeDialog({
   ];
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={resetForm}>
       <DialogContent className="h-fit bg-white">
         <DialogHeader>
           <DialogTitle>Set Date And Time</DialogTitle>
@@ -199,7 +189,7 @@ export default function SetDateTimeDialog({
         <div className="flex justify-between">
           <Button
             variant="outline"
-            onClick={onClose}
+            onClick={resetForm}
             className="cursor-pointer border-[#161CCA] text-[#161CCA]"
           >
             Cancel
@@ -213,7 +203,7 @@ export default function SetDateTimeDialog({
             }`}
             disabled={!isFormComplete || isPending}
           >
-            ${isPending ? "Setting..." : "Set"}
+            {isPending ? "Setting..." : "Set"}
           </Button>
         </div>
       </DialogContent>

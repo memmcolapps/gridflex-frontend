@@ -5,6 +5,7 @@ import {
   type SetAPNPayload,
   type SetCTPTRatioPayload,
   type SetIpPortPayload,
+  type ConfigureResponse,
   type FetchMeterConfigParams,
   type MeterConfigResponse,
   type ReadMeterResponse,
@@ -57,7 +58,7 @@ export async function fetchMeterConfigurations(
 
 export async function setCTPTRatio(
   data: SetCTPTRatioPayload,
-): Promise<{ responsecode: string; responsedesc: string }> {
+): Promise<ConfigureResponse> {
   try {
     const token = localStorage.getItem("auth_token");
     if (!token) {
@@ -102,7 +103,7 @@ export async function setCTPTRatio(
 
 export async function setAPN(
   data: SetAPNPayload,
-): Promise<{ responsecode: string; responsedesc: string }> {
+): Promise<ConfigureResponse> {
   try {
     const token = localStorage.getItem("auth_token");
     if (!token) {
@@ -138,7 +139,7 @@ export async function setAPN(
 
 export async function setDateTime(
   data: SetDateTimePayload,
-): Promise<{ responsecode: string; responsedesc: string }> {
+): Promise<ConfigureResponse> {
   try {
     const token = localStorage.getItem("auth_token");
     if (!token) {
@@ -176,7 +177,7 @@ export async function setDateTime(
 
 export async function setIpPort(
   data: SetIpPortPayload,
-): Promise<{ responsecode: string; responsedesc: string }> {
+): Promise<ConfigureResponse> {
   try {
     const token = localStorage.getItem("auth_token");
     if (!token) {
@@ -292,7 +293,7 @@ export async function relayControl(
 
 export async function setRelayMode(
   data: SetRelayModePayload,
-): Promise<{ responsecode: string; responsedesc: string }> {
+): Promise<ConfigureResponse> {
   try {
     const token = localStorage.getItem("auth_token");
     if (!token) {

@@ -12,7 +12,7 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { Card } from "@/components/ui/card";
-import { CirclePlus, MoreVertical, Pencil } from "lucide-react";
+import { CirclePlus, MoreVertical, Pencil, Loader2 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ContentHeader } from "@/components/ui/content-header";
 import {
@@ -52,6 +52,7 @@ function AddManufacturerDialog({
   isOpen,
   onClose,
   onAdd,
+  isSubmitting,
 }: {
   isOpen: boolean;
   onClose: () => void;
@@ -62,6 +63,7 @@ function AddManufacturerDialog({
     >,
   ) => void;
   data: Manufacturer[];
+  isSubmitting: boolean;
 }) {
   const [formData, setFormData] = useState({
     manufacturerName: "",
@@ -154,8 +156,11 @@ function AddManufacturerDialog({
     };
 
     onAdd(newManufacturer);
-    clearForm();
   };
+
+  useEffect(() => {
+    if (!isOpen) clearForm();
+  }, [isOpen]);
 
   const handleClose = () => {
     clearForm();
@@ -184,6 +189,7 @@ function AddManufacturerDialog({
                 required
                 value={formData.manufacturerName}
                 onChange={(e) => handleChange(e.target.value, "manufacturerName")}
+                disabled={isSubmitting}
                 className="mt-1 h-9 w-full border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
               />
             </div>
@@ -203,6 +209,7 @@ function AddManufacturerDialog({
                 placeholder="e.g. 123456"
                 value={formData.manufacturerId}
                 onChange={(e) => handleChange(e.target.value, "manufacturerId")}
+                disabled={isSubmitting}
                 className="mt-1 h-9 w-full border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
               />
             </div>
@@ -220,6 +227,7 @@ function AddManufacturerDialog({
                 required
                 value={formData.contactPerson}
                 onChange={(e) => handleChange(e.target.value, "contactPerson")}
+                disabled={isSubmitting}
                 className="mt-1 h-9 w-full border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
               />
             </div>
@@ -240,6 +248,7 @@ function AddManufacturerDialog({
                 maxLength={11}
                 value={formData.phoneNumber}
                 onChange={(e) => handleChange(e.target.value.replace(/\D/g, ''), "phoneNumber")}
+                disabled={isSubmitting}
                 className="mt-1 h-9 w-full border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
               />
             </div>
@@ -277,7 +286,7 @@ function AddManufacturerDialog({
             <Select
               value={formData.city}
               onValueChange={(value) => handleChange(value, "city")}
-              disabled={!formData.state || isLoadingCities}
+              disabled={!formData.state || isLoadingCities || isSubmitting}
               required
             >
               <SelectTrigger id="city" className="w-full">
@@ -322,6 +331,7 @@ function AddManufacturerDialog({
                 required
                 value={formData.street}
                 onChange={(e) => handleChange(e.target.value, "street")}
+                disabled={isSubmitting}
                 className="mt-1 h-9 w-full border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
               />
             </div>
@@ -339,6 +349,7 @@ function AddManufacturerDialog({
                 required
                 value={formData.houseNo}
                 onChange={(e) => handleChange(e.target.value, "houseNo")}
+                disabled={isSubmitting}
                 className="mt-1 h-9 w-full [appearance:textfield] border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
               />
             </div>
@@ -349,6 +360,7 @@ function AddManufacturerDialog({
             variant="outline"
             onClick={handleClose}
             size="lg"
+            disabled={isSubmitting}
             className="mr-2 h-8 border-[#161CCA] bg-transparent text-xs text-[#161CCA]"
           >
             Cancel
@@ -356,9 +368,17 @@ function AddManufacturerDialog({
           <Button
             onClick={handleAdd}
             size="lg"
-            className="h-8 bg-[#161CCA] text-xs text-white hover:bg-[#161CCA]/90"
+            disabled={isSubmitting}
+            className="h-8 bg-[#161CCA] text-xs text-white hover:bg-[#161CCA]/90 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Add
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Adding...
+              </>
+            ) : (
+              "Add"
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -714,6 +734,7 @@ export default function ManufacturersPage() {
   const { canEdit } = usePermissions();
   const { mutate: createManufacturer } = useCreateManufacturer();
   const { mutate: updateManufacturer } = useUpdateManufacturer();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [sortConfig, setSortConfig] = useState<{
     key: keyof Manufacturer | null;
@@ -772,17 +793,19 @@ export default function ManufacturersPage() {
       "id" | "orgId" | "createdAt" | "updatedAt"
     >,
   ) => {
+    setIsSubmitting(true);
     createManufacturer(newManufacturer, {
       onSuccess: () => {
         toast.success("Manufacturer created successfully");
+        setSearchTerm("");
+        setIsAddDialogOpen(false);
       },
       onError: (error) => {
         console.error("Failed to create manufacturer:", error);
         toast.error("Failed to create manufacturer");
       },
       onSettled: () => {
-        setSearchTerm("");
-        setIsAddDialogOpen(false);
+        setIsSubmitting(false);
       },
     });
   };
@@ -973,6 +996,7 @@ export default function ManufacturersPage() {
         onClose={() => setIsAddDialogOpen(false)}
         onAdd={handleAddManufacturer}
         data={data}
+        isSubmitting={isSubmitting}
       />
 
       {/* Edit Manufacturer Dialog */}

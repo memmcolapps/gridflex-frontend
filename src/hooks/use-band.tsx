@@ -1,6 +1,7 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
    fetchBands,
+   fetchVendingBands,
    createBand,
    type Band,
    updateBand,
@@ -11,12 +12,16 @@ import {
 import { useAuth } from "../context/auth-context";
 import { queryClient } from "@/lib/queryClient";
 
-export const useBand = (searchTerm?: string) => {
+export const useBand = (searchTerm?: string, source?: "vending") => {
   const { isAuthenticated } = useAuth();
 
+  const queryFn = source === "vending"
+    ? () => fetchVendingBands()
+    : () => fetchBands(searchTerm);
+
   const { data, isLoading, error } = useQuery({
-    queryKey: ["bands", searchTerm],
-    queryFn: () => fetchBands(searchTerm),
+    queryKey: source === "vending" ? ["vending-bands"] : ["bands", searchTerm],
+    queryFn,
     enabled: isAuthenticated,
   });
 

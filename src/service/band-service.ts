@@ -225,6 +225,50 @@ export async function activateBand(
   }
 }
 
+export async function fetchVendingBands(): Promise<
+  { success: true; data: Band[] } | { success: false; error: string }
+> {
+  try {
+    const token = localStorage.getItem("auth_token");
+
+    const response = await axiosInstance.get(
+      `${API_URL}/dashboard/service/vending/bands`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    if (response.data.responsecode !== "000") {
+      return {
+        success: false,
+        error: response.data.responsedesc ?? "Failed to fetch vending bands",
+      };
+    }
+
+    return {
+      success: true,
+      data: response.data.responsedata.map(
+        (item: { name: string; createdAt: string; updatedAt: string }) => ({
+          id: item.name,
+          name: item.name,
+          hour: 0,
+          createdAt: item.createdAt,
+          updatedAt: item.updatedAt,
+        }),
+      ),
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: handleApiError(error),
+    };
+  }
+}
+
 export async function bulkApproveBands(
   bands: { name: string }[],
 ): Promise<BandResult> {

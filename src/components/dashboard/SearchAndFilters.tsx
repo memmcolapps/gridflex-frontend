@@ -18,6 +18,7 @@ interface SearchAndFiltersProps {
   setSelectedMeterCategory?: (category: string) => void;
   selectedMeterClass?: string;
   setSelectedMeterClass?: (meterClass?: string) => void;
+  useVendingBandsProp?: boolean;
 }
 
 export const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({
@@ -29,9 +30,10 @@ export const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({
   setSelectedMeterCategory,
   selectedMeterClass,
   setSelectedMeterClass,
+  useVendingBandsProp,
 }) => {
   const [loading] = useState(false);
-  const { bands } = useBand();
+  const { bands } = useBand(undefined, useVendingBandsProp ? "vending" : undefined);
   const { user } = useAuth();
 
   // Generate years from user creation year to current year
@@ -77,7 +79,7 @@ export const SearchAndFilters: React.FC<SearchAndFiltersProps> = ({
             <SelectItem value="All Bands">All Bands</SelectItem>
             {bands.length > 0 ? (
               bands.map((bandItem) => (
-                <SelectItem key={bandItem.id} value={bandItem.name}>
+                <SelectItem key={bandItem.id ?? bandItem.name} value={bandItem.name}>
                   {bandItem.name}
                 </SelectItem>
               ))

@@ -161,6 +161,7 @@ export default function VendingDashboard() {
             setSelectedMeterClass={setSelectedMeterClass}
             selectedYear={selectedYear}
             setSelectedYear={setSelectedYear}
+            useVendingBandsProp
           />
         </section>
 

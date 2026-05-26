@@ -13,16 +13,10 @@ import { useState } from "react";
 import type { Meter } from "@/types/meter";
 import { useSetAPN } from "@/hooks/use-configure-meter";
 
-// interface Meter {
-//     id: string;
-//     name?: string;
-//     // Add other properties as needed
-// }
-
 interface ConfigureAPNDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  meter?: Meter | undefined; // Replaced 'any' with 'Meter'
+  meter?: Meter | undefined;
 }
 
 export default function ConfigureAPNDialog({
@@ -31,32 +25,19 @@ export default function ConfigureAPNDialog({
   meter,
 }: ConfigureAPNDialogProps) {
   const [apn, setApn] = useState("");
-
   const { mutate: setAPN, isPending } = useSetAPN();
-
-  // Check if the APN field is filled
   const isFormValid = apn.trim() !== "";
 
   const handleConfigure = () => {
-    // Handle APN configuration logic
     if (!meter?.meterNumber) return;
-
     setAPN(
-      {
-        serial: meter?.meterNumber,
-        apn,
-      },
-      {
-        onSuccess: () => {
-          onClose();
-        },
-      },
+      { serial: meter.meterNumber, apn },
+      { onSuccess: () => { setApn(""); onClose(); } },
     );
-    // console.log("Configuring APN:", { apn, meter });
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={() => { setApn(""); onClose(); }}>
       <DialogContent className="h-fit bg-white">
         <DialogHeader>
           <DialogTitle>Configure APN</DialogTitle>
@@ -80,14 +61,14 @@ export default function ConfigureAPNDialog({
         <div className="flex justify-between">
           <Button
             variant="outline"
-            onClick={onClose}
+            onClick={() => { setApn(""); onClose(); }}
             className="cursor-pointer border-[#161CCA] text-[#161CCA]"
           >
             Cancel
           </Button>
           <Button
             onClick={handleConfigure}
-            disabled={!isFormValid || isPending} // Disable when form is invalid
+            disabled={!isFormValid || isPending}
             className={`bg-[#161CCA] text-white ${
               !isFormValid ? "cursor-not-allowed opacity-50" : "cursor-pointer"
             }`}
