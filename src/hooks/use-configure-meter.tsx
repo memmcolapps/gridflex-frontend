@@ -6,6 +6,7 @@ import {
   setDateTime,
   setIpPort,
   relayControl,
+  setRelayMode,
   setToken,
 } from "@/service/configure-meter-service";
 import {
@@ -18,6 +19,7 @@ import {
   type ReadMeterResponse,
   type ReadMeterPayload,
   type RelayControlPayload,
+  type SetRelayModePayload,
   type SetTokenPayload,
   type SetTokenResponse,
 } from "@/types/configure-meter";
@@ -218,6 +220,28 @@ export const useRelayControl = () => {
       } else {
         toast.error(`${variables.type} failed: ${message}`);
       }
+      queryClient.invalidateQueries({ queryKey: ["meters"] });
+    },
+    onError: (error: Error) => {
+      const match = /"details":"([^"]+)"/.exec(error.message);
+      const friendlyMsg = match?.[1] ?? error.message;
+      toast.error(friendlyMsg);
+    },
+  });
+};
+
+export const useSetRelayMode = () => {
+  const queryClient = useQueryClient();
+  return useMutation<
+    { responsecode: string; responsedesc: string },
+    Error,
+    SetRelayModePayload
+  >({
+    mutationFn: setRelayMode,
+    onSuccess: (data, variables) => {
+      toast.success(
+        `Relay mode changed successfully for meter ${variables.serial}!`,
+      );
       queryClient.invalidateQueries({ queryKey: ["meters"] });
     },
     onError: (error: Error) => {

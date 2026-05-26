@@ -18,6 +18,7 @@ import { SelectPortal } from "@radix-ui/react-select";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import type { Meter } from "@/types/meter";
+import { useSetRelayMode } from "@/hooks/use-configure-meter";
 
 const relayModes = [
     {
@@ -76,10 +77,14 @@ export default function ChangeRelayModeDialog({
     meter,
 }: ChangeRelayModeDialogProps) {
     const [relayMode, setRelayMode] = useState("");
+    const { mutate: setRelayModeApi, isPending } = useSetRelayMode();
 
     const handleChange = () => {
-        console.log("Changing Relay Mode:", { relayMode, meter });
-        onClose();
+        if (!meter?.meterNumber) return;
+        setRelayModeApi(
+            { serial: meter.meterNumber, mode: relayMode },
+            { onSuccess: () => onClose() },
+        );
     };
 
     const isFormValid = relayMode.trim() !== "";
@@ -150,13 +155,13 @@ export default function ChangeRelayModeDialog({
                     </Button>
                     <Button
                         onClick={handleChange}
-                        disabled={!isFormValid}
-                        className={`bg-[#161CCA] text-white ${!isFormValid
+                        disabled={!isFormValid || isPending}
+                        className={`bg-[#161CCA] text-white ${!isFormValid || isPending
                                 ? "opacity-50 cursor-not-allowed"
                                 : "cursor-pointer"
                             }`}
                     >
-                        Change
+                        {isPending ? "Changing..." : "Change"}
                     </Button>
                 </div>
             </DialogContent>

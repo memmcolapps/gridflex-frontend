@@ -222,9 +222,9 @@ const profileColumns: Record<string, { key: string; label: string }[]> = {
     { key: "activeEnergyExportOffgrid", label: "Active Energy Export Offgrid" },
   ],
   "load-profile-two-household": [
-    { key: "voltageL1", label: "Voltage L1" },
-    { key: "currentL1", label: "Current L1" },
-    { key: "currentL2", label: "Current L2" },
+    { key: "instantaneousVoltageL1", label: "Voltage L1" },
+    { key: "instantaneousCurrentL1", label: "Current L1" },
+    { key: "instantaneousCurrentL2", label: "Current L2" },
   ],
   "daily-billing-data-household": [
     { key: "meterModel", label: "Meter Model" },
@@ -772,7 +772,7 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
               {tableColumns.map((col) => (
                 <TableHead
                   key={col.key}
-                  className="px-4 py-3 text-sm font-medium whitespace-nowrap text-gray-900"
+                  className="px-4 py-3 text-center text-sm font-medium whitespace-nowrap text-gray-900"
                 >
                   {col.label}
                 </TableHead>
