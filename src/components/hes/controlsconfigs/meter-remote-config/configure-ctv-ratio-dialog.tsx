@@ -13,16 +13,10 @@ import { useState } from "react";
 import type { Meter } from "@/types/meter";
 import { useSetCTPTRatio } from "@/hooks/use-configure-meter";
 
-// interface Meter {
-//     id: string;
-//     name?: string;
-//     // Add other properties as needed
-// }
-
 interface ConfigureCTVTRatioDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  meter: Meter | undefined; // Replaced 'any' with 'Meter'
+  meter: Meter | undefined;
 }
 
 export default function ConfigureCTVTRatioDialog({
@@ -37,7 +31,6 @@ export default function ConfigureCTVTRatioDialog({
 
   const { mutate: setCTPTRatio, isPending } = useSetCTPTRatio();
 
-  // Check if all required fields are filled
   const isFormValid =
     ctNumerator.trim() !== "" &&
     ctDenominator.trim() !== "" &&
@@ -45,12 +38,10 @@ export default function ConfigureCTVTRatioDialog({
     vtDenominator.trim() !== "";
 
   const handleConfigure = () => {
-    // Handle CT & VT Ratio configuration logic
     if (!meter?.meterNumber) return;
-
     setCTPTRatio(
       {
-        serial: meter?.meterNumber,
+        serial: meter.meterNumber,
         ctNumerator: Number(ctNumerator),
         ctDenominator: Number(ctDenominator),
         ptNumerator: Number(vtNumerator),
@@ -58,15 +49,20 @@ export default function ConfigureCTVTRatioDialog({
       },
       {
         onSuccess: () => {
+          setCtNumerator(""); setCtDenominator(""); setVtNumerator(""); setVtDenominator("");
           onClose();
         },
       },
     );
-    // console.log("Configuring CT & VT Ratio:", { ctNumerator, ctDenominator, vtNumerator, vtDenominator, meter });
+  };
+
+  const resetForm = () => {
+    setCtNumerator(""); setCtDenominator(""); setVtNumerator(""); setVtDenominator("");
+    onClose();
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={resetForm}>
       <DialogContent className="h-fit bg-white">
         <DialogHeader>
           <DialogTitle>Configure CT & VT Ratio</DialogTitle>
@@ -144,14 +140,14 @@ export default function ConfigureCTVTRatioDialog({
         <div className="flex justify-between">
           <Button
             variant="outline"
-            onClick={onClose}
+            onClick={resetForm}
             className="cursor-pointer border-[#161CCA] text-[#161CCA]"
           >
             Cancel
           </Button>
           <Button
             onClick={handleConfigure}
-            disabled={!isFormValid || isPending} // Disable when form is invalid
+            disabled={!isFormValid || isPending}
             className={`bg-[#161CCA] text-white ${
               !isFormValid ? "cursor-not-allowed opacity-50" : "cursor-pointer"
             }`}

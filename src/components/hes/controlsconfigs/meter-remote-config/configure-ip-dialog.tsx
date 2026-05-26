@@ -13,41 +13,28 @@ import { useState } from "react";
 import type { Meter } from "@/types/meter";
 import { useSetIpPort } from "@/hooks/use-configure-meter";
 
-// interface Meter {
-//     id: string;
-//     name?: string;
-//     // Add other properties as needed
-// }
-
 interface ConfigureIPDialogProps {
     isOpen: boolean;
     onClose: () => void;
-    meter?: Meter | undefined; // Replaced 'any' with 'Meter'
+    meter?: Meter | undefined;
 }
 
 export default function ConfigureIPDialog({ isOpen, onClose, meter }: ConfigureIPDialogProps) {
     const [ipAddress, setIpAddress] = useState("");
     const [port, setPort] = useState("");
-
-    // Check if both fields are filled
     const isFormValid = ipAddress.trim() !== "" && port.trim() !== "";
-
-    const { mutate: IpAddress, isPending} = useSetIpPort()
+    const { mutate: IpAddress, isPending } = useSetIpPort();
 
     const handleConfigure = () => {
-        // Handle IP and port configuration logic
-        if(!meter?.meterNumber) return;
-
-        IpAddress ({
-            serial: meter?.meterNumber,
-            ip: String(ipAddress),
-            port: Number(port)
-        })
-        // console.log("Configuring IP:", { ipAddress, port, meter });
+        if (!meter?.meterNumber) return;
+        IpAddress(
+            { serial: meter.meterNumber, ip: String(ipAddress), port: Number(port) },
+            { onSuccess: () => { setIpAddress(""); setPort(""); onClose(); } },
+        );
     };
 
     return (
-        <Dialog open={isOpen} onOpenChange={onClose}>
+        <Dialog open={isOpen} onOpenChange={() => { setIpAddress(""); setPort(""); onClose(); }}>
             <DialogContent className="bg-white h-fit">
                 <DialogHeader>
                     <DialogTitle>Configure IP Address & Port</DialogTitle>
@@ -83,14 +70,14 @@ export default function ConfigureIPDialog({ isOpen, onClose, meter }: ConfigureI
                 <div className="flex justify-between">
                     <Button
                         variant="outline"
-                        onClick={onClose}
+                        onClick={() => { setIpAddress(""); setPort(""); onClose(); }}
                         className="border-[#161CCA] text-[#161CCA] cursor-pointer"
                     >
                         Cancel
                     </Button>
                     <Button
                         onClick={handleConfigure}
-                        disabled={!isFormValid || isPending} // Disable when form is invalid
+                        disabled={!isFormValid || isPending}
                         className={`bg-[#161CCA] text-white ${
                             !isFormValid ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
                         }`}

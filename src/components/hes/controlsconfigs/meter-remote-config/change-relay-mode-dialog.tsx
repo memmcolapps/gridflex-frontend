@@ -59,16 +59,10 @@ const relayModes = [
     },
 ];
 
-// interface Meter {
-//     id: string;
-//     name?: string;
-//     // Add other properties as needed
-// }
-
 interface ChangeRelayModeDialogProps {
     isOpen: boolean;
     onClose: () => void;
-    meter: Meter | undefined; // Replaced 'any' with 'Meter'
+    meter: Meter | undefined;
 }
 
 export default function ChangeRelayModeDialog({
@@ -83,14 +77,14 @@ export default function ChangeRelayModeDialog({
         if (!meter?.meterNumber) return;
         setRelayModeApi(
             { serial: meter.meterNumber, mode: relayMode },
-            { onSuccess: () => onClose() },
+            { onSuccess: () => { setRelayMode(""); onClose(); } },
         );
     };
 
     const isFormValid = relayMode.trim() !== "";
 
     return (
-        <Dialog open={isOpen} onOpenChange={onClose}>
+        <Dialog open={isOpen} onOpenChange={() => { setRelayMode(""); onClose(); }}>
             <DialogContent className="bg-white h-auto max-w-md">
                 <DialogHeader>
                     <DialogTitle>Change Relay Mode</DialogTitle>
@@ -148,7 +142,7 @@ export default function ChangeRelayModeDialog({
                 <div className="flex justify-between">
                     <Button
                         variant="outline"
-                        onClick={onClose}
+                        onClick={() => { setRelayMode(""); onClose(); }}
                         className="border-[#161CCA] text-[#161CCA] cursor-pointer"
                     >
                         Cancel

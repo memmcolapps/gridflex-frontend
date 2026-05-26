@@ -150,6 +150,22 @@ export interface SetTokenPayload {
   credit: string;
 }
 
+export interface ConfigureResponse {
+  responsecode: string;
+  responsedesc: string;
+  responsedata: {
+    data: {
+      meterSerial: string;
+      status: string;
+      dlmsStatus?: string;
+      message: string;
+      [key: string]: unknown;
+    };
+    status: string;
+    timestamp: string;
+  };
+}
+
 export interface SetTokenResponse {
   responsecode: string;
   responsedesc: string;
