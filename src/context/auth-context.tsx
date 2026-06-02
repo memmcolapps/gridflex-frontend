@@ -36,6 +36,17 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const getStoredUsername = (userInfo: string | null) => {
+  if (!userInfo) return null;
+
+  try {
+    const parsedUser = JSON.parse(userInfo);
+    return parsedUser?.email ?? parsedUser?.username ?? null;
+  } catch {
+    return null;
+  }
+};
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
@@ -97,62 +108,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   );
 
   const logout = useCallback(async () => {
-    setIsLoading(true);
     setError(null);
 
-    try {
-      const token = localStorage.getItem("auth_token");
-      const userInfo = localStorage.getItem("user_info");
+    const token = localStorage.getItem("auth_token");
+    const userInfo = localStorage.getItem("user_info");
+    const username = getStoredUsername(userInfo);
 
-      const parsedUser = userInfo ? JSON.parse(userInfo) : null;
-      const username = parsedUser?.email ?? parsedUser?.username;
+    queryClient.clear();
 
-      if (token && username) {
-        try {
-          await logoutApi(token, username);
-        } catch (apiError) {
-          console.warn("Logout API failed:", apiError);
-        }
+    localStorage.removeItem("auth_token");
+    localStorage.removeItem("user_info");
+    setUser(null);
+    setIsAuthenticated(false);
+    setIsLoading(false);
+    router.replace("/login");
+
+    if (token && username) {
+      try {
+        await logoutApi(token, username);
+      } catch (apiError) {
+        console.warn("Logout API failed:", apiError);
       }
-
-      // Clear all cached queries to prevent data leakage between users
-      queryClient.clear();
-
-      localStorage.removeItem("auth_token");
-      localStorage.removeItem("user_info");
-      setUser(null);
-      setIsAuthenticated(false);
-
-      router.push("/login");
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to logout";
-      setError(errorMessage);
-      console.error("Logout error:", err);
-
-      // Clear cache even if logout API fails
-      queryClient.clear();
-
-      localStorage.removeItem("auth_token");
-      localStorage.removeItem("user_info");
-      setUser(null);
-      setIsAuthenticated(false);
-      router.push("/login");
-    } finally {
-      setIsLoading(false);
     }
   }, [router]);
 
   useEffect(() => {
     const handleExpired = () => {
       console.log("Token expired detected!");
-      logout();
+      void logout();
     };
 
     window.addEventListener("auth-token-expired", handleExpired);
 
     return () => {
-      window.addEventListener("auth-token-expired", handleExpired);
+      window.removeEventListener("auth-token-expired", handleExpired);
     };
   }, [logout]);
 
