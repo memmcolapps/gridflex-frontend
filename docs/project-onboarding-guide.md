@@ -527,32 +527,8 @@ Then create two users and attach each user to the correct group and node.
 6. Reject if incorrect.
 7. Confirm the record status changes.
 
-## 9. Loading and User Feedback Rules
 
-For create/edit/approve/reject/vending actions, the portal should show loading text linked to the actual request. This matters because users should know what is happening and should not submit the same action twice.
-
-Expected examples:
-
-| Action                     | Expected Loading Text                 |
-| -------------------------- | ------------------------------------- |
-| Create band                | `Adding...`                           |
-| Edit band                  | `Saving...`                           |
-| Create tariff/edit tariff  | `Saving...`                           |
-| Add liability cause        | `Adding...`                           |
-| Edit liability cause       | `Saving...`                           |
-| Add percentage range       | `Adding...`                           |
-| Edit percentage range      | `Saving...`                           |
-| Approve record             | `Approving...`                        |
-| Reject record              | `Rejecting...`                        |
-| Vending credit calculation | `Calculating...`                      |
-| Vending token generation   | `Generating...` or `Getting token...` |
-| Print token                | `Printing...`                         |
-
-Decision: dialogs should generally stay open while the request is pending. Closing too early makes users think work completed even when the backend request is still in progress.
-
-Logout is different. It should clear local session state and move the user to the login page quickly, not show the protected layout loading screen.
-
-## 10. Data Dependency Cheat Sheet
+## 9. Data Dependency Cheat Sheet
 
 | Thing You Want To Do     | Must Exist First                                                   |
 | ------------------------ | ------------------------------------------------------------------ |
@@ -568,7 +544,7 @@ Logout is different. It should clear local session state and move the user to th
 | Vend token               | Assigned customer/meter/account setup.                             |
 | See HES data             | HES access and backend meter communication data.                   |
 
-## 11. Developer Appendix
+## 10. Developer Appendix
 
 This section is for a teammate who will occasionally inspect code.
 
@@ -602,26 +578,6 @@ flowchart LR
 
 Most server actions are wrapped in React Query hooks. That is why create/edit screens should use mutation pending states for loading UI.
 
-### Auth and Landing Page
-
-On login:
-
-1. The portal receives an auth token and user info.
-2. It stores them in local storage.
-3. It reads the user's permission group.
-4. It redirects to the first accessible module path.
-
-Super Admin users land on the Data Management dashboard. Other users land on the first module their group allows, based on the module order in `src/utils/permissions.ts`.
-
-### Sidebar Visibility
-
-The sidebar is not a static menu. It checks:
-
-- User group modules.
-- User group submodules.
-- Special node-type restrictions.
-
-So a route can exist in the code but not appear for a user. Current exceptions: Audit Log and Incident Report are marked always visible; Change Log and About Us are defined but filtered out before rendering.
 
 ### Approval UI
 
