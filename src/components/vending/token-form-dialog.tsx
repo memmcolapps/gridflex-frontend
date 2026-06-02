@@ -48,6 +48,16 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
   const generateKCTAndClearTamperTokenMutation =
     useGenerateKCTAndClearTamperToken();
   const generateCompensationTokenMutation = useGenerateCompensationToken();
+  const isProceedPending =
+    calculateCreditTokenMutation.isPending ||
+    generateKCTTokenMutation.isPending ||
+    generateClearTamperTokenMutation.isPending ||
+    generateClearCreditTokenMutation.isPending ||
+    generateKCTAndClearTamperTokenMutation.isPending ||
+    generateCompensationTokenMutation.isPending;
+  const proceedPendingText =
+    tokenType === "creditToken" ? "Calculating..." : "Generating...";
+  const isGetTokenPending = generateCreditTokenMutation.isPending;
   const [vendBy, setVendBy] = useState("meterNumber");
   const [meterNumber, setMeterNumber] = useState("");
   const [amountTendered, setAmountTendered] = useState("");
@@ -592,7 +602,14 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
 
   return (
     <>
-      <Dialog open={isFormDialogOpen} onOpenChange={setIsFormDialogOpen}>
+      <Dialog
+        open={isFormDialogOpen}
+        onOpenChange={(open) => {
+          if (!isProceedPending && !isGetTokenPending) {
+            setIsFormDialogOpen(open);
+          }
+        }}
+      >
         <DialogTrigger asChild>
           <Button
             variant="default"
@@ -853,6 +870,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                   variant="outline"
                   size="lg"
                   className="cursor-pointer border-[#161CCA] text-[#161CCA]"
+                  disabled={isProceedPending}
                   onClick={() => setIsFormDialogOpen(false)}
                 >
                   Back
@@ -861,9 +879,10 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                   variant="default"
                   size="lg"
                   className="cursor-pointer bg-[#161CCA] text-white"
+                  disabled={isProceedPending}
                   onClick={handleProceed}
                 >
-                  Proceed
+                  {isProceedPending ? proceedPendingText : "Proceed"}
                 </Button>
               </>
             )}
@@ -873,6 +892,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                   variant="outline"
                   size="lg"
                   className="cursor-pointer border-[#161CCA] text-[#161CCA]"
+                  disabled={isGetTokenPending}
                   onClick={handleCancel}
                 >
                   Cancel
@@ -881,9 +901,10 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                   variant="default"
                   size="lg"
                   className="cursor-pointer bg-[#161CCA] text-white"
+                  disabled={isGetTokenPending}
                   onClick={handleGetToken}
                 >
-                  Get Token
+                  {isGetTokenPending ? "Getting token..." : "Get Token"}
                 </Button>
               </>
             )}
