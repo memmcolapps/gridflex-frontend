@@ -1167,6 +1167,7 @@ export function AddMeterDialog({
                 variant="outline"
                 onClick={onClose}
                 size="lg"
+                disabled={isPending}
                 className="border-[#161CCA] text-sm font-medium text-[#161CCA] hover:bg-gray-50"
               >
                 Cancel
@@ -1189,7 +1190,7 @@ export function AddMeterDialog({
                 }
                 className="bg-[#161CCA] text-sm font-medium text-white hover:bg-[#1e2abf]"
               >
-                {step1ButtonText}
+                {isPending ? "Saving..." : step1ButtonText}
               </Button>
             </>
           ) : step === 2 ? (
@@ -1198,6 +1199,7 @@ export function AddMeterDialog({
                 variant="outline"
                 onClick={handleBack}
                 size="lg"
+                disabled={isPending}
                 className="border-[#161CCA] text-sm font-medium text-[#161CCA] hover:bg-gray-50"
               >
                 Back
@@ -1221,7 +1223,7 @@ export function AddMeterDialog({
                 }
                 className="cursor-pointer bg-[#161CCA] text-sm font-medium text-white hover:bg-[#1e2abf]"
               >
-                {formData.smartStatus ? "Next" : "Save"}
+                {isPending ? "Saving..." : formData.smartStatus ? "Next" : "Save"}
               </Button>
             </>
           ) : (
@@ -1230,6 +1232,7 @@ export function AddMeterDialog({
                 variant="outline"
                 onClick={handleBack}
                 size="lg"
+                disabled={isPending}
                 className="cursor-pointer border-[#161CCA] text-sm font-medium text-[#161CCA] hover:bg-gray-50"
               >
                 Back

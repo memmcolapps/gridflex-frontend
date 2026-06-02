@@ -76,8 +76,8 @@ export default function BandManagement() {
   const [bandToToggle, setBandToToggle] = useState<Band | null>(null);
 
   const { bands, isLoading } = useBand(searchTerm);
-  const { mutate: createBand } = useCreateBand();
-  const { mutate: updateBand } = useUpdateBand();
+  const { mutate: createBand, isPending: isCreatingBand } = useCreateBand();
+  const { mutate: updateBand, isPending: isUpdatingBand } = useUpdateBand();
   const { mutate: deactivateBand, isPending: isDeactivating } =
     useDeactivateBand();
   const { mutate: activateBand, isPending: isActivating } = useActivateBand();
@@ -215,6 +215,7 @@ export default function BandManagement() {
           <BandForm
             mode="add"
             onSave={handleAddBand}
+            isSubmitting={isCreatingBand}
             triggerButton={
               <Button className="flex cursor-pointer items-center gap-2 bg-[#161CCA] hover:bg-[#121eb3]">
                 <div className="flex items-center justify-center p-0.5">
@@ -376,7 +377,12 @@ export default function BandManagement() {
       </div>
 
       {/* Edit Band Dialog */}
-      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+      <Dialog
+        open={showEditDialog}
+        onOpenChange={(open) => {
+          if (!isUpdatingBand) setShowEditDialog(open);
+        }}
+      >
         <DialogContent className="h-70 bg-white sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Edit Band</DialogTitle>
@@ -425,13 +431,18 @@ export default function BandManagement() {
                 <Button
                   type="button"
                   variant="outline"
+                  disabled={isUpdatingBand}
                   onClick={() => setShowEditDialog(false)}
                   className="border-[#161CCA] text-[#161CCA]"
                 >
                   Cancel
                 </Button>
-                <Button type="submit" className="bg-[#161CCA] text-white">
-                  Save
+                <Button
+                  type="submit"
+                  disabled={isUpdatingBand}
+                  className="bg-[#161CCA] text-white"
+                >
+                  {isUpdatingBand ? "Saving..." : "Save"}
                 </Button>
               </div>
             </form>

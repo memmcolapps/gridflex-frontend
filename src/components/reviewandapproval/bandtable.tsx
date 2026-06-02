@@ -265,6 +265,7 @@ const BandTable = ({ selectedBandNames, setSelectedBandNames }: BandTableProps) 
                 action={confirmAction ?? 'approve'}
                 onConfirm={handleConfirmAction}
                 selectedItem={selectedItem}
+                isSubmitting={reviewMutation.isPending}
             />
         </Card>
     );

@@ -339,6 +339,7 @@ const LiabilityCauseTable = ({
         action={confirmAction ?? "approve"}
         onConfirm={handleConfirmAction}
         selectedItem={selectedItem}
+        isSubmitting={reviewMutation.isPending}
       />
     </Card>
   );

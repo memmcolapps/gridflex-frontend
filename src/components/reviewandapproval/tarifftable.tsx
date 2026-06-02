@@ -260,6 +260,7 @@ const TariffTable = ({ selectedTariffNames, setSelectedTariffNames }: TariffTabl
         action={confirmAction ?? 'approve'}
         onConfirm={handleConfirmAction}
         selectedItem={selectedItem}
+        isSubmitting={reviewMutation.isPending}
       />
     </Card>
   );

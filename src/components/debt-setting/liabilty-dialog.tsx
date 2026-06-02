@@ -78,7 +78,7 @@ const AddLiabilityDialog = ({ onAddLiability }: AddLiabilityDialogProps) => {
                     className="bg-[rgba(22,28,202,1)] text-white"
                     disabled={isPending || !liabilityName || !liabilityCode}
                 >
-                    Submit
+                    {isPending ? "Adding..." : "Submit"}
                 </Button>
             </DialogContent>
         </Dialog>

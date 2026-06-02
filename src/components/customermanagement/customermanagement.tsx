@@ -15,10 +15,8 @@ import {
   useDownloadCustomerCsvTemplate,
   useDownloadCustomerExcelTemplate,
 } from "@/hooks/use-customer";
-import { useAssignMeter } from "@/hooks/use-assign-meter";
 import { type Customer } from "@/types/customer-types";
 import { toast } from "sonner";
-import { usePermissions } from "@/hooks/use-permissions";
 import {
   Dialog,
   DialogContent,
@@ -39,7 +37,6 @@ import { fetchCustomerRecord } from "@/service/customer-service";
 
 export default function CustomerManagement() {
   const bulkUploadMutation = useBulkUploadCustomer();
-  const assignMeterMutation = useAssignMeter();
   const { user } = useAuth();
   const downloadCsvTemplateMutation = useDownloadCustomerCsvTemplate();
   const downloadExcelTemplateMutation = useDownloadCustomerExcelTemplate();
@@ -47,10 +44,6 @@ export default function CustomerManagement() {
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isBlockDialogOpen, setIsBlockDialogOpen] = useState(false);
-  const [isUnblockDialogOpen, setIsUnblockDialogOpen] = useState(false);
-  const [customerToUnblock, setCustomerToUnblock] = useState<Customer | null>(
-    null,
-  );
   const [isConfirmBlockDialogOpen, setIsConfirmBlockDialogOpen] =
     useState(false);
   const [customerToBlock, setCustomerToBlock] = useState<Customer | null>(null);
@@ -81,7 +74,7 @@ export default function CustomerManagement() {
   const [isTemplateDropdownOpen, setIsTemplateDropdownOpen] = useState(false);
   const [isUploadResultDialogOpen, setIsUploadResultDialogOpen] =
     useState(false);
-  const showAddButton = !["region", "root"].includes(
+  const showAddButton = ["region", "root"].includes(
     user?.nodeInfo.type.toLowerCase() ?? "",
   );
   const [uploadResult, setUploadResult] = useState<{
@@ -141,10 +134,7 @@ export default function CustomerManagement() {
     }
   };
 
-  const confirmUnblockCustomer = () => {
-    setCustomerToUnblock(null);
-    setIsUnblockDialogOpen(false);
-  };
+  const confirmUnblockCustomer = () => undefined;
 
   const handleBulkUpload = (data: unknown) => {
     if (data instanceof File) {

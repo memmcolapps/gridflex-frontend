@@ -189,7 +189,7 @@ const AddPercentageRangeDialog = () => {
             !amountEndRange
           }
         >
-          Add
+          {isPending ? "Adding..." : "Add"}
         </Button>
       </DialogContent>
     </Dialog>

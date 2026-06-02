@@ -26,6 +26,7 @@ interface SetPaymentModeDialogPropsLegacy {
   isPaymentFormComplete: boolean;
   editCustomer: MeterInventoryItem | EditAssignedMeterPayload | null;
   onProceed: () => void;
+  isSubmitting?: boolean;
 }
 
 // New interface with separate debit/credit state and required fields for edit
@@ -269,11 +270,13 @@ export function SetPaymentModeDialog(props: SetPaymentModeDialogPropsCombined) {
             >
               Cancel
             </Button>
-            <Button
-              onClick={handleSave}
-              disabled={editAssignedMeterMutation.isPending}
-              className="bg-[#161CCA] text-white cursor-pointer"
-            >
+              <Button
+                onClick={handleSave}
+                disabled={
+                  editAssignedMeterMutation.isPending || !isPaymentFormComplete
+                }
+                className="bg-[#161CCA] text-white cursor-pointer"
+              >
               {editAssignedMeterMutation.isPending ? "Saving..." : "Save Payment Mode"}
             </Button>
           </DialogFooter>
@@ -286,8 +289,6 @@ export function SetPaymentModeDialog(props: SetPaymentModeDialogPropsCombined) {
   const {
     isOpen,
     onOpenChange,
-    paymentType,
-    setPaymentType,
     paymentMode,
     setPaymentMode,
     paymentPlan,
@@ -298,8 +299,8 @@ export function SetPaymentModeDialog(props: SetPaymentModeDialogPropsCombined) {
     creditPaymentPlan,
     setCreditPaymentPlan,
     isPaymentFormComplete,
-    editCustomer,
     onProceed,
+    isSubmitting = false,
   } = props;
 
   // Use separate credit state if provided, otherwise fall back to debit state
@@ -430,6 +431,7 @@ export function SetPaymentModeDialog(props: SetPaymentModeDialogPropsCombined) {
         <DialogFooter>
           <Button
             variant="outline"
+            disabled={isSubmitting}
             onClick={() => onOpenChange(false)}
             className="text-[#161CCA] border-[#161CCA] cursor-pointer"
           >
@@ -437,9 +439,10 @@ export function SetPaymentModeDialog(props: SetPaymentModeDialogPropsCombined) {
           </Button>
           <Button
             onClick={onProceed}
+            disabled={isSubmitting || !isPaymentFormComplete}
             className="bg-[#161CCA] text-white cursor-pointer"
           >
-            Save Payment Mode
+            {isSubmitting ? "Saving..." : "Save Payment Mode"}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -16,6 +16,7 @@ interface BandFormProps {
   band?: Band;
   onSave: (band: Omit<Band, "id">) => void;
   triggerButton: React.ReactNode;
+  isSubmitting?: boolean;
 }
 
 export default function BandForm({
@@ -23,6 +24,7 @@ export default function BandForm({
   band,
   onSave,
   triggerButton,
+  isSubmitting = false,
 }: BandFormProps) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState(band?.name ?? "");
@@ -45,7 +47,6 @@ export default function BandForm({
     };
 
     onSave(updatedBand);
-    setOpen(false);
   };
 
   return (
@@ -89,13 +90,22 @@ export default function BandForm({
             <Button
               type="button"
               variant="outline"
+              disabled={isSubmitting}
               onClick={() => setOpen(false)}
               className="border-[#161CCA] text-[#161CCA]"
             >
               Cancel
             </Button>
-            <Button type="submit" className="bg-[#161CCA] text-white">
-              Save
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="bg-[#161CCA] text-white"
+            >
+              {isSubmitting
+                ? mode === "add"
+                  ? "Adding..."
+                  : "Saving..."
+                : "Save"}
             </Button>
           </div>
         </form>

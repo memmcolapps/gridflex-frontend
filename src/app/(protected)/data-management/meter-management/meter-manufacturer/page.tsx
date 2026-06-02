@@ -391,6 +391,7 @@ function EditManufacturerDialog({
   onClose,
   onEdit,
   manufacturer,
+  isSubmitting,
 }: {
   isOpen: boolean;
   onClose: () => void;
@@ -401,6 +402,7 @@ function EditManufacturerDialog({
     >,
   ) => void;
   manufacturer: Manufacturer | null;
+  isSubmitting: boolean;
 }) {
   const [formData, setFormData] = useState({
     manufacturerName: "",
@@ -499,7 +501,6 @@ function EditManufacturerDialog({
     };
 
     onEdit(newManufacturer);
-    clearForm();
   };
 
   const handleClose = () => {
@@ -694,6 +695,7 @@ function EditManufacturerDialog({
             variant="outline"
             onClick={handleClose}
             size="lg"
+            disabled={isSubmitting}
             className="mr-2 h-8 border-[#161CCA] bg-transparent text-xs text-[#161CCA]"
           >
             Cancel
@@ -703,6 +705,7 @@ function EditManufacturerDialog({
             size="lg"
             className="h-8 bg-[#161CCA] text-xs text-white hover:bg-[#161CCA]/90"
             disabled={
+              isSubmitting ||
               !formData.manufacturerName.trim() ||
               !formData.manufacturerId.trim() ||
               !formData.contactPerson.trim() ||
@@ -713,7 +716,7 @@ function EditManufacturerDialog({
               !formData.houseNo.trim()
             }
           >
-            Save
+            {isSubmitting ? "Saving..." : "Save"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -733,7 +736,8 @@ export default function ManufacturersPage() {
 
   const { canEdit } = usePermissions();
   const { mutate: createManufacturer } = useCreateManufacturer();
-  const { mutate: updateManufacturer } = useUpdateManufacturer();
+  const { mutate: updateManufacturer, isPending: isUpdatingManufacturer } =
+    useUpdateManufacturer();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [sortConfig, setSortConfig] = useState<{
@@ -1008,6 +1012,7 @@ export default function ManufacturersPage() {
         }}
         onEdit={handleEditManufacturer}
         manufacturer={selectedManufacturer}
+        isSubmitting={isUpdatingManufacturer}
       />
     </main>
   );

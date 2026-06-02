@@ -821,6 +821,7 @@ export function AssignMeterDialog({
         onOpenChange={setIsUploadImageOpen}
         onProceed={handleProceedFromUploadImage}
         onCancel={() => setIsUploadImageOpen(false)}
+        isSubmitting={assignMeterMutation.isPending}
       />
 
       <SetPaymentModeDialog
@@ -839,6 +840,7 @@ export function AssignMeterDialog({
         isPaymentFormComplete={isPaymentFormComplete}
         editCustomer={null}
         onProceed={handleProceedFromSetPayment}
+        isSubmitting={assignMeterMutation.isPending}
       />
 
       <CinExistsDialog

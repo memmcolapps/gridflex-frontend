@@ -15,6 +15,7 @@ interface UploadImageDialogProps {
     onConfirmImage?: () => void;
     title?: string;
     description?: string;
+    isSubmitting?: boolean;
 }
 
 const UploadImageDialog: FC<UploadImageDialogProps> = ({
@@ -24,7 +25,8 @@ const UploadImageDialog: FC<UploadImageDialogProps> = ({
     onCancel,
     onConfirmImage,
     title = "Upload Image",
-    description = "Upload an image of the meter for verification."
+    description = "Upload an image of the meter for verification.",
+    isSubmitting = false,
 }) => {
     const [selectedImage, setSelectedImage] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -168,6 +170,7 @@ const UploadImageDialog: FC<UploadImageDialogProps> = ({
                 <DialogFooter>
                     <Button
                         variant="outline"
+                        disabled={isSubmitting}
                         onClick={handleCancelClick}
                         className="border-[#161CCA] text-[#161CCA] cursor-pointer"
                     >
@@ -175,9 +178,10 @@ const UploadImageDialog: FC<UploadImageDialogProps> = ({
                     </Button>
                     <Button
                         onClick={handleProceedClick}
+                        disabled={isSubmitting}
                         className="bg-[#161CCA] text-white cursor-pointer"
                     >
-                        Proceed
+                        {isSubmitting ? "Submitting..." : "Proceed"}
                     </Button>
                 </DialogFooter>
             </DialogContent>

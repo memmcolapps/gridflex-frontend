@@ -62,7 +62,8 @@ export function TariffTable({
   const { canEdit } = usePermissions();
   const { bands, isLoading: isBandsLoading, error: bandsError } = useBand();
   const { mutate: changeTariffStatus } = useChangeTariffStatus();
-  const { mutate: updateTariff } = useUpdateTariff();
+  const { mutate: updateTariff, isPending: isUpdatingTariff } =
+    useUpdateTariff();
 
   const [confirmDialog, setConfirmDialog] = useState<{
     isOpen: boolean;
@@ -357,9 +358,11 @@ export function TariffTable({
       {/* Edit Dialog */}
       <Dialog
         open={editDialog.isOpen}
-        onOpenChange={(open) =>
-          setEditDialog((prev) => ({ ...prev, isOpen: open }))
-        }
+        onOpenChange={(open) => {
+          if (!isUpdatingTariff) {
+            setEditDialog((prev) => ({ ...prev, isOpen: open }));
+          }
+        }}
       >
         <DialogContent className="h-fit bg-white sm:max-w-[400px]">
           <DialogHeader>
@@ -513,6 +516,7 @@ export function TariffTable({
                 onClick={() =>
                   setEditDialog((prev) => ({ ...prev, isOpen: false }))
                 }
+                disabled={isUpdatingTariff}
                 className="border-gray-300 text-gray-700"
               >
                 Cancel
@@ -520,9 +524,9 @@ export function TariffTable({
               <Button
                 type="submit"
                 className={`bg-[rgba(22,28,202,1)] text-white hover:bg-[rgba(22,28,202,0.9)] ${isFormValid ? "" : "cursor-not-allowed opacity-40"}`}
-                disabled={!isFormValid}
+                disabled={!isFormValid || isUpdatingTariff}
               >
-                Submit
+                {isUpdatingTariff ? "Saving..." : "Submit"}
               </Button>
             </div>
           </form>
