@@ -74,9 +74,9 @@ export default function CustomerManagement() {
   const [isTemplateDropdownOpen, setIsTemplateDropdownOpen] = useState(false);
   const [isUploadResultDialogOpen, setIsUploadResultDialogOpen] =
     useState(false);
-  const showAddButton = ["region", "root"].includes(
-    user?.nodeInfo.type.toLowerCase() ?? "",
-  );
+  const userNodeType =
+    user?.nodeInfo.type.toLowerCase().replace(/\s+/g, "") ?? "";
+  const showAddButton = ["businesshub", "servicecenter"].includes(userNodeType);
   const [uploadResult, setUploadResult] = useState<{
     successCount: number;
     failedCount: number;

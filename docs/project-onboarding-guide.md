@@ -37,9 +37,9 @@ The workspace contains multiple projects:
 | Folder                     | Purpose                                                                                           |
 | -------------------------- | ------------------------------------------------------------------------------------------------- |
 | `gridflex`                 | Current customer-facing/admin frontend portal. This is the main frontend discussed in this guide. |
-| `gridflex-backend-service` | Main backend service. Spring Boot/Maven service.                               |
+| `gridflex-backend-service` | Main backend service. Spring Boot/Maven service.                                                  |
 | `hes-backend-springboot`   | HES-related backend service.                                                                      |
-| `gridflex-admin-portal`    | frontend/admin project.                                                                   |
+| `gridflex-admin-portal`    | Another frontend/admin project.                                                                   |
 | `gridflex-landing-page`    | Marketing or landing page project.                                                                |
 
 Inside `gridflex`:
@@ -96,9 +96,9 @@ The organization module allows adding:
 Business decisions:
 
 - Users are attached to a node, so the node determines their operational scope.
-- Some actions are intentionally only available to higher levels.
-- In Customer Management, the current rule is that **Root** and **Region** users can add or upload customers.
-- Meter Inventory is hidden from users whose node type is `business hub` or `service center`.
+- Some actions are intentionally limited to specific node levels.
+- In Customer Management, the current rule is that **Business Hub** and **Service Center** users can add or upload customers, because those levels own the direct customer relationship.
+- Meter Inventory is hidden from Business Hub and Service Center users. That is separate from customer creation: these users can own customer onboarding without managing central meter stock.
 
 ### 3.2 Permission Groups
 
@@ -116,7 +116,7 @@ The main action permissions are:
 | `approve`  | User can approve or reject pending records. |
 | `disable`  | User can disable supported records.         |
 
-The portal navigation checks the user's group modules and submodules. A user will not see a sidebar page unless the assigned group has access to that module/submodule.
+The portal navigation checks the user's group modules and submodules. Most sidebar pages are hidden unless the assigned group has access to that module/submodule. Two current exceptions are Audit Log and Incident Report, which are marked as always visible in the sidebar component.
 
 ### 3.3 Users
 
@@ -134,6 +134,8 @@ When creating a user, the portal sends:
 - user profile fields: first name, last name, email, password, and related details.
 
 This is why organization setup and group permission setup should happen before user onboarding.
+
+Current Add User behavior supports assigning users to Head Office, Region, Business Hub, and Service Center. The organization tree can contain Substation, Feeder Line, and DSS nodes, but those lower technical nodes are not currently offered as user hierarchy choices in the Add User form.
 
 ## 4. Module Overview
 
@@ -195,7 +197,7 @@ HES is for meter communication and technical operations. The frontend includes:
 | Profile and Events         | Meter profile/event data.          |
 | Meter Remote Configuration | Remote configuration and controls. |
 
-### 4.5 Audit, Reports, Incidents, Change Log, About Us
+### 4.5 Audit, Reports, And Incidents
 
 These modules are supporting modules:
 
@@ -204,10 +206,8 @@ These modules are supporting modules:
 | Audit Log       | Track user/system activity.              |
 | Report Summary  | Reporting and export-oriented summaries. |
 | Incident Report | Operational issue reporting.             |
-| Change Log      | Product/system change history.           |
-| About Us        | Informational page.                      |
 
-Billing routes exist in the frontend, but the Billing sidebar section is currently commented out.
+Billing routes exist in the frontend, but the Billing sidebar section is currently commented out. Change Log and About Us are defined in the sidebar source but are filtered out of the rendered sidebar.
 
 ## 5. Recommended Onboarding Sequence
 
@@ -276,6 +276,8 @@ Example: A regional user should choose `Region` as the hierarchy and then choose
 
 Root/Head Office users are attached to the root node automatically after selecting the root hierarchy.
 
+Current Add User hierarchy options are Head Office, Region, Business Hub, and Service Center.
+
 ### Step 5: Configure Master Data
 
 Set up the operational data needed before customers and meters can work cleanly.
@@ -321,10 +323,12 @@ Go to:
 
 Current frontend rule:
 
-- Root and Region users can see Add Customer and Upload Customer.
-- Lower node types do not see those actions.
+- Business Hub and Service Center users can see Add Customer and Upload Customer.
+- Root/Head Office and Region users do not see those actions.
 
 Customers can be added individually or uploaded in bulk. Customer records include identity/contact information, location, address, and VAT preference.
+
+Note: this Add/Upload visibility is currently based on node type. Row-level customer actions such as edit, assign meter, block, and related table actions are controlled by edit permission.
 
 ### Step 8: Assign Meters
 
@@ -428,8 +432,10 @@ Common examples:
 | Add/Edit button is missing  | Group lacks edit permission, or page has node-type restrictions.                  |
 | Approve/Reject missing      | Group lacks approve permission or Review and Approval access.                     |
 | Meter Inventory missing     | User node type is Business Hub or Service Center.                                 |
-| Add/Upload Customer missing | User is not Root or Region.                                                       |
+| Add/Upload Customer missing | User is not Business Hub or Service Center.                                       |
 | Vending action blocked      | User lacks Vending access/edit permission, or meter/customer setup is incomplete. |
+
+Audit Log and Incident Report are sidebar exceptions because they are configured as always visible in the current frontend.
 
 ## 8. Practical Runbooks
 
@@ -489,7 +495,7 @@ Then create two users and attach each user to the correct group and node.
 
 ### 8.5 Add Customer and Assign Meter
 
-1. Confirm the user is Root or Region if they need to add or upload customers.
+1. Confirm the user is Business Hub or Service Center if they need to add or upload customers.
 2. Open `Data Management > Customer Management`.
 3. Add customer or upload customer file.
 4. Confirm the meter exists and is available.
@@ -553,6 +559,7 @@ Logout is different. It should clear local session state and move the user to th
 | Add a user               | Organization node and permission group.                            |
 | Show a module in sidebar | User group with module/submodule access.                           |
 | Show Add/Edit actions    | User group with edit permission and any required node type.        |
+| Add/upload customers     | Business Hub or Service Center user node type.                     |
 | Approve records          | User group with approve permission and Review and Approval access. |
 | Create tariff            | Band.                                                              |
 | Create percentage range  | Usually band and debt setting context.                             |
@@ -614,7 +621,7 @@ The sidebar is not a static menu. It checks:
 - User group submodules.
 - Special node-type restrictions.
 
-So a route can exist in the code but not appear for a user.
+So a route can exist in the code but not appear for a user. Current exceptions: Audit Log and Incident Report are marked always visible; Change Log and About Us are defined but filtered out before rendering.
 
 ### Approval UI
 
@@ -632,11 +639,9 @@ The shared confirmation dialog is:
 
 ### Current Business Rules Worth Remembering
 
-- Root and Region can add/upload customers.
+- Business Hub and Service Center can add/upload customers.
 - Business Hub and Service Center do not see Meter Inventory.
-- Permission group access controls sidebar visibility.
+- Permission group access controls most sidebar visibility.
 - Action permissions control create/edit/approve/disable behavior.
 - Data Management records may need approval before they become operationally active.
 - Vending depends on the customer-meter setup being correct.
-
-
