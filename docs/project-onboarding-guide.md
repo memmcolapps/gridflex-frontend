@@ -14,24 +14,175 @@ GridFlex is an operations portal for managing an electricity distribution busine
 4. **Operational master data**: bands, tariffs, meters, customers, debt settings, and meter manufacturers must be configured before daily work can happen.
 5. **Review and Approval**: important Data Management changes are staged for approval before becoming fully active.
 
-In practice, onboarding a new operating area usually follows this order:
+In practice, onboarding a new operating area follows the activity diagrams in the next section. If a button or page is missing, first check the user's permission group and node type.
+
+## 2. Diagrams
+
+These diagrams summarize the operating model before the guide explains each area in detail.
+
+### 2.1 System Context Diagram
+
+This shows the major systems and actors around the GridFlex portal.
+
+```mermaid
+flowchart LR
+  AdminPortal["Admin Portal"] --> OrgTree["Organization Tree"]
+  OrgTree --> GridFlex["GridFlex Portal"]
+
+  FirstAdmin["First Admin"] --> GridFlex
+  OpsUsers["Operations Users"] --> GridFlex
+  Approver["Approver"] --> GridFlex
+  VendingOperator["Vending Operator"] --> GridFlex
+  HesOperator["HES Operator"] --> GridFlex
+
+  GridFlex --> MainBackend["GridFlex Backend Service"]
+  GridFlex --> HesBackend["HES Backend Service"]
+
+  MainBackend --> Customers["Customers"]
+  MainBackend --> Meters["Meters"]
+  MainBackend --> Tariffs["Bands, Tariffs, Debt Settings"]
+  MainBackend --> Approvals["Approval Records"]
+  MainBackend --> Vending["Vending Transactions"]
+
+  HesBackend --> MeterComms["Meter Communication Data"]
+```
+
+### 2.2 Onboarding Activity Diagram
+
+This is the main onboarding activity flow. It reflects the current operating decision that the organization tree is created from the admin portal before the first admin creates users in GridFlex.
 
 ```mermaid
 flowchart TD
-  A["Create or confirm organization tree"] --> B["Create permission groups"]
-  B --> C["Create users and attach them to nodes"]
-  A --> D["Configure bands, tariffs, debt settings, and manufacturers"]
-  D --> E["Approve pending master data"]
-  E --> F["Create or upload meters"]
-  F --> G["Create or upload customers"]
-  G --> H["Assign meters to customers"]
-  H --> I["Apply debit or credit adjustments when needed"]
-  I --> J["Use vending, reports, HES, and operational dashboards"]
+  A["Admin Portal creates organization tree"] --> B["First admin logs into GridFlex"]
+  B --> C["First admin creates permission groups"]
+  C --> D["First admin creates users and attaches each user to a node"]
+  D --> E["Data manager configures bands, tariffs, debt settings, and manufacturers"]
+  E --> F["Approver reviews pending master data"]
+  F --> G{"Approved?"}
+  G -->|Yes| H["Business Hub or Service Center user adds/uploads customers"]
+  G -->|No| E
+  H --> I["Meter is created or confirmed available"]
+  I --> J["Assign meter from Meters submodule"]
+  J --> K["Approve assigned meter where required"]
+  K --> L["Assigned meter appears in Assigned Meter table"]
+  L --> M["Apply debit/credit adjustments when needed"]
+  M --> N["Vend tokens, monitor reports, HES, and audit logs"]
 ```
 
-If a button or page is missing, first check the user's permission group and node type.
+### 2.3 User And Access Diagram
 
-## 2. Repository Map
+This shows the main user types and the work they normally perform.
+
+```mermaid
+flowchart TB
+  FirstAdmin["First Admin\nUser Management only"] --> Groups["Create permission groups"]
+  FirstAdmin --> Users["Create users"]
+
+  DataManager["Data Manager"] --> MasterData["Configure bands, tariffs, debt settings, manufacturers, meters"]
+  DataManager --> Customers["Manage customers if attached to Business Hub or Service Center"]
+
+  Approver["Approver"] --> Review["Review and Approval"]
+  Review --> Approve["Approve pending records"]
+  Review --> Reject["Reject pending records"]
+
+  BhScUser["Business Hub / Service Center User"] --> AddCustomers["Add or upload customers"]
+  BhScUser --> CustomerActions["Edit customer details, assign meters, block/unblock where permitted"]
+
+  VendingOperator["Vending Operator"] --> Tokens["Generate and print vending tokens"]
+  HesOperator["HES Operator"] --> HesWork["View communication, realtime data, profile/events, remote configuration"]
+  Auditor["Auditor"] --> AuditReports["Review audit logs and reports"]
+```
+
+### 2.4 Customer And Meter Activity Diagram
+
+This focuses on the customer-to-meter relationship. The important point is that meter assignment starts from `Meters`, while `Assigned Meter` is the management view after assignment.
+
+```mermaid
+flowchart TD
+  A["Business Hub or Service Center user creates/uploads customer"] --> B["Confirm meter exists and is available"]
+  B --> C["Open Data Management > Meter Management > Meters"]
+  C --> D["Select assignment action"]
+  D --> E["Select customer and meter"]
+  E --> F["Provide payment mode and image details where required"]
+  F --> G["Submit assignment"]
+  G --> H["Approve assigned meter where required"]
+  H --> I["Assigned meter appears in Assigned Meter table"]
+  I --> J{"Later action needed?"}
+  J -->|Detach| K["Use Assigned Meter to detach"]
+  J -->|Edit assigned info| L["Use Assigned Meter to edit assigned information"]
+  J -->|No| M["Use customer-meter relationship for vending, adjustments, reports"]
+```
+
+### 2.5 Approval State Diagram
+
+This diagram captures the rejection rule: rejecting a newly created meter deletes it, while other rejected changes return to the prior state.
+
+```mermaid
+stateDiagram-v2
+  [*] --> Draft: user creates or edits
+  Draft --> Pending: save/submit
+  Pending --> Approved: approve
+  Pending --> Deleted: reject meter create
+  Pending --> PriorState: reject other changes
+  Approved --> Active: available for use
+  Deleted --> [*]
+  PriorState --> [*]
+```
+
+### 2.6 Module Dependency Diagram
+
+This shows why the setup order matters.
+
+```mermaid
+flowchart LR
+  Org["Organization Tree"] --> Users["Users"]
+  Groups["Permission Groups"] --> Users
+  Groups --> Navigation["Sidebar and actions"]
+
+  Org --> Customers["Customers"]
+  Manufacturers["Meter Manufacturers"] --> Meters["Meters"]
+  Bands["Bands"] --> Tariffs["Tariffs"]
+  Bands --> DebtSettings["Debt Settings"]
+  DebtSettings --> Adjustments["Debit/Credit Adjustments"]
+
+  Customers --> Assignment["Meter Assignment"]
+  Meters --> Assignment
+  Assignment --> AssignedMeters["Assigned Meter Records"]
+  AssignedMeters --> Vending["Vending"]
+  AssignedMeters --> Reports["Reports and Audit"]
+  AssignedMeters --> Hes["HES Operations"]
+  Adjustments --> Vending
+
+  Meters --> Approval["Review and Approval"]
+  Bands --> Approval
+  Tariffs --> Approval
+  DebtSettings --> Approval
+  Approval --> Assignment
+  Approval --> Vending
+```
+
+### 2.7 Permission Decision Diagram
+
+Use this when a user cannot see a module or action.
+
+```mermaid
+flowchart TD
+  A["User cannot see page or button"] --> B["Check module access"]
+  B --> C{"Has module access?"}
+  C -->|No| D["Update permission group module access"]
+  C -->|Yes| E["Check submodule access"]
+  E --> F{"Has submodule access?"}
+  F -->|No| G["Update permission group submodule access"]
+  F -->|Yes| H["Check action permission"]
+  H --> I{"Has edit/approve/disable as needed?"}
+  I -->|No| J["Update action permission"]
+  I -->|Yes| K["Check node type rule"]
+  K --> L{"Allowed for this node type?"}
+  L -->|No| M["Use correct user/node level"]
+  L -->|Yes| N["Investigate page state, approval status, or backend issue"]
+```
+
+## 3. Repository Map
 
 The workspace contains multiple projects:
 
@@ -64,9 +215,9 @@ Common frontend commands:
 | `npm run lint`      | Run linting.                            |
 | `npm run build`     | Build the frontend.                     |
 
-## 3. Core Mental Model
+## 4. Core Mental Model
 
-### 3.1 Organization Nodes
+### 4.1 Organization Nodes
 
 The organization tree is the business structure. It controls where data belongs and what scope a user operates within.
 
@@ -101,7 +252,7 @@ Business decisions:
 - In Customer Management, the current rule is that **Business Hub** and **Service Center** users can add or upload customers, because those levels own the direct customer relationship.
 - Meter Inventory is hidden from Business Hub and Service Center users. That is separate from customer creation: these users can own customer onboarding without managing central meter stock.
 
-### 3.2 Permission Groups
+### 4.2 Permission Groups
 
 Permission groups decide two things:
 
@@ -119,7 +270,7 @@ The main action permissions are:
 
 The portal navigation checks the user's group modules and submodules. Most sidebar pages are hidden unless the assigned group has access to that module/submodule. Two current exceptions are Audit Log and Incident Report, which are marked as always visible in the sidebar component.
 
-### 3.3 Users
+### 4.3 Users
 
 A user depends on:
 
@@ -138,9 +289,9 @@ This is why organization setup and group permission setup should happen before u
 
 Current Add User behavior supports assigning users to Head Office, Region, Business Hub, and Service Center. The organization tree can contain Substation, Feeder Line, and DSS nodes, but those lower technical nodes are not currently offered as user hierarchy choices in the Add User form.
 
-## 4. Module Overview
+## 5. Module Overview
 
-### 4.1 Data Management
+### 5.1 Data Management
 
 Data Management is the foundation module. It contains:
 
@@ -160,7 +311,7 @@ Data Management is the foundation module. It contains:
 | Credit Adjustment   | Apply credit-related adjustments.                                                      | Customers/meters and debt configuration. | Adjustment records.                                  |
 | Review and Approval | Approve or reject pending changes.                                                     | Pending records from Data Management.    | Approved or rejected records.                        |
 
-### 4.2 User Management
+### 5.2 User Management
 
 User Management contains:
 
@@ -171,7 +322,7 @@ User Management contains:
 
 Important decision: create permission groups before adding users. A user without the right group may log in but see the wrong pages or miss required buttons.
 
-### 4.3 Vending
+### 5.3 Vending
 
 Vending generates tokens for customers/meters. The visible token flows include:
 
@@ -186,7 +337,7 @@ Vending generates tokens for customers/meters. The visible token flows include:
 
 Vending depends on customer and meter setup. If a meter is not created, approved, and assigned correctly, vending will fail or return incomplete results.
 
-### 4.4 HES
+### 5.4 HES
 
 HES is for meter communication and technical operations. The frontend includes:
 
@@ -198,7 +349,7 @@ HES is for meter communication and technical operations. The frontend includes:
 | Profile and Events         | Meter profile/event data.          |
 | Meter Remote Configuration | Remote configuration and controls. |
 
-### 4.5 Audit, Reports, And Incidents
+### 5.5 Audit, Reports, And Incidents
 
 These modules are supporting modules:
 
@@ -210,7 +361,7 @@ These modules are supporting modules:
 
 Billing routes exist in the frontend, but the Billing sidebar section is currently commented out. Change Log and About Us are defined in the sidebar source but are filtered out of the rendered sidebar.
 
-## 5. Recommended Onboarding Sequence
+## 6. Recommended Onboarding Sequence
 
 Use this when setting up a new operating area or bringing a team onto the portal.
 
@@ -396,7 +547,7 @@ Use dashboards, reports, HES views, and audit logs to confirm operations:
 - Audit Log for user/system traceability.
 - Report Summary for export and review.
 
-## 6. Approval Flow
+## 7. Approval Flow
 
 Approval is a central business control in Data Management.
 
@@ -428,7 +579,7 @@ Operational guidance:
 - The current rejection flow does not provide a panel for entering a rejection reason.
 - Bulk approval is useful after careful filtering and review, not as a replacement for validation.
 
-## 7. Access Control and Missing Buttons
+## 8. Access Control and Missing Buttons
 
 When a user says "I cannot see this page" or "I cannot see this button", troubleshoot in this order:
 
@@ -459,9 +610,9 @@ Common examples:
 
 Audit Log and Incident Report are sidebar exceptions because they are configured as always visible in the current frontend.
 
-## 8. Practical Runbooks
+## 9. Practical Runbooks
 
-### 8.1 Confirm A New Region And Operating Units
+### 9.1 Confirm A New Region And Operating Units
 
 1. Confirm the organization tree has been created from the admin portal.
 2. Confirm the Region exists under Root.
@@ -470,7 +621,7 @@ Audit Log and Incident Report are sidebar exceptions because they are configured
 5. Confirm technical nodes exist if needed: Substation, Feeder Line, DSS.
 6. Use this portal to create the users and permission groups that will operate within those nodes.
 
-### 8.2 Add a New User
+### 9.2 Add a New User
 
 1. Confirm the organization node already exists.
 2. Confirm the permission group already exists.
@@ -484,7 +635,7 @@ Audit Log and Incident Report are sidebar exceptions because they are configured
 10. Save.
 11. Ask the user to log in and confirm their landing page and sidebar access.
 
-### 8.3 Create a Data Manager and an Approver
+### 9.3 Create a Data Manager and an Approver
 
 This is a good separation-of-duty pattern.
 
@@ -503,7 +654,7 @@ Approver group:
 
 Then create two users and attach each user to the correct group and node.
 
-### 8.4 Add Band and Tariff
+### 9.4 Add Band and Tariff
 
 1. Open `Data Management > Band Management`.
 2. Create the band.
@@ -514,7 +665,7 @@ Then create two users and attach each user to the correct group and node.
 7. Return to Review and Approval.
 8. Approve the tariff.
 
-### 8.5 Add Customer and Assign Meter
+### 9.5 Add Customer and Assign Meter
 
 1. Confirm the user is Business Hub or Service Center if they need to add or upload customers.
 2. Open `Data Management > Customer Management`.
@@ -527,7 +678,7 @@ Then create two users and attach each user to the correct group and node.
 9. Approve the assigned meter where approval is required.
 10. Confirm the assigned meter appears in the relevant table.
 
-### 8.6 Add A Debit Or Credit Adjustment
+### 9.6 Add A Debit Or Credit Adjustment
 
 1. Confirm the customer exists.
 2. Confirm the meter exists and is assigned if the adjustment depends on the meter.
@@ -537,7 +688,7 @@ Then create two users and attach each user to the correct group and node.
 6. Add the adjustment details.
 7. Save and confirm the adjustment appears in the table.
 
-### 8.7 Vend a Credit Token
+### 9.7 Vend a Credit Token
 
 1. Open `Vending > Vending`.
 2. Choose Credit Token.
@@ -549,7 +700,7 @@ Then create two users and attach each user to the correct group and node.
 8. Generate token.
 9. Print if required.
 
-### 8.8 Approve or Reject Pending Changes
+### 9.8 Approve or Reject Pending Changes
 
 1. Open `Data Management > Review and Approval`.
 2. Choose the correct tab.
@@ -559,7 +710,7 @@ Then create two users and attach each user to the correct group and node.
 6. Reject if incorrect.
 7. Confirm the record status changes.
 
-## 9. Loading and User Feedback Rules
+## 10. Loading and User Feedback Rules
 
 For create/edit/approve/reject/vending actions, the portal should show loading text linked to the actual request. This matters because users should know what is happening and should not submit the same action twice.
 
@@ -584,7 +735,7 @@ Decision: dialogs should generally stay open while the request is pending. Closi
 
 Logout is different. It should clear local session state and move the user to the login page quickly, not show the protected layout loading screen.
 
-## 10. Data Dependency Cheat Sheet
+## 11. Data Dependency Cheat Sheet
 
 | Thing You Want To Do          | Must Exist First                                                   |
 | ----------------------------- | ------------------------------------------------------------------ |
@@ -601,7 +752,7 @@ Logout is different. It should clear local session state and move the user to th
 | Vend token                    | Assigned customer/meter/account setup.                             |
 | See HES data                  | HES access and backend meter communication data.                   |
 
-## 11. Developer Appendix
+## 12. Developer Appendix
 
 This section is for a teammate who will occasionally inspect code.
 
