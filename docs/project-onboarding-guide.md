@@ -25,7 +25,8 @@ flowchart TD
   E --> F["Create or upload meters"]
   F --> G["Create or upload customers"]
   G --> H["Assign meters to customers"]
-  H --> I["Use vending, reports, HES, and operational dashboards"]
+  H --> I["Apply debit or credit adjustments when needed"]
+  I --> J["Use vending, reports, HES, and operational dashboards"]
 ```
 
 If a button or page is missing, first check the user's permission group and node type.
@@ -143,21 +144,21 @@ Current Add User behavior supports assigning users to Head Office, Region, Busin
 
 Data Management is the foundation module. It contains:
 
-| Submodule           | Purpose                                           | Depends On                               | Output                                               |
-| ------------------- | ------------------------------------------------- | ---------------------------------------- | ---------------------------------------------------- |
-| Dashboard           | Summary view of data management activity.         | Existing data.                           | Operational overview.                                |
-| Organization        | Build the hierarchy tree.                         | Root/business setup.                     | Regions, hubs, service centers, and technical nodes. |
-| Meter Manufacturers | Add manufacturers.                                | None beyond permission.                  | Manufacturer list used by meter setup.               |
-| Meter Inventory     | Manage physical meter stock.                      | Manufacturers and meter details.         | Available meters.                                    |
-| Meters              | Create and edit meter records.                    | Manufacturers, technical meter data.     | Meters awaiting or passing approval.                 |
-| Assigned Meter      | Attach meters to customers.                       | Customers and meters.                    | Active customer-meter relationship.                  |
-| Customer Management | Add, edit, upload, block, unblock customers.      | Organization/user scope.                 | Customer records.                                    |
-| Band Management     | Configure supply bands.                           | None beyond permission.                  | Bands, usually approval-managed.                     |
-| Tariff Rate         | Configure tariff rates.                           | Bands.                                   | Tariffs, usually approval-managed.                   |
-| Debt Setting        | Configure liability causes and percentage ranges. | Bands for percentage ranges.             | Debt configuration.                                  |
-| Debit Adjustment    | Apply debit-related adjustments.                  | Customers/meters and debt configuration. | Adjustment records.                                  |
-| Credit Adjustment   | Apply credit-related adjustments.                 | Customers/meters and debt configuration. | Adjustment records.                                  |
-| Review and Approval | Approve or reject pending changes.                | Pending records from Data Management.    | Approved or rejected records.                        |
+| Submodule           | Purpose                                                                                | Depends On                               | Output                                               |
+| ------------------- | -------------------------------------------------------------------------------------- | ---------------------------------------- | ---------------------------------------------------- |
+| Dashboard           | Summary view of data management activity.                                              | Existing data.                           | Operational overview.                                |
+| Organization        | Build the hierarchy tree.                                                              | Root/business setup.                     | Regions, hubs, service centers, and technical nodes. |
+| Meter Manufacturers | Add manufacturers.                                                                     | None beyond permission.                  | Manufacturer list used by meter setup.               |
+| Meter Inventory     | Manage physical meter stock.                                                           | Manufacturers and meter details.         | Available meters.                                    |
+| Meters              | Create and edit meter records.                                                         | Manufacturers, technical meter data.     | Meters awaiting or passing approval.                 |
+| Assigned Meter      | View assigned meters and pending detached meters; detach or edit assigned information. | Existing customer-meter relationship.    | Assigned meter records and detach/edit workflows.    |
+| Customer Management | Add, edit, upload, block, unblock customers.                                           | Organization/user scope.                 | Customer records.                                    |
+| Band Management     | Configure supply bands.                                                                | None beyond permission.                  | Bands, usually approval-managed.                     |
+| Tariff Rate         | Configure tariff rates.                                                                | Bands.                                   | Tariffs, usually approval-managed.                   |
+| Debt Setting        | Configure liability causes and percentage ranges.                                      | Bands for percentage ranges.             | Debt configuration.                                  |
+| Debit Adjustment    | Apply debit-related adjustments.                                                       | Customers/meters and debt configuration. | Adjustment records.                                  |
+| Credit Adjustment   | Apply credit-related adjustments.                                                      | Customers/meters and debt configuration. | Adjustment records.                                  |
+| Review and Approval | Approve or reject pending changes.                                                     | Pending records from Data Management.    | Approved or rejected records.                        |
 
 ### 4.2 User Management
 
@@ -213,24 +214,22 @@ Billing routes exist in the frontend, but the Billing sidebar section is current
 
 Use this when setting up a new operating area or bringing a team onto the portal.
 
-### Step 1: Confirm Admin Access
+### Step 1: Confirm First Admin Access
 
-Start with a Root or Super Admin user. The user should have:
+Start with the first admin user. This first admin does not manage the operating data directly in this portal; their access is focused on User Management.
 
-- Data Management access.
+The first admin should have:
+
 - User Management access.
-- Edit permission.
-- Approve permission if they will approve pending setup data.
+- Edit permission for creating permission groups and users.
 
 The login flow stores the authenticated user and redirects them to the first module their permission group allows.
 
-### Step 2: Build the Organization
+### Step 2: Confirm The Organization Tree
 
-Go to:
+Before users are created in this portal, the organization tree should already have been created for the business from the admin portal.
 
-`Data Management > Organization`
-
-Create nodes from the top down:
+Confirm that the expected nodes exist:
 
 1. Region.
 2. Business Hub under Region.
@@ -334,7 +333,7 @@ Note: this Add/Upload visibility is currently based on node type. Row-level cust
 
 Go to:
 
-`Data Management > Meter Management > Assigned Meter`
+`Data Management > Meter Management > Meters`
 
 Meter assignment connects a customer to a meter. This flow depends on:
 
@@ -343,9 +342,30 @@ Meter assignment connects a customer to a meter. This flow depends on:
 - Required meter image/payment mode information is provided where applicable.
 - The backend accepts the assignment state.
 
-This relationship is what makes later vending and operational lookup meaningful.
+After assignment is submitted, approve the assigned meter where approval is required. Once approved, confirm that the record appears in the assigned meter table.
 
-### Step 9: Vend Tokens
+The `Assigned Meter` submodule is not where the assignment starts. It shows meters that are already assigned and meters pending detach. Actions from `Assigned Meter` are focused on detach and editing assigned information.
+
+### Step 9: Apply Adjustments When Needed
+
+Go to:
+
+`Data Management > Debt Management > Debit Adjustment`
+
+or:
+
+`Data Management > Debt Management > Credit Adjustment`
+
+Adjustments are used after customer and meter setup when the business needs to apply debit or credit balances against a customer/meter. This flow depends on:
+
+- Customer exists.
+- Meter exists and is assigned where required.
+- Debt settings and liability causes exist where the adjustment requires them.
+- The user has Data Management, Debt Management, and edit access.
+
+Use Debit Adjustment when the customer should owe an additional amount. Use Credit Adjustment when the customer should receive a credit balance.
+
+### Step 10: Vend Tokens
 
 Go to:
 
@@ -366,7 +386,7 @@ Credit token flow has two stages:
 
 Other token flows generally generate the token after the required fields are submitted.
 
-### Step 10: Monitor, Report, and Audit
+### Step 11: Monitor, Report, and Audit
 
 Use dashboards, reports, HES views, and audit logs to confirm operations:
 
@@ -386,7 +406,8 @@ flowchart TD
   B --> C["Approver opens Review and Approval"]
   C --> D{"Decision"}
   D -->|Approve| E["Record becomes approved/active"]
-  D -->|Reject| F["Record is rejected and should be corrected or recreated"]
+  D -->|Reject meter create| F["Meter record is deleted from the system"]
+  D -->|Reject other changes| G["Record returns to its prior state"]
 ```
 
 Records covered by the current approval UI:
@@ -402,8 +423,9 @@ Records covered by the current approval UI:
 Operational guidance:
 
 - Do not assume a saved record is active until its approval status is confirmed.
-- If a newly created band or tariff is missing elsewhere, check Review and Approval.
-- Rejections should include enough context for the creator to know what to fix.
+- If a newly created object is missing elsewhere, check its approval status. If it is pending, wait for approval. If it is not found at all, it may have been rejected and removed from the system.
+- Rejection behavior differs by record type. Rejection for a newly created meter deletes the record entirely. For the other approval-managed records, rejection returns the object to its prior state.
+- The current rejection flow does not provide a panel for entering a rejection reason.
 - Bulk approval is useful after careful filtering and review, not as a replacement for validation.
 
 ## 7. Access Control and Missing Buttons
@@ -439,15 +461,14 @@ Audit Log and Incident Report are sidebar exceptions because they are configured
 
 ## 8. Practical Runbooks
 
-### 8.1 Add a New Region and Operating Units
+### 8.1 Confirm A New Region And Operating Units
 
-1. Log in with a Root/Super Admin account.
-2. Open `Data Management > Organization`.
-3. Add a Region under Root.
-4. Add Business Hub under that Region.
-5. Add Service Center under that Business Hub.
-6. Add technical nodes if needed: Substation, Feeder Line, DSS.
-7. Confirm each node appears in the organization tree.
+1. Confirm the organization tree has been created from the admin portal.
+2. Confirm the Region exists under Root.
+3. Confirm the Business Hub exists under that Region.
+4. Confirm the Service Center exists under that Business Hub.
+5. Confirm technical nodes exist if needed: Substation, Feeder Line, DSS.
+6. Use this portal to create the users and permission groups that will operate within those nodes.
 
 ### 8.2 Add a New User
 
@@ -499,13 +520,24 @@ Then create two users and attach each user to the correct group and node.
 2. Open `Data Management > Customer Management`.
 3. Add customer or upload customer file.
 4. Confirm the meter exists and is available.
-5. Open `Data Management > Meter Management > Assigned Meter`.
+5. Open `Data Management > Meter Management > Meters`.
 6. Select customer and meter.
 7. Complete payment mode and image steps if requested.
 8. Submit assignment.
-9. Confirm the assigned meter appears in the relevant table.
+9. Approve the assigned meter where approval is required.
+10. Confirm the assigned meter appears in the relevant table.
 
-### 8.6 Vend a Credit Token
+### 8.6 Add A Debit Or Credit Adjustment
+
+1. Confirm the customer exists.
+2. Confirm the meter exists and is assigned if the adjustment depends on the meter.
+3. Confirm the relevant debt settings and liability causes exist.
+4. Open `Data Management > Debt Management > Debit Adjustment` or `Data Management > Debt Management > Credit Adjustment`.
+5. Search for the customer or meter.
+6. Add the adjustment details.
+7. Save and confirm the adjustment appears in the table.
+
+### 8.7 Vend a Credit Token
 
 1. Open `Vending > Vending`.
 2. Choose Credit Token.
@@ -517,7 +549,7 @@ Then create two users and attach each user to the correct group and node.
 8. Generate token.
 9. Print if required.
 
-### 8.7 Approve or Reject Pending Changes
+### 8.8 Approve or Reject Pending Changes
 
 1. Open `Data Management > Review and Approval`.
 2. Choose the correct tab.
@@ -527,24 +559,49 @@ Then create two users and attach each user to the correct group and node.
 6. Reject if incorrect.
 7. Confirm the record status changes.
 
+## 9. Loading and User Feedback Rules
 
-## 9. Data Dependency Cheat Sheet
+For create/edit/approve/reject/vending actions, the portal should show loading text linked to the actual request. This matters because users should know what is happening and should not submit the same action twice.
 
-| Thing You Want To Do     | Must Exist First                                                   |
-| ------------------------ | ------------------------------------------------------------------ |
-| Add a user               | Organization node and permission group.                            |
-| Show a module in sidebar | User group with module/submodule access.                           |
-| Show Add/Edit actions    | User group with edit permission and any required node type.        |
-| Add/upload customers     | Business Hub or Service Center user node type.                     |
-| Approve records          | User group with approve permission and Review and Approval access. |
-| Create tariff            | Band.                                                              |
-| Create percentage range  | Usually band and debt setting context.                             |
-| Create meter             | Manufacturer and meter technical details.                          |
-| Assign meter             | Customer and meter.                                                |
-| Vend token               | Assigned customer/meter/account setup.                             |
-| See HES data             | HES access and backend meter communication data.                   |
+Expected examples:
 
-## 10. Developer Appendix
+| Action                     | Expected Loading Text                 |
+| -------------------------- | ------------------------------------- |
+| Create band                | `Adding...`                           |
+| Edit band                  | `Saving...`                           |
+| Create tariff/edit tariff  | `Saving...`                           |
+| Add liability cause        | `Adding...`                           |
+| Edit liability cause       | `Saving...`                           |
+| Add percentage range       | `Adding...`                           |
+| Edit percentage range      | `Saving...`                           |
+| Approve record             | `Approving...`                        |
+| Reject record              | `Rejecting...`                        |
+| Vending credit calculation | `Calculating...`                      |
+| Vending token generation   | `Generating...` or `Getting token...` |
+| Print token                | `Printing...`                         |
+
+Decision: dialogs should generally stay open while the request is pending. Closing too early makes users think work completed even when the backend request is still in progress.
+
+Logout is different. It should clear local session state and move the user to the login page quickly, not show the protected layout loading screen.
+
+## 10. Data Dependency Cheat Sheet
+
+| Thing You Want To Do          | Must Exist First                                                   |
+| ----------------------------- | ------------------------------------------------------------------ |
+| Add a user                    | Organization node and permission group.                            |
+| Show a module in sidebar      | User group with module/submodule access.                           |
+| Show Add/Edit actions         | User group with edit permission and any required node type.        |
+| Add/upload customers          | Business Hub or Service Center user node type.                     |
+| Approve records               | User group with approve permission and Review and Approval access. |
+| Create tariff                 | Band.                                                              |
+| Create percentage range       | Usually band and debt setting context.                             |
+| Create meter                  | Manufacturer and meter technical details.                          |
+| Assign meter                  | Customer and meter.                                                |
+| Apply debit/credit adjustment | Customer/meter context and required debt settings.                 |
+| Vend token                    | Assigned customer/meter/account setup.                             |
+| See HES data                  | HES access and backend meter communication data.                   |
+
+## 11. Developer Appendix
 
 This section is for a teammate who will occasionally inspect code.
 
@@ -577,7 +634,6 @@ flowchart LR
 ```
 
 Most server actions are wrapped in React Query hooks. That is why create/edit screens should use mutation pending states for loading UI.
-
 
 ### Approval UI
 
