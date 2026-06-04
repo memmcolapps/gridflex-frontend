@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import type { Meter } from "@/types/meter";
 import { useSetDateTime } from "@/hooks/use-configure-meter";
+import { toast } from "sonner";
 
 interface SetDateTimeDialogProps {
   isOpen: boolean;
@@ -54,9 +55,20 @@ export default function SetDateTimeDialog({
     setMeterClock(
       { serial: meter.meterNumber, dateTime },
       {
-        onSuccess: () => {
+        onSuccess: (data) => {
+          const { status, message } = data.responsedata;
+          if (status === "success") {
+            toast.success("Date and time set successfully");
+          } else {
+            toast.error(`${status}: ${message}`);
+          }
           setHour(""); setMinute(""); setDate(""); setMonth(""); setYear("");
           onClose();
+        },
+        onError: (error) => {
+          const match = /"details":"([^"]+)"/.exec(error.message);
+          const friendlyMsg = match?.[1] ?? error.message;
+          toast.error(friendlyMsg);
         },
       },
     );
@@ -92,6 +104,7 @@ export default function SetDateTimeDialog({
         <DialogHeader>
           <DialogTitle>Set Date And Time</DialogTitle>
         </DialogHeader>
+
         <div className="space-y-4 py-4">
           <div className="flex gap-4">
             <div className="w-1/2">

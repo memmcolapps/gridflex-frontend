@@ -151,7 +151,7 @@ export const useSetDateTime = () => {
   return useMutation<ConfigureResponse, Error, SetDateTimePayload>({
     mutationFn: setDateTime,
     onSuccess: (data) => {
-      const { status, message } = data.responsedata.data;
+      const { status, message } = data.responsedata;
       if (status === "success") {
         toast.success(`Date and Time configured: ${message}`);
       } else {
