@@ -373,7 +373,11 @@ export function AssignMeterDialog({
     setPendingAssignmentPayload(null);
   };
 
-  const isPaymentFormComplete = paymentMode !== "" && paymentType !== "";
+  const isPaymentFormComplete =
+    paymentMode !== "" &&
+    creditPaymentMode !== "" &&
+    (paymentMode !== "monthly" || paymentPlan !== "") &&
+    (creditPaymentMode !== "monthly" || creditPaymentPlan !== "");
 
   return (
     <>
