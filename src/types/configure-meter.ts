@@ -161,6 +161,8 @@ export interface ConfigureResponse {
       message: string;
       [key: string]: unknown;
     };
+    serial?: string;
+    message?: string;
     status: string;
     timestamp: string;
   };

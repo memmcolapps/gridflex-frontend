@@ -124,22 +124,8 @@ export const useLiabilities = (params: FetchParams): UseLiabilitiesResult => {
     ReviewPayload
   >({
     mutationFn: (payload) => reviewLiability(payload.id, payload.approveStatus),
-    onSuccess: (data, variables) => {
-      if (variables.approveStatus === "approve") {
-        queryClient.setQueryData(
-          ["liabilities", params],
-          (oldData: Liability[] | undefined) => {
-            if (oldData) {
-              return oldData.filter(
-                (item) => item.liabilityCauseId !== variables.id,
-              );
-            }
-            return oldData;
-          },
-        );
-      } else {
-        queryClient.invalidateQueries({ queryKey: ["liability"] });
-      }
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["liability"] });
     },
   });
 
