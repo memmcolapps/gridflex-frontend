@@ -22,12 +22,14 @@ interface FilterControlProps {
     initialFilters?: Record<string, boolean>;
 }
 
+const EMPTY_FILTERS: Record<string, boolean> = {};
+
 export function FilterControl({
     sections = [], // Default to empty array
     filterType = "multi-section", // Default to multi-section filter
     onApply,
     onReset,
-    initialFilters = {}
+    initialFilters = EMPTY_FILTERS
 }: FilterControlProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [filters, setFilters] = useState<Record<string, boolean>>(initialFilters);
@@ -44,7 +46,15 @@ export function FilterControl({
     };
 
     useEffect(() => {
-        setFilters(initialFilters);
+        setFilters((previous) => {
+            const previousKeys = Object.keys(previous);
+            const nextKeys = Object.keys(initialFilters);
+            const isSame =
+                previousKeys.length === nextKeys.length &&
+                nextKeys.every((key) => previous[key] === initialFilters[key]);
+
+            return isSame ? previous : initialFilters;
+        });
     }, [initialFilters]);
 
     useEffect(() => {
