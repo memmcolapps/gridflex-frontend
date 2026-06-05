@@ -51,6 +51,9 @@ export default function CustomerTable({
     key: keyof Customer;
     direction: "asc" | "desc";
   } | null>(null);
+  const [activeFilters, setActiveFilters] = useState<Record<string, boolean>>(
+    {},
+  );
 
   const { data, isLoading, isError, error } = useCustomers({
     page: currentPage,
@@ -64,7 +67,15 @@ export default function CustomerTable({
     toast.error(error.message);
   }
 
-  const allCustomers = data?.responsedata?.data ?? [];
+  const allCustomers = (data?.responsedata?.data ?? []).filter((customer) => {
+    const selectedStatuses = Object.entries(activeFilters)
+      .filter(([, selected]) => selected)
+      .map(([status]) => status.toLowerCase());
+
+    if (selectedStatuses.length === 0) return true;
+
+    return selectedStatuses.includes(String(customer.status).toLowerCase());
+  });
 
   // Apply client-side pagination (API may return all data regardless of pageSize)
   // Calculate pagination indices
@@ -86,6 +97,14 @@ export default function CustomerTable({
       direction = "desc";
     }
     setSortConfig({ key, direction });
+    setCurrentPage(1);
+  };
+
+  const handleSortControlChange = (direction: string) => {
+    setSortConfig({
+      key: "customerId",
+      direction: direction === "desc" ? "desc" : "asc",
+    });
     setCurrentPage(1);
   };
 
@@ -245,8 +264,29 @@ export default function CustomerTable({
             placeholder="Search by meter no., account no..."
           />
         </div>
-        <FilterControl />
-        <SortControl />
+        <FilterControl
+          sections={[
+            {
+              title: "Status",
+              options: [
+                { label: "Active", id: "Active" },
+                { label: "Block", id: "Block" },
+              ],
+            },
+          ]}
+          onApply={(filters) => {
+            setActiveFilters(filters);
+            setCurrentPage(1);
+          }}
+          onReset={() => {
+            setActiveFilters({});
+            setCurrentPage(1);
+          }}
+        />
+        <SortControl
+          onSortChange={handleSortControlChange}
+          currentSort={sortConfig?.direction ?? ""}
+        />
       </div>
       <Card className="h-4/6 overflow-x-hidden border-none bg-transparent shadow-none">
         <Table className="h-fit">

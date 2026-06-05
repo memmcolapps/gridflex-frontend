@@ -625,6 +625,7 @@ export default function AssignMeterPage() {
     term: string,
     sortBy: keyof MeterInventoryItem | keyof VirtualMeterData | null,
     direction: "asc" | "desc",
+    filters: Record<string, boolean> = activeFilters,
   ) => {
     let results = processedData;
 
@@ -642,14 +643,14 @@ export default function AssignMeterPage() {
 
     results = results.filter((meter) => {
       const classOptions = [
-        { active: activeFilters.singlePhase, value: "single phase" },
-        { active: activeFilters.threePhase, value: "three phase" },
-        { active: activeFilters.md, value: "md" },
+        { active: filters.singlePhase, value: "single phase" },
+        { active: filters.threePhase, value: "three phase" },
+        { active: filters.md, value: "md" },
       ];
       const classMatch =
-        !activeFilters.singlePhase &&
-        !activeFilters.threePhase &&
-        !activeFilters.md
+        !filters.singlePhase &&
+        !filters.threePhase &&
+        !filters.md
           ? true
           : classOptions.some(
               ({ active, value }) =>
@@ -659,11 +660,11 @@ export default function AssignMeterPage() {
             );
 
       const typeOptions = [
-        { active: activeFilters.prepaid, value: "prepaid" },
-        { active: activeFilters.postPaid, value: "postpaid" },
+        { active: filters.prepaid, value: "prepaid" },
+        { active: filters.postPaid, value: "postpaid" },
       ];
       const typeMatch =
-        !activeFilters.prepaid && !activeFilters.postPaid
+        !filters.prepaid && !filters.postPaid
           ? true
           : typeOptions.some(
               ({ active, value }) =>
@@ -689,7 +690,7 @@ export default function AssignMeterPage() {
 
   const handleSetActiveFilters = (filters: Record<string, boolean>) => {
     setActiveFilters(filters);
-    applyFiltersAndSort(searchTerm, sortConfig.key, sortConfig.direction);
+    applyFiltersAndSort(searchTerm, sortConfig.key, sortConfig.direction, filters);
   };
 
   const isFormComplete: boolean =

@@ -3,7 +3,7 @@
 
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
-import { type ChangeEvent, useState } from "react";
+import { type ChangeEvent, useEffect, useState } from "react";
 
 
 interface SearchControlProps {
@@ -13,14 +13,19 @@ interface SearchControlProps {
     onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
 }
 
-export function SearchControl({ onSearchChange, value = "",placeholder="" }: SearchControlProps) {
+export function SearchControl({ onSearchChange, value = "", placeholder = "", onChange }: SearchControlProps) {
     const [inputValue, setInputValue] = useState(value);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value;
+    useEffect(() => {
         setInputValue(value);
+    }, [value]);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const nextValue = e.target.value;
+        setInputValue(nextValue);
+        onChange?.(e);
         if (onSearchChange) {
-            onSearchChange(value);
+            onSearchChange(nextValue);
         }
     };
 

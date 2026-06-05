@@ -31,7 +31,7 @@ export function ReviewApprovalTabs() {
     const [activeTab, setActiveTab] = useState("percentage");
     const [searchTerm, setSearchTerm] = useState("");
     const [sortConfig, setSortConfig] = useState({ key: '', direction: 'asc' });
-    const [, setActiveFilters] = useState({});
+    const [activeFilters, setActiveFilters] = useState<Record<string, boolean>>({});
     const [selectedMeterNumbers, setSelectedMeterNumbers] = useState<string[]>([]);
     const [selectedBandNames, setSelectedBandNames] = useState<string[]>([]);
     const [selectedTariffNames, setSelectedTariffNames] = useState<string[]>([]);
@@ -311,11 +311,31 @@ export function ReviewApprovalTabs() {
         }
     };
 
-    const handleSortChange = (sortBy: string) => {
-        const [keyRaw, directionRaw] = sortBy.split(' ');
-        const key = keyRaw ?? '';
-        const direction = directionRaw ?? 'asc';
-        setSortConfig({ key, direction });
+    const getDefaultSortKey = () => {
+        switch (activeTab) {
+            case 'percentage':
+                return 'code';
+            case 'liability cause':
+                return 'name';
+            case 'band':
+                return 'name';
+            case 'tariff':
+                return 'name';
+            case 'meter':
+                return 'meterNumber';
+            default:
+                return '';
+        }
+    };
+
+    const getReviewType = () => {
+        if (activeFilters.approved) return 'approved';
+        if (activeFilters.rejected) return 'rejected';
+        return 'pending-state';
+    };
+
+    const handleSortChange = (direction: string) => {
+        setSortConfig({ key: getDefaultSortKey(), direction });
     };
 
     const handleSearchChange = (term: string) => {
@@ -402,7 +422,7 @@ export function ReviewApprovalTabs() {
                             />
                             <SortControl
                                 onSortChange={handleSortChange}
-                                currentSort={sortConfig.key ? `${sortConfig.key} (${sortConfig.direction})` : ''}
+                                currentSort={sortConfig.key ? sortConfig.direction : ''}
                             />
 
                         </div>
@@ -411,30 +431,50 @@ export function ReviewApprovalTabs() {
                         <PercentageRangeTable
                             selectedPercentageRangeCodes={selectedPercentageRangeCodes}
                             setSelectedPercentageRangeCodes={setSelectedPercentageRangeCodes}
+                            searchTerm={searchTerm}
+                            sortBy={sortConfig.key}
+                            sortDirection={sortConfig.direction as "asc" | "desc"}
+                            type={getReviewType()}
                         />
                     </TabsContent>
                     <TabsContent value="liability cause" className="overflow-x-hidden">
                         <LiabilityCauseTable
                             selectedLiabilityCauseNames={selectedLiabilityCauseNames}
                             setSelectedLiabilityCauseNames={setSelectedLiabilityCauseNames}
+                            searchTerm={searchTerm}
+                            sortBy={sortConfig.key}
+                            sortDirection={sortConfig.direction as "asc" | "desc"}
+                            type={getReviewType()}
                         />
                     </TabsContent>
                     <TabsContent value="band" className="overflow-x-hidden">
                         <BandTable
                             selectedBandNames={selectedBandNames}
                             setSelectedBandNames={setSelectedBandNames}
+                            searchTerm={searchTerm}
+                            sortBy={sortConfig.key}
+                            sortDirection={sortConfig.direction as "asc" | "desc"}
+                            type={getReviewType()}
                         />
                     </TabsContent>
                     <TabsContent value="tariff" className="overflow-x-hidden">
                         <TariffTable
                             selectedTariffNames={selectedTariffNames}
                             setSelectedTariffNames={setSelectedTariffNames}
+                            searchTerm={searchTerm}
+                            sortBy={sortConfig.key}
+                            sortDirection={sortConfig.direction as "asc" | "desc"}
+                            type={getReviewType()}
                         />
                     </TabsContent>
                     <TabsContent value="meter" className="overflow-x-hidden">
                         <MeterTable
                             selectedMeterNumbers={selectedMeterNumbers}
                             setSelectedMeterNumbers={setSelectedMeterNumbers}
+                            searchTerm={searchTerm}
+                            sortBy={sortConfig.key}
+                            sortDirection={sortConfig.direction as "asc" | "desc"}
+                            type={getReviewType()}
                         />
                     </TabsContent>
                 </Tabs>

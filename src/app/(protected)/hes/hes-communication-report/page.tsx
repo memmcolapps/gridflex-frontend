@@ -45,6 +45,8 @@ export default function CommunicationReportPage() {
   const [openDialog, setOpenDialog] = useState(false);
   const [activeTab, setActiveTab] = useState<"MD" | "Non-MD">("MD");
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeFilters, setActiveFilters] = useState<Record<string, boolean>>({});
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc" | null>(null);
   const [liveStatuses, setLiveStatuses] = useState<
     Record<string, MeterStatusData>
   >({});
@@ -80,14 +82,34 @@ export default function CommunicationReportPage() {
 
   // Filter data based on search query
   const filteredData = useMemo(() => {
-    if (!searchQuery) return communicationData;
     const searchLower = searchQuery.toLowerCase();
-    return communicationData.filter(
-      (item) =>
-        item.meterNo?.toLowerCase().includes(searchLower) ??
-        item.connectionType?.toLowerCase().includes(searchLower),
-    );
-  }, [communicationData, searchQuery]);
+    const selectedStatuses = Object.entries(activeFilters)
+      .filter(([, selected]) => selected)
+      .map(([status]) => status.toLowerCase());
+
+    const result = communicationData.filter((item) => {
+      const matchesSearch =
+        !searchLower ||
+        Boolean(item.meterNo?.toLowerCase().includes(searchLower)) ||
+        Boolean(item.connectionType?.toLowerCase().includes(searchLower));
+
+      const matchesStatus =
+        selectedStatuses.length === 0 ||
+        selectedStatuses.includes((item.connectionType ?? "").toLowerCase());
+
+      return matchesSearch && matchesStatus;
+    });
+
+    if (!sortDirection) return result;
+
+    return [...result].sort((a, b) => {
+      const aValue = a.meterNo ?? "";
+      const bValue = b.meterNo ?? "";
+      return sortDirection === "asc"
+        ? aValue.localeCompare(bValue)
+        : bValue.localeCompare(aValue);
+    });
+  }, [communicationData, searchQuery, activeFilters, sortDirection]);
 
   const formatDateTime = (value: unknown) => {
     if (!value) return "-";
@@ -169,8 +191,26 @@ export default function CommunicationReportPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
-          <FilterControl />
-          <SortControl />
+          <FilterControl
+            sections={[
+              {
+                title: "Connection",
+                options: [
+                  { label: "Online", id: "ONLINE" },
+                  { label: "Offline", id: "OFFLINE" },
+                  { label: "Connected", id: "CONNECTED" },
+                ],
+              },
+            ]}
+            onApply={setActiveFilters}
+            onReset={() => setActiveFilters({})}
+          />
+          <SortControl
+            onSortChange={(direction) =>
+              setSortDirection(direction === "desc" ? "desc" : "asc")
+            }
+            currentSort={sortDirection ?? ""}
+          />
         </div>
         <ExportButton
           data={filteredData}
@@ -182,7 +222,7 @@ export default function CommunicationReportPage() {
       <CommunicationTable
         searchQuery={searchQuery}
         activeTab={activeTab}
-        communicationData={communicationData}
+        communicationData={filteredData}
       />
       <DailyReportDialog
         open={openDialog}

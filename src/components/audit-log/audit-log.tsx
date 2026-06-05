@@ -19,6 +19,10 @@ export function AuditLog() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc" | null>(
+    null,
+  );
 
   const apiPage = currentPage - 1;
   const { data, isLoading, isError, error } = useAuditLogs(
@@ -26,7 +30,29 @@ export function AuditLog() {
     rowsPerPage,
   );
 
-  const totalRows = data?.totalData ?? 0;
+  const displayRows = (data?.data ?? [])
+    .filter((row) => {
+      if (!searchTerm.trim()) return true;
+      const search = searchTerm.toLowerCase();
+      return [
+        row.username,
+        row.email,
+        row.groupPermission,
+        row.activity,
+        row.userAgent,
+        row.ipAddress,
+        row.timeStamp,
+      ].some((value) => value?.toLowerCase().includes(search));
+    })
+    .sort((a, b) => {
+      if (!sortDirection) return 0;
+      const aTime = new Date(a.timeStamp).getTime();
+      const bTime = new Date(b.timeStamp).getTime();
+      return sortDirection === "asc" ? aTime - bTime : bTime - aTime;
+    });
+
+  const totalRows =
+    searchTerm || sortDirection ? displayRows.length : (data?.totalData ?? 0);
 
   const handleRowClick = (entry: AuditLog) => {
     setSelectedEntry(entry);
@@ -48,9 +74,21 @@ export function AuditLog() {
         </p>
         <div className="mb-6 flex w-80 items-center gap-4">
           <div className="flex items-center gap-2">
-            <SearchControl />
+            <SearchControl
+              value={searchTerm}
+              onSearchChange={(value) => {
+                setSearchTerm(value);
+                setCurrentPage(1);
+              }}
+              placeholder="Search audit logs..."
+            />
           </div>
-          <SortControl />
+          <SortControl
+            currentSort={sortDirection ?? ""}
+            onSortChange={(direction) =>
+              setSortDirection(direction === "desc" ? "desc" : "asc")
+            }
+          />
         </div>
         <div>
           <div className="w-full overflow-x-auto bg-transparent">
@@ -87,7 +125,7 @@ export function AuditLog() {
                       Error loading audit logs: {error?.toString()}
                     </TableCell>
                   </TableRow>
-                ) : !data?.data || data.data.length === 0 ? (
+                ) : displayRows.length === 0 ? (
                   <TableRow>
                     <TableCell
                       colSpan={6}
@@ -97,7 +135,7 @@ export function AuditLog() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  data.data.map((row: AuditLog, idx: number) => (
+                  displayRows.map((row: AuditLog, idx: number) => (
                     <TableRow
                       key={row.id ?? idx}
                       onClick={() => handleRowClick(row)}

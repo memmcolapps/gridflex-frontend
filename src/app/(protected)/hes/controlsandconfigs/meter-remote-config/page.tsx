@@ -122,6 +122,7 @@ export default function MeterRemoteConfigPage() {
     key: keyof Meter;
     direction: "asc" | "desc";
   }>({ key: "sN", direction: "asc" });
+  const [activeFilters, setActiveFilters] = useState<Record<string, string | boolean>>({});
   const [selectedMeters, setSelectedMeters] = useState<string[]>([]);
   const [selectedConfigOption, setSelectedConfigOption] =
     useState<DialogType | null>(null);
@@ -202,10 +203,11 @@ export default function MeterRemoteConfigPage() {
   //     }
   // };
 
-  // Apply search filter
+  // Apply search and dropdown filters
   const filteredData = meterData.filter((meter) => {
     const searchLower = searchTerm.toLowerCase();
-    return (
+    const matchesSearch =
+      !searchLower ||
       meter.sN.toLowerCase().includes(searchLower) ||
       meter.meterNumber.toLowerCase().includes(searchLower) ||
       meter.simNo.toLowerCase().includes(searchLower) ||
@@ -219,7 +221,50 @@ export default function MeterRemoteConfigPage() {
       meter.serviceCenter.toLowerCase().includes(searchLower) ||
       meter.feeder.toLowerCase().includes(searchLower) ||
       meter.transformer.toLowerCase().includes(searchLower) ||
-      meter.lastSync.toLowerCase().includes(searchLower)
+      meter.lastSync.toLowerCase().includes(searchLower);
+
+    const classFilters = [
+      { active: activeFilters.singlePhase, value: "single" },
+      { active: activeFilters.threePhase, value: "three" },
+      { active: activeFilters.md, value: "md" },
+    ];
+    const matchesClass =
+      classFilters.every((filter) => !filter.active) ||
+      classFilters.some(
+        (filter) =>
+          filter.active &&
+          meter.class.toLowerCase().includes(filter.value),
+      );
+
+    const categoryFilters = [
+      { active: activeFilters.prepaid, value: "prepaid" },
+      { active: activeFilters.postpaid, value: "postpaid" },
+    ];
+    const matchesCategory =
+      categoryFilters.every((filter) => !filter.active) ||
+      categoryFilters.some(
+        (filter) =>
+          filter.active &&
+          meter.category.toLowerCase().includes(filter.value),
+      );
+
+    const statusFilters = [
+      { active: activeFilters.online, value: "online" },
+      { active: activeFilters.offline, value: "offline" },
+    ];
+    const matchesStatus =
+      statusFilters.every((filter) => !filter.active) ||
+      statusFilters.some(
+        (filter) =>
+          filter.active &&
+          meter.status.toLowerCase().includes(filter.value),
+      );
+
+    return (
+      matchesSearch &&
+      matchesClass &&
+      matchesCategory &&
+      matchesStatus
     );
   });
 
@@ -269,7 +314,7 @@ export default function MeterRemoteConfigPage() {
   const handleSetActiveFilters = (
     filters: Record<string, string | boolean>,
   ) => {
-    console.log("Filters applied:", filters);
+    setActiveFilters(filters);
     setCurrentPage(1);
   };
 
@@ -840,6 +885,5 @@ export default function MeterRemoteConfigPage() {
     </div>
   );
 }
-
 
 

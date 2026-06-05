@@ -488,21 +488,22 @@ export default function MeterManagementPage() {
     term: string,
     sortBy: keyof MeterInventoryItem | null,
     direction: "asc" | "desc",
+    filters: Record<string, boolean> = activeFilters,
   ) => {
     let results: MeterInventoryItem[] = metersData?.actualMeters ?? [];
 
-    if (Object.keys(activeFilters).length > 0) {
+    if (Object.keys(filters).length > 0) {
       results = results.filter((item) => {
         const meter = item as MeterInventoryItem;
         const statusFilters = [
           {
             id: "assigned",
-            value: activeFilters.assigned,
+            value: filters.assigned,
             status: "Assigned",
           },
           {
             id: "deactivated",
-            value: activeFilters.deactivated,
+            value: filters.deactivated,
             status: "Unassigned",
           },
         ];
@@ -515,15 +516,15 @@ export default function MeterManagementPage() {
         const classFilters = [
           {
             id: "singlePhase",
-            value: activeFilters.singlePhase,
+            value: filters.singlePhase,
             class: "Single phase",
           },
           {
             id: "threePhase",
-            value: activeFilters.threePhase,
+            value: filters.threePhase,
             class: "Three Phase",
           },
-          { id: "mdMeter", value: activeFilters.mdMeter, class: "MD" },
+          { id: "mdMeter", value: filters.mdMeter, class: "MD" },
         ];
         const classMatch =
           classFilters.every((f) => !f.value) ||
@@ -559,6 +560,11 @@ export default function MeterManagementPage() {
       });
     }
     setProcessedData(results);
+  };
+
+  const handleSetActiveFilters = (filters: Record<string, boolean>) => {
+    setActiveFilters(filters);
+    applyFiltersAndSort(searchTerm, sortConfig.key, sortConfig.direction, filters);
   };
 
   const toggleSelection = (id: string) => {
@@ -783,8 +789,8 @@ export default function MeterManagementPage() {
             <FilterControl
               sections={actualFilterSections}
               filterType="multi-section"
-              onApply={(filters) => setActiveFilters(filters)}
-              onReset={() => setActiveFilters({})}
+              onApply={handleSetActiveFilters}
+              onReset={() => handleSetActiveFilters({})}
             />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>

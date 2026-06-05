@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { SetStateAction, useState } from "react";
+import { SetStateAction, useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import {
   Table,
@@ -47,11 +47,19 @@ interface LiabilityCauseTableProps {
   setSelectedLiabilityCauseNames: React.Dispatch<
     React.SetStateAction<string[]>
   >;
+  searchTerm?: string;
+  sortBy?: string | null;
+  sortDirection?: "asc" | "desc" | null;
+  type?: string;
 }
 
 const LiabilityCauseTable = ({
   selectedLiabilityCauseNames,
   setSelectedLiabilityCauseNames,
+  searchTerm = "",
+  sortBy = null,
+  sortDirection = null,
+  type = "pending-state",
 }: LiabilityCauseTableProps) => {
   const { canApprove } = usePermissions();
   const [fetchParams, setFetchParams] = useState<FetchParams>({
@@ -74,10 +82,22 @@ const LiabilityCauseTable = ({
   const { liabilities, isLoading, isError, error, reviewMutation } =
     useLiabilities(fetchParams);
 
+  useEffect(() => {
+    setFetchParams((previous) => ({
+      ...previous,
+      page: 1,
+      searchTerm,
+      sortBy,
+      sortDirection,
+      type,
+    }));
+  }, [searchTerm, sortBy, sortDirection, type]);
+
   // Filter out approved liabilities
-  const filteredLiabilities = liabilities.filter(
-    (item) => item.approveStatus !== "Approved",
-  );
+  const filteredLiabilities =
+    type === "approved"
+      ? liabilities
+      : liabilities.filter((item) => item.approveStatus !== "Approved");
 
   // We are now getting the total count from the filtered data
   const totalCount = filteredLiabilities.length;

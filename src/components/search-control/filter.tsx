@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ListFilter } from "lucide-react";
 import { Checkbox } from "../ui/checkbox";
@@ -42,6 +42,10 @@ export function FilterControl({
             { label: "Deactivated", id: "deactivated" }
         ]
     };
+
+    useEffect(() => {
+        setFilters(initialFilters);
+    }, [initialFilters]);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -109,33 +113,6 @@ export function FilterControl({
         setIsOpen(false);
     };
 
-    // Validation for multi-section filter
-    if (filterType === "multi-section" && sections.length < 2) {
-        return (
-            <div className="relative">
-                <div className="flex items-center gap-2">
-                    <Button
-                        ref={buttonRef}
-                        variant="outline"
-                        className="gap-2 border-gray-300 w-full lg:w-auto cursor-pointer"
-                        onClick={() => setIsOpen(!isOpen)}
-                    >
-                        <ListFilter className="text-gray-500" size={14} />
-                        <span className="text-gray-800 text-sm lg:text-base">Filter</span>
-                    </Button>
-                </div>
-                {isOpen && (
-                    <div
-                        ref={dropdownRef}
-                        className="absolute z-50 mt-2 w-[280px] bg-white rounded-md shadow-lg border border-gray-200 p-4 ml-[-45px]"
-                    >
-                        <div className="text-gray-700 text-sm">Insufficient filter sections provided.</div>
-                    </div>
-                )}
-            </div>
-        );
-    }
-
     return (
         <div className="relative">
             <div className="flex items-center gap-2">
@@ -179,56 +156,38 @@ export function FilterControl({
                                 </div>
                             ))}
                         </div>
-                    ) : (
-                        // Multi-Section Filter UI
+                    ) : sections.length > 0 ? (
                         <div className="flex gap-4">
-                            {/* Left Column: Meter Class */}
-                            <div className="flex-1 border-r border-gray-200 pr-4">
-                                <div className="text-black-700 text-sm mb-2 font-bold">{sections[0]?.title}</div>
-                                {sections[0]?.options?.map((option) => (
-                                    <div
-                                        key={option.id}
-                                        className="flex items-center justify-between py-2"
-                                    >
-                                        <label htmlFor={option.id} className="text-sm text-gray-700">
-                                            {option.label}
-                                        </label>
-                                        <Checkbox
-                                            id={option.id}
-                                            checked={filters[option.id] ?? false}
-                                            onCheckedChange={() => toggleFilter(option.id, 0)}
-                                            className={`h-4 w-4 border-2 rounded cursor-pointer ${filters[option.id]
-                                                ? 'bg-[#161CCA] border-[#161CCA]'
-                                                : 'bg-white border-gray-300'
-                                            }`}
-                                        />
+                            {sections.map((section, sectionIndex) => (
+                                <Fragment key={section.title}>
+                                    {sectionIndex > 0 && <div className="border-r border-gray-200" />}
+                                    <div className="flex-1">
+                                        <div className="text-black-700 text-sm mb-2 font-bold">{section.title}</div>
+                                        {section.options.map((option) => (
+                                            <div
+                                                key={option.id}
+                                                className="flex items-center justify-between py-2"
+                                            >
+                                                <label htmlFor={option.id} className="text-sm text-gray-700">
+                                                    {option.label}
+                                                </label>
+                                                <Checkbox
+                                                    id={option.id}
+                                                    checked={filters[option.id] ?? false}
+                                                    onCheckedChange={() => toggleFilter(option.id, sectionIndex)}
+                                                    className={`h-4 w-4 border-2 rounded cursor-pointer ${filters[option.id]
+                                                        ? 'bg-[#161CCA] border-[#161CCA]'
+                                                        : 'bg-white border-gray-300'
+                                                    }`}
+                                                />
+                                            </div>
+                                        ))}
                                     </div>
-                                ))}
-                            </div>
-                            {/* Right Column: Meter Type (Category) */}
-                            <div className="flex-1">
-                                <div className="font-bold text-black-700 text-sm mb-2">{sections[1]?.title}</div>
-                                {sections[1]?.options?.map((option) => (
-                                    <div
-                                        key={option.id}
-                                        className="flex items-center justify-between py-2"
-                                    >
-                                        <label htmlFor={option.id} className="text-sm text-gray-700">
-                                            {option.label}
-                                        </label>
-                                        <Checkbox
-                                            id={option.id}
-                                            checked={filters[option.id] ?? false}
-                                            onCheckedChange={() => toggleFilter(option.id, 1)}
-                                            className={`h-4 w-4 border-2 rounded cursor-pointer ${filters[option.id]
-                                                ? 'bg-[#161CCA] border-[#161CCA]'
-                                                : 'bg-white border-gray-300'
-                                            }`}
-                                        />
-                                    </div>
-                                ))}
-                            </div>
+                                </Fragment>
+                            ))}
                         </div>
+                    ) : (
+                        <div className="text-gray-700 text-sm">No filter options available.</div>
                     )}
 
                     <div className="flex justify-center gap-2 mt-4">

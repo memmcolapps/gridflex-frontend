@@ -786,7 +786,13 @@ export default function ManufacturersPage() {
     return results;
   };
 
-  const paginatedData = data.slice(
+  const processedData = applyFiltersAndSort(
+    searchTerm,
+    sortConfig.key,
+    sortConfig.direction,
+  );
+
+  const paginatedData = processedData.slice(
     (currentPage - 1) * rowsPerPage,
     currentPage * rowsPerPage,
   );
@@ -988,7 +994,7 @@ export default function ManufacturersPage() {
       {/* Pagination */}
       <PaginationControls
         currentPage={currentPage}
-        totalItems={data.length}
+        totalItems={processedData.length}
         pageSize={rowsPerPage}
         onPageChange={setCurrentPage}
         onPageSizeChange={handlePageSizeChange}
