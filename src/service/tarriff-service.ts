@@ -67,14 +67,28 @@ interface ApprovalStatusResponse {
 const API_URL = env.NEXT_PUBLIC_BASE_URL;
 const CUSTOM_HEADER = env.NEXT_PUBLIC_CUSTOM_HEADER;
 
-export async function fetchTariffs(): Promise<
+export interface FetchTariffsParams {
+  search?: string;
+  approveStatus?: string;
+  sort?: "asc" | "desc" | "";
+}
+
+export async function fetchTariffs(
+  params: FetchTariffsParams = {},
+): Promise<
   { success: true; data: Tariff[] } | { success: false; error: string }
 > {
   try {
     const token = localStorage.getItem("auth_token");
 
+    const query = new URLSearchParams();
+    if (params.search) query.set("search", params.search);
+    if (params.approveStatus) query.set("approveStatus", params.approveStatus);
+    if (params.sort) query.set("sort", params.sort);
+    const queryString = query.toString();
+
     const response = await axiosInstance.get<TariffListResponse>(
-      `${API_URL}/tariff/service/all`,
+      `${API_URL}/tariff/service/all${queryString ? `?${queryString}` : ""}`,
       {
         headers: {
           "Content-Type": "application/json",

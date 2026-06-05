@@ -13,16 +13,17 @@ import type {
   UpdateTariffPayload,
   ExportTariffParams,
   BulkApproveTariffPayload,
+  FetchTariffsParams,
 } from "../service/tarriff-service";
 import { useAuth } from "../context/auth-context";
 import { queryClient } from "@/lib/queryClient";
 
-export const useTariff = () => {
+export const useTariff = (params: FetchTariffsParams = {}) => {
   const { isAuthenticated } = useAuth();
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ["tariffs"],
-    queryFn: fetchTariffs,
+    queryKey: ["tariffs", params],
+    queryFn: () => fetchTariffs(params),
     enabled: isAuthenticated,
   });
 
