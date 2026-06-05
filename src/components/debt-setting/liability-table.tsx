@@ -20,6 +20,10 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import {
@@ -107,6 +111,7 @@ const LiabilityTable = ({
 }: LiabilityTableProps) => {
   const { canEdit } = usePermissions();
   const [searchTerm, setSearchTerm] = useState("");
+  const [sort, setSort] = useState<"asc" | "desc" | "">("");
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeactivateDialogOpen, setIsDeactivateDialogOpen] = useState(false);
   const [isActivateDialogOpen, setIsActivateDialogOpen] = useState(false);
@@ -118,12 +123,12 @@ const LiabilityTable = ({
     data: liabilityData,
     isLoading: isLoadingLiabilities,
     refetch: refetchLiabilities,
-  } = useAllLiabilityCauses(searchTerm);
+  } = useAllLiabilityCauses(searchTerm, sort);
   const {
     data: percentageData,
     isLoading: isLoadingPercentages,
     refetch: refetchPercentages,
-  } = useAllPercentageRanges(searchTerm);
+  } = useAllPercentageRanges(searchTerm, sort);
   const { mutate: updateLiability, isPending: isUpdatingLiability } =
     useUpdateLiabilityCause();
   const { mutate: updatePercentage, isPending: isUpdatingPercentage } =
@@ -574,25 +579,50 @@ const LiabilityTable = ({
             <DropdownMenuTrigger asChild>
               <Button
                 variant="outline"
-                className="w-full gap-2 border-gray-300 ring-gray-100/20 lg:w-auto"
+                className={`w-full gap-2 border-gray-300 ring-gray-100/20 lg:w-auto ${
+                  sort ? "border-[#161CCA] text-[#161CCA]" : ""
+                }`}
               >
-                <ArrowUpDown className="text-gray-500" size={14} />
-                <span className="text-sm text-gray-800 lg:text-base">Sort</span>
+                <ArrowUpDown
+                  className={sort ? "text-[#161CCA]" : "text-gray-500"}
+                  size={14}
+                />
+                <span className="text-sm lg:text-base">
+                  {sort === "asc"
+                    ? "Sort: A–Z"
+                    : sort === "desc"
+                      ? "Sort: Z–A"
+                      : "Sort"}
+                </span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-full p-3 shadow-lg">
-              <DropdownMenuItem className="cursor-pointer">
-                Newest - Oldest
-              </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer">
-                Oldest - Newest
-              </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer">
-                Highest - Lowest
-              </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer">
-                Lowest - Highest
-              </DropdownMenuItem>
+            <DropdownMenuContent className="w-full p-1 shadow-lg">
+              <DropdownMenuLabel>
+                {view === "liability" ? "Liability Name" : "Percentage"}
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuRadioGroup
+                value={sort}
+                onValueChange={(value) => setSort(value as "asc" | "desc" | "")}
+              >
+                <DropdownMenuRadioItem value="asc" className="cursor-pointer">
+                  Ascending (A–Z)
+                </DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="desc" className="cursor-pointer">
+                  Descending (Z–A)
+                </DropdownMenuRadioItem>
+              </DropdownMenuRadioGroup>
+              {sort && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    className="cursor-pointer text-red-600"
+                    onSelect={() => setSort("")}
+                  >
+                    Clear sort
+                  </DropdownMenuItem>
+                </>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

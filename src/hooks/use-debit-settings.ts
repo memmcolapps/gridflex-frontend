@@ -25,11 +25,14 @@ import {
 
 // --- Liability Cause Hooks ---
 
-export const useAllLiabilityCauses = (searchTerm?: string) => {
+export const useAllLiabilityCauses = (
+  searchTerm?: string,
+  sort?: "asc" | "desc" | "",
+) => {
   return useQuery<LiabilityCause[]>({
-    queryKey: ["liability", searchTerm],
+    queryKey: ["liability", searchTerm, sort],
     queryFn: async () => {
-      const result = await fetchAllLiabilityCauses(searchTerm);
+      const result = await fetchAllLiabilityCauses(searchTerm, sort);
       if (result.success) {
         return result.data;
       } else {
@@ -98,11 +101,14 @@ export const useChangeLiabilityCauseStatus = () => {
 
 // --- Percentage Range Hooks ---
 
-export const useAllPercentageRanges = (searchTerm?: string) => {
+export const useAllPercentageRanges = (
+  searchTerm?: string,
+  sort?: "asc" | "desc" | "",
+) => {
   return useQuery<PercentageRange[]>({
-    queryKey: ["percentageRange", searchTerm],
+    queryKey: ["percentageRange", searchTerm, sort],
     queryFn: async () => {
-      const result = await fetchAllPercentageRanges(searchTerm);
+      const result = await fetchAllPercentageRanges(searchTerm, sort);
       if (result.success) {
         return result.data;
       } else {
