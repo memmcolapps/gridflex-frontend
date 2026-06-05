@@ -54,11 +54,14 @@ export default function CustomerTable({
   const [activeFilters, setActiveFilters] = useState<Record<string, boolean>>(
     {},
   );
+  const selectedStatus =
+    Object.entries(activeFilters).find(([, selected]) => selected)?.[0] ?? null;
 
   const { data, isLoading, isError, error } = useCustomers({
     page: currentPage,
     pageSize: rowsPerPage,
     searchTerm,
+    status: selectedStatus,
     sortBy: sortConfig?.key,
     sortDirection: sortConfig?.direction,
   });
@@ -67,24 +70,8 @@ export default function CustomerTable({
     toast.error(error.message);
   }
 
-  const allCustomers = (data?.responsedata?.data ?? []).filter((customer) => {
-    const selectedStatuses = Object.entries(activeFilters)
-      .filter(([, selected]) => selected)
-      .map(([status]) => status.toLowerCase());
-
-    if (selectedStatuses.length === 0) return true;
-
-    return selectedStatuses.includes(String(customer.status).toLowerCase());
-  });
-
-  // Apply client-side pagination (API may return all data regardless of pageSize)
-  // Calculate pagination indices
-  const startIndex = (currentPage - 1) * rowsPerPage;
-  const endIndex = startIndex + rowsPerPage;
-  const customers = allCustomers.slice(startIndex, endIndex);
-
-  // Use API totalData if available, otherwise use length of returned data
-  const totalCustomers = data?.responsedata?.totalData ?? allCustomers.length;
+  const customers = data?.responsedata?.data ?? [];
+  const totalCustomers = data?.responsedata?.totalData ?? customers.length;
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);

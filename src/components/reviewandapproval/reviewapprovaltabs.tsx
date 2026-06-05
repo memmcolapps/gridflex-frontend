@@ -193,8 +193,29 @@ export function ReviewApprovalTabs() {
         // Add more filter sections as needed
     ];
 
+    const getDefaultSortKey = (tab = activeTab) => {
+        switch (tab) {
+            case 'percentage':
+                return 'code';
+            case 'liability cause':
+                return 'name';
+            case 'band':
+                return 'name';
+            case 'tariff':
+                return 'name';
+            case 'meter':
+                return 'meterNumber';
+            default:
+                return '';
+        }
+    };
+
     const changeTab = (value: string) => {
         setActiveTab(value);
+        setSortConfig((previous) => ({
+            key: previous.key ? getDefaultSortKey(value) : '',
+            direction: previous.direction,
+        }));
         // Clear selected meter numbers when switching tabs
         if (value !== "meter") {
             setSelectedMeterNumbers([]);
@@ -308,23 +329,6 @@ export function ReviewApprovalTabs() {
                 const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
                 toast.error(errorMessage);
             }
-        }
-    };
-
-    const getDefaultSortKey = () => {
-        switch (activeTab) {
-            case 'percentage':
-                return 'code';
-            case 'liability cause':
-                return 'name';
-            case 'band':
-                return 'name';
-            case 'tariff':
-                return 'name';
-            case 'meter':
-                return 'meterNumber';
-            default:
-                return '';
         }
     };
 
