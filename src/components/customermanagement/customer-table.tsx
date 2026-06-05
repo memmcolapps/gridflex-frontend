@@ -257,6 +257,7 @@ export default function CustomerTable({
               title: "Status",
               options: [
                 { label: "Active", id: "Active" },
+                { label: "Inactive", id: "Inactive" },
                 { label: "Block", id: "Block" },
               ],
             },

@@ -161,9 +161,9 @@ export async function fetchMeterInventory(
 
     // Build query parameters
     const params = new URLSearchParams();
-    // API expects 0-based page index (page 0 = first page), UI uses 1-based
-    if (queryFilters.page) params.append("page", String(queryFilters.page - 1));
+    if (queryFilters.page !== undefined) params.append("page", String(queryFilters.page));
     if (queryFilters.size) params.append("size", queryFilters.size.toString());
+    if (queryFilters.search) params.append("search", queryFilters.search);
     if (queryFilters.meterNumber)
       params.append("meterNumber", queryFilters.meterNumber);
     if (queryFilters.simNo) params.append("simNo", queryFilters.simNo);
@@ -177,6 +177,9 @@ export async function fetchMeterInventory(
     if (queryFilters.status) params.append("status", queryFilters.status);
     if (queryFilters.createdAt)
       params.append("createdAt", queryFilters.createdAt);
+    if (queryFilters.sortBy) params.append("sortBy", String(queryFilters.sortBy));
+    if (queryFilters.sortDirection)
+      params.append("sortDirection", queryFilters.sortDirection);
     params.append("type", "inventory");
 
     const response = await axiosInstance.get<GetMeterInventoryResponse>(

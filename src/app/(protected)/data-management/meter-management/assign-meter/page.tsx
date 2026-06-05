@@ -57,6 +57,7 @@ import { fetchCustomerRecord } from "@/service/customer-service";
 import { ExportButton, ExportColumn } from "@/components/ui/export-button";
 import { useAuth } from "@/context/auth-context";
 import { usePermissions } from "@/hooks/use-permissions";
+import type { MeterAPIItem } from "@/service/assign-meter-service";
 
 // Define filter sections
 const filterSections = [
@@ -68,14 +69,19 @@ const filterSections = [
       { label: "MD", id: "md" },
     ],
   },
-  {
-    title: "Meter Type",
-    options: [
-      { label: "Prepaid", id: "prepaid" },
-      { label: "Postpaid", id: "postPaid" },
-    ],
-  },
 ];
+
+const mapActiveFiltersToApi = (filters: Record<string, boolean>) => {
+  const selectedClasses = [
+    filters.singlePhase ? "Single phase" : null,
+    filters.threePhase ? "Three Phase" : null,
+    filters.md ? "MD" : null,
+  ].filter((value): value is string => Boolean(value));
+
+  return {
+    meterClass: selectedClasses.length === 1 ? selectedClasses[0] : undefined,
+  };
+};
 
 export default function AssignMeterPage() {
   const {canEdit} = usePermissions()
@@ -108,7 +114,7 @@ export default function AssignMeterPage() {
   const [sortConfig, setSortConfig] = useState<{
     key: keyof MeterInventoryItem | keyof VirtualMeterData | null;
     direction: "asc" | "desc";
-  }>({ key: null, direction: "asc" });
+  }>({ key: "createdAt", direction: "desc" });
   const [meterNumber, setMeterNumber] = useState("");
   const [cin, setCin] = useState("");
   const [accountNumber, setAccountNumber] = useState("");
@@ -151,6 +157,7 @@ export default function AssignMeterPage() {
 
   // Fetch tariffs using the useTariff hook
   const { tariffs, isLoading: isLoadingTariffs } = useTariff();
+  const serverFilters = mapActiveFiltersToApi(activeFilters);
 
   // Fetch meter data using the API
   const {
@@ -158,11 +165,12 @@ export default function AssignMeterPage() {
     isLoading,
     refetch,
   } = useMeters({
-    page: 1,
-    pageSize: 1000, // Fetch a large number to handle client-side filtering/pagination
+    page: currentPage,
+    pageSize: rowsPerPage,
     searchTerm,
-    sortBy: sortConfig.key as any,
+    sortBy: sortConfig.key as keyof MeterAPIItem,
     sortDirection: sortConfig.direction,
+    meterClass: serverFilters.meterClass,
     type: "assigned",
   });
 
@@ -182,11 +190,7 @@ export default function AssignMeterPage() {
     setMeterData(processedData);
   }, [processedData]);
 
-  // Calculate pagination values
-  const totalRows = Math.ceil(processedData.length / rowsPerPage);
-  const startIndex = (currentPage - 1) * rowsPerPage;
-  const endIndex = startIndex + rowsPerPage;
-  const currentPageData = meterData.slice(startIndex, endIndex);
+  const currentPageData = meterData;
 
   // Reset payment fields when Set Payment Mode modal closes
   useEffect(() => {
@@ -611,86 +615,20 @@ export default function AssignMeterPage() {
 
   const handleSearchChange = (term: string) => {
     setSearchTerm(term);
-    applyFiltersAndSort(term, sortConfig.key, sortConfig.direction);
+    setCurrentPage(1);
   };
 
-  const handleSortChange = (key: keyof MeterInventoryItem) => {
-    const newDirection =
-      sortConfig.key === key && sortConfig.direction === "asc" ? "desc" : "asc";
-    setSortConfig({ key, direction: newDirection });
-    applyFiltersAndSort(searchTerm, key, newDirection);
-  };
-
-  const applyFiltersAndSort = (
-    term: string,
-    sortBy: keyof MeterInventoryItem | keyof VirtualMeterData | null,
+  const handleSortChange = (
+    key: keyof MeterInventoryItem | keyof VirtualMeterData,
     direction: "asc" | "desc",
-    filters: Record<string, boolean> = activeFilters,
   ) => {
-    let results = processedData;
-
-    if (term.trim() !== "") {
-      results = results.filter(
-        (item) =>
-          [
-            item.customerId?.toLowerCase().includes(term.toLowerCase()),
-            item.meterNumber?.toLowerCase().includes(term.toLowerCase()),
-            item.accountNumber?.toLowerCase().includes(term.toLowerCase()),
-            item.cin?.toLowerCase().includes(term.toLowerCase()),
-          ].some((result) => result === true) ?? false,
-      );
-    }
-
-    results = results.filter((meter) => {
-      const classOptions = [
-        { active: filters.singlePhase, value: "single phase" },
-        { active: filters.threePhase, value: "three phase" },
-        { active: filters.md, value: "md" },
-      ];
-      const classMatch =
-        !filters.singlePhase &&
-        !filters.threePhase &&
-        !filters.md
-          ? true
-          : classOptions.some(
-              ({ active, value }) =>
-                active &&
-                "meterClass" in meter &&
-                meter.meterClass?.toLowerCase().includes(value),
-            );
-
-      const typeOptions = [
-        { active: filters.prepaid, value: "prepaid" },
-        { active: filters.postPaid, value: "postpaid" },
-      ];
-      const typeMatch =
-        !filters.prepaid && !filters.postPaid
-          ? true
-          : typeOptions.some(
-              ({ active, value }) =>
-                active && meter.category?.toLowerCase() === value,
-            );
-
-      return classMatch && typeMatch;
-    });
-
-    if (sortBy) {
-      results = [...results].sort((a, b) => {
-        const aValue = (a as any)[sortBy!] ?? "";
-        const bValue = (b as any)[sortBy!] ?? "";
-        if (aValue < bValue) return direction === "asc" ? -1 : 1;
-        if (aValue > bValue) return direction === "asc" ? 1 : -1;
-        return 0;
-      });
-    }
-
-    setMeterData(results);
+    setSortConfig({ key, direction });
     setCurrentPage(1);
   };
 
   const handleSetActiveFilters = (filters: Record<string, boolean>) => {
     setActiveFilters(filters);
-    applyFiltersAndSort(searchTerm, sortConfig.key, sortConfig.direction, filters);
+    setCurrentPage(1);
   };
 
   const isFormComplete: boolean =
@@ -731,7 +669,7 @@ export default function AssignMeterPage() {
   };
 
   const handleNext = () => {
-    setCurrentPage((prev) => Math.min(prev + 1, totalRows));
+    setCurrentPage((prev) => prev + 1);
   };
 
   const handlePageSizeChange = (newPageSize: number) => {
@@ -779,16 +717,28 @@ export default function AssignMeterPage() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="center" className="w-48">
               <DropdownMenuItem
-                onClick={() => handleSortChange("customerId")}
+                onClick={() => handleSortChange("createdAt", "asc")}
                 className="cursor-pointer text-sm hover:bg-gray-100"
               >
-                Ascending - Descending
+                Date Added: Oldest first
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={() => handleSortChange("customerId")}
+                onClick={() => handleSortChange("createdAt", "desc")}
                 className="cursor-pointer text-sm hover:bg-gray-100"
               >
-                Descending - Ascending
+                Date Added: Newest first
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => handleSortChange("customerId", "asc")}
+                className="cursor-pointer text-sm hover:bg-gray-100"
+              >
+                Customer ID: A to Z
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => handleSortChange("customerId", "desc")}
+                className="cursor-pointer text-sm hover:bg-gray-100"
+              >
+                Customer ID: Z to A
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -983,7 +933,7 @@ export default function AssignMeterPage() {
       </Table>
       <PaginationControls
         currentPage={currentPage}
-        totalItems={processedData.length}
+        totalItems={metersData?.totalData ?? 0}
         pageSize={rowsPerPage}
         onPageChange={setCurrentPage}
         onPageSizeChange={handlePageSizeChange}

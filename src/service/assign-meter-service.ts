@@ -148,6 +148,9 @@ export interface GetMetersParams {
   searchTerm: string;
   sortBy: keyof MeterAPIItem | null;
   sortDirection: "asc" | "desc" | null;
+  meterStage?: string;
+  meterClass?: string;
+  category?: string;
   type?: string;
 }
 
@@ -261,6 +264,9 @@ export async function getMeters({
   searchTerm,
   sortBy,
   sortDirection,
+  meterStage,
+  meterClass,
+  category,
   type,
 }: GetMetersParams): Promise<MetersApiResponse> {
   try {
@@ -270,15 +276,23 @@ export async function getMeters({
     }
 
     const params = new URLSearchParams();
-    // API expects 0-based page index (page 0 = first page), UI uses 1-based
     params.append("page", String(page - 1));
-    params.append("pageSize", String(pageSize));
+    params.append("size", String(pageSize));
     if (searchTerm) {
       params.append("search", searchTerm);
     }
     if (sortBy) {
       params.append("sortBy", sortBy);
       params.append("sortDirection", sortDirection ?? "asc");
+    }
+    if (meterStage) {
+      params.append("meterStage", meterStage);
+    }
+    if (meterClass) {
+      params.append("meterClass", meterClass);
+    }
+    if (category) {
+      params.append("category", category);
     }
     if (type) {
       params.append("type", type);
