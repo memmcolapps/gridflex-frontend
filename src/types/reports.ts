@@ -53,4 +53,6 @@ export interface UseAllCommunicationReportsParams {
     size?: number;
     type?: 'MD' | 'Non-MD';
     search?: string;
+    connectionType?: string;
+    sortDirection?: 'asc' | 'desc';
 }

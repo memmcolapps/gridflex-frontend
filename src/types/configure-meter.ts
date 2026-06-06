@@ -13,7 +13,13 @@ export interface SetAPNPayload {
 
 export interface ReadMeterPayload {
   serial: string;
-  type: "READ_RATIO" | "READ_IP" | "READ_CLOCK" | "READ_RELAY_MODE" | "READ_APN" | "READ_RELAY_STATUS";
+  type:
+    | "READ_RATIO"
+    | "READ_IP"
+    | "READ_CLOCK"
+    | "READ_RELAY_MODE"
+    | "READ_APN"
+    | "READ_RELAY_STATUS";
 }
 
 interface ReadMeterResponseData {
@@ -138,6 +144,11 @@ export interface RelayControlPayload {
 export interface FetchMeterConfigParams {
   page?: number;
   size?: number;
+  search?: string;
+  meterClass?: string;
+  status?: string;
+  sortBy?: "sN" | "meterNumber" | "status";
+  sortDirection?: "asc" | "desc";
 }
 
 export interface SetRelayModePayload {

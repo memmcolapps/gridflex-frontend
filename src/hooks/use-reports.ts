@@ -1,16 +1,18 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchAllCommunicationReports, fetchCommunicationRangeReport } from "@/service/reports-service";
-import { type UseAllCommunicationReportsParams, type CommunicationReportData } from "@/types/reports";
+import { type UseAllCommunicationReportsParams, type CommunicationReportData, type CommunicationReport } from "@/types/reports";
 
 export const useAllCommunicationReports = ({
   page = 0,
   size = 5,
     type = 'MD',
-    search = ''
+    search = '',
+    connectionType = '',
+    sortDirection = 'asc',
 }: UseAllCommunicationReportsParams) => {
-  return useQuery<CommunicationReportData[]>({
-    queryKey: ["communicationReports", page, size, type, search],
-    queryFn: () => fetchAllCommunicationReports(page, size, type, search),
+  return useQuery<CommunicationReport>({
+    queryKey: ["communicationReports", page, size, type, search, connectionType, sortDirection],
+    queryFn: () => fetchAllCommunicationReports(page, size, type, search, connectionType, sortDirection),
     staleTime: 1000 * 60 * 2,
     refetchOnWindowFocus: false,
     refetchInterval: 1000 * 60 * 3, 

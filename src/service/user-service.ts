@@ -41,21 +41,28 @@ export interface GroupPermission {
   }>;
 }
 
+export interface GroupPermissionQueryParams {
+  search?: string;
+  status?: boolean;
+  sortDirection?: "asc" | "desc";
+}
+
 export async function getGroupPermission(
-  searchTerm?: string,
+  queryParams: GroupPermissionQueryParams = {},
 ): Promise<
   { success: true; data: GroupPermission[] } | { success: false; error: string }
 > {
   try {
     const token = localStorage.getItem("auth_token");
 
-    const params: Record<string, string> = {};
-    if (searchTerm) params.search = searchTerm;
-
     const response = await axiosInstance.get<GroupPermissionResponse>(
       `${API_URL}/user/service/groups`,
       {
-        params,
+        params: {
+          search: queryParams.search || undefined,
+          status: queryParams.status,
+          sortDirection: queryParams.sortDirection,
+        },
         headers: {
           "Content-Type": "application/json",
           custom: CUSTOM_HEADER,

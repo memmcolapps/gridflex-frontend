@@ -6,6 +6,7 @@ import {
   editUser,
   type EditUserPayload,
   getGroupPermission,
+  type GroupPermissionQueryParams,
   getUsers,
   updateGroupPermission,
   updateGroupPermissionField,
@@ -18,10 +19,12 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { type CreateUserPayload } from "@/types/users-groups";
 
-export const useGroupPermissions = (searchTerm?: string) => {
+export const useGroupPermissions = (
+  params: GroupPermissionQueryParams = {},
+) => {
   const { data, error, isLoading } = useQuery({
-    queryKey: ["groupPermissions", searchTerm],
-    queryFn: () => getGroupPermission(searchTerm),
+    queryKey: ["groupPermissions", params],
+    queryFn: () => getGroupPermission(params),
   });
   return { data: data?.success ? data.data : [], error, isLoading };
 };
