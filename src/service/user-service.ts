@@ -240,7 +240,7 @@ export async function deactivateOrActivateGroupPermission(
 }
 
 export async function getUsers(
-  searchTerm?: string,
+  queryParams: GetUsersQueryParams = {},
 ): Promise<
   | { success: true; data: GetUsersResponseData }
   | { success: false; error: string }
@@ -248,13 +248,16 @@ export async function getUsers(
   try {
     const token = localStorage.getItem("auth_token");
 
-    const params: Record<string, string> = {};
-    if (searchTerm) params.search = searchTerm;
-
     const response = await axiosInstance.get<GetUsersApiResponse>(
       `${API_URL}/user/service/all`,
       {
-        params,
+        params: {
+          page: queryParams.page ?? 0,
+          size: queryParams.size ?? 10,
+          search: queryParams.search || undefined,
+          status: queryParams.status,
+          sortDirection: queryParams.sortDirection,
+        },
         headers: {
           "Content-Type": "application/json",
           custom: CUSTOM_HEADER,
@@ -278,6 +281,14 @@ export async function getUsers(
       error: handleApiError(error),
     };
   }
+}
+
+export interface GetUsersQueryParams {
+  page?: number;
+  size?: number;
+  search?: string;
+  status?: boolean;
+  sortDirection?: "asc" | "desc";
 }
 
 export async function createUser(

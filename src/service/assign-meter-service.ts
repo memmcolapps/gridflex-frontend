@@ -151,6 +151,7 @@ export interface GetMetersParams {
   meterStage?: string;
   meterClass?: string;
   category?: string;
+  status?: string;
   type?: string;
 }
 
@@ -267,6 +268,7 @@ export async function getMeters({
   meterStage,
   meterClass,
   category,
+  status,
   type,
 }: GetMetersParams): Promise<MetersApiResponse> {
   try {
@@ -293,6 +295,9 @@ export async function getMeters({
     }
     if (category) {
       params.append("category", category);
+    }
+    if (status) {
+      params.append("status", status);
     }
     if (type) {
       params.append("type", type);
@@ -684,7 +689,8 @@ export async function fetchAuthImage(imageUrl: string): Promise<string> {
     },
   });
 
-  if (!response.ok) throw new Error(`Failed to fetch image: ${response.status}`);
+  if (!response.ok)
+    throw new Error(`Failed to fetch image: ${response.status}`);
 
   const blob = await response.blob();
   return URL.createObjectURL(blob);

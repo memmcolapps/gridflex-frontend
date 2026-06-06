@@ -8,6 +8,7 @@ import {
   getGroupPermission,
   type GroupPermissionQueryParams,
   getUsers,
+  type GetUsersQueryParams,
   updateGroupPermission,
   updateGroupPermissionField,
 } from "@/service/user-service";
@@ -119,15 +120,15 @@ export const useDeactivateOrActivateGroupPermission = () => {
   });
 };
 
-export const useGetUsers = (searchTerm?: string) => {
+export const useGetUsers = (params: GetUsersQueryParams = {}) => {
   const { data, error, isLoading } = useQuery({
-    queryKey: ["users", searchTerm],
-    queryFn: () => getUsers(searchTerm),
+    queryKey: ["users", params],
+    queryFn: () => getUsers(params),
   });
   return {
     data: data?.success
       ? data.data
-      : { data: [], totalData: 1, size: 0, totalPages: 1, page: 1 },
+      : { data: [], totalData: 0, size: 0, totalPages: 1, page: 0 },
     error,
     isLoading,
   };

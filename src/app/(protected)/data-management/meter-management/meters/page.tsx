@@ -97,9 +97,16 @@ const mapActiveFiltersToApi = (filters: Record<string, boolean>) => {
     filters.mdMeter ? "MD" : null,
   ].filter((value): value is string => Boolean(value));
 
+  const activationStatus = filters.active
+    ? "Active"
+    : filters.inactive
+      ? "Deactivated"
+      : undefined;
+
   return {
     meterStage: selectedStages.length === 1 ? selectedStages[0] : undefined,
     meterClass: selectedClasses.length === 1 ? selectedClasses[0] : undefined,
+    status: activationStatus,
   };
 };
 
@@ -186,6 +193,7 @@ export default function MeterManagementPage() {
     sortDirection: sortConfig.direction,
     meterStage: serverFilters.meterStage,
     meterClass: serverFilters.meterClass,
+    status: serverFilters.status,
     type: "allocated",
   });
 
@@ -445,6 +453,13 @@ export default function MeterManagementPage() {
         { id: "singlePhase", label: "Single phase" },
         { id: "threePhase", label: "Three Phase" },
         { id: "mdMeter", label: "MD Meter" },
+      ],
+    },
+    {
+      title: "Activation Status",
+      options: [
+        { id: "active", label: "Active" },
+        { id: "inactive", label: "Inactive" },
       ],
     },
   ];

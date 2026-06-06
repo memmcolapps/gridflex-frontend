@@ -38,6 +38,7 @@ export interface UseMetersParams {
   meterStage?: string;
   meterClass?: string;
   category?: string;
+  status?: string;
   type?: string;
 }
 
@@ -180,6 +181,7 @@ export const useMeters = ({
   meterStage,
   meterClass,
   category,
+  status,
   type,
 }: UseMetersParams) => {
   return useQuery<
@@ -201,6 +203,7 @@ export const useMeters = ({
       meterStage,
       meterClass,
       category,
+      status,
       type,
     ],
     queryFn: () =>
@@ -213,6 +216,7 @@ export const useMeters = ({
         meterStage,
         meterClass,
         category,
+        status,
         type,
       }),
     staleTime: 1000 * 60 * 5,

@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { ChevronUpIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
 import AddUserForm from "./adduserform";
 import EditUserDialog from "./edituserdialog";
 import { Button } from "@/components/ui/button";
@@ -12,14 +11,12 @@ import {
   TableBody,
   TableCell,
 } from "@/components/ui/table";
-import { Label } from "@/components/ui/label";
 import {
   ArrowUpDown,
   PlusCircleIcon,
   SearchIcon,
   MoreVertical,
   Pencil,
-  ListFilter,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -41,6 +38,17 @@ import { PaginationControls } from "@/components/ui/pagination-controls";
 import { LoadingAnimation } from "@/components/ui/loading-animation";
 import { usePermissions } from "@/hooks/use-permissions";
 import { useAuth } from "@/context/auth-context";
+import { FilterControl } from "@/components/search-control";
+
+const filterSections = [
+  {
+    title: "Status",
+    options: [
+      { label: "Active", id: "active" },
+      { label: "Inactive", id: "inactive" },
+    ],
+  },
+];
 
 const parseTimestamp = (timestamp: string): Date => {
   // Convert format "2025-10-22 10:32:15.338908-05" to ISO 8601
@@ -61,21 +69,34 @@ const formatDateAdded = (date: Date) => {
 
 export default function UserManagement() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortConfig, setSortConfig] = useState<{
-    key: keyof GetUsersUser;
-    direction: "ascending" | "descending";
-  } | null>(null);
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [activeFilters, setActiveFilters] = useState<Record<string, boolean>>(
+    {},
+  );
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [editingUser, setEditingUser] = useState<GetUsersUser | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const { data: users, isLoading } = useGetUsers(searchTerm);
+  const { data: users, isLoading } = useGetUsers({
+    page: currentPage - 1,
+    size: rowsPerPage,
+    search: searchTerm.trim() || undefined,
+    status: activeFilters.active
+      ? true
+      : activeFilters.inactive
+        ? false
+        : undefined,
+    sortDirection,
+  });
   const { mutate: createUser } = useCreateUser();
   const { mutate: editUser } = useEditUser();
   const { canEdit } = usePermissions();
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
+    setCurrentPage(1);
   };
 
   const handleCreateUser = (newUser: CreateUserPayload) => {
@@ -136,40 +157,9 @@ export default function UserManagement() {
     }
   };
 
-  const requestSort = (key: keyof GetUsersUser) => {
-    let direction: "ascending" | "descending" = "ascending";
-    if (sortConfig?.key === key && sortConfig.direction === "ascending") {
-      direction = "descending";
-    }
-    setSortConfig({ key, direction });
-  };
-
-  const sortedUsers = () => {
-    const sortableUsers = [...(users?.data || [])];
-    if (sortConfig !== null) {
-      sortableUsers.sort((a, b) => {
-        const aValue = a[sortConfig.key] ?? "";
-        const bValue = b[sortConfig.key] ?? "";
-        if (aValue < bValue) {
-          return sortConfig.direction === "ascending" ? -1 : 1;
-        }
-        if (aValue > bValue) {
-          return sortConfig.direction === "ascending" ? 1 : -1;
-        }
-        return 0;
-      });
-    }
-    return sortableUsers;
-  };
-
-  const filteredUsers = sortedUsers();
-
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [currentPage, setCurrentPage] = useState(1);
-  const totalRows = filteredUsers.length;
+  const filteredUsers = users?.data ?? [];
+  const totalRows = users?.totalData ?? 0;
   const startIndex = (currentPage - 1) * rowsPerPage;
-  const endIndex = startIndex + rowsPerPage;
-  const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
   const { user: currentUser } = useAuth();
 
   const handlePageSizeChange = (newPageSize: number) => {
@@ -180,7 +170,11 @@ export default function UserManagement() {
   if (isLoading) {
     return (
       <div className="flex min-h-96 items-center justify-center">
-        <LoadingAnimation variant="spinner" message="Loading users..." size="lg" />
+        <LoadingAnimation
+          variant="spinner"
+          message="Loading users..."
+          size="lg"
+        />
       </div>
     );
   }
@@ -210,39 +204,62 @@ export default function UserManagement() {
           )}
         </div>
 
-        <div className="mb-6 flex w-80 items-center gap-4">
-          <div className="relative flex-1">
+        <div className="mb-6 flex w-full items-center gap-4">
+          <div className="relative w-80">
             <SearchIcon
               className="text-muted-foreground absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2"
               size={12}
             />
             <Input
               type="text"
-              placeholder="Search by name,ID,cont..."
-              className="w-100 border-[rgba(228,231,236,1)] pl-10"
+              placeholder="Search by name, email, group..."
+              className="w-full border-[rgba(228,231,236,1)] pl-10"
               value={searchTerm}
               onChange={handleSearch}
             />
           </div>
 
-          <Button
-            variant="outline"
-            className="gap-1 border-[rgba(228,231,236,1)]"
-          >
-            <ListFilter className="" strokeWidth={2.5} size={12} />
-            <Label htmlFor="filterCheckbox" className="cursor-pointer">
-              Filter
-            </Label>
-          </Button>
-          <Button
-            variant="outline"
-            className="gap-1 border-[rgba(228,231,236,1)]"
-          >
-            <ArrowUpDown className="" strokeWidth={2.5} size={12} />
-            <Label htmlFor="sortCheckbox" className="cursor-pointer">
-              Sort
-            </Label>
-          </Button>
+          <FilterControl
+            sections={filterSections}
+            initialFilters={activeFilters}
+            onApply={(filters) => {
+              setActiveFilters(filters);
+              setCurrentPage(1);
+            }}
+            onReset={() => {
+              setActiveFilters({});
+              setCurrentPage(1);
+            }}
+          />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                className="gap-1 border-[rgba(228,231,236,1)]"
+              >
+                <ArrowUpDown strokeWidth={2.5} size={12} />
+                Sort
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              <DropdownMenuItem
+                onSelect={() => {
+                  setSortDirection("asc");
+                  setCurrentPage(1);
+                }}
+              >
+                Username (A-Z)
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onSelect={() => {
+                  setSortDirection("desc");
+                  setCurrentPage(1);
+                }}
+              >
+                Username (Z-A)
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
         <div className="h-4/6">
           <Table>
@@ -261,96 +278,16 @@ export default function UserManagement() {
                     <span>S/N</span>
                   </div>
                 </TableHead>
-                <TableHead
-                  className="cursor-pointer"
-                  onClick={() => requestSort("firstname")}
-                >
-                  <div className="flex items-center justify-between">
-                    <span>Username</span>
-                    {sortConfig?.key === "firstname" && (
-                      <span>
-                        {sortConfig.direction === "ascending" ? (
-                          <ChevronUpIcon className="h-4 w-4" />
-                        ) : (
-                          <ChevronDownIcon className="h-4 w-4" />
-                        )}
-                      </span>
-                    )}
-                  </div>
-                </TableHead>
-                <TableHead
-                  className="cursor-pointer"
-                  onClick={() => requestSort("groups")}
-                >
-                  <div className="flex items-center justify-between">
-                    <span>Group Permission</span>
-                    {sortConfig?.key === "groups" && (
-                      <span>
-                        {sortConfig.direction === "ascending" ? (
-                          <ChevronUpIcon className="h-4 w-4" />
-                        ) : (
-                          <ChevronDownIcon className="h-4 w-4" />
-                        )}
-                      </span>
-                    )}
-                  </div>
-                </TableHead>
-                <TableHead
-                  className="cursor-pointer"
-                  onClick={() => requestSort("lastActive")}
-                >
-                  <div className="flex items-center justify-between">
-                    <span>Last Active</span>
-                    {sortConfig?.key === "lastActive" && (
-                      <span>
-                        {sortConfig.direction === "ascending" ? (
-                          <ChevronUpIcon className="h-4 w-4" />
-                        ) : (
-                          <ChevronDownIcon className="h-4 w-4" />
-                        )}
-                      </span>
-                    )}
-                  </div>
-                </TableHead>
-                <TableHead
-                  className="cursor-pointer"
-                  onClick={() => requestSort("lastActive")}
-                >
-                  <div className="flex items-center justify-between">
-                    <span>Status</span>
-                    {sortConfig?.key === "lastActive" && (
-                      <span>
-                        {sortConfig.direction === "ascending" ? (
-                          <ChevronUpIcon className="h-4 w-4" />
-                        ) : (
-                          <ChevronDownIcon className="h-4 w-4" />
-                        )}
-                      </span>
-                    )}
-                  </div>
-                </TableHead>
-                <TableHead
-                  className="cursor-pointer"
-                  onClick={() => requestSort("createdAt")}
-                >
-                  <div className="flex items-center justify-between">
-                    <span>Date Added</span>
-                    {sortConfig?.key === "createdAt" && (
-                      <span>
-                        {sortConfig.direction === "ascending" ? (
-                          <ChevronUpIcon className="h-4 w-4" />
-                        ) : (
-                          <ChevronDownIcon className="h-4 w-4" />
-                        )}
-                      </span>
-                    )}
-                  </div>
-                </TableHead>
+                <TableHead>Username</TableHead>
+                <TableHead>Group Permission</TableHead>
+                <TableHead>Last Active</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Date Added</TableHead>
                 <TableHead>Action</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {paginatedUsers.map((user, index) => (
+              {filteredUsers.map((user, index) => (
                 <TableRow key={user.id} className="hover:bg-muted/50">
                   <TableCell>
                     <div className="flex items-center gap-2">
@@ -399,7 +336,10 @@ export default function UserManagement() {
                   <TableCell>
                     {canEdit && user?.id !== currentUser?.id && (
                       <DropdownMenu>
-                        <DropdownMenuTrigger asChild disabled={isEditDialogOpen}>
+                        <DropdownMenuTrigger
+                          asChild
+                          disabled={isEditDialogOpen}
+                        >
                           <Button
                             size="sm"
                             variant="ghost"
