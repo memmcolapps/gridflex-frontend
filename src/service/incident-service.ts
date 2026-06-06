@@ -67,6 +67,7 @@ export const createMessage = async (
 export const getIncidentReports = async (
   page?: number,
   size?: number,
+  status?: boolean,
 ): Promise<{
   success: boolean;
   data?: IncidentReport["responsedata"];
@@ -77,7 +78,7 @@ export const getIncidentReports = async (
     const response = await axiosInstance.get<IncidentReport>(
       `${API_URL}/audit-log/service/incident/report/get`,
       {
-        params: { page, size },
+        params: { page, size, status },
         headers: {
           Authorization: `Bearer ${token}`,
         },

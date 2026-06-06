@@ -3,16 +3,24 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useIncidentReports } from "@/hooks/use-incident";
 import { Clock } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 
-export default function RecentIncidents() {
+export default function RecentIncidents({ status }: { status?: boolean }) {
   const [currentPage, setCurrentPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  const { data: incidents } = useIncidentReports(currentPage, rowsPerPage);
+  const { data: incidents } = useIncidentReports(
+    currentPage,
+    rowsPerPage,
+    status,
+  );
   const incidentList = incidents?.data?.data ?? [];
   const totalData = incidents?.data?.totalData ?? 0;
+
+  useEffect(() => {
+    setCurrentPage(0);
+  }, [status]);
 
   const handlePageSizeChange = (newPageSize: number) => {
     setRowsPerPage(newPageSize);
