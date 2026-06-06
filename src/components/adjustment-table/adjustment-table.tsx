@@ -86,11 +86,26 @@ import { CheckCircle, XCircle, AlertTriangle } from "lucide-react";
 const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
   const { canEdit } = usePermissions();
   const queryClient = useQueryClient();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [rowsPerPage, setRowsPerPage] = useState<number>(10);
+  const [sortConfig, setSortConfig] = useState<{
+    key: keyof Customer | null;
+    direction: "asc" | "desc";
+  }>({ key: "customerId", direction: "asc" });
   const {
-    data: allAdjustments,
+    data: allAdjustmentsResponse,
     isLoading,
     error,
-  } = useAllAdjustments(type, 0, 100);
+  } = useAllAdjustments(
+    type,
+    currentPage - 1,
+    rowsPerPage,
+    searchTerm,
+    sortConfig.key ?? undefined,
+    sortConfig.direction,
+  );
+  const allAdjustments = allAdjustmentsResponse?.data ?? [];
 
   const customers = useMemo(() => {
     if (!allAdjustments) return [];
@@ -154,9 +169,6 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
     string | null
   >(null);
   const [fetchPaymentHistory, setFetchPaymentHistory] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [rowsPerPage, setRowsPerPage] = useState<number>(10);
   const [selectedCustomers, setSelectedCustomers] = useState<string[]>([]);
   const [dialogStep, setDialogStep] = useState<"initial" | "fullForm">(
     "initial",
@@ -196,11 +208,6 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
   const isAddDisabled = !amount.trim() || !liabilityCause || !selectedMeter;
   const isReconcileDisabled = !reconcileAmount.trim();
 
-  const [sortConfig, setSortConfig] = useState<{
-    key: keyof Customer | null;
-    direction: "asc" | "desc";
-  }>({ key: null, direction: "asc" });
-
   const {
     data: paymentHistory,
     isLoading: isPaymentHistoryLoading,
@@ -211,46 +218,22 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
     type,
   );
 
-  const processedData = useMemo(() => {
-    let results = customers;
-    if (searchTerm.trim() !== "") {
-      results = customers.filter(
-        (item) =>
-          item.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          item.meterNo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          item.accountNo?.toLowerCase().includes(searchTerm.toLowerCase()),
-      );
-    }
-
-    if (sortConfig.key) {
-      results = [...results].sort((a, b) => {
-        const aValue = a[sortConfig.key!] ?? "";
-        const bValue = b[sortConfig.key!] ?? "";
-
-        if (aValue < bValue) return sortConfig.direction === "asc" ? -1 : 1;
-        if (aValue > bValue) return sortConfig.direction === "asc" ? 1 : -1;
-        return 0;
-      });
-    }
-
-    return results;
-  }, [customers, searchTerm, sortConfig]);
-
   const handleSearchChange = (term: string) => {
     setSearchTerm(term);
+    setCurrentPage(1);
   };
 
-  const handleSortChange = () => {
-    const sortKey: keyof Customer = sortConfig.key ?? "id";
-    const newDirection = sortConfig.direction === "asc" ? "desc" : "asc";
-    setSortConfig({ key: sortKey, direction: newDirection });
+  const handleSortChange = (direction: string) => {
+    setSortConfig({
+      key: "customerId",
+      direction: direction === "desc" ? "desc" : "asc",
+    });
+    setCurrentPage(1);
   };
 
-  const totalPages = Math.ceil(processedData.length / rowsPerPage);
-  const paginatedCustomers = processedData.slice(
-    (currentPage - 1) * rowsPerPage,
-    currentPage * rowsPerPage,
-  );
+  const totalData = allAdjustmentsResponse?.totalData ?? customers.length;
+  const totalPages = Math.max(1, Math.ceil(totalData / rowsPerPage));
+  const paginatedCustomers = customers;
 
   const toggleSelectAll = () => {
     if (selectedCustomers.length === paginatedCustomers.length) {
@@ -922,7 +905,7 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
           </div>
           <div>
             <ExportButton
-              data={processedData}
+              data={customers}
               columns={[
                 { key: "accountNo", label: "Account No." },
                 { key: "customerId", label: "Customer ID" },
@@ -993,9 +976,8 @@ const AdjustmentTable: React.FC<AdjustmentTableProps> = ({ type }) => {
               </SelectContent>
             </Select>
             <span className="text-sm font-medium">
-              {(currentPage - 1) * rowsPerPage + 1}-
-              {Math.min(currentPage * rowsPerPage, processedData.length)} of{" "}
-              {processedData.length}
+              {totalData === 0 ? 0 : (currentPage - 1) * rowsPerPage + 1}-
+              {Math.min(currentPage * rowsPerPage, totalData)} of {totalData}
             </span>
           </div>
           <PaginationContent>

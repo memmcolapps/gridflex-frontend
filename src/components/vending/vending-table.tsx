@@ -16,7 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { EllipsisVertical, Printer } from "lucide-react";
 import { Card } from "../ui/card";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -35,60 +35,35 @@ import { usePermissions } from "@/hooks/use-permissions";
 
 interface VendingTableProps {
   searchQuery?: string;
-  transactionsData?: VendingTransaction[];
+  status?: string;
+  sortDirection?: "asc" | "desc";
 }
 
 const VendingTable = ({
   searchQuery = "",
-  transactionsData: externalData,
+  status = "",
+  sortDirection = "desc",
 }: VendingTableProps = {}) => {
   const [rowsPerPage, setRowsPerPage] = useState<number>(10);
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [internalData, setInternalData] = useState<VendingTransaction[]>([]);
   const { canEdit } = usePermissions();
 
   const { data: rawTransactionsData, isLoading } = useVendingTransactions({
-    page: 1,
-    size: 1000, // Fetch a large number to handle client-side filtering/pagination
+    page: currentPage,
+    size: rowsPerPage,
+    search: searchQuery,
+    status,
+    sortDirection,
   });
 
-  // Use external data if provided, otherwise use internal data
-  const transactionsData = externalData ?? internalData;
+  const transactions = rawTransactionsData?.messages ?? [];
+  const totalCount = rawTransactionsData?.totalCount ?? 0;
+  const startIndex = (currentPage - 1) * rowsPerPage;
 
-  // Update transactionsData when rawTransactionsData changes
-  useEffect(() => {
-    if (rawTransactionsData?.messages) {
-      setInternalData(rawTransactionsData.messages);
-    }
-  }, [rawTransactionsData]);
-
-  // Filter transactions based on search query (client-side filtering)
-  const filteredTransactions = useMemo(() => {
-    if (!searchQuery) return transactionsData;
-    const searchLower = searchQuery.toLowerCase();
-    return transactionsData.filter(
-      (transaction) =>
-        transaction.meterAccountNumber?.toLowerCase().includes(searchLower) ||
-        transaction.meterNumber?.toLowerCase().includes(searchLower) ||
-        transaction.tokenType?.toLowerCase().includes(searchLower) ||
-        transaction.tariffName?.toLowerCase().includes(searchLower) ||
-        transaction.status?.toLowerCase().includes(searchLower),
-    );
-  }, [transactionsData, searchQuery]);
-
-  // Reset to first page when search query changes
+  // Reset to first page when server-side query params change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery]);
-
-  // Calculate pagination values
-  const totalRows = Math.ceil(filteredTransactions.length / rowsPerPage);
-  const startIndex = (currentPage - 1) * rowsPerPage;
-  const endIndex = startIndex + rowsPerPage;
-  const paginatedTransactions = filteredTransactions.slice(
-    startIndex,
-    endIndex,
-  );
+  }, [searchQuery, status, sortDirection]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -163,14 +138,14 @@ const VendingTable = ({
                   />
                 </TableCell>
               </TableRow>
-            ) : filteredTransactions.length === 0 ? (
+            ) : transactions.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={11} className="py-8 text-center">
                   No transactions found
                 </TableCell>
               </TableRow>
             ) : (
-              paginatedTransactions.map((transaction, index) => (
+              transactions.map((transaction, index) => (
                 <TableRow key={transaction.transactionId}>
                   <TableCell>{startIndex + index + 1}</TableCell>
                   <TableCell>{transaction.meterAccountNumber}</TableCell>
@@ -220,7 +195,7 @@ const VendingTable = ({
       </Card>
       <PaginationControls
         currentPage={currentPage}
-        totalItems={filteredTransactions.length}
+        totalItems={totalCount}
         pageSize={rowsPerPage}
         onPageChange={setCurrentPage}
         onPageSizeChange={handlePageSizeChange}

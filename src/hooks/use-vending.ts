@@ -178,7 +178,13 @@ export const useGenerateCompensationToken = () => {
   });
 };
 
-export const useVendingTransactions = (payload?: { page?: number; size?: number }) => {
+export const useVendingTransactions = (payload?: {
+  page?: number;
+  size?: number;
+  search?: string;
+  status?: string;
+  sortDirection?: "asc" | "desc";
+}) => {
   return useQuery({
     queryKey: ["vending-transactions", payload],
     queryFn: async () => {

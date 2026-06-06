@@ -491,6 +491,9 @@ export interface GetVendingTransactionsResponse {
 export async function getVendingTransactions(payload?: {
   page?: number;
   size?: number;
+  search?: string;
+  status?: string;
+  sortDirection?: "asc" | "desc";
 }): Promise<
   | { success: true; data: GetVendingTransactionsResponse["responsedata"] }
   | { success: false; error: string }
@@ -510,6 +513,10 @@ export async function getVendingTransactions(payload?: {
       params.append("page", String(payload.page - 1));
     if (payload?.size !== undefined)
       params.append("size", payload.size.toString());
+    if (payload?.search) params.append("search", payload.search);
+    if (payload?.status) params.append("status", payload.status);
+    if (payload?.sortDirection)
+      params.append("sortDirection", payload.sortDirection);
 
     const response = await axiosInstance.get<GetVendingTransactionsResponse>(
       `${API_URL}/vending/service/generate/token/all?${params.toString()}`,

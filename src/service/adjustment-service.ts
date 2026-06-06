@@ -24,6 +24,8 @@ export const fetchAllAdjustments = async (
   page = 0,
   size = 10,
   searchTerm?: string,
+  sortBy?: string,
+  sortDirection?: "asc" | "desc",
 ): Promise<
   | { success: true; data: Adjustment[]; totalData?: number }
   | { success: false; error: string }
@@ -38,6 +40,8 @@ export const fetchAllAdjustments = async (
     };
 
     if (searchTerm) params.search = searchTerm;
+    if (sortBy) params.sortBy = sortBy;
+    if (sortDirection) params.sortDirection = sortDirection;
 
     const response = await axiosInstance.get<ApiResponse<any>>(
       `${API_URL}/debit-credit-adjustment/service/all`,

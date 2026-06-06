@@ -5,7 +5,7 @@ import { CheckCircle, XCircle, AlertTriangle } from "lucide-react";
 import { Button } from "../ui/button";
 import { ContentHeader } from "../ui/content-header";
 import PercentageRangeTable from "./percentagerangetable";
-import { FilterControl, SearchControl, SortControl } from "@/components/search-control";
+import { SearchControl, SortControl } from "@/components/search-control";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import LiabilityCauseTable from "./liabilitycausetable";
@@ -31,7 +31,6 @@ export function ReviewApprovalTabs() {
     const [activeTab, setActiveTab] = useState("percentage");
     const [searchTerm, setSearchTerm] = useState("");
     const [sortConfig, setSortConfig] = useState({ key: '', direction: 'asc' });
-    const [activeFilters, setActiveFilters] = useState<Record<string, boolean>>({});
     const [selectedMeterNumbers, setSelectedMeterNumbers] = useState<string[]>([]);
     const [selectedBandNames, setSelectedBandNames] = useState<string[]>([]);
     const [selectedTariffNames, setSelectedTariffNames] = useState<string[]>([]);
@@ -181,18 +180,6 @@ export function ReviewApprovalTabs() {
         }
     }, [activeTab, filteredPercentageRanges, filteredLiabilities, filteredBands, filteredTariffs, filteredMeters]);
 
-    const filterSections = [
-        {
-            title: "Status",
-            options: [
-                { label: "Approved", id: "approved" },
-                { label: "Pending", id: "pending" },
-                { label: "Rejected", id: "rejected" },
-            ],
-        },
-        // Add more filter sections as needed
-    ];
-
     const getDefaultSortKey = (tab = activeTab) => {
         switch (tab) {
             case 'percentage':
@@ -332,12 +319,6 @@ export function ReviewApprovalTabs() {
         }
     };
 
-    const getReviewType = () => {
-        if (activeFilters.approved) return 'approved';
-        if (activeFilters.rejected) return 'rejected';
-        return 'pending-state';
-    };
-
     const handleSortChange = (direction: string) => {
         setSortConfig({ key: getDefaultSortKey(), direction });
     };
@@ -419,11 +400,6 @@ export function ReviewApprovalTabs() {
                                 value={searchTerm}
                                 placeholder="Search by percentage, code, or description..."
                             />
-                            <FilterControl
-                                sections={filterSections}
-                                onApply={(filters) => setActiveFilters(filters)}
-                                onReset={() => setActiveFilters({})}
-                            />
                             <SortControl
                                 onSortChange={handleSortChange}
                                 currentSort={sortConfig.key ? sortConfig.direction : ''}
@@ -438,7 +414,7 @@ export function ReviewApprovalTabs() {
                             searchTerm={searchTerm}
                             sortBy={sortConfig.key}
                             sortDirection={sortConfig.direction as "asc" | "desc"}
-                            type={getReviewType()}
+                            type="pending-state"
                         />
                     </TabsContent>
                     <TabsContent value="liability cause" className="overflow-x-hidden">
@@ -448,7 +424,7 @@ export function ReviewApprovalTabs() {
                             searchTerm={searchTerm}
                             sortBy={sortConfig.key}
                             sortDirection={sortConfig.direction as "asc" | "desc"}
-                            type={getReviewType()}
+                            type="pending-state"
                         />
                     </TabsContent>
                     <TabsContent value="band" className="overflow-x-hidden">
@@ -458,7 +434,7 @@ export function ReviewApprovalTabs() {
                             searchTerm={searchTerm}
                             sortBy={sortConfig.key}
                             sortDirection={sortConfig.direction as "asc" | "desc"}
-                            type={getReviewType()}
+                            type="pending-state"
                         />
                     </TabsContent>
                     <TabsContent value="tariff" className="overflow-x-hidden">
@@ -468,7 +444,7 @@ export function ReviewApprovalTabs() {
                             searchTerm={searchTerm}
                             sortBy={sortConfig.key}
                             sortDirection={sortConfig.direction as "asc" | "desc"}
-                            type={getReviewType()}
+                            type="pending-state"
                         />
                     </TabsContent>
                     <TabsContent value="meter" className="overflow-x-hidden">
@@ -478,7 +454,7 @@ export function ReviewApprovalTabs() {
                             searchTerm={searchTerm}
                             sortBy={sortConfig.key}
                             sortDirection={sortConfig.direction as "asc" | "desc"}
-                            type={getReviewType()}
+                            type="pending-state"
                         />
                     </TabsContent>
                 </Tabs>
