@@ -45,9 +45,9 @@ export async function fetchMeterConfigurations(
         params: {
           page,
           size,
-          search: search || undefined,
-          meterClass: meterClass || undefined,
-          status: status || undefined,
+          search: search ?? undefined,
+          meterClass: meterClass ?? undefined,
+          status: status ?? undefined,
           sortBy,
           sortDirection,
         },

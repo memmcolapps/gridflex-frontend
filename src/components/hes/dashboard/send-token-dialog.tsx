@@ -24,7 +24,7 @@ const SendTokenDialog = ({ isOpen, onClose, onSubmit, meterNumber, initialToken 
 
     useEffect(() => {
         if (isOpen) {
-            setToken(initialToken || "");
+            setToken(initialToken ?? "");
         } else {
             setToken("");
         }
@@ -57,7 +57,7 @@ const SendTokenDialog = ({ isOpen, onClose, onSubmit, meterNumber, initialToken 
                             </Label>
                             <Input
                                 id="meterNumber"
-                                value={meterNumber || ""}
+                                value={meterNumber ?? ""}
                                 disabled
                                 className="w-full h-12 border border-gray-300 bg-gray-100 text-gray-400 cursor-not-allowed"
                             />

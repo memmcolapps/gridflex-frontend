@@ -59,7 +59,7 @@ export async function getGroupPermission(
       `${API_URL}/user/service/groups`,
       {
         params: {
-          search: queryParams.search || undefined,
+          search: queryParams.search ?? undefined,
           status: queryParams.status,
           sortDirection: queryParams.sortDirection,
         },
@@ -254,7 +254,7 @@ export async function getUsers(
         params: {
           page: queryParams.page ?? 0,
           size: queryParams.size ?? 10,
-          search: queryParams.search || undefined,
+          search: queryParams.search ?? undefined,
           status: queryParams.status,
           sortDirection: queryParams.sortDirection,
         },

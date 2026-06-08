@@ -113,7 +113,7 @@ const CommunicationReportTable = () => {
         isOpen={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
         onSubmit={handleDialogSubmit}
-        meterNumber={selectedMeter || undefined}
+        meterNumber={selectedMeter ?? undefined}
       />
     </Card>
   );
