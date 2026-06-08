@@ -42,7 +42,6 @@ import { format } from "date-fns";
 import {
   ArrowUpDown,
   CirclePlusIcon,
-  ListFilter,
   Search,
   SquareArrowOutUpRight,
   CalendarIcon,
@@ -469,53 +468,25 @@ export default function TariffManagementPage() {
               />
             </div>
             <div className="flex gap-2">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "flex items-center gap-2 border-gray-300 text-gray-700 hover:bg-gray-50",
-                      approveStatusFilter && "border-blue-500 text-blue-600",
-                    )}
-                  >
-                    <ListFilter size={14} />
-                    {approveStatusFilter ? `Filter: ${approveStatusFilter}` : "Filter"}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="bg-white">
-                  <DropdownMenuLabel>Approval Status</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuRadioGroup
-                    value={approveStatusFilter}
-                    onValueChange={setApproveStatusFilter}
-                  >
-                    <DropdownMenuRadioItem value="">All</DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="Approved">
-                      Approved
-                    </DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="Pending">
-                      Pending
-                    </DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="Deactivated">
-                      Deactivated
-                    </DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="Rejected">
-                      Rejected
-                    </DropdownMenuRadioItem>
-                  </DropdownMenuRadioGroup>
-                  {approveStatusFilter && (
-                    <>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onSelect={() => setApproveStatusFilter("")}
-                        className="text-red-600"
-                      >
-                        Clear filter
-                      </DropdownMenuItem>
-                    </>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <Select
+                value={approveStatusFilter || "all"}
+                onValueChange={(value) =>
+                  setApproveStatusFilter(value === "all" ? "" : value)
+                }
+              >
+                <SelectTrigger
+                  aria-label="Filter tariffs by approval status"
+                  className="w-44 border-gray-300 bg-white text-gray-700"
+                >
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All statuses</SelectItem>
+                  <SelectItem value="Approved">Approved</SelectItem>
+                  <SelectItem value="Pending">Pending</SelectItem>
+                  <SelectItem value="Deactivated">Deactivated</SelectItem>
+                </SelectContent>
+              </Select>
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

@@ -92,8 +92,8 @@ const mapActiveFiltersToApi = (filters: Record<string, boolean>) => {
   ].filter((value): value is string => Boolean(value));
 
   const selectedClasses = [
-    filters.singlePhase ? "Single phase" : null,
-    filters.threePhase ? "Three Phase" : null,
+    filters.singlePhase ? "Single-phase" : null,
+    filters.threePhase ? "Three-phase" : null,
     filters.mdMeter ? "MD" : null,
   ].filter((value): value is string => Boolean(value));
 
@@ -450,8 +450,8 @@ export default function MeterManagementPage() {
     {
       title: "Meter Class",
       options: [
-        { id: "singlePhase", label: "Single phase" },
-        { id: "threePhase", label: "Three Phase" },
+        { id: "singlePhase", label: "Single-phase" },
+        { id: "threePhase", label: "Three-phase" },
         { id: "mdMeter", label: "MD Meter" },
       ],
     },

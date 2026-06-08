@@ -20,10 +20,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import {
@@ -575,56 +571,32 @@ const LiabilityTable = ({
               className="w-fit border-gray-300 pl-10 text-sm focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50 lg:text-base"
             />
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                className={`w-full gap-2 border-gray-300 ring-gray-100/20 lg:w-auto ${
-                  sort ? "border-[#161CCA] text-[#161CCA]" : ""
-                }`}
-              >
-                <ArrowUpDown
-                  className={sort ? "text-[#161CCA]" : "text-gray-500"}
-                  size={14}
-                />
-                <span className="text-sm lg:text-base">
-                  {sort === "asc"
-                    ? "Sort: A–Z"
-                    : sort === "desc"
-                      ? "Sort: Z–A"
-                      : "Sort"}
-                </span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-full p-1 shadow-lg">
-              <DropdownMenuLabel>
-                {view === "liability" ? "Liability Name" : "Percentage"}
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuRadioGroup
-                value={sort}
-                onValueChange={(value) => setSort(value as "asc" | "desc" | "")}
-              >
-                <DropdownMenuRadioItem value="asc" className="cursor-pointer">
-                  Ascending (A–Z)
-                </DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="desc" className="cursor-pointer">
-                  Descending (Z–A)
-                </DropdownMenuRadioItem>
-              </DropdownMenuRadioGroup>
-              {sort && (
-                <>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    className="cursor-pointer text-red-600"
-                    onSelect={() => setSort("")}
-                  >
-                    Clear sort
-                  </DropdownMenuItem>
-                </>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Select
+            value={sort || "none"}
+            onValueChange={(value) =>
+              setSort(value === "none" ? "" : (value as "asc" | "desc"))
+            }
+          >
+            <SelectTrigger
+              aria-label={`Sort by ${
+                view === "liability" ? "liability name" : "percentage"
+              }`}
+              className={`w-44 border-gray-300 bg-white ${
+                sort ? "border-[#161CCA] text-[#161CCA]" : ""
+              }`}
+            >
+              <ArrowUpDown
+                className={sort ? "text-[#161CCA]" : "text-gray-500"}
+                size={14}
+              />
+              <SelectValue placeholder="Sort" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">Sort</SelectItem>
+              <SelectItem value="asc">Ascending (A–Z)</SelectItem>
+              <SelectItem value="desc">Descending (Z–A)</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
       <Card className="mt-10 overflow-auto rounded-lg border-gray-100 bg-transparent">

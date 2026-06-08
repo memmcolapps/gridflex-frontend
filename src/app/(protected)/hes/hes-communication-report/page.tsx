@@ -60,7 +60,6 @@ export default function CommunicationReportPage() {
   const connectionType = useMemo(() => {
     if (activeFilters.ONLINE) return "ONLINE";
     if (activeFilters.OFFLINE) return "OFFLINE";
-    if (activeFilters.CONNECTED) return "CONNECTED";
     return "";
   }, [activeFilters]);
 
@@ -202,7 +201,6 @@ export default function CommunicationReportPage() {
                 options: [
                   { label: "Online", id: "ONLINE" },
                   { label: "Offline", id: "OFFLINE" },
-                  { label: "Connected", id: "CONNECTED" },
                 ],
               },
             ]}
