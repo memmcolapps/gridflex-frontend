@@ -782,12 +782,17 @@ export default function MeterRemoteConfigPage() {
         <SendTokenDialog
           isOpen={true}
           onClose={closeDialog}
+          meterNumber={selectedMeter.meterNumber}
           onSubmit={(token) => {
-            setTokenMutation.mutate({
-              serial: selectedMeter.meterNumber,
-              credit: token,
+            return new Promise<void>((resolve, reject) => {
+              setTokenMutation.mutate(
+                { serial: selectedMeter.meterNumber, credit: token },
+                {
+                  onSuccess: () => resolve(),
+                  onError: (error) => reject(error),
+                }
+              );
             });
-            closeDialog();
           }}
         />
       )}

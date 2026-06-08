@@ -32,7 +32,7 @@ const CommunicationReportTable = () => {
     setIsDialogOpen(true);
   };
 
-  const handleDialogSubmit = (token: string) => {
+  const handleDialogSubmit = async (token: string) => {
     console.log(`Sending token ${token} to meter ${selectedMeter}`);
     // Add your token sending logic here
   };
@@ -113,6 +113,7 @@ const CommunicationReportTable = () => {
         isOpen={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
         onSubmit={handleDialogSubmit}
+        meterNumber={selectedMeter || undefined}
       />
     </Card>
   );

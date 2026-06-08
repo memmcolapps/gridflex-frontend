@@ -1,5 +1,5 @@
 // SendTokenDialog.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
     Dialog,
     DialogContent,
@@ -13,18 +13,33 @@ import { Label } from "@/components/ui/label";
 interface SendTokenDialogProps {
     isOpen: boolean;
     onClose: () => void;
-    onSubmit: (token: string) => void;
+    onSubmit: (token: string) => void | Promise<void>;
+    meterNumber?: string;
+    initialToken?: string;
 }
 
-const SendTokenDialog = ({ isOpen, onClose, onSubmit }: SendTokenDialogProps) => {
+const SendTokenDialog = ({ isOpen, onClose, onSubmit, meterNumber, initialToken }: SendTokenDialogProps) => {
     const [token, setToken] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    useEffect(() => {
+        if (isOpen) {
+            setToken(initialToken || "");
+        } else {
+            setToken("");
+        }
+    }, [isOpen, initialToken]);
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        if (token) {
-            onSubmit(token);
+        if (!token || isSubmitting) return;
+        setIsSubmitting(true);
+        try {
+            await onSubmit(token);
             setToken("");
             onClose();
+        } catch {
+            setIsSubmitting(false);
         }
     };
 
@@ -36,6 +51,17 @@ const SendTokenDialog = ({ isOpen, onClose, onSubmit }: SendTokenDialogProps) =>
                 </DialogHeader>
                 <form onSubmit={handleSubmit}>
                     <div className="grid gap-4 py-4">
+                        <div className="flex flex-col gap-2 p-2">
+                            <Label htmlFor="meterNumber" className="text-left font-normal text-gray-400 text-base sm:text-sm md:text-sm">
+                                Meter Number <span className="text-red-600">*</span>
+                            </Label>
+                            <Input
+                                id="meterNumber"
+                                value={meterNumber || ""}
+                                disabled
+                                className="w-full h-12 border border-gray-300 bg-gray-100 text-gray-400 cursor-not-allowed"
+                            />
+                        </div>
                         <div className="flex flex-col gap-2 p-2">
                             <Label htmlFor="token" className="text-left font-normal text-black text-base sm:text-sm md:text-sm">
                                 Token <span className="text-red-600">*</span>
@@ -62,9 +88,9 @@ const SendTokenDialog = ({ isOpen, onClose, onSubmit }: SendTokenDialogProps) =>
                         <Button
                             type="submit"
                             className="bg-[#161CCA] text-white cursor-pointer h-10"
-                            disabled={!token}
+                            disabled={!token || isSubmitting}
                         >
-                            Proceed
+                            {isSubmitting ? "Proceeding..." : "Proceed"}
                         </Button>
                     </div>
                     {/* </DialogFooter> */}

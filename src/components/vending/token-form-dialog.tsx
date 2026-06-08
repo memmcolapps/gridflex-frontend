@@ -32,6 +32,8 @@ import type {
   CalculateCreditTokenResponse,
 } from "@/types/vending";
 import { usePermissions } from "@/hooks/use-permissions";
+import SendTokenDialog from "@/components/hes/dashboard/send-token-dialog";
+import { useSetToken } from "@/hooks/use-configure-meter";
 
 interface TokenFormDialogProps {
   tokenType: string;
@@ -48,6 +50,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
   const generateKCTAndClearTamperTokenMutation =
     useGenerateKCTAndClearTamperToken();
   const generateCompensationTokenMutation = useGenerateCompensationToken();
+  const sendTokenMutation = useSetToken();
   const isProceedPending =
     calculateCreditTokenMutation.isPending ||
     generateKCTTokenMutation.isPending ||
@@ -73,6 +76,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
   const [showReceipt, setShowReceipt] = useState(false);
   const [showTokenDialog, setShowTokenDialog] = useState(false);
   const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
+  const [showSendTokenDialog, setShowSendTokenDialog] = useState(false);
   const [generatedTokenData, setGeneratedTokenData] =
     useState<VendingTransaction | null>(null);
   const [calculatedTokenData, setCalculatedTokenData] = useState<
@@ -820,45 +824,49 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
               </>
             )}
             {showReceipt && tokenType === "creditToken" && (
-              <div className="mt-6">
-                <p>
-                  <strong>VAT Rate:</strong> {calculatedTokenData?.vat}
+              <div className="mt-6 ">
+                <p className="flex justify-between">
+                  <strong>VAT Rate:</strong>
+                  <p>{calculatedTokenData?.vat}</p>
+            
                 </p>
-                <p>
-                  <strong>VAT Amount:</strong> {calculatedTokenData?.vatAmount}
+                <p className="flex justify-between">
+                  <strong>VAT Amount:</strong> 
+                  <p>{calculatedTokenData?.vatAmount}</p>
                 </p>
-                <p>
-                  <strong>Debit Adjustment:</strong>{" "}
-                  {calculatedTokenData?.debitDeducted}
+                <p className="flex justify-between">
+                  <strong>Debit Adjustment:</strong>
+                  <p>{calculatedTokenData?.debitDeducted}</p>
                 </p>
-                <p>
-                  <strong>Mode of Payment:</strong>{" "}
-                  {calculatedTokenData?.debitPaymentMode}
+                <p className="flex justify-between">
+                  <strong>Mode of Payment:</strong> 
+                  <p>{calculatedTokenData?.debitPaymentMode}</p>
                 </p>
 
-                <p>
+                <p className="flex justify-between">
                   <strong>Credit Adjustment:</strong>{" "}
-                  {calculatedTokenData?.creditDeducted}
+                  <p>{calculatedTokenData?.creditDeducted}</p>
                 </p>
 
-                <p>
+                <p className="flex justify-between">
                   <strong>Mode Of Payment:</strong>{" "}
-                  {calculatedTokenData?.creditPaymentMode}
+                  <p>{calculatedTokenData?.creditPaymentMode}</p>
                 </p>
-                <p>
+                <p className="flex justify-between">
                   <strong>Cost Of Unit:</strong>{" "}
-                  {calculatedTokenData?.costOfUnit}
+                  <p>{calculatedTokenData?.costOfUnit}</p>
                 </p>
-                <p>
-                  <strong>Units:</strong> {calculatedTokenData?.unit}
+                <p className="flex justify-between">
+                  <strong>Units:</strong> 
+                  <p>{calculatedTokenData?.unit}</p>
                 </p>
-                <p>
+                <p className="flex justify-between">
                   <strong>Initial Amount:</strong>{" "}
-                  {calculatedTokenData?.initialAmount}
+                  <p>{calculatedTokenData?.initialAmount}</p>
                 </p>
-                <p>
+                <p className="flex justify-between">
                   <strong>Total Amount Vended:</strong>{" "}
-                  {calculatedTokenData?.finalAmount}
+                  <p>{calculatedTokenData?.finalAmount}</p>
                 </p>
               </div>
             )}
@@ -1064,9 +1072,13 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
               variant="outline"
               size="lg"
               className="cursor-pointer border-[#161CCA] text-[#161CCA]"
-              onClick={() => setShowTokenDialog(false)}
+              onClick={() => {
+                setShowTokenDialog(false);
+                setShowSendTokenDialog(true);
+              }}
+              disabled={sendTokenMutation.isPending}
             >
-              Back
+              {sendTokenMutation.isPending ? "Sending..." : "Send Token"}
             </Button>
             {canEdit && (
               <Button
@@ -1082,6 +1094,29 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
           </div>
         </DialogContent>
       </Dialog>
+      <SendTokenDialog
+        isOpen={showSendTokenDialog}
+        onClose={() => {
+          setShowSendTokenDialog(false);
+          setShowTokenDialog(true);
+        }}
+        meterNumber={generatedTokenData?.meterNumber}
+        initialToken={generatedTokenData?.token}
+        onSubmit={(token) => {
+          return new Promise<void>((resolve, reject) => {
+            sendTokenMutation.mutate(
+              {
+                serial: generatedTokenData?.meterNumber ?? "",
+                credit: token,
+              },
+              {
+                onSuccess: () => resolve(),
+                onError: (error) => reject(error),
+              },
+            );
+          });
+        }}
+      />
     </>
   );
 }
