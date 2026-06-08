@@ -16,7 +16,7 @@ import {
   type CreateGroupPermissionPayload,
   type UpdateGroupPermissionPayload,
 } from "@/types/group-permission-user";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { type CreateUserPayload } from "@/types/users-groups";
 
@@ -124,6 +124,7 @@ export const useGetUsers = (params: GetUsersQueryParams = {}) => {
   const { data, error, isLoading } = useQuery({
     queryKey: ["users", params],
     queryFn: () => getUsers(params),
+    placeholderData: keepPreviousData,
   });
   return {
     data: data?.success

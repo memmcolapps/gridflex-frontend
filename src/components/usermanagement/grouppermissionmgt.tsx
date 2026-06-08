@@ -28,17 +28,13 @@ import {
 import { DropdownMenuContent, DropdownMenuItem } from "../ui/dropdown-menu";
 import GroupStatusToggleDropdownItem from "./groupstatustoggledropdownitem";
 import { usePermissions } from "@/hooks/use-permissions";
-import { FilterControl } from "@/components/search-control";
-
-const filterSections = [
-  {
-    title: "Status",
-    options: [
-      { label: "Active", id: "active" },
-      { label: "Inactive", id: "inactive" },
-    ],
-  },
-];
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface GroupPermissionFormData {
   groupTitle: string;
@@ -370,47 +366,52 @@ export default function GroupPermissionManagement() {
               onChange={handleSearch}
             />
           </div>
-          <FilterControl
-            sections={filterSections}
-            initialFilters={activeFilters}
-            onApply={(filters) => {
-              setActiveFilters(filters);
+          <Select
+            value={
+              activeFilters.active
+                ? "active"
+                : activeFilters.inactive
+                  ? "inactive"
+                  : "all"
+            }
+            onValueChange={(value) => {
+              setActiveFilters(value === "all" ? {} : { [value]: true });
               setCurrentPage(1);
             }}
-            onReset={() => {
-              setActiveFilters({});
+          >
+            <SelectTrigger
+              aria-label="Filter groups by status"
+              className="w-36 border-[rgba(228,231,236,1)] bg-white"
+            >
+              <SelectValue placeholder="Filter" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All statuses</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="inactive">Inactive</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select
+            value={sortDirection}
+            onValueChange={(value) => {
+              setSortDirection(value as "asc" | "desc");
               setCurrentPage(1);
             }}
-          />
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                className="gap-1 border-[rgba(228,231,236,1)]"
-              >
+          >
+            <SelectTrigger
+              aria-label="Sort groups"
+              className="w-44 border-[rgba(228,231,236,1)] bg-white"
+            >
+              <div className="flex items-center gap-1">
                 <ArrowUpDown strokeWidth={2.5} size={12} />
-                Sort
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
-              <DropdownMenuItem
-                onSelect={() => {
-                  setSortDirection("asc");
-                  setCurrentPage(1);
-                }}
-              >
-                Group Name (A-Z)
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onSelect={() => {
-                  setSortDirection("desc");
-                  setCurrentPage(1);
-                }}
-              >
-                Group Name (Z-A)
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                <SelectValue placeholder="Sort" />
+              </div>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="asc">Group Name (A-Z)</SelectItem>
+              <SelectItem value="desc">Group Name (Z-A)</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 

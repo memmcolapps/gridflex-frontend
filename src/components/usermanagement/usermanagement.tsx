@@ -38,17 +38,13 @@ import { PaginationControls } from "@/components/ui/pagination-controls";
 import { LoadingAnimation } from "@/components/ui/loading-animation";
 import { usePermissions } from "@/hooks/use-permissions";
 import { useAuth } from "@/context/auth-context";
-import { FilterControl } from "@/components/search-control";
-
-const filterSections = [
-  {
-    title: "Status",
-    options: [
-      { label: "Active", id: "active" },
-      { label: "Inactive", id: "inactive" },
-    ],
-  },
-];
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const parseTimestamp = (timestamp: string): Date => {
   // Convert format "2025-10-22 10:32:15.338908-05" to ISO 8601
@@ -219,47 +215,52 @@ export default function UserManagement() {
             />
           </div>
 
-          <FilterControl
-            sections={filterSections}
-            initialFilters={activeFilters}
-            onApply={(filters) => {
-              setActiveFilters(filters);
+          <Select
+            value={
+              activeFilters.active
+                ? "active"
+                : activeFilters.inactive
+                  ? "inactive"
+                  : "all"
+            }
+            onValueChange={(value) => {
+              setActiveFilters(value === "all" ? {} : { [value]: true });
               setCurrentPage(1);
             }}
-            onReset={() => {
-              setActiveFilters({});
+          >
+            <SelectTrigger
+              aria-label="Filter users by status"
+              className="w-36 border-[rgba(228,231,236,1)] bg-white"
+            >
+              <SelectValue placeholder="Filter" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All statuses</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="inactive">Inactive</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select
+            value={sortDirection}
+            onValueChange={(value) => {
+              setSortDirection(value as "asc" | "desc");
               setCurrentPage(1);
             }}
-          />
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                className="gap-1 border-[rgba(228,231,236,1)]"
-              >
+          >
+            <SelectTrigger
+              aria-label="Sort users"
+              className="w-44 border-[rgba(228,231,236,1)] bg-white"
+            >
+              <div className="flex items-center gap-1">
                 <ArrowUpDown strokeWidth={2.5} size={12} />
-                Sort
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
-              <DropdownMenuItem
-                onSelect={() => {
-                  setSortDirection("asc");
-                  setCurrentPage(1);
-                }}
-              >
-                Username (A-Z)
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onSelect={() => {
-                  setSortDirection("desc");
-                  setCurrentPage(1);
-                }}
-              >
-                Username (Z-A)
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                <SelectValue placeholder="Sort" />
+              </div>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="asc">Username (A-Z)</SelectItem>
+              <SelectItem value="desc">Username (Z-A)</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <div className="h-4/6">
           <Table>
