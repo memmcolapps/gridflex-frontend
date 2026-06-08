@@ -7,14 +7,12 @@ import { useObisData } from "@/hooks/use-hes-hierarchy";
 interface RealTimeDataTableProps {
   meterType?: string;
   onMeterSelection?: (meters: string[]) => void;
-  resultFilters?: Record<string, boolean>;
   sortDirection?: "asc" | "desc" | null;
 }
 
 export function RealTimeDataTable({
   meterType: currentMeterType = "MD",
   onMeterSelection,
-  resultFilters = {},
   sortDirection = null,
 }: RealTimeDataTableProps) {
   const { data, selectedReading, isStreaming, error, run } = useRealtimeStream();
@@ -35,41 +33,14 @@ export function RealTimeDataTable({
   }, [obisData]);
 
   const displayData = useMemo(() => {
-    const activeReadings = selectedReading.filter(
-      (reading) => reading !== "meter-serial-number" && reading !== "clock object",
-    );
-    const selectedResults = Object.entries(resultFilters)
-      .filter(([, selected]) => selected)
-      .map(([result]) => result);
+    if (!sortDirection) return data;
 
-    let result = data;
-    if (selectedResults.length > 0) {
-      result = data.filter((row) => {
-        const hasFailed = activeReadings.some(
-          (reading) => row[`${reading}__status`] === "-1",
-        );
-        const hasSuccess = activeReadings.some(
-          (reading) =>
-            row[reading] !== undefined &&
-            row[reading] !== "" &&
-            row[`${reading}__loading`] === "false",
-        );
-
-        return (
-          (selectedResults.includes("success") && hasSuccess) ||
-          (selectedResults.includes("failed") && hasFailed)
-        );
-      });
-    }
-
-    if (!sortDirection) return result;
-
-    return [...result].sort((a, b) =>
+    return [...data].sort((a, b) =>
       sortDirection === "asc"
         ? a.meter.localeCompare(b.meter)
         : b.meter.localeCompare(a.meter),
     );
-  }, [data, resultFilters, selectedReading, sortDirection]);
+  }, [data, sortDirection]);
 
   const handleRun = async (filters: {
     hierarchy: string;

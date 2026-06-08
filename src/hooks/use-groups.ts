@@ -23,11 +23,17 @@ import { type CreateUserPayload } from "@/types/users-groups";
 export const useGroupPermissions = (
   params: GroupPermissionQueryParams = {},
 ) => {
-  const { data, error, isLoading } = useQuery({
+  const { data, error, isLoading, isFetching } = useQuery({
     queryKey: ["groupPermissions", params],
     queryFn: () => getGroupPermission(params),
+    placeholderData: keepPreviousData,
   });
-  return { data: data?.success ? data.data : [], error, isLoading };
+  return {
+    data: data?.success ? data.data : [],
+    error,
+    isLoading,
+    isFetching,
+  };
 };
 
 export const useCreateGroupPermission = () => {
@@ -121,7 +127,7 @@ export const useDeactivateOrActivateGroupPermission = () => {
 };
 
 export const useGetUsers = (params: GetUsersQueryParams = {}) => {
-  const { data, error, isLoading } = useQuery({
+  const { data, error, isLoading, isFetching } = useQuery({
     queryKey: ["users", params],
     queryFn: () => getUsers(params),
     placeholderData: keepPreviousData,
@@ -132,6 +138,7 @@ export const useGetUsers = (params: GetUsersQueryParams = {}) => {
       : { data: [], totalData: 0, size: 0, totalPages: 1, page: 0 },
     error,
     isLoading,
+    isFetching,
   };
 };
 

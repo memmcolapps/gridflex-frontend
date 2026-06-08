@@ -1,7 +1,7 @@
 // app/communication-report/page.tsx
 "use client";
 import { RealTimeDataTable } from "@/components/hes/real-time-data-table";
-import { FilterControl, SortControl } from "@/components/search-control";
+import { SortControl } from "@/components/search-control";
 import { Button } from "@/components/ui/button";
 import { ContentHeader } from "@/components/ui/content-header";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -23,7 +23,6 @@ import type {
 export default function RealtimeDataPage() {
   const [activeTab, setActiveTab] = useState("MD");
   const [selectedMeters, setSelectedMeters] = useState<string[]>([]);
-  const [resultFilters, setResultFilters] = useState<Record<string, boolean>>({});
   const [sortDirection, setSortDirection] = useState<"asc" | "desc" | null>(null);
   const [selectedHierarchy] = useState<string>("");
   const [, setUnitOptions] = useState<{ label: string; id: string }[]>([]);
@@ -187,19 +186,6 @@ export default function RealtimeDataPage() {
         </Tabs>
 
         <div className="mb-4 flex flex-col gap-4 md:flex-row">
-          <FilterControl
-            sections={[
-              {
-                title: "Result",
-                options: [
-                  { label: "Success", id: "success" },
-                  { label: "Failed", id: "failed" },
-                ],
-              },
-            ]}
-            onApply={setResultFilters}
-            onReset={() => setResultFilters({})}
-          />
           <SortControl
             onSortChange={(direction) =>
               setSortDirection(direction === "desc" ? "desc" : "asc")
@@ -214,7 +200,6 @@ export default function RealtimeDataPage() {
         // selectedMeters={selectedMeters}
         onMeterSelection={handleMeterSelection}
         meterType={activeTab} 
-        resultFilters={resultFilters}
         sortDirection={sortDirection}
         // onRunStream={runRealtimeStream}
       />

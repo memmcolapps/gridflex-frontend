@@ -64,8 +64,8 @@ const filterSections = [
   {
     title: "Meter Class",
     options: [
-      { label: "Single Phase", id: "singlePhase" },
-      { label: "Three Phase", id: "threePhase" },
+      { label: "Single-phase", id: "singlePhase" },
+      { label: "Three-phase", id: "threePhase" },
       { label: "MD", id: "md" },
     ],
   },
@@ -73,8 +73,8 @@ const filterSections = [
 
 const mapActiveFiltersToApi = (filters: Record<string, boolean>) => {
   const selectedClasses = [
-    filters.singlePhase ? "Single phase" : null,
-    filters.threePhase ? "Three Phase" : null,
+    filters.singlePhase ? "Single-phase" : null,
+    filters.threePhase ? "Three-phase" : null,
     filters.md ? "MD" : null,
   ].filter((value): value is string => Boolean(value));
 

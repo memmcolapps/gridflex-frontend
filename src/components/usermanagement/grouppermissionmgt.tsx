@@ -172,6 +172,7 @@ export default function GroupPermissionManagement() {
   const {
     data: groupPermissions = [],
     isLoading,
+    isFetching,
     error,
   } = useGroupPermissions({
     search: searchTerm.trim() || undefined,
@@ -431,9 +432,9 @@ export default function GroupPermissionManagement() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {isLoading ? (
+            {isFetching ? (
               <TableRow>
-                <TableCell colSpan={6} className="py-8 text-center">
+                <TableCell colSpan={6} className="h-40 text-center">
                   <div className="flex items-center justify-center">
                     <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-blue-600"></div>
                     <span className="ml-2">Loading group permissions...</span>
@@ -442,8 +443,15 @@ export default function GroupPermissionManagement() {
               </TableRow>
             ) : paginatedGroups.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="py-8 text-center">
-                  No results found.
+                <TableCell
+                  colSpan={6}
+                  className="h-40 text-center text-gray-500"
+                >
+                  {searchTerm.trim() ||
+                  activeFilters.active ||
+                  activeFilters.inactive
+                    ? "No permission groups match your search or filter."
+                    : "No permission groups have been added yet."}
                 </TableCell>
               </TableRow>
             ) : (

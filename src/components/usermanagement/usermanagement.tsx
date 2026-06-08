@@ -75,7 +75,7 @@ export default function UserManagement() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const { data: users, isLoading } = useGetUsers({
+  const { data: users, isFetching } = useGetUsers({
     page: currentPage - 1,
     size: rowsPerPage,
     search: searchTerm.trim() || undefined,
@@ -162,18 +162,6 @@ export default function UserManagement() {
     setRowsPerPage(newPageSize);
     setCurrentPage(1);
   };
-
-  if (isLoading) {
-    return (
-      <div className="flex min-h-96 items-center justify-center">
-        <LoadingAnimation
-          variant="spinner"
-          message="Loading users..."
-          size="lg"
-        />
-      </div>
-    );
-  }
 
   return (
     <div className="flex h-full flex-col overflow-hidden text-black">
@@ -288,89 +276,116 @@ export default function UserManagement() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredUsers.map((user, index) => (
-                <TableRow key={user.id} className="hover:bg-muted/50">
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        checked={selectedUsers.includes(user.id)}
-                        onCheckedChange={() => toggleUserSelection(user.id)}
-                        className="border-[rgba(228,231,236,1)]"
-                      />
-                      <span>{startIndex + index + 1}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col">
-                      <span className="font-medium">
-                        {user.firstname} {user.lastname}
-                      </span>
-                      <span className="text-muted-foreground text-sm">
-                        {user.email}
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell>{user.groups.groupTitle}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      {formatLastActive(
-                        user.lastActive
-                          ? parseTimestamp(user.lastActive)
-                          : new Date(),
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <span
-                      className={`inline-block rounded-full px-2 py-1 text-xs font-semibold ${
-                        user.status
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
-                      }`}
-                    >
-                      {user.status ? "Active" : "Inactive"}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    {formatDateAdded(new Date(user.createdAt))}
-                  </TableCell>
-                  <TableCell>
-                    {canEdit && user?.id !== currentUser?.id && (
-                      <DropdownMenu>
-                        <DropdownMenuTrigger
-                          asChild
-                          disabled={isEditDialogOpen}
-                        >
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-8 w-8 cursor-pointer p-2"
-                          >
-                            <MoreVertical size={14} />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent
-                          align="center"
-                          className="w-35 cursor-pointer"
-                        >
-                          <DropdownMenuItem
-                            onSelect={() => {
-                              setEditingUser(user);
-                              setIsEditDialogOpen(true);
-                            }}
-                          >
-                            <div className="flex w-full items-center gap-2">
-                              <Pencil size={14} />
-                              <span className="cursor-pointer">Edit User</span>
-                            </div>
-                          </DropdownMenuItem>
-                          <UserStatusToggleDropdownItem user={user} />
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    )}
+              {isFetching ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="h-40 text-center">
+                    <LoadingAnimation
+                      variant="spinner"
+                      message="Loading users..."
+                      size="md"
+                    />
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : filteredUsers.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={7}
+                    className="h-40 text-center text-gray-500"
+                  >
+                    {searchTerm.trim() ||
+                    activeFilters.active ||
+                    activeFilters.inactive
+                      ? "No users match your search or filter."
+                      : "No users have been added yet."}
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredUsers.map((user, index) => (
+                  <TableRow key={user.id} className="hover:bg-muted/50">
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Checkbox
+                          checked={selectedUsers.includes(user.id)}
+                          onCheckedChange={() => toggleUserSelection(user.id)}
+                          className="border-[rgba(228,231,236,1)]"
+                        />
+                        <span>{startIndex + index + 1}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col">
+                        <span className="font-medium">
+                          {user.firstname} {user.lastname}
+                        </span>
+                        <span className="text-muted-foreground text-sm">
+                          {user.email}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell>{user.groups.groupTitle}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        {formatLastActive(
+                          user.lastActive
+                            ? parseTimestamp(user.lastActive)
+                            : new Date(),
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <span
+                        className={`inline-block rounded-full px-2 py-1 text-xs font-semibold ${
+                          user.status
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
+                      >
+                        {user.status ? "Active" : "Inactive"}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      {formatDateAdded(new Date(user.createdAt))}
+                    </TableCell>
+                    <TableCell>
+                      {canEdit && user?.id !== currentUser?.id && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger
+                            asChild
+                            disabled={isEditDialogOpen}
+                          >
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-8 w-8 cursor-pointer p-2"
+                            >
+                              <MoreVertical size={14} />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent
+                            align="center"
+                            className="w-35 cursor-pointer"
+                          >
+                            <DropdownMenuItem
+                              onSelect={() => {
+                                setEditingUser(user);
+                                setIsEditDialogOpen(true);
+                              }}
+                            >
+                              <div className="flex w-full items-center gap-2">
+                                <Pencil size={14} />
+                                <span className="cursor-pointer">
+                                  Edit User
+                                </span>
+                              </div>
+                            </DropdownMenuItem>
+                            <UserStatusToggleDropdownItem user={user} />
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </div>
