@@ -27,6 +27,7 @@ import { FilterControl, SearchControl, SortControl } from "../search-control";
 import { Card } from "../ui/card";
 import { LoadingAnimation } from "@/components/ui/loading-animation";
 import { usePermissions } from "@/hooks/use-permissions";
+import { useAuth } from "@/context/auth-context";
 
 interface CustomerTableProps {
   onEditCustomer: (customer: Customer) => void;
@@ -44,6 +45,10 @@ export default function CustomerTable({
   onAssignMeter,
 }: CustomerTableProps) {
   const { canEdit } = usePermissions();
+  const { user } = useAuth();
+  const userNodeType =
+    user?.nodeInfo?.type?.toLowerCase().replace(/\s+/g, "") ?? "";
+  const showBusinessHub = ["region", "root"].includes(userNodeType);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -100,7 +105,7 @@ export default function CustomerTable({
     setCurrentPage(1);
   };
 
-  const colSpan = 9;
+  const colSpan = showBusinessHub ? 10 : 9;
 
   const renderTableBody = () => {
     if (isLoading) {
@@ -174,6 +179,11 @@ export default function CustomerTable({
           <TableCell className="text-center">{customer.streetName}</TableCell>
           <TableCell className="text-center">{customer.city}</TableCell>
           <TableCell className="text-center">{customer.state}</TableCell>
+          {showBusinessHub && (
+            <TableCell className="text-center">
+              {customer.businessName?.name ?? "-"}
+            </TableCell>
+          )}
           <TableCell className="text-center">
             <span className={getStatusStyle(customer.status.toString())}>
               {customer.status.toString()}
@@ -327,6 +337,9 @@ export default function CustomerTable({
               >
                 State
               </TableHead>
+              {showBusinessHub && (
+                <TableHead className="text-center">Business Hub</TableHead>
+              )}
               <TableHead
                 onClick={() => requestSort("status")}
                 className="text-center"
