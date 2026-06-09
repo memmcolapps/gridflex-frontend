@@ -135,6 +135,33 @@ export async function getAllCustomerIds(): Promise<string[]> {
   }
 }
 
+export async function getCustomerByCustomerId(
+  customerId: string,
+): Promise<Customer | null> {
+  try {
+    const token = localStorage.getItem("auth_token");
+    if (!token) throw new Error("Authentication token not found.");
+
+    const response = await axiosInstance.get(
+      `${API_URL}/customer/service/all`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    if (response.data.responsecode !== "000") return null;
+
+    const customers: Customer[] = response.data.responsedata?.data ?? [];
+    return customers.find((c) => c.customerId === customerId) ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export async function addCustomer(
   customerData: AddCustomerPayload,
 ): Promise<CustomerMutationResponse> {

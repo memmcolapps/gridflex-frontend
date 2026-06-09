@@ -59,7 +59,10 @@ import type {
   AssignMeterPayload,
   MeterAPIItem,
 } from "@/service/assign-meter-service";
-import { fetchCustomerRecord } from "@/service/customer-service";
+import {
+  fetchCustomerRecord,
+  getCustomerByCustomerId,
+} from "@/service/customer-service";
 import { LoadingAnimation } from "@/components/ui/loading-animation";
 import {
   useDownloadAssignCsvTemplate,
@@ -231,11 +234,17 @@ export default function MeterManagementPage() {
 
   const handleCustomerIdSelect = async (customerId: string) => {
     try {
-      // Fetch the customer record from API to get generated account number
-      const customerRecord = await fetchCustomerRecord(customerId);
+      const [customerRecord, fullCustomer] = await Promise.all([
+        fetchCustomerRecord(customerId),
+        getCustomerByCustomerId(customerId),
+      ]);
 
       if (customerRecord?.customer?.customerId) {
         const customer = customerRecord.customer;
+        const bn = fullCustomer?.businessName?.name;
+        const businessName = bn
+          ? typeof bn === "string" ? { name: bn } : bn
+          : undefined;
         setSelectedCustomer({
           id: customer.customerId,
           customerId: customer.customerId,
@@ -253,6 +262,7 @@ export default function MeterManagementPage() {
           firstName: customer.firstname || "",
           lastName: customer.lastname || "",
           phone: customer.phoneNumber || "",
+          businessName,
           image: null,
           consumptionType: "Non-MD",
           category: "",
@@ -332,11 +342,16 @@ export default function MeterManagementPage() {
     });
   };
 
-  const handleProceedFromCustomerIdDialog = () => {
+  const handleProceedFromCustomerIdDialog = async () => {
     if (!customerIdInput.trim()) return;
 
     if (customerRecordData) {
       const customer = customerRecordData.customer;
+      const fullCustomer = await getCustomerByCustomerId(customer.customerId);
+      const bn = fullCustomer?.businessName;
+      const businessName = bn
+        ? typeof bn === "string" ? { name: bn } : bn
+        : undefined;
       setSelectedCustomer({
         id: customer.customerId,
         customerId: customer.customerId,
@@ -354,6 +369,7 @@ export default function MeterManagementPage() {
         firstName: customer.firstname || "",
         lastName: customer.lastname || "",
         phone: customer.phoneNumber || "",
+        businessName,
         image: null,
         consumptionType: "Non-MD",
         category: "",
