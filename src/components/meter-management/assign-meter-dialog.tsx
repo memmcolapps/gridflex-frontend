@@ -461,7 +461,11 @@ export function AssignMeterDialog({
                   <Label>Business Hub</Label>
                   <Input
                     value={
-                      (customer as Customer)?.businessName?.name ?? ""
+                      (() => {
+                        const bn = (customer as Customer)?.businessName;
+                        if (!bn) return "";
+                        return typeof bn === "string" ? bn : bn?.name ?? "";
+                      })()
                     }
                     readOnly
                     placeholder="Business Hub"
