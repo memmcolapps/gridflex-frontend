@@ -214,7 +214,7 @@ const profileColumns: Record<string, { key: string; label: string }[]> = {
   ],
   "load-profile-one-household": [
     { key: "meterModel", label: "Meter Model" },
-    // { key: "meterHealthIndicator", label: "Meter Health Indicator" },
+    { key: "activeEnergyImport", label: "Active Energy Import" },
     { key: "activeEnergyImportOngrid", label: "Active Energy Import Ongrid" },
     { key: "activeEnergyImportOffgrid", label: "Active Energy Import Offgrid" },
     { key: "activeEnergyExport", label: "Active Energy Export" },
