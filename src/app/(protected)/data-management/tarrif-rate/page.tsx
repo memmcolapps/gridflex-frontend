@@ -129,7 +129,6 @@ export default function TariffManagementPage() {
         toast.success("Bulk approve successful");
       }
     } catch (error) {
-      console.error("Bulk approve error:", error);
       toast.error("Failed to bulk approve tariffs");
     }
   };
@@ -155,7 +154,7 @@ export default function TariffManagementPage() {
           toast.error(
             error.message || "Failed to export tariff data. Please try again.",
           );
-          console.error("Export error:", error);
+          
         },
       },
     );
@@ -176,14 +175,14 @@ export default function TariffManagementPage() {
     };
 
     createTariff(newTariff, {
-      onSuccess: () => {
+      onSuccess: (data) => {
         resetForm();
-        toast.success("Tariff created successfully");
+        toast.success(data?.message || "Tariff created successfully");
         setIsDialogOpen(false);
       },
       onError: (error) => {
         console.error("Failed to create tariff:", error);
-        toast.error("Failed to create tariff");
+        toast.error(error?.message || "Failed to create tariff");
       },
       onSettled: () => {
         setIsSubmitting(false);

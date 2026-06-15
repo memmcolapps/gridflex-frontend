@@ -80,7 +80,7 @@ export async function fetchManufacturers(): Promise<
 
 export async function createManufacturer(
   manufacturer: Omit<Manufacturer, "id" | "orgId" | "createdAt" | "updatedAt">,
-): Promise<{ success: true } | { success: false; error: string }> {
+): Promise<{ success: true; message: string } | { success: false; error: string }> {
   try {
     const token = localStorage.getItem("auth_token");
 
@@ -98,12 +98,13 @@ export async function createManufacturer(
     if (response.data.responsecode !== "000") {
       return {
         success: false,
-        error: response.data.responsedesc || "Failed to fetch tariffs",
+        error: response.data.responsedesc,
       };
     }
 
     return {
       success: true,
+      message: response.data.responsedesc || "Manufacturer created successfully",
     };
   } catch (error) {
     return {

@@ -51,7 +51,7 @@ export async function createBand(band: Omit<Band, "id">): Promise<BandResult> {
     if (response.data.responsecode !== "000") {
       return {
         success: false,
-        error: response.data.responsedesc || "Failed to fetch audit logs",
+        error: response.data.responsedesc,
       };
     }
 
