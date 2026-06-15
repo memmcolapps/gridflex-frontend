@@ -24,7 +24,9 @@ interface BandListResponse {
   responsedata: Band[];
 }
 
-type BandResult = { success: true } | { success: false; error: string };
+type BandResult = {
+  message: string; success: true 
+} | { success: false; error: string };
 
 const API_URL = env.NEXT_PUBLIC_BASE_URL;
 const CUSTOM_HEADER = env.NEXT_PUBLIC_CUSTOM_HEADER;
@@ -57,6 +59,7 @@ export async function createBand(band: Omit<Band, "id">): Promise<BandResult> {
 
     return {
       success: true,
+      message: response.data.responsedesc || "Band created successfully",
     };
   } catch (error: unknown) {
     return {
@@ -90,7 +93,7 @@ export async function fetchBands(searchTerm?: string): Promise<
     if (response.data.responsecode !== "000") {
       return {
         success: false,
-        error: response.data.responsedesc || "Failed to fetch audit logs",
+        error: response.data.responsedesc,
       };
     }
 
@@ -131,7 +134,7 @@ export async function updateBand(
     if (response.data.responsecode !== "000") {
       return {
         success: false,
-        error: response.data.responsedesc || "Failed to update band",
+        error: response.data.responsedesc,
       };
     }
 
@@ -296,6 +299,7 @@ export async function bulkApproveBands(
 
     return {
       success: true,
+      message: response.data.responsedesc || "Bands approved successfully",
     };
   } catch (error: unknown) {
     return {
