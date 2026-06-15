@@ -122,11 +122,12 @@ export default function BandManagement() {
 
   const handleAddBand = async (newBand: Omit<Band, "id">) => {
     createBand(newBand, {
-      onSuccess: () => {
-        toast.success("Band created successfully");
+      onSuccess: (data) => {
+        toast.success(data?.message || "Band created successfully");
       },
       onError: (error) => {
         console.error("Failed to create band:", error);
+        toast.error(error?.message || "Failed to create band");
       },
       onSettled: () => {
         setSearchTerm("");

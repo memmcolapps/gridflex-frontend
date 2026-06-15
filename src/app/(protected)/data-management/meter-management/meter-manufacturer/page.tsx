@@ -805,14 +805,14 @@ export default function ManufacturersPage() {
   ) => {
     setIsSubmitting(true);
     createManufacturer(newManufacturer, {
-      onSuccess: () => {
-        toast.success("Manufacturer created successfully");
+      onSuccess: (data) => {
+        toast.success(data?.message || "Manufacturer created successfully");
         setSearchTerm("");
         setIsAddDialogOpen(false);
       },
       onError: (error) => {
         console.error("Failed to create manufacturer:", error);
-        toast.error("Failed to create manufacturer");
+        toast.error(error?.message || "Failed to create manufacturer");
       },
       onSettled: () => {
         setIsSubmitting(false);
