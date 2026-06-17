@@ -56,7 +56,9 @@ export default function ReadDateTimeDialog({
     }
   }, [isOpen]);
 
-  const parsed = parseDateTimeValue(String(data?.responsedata?.value));
+  const responsedata = data?.responsedata;
+  const value = responsedata && !Array.isArray(responsedata) ? String(responsedata.value ?? "") : "";
+  const parsed = parseDateTimeValue(value);
   const isLoading = isPending ? "Loading..." : "No data available";
 
   return (

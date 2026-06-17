@@ -2,7 +2,7 @@ import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 type ResponseValueItem = {
   description: string;
-  value: number;
+  value: string | number;
 };
 
 export function cn(...inputs: ClassValue[]) {
