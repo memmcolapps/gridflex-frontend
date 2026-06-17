@@ -31,7 +31,8 @@ export default function ReadRelayModeDialog({
     }
   }, [isOpen]);
 
-  const relayModeValue = data?.responsedata?.value ?? "";
+  const responsedata = data?.responsedata;
+  const relayModeValue = responsedata && !Array.isArray(responsedata) ? String(responsedata.value ?? "") : "";
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

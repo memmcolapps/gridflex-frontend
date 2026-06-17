@@ -33,10 +33,21 @@ interface ReadMeterResponseData {
   message: string;
 }
 
+export interface NonMdReadMeterItem {
+  "Meter No": string;
+  obisCode: string;
+  attributeIndex: number;
+  dataIndex: number;
+  value: string;
+  scaler: number;
+  status: string;
+  description: string;
+}
+
 export interface ReadMeterResponse {
   responsecode: string;
   responsedesc: string;
-  responsedata: ReadMeterResponseData;
+  responsedata: ReadMeterResponseData | NonMdReadMeterItem[];
 }
 
 export interface SetDateTimePayload {

@@ -10,6 +10,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useReadMeter } from "@/hooks/use-configure-meter";
+import { getValueByDescription } from "@/lib/utils";
 import type { Meter } from "@/types/meter";
 import { useEffect } from "react";
 
@@ -25,12 +26,22 @@ export default function ReadIPDialog({
   meter,
 }: ReadIPDialogProps) {
   const { mutate: readMeter, data, isPending, reset } = useReadMeter();
-  const [ipAddress, port] = String(data?.responsedata?.value ?? "").split(":");
+
+  const mdResponse = !Array.isArray(data?.responsedata) ? data?.responsedata : undefined;
+  const nonMdResponse = Array.isArray(data?.responsedata) ? data.responsedata : [];
+
+  const [ipAddress, port] = mdResponse
+    ? String(mdResponse.value ?? "").split(":")
+    : [
+        getValueByDescription(nonMdResponse, "Auto connect setup (IP & Port)"),
+        getValueByDescription(nonMdResponse, "IP Port"),
+      ];
 
   useEffect(() => {
     if (isOpen && meter?.meterNumber) {
       readMeter({ serial: meter.meter?.meterNumber, type: "READ_IP" });
     }
+    if (!isOpen) reset();
   }, [isOpen]);
 
   const isLoading = isPending ? "Loading..." : "No data available";

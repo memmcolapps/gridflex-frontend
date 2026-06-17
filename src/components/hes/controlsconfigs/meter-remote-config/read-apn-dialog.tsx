@@ -32,7 +32,8 @@ export default function ReadAPNDialog({
     if (!isOpen) reset();
   }, [isOpen]);
 
-  const apnValue = data?.responsedata?.value ?? "";
+  const responsedata = data?.responsedata;
+  const apnValue = responsedata && !Array.isArray(responsedata) ? String(responsedata.value ?? "") : "";
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
