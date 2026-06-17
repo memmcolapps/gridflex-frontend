@@ -9,6 +9,7 @@ import type { VirtualMeterData } from "@/types/meter";
 import { useTariff } from "@/hooks/use-tarrif";
 import { useNigerianStates, useNigerianCities } from "@/hooks/use-location";
 import { useFeeders, useDSS } from "@/hooks/use-node";
+import { useAuth } from "@/context/auth-context";
 import { useState } from "react";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -103,8 +104,12 @@ const AddVirtualMeterDetailsDialog: FC<AddVirtualMeterDetailsDialogProps> = ({
     isError: isErrorCities,
   } = useNigerianCities(state);
 
-  const { data: feeders, isLoading: isLoadingFeeders } = useFeeders();
-  const { data: dssOptions, isLoading: isLoadingDSS } = useDSS(feeder || null);
+  const { user } = useAuth();
+  const nodeId = user?.nodeInfo?.nodeId ?? null;
+  const { data: feeders, isLoading: isLoadingFeeders } = useFeeders(nodeId);
+  const selectedFeeder = feeders?.find((f) => f.assetId === feeder);
+  const feederNodeId = selectedFeeder?.nodeId ?? null;
+  const { data: dssOptions, isLoading: isLoadingDSS } = useDSS(feederNodeId);
 
   const [feederOpen, setFeederOpen] = useState(false);
   const [dssOpen, setDssOpen] = useState(false);

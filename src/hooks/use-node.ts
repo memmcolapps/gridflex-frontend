@@ -1,26 +1,32 @@
 import { useQuery } from "@tanstack/react-query";
 import { fetchFeeders, fetchDSSByFeeder } from "@/service/node-service";
 
-export const useFeeders = () => {
+export const useFeeders = (nodeId: string | null) => {
   return useQuery({
-    queryKey: ["feeders"],
-    queryFn: fetchFeeders,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    queryKey: ["feeders", nodeId],
+    queryFn: () => {
+      if (!nodeId) {
+        return Promise.resolve([]);
+      }
+      return fetchFeeders(nodeId);
+    },
+    enabled: !!nodeId,
+    staleTime: 1000 * 60 * 5,
     refetchOnWindowFocus: false,
   });
 };
 
-export const useDSS = (feederAssetId: string | null) => {
+export const useDSS = (feederNodeId: string | null) => {
   return useQuery({
-    queryKey: ["dss", feederAssetId],
+    queryKey: ["dss", feederNodeId],
     queryFn: () => {
-      if (!feederAssetId) {
+      if (!feederNodeId) {
         return Promise.resolve([]);
       }
-      return fetchDSSByFeeder(feederAssetId);
+      return fetchDSSByFeeder(feederNodeId);
     },
-    enabled: !!feederAssetId,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    enabled: !!feederNodeId,
+    staleTime: 1000 * 60 * 5,
     refetchOnWindowFocus: false,
   });
 };

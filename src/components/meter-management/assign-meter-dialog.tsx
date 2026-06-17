@@ -144,8 +144,10 @@ export function AssignMeterDialog({
     isError: isErrorCities,
   } = useNigerianCities(state);
 
-  const { data: feeders, isLoading: isLoadingFeeders } = useFeeders();
-  const { data: dssOptions, isLoading: isLoadingDSS } = useDSS(feeder || null);
+  const { data: feeders, isLoading: isLoadingFeeders } = useFeeders(user?.nodeInfo?.nodeId ?? null);
+  const selectedFeeder = feeders?.find((f) => f.assetId === feeder);
+  const feederNodeId = selectedFeeder?.nodeId ?? null;
+  const { data: dssOptions, isLoading: isLoadingDSS } = useDSS(feederNodeId);
 
   const { data: metersData, isLoading: metersLoading } = useMeters({
     page: 1,
