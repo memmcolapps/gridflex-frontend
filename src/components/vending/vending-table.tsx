@@ -294,7 +294,7 @@ const VendingTable = ({
                 <p>{selectedTransaction.token}</p>
               </div>
             )}
-            {selectedTransaction?.tokenType === "kct-clear-tamper" && (
+            {selectedTransaction?.tokenType === "clear-tamper" && (
               <>
                 <div className="grid grid-cols-2 gap-4">
                   <p>Clear Tamper:</p>
@@ -441,7 +441,7 @@ const VendingTable = ({
                                                       selectedTransaction?.tokenType !==
                                                         "clear-credit" &&
                                                       selectedTransaction?.tokenType !==
-                                                        "kct-clear-tamper"
+                                                        "clear-tamper"
                                                         ? `
                                                     <div class="info-row">
                                                         <span class="label">Tariff:</span>
@@ -622,7 +622,7 @@ const VendingTable = ({
                                                     </div>
                                                     `
                                                               : selectedTransaction?.tokenType ===
-                                                                  "kct-clear-tamper"
+                                                                  "clear-tamper"
                                                                 ? `
                                                     <div class="token-section">
                                                         <div class="token-label">KCT AND CLEAR TAMPER TOKENS</div>

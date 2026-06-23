@@ -41,6 +41,7 @@ import ReadCTVTRatioDialog from "@/components/hes/controlsconfigs/meter-remote-c
 import ReadRelayModeDialog from "@/components/hes/controlsconfigs/meter-remote-config/read-relay-mode-dialog";
 import ReadRelayStatusDialog from "@/components/hes/controlsconfigs/meter-remote-config/read-relay-status-dialog";
 import ReadDateTimeDialog from "@/components/hes/controlsconfigs/meter-remote-config/read-date-time-dialog";
+import ReadCreditBalanceDialog from "@/components/hes/controlsconfigs/meter-remote-config/read-credit-balance-dialog";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { ArrowUpDown } from "lucide-react";
@@ -87,7 +88,8 @@ type DialogType =
   | "readCtv"
   | "readRelay"
   | "readDatetime"
-  | "readRelayStatus";
+  | "readRelayStatus"
+  | "readCreditBalance";
 
 // Define filter sections
 const filterSections = [
@@ -659,6 +661,14 @@ export default function MeterRemoteConfigPage() {
                             >
                               <span>Read Date and Time</span>
                             </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleReadAction(meter, "readCreditBalance")
+                              }
+                              className="flex cursor-pointer items-center justify-between"
+                            >
+                              <span>Read Credit Balance</span>
+                            </DropdownMenuItem>
                           </DropdownMenuSubContent>
                         </DropdownMenuSub>
                       </DropdownMenuContent>
@@ -833,6 +843,13 @@ export default function MeterRemoteConfigPage() {
       )}
       {isDialogOpen && dialogType === "readRelayStatus" && selectedMeter && (
         <ReadRelayStatusDialog
+          isOpen={true}
+          onClose={closeDialog}
+          meter={selectedMeter}
+        />
+      )}
+      {isDialogOpen && dialogType === "readCreditBalance" && selectedMeter && (
+        <ReadCreditBalanceDialog
           isOpen={true}
           onClose={closeDialog}
           meter={selectedMeter}

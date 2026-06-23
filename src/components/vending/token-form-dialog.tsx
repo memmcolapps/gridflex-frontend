@@ -217,8 +217,25 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
       } catch (error) {
         console.error("Failed to generate KCT token:", error);
       }
-    } else if (tokenType === "kct") {
-      // For KCT, we need to generate the token first to get customer data
+    } else if (tokenType === "kct" && !isKctStepOpen) {
+      try {
+        const meterData =
+          vendBy === "meterNumber"
+            ? await meterKctPrefillMutation.mutateAsync({ meterNumber })
+            : await meterKctPrefillMutation.mutateAsync({
+                accountNumber: meterNumber,
+              });
+        setOldSgc(meterData.oldSgc ?? "");
+        setNewSgc(meterData.newSgc ?? "");
+        setOldKrn(meterData.oldKrn ?? "");
+        setNewKrn(meterData.newKrn ?? "");
+        setOldTariffIndex(String(meterData.oldTariffIndex ?? ""));
+        setNewTariffIndex(String(meterData.newTariffIndex ?? ""));
+        setIsKctStepOpen(true);
+      } catch (error) {
+        console.error("Failed to fetch KCT prefill:", error);
+      }
+    } else if (tokenType === "kct" && isKctStepOpen) {
       const payload = {
         [vendBy === "meterNumber" ? "meterNumber" : "accountNumber"]:
           meterNumber,
@@ -281,12 +298,29 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
       } catch (error) {
         console.error("Failed to generate Clear Credit token:", error);
       }
-    } else if (tokenType === "kctAndClearTamper") {
-      // For KCT and Clear Tamper, we need to generate the token first to get customer data
+    } else if (tokenType === "kctAndClearTamper" && !isKctStepOpen) {
+      try {
+        const meterData =
+          vendBy === "meterNumber"
+            ? await meterKctPrefillMutation.mutateAsync({ meterNumber })
+            : await meterKctPrefillMutation.mutateAsync({
+                accountNumber: meterNumber,
+              });
+        setOldSgc(meterData.oldSgc ?? "");
+        setNewSgc(meterData.newSgc ?? "");
+        setOldKrn(meterData.oldKrn ?? "");
+        setNewKrn(meterData.newKrn ?? "");
+        setOldTariffIndex(String(meterData.oldTariffIndex ?? ""));
+        setNewTariffIndex(String(meterData.newTariffIndex ?? ""));
+        setIsKctStepOpen(true);
+      } catch (error) {
+        console.error("Failed to fetch KCT prefill:", error);
+      }
+    } else if (tokenType === "kctAndClearTamper" && isKctStepOpen) {
       const payload = {
         [vendBy === "meterNumber" ? "meterNumber" : "accountNumber"]:
           meterNumber,
-        tokenType: "kct-clear-tamper",
+        tokenType: "clear-tamper",
         reason,
         oldSgc,
         newSgc,
@@ -418,7 +452,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
           kct: "kct",
           clearTamper: "clear-tamper",
           clearCredit: "clear-credit",
-          kctAndClearTamper: "kct-clear-tamper",
+          kctAndClearTamper: "clear-tamper",
           compensation: "compensation",
         };
         const apiTokenType = tokenTypeMap[tokenType] ?? tokenType;
@@ -778,9 +812,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
         <DialogContent className="h-fit w-full bg-white">
           <DialogHeader>
             <DialogTitle>
-              {tokenType === "creditToken" && isKctStepOpen
-                ? "KCT"
-                : getTitleCase(tokenType)}
+              {isKctStepOpen ? "KCT" : getTitleCase(tokenType)}
             </DialogTitle>
           </DialogHeader>
           <div className="grid gap-6 py-4">
@@ -791,7 +823,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                 </Label>
                 <Select onValueChange={handleVendByChange} value={vendBy}>
                   <SelectTrigger
-                    disabled={tokenType === "creditToken" && isKctStepOpen}
+                    disabled={isKctStepOpen}
                   >
                     <SelectValue placeholder="Select Vend By" />
                   </SelectTrigger>
@@ -810,16 +842,48 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                 >
                   {getDynamicLabel()} <span className="text-red-500">*</span>
                 </Label>
-                <Input
-                  id="dynamicInput"
-                  className="border border-gray-300"
-                  placeholder={getDynamicPlaceholder()}
-                  value={meterNumber}
-                  disabled={tokenType === "creditToken" && isKctStepOpen}
-                  onChange={(e) => setMeterNumber(e.target.value)}
-                />
+                  <Input
+                    id="dynamicInput"
+                    className="border border-gray-300"
+                    placeholder={getDynamicPlaceholder()}
+                    value={meterNumber}
+                    disabled={isKctStepOpen}
+                    onChange={(e) => setMeterNumber(e.target.value)}
+                  />
               </div>
             </div>
+            {(tokenType === "kct" || tokenType === "kctAndClearTamper") && !isKctStepOpen && (
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="energySource" className="text-right">
+                    Energy Source
+                  </Label>
+                  <Select onValueChange={setEnergySource} value={energySource}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Energy Source" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="grid">Grid (NEPA)</SelectItem>
+                      <SelectItem value="off grid">
+                        Off Grid (Generator etc)
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="reason" className="text-right">
+                    Reason <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="reason"
+                    className="border border-gray-300"
+                    placeholder="Enter Reason"
+                    value={reason}
+                    onChange={(e) => setReason(e.target.value)}
+                  />
+                </div>
+              </div>
+            )}
             {(tokenType === "creditToken" || tokenType === "arrearsPayment") ? (
               <>
                 <div className="grid grid-cols-2 gap-4">
@@ -886,7 +950,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                   </div>
                 )}
               </>
-            ) : (
+              ) : tokenType !== "kct" && tokenType !== "kctAndClearTamper" ? (
               <div className="flex flex-col gap-2">
                 <Label htmlFor="energySource" className="text-right">
                   Energy Source
@@ -905,11 +969,9 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                   </SelectContent>
                 </Select>
               </div>
-            )}
-            {(tokenType === "kct" ||
-              tokenType === "clearTamper" ||
+            ) : null}
+            {(tokenType === "clearTamper" ||
               tokenType === "clearCredit" ||
-              tokenType === "kctAndClearTamper" ||
               tokenType === "clearTamperAndKct") && (
               <div className="flex flex-col gap-2">
                 <Label htmlFor="reason" className="text-right">
@@ -952,11 +1014,44 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                 </div>
               </div>
             )}
-            {(tokenType === "kct" ||
-              tokenType === "kctAndClearTamper" ||
+            {((tokenType === "kctAndClearTamper" && isKctStepOpen) ||
               tokenType === "clearTamperAndKct" ||
+              (tokenType === "kct" && isKctStepOpen) ||
               (tokenType === "creditToken" && isKctStepOpen)) && (
               <>
+                {(tokenType === "kct" || tokenType === "kctAndClearTamper") && isKctStepOpen && (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-2">
+                      <Label htmlFor="energySource" className="text-right">
+                        Energy Source
+                      </Label>
+                      <Select onValueChange={setEnergySource} value={energySource}>
+                        <SelectTrigger disabled className="opacity-50 cursor-not-allowed">
+                          <SelectValue placeholder="Select Energy Source" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="grid">Grid (NEPA)</SelectItem>
+                          <SelectItem value="off grid">
+                            Off Grid (Generator etc)
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <Label htmlFor="reason" className="text-right">
+                        Reason <span className="text-red-500">*</span>
+                      </Label>
+                      <Input
+                        id="reason"
+                        className="border border-gray-300 opacity-50 cursor-not-allowed"
+                        placeholder="Enter Reason"
+                        value={reason}
+                        disabled
+                        onChange={(e) => setReason(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                )}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="flex flex-col gap-2">
                     <Label htmlFor="oldSgc" className="text-right">
@@ -1042,8 +1137,8 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                   </div>
                 </div>
                 {(tokenType === "creditToken" && isKctStepOpen) ||
-                  tokenType === "kct" ||
-                  tokenType === "kctAndClearTamper" ? (
+                  (tokenType === "kct" && isKctStepOpen) ||
+                  (tokenType === "kctAndClearTamper" && isKctStepOpen) ? (
                   <div className="flex flex-col gap-2">
                     <Label htmlFor="threeKct" className="text-right">
                       3 KCT
@@ -1121,7 +1216,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                   className="cursor-pointer border-[#161CCA] text-[#161CCA]"
                   disabled={isProceedPending}
                   onClick={() => {
-                    if (tokenType === "creditToken" && isKctStepOpen) {
+                    if (isKctStepOpen) {
                       setIsKctStepOpen(false);
                       return;
                     }
@@ -1138,9 +1233,11 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                   onClick={handleProceed}
                 >
                   {isProceedPending
-                    ? tokenType === "creditToken" &&
-                      needKCT === "yes" &&
-                      !isKctStepOpen
+                    ? (tokenType === "creditToken" &&
+                        needKCT === "yes" &&
+                        !isKctStepOpen) ||
+                      (tokenType === "kct" && !isKctStepOpen) ||
+                      (tokenType === "kctAndClearTamper" && !isKctStepOpen)
                       ? "Proceed"
                       : tokenType === "creditToken"
                         ? "Calculating..."

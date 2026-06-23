@@ -280,7 +280,7 @@ export async function generateKCTAndClearTamperToken(
     console.log("KCT and Clear Tamper API call payload:", payload);
     const response =
       await axiosInstance.post<GenerateKCTAndClearTamperResponse>(
-        `${API_URL}/vending/service/generate/token/kct-clear-tamper`,
+        `${API_URL}/vending/service/generate/token/clear-tamper`,
         payload,
         {
           headers: {
