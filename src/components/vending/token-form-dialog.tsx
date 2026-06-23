@@ -230,11 +230,16 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
         newKrn,
         oldTariffIndex: parseInt(oldTariffIndex) || 0,
         newTariffIndex: parseInt(newTariffIndex) || 1,
+        allow: isThreeKCT,
       };
 
       try {
         const result = await generateKCTTokenMutation.mutateAsync(payload);
-        setGeneratedTokenData(result);
+        const normalizedKctTokens = normalizeKctTokens(result, isThreeKCT);
+        setGeneratedTokenData({
+          ...result,
+          ...normalizedKctTokens,
+        });
         setShowTokenDialog(true);
         setIsFormDialogOpen(false);
       } catch (error) {
@@ -289,14 +294,19 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
         newKrn,
         oldTariffIndex: parseInt(oldTariffIndex) || 0,
         newTariffIndex: parseInt(newTariffIndex) || 1,
+        allow: isThreeKCT,
       };
 
       try {
         console.log("KCT and Clear Tamper payload:", payload);
         const result =
           await generateKCTAndClearTamperTokenMutation.mutateAsync(payload);
+        const normalizedKctTokens = normalizeKctTokens(result, isThreeKCT);
         console.log("KCT and Clear Tamper result:", result);
-        setGeneratedTokenData(result);
+        setGeneratedTokenData({
+          ...result,
+          ...normalizedKctTokens,
+        });
         setShowTokenDialog(true);
         setIsFormDialogOpen(false);
       } catch (error) {
@@ -351,6 +361,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
         initialAmount: parseInt(amountTendered) || 0,
         tokenType: "credit-token",
         needKCT: needKCT === "yes",
+        allow: isThreeKCT,
       };
 
       try {
@@ -378,9 +389,9 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
             normalizedResultKcts.kct2 ??
             result.kct2,
           kct3:
-            generatedKctData?.kct3 ??
+            result.kct3 ??
             normalizedResultKcts.kct3 ??
-            result.kct3,
+            generatedKctData?.kct3,
         };
         setGeneratedTokenData(mergedData);
         setShowReceipt(false);
@@ -1030,7 +1041,9 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                     />
                   </div>
                 </div>
-                {tokenType === "creditToken" && isKctStepOpen && (
+                {(tokenType === "creditToken" && isKctStepOpen) ||
+                  tokenType === "kct" ||
+                  tokenType === "kctAndClearTamper" ? (
                   <div className="flex flex-col gap-2">
                     <Label htmlFor="threeKct" className="text-right">
                       3 KCT
@@ -1048,7 +1061,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                       </SelectContent>
                     </Select>
                   </div>
-                )}
+                ) : null}
               </>
             )}
             {showReceipt && tokenType === "creditToken" && (
