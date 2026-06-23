@@ -11,6 +11,8 @@ import type {
   VendingDashboardPayload,
   PrintTokenPayload,
   CalculateCreditTokenPayload,
+  MeterKctPrefillPayload,
+  MeterKctPrefillResponse,
 } from "@/types/vending";
 import { axiosInstance } from "@/lib/axios";
 
@@ -73,6 +75,8 @@ export interface GenerateKCTPayload {
   newKrn: string;
   oldTariffIndex: number;
   newTariffIndex: number;
+  // Backend flag: true => 3 KCT, false => 2 KCT
+  allow?: boolean;
 }
 
 export interface GenerateKCTResponse {
@@ -469,6 +473,51 @@ export async function calculateCreditToken(
     };
   } catch (error) {
     console.error("Calculate credit token error:", error);
+    return {
+      success: false,
+      error: handleApiError(error),
+    };
+  }
+}
+
+export async function getMeterKctPrefill(
+  payload: MeterKctPrefillPayload,
+): Promise<
+  | { success: true; data: MeterKctPrefillResponse["responsedata"] }
+  | { success: false; error: string }
+> {
+  try {
+    const token = localStorage.getItem("auth_token");
+    if (!token) {
+      return {
+        success: false,
+        error: "Authorization token not found",
+      };
+    }
+
+    const response = await axiosInstance.get<MeterKctPrefillResponse>(
+      `${API_URL}/meter/service/single`,
+      {
+        params: payload,
+        headers: {
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    if (response.data.responsecode !== "000") {
+      return {
+        success: false,
+        error: response.data.responsedesc || "Failed to fetch meter details",
+      };
+    }
+
+    return {
+      success: true,
+      data: response.data.responsedata,
+    };
+  } catch (error) {
     return {
       success: false,
       error: handleApiError(error),

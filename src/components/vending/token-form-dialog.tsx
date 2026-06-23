@@ -26,6 +26,7 @@ import {
   useGenerateClearCreditToken,
   useGenerateKCTAndClearTamperToken,
   useGenerateCompensationToken,
+  useGetMeterKctPrefill,
 } from "@/hooks/use-vending";
 import type {
   VendingTransaction,
@@ -50,16 +51,16 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
   const generateKCTAndClearTamperTokenMutation =
     useGenerateKCTAndClearTamperToken();
   const generateCompensationTokenMutation = useGenerateCompensationToken();
+  const meterKctPrefillMutation = useGetMeterKctPrefill();
   const sendTokenMutation = useSetToken();
   const isProceedPending =
     calculateCreditTokenMutation.isPending ||
+    meterKctPrefillMutation.isPending ||
     generateKCTTokenMutation.isPending ||
     generateClearTamperTokenMutation.isPending ||
     generateClearCreditTokenMutation.isPending ||
     generateKCTAndClearTamperTokenMutation.isPending ||
     generateCompensationTokenMutation.isPending;
-  const proceedPendingText =
-    tokenType === "creditToken" ? "Calculating..." : "Generating...";
   const isGetTokenPending = generateCreditTokenMutation.isPending;
   const [vendBy, setVendBy] = useState("meterNumber");
   const [meterNumber, setMeterNumber] = useState("");
@@ -73,6 +74,9 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
   const [oldTariffIndex, setOldTariffIndex] = useState("");
   const [newTariffIndex, setNewTariffIndex] = useState("");
   const [unit, setUnit] = useState("");
+  const [needKCT, setNeedKCT] = useState("no");
+  const [isKctStepOpen, setIsKctStepOpen] = useState(false);
+  const [isThreeKCT, setIsThreeKCT] = useState(false);
   const [showReceipt, setShowReceipt] = useState(false);
   const [showTokenDialog, setShowTokenDialog] = useState(false);
   const [isFormDialogOpen, setIsFormDialogOpen] = useState(false);
@@ -82,6 +86,8 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
   const [calculatedTokenData, setCalculatedTokenData] = useState<
     CalculateCreditTokenResponse["responsedata"] | null
   >(null);
+  const [generatedKctData, setGeneratedKctData] =
+    useState<VendingTransaction | null>(null);
 
   const handleVendByChange = (value: string) => setVendBy(value);
 
@@ -91,30 +97,125 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
   const getDynamicPlaceholder = () =>
     vendBy === "meterNumber" ? "Enter Meter Number" : "Enter Account Number";
 
+  const normalizeKctTokens = (
+    rawData: VendingTransaction | Record<string, unknown> | null | undefined,
+    expectThirdToken = false,
+  ): Pick<VendingTransaction, "kct1" | "kct2" | "kct3"> => {
+    if (!rawData) {
+      return {
+        kct1: undefined,
+        kct2: undefined,
+        kct3: expectThirdToken ? "N/A" : undefined,
+      };
+    }
+
+    const data = rawData as Record<string, unknown>;
+    const getString = (value: unknown): string | undefined => {
+      if (typeof value === "string" && value.trim()) return value;
+      if (typeof value === "number") return String(value);
+      return undefined;
+    };
+    const fromKeys = (keys: string[]) => {
+      for (const key of keys) {
+        const parsed = getString(data[key]);
+        if (parsed) return parsed;
+      }
+      return undefined;
+    };
+
+    const tokenArrayCandidate =
+      (Array.isArray(data.tokens) ? data.tokens : undefined) ??
+      (Array.isArray(data.kctTokens) ? data.kctTokens : undefined);
+    const tokenArray = tokenArrayCandidate
+      ?.map((entry) => getString(entry))
+      .filter(Boolean) as string[] | undefined;
+
+    const kct1 = fromKeys(["kct1", "kct_1"]) ?? tokenArray?.[0];
+    const kct2 = fromKeys(["kct2", "kct_2"]) ?? tokenArray?.[1];
+    const kct3 =
+      fromKeys(["kct3", "kct_3", "kctThree", "thirdKct"]) ?? tokenArray?.[2];
+
+    return {
+      kct1,
+      kct2,
+      kct3: kct3 ?? (expectThirdToken ? "N/A" : undefined),
+    };
+  };
+
+  const calculateCreditTokenForFlow = async () => {
+    const payload =
+      vendBy === "meterNumber"
+        ? {
+            meterNumber,
+            initialAmount: parseInt(amountTendered) || 0,
+            needKCT: needKCT === "yes",
+          }
+        : {
+            accountNumber: meterNumber,
+            initialAmount: parseInt(amountTendered) || 0,
+            needKCT: needKCT === "yes",
+          };
+
+    const result = await calculateCreditTokenMutation.mutateAsync(payload);
+    setCalculatedTokenData(result);
+    setShowReceipt(true);
+  };
+
   const handleProceed = async () => {
     if (
       tokenType === "creditToken" &&
+      !isKctStepOpen &&
       vendBy &&
       meterNumber &&
       amountTendered
     ) {
       try {
-        const payload =
-          vendBy === "meterNumber"
-            ? {
-                meterNumber: meterNumber,
-                initialAmount: parseInt(amountTendered) || 0,
-              }
-            : {
-                accountNumber: meterNumber,
-                initialAmount: parseInt(amountTendered) || 0,
-              };
-
-        const result = await calculateCreditTokenMutation.mutateAsync(payload);
-        setCalculatedTokenData(result);
-        setShowReceipt(true);
+        if (needKCT === "yes") {
+          const meterData =
+            vendBy === "meterNumber"
+              ? await meterKctPrefillMutation.mutateAsync({ meterNumber })
+              : await meterKctPrefillMutation.mutateAsync({
+                  accountNumber: meterNumber,
+                });
+          setReason("First-time vending");
+          setOldSgc(meterData.oldSgc ?? "");
+          setNewSgc(meterData.newSgc ?? "");
+          setOldKrn(meterData.oldKrn ?? "");
+          setNewKrn(meterData.newKrn ?? "");
+          setOldTariffIndex(String(meterData.oldTariffIndex ?? ""));
+          setNewTariffIndex(String(meterData.newTariffIndex ?? ""));
+          setIsKctStepOpen(true);
+          return;
+        }
+        await calculateCreditTokenForFlow();
       } catch (error) {
         console.error("Failed to calculate token:", error);
+      }
+    } else if (tokenType === "creditToken" && isKctStepOpen) {
+      try {
+        const payload = {
+          [vendBy === "meterNumber" ? "meterNumber" : "accountNumber"]:
+            meterNumber,
+          tokenType: "kct",
+          reason: "First-time vending",
+          oldSgc,
+          newSgc,
+          oldKrn,
+          newKrn,
+          oldTariffIndex: parseInt(oldTariffIndex) || 0,
+          newTariffIndex: parseInt(newTariffIndex) || 1,
+          allow: isThreeKCT,
+        };
+        const kctResult = await generateKCTTokenMutation.mutateAsync(payload);
+        const normalizedKctTokens = normalizeKctTokens(kctResult, isThreeKCT);
+        setGeneratedKctData({
+          ...kctResult,
+          ...normalizedKctTokens,
+        });
+        setIsKctStepOpen(false);
+        await calculateCreditTokenForFlow();
+      } catch (error) {
+        console.error("Failed to generate KCT token:", error);
       }
     } else if (tokenType === "kct") {
       // For KCT, we need to generate the token first to get customer data
@@ -225,6 +326,9 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
 
   const handleCancel = () => {
     setShowReceipt(false);
+    setIsKctStepOpen(false);
+    setNeedKCT("no");
+    setIsThreeKCT(false);
     setMeterNumber("");
     setAmountTendered("");
     setReason("");
@@ -235,6 +339,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
     setOldTariffIndex("");
     setNewTariffIndex("");
     setUnit("");
+    setGeneratedKctData(null);
     setIsFormDialogOpen(false); // Close form dialog
   };
 
@@ -245,10 +350,12 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
           meterNumber,
         initialAmount: parseInt(amountTendered) || 0,
         tokenType: "credit-token",
+        needKCT: needKCT === "yes",
       };
 
       try {
         const result = await generateCreditTokenMutation.mutateAsync(payload);
+        const normalizedResultKcts = normalizeKctTokens(result, isThreeKCT);
         // Merge calculated data with generated data to preserve adjustment info
         const debitBalance = calculatedTokenData?.totalDebitBalance
           ? Number(calculatedTokenData.totalDebitBalance)
@@ -262,6 +369,18 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
           debitAdjustment: (debitBalance || result.debitAdjustment) ?? 0,
           creditAdjustmentBalance: calculatedTokenData?.creditDeducted ?? 0,
           debitAdjustmentBalance: debitBalance,
+          kct1:
+            generatedKctData?.kct1 ??
+            normalizedResultKcts.kct1 ??
+            result.kct1,
+          kct2:
+            generatedKctData?.kct2 ??
+            normalizedResultKcts.kct2 ??
+            result.kct2,
+          kct3:
+            generatedKctData?.kct3 ??
+            normalizedResultKcts.kct3 ??
+            result.kct3,
         };
         setGeneratedTokenData(mergedData);
         setShowReceipt(false);
@@ -512,6 +631,22 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                                 <div class="token-label">CREDIT TOKEN</div>
                                 <div class="token-value">${generatedTokenData?.token || "N/A"}</div>
                             </div>
+                            ${
+                              generatedTokenData?.kct1
+                                ? `
+                            <div class="token-section">
+                                <div class="token-label">KCT TOKENS</div>
+                                <div class="token-value">${generatedTokenData?.kct1 ?? "N/A"}</div>
+                                <div class="token-value" style="margin-top: 10px;">${generatedTokenData?.kct2 ?? "N/A"}</div>
+                                ${
+                                  generatedTokenData?.kct3
+                                    ? `<div class="token-value" style="margin-top: 10px;">${generatedTokenData?.kct3}</div>`
+                                    : ""
+                                }
+                            </div>
+                            `
+                                : ""
+                            }
                             <div class="info-row">
                                 <span class="label">Debit Adjustment Balance:</span>
                                 <span class="value">₦${(generatedTokenData?.debitAdjustmentBalance ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
@@ -527,6 +662,11 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                                 <div class="token-label">KCT TOKENS</div>
                                 <div class="token-value">${generatedTokenData?.kct1 ?? "N/A"}</div>
                                 <div class="token-value" style="margin-top: 10px;">${generatedTokenData?.kct2 ?? "N/A"}</div>
+                                ${
+                                  generatedTokenData?.kct3
+                                    ? `<div class="token-value" style="margin-top: 10px;">${generatedTokenData?.kct3}</div>`
+                                    : ""
+                                }
                             </div>
                             `
                                   : tokenType === "clearTamper"
@@ -626,7 +766,11 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
         </DialogTrigger>
         <DialogContent className="h-fit w-full bg-white">
           <DialogHeader>
-            <DialogTitle>{getTitleCase(tokenType)}</DialogTitle>
+            <DialogTitle>
+              {tokenType === "creditToken" && isKctStepOpen
+                ? "KCT"
+                : getTitleCase(tokenType)}
+            </DialogTitle>
           </DialogHeader>
           <div className="grid gap-6 py-4">
             <div className="grid grid-cols-2 gap-4">
@@ -635,7 +779,9 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                   Vend By <span className="text-red-500">*</span>
                 </Label>
                 <Select onValueChange={handleVendByChange} value={vendBy}>
-                  <SelectTrigger>
+                  <SelectTrigger
+                    disabled={tokenType === "creditToken" && isKctStepOpen}
+                  >
                     <SelectValue placeholder="Select Vend By" />
                   </SelectTrigger>
                   <SelectContent>
@@ -658,39 +804,95 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                   className="border border-gray-300"
                   placeholder={getDynamicPlaceholder()}
                   value={meterNumber}
+                  disabled={tokenType === "creditToken" && isKctStepOpen}
                   onChange={(e) => setMeterNumber(e.target.value)}
                 />
               </div>
             </div>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="energySource" className="text-right">
-                Energy Source
-              </Label>
-              <Select onValueChange={setEnergySource} value={energySource}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select Energy Source" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="grid">Grid (NEPA)</SelectItem>
-                  <SelectItem value="off grid">
-                    Off Grid (Generator etc)
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            {(tokenType === "creditToken" ||
-              tokenType === "arrearsPayment") && (
+            {(tokenType === "creditToken" || tokenType === "arrearsPayment") ? (
+              <>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="energySource" className="text-right">
+                      Energy Source
+                    </Label>
+                    <Select onValueChange={setEnergySource} value={energySource}>
+                      <SelectTrigger
+                        disabled={tokenType === "creditToken" && isKctStepOpen}
+                      >
+                        <SelectValue placeholder="Select Energy Source" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="grid">Grid (NEPA)</SelectItem>
+                        <SelectItem value="off grid">
+                          Off Grid (Generator etc)
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {isKctStepOpen ? (
+                    <div className="flex flex-col gap-2">
+                      <Label htmlFor="reasonInline" className="text-right">
+                        Reason <span className="text-red-500">*</span>
+                      </Label>
+                      <Input
+                        id="reasonInline"
+                        className="border border-gray-300"
+                        value="First-time vending"
+                        disabled
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-2">
+                      <Label htmlFor="amountTendered" className="text-right">
+                        Amount Tendered <span className="text-red-500">*</span>
+                      </Label>
+                      <Input
+                        id="amountTendered"
+                        className="border border-gray-300"
+                        placeholder="Enter Amount"
+                        value={amountTendered}
+                        onChange={(e) => setAmountTendered(e.target.value)}
+                      />
+                    </div>
+                  )}
+                </div>
+                {!isKctStepOpen && !showReceipt && (
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="needKCT" className="text-right">
+                      Does this meter require KCT{" "}
+                      <span className="text-red-500">*</span>
+                    </Label>
+                    <Select onValueChange={setNeedKCT} value={needKCT}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Option" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="yes">Yes</SelectItem>
+                        <SelectItem value="no">No</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+              </>
+            ) : (
               <div className="flex flex-col gap-2">
-                <Label htmlFor="amountTendered" className="text-right">
-                  Amount Tendered <span className="text-red-500">*</span>
+                <Label htmlFor="energySource" className="text-right">
+                  Energy Source
                 </Label>
-                <Input
-                  id="amountTendered"
-                  className="border border-gray-300"
-                  placeholder="Enter Amount"
-                  value={amountTendered}
-                  onChange={(e) => setAmountTendered(e.target.value)}
-                />
+                <Select onValueChange={setEnergySource} value={energySource}>
+                  <SelectTrigger
+                    disabled={tokenType === "creditToken" && isKctStepOpen}
+                  >
+                    <SelectValue placeholder="Select Energy Source" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="grid">Grid (NEPA)</SelectItem>
+                    <SelectItem value="off grid">
+                      Off Grid (Generator etc)
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             )}
             {(tokenType === "kct" ||
@@ -741,7 +943,8 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
             )}
             {(tokenType === "kct" ||
               tokenType === "kctAndClearTamper" ||
-              tokenType === "clearTamperAndKct") && (
+              tokenType === "clearTamperAndKct" ||
+              (tokenType === "creditToken" && isKctStepOpen)) && (
               <>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="flex flex-col gap-2">
@@ -753,6 +956,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                       className="border border-gray-300"
                       placeholder="Enter Old SGC"
                       value={oldSgc}
+                      disabled={tokenType === "creditToken" && isKctStepOpen}
                       onChange={(e) => setOldSgc(e.target.value)}
                     />
                   </div>
@@ -765,6 +969,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                       className="border border-gray-300"
                       placeholder="Enter New SGC"
                       value={newSgc}
+                      disabled={tokenType === "creditToken" && isKctStepOpen}
                       onChange={(e) => setNewSgc(e.target.value)}
                     />
                   </div>
@@ -779,6 +984,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                       className="border border-gray-300"
                       placeholder="Enter Old KRN"
                       value={oldKrn}
+                      disabled={tokenType === "creditToken" && isKctStepOpen}
                       onChange={(e) => setOldKrn(e.target.value)}
                     />
                   </div>
@@ -791,6 +997,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                       className="border border-gray-300"
                       placeholder="Enter New KRN"
                       value={newKrn}
+                      disabled={tokenType === "creditToken" && isKctStepOpen}
                       onChange={(e) => setNewKrn(e.target.value)}
                     />
                   </div>
@@ -805,6 +1012,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                       className="border border-gray-300"
                       placeholder="Enter Old Tariff Index"
                       value={oldTariffIndex}
+                      disabled={tokenType === "creditToken" && isKctStepOpen}
                       onChange={(e) => setOldTariffIndex(e.target.value)}
                     />
                   </div>
@@ -817,10 +1025,30 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                       className="border border-gray-300"
                       placeholder="Enter New Tariff Index"
                       value={newTariffIndex}
+                      disabled={tokenType === "creditToken" && isKctStepOpen}
                       onChange={(e) => setNewTariffIndex(e.target.value)}
                     />
                   </div>
                 </div>
+                {tokenType === "creditToken" && isKctStepOpen && (
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="threeKct" className="text-right">
+                      3 KCT
+                    </Label>
+                    <Select
+                      onValueChange={(value) => setIsThreeKCT(value === "true")}
+                      value={String(isThreeKCT)}
+                    >
+                      <SelectTrigger id="threeKct">
+                        <SelectValue placeholder="Select Option" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="false">False</SelectItem>
+                        <SelectItem value="true">True</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </>
             )}
             {showReceipt && tokenType === "creditToken" && (
@@ -879,7 +1107,13 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                   size="lg"
                   className="cursor-pointer border-[#161CCA] text-[#161CCA]"
                   disabled={isProceedPending}
-                  onClick={() => setIsFormDialogOpen(false)}
+                  onClick={() => {
+                    if (tokenType === "creditToken" && isKctStepOpen) {
+                      setIsKctStepOpen(false);
+                      return;
+                    }
+                    setIsFormDialogOpen(false);
+                  }}
                 >
                   Back
                 </Button>
@@ -890,7 +1124,15 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                   disabled={isProceedPending}
                   onClick={handleProceed}
                 >
-                  {isProceedPending ? proceedPendingText : "Proceed"}
+                  {isProceedPending
+                    ? tokenType === "creditToken" &&
+                      needKCT === "yes" &&
+                      !isKctStepOpen
+                      ? "Proceed"
+                      : tokenType === "creditToken"
+                        ? "Calculating..."
+                        : "Generating..."
+                    : "Proceed"}
                 </Button>
               </>
             )}
@@ -997,12 +1239,38 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
               <p>{generatedTokenData?.receiptNo ?? "N/A"}</p>
             </div>
             {tokenType === "creditToken" && (
-              <div className="grid grid-cols-2 gap-4">
-                <p>
-                  <strong>Credit Token:</strong>
-                </p>
-                <p>{generatedTokenData?.token ?? "N/A"}</p>
-              </div>
+              <>
+                <div className="grid grid-cols-2 gap-4">
+                  <p>
+                    <strong>Credit Token:</strong>
+                  </p>
+                  <p>{generatedTokenData?.token ?? "N/A"}</p>
+                </div>
+                {generatedTokenData?.kct1 && (
+                  <>
+                    <div className="grid grid-cols-2 gap-4">
+                      <p>
+                        <strong>KCT 1:</strong>
+                      </p>
+                      <p>{generatedTokenData.kct1}</p>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <p>
+                        <strong>KCT 2:</strong>
+                      </p>
+                      <p>{generatedTokenData.kct2}</p>
+                    </div>
+                    {(generatedTokenData.kct3 || isThreeKCT) && (
+                      <div className="grid grid-cols-2 gap-4">
+                        <p>
+                          <strong>KCT 3:</strong>
+                        </p>
+                        <p>{generatedTokenData.kct3 ?? "N/A"}</p>
+                      </div>
+                    )}
+                  </>
+                )}
+              </>
             )}
             {tokenType === "kct" && (
               <>
@@ -1018,6 +1286,14 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                   </p>
                   <p>{generatedTokenData?.kct2}</p>
                 </div>
+                {generatedTokenData?.kct3 && (
+                  <div className="grid grid-cols-2 gap-4">
+                    <p>
+                      <strong>KCT 3:</strong>
+                    </p>
+                    <p>{generatedTokenData.kct3}</p>
+                  </div>
+                )}
               </>
             )}
             {tokenType === "clearTamper" && (
