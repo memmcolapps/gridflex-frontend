@@ -1378,7 +1378,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                       </p>
                       <p>{generatedTokenData.kct2}</p>
                     </div>
-                    {(generatedTokenData.kct3 || isThreeKCT) && (
+                    {(generatedTokenData.kct3 ?? isThreeKCT) && (
                       <div className="grid grid-cols-2 gap-4">
                         <p>
                           <strong>KCT 3:</strong>
@@ -1450,7 +1450,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                   </p>
                   <p>{generatedTokenData.kct2}</p>
                 </div>
-                {(generatedTokenData.kct3 || isThreeKCT) && (
+                {(generatedTokenData.kct3 ?? isThreeKCT) && (
                   <div className="grid grid-cols-2 gap-4">
                     <p>
                       <strong>KCT 3:</strong>
