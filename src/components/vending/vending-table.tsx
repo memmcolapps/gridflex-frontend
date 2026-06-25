@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { EllipsisVertical, Printer } from "lucide-react";
+import { EllipsisVertical, Printer, Send } from "lucide-react";
 import { Card } from "../ui/card";
 import { useState, useEffect } from "react";
 import {
@@ -32,6 +32,8 @@ import {
 import { toast } from "sonner";
 import { LoadingAnimation } from "@/components/ui/loading-animation";
 import { usePermissions } from "@/hooks/use-permissions";
+import SendTokenDialog from "@/components/hes/dashboard/send-token-dialog";
+import { useSetToken } from "@/hooks/use-configure-meter";
 
 interface VendingTableProps {
   searchQuery?: string;
@@ -82,8 +84,10 @@ const VendingTable = ({
   const [selectedTransaction, setSelectedTransaction] =
     useState<VendingTransaction | null>(null);
   const [showTokenDialog, setShowTokenDialog] = useState(false);
+  const [showSendTokenDialog, setShowSendTokenDialog] = useState(false);
 
   const printTokenMutation = usePrintToken();
+  const sendTokenMutation = useSetToken();
 
   // Handle pagination controls
   const handlePageSizeChange = (newPageSize: number) => {
@@ -182,6 +186,16 @@ const VendingTable = ({
                           >
                             <Printer size={14} />
                             Reprint Token
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="flex cursor-pointer items-center gap-2"
+                            onClick={() => {
+                              setSelectedTransaction(transaction);
+                              setShowSendTokenDialog(true);
+                            }}
+                          >
+                            <Send size={14} />
+                            Send Token
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -684,6 +698,23 @@ const VendingTable = ({
           </div>
         </DialogContent>
       </Dialog>
+      <SendTokenDialog
+        isOpen={showSendTokenDialog}
+        onClose={() => setShowSendTokenDialog(false)}
+        meterNumber={selectedTransaction?.meterNumber}
+        initialToken={selectedTransaction?.token}
+        onSubmit={(token) => {
+          return new Promise<void>((resolve, reject) => {
+            sendTokenMutation.mutate(
+              { serial: selectedTransaction?.meterNumber ?? "", credit: token },
+              {
+                onSuccess: () => resolve(),
+                onError: (error) => reject(error),
+              },
+            );
+          });
+        }}
+      />
     </div>
   );
 };
