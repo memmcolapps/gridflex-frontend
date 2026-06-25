@@ -611,7 +611,7 @@ const VendingTable = ({
                                                     <div class="token-section">
                                                         <div class="token-label">KCT TOKENS</div>
                                                         <div class="token-value">${selectedTransaction?.kct1 ?? "N/A"}</div>
-                                                        <div class="token-value" style="margin-top: 10px;">${selectedTransaction?.kct2 ?? "N/A"}</div>
+                                                        <div class="token-value" style="margin-top: 10px;">${selectedTransaction?.kct2 ?? ""}</div>
                                                         ${
                                                           selectedTransaction?.kct3
                                                             ? `<div class="token-value" style="margin-top: 10px;">${selectedTransaction?.kct3}</div>`

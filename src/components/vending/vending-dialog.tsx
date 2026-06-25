@@ -60,7 +60,7 @@ export default function VendTokenDialog() {
                                 {/* <SelectItem value="arrearsPayment">Arrears Payment</SelectItem> */}
                                 <SelectItem value="clearCredit">Clear Credit</SelectItem>
                                 <SelectItem value="clearTamper">Clear Tamper</SelectItem>
-                                <SelectItem value="kctAndClearTamper">KCT and Clear Tamper</SelectItem>
+                                {/* <SelectItem value="kctAndClearTamper">KCT and Clear Tamper</SelectItem> */}
                             </SelectContent>
                         </Select>
                     </div>

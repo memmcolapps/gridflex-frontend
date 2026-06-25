@@ -105,7 +105,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
       return {
         kct1: undefined,
         kct2: undefined,
-        kct3: expectThirdToken ? "N/A" : undefined,
+        kct3: undefined,
       };
     }
 
@@ -138,7 +138,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
     return {
       kct1,
       kct2,
-      kct3: kct3 ?? (expectThirdToken ? "N/A" : undefined),
+      kct3,
     };
   };
 
@@ -682,7 +682,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                             <div class="token-section">
                                 <div class="token-label">KCT TOKENS</div>
                                 <div class="token-value">${generatedTokenData?.kct1 ?? "N/A"}</div>
-                                <div class="token-value" style="margin-top: 10px;">${generatedTokenData?.kct2 ?? "N/A"}</div>
+                                <div class="token-value" style="margin-top: 10px;">${generatedTokenData?.kct2 ?? ""}</div>
                                 ${
                                   generatedTokenData?.kct3
                                     ? `<div class="token-value" style="margin-top: 10px;">${generatedTokenData?.kct3}</div>`
@@ -706,7 +706,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                             <div class="token-section">
                                 <div class="token-label">KCT TOKENS</div>
                                 <div class="token-value">${generatedTokenData?.kct1 ?? "N/A"}</div>
-                                <div class="token-value" style="margin-top: 10px;">${generatedTokenData?.kct2 ?? "N/A"}</div>
+                                <div class="token-value" style="margin-top: 10px;">${generatedTokenData?.kct2 ?? ""}</div>
                                 ${
                                   generatedTokenData?.kct3
                                     ? `<div class="token-value" style="margin-top: 10px;">${generatedTokenData?.kct3}</div>`
@@ -731,10 +731,18 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                                       : tokenType === "kctAndClearTamper"
                                         ? `
                             <div class="token-section">
-                                <div class="token-label">KCT AND CLEAR TAMPER TOKENS</div>
+                                <div class="token-label">CLEAR TAMPER TOKEN</div>
                                 <div class="token-value">${generatedTokenData?.token || "N/A"}</div>
-                                <div class="token-value" style="margin-top: 10px;">${generatedTokenData?.token || "N/A"}</div>
-                                <div class="token-value" style="margin-top: 10px;">${generatedTokenData?.token}</div>
+                            </div>
+                            <div class="token-section">
+                                <div class="token-label">KCT TOKENS</div>
+                                <div class="token-value">${generatedTokenData?.kct1 ?? "N/A"}</div>
+                                <div class="token-value" style="margin-top: 10px;">${generatedTokenData?.kct2 ?? ""}</div>
+                                ${
+                                  generatedTokenData?.kct3 || isThreeKCT
+                                    ? `<div class="token-value" style="margin-top: 10px;">${generatedTokenData?.kct3 ?? "N/A"}</div>`
+                                    : ""
+                                }
                             </div>
                             `
                                         : tokenType === "compensation"
@@ -1375,7 +1383,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                         <p>
                           <strong>KCT 3:</strong>
                         </p>
-                        <p>{generatedTokenData.kct3 ?? "N/A"}</p>
+                        <p>{generatedTokenData.kct3 ?? ""}</p>
                       </div>
                     )}
                   </>
@@ -1422,7 +1430,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                 <p>{generatedTokenData?.token}</p>
               </div>
             )}
-            {tokenType === "kctAndClearTamper" && (
+            {tokenType === "kctAndClearTamper" && generatedTokenData?.kct1 && (
               <>
                 <div className="grid grid-cols-2 gap-4">
                   <p>
@@ -1434,14 +1442,22 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                   <p>
                     <strong>KCT 1:</strong>
                   </p>
-                  <p>{generatedTokenData?.token}</p>
+                  <p>{generatedTokenData.kct1}</p>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <p>
                     <strong>KCT 2:</strong>
                   </p>
-                  <p>{generatedTokenData?.token}</p>
+                  <p>{generatedTokenData.kct2}</p>
                 </div>
+                {(generatedTokenData.kct3 || isThreeKCT) && (
+                  <div className="grid grid-cols-2 gap-4">
+                    <p>
+                      <strong>KCT 3:</strong>
+                    </p>
+                    <p>{generatedTokenData.kct3 ?? ""}</p>
+                  </div>
+                )}
               </>
             )}
             {tokenType === "compensation" && (
