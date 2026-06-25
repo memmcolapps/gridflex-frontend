@@ -19,7 +19,8 @@ export interface ReadMeterPayload {
     | "READ_CLOCK"
     | "READ_RELAY_MODE"
     | "READ_APN"
-    | "READ_RELAY_STATUS";
+    | "READ_RELAY_STATUS"
+    | "READ_PUBLIC_CREDIT";
 }
 
 interface ReadMeterResponseData {

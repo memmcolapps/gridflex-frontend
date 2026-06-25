@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { EllipsisVertical, Printer } from "lucide-react";
+import { EllipsisVertical, Printer, Send } from "lucide-react";
 import { Card } from "../ui/card";
 import { useState, useEffect } from "react";
 import {
@@ -32,6 +32,8 @@ import {
 import { toast } from "sonner";
 import { LoadingAnimation } from "@/components/ui/loading-animation";
 import { usePermissions } from "@/hooks/use-permissions";
+import SendTokenDialog from "@/components/hes/dashboard/send-token-dialog";
+import { useSetToken } from "@/hooks/use-configure-meter";
 
 interface VendingTableProps {
   searchQuery?: string;
@@ -82,8 +84,10 @@ const VendingTable = ({
   const [selectedTransaction, setSelectedTransaction] =
     useState<VendingTransaction | null>(null);
   const [showTokenDialog, setShowTokenDialog] = useState(false);
+  const [showSendTokenDialog, setShowSendTokenDialog] = useState(false);
 
   const printTokenMutation = usePrintToken();
+  const sendTokenMutation = useSetToken();
 
   // Handle pagination controls
   const handlePageSizeChange = (newPageSize: number) => {
@@ -183,6 +187,16 @@ const VendingTable = ({
                             <Printer size={14} />
                             Reprint Token
                           </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="flex cursor-pointer items-center gap-2"
+                            onClick={() => {
+                              setSelectedTransaction(transaction);
+                              setShowSendTokenDialog(true);
+                            }}
+                          >
+                            <Send size={14} />
+                            Send Token
+                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -274,6 +288,12 @@ const VendingTable = ({
                   <p>KCT 2:</p>
                   <p>{selectedTransaction.kct2}</p>
                 </div>
+                {selectedTransaction.kct3 && (
+                  <div className="grid grid-cols-2 gap-4">
+                    <p>KCT 3:</p>
+                    <p>{selectedTransaction.kct3}</p>
+                  </div>
+                )}
               </>
             )}
             {selectedTransaction?.tokenType === "clear-tamper" && (
@@ -288,7 +308,7 @@ const VendingTable = ({
                 <p>{selectedTransaction.token}</p>
               </div>
             )}
-            {selectedTransaction?.tokenType === "kct-clear-tamper" && (
+            {selectedTransaction?.tokenType === "clear-tamper" && (
               <>
                 <div className="grid grid-cols-2 gap-4">
                   <p>Clear Tamper:</p>
@@ -435,7 +455,7 @@ const VendingTable = ({
                                                       selectedTransaction?.tokenType !==
                                                         "clear-credit" &&
                                                       selectedTransaction?.tokenType !==
-                                                        "kct-clear-tamper"
+                                                        "clear-tamper"
                                                         ? `
                                                     <div class="info-row">
                                                         <span class="label">Tariff:</span>
@@ -591,7 +611,12 @@ const VendingTable = ({
                                                     <div class="token-section">
                                                         <div class="token-label">KCT TOKENS</div>
                                                         <div class="token-value">${selectedTransaction?.kct1 ?? "N/A"}</div>
-                                                        <div class="token-value" style="margin-top: 10px;">${selectedTransaction?.kct2 ?? "N/A"}</div>
+                                                        <div class="token-value" style="margin-top: 10px;">${selectedTransaction?.kct2 ?? ""}</div>
+                                                        ${
+                                                          selectedTransaction?.kct3
+                                                            ? `<div class="token-value" style="margin-top: 10px;">${selectedTransaction?.kct3}</div>`
+                                                            : ""
+                                                        }
                                                     </div>
                                                     `
                                                           : selectedTransaction?.tokenType ===
@@ -611,7 +636,7 @@ const VendingTable = ({
                                                     </div>
                                                     `
                                                               : selectedTransaction?.tokenType ===
-                                                                  "kct-clear-tamper"
+                                                                  "clear-tamper"
                                                                 ? `
                                                     <div class="token-section">
                                                         <div class="token-label">KCT AND CLEAR TAMPER TOKENS</div>
@@ -673,6 +698,23 @@ const VendingTable = ({
           </div>
         </DialogContent>
       </Dialog>
+      <SendTokenDialog
+        isOpen={showSendTokenDialog}
+        onClose={() => setShowSendTokenDialog(false)}
+        meterNumber={selectedTransaction?.meterNumber}
+        initialToken={selectedTransaction?.token}
+        onSubmit={(token) => {
+          return new Promise<void>((resolve, reject) => {
+            sendTokenMutation.mutate(
+              { serial: selectedTransaction?.meterNumber ?? "", credit: token },
+              {
+                onSuccess: () => resolve(),
+                onError: (error) => reject(error),
+              },
+            );
+          });
+        }}
+      />
     </div>
   );
 };

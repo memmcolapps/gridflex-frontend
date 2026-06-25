@@ -1,7 +1,7 @@
 // use-vending.ts
 
-import { generateCreditToken, printToken, calculateCreditToken, generateKCTToken, generateClearTamperToken, generateClearCreditToken, generateKCTAndClearTamperToken, generateCompensationToken, getVendingDashboardData, getVendingTransactions } from "@/service/vending-service";
-import type { GenerateCreditTokenPayload, PrintTokenPayload, GenerateKCTPayload, GenerateClearTamperPayload, GenerateClearCreditPayload, GenerateKCTAndClearTamperPayload, GenerateCompensationPayload, VendingDashboardPayload } from "@/types/vending";
+import { generateCreditToken, printToken, calculateCreditToken, generateKCTToken, generateClearTamperToken, generateClearCreditToken, generateKCTAndClearTamperToken, generateCompensationToken, getVendingDashboardData, getVendingTransactions, getMeterKctPrefill } from "@/service/vending-service";
+import type { GenerateCreditTokenPayload, PrintTokenPayload, GenerateKCTPayload, GenerateClearTamperPayload, GenerateClearCreditPayload, GenerateKCTAndClearTamperPayload, GenerateCompensationPayload, VendingDashboardPayload, MeterKctPrefillPayload } from "@/types/vending";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -174,6 +174,21 @@ export const useGenerateCompensationToken = () => {
     },
     onError: (error) => {
       toast.error(error.message || "Failed to generate Compensation token");
+    },
+  });
+};
+
+export const useGetMeterKctPrefill = () => {
+  return useMutation({
+    mutationFn: async (payload: MeterKctPrefillPayload) => {
+      const response = await getMeterKctPrefill(payload);
+      if (!response.success) {
+        throw new Error(response.error);
+      }
+      return response.data;
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to fetch meter details");
     },
   });
 };
