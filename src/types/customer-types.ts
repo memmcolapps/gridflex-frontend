@@ -18,6 +18,17 @@ export interface Customer {
   streetName: string;
   meterAssigned: boolean;
   meterNumber: string | null;
+  businessName?: {
+    id: string;
+    orgId: string;
+    address: string;
+    createdAt: string;
+    email: string;
+    name: string;
+    nodeId: string;
+    type: string;
+    updatedAt: string;
+  };
   createdAt: string;
   updatedAt: string;
   meter?: Array<{

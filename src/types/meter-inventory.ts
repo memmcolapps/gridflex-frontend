@@ -246,6 +246,7 @@ export interface GetMeterInventoryResponse {
 export interface MeterInventoryFilters {
   page?: number;
   size?: number;
+  search?: string;
   meterNumber?: string;
   simNo?: string;
   manufacturer?: string;
@@ -254,6 +255,8 @@ export interface MeterInventoryFilters {
   approvedStatus?: string;
   status?: string;
   createdAt?: string;
+  sortBy?: keyof MeterInventoryItem | string | null;
+  sortDirection?: "asc" | "desc" | null;
 }
 
 export interface ApiResponse {

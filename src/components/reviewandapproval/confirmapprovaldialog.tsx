@@ -14,8 +14,9 @@ interface ConfirmDialogProps<T extends SupportedItem | null> {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   action: 'approve' | 'reject';
-  onConfirm: () => void;
+  onConfirm: () => void | Promise<void>;
   selectedItem: T;
+  isSubmitting?: boolean;
 }
 
 const ConfirmDialog = <T extends SupportedItem | null>({
@@ -24,10 +25,12 @@ const ConfirmDialog = <T extends SupportedItem | null>({
   action,
   onConfirm,
   selectedItem,
+  isSubmitting = false,
 }: ConfirmDialogProps<T>) => {
   const isApprove = action === 'approve';
   const title = isApprove ? 'Confirm Approval' : 'Confirm Rejection';
   const confirmButtonText = isApprove ? 'Approve' : 'Reject';
+  const submittingButtonText = isApprove ? 'Approving...' : 'Rejecting...';
   const confirmButtonClass = isApprove
     ? 'bg-[#161CCA] text-white'
     : 'bg-[#F50202] text-white';
@@ -84,7 +87,12 @@ const ConfirmDialog = <T extends SupportedItem | null>({
   const { message, details } = getMessageAndDetails();
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!isSubmitting) onOpenChange(open);
+      }}
+    >
       <DialogContent className="sm:max-w-[380px] h-fit mx-auto bg-white text-black z-[1000]">
         <DialogHeader>
           <div className="mb-2 flex justify-items-start">
@@ -100,6 +108,7 @@ const ConfirmDialog = <T extends SupportedItem | null>({
           <Button
             variant="outline"
             className={`text-sm font-medium w-full sm:w-auto px-4 py-2 rounded-md transition-colors ${cancelButtonClass}`}
+            disabled={isSubmitting}
             onClick={() => onOpenChange(false)}
           >
             Cancel
@@ -107,12 +116,10 @@ const ConfirmDialog = <T extends SupportedItem | null>({
           <Button
             variant="default"
             className={`text-sm font-medium w-full sm:w-auto px-4 py-2 rounded-md transition-colors ${confirmButtonClass}`}
-            onClick={() => {
-              onConfirm();
-              onOpenChange(false);
-            }}
+            disabled={isSubmitting}
+            onClick={onConfirm}
           >
-            {confirmButtonText}
+            {isSubmitting ? submittingButtonText : confirmButtonText}
           </Button>
         </div>
       </DialogContent>

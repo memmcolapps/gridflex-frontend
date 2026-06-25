@@ -8,8 +8,10 @@ const CUSTOM_HEADER = env.NEXT_PUBLIC_CUSTOM_HEADER;
 export interface FeederItem {
   assetId: string;
   name: string;
-  createdAt: string;
-  updatedAt: string;
+  id?: string;
+  nodeId?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface DSSItem {
@@ -31,7 +33,7 @@ interface DSSResponse {
   responsedata: DSSItem[];
 }
 
-export async function fetchFeeders(): Promise<FeederItem[]> {
+export async function fetchFeeders(nodeId: string): Promise<FeederItem[]> {
   try {
     const token = localStorage.getItem("auth_token");
     if (!token) {
@@ -39,8 +41,9 @@ export async function fetchFeeders(): Promise<FeederItem[]> {
     }
 
     const response = await axiosInstance.get<FeederResponse>(
-      `${API_URL}/node/service/feeder`,
+      `${API_URL}/node/service/feederByBhub`,
       {
+        params: { nodeId },
         headers: {
           "Content-Type": "application/json",
           custom: CUSTOM_HEADER,
@@ -55,13 +58,16 @@ export async function fetchFeeders(): Promise<FeederItem[]> {
       );
     }
 
-    return response.data.responsedata;
+    return response.data.responsedata.map((item) => ({
+      ...item,
+      assetId: item.assetId || (item.id ?? ""),
+    }));
   } catch (error) {
     throw new Error(handleApiError(error));
   }
 }
 
-export async function fetchDSSByFeeder(feederAssetId: string): Promise<DSSItem[]> {
+export async function fetchDSSByFeeder(nodeId: string): Promise<DSSItem[]> {
   try {
     const token = localStorage.getItem("auth_token");
     if (!token) {
@@ -71,7 +77,7 @@ export async function fetchDSSByFeeder(feederAssetId: string): Promise<DSSItem[]
     const response = await axiosInstance.get<DSSResponse>(
       `${API_URL}/node/service/dss`,
       {
-        params: { assetId: feederAssetId },
+        params: { assetId: nodeId },
         headers: {
           "Content-Type": "application/json",
           custom: CUSTOM_HEADER,

@@ -26,6 +26,7 @@ export interface UseCustomersParams {
   page: number;
   pageSize: number;
   searchTerm: string;
+  status?: string | null;
   sortBy?: keyof Customer | null;
   sortDirection?: "asc" | "desc" | null;
 }
@@ -33,10 +34,10 @@ export interface UseCustomersParams {
 /**
  * A hook to fetch a paginated, searchable, and sortable list of customers.
  */
-export const useCustomers = ({ page, pageSize, searchTerm, sortBy, sortDirection }: UseCustomersParams) => {
+export const useCustomers = ({ page, pageSize, searchTerm, status, sortBy, sortDirection }: UseCustomersParams) => {
   return useQuery<CustomersApiResponse, Error>({
-    queryKey: ["customers", page, pageSize, searchTerm, sortBy, sortDirection],
-        queryFn: () => getCustomers({ page, pageSize, searchTerm, sortBy: sortBy ?? null, sortDirection: sortDirection ?? null }),
+    queryKey: ["customers", page, pageSize, searchTerm, status, sortBy, sortDirection],
+        queryFn: () => getCustomers({ page, pageSize, searchTerm, status: status ?? null, sortBy: sortBy ?? null, sortDirection: sortDirection ?? null }),
   });
 };
 

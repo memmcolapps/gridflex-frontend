@@ -4,6 +4,7 @@ import { axiosInstance } from "@/lib/axios";
 import {
   type CommunicationReportResponse,
   type CommunicationReportData,
+  type CommunicationReport,
 } from "@/types/reports";
 
 const API_URL = env.NEXT_PUBLIC_BASE_URL;
@@ -14,7 +15,9 @@ export async function fetchAllCommunicationReports(
   size = 5,
   type: "MD" | "Non-MD" = "MD",
   search = "",
-): Promise<CommunicationReportData[]> {
+  connectionType = "",
+  sortDirection: "asc" | "desc" = "asc",
+): Promise<CommunicationReport> {
   try {
     const token = localStorage.getItem("auth_token");
     if (!token) {
@@ -29,6 +32,10 @@ export async function fetchAllCommunicationReports(
     if (search) {
       params.append("search", search);
     }
+    if (connectionType) {
+      params.append("connectionType", connectionType);
+    }
+    params.append("sortDirection", sortDirection);
 
     const response = await axiosInstance.get<CommunicationReportResponse>(
       `${API_URL}/hes/service/communication/report`,
@@ -48,7 +55,7 @@ export async function fetchAllCommunicationReports(
       );
     }
 
-    return response.data.responsedata?.data ?? [];
+    return response.data.responsedata ?? {};
   } catch (error) {
     throw new Error(handleApiError(error));
   }

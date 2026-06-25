@@ -27,6 +27,7 @@ import { FilterControl, SearchControl, SortControl } from "../search-control";
 import { Card } from "../ui/card";
 import { LoadingAnimation } from "@/components/ui/loading-animation";
 import { usePermissions } from "@/hooks/use-permissions";
+import { useAuth } from "@/context/auth-context";
 
 interface CustomerTableProps {
   onEditCustomer: (customer: Customer) => void;
@@ -44,6 +45,10 @@ export default function CustomerTable({
   onAssignMeter,
 }: CustomerTableProps) {
   const { canEdit } = usePermissions();
+  const { user } = useAuth();
+  const userNodeType =
+    user?.nodeInfo?.type?.toLowerCase().replace(/\s+/g, "") ?? "";
+  const showBusinessHub = ["region", "root"].includes(userNodeType);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -51,11 +56,17 @@ export default function CustomerTable({
     key: keyof Customer;
     direction: "asc" | "desc";
   } | null>(null);
+  const [activeFilters, setActiveFilters] = useState<Record<string, boolean>>(
+    {},
+  );
+  const selectedStatus =
+    Object.entries(activeFilters).find(([, selected]) => selected)?.[0] ?? null;
 
   const { data, isLoading, isError, error } = useCustomers({
     page: currentPage,
     pageSize: rowsPerPage,
     searchTerm,
+    status: selectedStatus,
     sortBy: sortConfig?.key,
     sortDirection: sortConfig?.direction,
   });
@@ -64,16 +75,8 @@ export default function CustomerTable({
     toast.error(error.message);
   }
 
-  const allCustomers = data?.responsedata?.data ?? [];
-
-  // Apply client-side pagination (API may return all data regardless of pageSize)
-  // Calculate pagination indices
-  const startIndex = (currentPage - 1) * rowsPerPage;
-  const endIndex = startIndex + rowsPerPage;
-  const customers = allCustomers.slice(startIndex, endIndex);
-
-  // Use API totalData if available, otherwise use length of returned data
-  const totalCustomers = data?.responsedata?.totalData ?? allCustomers.length;
+  const customers = data?.responsedata?.data ?? [];
+  const totalCustomers = data?.responsedata?.totalData ?? customers.length;
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -89,12 +92,20 @@ export default function CustomerTable({
     setCurrentPage(1);
   };
 
+  const handleSortControlChange = (direction: string) => {
+    setSortConfig({
+      key: "customerId",
+      direction: direction === "desc" ? "desc" : "asc",
+    });
+    setCurrentPage(1);
+  };
+
   const handlePageSizeChange = (newPageSize: number) => {
     setRowsPerPage(newPageSize);
     setCurrentPage(1);
   };
 
-  const colSpan = 9;
+  const colSpan = showBusinessHub ? 10 : 9;
 
   const renderTableBody = () => {
     if (isLoading) {
@@ -168,6 +179,11 @@ export default function CustomerTable({
           <TableCell className="text-center">{customer.streetName}</TableCell>
           <TableCell className="text-center">{customer.city}</TableCell>
           <TableCell className="text-center">{customer.state}</TableCell>
+          {showBusinessHub && (
+            <TableCell className="text-center">
+              {customer.businessName?.name ?? "-"}
+            </TableCell>
+          )}
           <TableCell className="text-center">
             <span className={getStatusStyle(customer.status.toString())}>
               {customer.status.toString()}
@@ -245,8 +261,30 @@ export default function CustomerTable({
             placeholder="Search by meter no., account no..."
           />
         </div>
-        <FilterControl />
-        <SortControl />
+        <FilterControl
+          sections={[
+            {
+              title: "Status",
+              options: [
+                { label: "Active", id: "Active" },
+                { label: "Inactive", id: "Inactive" },
+                { label: "Block", id: "Block" },
+              ],
+            },
+          ]}
+          onApply={(filters) => {
+            setActiveFilters(filters);
+            setCurrentPage(1);
+          }}
+          onReset={() => {
+            setActiveFilters({});
+            setCurrentPage(1);
+          }}
+        />
+        <SortControl
+          onSortChange={handleSortControlChange}
+          currentSort={sortConfig?.direction ?? ""}
+        />
       </div>
       <Card className="h-4/6 overflow-x-hidden border-none bg-transparent shadow-none">
         <Table className="h-fit">
@@ -299,6 +337,9 @@ export default function CustomerTable({
               >
                 State
               </TableHead>
+              {showBusinessHub && (
+                <TableHead className="text-center">Business Hub</TableHead>
+              )}
               <TableHead
                 onClick={() => requestSort("status")}
                 className="text-center"

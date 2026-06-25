@@ -14,9 +14,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { EllipsisVertical, Printer } from "lucide-react";
+import { EllipsisVertical, Printer, Send } from "lucide-react";
 import { Card } from "../ui/card";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -32,63 +32,40 @@ import {
 import { toast } from "sonner";
 import { LoadingAnimation } from "@/components/ui/loading-animation";
 import { usePermissions } from "@/hooks/use-permissions";
+import SendTokenDialog from "@/components/hes/dashboard/send-token-dialog";
+import { useSetToken } from "@/hooks/use-configure-meter";
 
 interface VendingTableProps {
   searchQuery?: string;
-  transactionsData?: VendingTransaction[];
+  status?: string;
+  sortDirection?: "asc" | "desc";
 }
 
 const VendingTable = ({
   searchQuery = "",
-  transactionsData: externalData,
+  status = "",
+  sortDirection = "desc",
 }: VendingTableProps = {}) => {
   const [rowsPerPage, setRowsPerPage] = useState<number>(10);
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [internalData, setInternalData] = useState<VendingTransaction[]>([]);
   const { canEdit } = usePermissions();
 
   const { data: rawTransactionsData, isLoading } = useVendingTransactions({
-    page: 1,
-    size: 1000, // Fetch a large number to handle client-side filtering/pagination
+    page: currentPage,
+    size: rowsPerPage,
+    search: searchQuery,
+    status,
+    sortDirection,
   });
 
-  // Use external data if provided, otherwise use internal data
-  const transactionsData = externalData ?? internalData;
+  const transactions = rawTransactionsData?.messages ?? [];
+  const totalCount = rawTransactionsData?.totalCount ?? 0;
+  const startIndex = (currentPage - 1) * rowsPerPage;
 
-  // Update transactionsData when rawTransactionsData changes
-  useEffect(() => {
-    if (rawTransactionsData?.messages) {
-      setInternalData(rawTransactionsData.messages);
-    }
-  }, [rawTransactionsData]);
-
-  // Filter transactions based on search query (client-side filtering)
-  const filteredTransactions = useMemo(() => {
-    if (!searchQuery) return transactionsData;
-    const searchLower = searchQuery.toLowerCase();
-    return transactionsData.filter(
-      (transaction) =>
-        transaction.meterAccountNumber?.toLowerCase().includes(searchLower) ||
-        transaction.meterNumber?.toLowerCase().includes(searchLower) ||
-        transaction.tokenType?.toLowerCase().includes(searchLower) ||
-        transaction.tariffName?.toLowerCase().includes(searchLower) ||
-        transaction.status?.toLowerCase().includes(searchLower),
-    );
-  }, [transactionsData, searchQuery]);
-
-  // Reset to first page when search query changes
+  // Reset to first page when server-side query params change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery]);
-
-  // Calculate pagination values
-  const totalRows = Math.ceil(filteredTransactions.length / rowsPerPage);
-  const startIndex = (currentPage - 1) * rowsPerPage;
-  const endIndex = startIndex + rowsPerPage;
-  const paginatedTransactions = filteredTransactions.slice(
-    startIndex,
-    endIndex,
-  );
+  }, [searchQuery, status, sortDirection]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -107,8 +84,10 @@ const VendingTable = ({
   const [selectedTransaction, setSelectedTransaction] =
     useState<VendingTransaction | null>(null);
   const [showTokenDialog, setShowTokenDialog] = useState(false);
+  const [showSendTokenDialog, setShowSendTokenDialog] = useState(false);
 
   const printTokenMutation = usePrintToken();
+  const sendTokenMutation = useSetToken();
 
   // Handle pagination controls
   const handlePageSizeChange = (newPageSize: number) => {
@@ -163,14 +142,14 @@ const VendingTable = ({
                   />
                 </TableCell>
               </TableRow>
-            ) : filteredTransactions.length === 0 ? (
+            ) : transactions.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={11} className="py-8 text-center">
                   No transactions found
                 </TableCell>
               </TableRow>
             ) : (
-              paginatedTransactions.map((transaction, index) => (
+              transactions.map((transaction, index) => (
                 <TableRow key={transaction.transactionId}>
                   <TableCell>{startIndex + index + 1}</TableCell>
                   <TableCell>{transaction.meterAccountNumber}</TableCell>
@@ -208,6 +187,16 @@ const VendingTable = ({
                             <Printer size={14} />
                             Reprint Token
                           </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="flex cursor-pointer items-center gap-2"
+                            onClick={() => {
+                              setSelectedTransaction(transaction);
+                              setShowSendTokenDialog(true);
+                            }}
+                          >
+                            <Send size={14} />
+                            Send Token
+                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -220,7 +209,7 @@ const VendingTable = ({
       </Card>
       <PaginationControls
         currentPage={currentPage}
-        totalItems={filteredTransactions.length}
+        totalItems={totalCount}
         pageSize={rowsPerPage}
         onPageChange={setCurrentPage}
         onPageSizeChange={handlePageSizeChange}
@@ -299,6 +288,12 @@ const VendingTable = ({
                   <p>KCT 2:</p>
                   <p>{selectedTransaction.kct2}</p>
                 </div>
+                {selectedTransaction.kct3 && (
+                  <div className="grid grid-cols-2 gap-4">
+                    <p>KCT 3:</p>
+                    <p>{selectedTransaction.kct3}</p>
+                  </div>
+                )}
               </>
             )}
             {selectedTransaction?.tokenType === "clear-tamper" && (
@@ -313,7 +308,7 @@ const VendingTable = ({
                 <p>{selectedTransaction.token}</p>
               </div>
             )}
-            {selectedTransaction?.tokenType === "kct-clear-tamper" && (
+            {selectedTransaction?.tokenType === "clear-tamper" && (
               <>
                 <div className="grid grid-cols-2 gap-4">
                   <p>Clear Tamper:</p>
@@ -460,7 +455,7 @@ const VendingTable = ({
                                                       selectedTransaction?.tokenType !==
                                                         "clear-credit" &&
                                                       selectedTransaction?.tokenType !==
-                                                        "kct-clear-tamper"
+                                                        "clear-tamper"
                                                         ? `
                                                     <div class="info-row">
                                                         <span class="label">Tariff:</span>
@@ -616,7 +611,12 @@ const VendingTable = ({
                                                     <div class="token-section">
                                                         <div class="token-label">KCT TOKENS</div>
                                                         <div class="token-value">${selectedTransaction?.kct1 ?? "N/A"}</div>
-                                                        <div class="token-value" style="margin-top: 10px;">${selectedTransaction?.kct2 ?? "N/A"}</div>
+                                                        <div class="token-value" style="margin-top: 10px;">${selectedTransaction?.kct2 ?? ""}</div>
+                                                        ${
+                                                          selectedTransaction?.kct3
+                                                            ? `<div class="token-value" style="margin-top: 10px;">${selectedTransaction?.kct3}</div>`
+                                                            : ""
+                                                        }
                                                     </div>
                                                     `
                                                           : selectedTransaction?.tokenType ===
@@ -636,7 +636,7 @@ const VendingTable = ({
                                                     </div>
                                                     `
                                                               : selectedTransaction?.tokenType ===
-                                                                  "kct-clear-tamper"
+                                                                  "clear-tamper"
                                                                 ? `
                                                     <div class="token-section">
                                                         <div class="token-label">KCT AND CLEAR TAMPER TOKENS</div>
@@ -698,6 +698,23 @@ const VendingTable = ({
           </div>
         </DialogContent>
       </Dialog>
+      <SendTokenDialog
+        isOpen={showSendTokenDialog}
+        onClose={() => setShowSendTokenDialog(false)}
+        meterNumber={selectedTransaction?.meterNumber}
+        initialToken={selectedTransaction?.token}
+        onSubmit={(token) => {
+          return new Promise<void>((resolve, reject) => {
+            sendTokenMutation.mutate(
+              { serial: selectedTransaction?.meterNumber ?? "", credit: token },
+              {
+                onSuccess: () => resolve(),
+                onError: (error) => reject(error),
+              },
+            );
+          });
+        }}
+      />
     </div>
   );
 };

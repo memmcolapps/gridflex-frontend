@@ -16,6 +16,7 @@ export interface VendingTransaction {
   token: string;
   kct1?: string;
   kct2?: string;
+  kct3?: string;
   receiptNo: string;
   tokenType: string;
   tariffName: string;
@@ -40,6 +41,7 @@ export interface GenerateCreditTokenPayload {
   meterAccountNumber?: string;
   initialAmount: number;
   tokenType: string;
+  needKCT?: boolean;
 }
 
 export interface GenerateCreditTokenResponse {
@@ -87,8 +89,8 @@ export interface CreditTokenData {
 }
 
 export type CalculateCreditTokenPayload =
-  | { meterNumber: string; initialAmount: number }
-  | { accountNumber: string; initialAmount: number };
+  | { meterNumber: string; initialAmount: number; needKCT?: boolean }
+  | { accountNumber: string; initialAmount: number; needKCT?: boolean };
 
 export interface CalculateCreditTokenResponse {
   responsecode: string;
@@ -127,6 +129,8 @@ export interface GenerateKCTPayload {
   newKrn: string;
   oldTariffIndex: number;
   newTariffIndex: number;
+  // Backend flag: true => 3 KCT, false => 2 KCT
+  allow?: boolean;
 }
 
 export interface GenerateKCTResponse {
@@ -188,6 +192,29 @@ export interface GenerateCompensationResponse {
   responsedesc: string;
   responsedata: VendingTransaction;
 }
+
+export interface MeterKctPrefillData {
+  id: string;
+  meterNumber: string;
+  accountNumber: string;
+  oldSgc: string;
+  newSgc: string;
+  oldKrn: string;
+  newKrn: string;
+  oldTariffIndex: number;
+  newTariffIndex: number;
+}
+
+export interface MeterKctPrefillResponse {
+  responsecode: string;
+  responsedesc: string;
+  responsedata: MeterKctPrefillData;
+}
+
+export type MeterKctPrefillPayload =
+  | { meterId: string }
+  | { meterNumber: string }
+  | { accountNumber: string };
 
 export interface CardData {
   totalProfit: number;

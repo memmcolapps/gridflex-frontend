@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import {
   Table,
@@ -30,9 +30,20 @@ import { usePermissions } from '@/hooks/use-permissions';
 interface TariffTableProps {
   selectedTariffNames: string[];
   setSelectedTariffNames: React.Dispatch<React.SetStateAction<string[]>>;
+  searchTerm?: string;
+  sortBy?: string | null;
+  sortDirection?: "asc" | "desc" | null;
+  type?: string;
 }
 
-const TariffTable = ({ selectedTariffNames, setSelectedTariffNames }: TariffTableProps) => {
+const TariffTable = ({
+  selectedTariffNames,
+  setSelectedTariffNames,
+  searchTerm = '',
+  sortBy = null,
+  sortDirection = null,
+  type = 'pending-state',
+}: TariffTableProps) => {
   const { canApprove } = usePermissions();
   const [fetchParams, setFetchParams] = useState<FetchParams>({
     page: 1,
@@ -52,6 +63,17 @@ const TariffTable = ({ selectedTariffNames, setSelectedTariffNames }: TariffTabl
 
   const { tariffs, totalData, isLoading, isError, error, reviewMutation } = useTariffs(fetchParams);
   const totalCount = totalData;
+
+  useEffect(() => {
+    setFetchParams((previous) => ({
+      ...previous,
+      page: 1,
+      searchTerm,
+      sortBy,
+      sortDirection,
+      type,
+    }));
+  }, [searchTerm, sortBy, sortDirection, type]);
 
   const handlePageChange = (page: number) => {
     setFetchParams({ ...fetchParams, page });
@@ -260,6 +282,7 @@ const TariffTable = ({ selectedTariffNames, setSelectedTariffNames }: TariffTabl
         action={confirmAction ?? 'approve'}
         onConfirm={handleConfirmAction}
         selectedItem={selectedItem}
+        isSubmitting={reviewMutation.isPending}
       />
     </Card>
   );

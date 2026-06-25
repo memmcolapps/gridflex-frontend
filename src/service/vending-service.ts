@@ -11,6 +11,8 @@ import type {
   VendingDashboardPayload,
   PrintTokenPayload,
   CalculateCreditTokenPayload,
+  MeterKctPrefillPayload,
+  MeterKctPrefillResponse,
 } from "@/types/vending";
 import { axiosInstance } from "@/lib/axios";
 
@@ -73,6 +75,8 @@ export interface GenerateKCTPayload {
   newKrn: string;
   oldTariffIndex: number;
   newTariffIndex: number;
+  // Backend flag: true => 3 KCT, false => 2 KCT
+  allow?: boolean;
 }
 
 export interface GenerateKCTResponse {
@@ -276,7 +280,7 @@ export async function generateKCTAndClearTamperToken(
     console.log("KCT and Clear Tamper API call payload:", payload);
     const response =
       await axiosInstance.post<GenerateKCTAndClearTamperResponse>(
-        `${API_URL}/vending/service/generate/token/kct-clear-tamper`,
+        `${API_URL}/vending/service/generate/token/clear-tamper`,
         payload,
         {
           headers: {
@@ -476,6 +480,51 @@ export async function calculateCreditToken(
   }
 }
 
+export async function getMeterKctPrefill(
+  payload: MeterKctPrefillPayload,
+): Promise<
+  | { success: true; data: MeterKctPrefillResponse["responsedata"] }
+  | { success: false; error: string }
+> {
+  try {
+    const token = localStorage.getItem("auth_token");
+    if (!token) {
+      return {
+        success: false,
+        error: "Authorization token not found",
+      };
+    }
+
+    const response = await axiosInstance.get<MeterKctPrefillResponse>(
+      `${API_URL}/meter/service/single`,
+      {
+        params: payload,
+        headers: {
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    if (response.data.responsecode !== "000") {
+      return {
+        success: false,
+        error: response.data.responsedesc || "Failed to fetch meter details",
+      };
+    }
+
+    return {
+      success: true,
+      data: response.data.responsedata,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: handleApiError(error),
+    };
+  }
+}
+
 export interface GetVendingTransactionsResponse {
   responsecode: string;
   responsedesc: string;
@@ -491,6 +540,9 @@ export interface GetVendingTransactionsResponse {
 export async function getVendingTransactions(payload?: {
   page?: number;
   size?: number;
+  search?: string;
+  status?: string;
+  sortDirection?: "asc" | "desc";
 }): Promise<
   | { success: true; data: GetVendingTransactionsResponse["responsedata"] }
   | { success: false; error: string }
@@ -510,6 +562,10 @@ export async function getVendingTransactions(payload?: {
       params.append("page", String(payload.page - 1));
     if (payload?.size !== undefined)
       params.append("size", payload.size.toString());
+    if (payload?.search) params.append("search", payload.search);
+    if (payload?.status) params.append("status", payload.status);
+    if (payload?.sortDirection)
+      params.append("sortDirection", payload.sortDirection);
 
     const response = await axiosInstance.get<GetVendingTransactionsResponse>(
       `${API_URL}/vending/service/generate/token/all?${params.toString()}`,

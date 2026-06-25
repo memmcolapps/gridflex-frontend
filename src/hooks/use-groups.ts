@@ -6,7 +6,9 @@ import {
   editUser,
   type EditUserPayload,
   getGroupPermission,
+  type GroupPermissionQueryParams,
   getUsers,
+  type GetUsersQueryParams,
   updateGroupPermission,
   updateGroupPermissionField,
 } from "@/service/user-service";
@@ -14,16 +16,24 @@ import {
   type CreateGroupPermissionPayload,
   type UpdateGroupPermissionPayload,
 } from "@/types/group-permission-user";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { type CreateUserPayload } from "@/types/users-groups";
 
-export const useGroupPermissions = (searchTerm?: string) => {
-  const { data, error, isLoading } = useQuery({
-    queryKey: ["groupPermissions", searchTerm],
-    queryFn: () => getGroupPermission(searchTerm),
+export const useGroupPermissions = (
+  params: GroupPermissionQueryParams = {},
+) => {
+  const { data, error, isLoading, isFetching } = useQuery({
+    queryKey: ["groupPermissions", params],
+    queryFn: () => getGroupPermission(params),
+    placeholderData: keepPreviousData,
   });
-  return { data: data?.success ? data.data : [], error, isLoading };
+  return {
+    data: data?.success ? data.data : [],
+    error,
+    isLoading,
+    isFetching,
+  };
 };
 
 export const useCreateGroupPermission = () => {
@@ -116,17 +126,19 @@ export const useDeactivateOrActivateGroupPermission = () => {
   });
 };
 
-export const useGetUsers = (searchTerm?: string) => {
-  const { data, error, isLoading } = useQuery({
-    queryKey: ["users", searchTerm],
-    queryFn: () => getUsers(searchTerm),
+export const useGetUsers = (params: GetUsersQueryParams = {}) => {
+  const { data, error, isLoading, isFetching } = useQuery({
+    queryKey: ["users", params],
+    queryFn: () => getUsers(params),
+    placeholderData: keepPreviousData,
   });
   return {
     data: data?.success
       ? data.data
-      : { data: [], totalData: 1, size: 0, totalPages: 1, page: 1 },
+      : { data: [], totalData: 0, size: 0, totalPages: 1, page: 0 },
     error,
     isLoading,
+    isFetching,
   };
 };
 

@@ -41,6 +41,7 @@ import ReadCTVTRatioDialog from "@/components/hes/controlsconfigs/meter-remote-c
 import ReadRelayModeDialog from "@/components/hes/controlsconfigs/meter-remote-config/read-relay-mode-dialog";
 import ReadRelayStatusDialog from "@/components/hes/controlsconfigs/meter-remote-config/read-relay-status-dialog";
 import ReadDateTimeDialog from "@/components/hes/controlsconfigs/meter-remote-config/read-date-time-dialog";
+import ReadCreditBalanceDialog from "@/components/hes/controlsconfigs/meter-remote-config/read-credit-balance-dialog";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { ArrowUpDown } from "lucide-react";
@@ -67,7 +68,11 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
-import { useMeterConfigurations, useRelayControl, useSetToken } from "@/hooks/use-configure-meter";
+import {
+  useMeterConfigurations,
+  useRelayControl,
+  useSetToken,
+} from "@/hooks/use-configure-meter";
 
 // Define the possible dialog types
 type DialogType =
@@ -83,7 +88,8 @@ type DialogType =
   | "readCtv"
   | "readRelay"
   | "readDatetime"
-  | "readRelayStatus";
+  | "readRelayStatus"
+  | "readCreditBalance";
 
 // Define filter sections
 const filterSections = [
@@ -93,13 +99,6 @@ const filterSections = [
       { label: "Single Phase", id: "singlePhase" },
       { label: "Three Phase", id: "threePhase" },
       { label: "MD", id: "md" },
-    ],
-  },
-  {
-    title: "Meter Category",
-    options: [
-      { label: "Prepaid", id: "prepaid" },
-      { label: "Postpaid", id: "postpaid" },
     ],
   },
   {
@@ -122,15 +121,36 @@ export default function MeterRemoteConfigPage() {
     key: keyof Meter;
     direction: "asc" | "desc";
   }>({ key: "sN", direction: "asc" });
+  const [activeFilters, setActiveFilters] = useState<
+    Record<string, string | boolean>
+  >({});
   const [selectedMeters, setSelectedMeters] = useState<string[]>([]);
   const [selectedConfigOption, setSelectedConfigOption] =
     useState<DialogType | null>(null);
   const [showOfflineDialog, setShowOfflineDialog] = useState(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [rowsPerPage, setRowsPerPage] = useState<number>(10);
+  const selectedClasses = [
+    activeFilters.singlePhase && "single-phase",
+    activeFilters.threePhase && "three-phase",
+    activeFilters.md && "MD",
+  ]
+    .filter(Boolean)
+    .join(",");
+  const selectedStatuses = [
+    activeFilters.online && "ONLINE",
+    activeFilters.offline && "OFFLINE",
+  ]
+    .filter(Boolean)
+    .join(",");
   const { data, isLoading, error, refetch } = useMeterConfigurations({
     page: currentPage - 1,
     size: rowsPerPage,
+    search: searchTerm.trim() || undefined,
+    meterClass: selectedClasses || undefined,
+    status: selectedStatuses || undefined,
+    sortBy: sortConfig.key as "sN" | "meterNumber" | "status",
+    sortDirection: sortConfig.direction,
   });
   const meterData = data?.meters ?? [];
   const totalData = data?.totalData ?? 0;
@@ -202,39 +222,6 @@ export default function MeterRemoteConfigPage() {
   //     }
   // };
 
-  // Apply search filter
-  const filteredData = meterData.filter((meter) => {
-    const searchLower = searchTerm.toLowerCase();
-    return (
-      meter.sN.toLowerCase().includes(searchLower) ||
-      meter.meterNumber.toLowerCase().includes(searchLower) ||
-      meter.simNo.toLowerCase().includes(searchLower) ||
-      meter.businessHub.toLowerCase().includes(searchLower) ||
-      meter.class.toLowerCase().includes(searchLower) ||
-      meter.category.toLowerCase().includes(searchLower) ||
-      meter.manufacturer.toLowerCase().includes(searchLower) ||
-      meter.model.toLowerCase().includes(searchLower) ||
-      meter.status.toLowerCase().includes(searchLower) ||
-      meter.region.toLowerCase().includes(searchLower) ||
-      meter.serviceCenter.toLowerCase().includes(searchLower) ||
-      meter.feeder.toLowerCase().includes(searchLower) ||
-      meter.transformer.toLowerCase().includes(searchLower) ||
-      meter.lastSync.toLowerCase().includes(searchLower)
-    );
-  });
-
-  // Apply sorting
-  const sortedData = [...filteredData].sort((a, b) => {
-    const aValue = a[sortConfig.key];
-    const bValue = b[sortConfig.key];
-    if (typeof aValue === "string" && typeof bValue === "string") {
-      return sortConfig.direction === "asc"
-        ? aValue.localeCompare(bValue)
-        : bValue.localeCompare(aValue);
-    }
-    return 0;
-  });
-
   const handlePrevious = () => {
     setCurrentPage((prev) => Math.max(prev - 1, 1));
   };
@@ -250,6 +237,7 @@ export default function MeterRemoteConfigPage() {
 
   const handleSortChange = (key: keyof Meter, direction: "asc" | "desc") => {
     setSortConfig({ key, direction });
+    setCurrentPage(1);
   };
 
   const toggleMeterSelection = (sN: string) => {
@@ -259,17 +247,17 @@ export default function MeterRemoteConfigPage() {
   };
 
   const toggleSelectAll = () => {
-    if (selectedMeters.length === sortedData.length && sortedData.length > 0) {
+    if (selectedMeters.length === meterData.length && meterData.length > 0) {
       setSelectedMeters([]);
     } else {
-      setSelectedMeters(sortedData.map((meter) => meter.sN));
+      setSelectedMeters(meterData.map((meter) => meter.sN));
     }
   };
 
   const handleSetActiveFilters = (
     filters: Record<string, string | boolean>,
   ) => {
-    console.log("Filters applied:", filters);
+    setActiveFilters(filters);
     setCurrentPage(1);
   };
 
@@ -362,7 +350,10 @@ export default function MeterRemoteConfigPage() {
             placeholder="Search by meter no., sim no, etc..."
             className="w-full border-gray-300 pl-10 focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
           />
         </div>
         <FilterControl
@@ -429,8 +420,8 @@ export default function MeterRemoteConfigPage() {
                 <div className="flex items-center gap-2">
                   <Checkbox
                     checked={
-                      selectedMeters.length === sortedData.length &&
-                      sortedData.length > 0
+                      selectedMeters.length === meterData.length &&
+                      meterData.length > 0
                     }
                     onCheckedChange={toggleSelectAll}
                     className="border-gray-300"
@@ -477,7 +468,7 @@ export default function MeterRemoteConfigPage() {
                   </div>
                 </TableCell>
               </TableRow>
-            ) : sortedData.length === 0 ? (
+            ) : meterData.length === 0 ? (
               <TableRow>
                 <TableCell
                   colSpan={10}
@@ -487,7 +478,7 @@ export default function MeterRemoteConfigPage() {
                 </TableCell>
               </TableRow>
             ) : (
-              sortedData.map((meter, index) => (
+              meterData.map((meter, index) => (
                 <TableRow
                   key={meter.sN}
                   className="cursor-pointer hover:bg-gray-50"
@@ -561,7 +552,10 @@ export default function MeterRemoteConfigPage() {
                         <DropdownMenuItem
                           onSelect={(e) => {
                             e.preventDefault();
-                            console.log("Connect relay clicked for meter:", meter.sN);
+                            console.log(
+                              "Connect relay clicked for meter:",
+                              meter.sN,
+                            );
                             relayControlMutation.mutate({
                               serial: meter.sN,
                               state: 1,
@@ -572,13 +566,18 @@ export default function MeterRemoteConfigPage() {
                         >
                           <div className="flex w-full items-center gap-2">
                             <CircleCheck size={14} />
-                            <span className="cursor-pointer">Connect Relay</span>
+                            <span className="cursor-pointer">
+                              Connect Relay
+                            </span>
                           </div>
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onSelect={(e) => {
                             e.preventDefault();
-                            console.log("Disconnect relay clicked for meter:", meter.sN);
+                            console.log(
+                              "Disconnect relay clicked for meter:",
+                              meter.sN,
+                            );
                             relayControlMutation.mutate({
                               serial: meter.sN,
                               state: 0,
@@ -589,7 +588,9 @@ export default function MeterRemoteConfigPage() {
                         >
                           <div className="flex w-full items-center gap-2">
                             <Ban size={14} />
-                            <span className="cursor-pointer">Disconnect Relay</span>
+                            <span className="cursor-pointer">
+                              Disconnect Relay
+                            </span>
                           </div>
                         </DropdownMenuItem>
                         <DropdownMenuItem
@@ -659,6 +660,14 @@ export default function MeterRemoteConfigPage() {
                               className="flex cursor-pointer items-center justify-between"
                             >
                               <span>Read Date and Time</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleReadAction(meter, "readCreditBalance")
+                              }
+                              className="flex cursor-pointer items-center justify-between"
+                            >
+                              <span>Read Credit Balance</span>
                             </DropdownMenuItem>
                           </DropdownMenuSubContent>
                         </DropdownMenuSub>
@@ -783,12 +792,17 @@ export default function MeterRemoteConfigPage() {
         <SendTokenDialog
           isOpen={true}
           onClose={closeDialog}
+          meterNumber={selectedMeter.meterNumber}
           onSubmit={(token) => {
-            setTokenMutation.mutate({
-              serial: selectedMeter.meterNumber,
-              credit: token,
+            return new Promise<void>((resolve, reject) => {
+              setTokenMutation.mutate(
+                { serial: selectedMeter.meterNumber, credit: token },
+                {
+                  onSuccess: () => resolve(),
+                  onError: (error) => reject(error),
+                }
+              );
             });
-            closeDialog();
           }}
         />
       )}
@@ -834,12 +848,16 @@ export default function MeterRemoteConfigPage() {
           meter={selectedMeter}
         />
       )}
+      {isDialogOpen && dialogType === "readCreditBalance" && selectedMeter && (
+        <ReadCreditBalanceDialog
+          isOpen={true}
+          onClose={closeDialog}
+          meter={selectedMeter}
+        />
+      )}
       {showOfflineDialog && (
         <OfflineDialog isOpen={true} onClose={closeDialog} />
       )}
     </div>
   );
 }
-
-
-

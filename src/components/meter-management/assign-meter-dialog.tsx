@@ -20,6 +20,7 @@ import type { VirtualMeterData } from "@/types/meter";
 import type { MeterInventoryItem } from "@/types/meter-inventory";
 import type { Customer } from "@/types/customer-types";
 import type { AssignMeterPayload, MeterAPIItem } from "@/service/assign-meter-service";
+import { useAuth } from "@/context/auth-context";
 import { useTariff } from "@/hooks/use-tarrif";
 import {
   useMeters,
@@ -127,6 +128,10 @@ export function AssignMeterDialog({
   // progress,
   onConfirmAssignment,
 }: AssignMeterDialogProps) {
+  const { user } = useAuth();
+  const userNodeType =
+    user?.nodeInfo?.type?.toLowerCase().replace(/\s+/g, "") ?? "";
+  const showBusinessHub = ["region", "root"].includes(userNodeType);
   const { tariffs, isLoading: tariffsLoading } = useTariff();
   const {
     data: states,
@@ -139,8 +144,10 @@ export function AssignMeterDialog({
     isError: isErrorCities,
   } = useNigerianCities(state);
 
-  const { data: feeders, isLoading: isLoadingFeeders } = useFeeders();
-  const { data: dssOptions, isLoading: isLoadingDSS } = useDSS(feeder || null);
+  const { data: feeders, isLoading: isLoadingFeeders } = useFeeders(user?.nodeInfo?.nodeId ?? null);
+  const selectedFeeder = feeders?.find((f) => f.assetId === feeder);
+  const feederNodeId = selectedFeeder?.nodeId ?? null;
+  const { data: dssOptions, isLoading: isLoadingDSS } = useDSS(feederNodeId);
 
   const { data: metersData, isLoading: metersLoading } = useMeters({
     page: 1,
@@ -373,7 +380,11 @@ export function AssignMeterDialog({
     setPendingAssignmentPayload(null);
   };
 
-  const isPaymentFormComplete = paymentMode !== "" && paymentType !== "";
+  const isPaymentFormComplete =
+    paymentMode !== "" &&
+    creditPaymentMode !== "" &&
+    (paymentMode !== "monthly" || paymentPlan !== "") &&
+    (creditPaymentMode !== "monthly" || creditPaymentPlan !== "");
 
   return (
     <>
@@ -447,6 +458,23 @@ export function AssignMeterDialog({
                   className="border-gray-200 text-gray-600"
                 />
               </div>
+              {showBusinessHub && (
+                <div className="col-span-2 space-y-2">
+                  <Label>Business Hub</Label>
+                  <Input
+                    value={
+                      (() => {
+                        const bn = (customer as Customer)?.businessName;
+                        if (!bn) return "";
+                        return typeof bn === "string" ? bn : bn?.name ?? "";
+                      })()
+                    }
+                    readOnly
+                    placeholder="Business Hub"
+                    className="border-gray-200 text-gray-600 bg-gray-50"
+                  />
+                </div>
+              )}
               <div className="space-y-2">
                 <Label>
                   Meter Number<span className="text-red-700">*</span>
@@ -821,6 +849,7 @@ export function AssignMeterDialog({
         onOpenChange={setIsUploadImageOpen}
         onProceed={handleProceedFromUploadImage}
         onCancel={() => setIsUploadImageOpen(false)}
+        isSubmitting={assignMeterMutation.isPending}
       />
 
       <SetPaymentModeDialog
@@ -839,6 +868,7 @@ export function AssignMeterDialog({
         isPaymentFormComplete={isPaymentFormComplete}
         editCustomer={null}
         onProceed={handleProceedFromSetPayment}
+        isSubmitting={assignMeterMutation.isPending}
       />
 
       <CinExistsDialog

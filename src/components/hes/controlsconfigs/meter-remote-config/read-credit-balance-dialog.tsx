@@ -12,47 +12,48 @@ import { useReadMeter } from "@/hooks/use-configure-meter";
 import type { Meter } from "@/types/meter";
 import { useEffect } from "react";
 
-interface ReadRelayModeDialogProps {
+interface ReadCreditBalanceDialogProps {
   isOpen: boolean;
   onClose: () => void;
   meter?: Meter | undefined;
 }
 
-export default function ReadRelayModeDialog({
+export default function ReadCreditBalanceDialog({
   isOpen,
   onClose,
   meter,
-}: ReadRelayModeDialogProps) {
+}: ReadCreditBalanceDialogProps) {
   const { mutate: readMeter, data, isPending, reset } = useReadMeter();
 
   useEffect(() => {
-    if (isOpen && meter?.meterNumber) {
-      readMeter({ serial: meter.meter?.meterNumber, type: "READ_RELAY_MODE" });
+    if (isOpen && meter?.meter?.meterNumber) {
+      readMeter({ serial: meter.meter?.meterNumber, type: "READ_PUBLIC_CREDIT" });
     }
+    if (!isOpen) reset();
   }, [isOpen]);
 
   const responsedata = data?.responsedata;
-  const relayModeValue = responsedata && !Array.isArray(responsedata) ? String(responsedata.value ?? "") : "";
+  const creditBalance = responsedata && !Array.isArray(responsedata) ? String(responsedata.value ?? "") : "";
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="h-fit bg-white">
         <DialogHeader>
-          <DialogTitle>Read Relay Mode</DialogTitle>
+          <DialogTitle>Read Credit Balance</DialogTitle>
         </DialogHeader>
         <div className="py-4">
           <Label
-            htmlFor="relay-mode"
+            htmlFor="credit-balance"
             className="mb-2 block text-sm font-medium text-gray-700"
           >
-            Relay Mode
+            Credit Balance
           </Label>
           <Input
-            id="relay-mode"
+            id="credit-balance"
             type="text"
             readOnly
             placeholder={isPending ? "Loading..." : "No data available"}
-            value={relayModeValue}
+            value={creditBalance}
             className="w-full border border-gray-200"
           />
         </div>

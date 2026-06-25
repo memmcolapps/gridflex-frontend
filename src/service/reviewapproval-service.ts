@@ -50,10 +50,7 @@ export async function getAllPercentageRanges({
 
     if (type) params.type = type;
     if (searchTerm) params.search = searchTerm;
-    if (sortBy) {
-      params.sortBy = sortBy;
-      params.sortDirection = sortDirection ?? "asc";
-    }
+    if (sortBy) params.sort = sortDirection ?? "asc";
 
     const response = await axiosInstance.get<GetPercentageResponse>(
       `${API_URL}/debt-setting/service/percentage-range/all`,
@@ -187,10 +184,7 @@ export async function getAllLiabilities({
 
     if (type) params.type = type;
     if (searchTerm) params.search = searchTerm;
-    if (sortBy) {
-      params.sortBy = sortBy;
-      params.sortDirection = sortDirection ?? "asc";
-    }
+    if (sortBy) params.sort = sortDirection ?? "asc";
 
     const response = await axiosInstance.get<GetAllLiabilitiesResponse>(
       `${API_URL}/debt-setting/service/liability-cause/all`,
@@ -323,10 +317,7 @@ export async function getAllBands({
 
     if (type) params.type = type;
     if (searchTerm) params.search = searchTerm;
-    if (sortBy) {
-      params.sortBy = sortBy;
-      params.sortDirection = sortDirection ?? "asc";
-    }
+    if (sortBy) params.sort = sortDirection ?? "asc";
 
     const response = await axiosInstance.get<GetBandResponse>(
       `${API_URL}/band/service/all`,
@@ -453,16 +444,13 @@ export async function getAllTariffs({
     const token = localStorage.getItem("auth_token");
 
     const params: Record<string, string> = {
-      page: String(page),
-      pageSize: String(pageSize),
+      page: String(Math.max(page - 1, 0)),
+      size: String(pageSize),
     };
 
     if (type) params.type = type;
     if (searchTerm) params.search = searchTerm;
-    if (sortBy) {
-      params.sortBy = sortBy;
-      params.sortDirection = sortDirection ?? "asc";
-    }
+    if (sortBy) params.sort = sortDirection ?? "asc";
 
     const response = await axiosInstance.get<GetTariffResponse>(
       `${API_URL}/tariff/service/all`,
@@ -589,8 +577,8 @@ export async function getAllMeters({
     const token = localStorage.getItem("auth_token");
 
     const params: Record<string, string> = {
-      page: String(page),
-      pageSize: String(pageSize),
+      page: String(Math.max(page - 1, 0)),
+      size: String(pageSize),
     };
 
     if (type) params.type = type;

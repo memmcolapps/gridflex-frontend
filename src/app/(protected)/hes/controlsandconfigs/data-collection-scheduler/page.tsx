@@ -95,18 +95,10 @@ function mapScheduleItem(item: ScheduleItem, index: number): TableData {
 
 const filterSections = [
   {
-    title: "Meter Class",
+    title: "Status",
     options: [
-      { label: "Single Phase", id: "singlePhase" },
-      { label: "Three Phase", id: "threePhase" },
-      { label: "MD", id: "md" },
-    ],
-  },
-  {
-    title: "Meter Type",
-    options: [
-      { label: "Prepaid", id: "prepaid" },
-      { label: "Postpaid", id: "postPaid" },
+      { label: "Active", id: "Active" },
+      { label: "Paused", id: "Paused" },
     ],
   },
 ];
@@ -140,6 +132,7 @@ export default function DataCollScheduler() {
     key: string;
     direction: string;
   }>({ key: "", direction: "asc" });
+  const [activeFilters, setActiveFilters] = useState<FilterType>({});
   const [cronDialogEvent, setCronDialogEvent] = useState<{
     jobName: string;
     jobGroup: string;
@@ -158,8 +151,17 @@ export default function DataCollScheduler() {
   const totalData = scheduleResponse?.totalData ?? 0;
   const totalPages = scheduleResponse?.totalPages ?? 1;
 
+  const filteredData = rawData.filter((item) => {
+    const selectedStatuses = Object.entries(activeFilters)
+      .filter(([, selected]) => selected)
+      .map(([status]) => status);
+
+    if (selectedStatuses.length === 0) return true;
+    return selectedStatuses.includes(item.status);
+  });
+
   // Apply sorting on the fetched page data
-  const sortedData = [...rawData].sort((a, b) => {
+  const sortedData = [...filteredData].sort((a, b) => {
     if (!sortConfig.key) return 0;
     const aValue = a[sortConfig.key as keyof TableData] ?? "";
     const bValue = b[sortConfig.key as keyof TableData] ?? "";
@@ -185,7 +187,7 @@ export default function DataCollScheduler() {
   };
 
   const handleSetActiveFilters = (filters: FilterType) => {
-    console.log("Filters applied:", filters);
+    setActiveFilters(filters);
     setCurrentPage(1);
   };
 

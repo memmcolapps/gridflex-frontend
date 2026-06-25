@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { ChevronUpIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
 import AddUserForm from "./adduserform";
 import EditUserDialog from "./edituserdialog";
 import { Button } from "@/components/ui/button";
@@ -12,14 +11,12 @@ import {
   TableBody,
   TableCell,
 } from "@/components/ui/table";
-import { Label } from "@/components/ui/label";
 import {
   ArrowUpDown,
   PlusCircleIcon,
   SearchIcon,
   MoreVertical,
   Pencil,
-  ListFilter,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -41,6 +38,13 @@ import { PaginationControls } from "@/components/ui/pagination-controls";
 import { LoadingAnimation } from "@/components/ui/loading-animation";
 import { usePermissions } from "@/hooks/use-permissions";
 import { useAuth } from "@/context/auth-context";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const parseTimestamp = (timestamp: string): Date => {
   // Convert format "2025-10-22 10:32:15.338908-05" to ISO 8601
@@ -61,21 +65,34 @@ const formatDateAdded = (date: Date) => {
 
 export default function UserManagement() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortConfig, setSortConfig] = useState<{
-    key: keyof GetUsersUser;
-    direction: "ascending" | "descending";
-  } | null>(null);
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [activeFilters, setActiveFilters] = useState<Record<string, boolean>>(
+    {},
+  );
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [editingUser, setEditingUser] = useState<GetUsersUser | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const { data: users, isLoading } = useGetUsers(searchTerm);
+  const { data: users, isFetching } = useGetUsers({
+    page: currentPage - 1,
+    size: rowsPerPage,
+    search: searchTerm.trim() || undefined,
+    status: activeFilters.active
+      ? true
+      : activeFilters.inactive
+        ? false
+        : undefined,
+    sortDirection,
+  });
   const { mutate: createUser } = useCreateUser();
   const { mutate: editUser } = useEditUser();
   const { canEdit } = usePermissions();
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
+    setCurrentPage(1);
   };
 
   const handleCreateUser = (newUser: CreateUserPayload) => {
@@ -136,54 +153,15 @@ export default function UserManagement() {
     }
   };
 
-  const requestSort = (key: keyof GetUsersUser) => {
-    let direction: "ascending" | "descending" = "ascending";
-    if (sortConfig?.key === key && sortConfig.direction === "ascending") {
-      direction = "descending";
-    }
-    setSortConfig({ key, direction });
-  };
-
-  const sortedUsers = () => {
-    const sortableUsers = [...(users?.data || [])];
-    if (sortConfig !== null) {
-      sortableUsers.sort((a, b) => {
-        const aValue = a[sortConfig.key] ?? "";
-        const bValue = b[sortConfig.key] ?? "";
-        if (aValue < bValue) {
-          return sortConfig.direction === "ascending" ? -1 : 1;
-        }
-        if (aValue > bValue) {
-          return sortConfig.direction === "ascending" ? 1 : -1;
-        }
-        return 0;
-      });
-    }
-    return sortableUsers;
-  };
-
-  const filteredUsers = sortedUsers();
-
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [currentPage, setCurrentPage] = useState(1);
-  const totalRows = filteredUsers.length;
+  const filteredUsers = users?.data ?? [];
+  const totalRows = users?.totalData ?? 0;
   const startIndex = (currentPage - 1) * rowsPerPage;
-  const endIndex = startIndex + rowsPerPage;
-  const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
   const { user: currentUser } = useAuth();
 
   const handlePageSizeChange = (newPageSize: number) => {
     setRowsPerPage(newPageSize);
     setCurrentPage(1);
   };
-
-  if (isLoading) {
-    return (
-      <div className="flex min-h-96 items-center justify-center">
-        <LoadingAnimation variant="spinner" message="Loading users..." size="lg" />
-      </div>
-    );
-  }
 
   return (
     <div className="flex h-full flex-col overflow-hidden text-black">
@@ -210,39 +188,67 @@ export default function UserManagement() {
           )}
         </div>
 
-        <div className="mb-6 flex w-80 items-center gap-4">
-          <div className="relative flex-1">
+        <div className="mb-6 flex w-full items-center gap-4">
+          <div className="relative w-80">
             <SearchIcon
               className="text-muted-foreground absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2"
               size={12}
             />
             <Input
               type="text"
-              placeholder="Search by name,ID,cont..."
-              className="w-100 border-[rgba(228,231,236,1)] pl-10"
+              placeholder="Search by name, email, group..."
+              className="w-full border-[rgba(228,231,236,1)] pl-10"
               value={searchTerm}
               onChange={handleSearch}
             />
           </div>
 
-          <Button
-            variant="outline"
-            className="gap-1 border-[rgba(228,231,236,1)]"
+          <Select
+            value={
+              activeFilters.active
+                ? "active"
+                : activeFilters.inactive
+                  ? "inactive"
+                  : "all"
+            }
+            onValueChange={(value) => {
+              setActiveFilters(value === "all" ? {} : { [value]: true });
+              setCurrentPage(1);
+            }}
           >
-            <ListFilter className="" strokeWidth={2.5} size={12} />
-            <Label htmlFor="filterCheckbox" className="cursor-pointer">
-              Filter
-            </Label>
-          </Button>
-          <Button
-            variant="outline"
-            className="gap-1 border-[rgba(228,231,236,1)]"
+            <SelectTrigger
+              aria-label="Filter users by status"
+              className="w-36 border-[rgba(228,231,236,1)] bg-white"
+            >
+              <SelectValue placeholder="Filter" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All statuses</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="inactive">Inactive</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select
+            value={sortDirection}
+            onValueChange={(value) => {
+              setSortDirection(value as "asc" | "desc");
+              setCurrentPage(1);
+            }}
           >
-            <ArrowUpDown className="" strokeWidth={2.5} size={12} />
-            <Label htmlFor="sortCheckbox" className="cursor-pointer">
-              Sort
-            </Label>
-          </Button>
+            <SelectTrigger
+              aria-label="Sort users"
+              className="w-44 border-[rgba(228,231,236,1)] bg-white"
+            >
+              <div className="flex items-center gap-1">
+                <ArrowUpDown strokeWidth={2.5} size={12} />
+                <SelectValue placeholder="Sort" />
+              </div>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="asc">Username (A-Z)</SelectItem>
+              <SelectItem value="desc">Username (Z-A)</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <div className="h-4/6">
           <Table>
@@ -261,175 +267,125 @@ export default function UserManagement() {
                     <span>S/N</span>
                   </div>
                 </TableHead>
-                <TableHead
-                  className="cursor-pointer"
-                  onClick={() => requestSort("firstname")}
-                >
-                  <div className="flex items-center justify-between">
-                    <span>Username</span>
-                    {sortConfig?.key === "firstname" && (
-                      <span>
-                        {sortConfig.direction === "ascending" ? (
-                          <ChevronUpIcon className="h-4 w-4" />
-                        ) : (
-                          <ChevronDownIcon className="h-4 w-4" />
-                        )}
-                      </span>
-                    )}
-                  </div>
-                </TableHead>
-                <TableHead
-                  className="cursor-pointer"
-                  onClick={() => requestSort("groups")}
-                >
-                  <div className="flex items-center justify-between">
-                    <span>Group Permission</span>
-                    {sortConfig?.key === "groups" && (
-                      <span>
-                        {sortConfig.direction === "ascending" ? (
-                          <ChevronUpIcon className="h-4 w-4" />
-                        ) : (
-                          <ChevronDownIcon className="h-4 w-4" />
-                        )}
-                      </span>
-                    )}
-                  </div>
-                </TableHead>
-                <TableHead
-                  className="cursor-pointer"
-                  onClick={() => requestSort("lastActive")}
-                >
-                  <div className="flex items-center justify-between">
-                    <span>Last Active</span>
-                    {sortConfig?.key === "lastActive" && (
-                      <span>
-                        {sortConfig.direction === "ascending" ? (
-                          <ChevronUpIcon className="h-4 w-4" />
-                        ) : (
-                          <ChevronDownIcon className="h-4 w-4" />
-                        )}
-                      </span>
-                    )}
-                  </div>
-                </TableHead>
-                <TableHead
-                  className="cursor-pointer"
-                  onClick={() => requestSort("lastActive")}
-                >
-                  <div className="flex items-center justify-between">
-                    <span>Status</span>
-                    {sortConfig?.key === "lastActive" && (
-                      <span>
-                        {sortConfig.direction === "ascending" ? (
-                          <ChevronUpIcon className="h-4 w-4" />
-                        ) : (
-                          <ChevronDownIcon className="h-4 w-4" />
-                        )}
-                      </span>
-                    )}
-                  </div>
-                </TableHead>
-                <TableHead
-                  className="cursor-pointer"
-                  onClick={() => requestSort("createdAt")}
-                >
-                  <div className="flex items-center justify-between">
-                    <span>Date Added</span>
-                    {sortConfig?.key === "createdAt" && (
-                      <span>
-                        {sortConfig.direction === "ascending" ? (
-                          <ChevronUpIcon className="h-4 w-4" />
-                        ) : (
-                          <ChevronDownIcon className="h-4 w-4" />
-                        )}
-                      </span>
-                    )}
-                  </div>
-                </TableHead>
+                <TableHead>Username</TableHead>
+                <TableHead>Group Permission</TableHead>
+                <TableHead>Last Active</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Date Added</TableHead>
                 <TableHead>Action</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {paginatedUsers.map((user, index) => (
-                <TableRow key={user.id} className="hover:bg-muted/50">
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Checkbox
-                        checked={selectedUsers.includes(user.id)}
-                        onCheckedChange={() => toggleUserSelection(user.id)}
-                        className="border-[rgba(228,231,236,1)]"
-                      />
-                      <span>{startIndex + index + 1}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col">
-                      <span className="font-medium">
-                        {user.firstname} {user.lastname}
-                      </span>
-                      <span className="text-muted-foreground text-sm">
-                        {user.email}
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell>{user.groups.groupTitle}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      {formatLastActive(
-                        user.lastActive
-                          ? parseTimestamp(user.lastActive)
-                          : new Date(),
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <span
-                      className={`inline-block rounded-full px-2 py-1 text-xs font-semibold ${
-                        user.status
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
-                      }`}
-                    >
-                      {user.status ? "Active" : "Inactive"}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    {formatDateAdded(new Date(user.createdAt))}
-                  </TableCell>
-                  <TableCell>
-                    {canEdit && user?.id !== currentUser?.id && (
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild disabled={isEditDialogOpen}>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-8 w-8 cursor-pointer p-2"
-                          >
-                            <MoreVertical size={14} />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent
-                          align="center"
-                          className="w-35 cursor-pointer"
-                        >
-                          <DropdownMenuItem
-                            onSelect={() => {
-                              setEditingUser(user);
-                              setIsEditDialogOpen(true);
-                            }}
-                          >
-                            <div className="flex w-full items-center gap-2">
-                              <Pencil size={14} />
-                              <span className="cursor-pointer">Edit User</span>
-                            </div>
-                          </DropdownMenuItem>
-                          <UserStatusToggleDropdownItem user={user} />
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    )}
+              {isFetching ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="h-40 text-center">
+                    <LoadingAnimation
+                      variant="spinner"
+                      message="Loading users..."
+                      size="md"
+                    />
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : filteredUsers.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={7}
+                    className="h-40 text-center text-gray-500"
+                  >
+                    {searchTerm.trim() ||
+                    activeFilters.active ||
+                    activeFilters.inactive
+                      ? "No users match your search or filter."
+                      : "No users have been added yet."}
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredUsers.map((user, index) => (
+                  <TableRow key={user.id} className="hover:bg-muted/50">
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Checkbox
+                          checked={selectedUsers.includes(user.id)}
+                          onCheckedChange={() => toggleUserSelection(user.id)}
+                          className="border-[rgba(228,231,236,1)]"
+                        />
+                        <span>{startIndex + index + 1}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col">
+                        <span className="font-medium">
+                          {user.firstname} {user.lastname}
+                        </span>
+                        <span className="text-muted-foreground text-sm">
+                          {user.email}
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell>{user.groups.groupTitle}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        {formatLastActive(
+                          user.lastActive
+                            ? parseTimestamp(user.lastActive)
+                            : new Date(),
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <span
+                        className={`inline-block rounded-full px-2 py-1 text-xs font-semibold ${
+                          user.status
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
+                      >
+                        {user.status ? "Active" : "Inactive"}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      {formatDateAdded(new Date(user.createdAt))}
+                    </TableCell>
+                    <TableCell>
+                      {canEdit && user?.id !== currentUser?.id && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger
+                            asChild
+                            disabled={isEditDialogOpen}
+                          >
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-8 w-8 cursor-pointer p-2"
+                            >
+                              <MoreVertical size={14} />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent
+                            align="center"
+                            className="w-35 cursor-pointer"
+                          >
+                            <DropdownMenuItem
+                              onSelect={() => {
+                                setEditingUser(user);
+                                setIsEditDialogOpen(true);
+                              }}
+                            >
+                              <div className="flex w-full items-center gap-2">
+                                <Pencil size={14} />
+                                <span className="cursor-pointer">
+                                  Edit User
+                                </span>
+                              </div>
+                            </DropdownMenuItem>
+                            <UserStatusToggleDropdownItem user={user} />
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </div>

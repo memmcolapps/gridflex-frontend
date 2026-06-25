@@ -11,6 +11,7 @@ import {
 } from "@/service/adjustment-service";
 import {
   type Adjustment,
+  type AdjustmentListResponse,
   type AdjustmentPayload,
   type PaymentHistoryTransaction,
 } from "@/types/credit-debit";
@@ -21,13 +22,33 @@ export const useAllAdjustments = (
   page = 0,
   size = 10,
   searchTerm?: string,
+  sortBy?: string,
+  sortDirection?: "asc" | "desc",
 ) => {
-  return useQuery<Adjustment[]>({
-    queryKey: ["adjustments", type, searchTerm, page, size],
+  return useQuery<AdjustmentListResponse>({
+    queryKey: [
+      "adjustments",
+      type,
+      searchTerm,
+      sortBy,
+      sortDirection,
+      page,
+      size,
+    ],
     queryFn: async () => {
-      const result = await fetchAllAdjustments(type, page, size, searchTerm);
+      const result = await fetchAllAdjustments(
+        type,
+        page,
+        size,
+        searchTerm,
+        sortBy,
+        sortDirection,
+      );
       if (result.success) {
-        return result.data;
+        return {
+          data: result.data,
+          totalData: result.totalData ?? result.data.length,
+        };
       } else {
         throw new Error(result.error);
       }

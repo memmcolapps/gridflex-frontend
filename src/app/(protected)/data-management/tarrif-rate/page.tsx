@@ -27,18 +27,27 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import {
   ArrowUpDown,
   CirclePlusIcon,
-  ListFilter,
   Search,
   SquareArrowOutUpRight,
   CalendarIcon,
   Loader2,
 } from "lucide-react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useBand } from "@/hooks/use-band";
 import { usePermissions } from "@/hooks/use-permissions";
@@ -56,6 +65,18 @@ export default function TariffManagementPage() {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Search / filter / sort state
+  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState("");
+  const [approveStatusFilter, setApproveStatusFilter] = useState("");
+  const [sort, setSort] = useState<"asc" | "desc" | "">("");
+
+  // Debounce the search box so we don't refetch on every keystroke
+  useEffect(() => {
+    const timer = setTimeout(() => setSearch(searchInput.trim()), 400);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
+
   const [formData, setFormData] = useState({
     name: "",
     type: "",
@@ -67,7 +88,15 @@ export default function TariffManagementPage() {
   });
 
   const { bands, isLoading: bandsLoading, error: bandsError } = useBand();
-  const { tariffs, isLoading, error: tariffError } = useTariff();
+  const {
+    tariffs,
+    isLoading,
+    error: tariffError,
+  } = useTariff({
+    search,
+    approveStatus: approveStatusFilter,
+    sort,
+  });
   const { mutate: createTariff } = useCreateTariff();
   const { mutate: exportTariff, isPending: isExporting } = useExportTariff();
 
@@ -100,7 +129,6 @@ export default function TariffManagementPage() {
         toast.success("Bulk approve successful");
       }
     } catch (error) {
-      console.error("Bulk approve error:", error);
       toast.error("Failed to bulk approve tariffs");
     }
   };
@@ -126,7 +154,7 @@ export default function TariffManagementPage() {
           toast.error(
             error.message || "Failed to export tariff data. Please try again.",
           );
-          console.error("Export error:", error);
+          
         },
       },
     );
@@ -147,14 +175,14 @@ export default function TariffManagementPage() {
     };
 
     createTariff(newTariff, {
-      onSuccess: () => {
+      onSuccess: (data) => {
         resetForm();
-        toast.success("Tariff created successfully");
+        toast.success(data?.message || "Tariff created successfully");
         setIsDialogOpen(false);
       },
       onError: (error) => {
         console.error("Failed to create tariff:", error);
-        toast.error("Failed to create tariff");
+        toast.error(error?.message || "Failed to create tariff");
       },
       onSettled: () => {
         setIsSubmitting(false);
@@ -434,23 +462,77 @@ export default function TariffManagementPage() {
                 type="text"
                 placeholder="Search by name, type..."
                 className="w-64 border-gray-300 pl-10 focus:border-blue-500 focus:ring-blue-500"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
               />
             </div>
             <div className="flex gap-2">
-              <Button
-                variant="outline"
-                className="flex items-center gap-2 border-gray-300 text-gray-700 hover:bg-gray-50"
+              <Select
+                value={approveStatusFilter || "all"}
+                onValueChange={(value) =>
+                  setApproveStatusFilter(value === "all" ? "" : value)
+                }
               >
-                <ListFilter size={14} />
-                Filter
-              </Button>
-              <Button
-                variant="outline"
-                className="flex items-center gap-2 border-gray-300 text-gray-700 hover:bg-gray-50"
-              >
-                <ArrowUpDown size={14} />
-                Sort
-              </Button>
+                <SelectTrigger
+                  aria-label="Filter tariffs by approval status"
+                  className="w-44 border-gray-300 bg-white text-gray-700"
+                >
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All statuses</SelectItem>
+                  <SelectItem value="Approved">Approved</SelectItem>
+                  <SelectItem value="Pending">Pending</SelectItem>
+                  <SelectItem value="Deactivated">Deactivated</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "flex items-center gap-2 border-gray-300 text-gray-700 hover:bg-gray-50",
+                      sort && "border-blue-500 text-blue-600",
+                    )}
+                  >
+                    <ArrowUpDown size={14} />
+                    {sort === "asc"
+                      ? "Sort: A–Z"
+                      : sort === "desc"
+                        ? "Sort: Z–A"
+                        : "Sort"}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="bg-white">
+                  <DropdownMenuLabel>Tariff Name</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuRadioGroup
+                    value={sort}
+                    onValueChange={(value) =>
+                      setSort(value as "asc" | "desc" | "")
+                    }
+                  >
+                    <DropdownMenuRadioItem value="asc">
+                      Ascending (A–Z)
+                    </DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="desc">
+                      Descending (Z–A)
+                    </DropdownMenuRadioItem>
+                  </DropdownMenuRadioGroup>
+                  {sort && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onSelect={() => setSort("")}
+                        className="text-red-600"
+                      >
+                        Clear sort
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
 

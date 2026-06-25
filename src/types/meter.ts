@@ -415,6 +415,7 @@ export interface MeterApiResponse {
 export interface MeterInventoryFilters {
   page?: number;
   size?: number;
+  search?: string;
   meterNumber?: string;
   simNo?: string;
   manufacturer?: string;
@@ -423,4 +424,6 @@ export interface MeterInventoryFilters {
   approvedStatus?: string;
   status?: string;
   createdAt?: string; // Format like '27-05-2025' or 'YYYY-MM-DD' as per API
+  sortBy?: string | null;
+  sortDirection?: "asc" | "desc" | null;
 }

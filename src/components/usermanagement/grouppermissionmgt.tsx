@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { ChevronUp, ChevronDown, MoreVertical, Pencil } from "lucide-react";
+import { useState } from "react";
+import { MoreVertical, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -10,14 +10,8 @@ import {
   TableBody,
   TableCell,
 } from "@/components/ui/table";
-import {
-  ArrowUpDown,
-  ListFilter,
-  PlusCircleIcon,
-  SearchIcon,
-} from "lucide-react";
+import { ArrowUpDown, PlusCircleIcon, SearchIcon } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import GroupPermissionForm from "./grouppermissionform";
 import EditGroupPermissionForm from "./editgrouppermissionform";
 import {
@@ -34,6 +28,13 @@ import {
 import { DropdownMenuContent, DropdownMenuItem } from "../ui/dropdown-menu";
 import GroupStatusToggleDropdownItem from "./groupstatustoggledropdownitem";
 import { usePermissions } from "@/hooks/use-permissions";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface GroupPermissionFormData {
   groupTitle: string;
@@ -158,10 +159,10 @@ const transformAccessLevelsToPermissions = (accessLevels: string[]) => {
 
 export default function GroupPermissionManagement() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortConfig, setSortConfig] = useState<{
-    key: "id" | "groupTitle";
-    direction: "ascending" | "descending";
-  } | null>(null);
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [activeFilters, setActiveFilters] = useState<Record<string, boolean>>(
+    {},
+  );
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(12);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -171,8 +172,17 @@ export default function GroupPermissionManagement() {
   const {
     data: groupPermissions = [],
     isLoading,
+    isFetching,
     error,
-  } = useGroupPermissions(searchTerm);
+  } = useGroupPermissions({
+    search: searchTerm.trim() || undefined,
+    status: activeFilters.active
+      ? true
+      : activeFilters.inactive
+        ? false
+        : undefined,
+    sortDirection,
+  });
   const { mutate: createPermissionGroup } = useCreateGroupPermission();
   const { mutate: updatePermissionGroup } = useUpdateGroupPermission();
   const { mutate: updatePermissionField } = useUpdateGroupPermissionField();
@@ -183,45 +193,10 @@ export default function GroupPermissionManagement() {
     setCurrentPage(1);
   };
 
-  const requestSort = (key: "id" | "groupTitle") => {
-    let direction: "ascending" | "descending" = "ascending";
-    if (
-      sortConfig &&
-      sortConfig.key === key &&
-      sortConfig.direction === "ascending"
-    ) {
-      direction = "descending";
-    }
-    setSortConfig({ key, direction });
-  };
-
-  const processedGroupPermissions = useMemo(() => {
-    const sortableGroups = [...groupPermissions];
-
-    if (sortConfig !== null) {
-      sortableGroups.sort((a, b) => {
-        const aValue = a[sortConfig.key];
-        const bValue = b[sortConfig.key];
-
-        if (typeof aValue === "string" && typeof bValue === "string") {
-          if (aValue < bValue) {
-            return sortConfig.direction === "ascending" ? -1 : 1;
-          }
-          if (aValue > bValue) {
-            return sortConfig.direction === "ascending" ? 1 : -1;
-          }
-        }
-        return 0;
-      });
-    }
-
-    return sortableGroups;
-  }, [groupPermissions, sortConfig]);
-
-  const totalRows = processedGroupPermissions.length;
+  const totalRows = groupPermissions.length;
   const startIndex = (currentPage - 1) * rowsPerPage;
   const endIndex = startIndex + rowsPerPage;
-  const paginatedGroups = processedGroupPermissions.slice(startIndex, endIndex);
+  const paginatedGroups = groupPermissions.slice(startIndex, endIndex);
 
   const handleAddGroupPermission = async (
     newGroup: GroupPermissionFormData,
@@ -392,25 +367,52 @@ export default function GroupPermissionManagement() {
               onChange={handleSearch}
             />
           </div>
-          <Button
-            variant="outline"
-            className="gap-1 border-[rgba(228,231,236,1)]"
+          <Select
+            value={
+              activeFilters.active
+                ? "active"
+                : activeFilters.inactive
+                  ? "inactive"
+                  : "all"
+            }
+            onValueChange={(value) => {
+              setActiveFilters(value === "all" ? {} : { [value]: true });
+              setCurrentPage(1);
+            }}
           >
-            <ListFilter className="" strokeWidth={2.5} size={12} />
-            <Label htmlFor="filterCheckbox" className="cursor-pointer">
-              Filter
-            </Label>
-          </Button>
-          <Button
-            variant="outline"
-            className="gap-1 border-[rgba(228,231,236,1)]"
-            onClick={() => setSortConfig(null)}
+            <SelectTrigger
+              aria-label="Filter groups by status"
+              className="w-36 border-[rgba(228,231,236,1)] bg-white"
+            >
+              <SelectValue placeholder="Filter" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All statuses</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="inactive">Inactive</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select
+            value={sortDirection}
+            onValueChange={(value) => {
+              setSortDirection(value as "asc" | "desc");
+              setCurrentPage(1);
+            }}
           >
-            <ArrowUpDown className="" strokeWidth={2.5} size={12} />
-            <Label className="cursor-pointer">
-              {sortConfig ? "Clear Sort" : "Sort"}
-            </Label>
-          </Button>
+            <SelectTrigger
+              aria-label="Sort groups"
+              className="w-44 border-[rgba(228,231,236,1)] bg-white"
+            >
+              <div className="flex items-center gap-1">
+                <ArrowUpDown strokeWidth={2.5} size={12} />
+                <SelectValue placeholder="Sort" />
+              </div>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="asc">Group Name (A-Z)</SelectItem>
+              <SelectItem value="desc">Group Name (Z-A)</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
@@ -418,23 +420,7 @@ export default function GroupPermissionManagement() {
         <Table className="bg-transparent">
           <TableHeader className="bg-transparent">
             <TableRow>
-              <TableHead
-                className="cursor-pointer hover:bg-gray-50"
-                onClick={() => requestSort("groupTitle")}
-              >
-                <div className="flex items-center justify-between">
-                  <span>Group Permission</span>
-                  {sortConfig?.key === "groupTitle" && (
-                    <span>
-                      {sortConfig.direction === "ascending" ? (
-                        <ChevronUp className="h-4 w-4" />
-                      ) : (
-                        <ChevronDown className="h-4 w-4" />
-                      )}
-                    </span>
-                  )}
-                </div>
-              </TableHead>
+              <TableHead>Group Permission</TableHead>
               {/* Added consistent width and centering to all functional headers */}
               <TableHead className="w-28 text-center">View</TableHead>
               <TableHead className="w-28 text-center">Edit</TableHead>
@@ -446,9 +432,9 @@ export default function GroupPermissionManagement() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {isLoading ? (
+            {isFetching ? (
               <TableRow>
-                <TableCell colSpan={6} className="py-8 text-center">
+                <TableCell colSpan={6} className="h-40 text-center">
                   <div className="flex items-center justify-center">
                     <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-blue-600"></div>
                     <span className="ml-2">Loading group permissions...</span>
@@ -457,8 +443,15 @@ export default function GroupPermissionManagement() {
               </TableRow>
             ) : paginatedGroups.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="py-8 text-center">
-                  No results found.
+                <TableCell
+                  colSpan={6}
+                  className="h-40 text-center text-gray-500"
+                >
+                  {searchTerm.trim() ||
+                  activeFilters.active ||
+                  activeFilters.inactive
+                    ? "No permission groups match your search or filter."
+                    : "No permission groups have been added yet."}
                 </TableCell>
               </TableRow>
             ) : (

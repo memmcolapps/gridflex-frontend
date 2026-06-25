@@ -55,8 +55,14 @@ import {
   useCustomerRecordQuery,
   useAllCustomerIds,
 } from "@/hooks/use-customer";
-import type { AssignMeterPayload } from "@/service/assign-meter-service";
-import { fetchCustomerRecord } from "@/service/customer-service";
+import type {
+  AssignMeterPayload,
+  MeterAPIItem,
+} from "@/service/assign-meter-service";
+import {
+  fetchCustomerRecord,
+  getCustomerByCustomerId,
+} from "@/service/customer-service";
 import { LoadingAnimation } from "@/components/ui/loading-animation";
 import {
   useDownloadAssignCsvTemplate,
@@ -82,6 +88,31 @@ import {
 import { ContentHeader } from "@/components/ui/content-header";
 import { useAuth } from "@/context/auth-context";
 
+const mapActiveFiltersToApi = (filters: Record<string, boolean>) => {
+  const selectedStages = [
+    filters.assigned ? "Assigned" : null,
+    filters.unassigned ? "Unassigned" : null,
+  ].filter((value): value is string => Boolean(value));
+
+  const selectedClasses = [
+    filters.singlePhase ? "Single-phase" : null,
+    filters.threePhase ? "Three-phase" : null,
+    filters.mdMeter ? "MD" : null,
+  ].filter((value): value is string => Boolean(value));
+
+  const activationStatus = filters.active
+    ? "Active"
+    : filters.inactive
+      ? "Deactivated"
+      : undefined;
+
+  return {
+    meterStage: selectedStages.length === 1 ? selectedStages[0] : undefined,
+    meterClass: selectedClasses.length === 1 ? selectedClasses[0] : undefined,
+    status: activationStatus,
+  };
+};
+
 export default function MeterManagementPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const { showEditButton } = usePermissions();
@@ -104,7 +135,7 @@ export default function MeterManagementPage() {
   const [sortConfig, setSortConfig] = useState<{
     key: keyof MeterInventoryItem | null;
     direction: "asc" | "desc";
-  }>({ key: null, direction: "asc" });
+  }>({ key: "createdAt", direction: "desc" });
   const [processedData, setProcessedData] = useState<MeterInventoryItem[]>([]);
   const [customerIdInput, setCustomerIdInput] = useState("");
   const [filteredCustomerIds, setFilteredCustomerIds] = useState<string[]>([]);
@@ -151,6 +182,7 @@ export default function MeterManagementPage() {
     totalRecords: number;
     failedRecords: string[];
   } | null>(null);
+  const serverFilters = mapActiveFiltersToApi(activeFilters);
 
   const {
     data: metersData,
@@ -160,7 +192,11 @@ export default function MeterManagementPage() {
     page: currentPage,
     pageSize: rowsPerPage,
     searchTerm,
+    sortBy: sortConfig.key as keyof MeterAPIItem,
     sortDirection: sortConfig.direction,
+    meterStage: serverFilters.meterStage,
+    meterClass: serverFilters.meterClass,
+    status: serverFilters.status,
     type: "allocated",
   });
 
@@ -198,11 +234,17 @@ export default function MeterManagementPage() {
 
   const handleCustomerIdSelect = async (customerId: string) => {
     try {
-      // Fetch the customer record from API to get generated account number
-      const customerRecord = await fetchCustomerRecord(customerId);
+      const [customerRecord, fullCustomer] = await Promise.all([
+        fetchCustomerRecord(customerId),
+        getCustomerByCustomerId(customerId),
+      ]);
 
       if (customerRecord?.customer?.customerId) {
         const customer = customerRecord.customer;
+        const bn = fullCustomer?.businessName?.name;
+        const businessName = bn
+          ? typeof bn === "string" ? { name: bn } : bn
+          : undefined;
         setSelectedCustomer({
           id: customer.customerId,
           customerId: customer.customerId,
@@ -220,6 +262,7 @@ export default function MeterManagementPage() {
           firstName: customer.firstname || "",
           lastName: customer.lastname || "",
           phone: customer.phoneNumber || "",
+          businessName,
           image: null,
           consumptionType: "Non-MD",
           category: "",
@@ -299,11 +342,16 @@ export default function MeterManagementPage() {
     });
   };
 
-  const handleProceedFromCustomerIdDialog = () => {
+  const handleProceedFromCustomerIdDialog = async () => {
     if (!customerIdInput.trim()) return;
 
     if (customerRecordData) {
       const customer = customerRecordData.customer;
+      const fullCustomer = await getCustomerByCustomerId(customer.customerId);
+      const bn = fullCustomer?.businessName;
+      const businessName = bn
+        ? typeof bn === "string" ? { name: bn } : bn
+        : undefined;
       setSelectedCustomer({
         id: customer.customerId,
         customerId: customer.customerId,
@@ -321,6 +369,7 @@ export default function MeterManagementPage() {
         firstName: customer.firstname || "",
         lastName: customer.lastname || "",
         phone: customer.phoneNumber || "",
+        businessName,
         image: null,
         consumptionType: "Non-MD",
         category: "",
@@ -417,9 +466,16 @@ export default function MeterManagementPage() {
     {
       title: "Meter Class",
       options: [
-        { id: "singlePhase", label: "Single phase" },
-        { id: "threePhase", label: "Three Phase" },
+        { id: "singlePhase", label: "Single-phase" },
+        { id: "threePhase", label: "Three-phase" },
         { id: "mdMeter", label: "MD Meter" },
+      ],
+    },
+    {
+      title: "Activation Status",
+      options: [
+        { id: "active", label: "Active" },
+        { id: "inactive", label: "Inactive" },
       ],
     },
   ];
@@ -473,92 +529,20 @@ export default function MeterManagementPage() {
 
   const handleSearchChange = (term: string) => {
     setSearchTerm(term);
-    applyFiltersAndSort(term, sortConfig.key, sortConfig.direction);
+    setCurrentPage(1);
   };
 
-  const handleSortChange = () => {
-    const sortKey: keyof MeterInventoryItem = sortConfig.key ?? "meterNumber";
-    const newDirection: "asc" | "desc" =
-      sortConfig.direction === "asc" ? "desc" : "asc";
-    setSortConfig({ key: sortKey, direction: newDirection });
-    applyFiltersAndSort(searchTerm, sortKey, newDirection);
-  };
-
-  const applyFiltersAndSort = (
-    term: string,
-    sortBy: keyof MeterInventoryItem | null,
+  const handleSortChange = (
+    key: keyof MeterInventoryItem,
     direction: "asc" | "desc",
   ) => {
-    let results: MeterInventoryItem[] = metersData?.actualMeters ?? [];
+    setSortConfig({ key, direction });
+    setCurrentPage(1);
+  };
 
-    if (Object.keys(activeFilters).length > 0) {
-      results = results.filter((item) => {
-        const meter = item as MeterInventoryItem;
-        const statusFilters = [
-          {
-            id: "assigned",
-            value: activeFilters.assigned,
-            status: "Assigned",
-          },
-          {
-            id: "deactivated",
-            value: activeFilters.deactivated,
-            status: "Unassigned",
-          },
-        ];
-        const statusMatch =
-          statusFilters.every((f) => !f.value) ||
-          statusFilters.some(
-            (filter) => filter.value && meter.status === filter.status,
-          );
-
-        const classFilters = [
-          {
-            id: "singlePhase",
-            value: activeFilters.singlePhase,
-            class: "Single phase",
-          },
-          {
-            id: "threePhase",
-            value: activeFilters.threePhase,
-            class: "Three Phase",
-          },
-          { id: "mdMeter", value: activeFilters.mdMeter, class: "MD" },
-        ];
-        const classMatch =
-          classFilters.every((f) => !f.value) ||
-          classFilters.some(
-            (filter) => filter.value && meter.meterClass === filter.class,
-          );
-
-        return statusMatch && classMatch;
-      });
-    }
-
-    if (term.trim() !== "") {
-      results = results.filter((item) =>
-        (
-          [
-            item.meterNumber,
-            item.assignedStatus ?? "",
-            item.status,
-            item.meterClass ?? "",
-          ] as string[]
-        ).some((value) => value.toLowerCase().includes(term.toLowerCase())),
-      );
-    }
-
-    if (sortBy) {
-      results = [...results].sort((a, b) => {
-        const aValue = String(a[sortBy] ?? "");
-        const bValue = String(b[sortBy] ?? "");
-
-        return direction === "asc"
-          ? aValue.localeCompare(bValue)
-          : bValue.localeCompare(aValue);
-      });
-    }
-    setProcessedData(results);
+  const handleSetActiveFilters = (filters: Record<string, boolean>) => {
+    setActiveFilters(filters);
+    setCurrentPage(1);
   };
 
   const toggleSelection = (id: string) => {
@@ -706,13 +690,7 @@ export default function MeterManagementPage() {
     streetName.trim() !== "" &&
     houseNo.trim() !== "";
 
-  const totalPages = Math.ceil(
-    (metersData?.actualMeters?.length ?? 0) / rowsPerPage,
-  );
-  const paginatedData = processedData.slice(
-    (currentPage - 1) * rowsPerPage,
-    currentPage * rowsPerPage,
-  );
+  const paginatedData = processedData;
 
   const handlePageSizeChange = (newPageSize: number) => {
     setRowsPerPage(newPageSize);
@@ -783,8 +761,8 @@ export default function MeterManagementPage() {
             <FilterControl
               sections={actualFilterSections}
               filterType="multi-section"
-              onApply={(filters) => setActiveFilters(filters)}
-              onReset={() => setActiveFilters({})}
+              onApply={handleSetActiveFilters}
+              onReset={() => handleSetActiveFilters({})}
             />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -798,16 +776,28 @@ export default function MeterManagementPage() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
                 <DropdownMenuItem
-                  onClick={handleSortChange}
+                  onClick={() => handleSortChange("createdAt", "asc")}
                   className="cursor-pointer text-sm hover:bg-gray-100"
                 >
-                  Ascending - Descending
+                  Date Added: Oldest first
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={handleSortChange}
+                  onClick={() => handleSortChange("createdAt", "desc")}
                   className="cursor-pointer text-sm hover:bg-gray-100"
                 >
-                  Descending - Ascending
+                  Date Added: Newest first
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleSortChange("meterNumber", "asc")}
+                  className="cursor-pointer text-sm hover:bg-gray-100"
+                >
+                  Meter Number: A to Z
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleSortChange("meterNumber", "desc")}
+                  className="cursor-pointer text-sm hover:bg-gray-100"
+                >
+                  Meter Number: Z to A
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -1117,7 +1107,7 @@ export default function MeterManagementPage() {
       </Card>
       <PaginationControls
         currentPage={currentPage}
-        totalItems={processedData.length}
+        totalItems={metersData?.totalData ?? 0}
         pageSize={rowsPerPage}
         onPageChange={setCurrentPage}
         onPageSizeChange={handlePageSizeChange}

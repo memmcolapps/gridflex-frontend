@@ -5,7 +5,7 @@ import { CheckCircle, XCircle, AlertTriangle } from "lucide-react";
 import { Button } from "../ui/button";
 import { ContentHeader } from "../ui/content-header";
 import PercentageRangeTable from "./percentagerangetable";
-import { FilterControl, SearchControl, SortControl } from "@/components/search-control";
+import { SearchControl, SortControl } from "@/components/search-control";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import LiabilityCauseTable from "./liabilitycausetable";
@@ -31,7 +31,6 @@ export function ReviewApprovalTabs() {
     const [activeTab, setActiveTab] = useState("percentage");
     const [searchTerm, setSearchTerm] = useState("");
     const [sortConfig, setSortConfig] = useState({ key: '', direction: 'asc' });
-    const [, setActiveFilters] = useState({});
     const [selectedMeterNumbers, setSelectedMeterNumbers] = useState<string[]>([]);
     const [selectedBandNames, setSelectedBandNames] = useState<string[]>([]);
     const [selectedTariffNames, setSelectedTariffNames] = useState<string[]>([]);
@@ -181,20 +180,29 @@ export function ReviewApprovalTabs() {
         }
     }, [activeTab, filteredPercentageRanges, filteredLiabilities, filteredBands, filteredTariffs, filteredMeters]);
 
-    const filterSections = [
-        {
-            title: "Status",
-            options: [
-                { label: "Approved", id: "approved" },
-                { label: "Pending", id: "pending" },
-                { label: "Rejected", id: "rejected" },
-            ],
-        },
-        // Add more filter sections as needed
-    ];
+    const getDefaultSortKey = (tab = activeTab) => {
+        switch (tab) {
+            case 'percentage':
+                return 'code';
+            case 'liability cause':
+                return 'name';
+            case 'band':
+                return 'name';
+            case 'tariff':
+                return 'name';
+            case 'meter':
+                return 'meterNumber';
+            default:
+                return '';
+        }
+    };
 
     const changeTab = (value: string) => {
         setActiveTab(value);
+        setSortConfig((previous) => ({
+            key: previous.key ? getDefaultSortKey(value) : '',
+            direction: previous.direction,
+        }));
         // Clear selected meter numbers when switching tabs
         if (value !== "meter") {
             setSelectedMeterNumbers([]);
@@ -311,11 +319,8 @@ export function ReviewApprovalTabs() {
         }
     };
 
-    const handleSortChange = (sortBy: string) => {
-        const [keyRaw, directionRaw] = sortBy.split(' ');
-        const key = keyRaw ?? '';
-        const direction = directionRaw ?? 'asc';
-        setSortConfig({ key, direction });
+    const handleSortChange = (direction: string) => {
+        setSortConfig({ key: getDefaultSortKey(), direction });
     };
 
     const handleSearchChange = (term: string) => {
@@ -395,14 +400,9 @@ export function ReviewApprovalTabs() {
                                 value={searchTerm}
                                 placeholder="Search by percentage, code, or description..."
                             />
-                            <FilterControl
-                                sections={filterSections}
-                                onApply={(filters) => setActiveFilters(filters)}
-                                onReset={() => setActiveFilters({})}
-                            />
                             <SortControl
                                 onSortChange={handleSortChange}
-                                currentSort={sortConfig.key ? `${sortConfig.key} (${sortConfig.direction})` : ''}
+                                currentSort={sortConfig.key ? sortConfig.direction : ''}
                             />
 
                         </div>
@@ -411,30 +411,50 @@ export function ReviewApprovalTabs() {
                         <PercentageRangeTable
                             selectedPercentageRangeCodes={selectedPercentageRangeCodes}
                             setSelectedPercentageRangeCodes={setSelectedPercentageRangeCodes}
+                            searchTerm={searchTerm}
+                            sortBy={sortConfig.key}
+                            sortDirection={sortConfig.direction as "asc" | "desc"}
+                            type="pending-state"
                         />
                     </TabsContent>
                     <TabsContent value="liability cause" className="overflow-x-hidden">
                         <LiabilityCauseTable
                             selectedLiabilityCauseNames={selectedLiabilityCauseNames}
                             setSelectedLiabilityCauseNames={setSelectedLiabilityCauseNames}
+                            searchTerm={searchTerm}
+                            sortBy={sortConfig.key}
+                            sortDirection={sortConfig.direction as "asc" | "desc"}
+                            type="pending-state"
                         />
                     </TabsContent>
                     <TabsContent value="band" className="overflow-x-hidden">
                         <BandTable
                             selectedBandNames={selectedBandNames}
                             setSelectedBandNames={setSelectedBandNames}
+                            searchTerm={searchTerm}
+                            sortBy={sortConfig.key}
+                            sortDirection={sortConfig.direction as "asc" | "desc"}
+                            type="pending-state"
                         />
                     </TabsContent>
                     <TabsContent value="tariff" className="overflow-x-hidden">
                         <TariffTable
                             selectedTariffNames={selectedTariffNames}
                             setSelectedTariffNames={setSelectedTariffNames}
+                            searchTerm={searchTerm}
+                            sortBy={sortConfig.key}
+                            sortDirection={sortConfig.direction as "asc" | "desc"}
+                            type="pending-state"
                         />
                     </TabsContent>
                     <TabsContent value="meter" className="overflow-x-hidden">
                         <MeterTable
                             selectedMeterNumbers={selectedMeterNumbers}
                             setSelectedMeterNumbers={setSelectedMeterNumbers}
+                            searchTerm={searchTerm}
+                            sortBy={sortConfig.key}
+                            sortDirection={sortConfig.direction as "asc" | "desc"}
+                            type="pending-state"
                         />
                     </TabsContent>
                 </Tabs>

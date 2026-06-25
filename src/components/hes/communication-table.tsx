@@ -1,6 +1,6 @@
 // components/CommunicationTable.tsx
 "use client";
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import {
   Table,
   TableBody,
@@ -28,19 +28,26 @@ import { toast } from "sonner";
 import { Label } from "../ui/label";
 import { getStatusStyle } from "../status-style";
 import { PaginationControls } from "../ui/pagination-controls";
-import { useAllCommunicationReports } from "@/hooks/use-reports";
 import { type CommunicationReportData } from "@/types/reports";
 
 interface CommunicationTableProps {
-  searchQuery?: string;
-  activeTab?: "MD" | "Non-MD";
-  communicationData?: CommunicationReportData[];
+  communicationData: CommunicationReportData[];
+  isLoading: boolean;
+  currentPage: number;
+  rowsPerPage: number;
+  totalItems: number;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (pageSize: number) => void;
 }
 
 export function CommunicationTable({
-  searchQuery = "",
-  activeTab = "MD",
-  communicationData: externalData,
+  communicationData,
+  isLoading,
+  currentPage,
+  rowsPerPage,
+  totalItems,
+  onPageChange,
+  onPageSizeChange,
 }: CommunicationTableProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedRow, setSelectedRow] =
@@ -51,32 +58,7 @@ export function CommunicationTable({
   const [token, setToken] = useState("");
   const [meterToTokenize, setMeterToTokenize] = useState<string | null>(null);
 
-  // --- Start of added pagination state and handlers ---
-  const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-
-  // Use external data if provided, otherwise fetch internally
-  const { data: internalData, isLoading } = useAllCommunicationReports({
-    type: activeTab,
-    page: Math.max(0, currentPage - 1),
-    size: rowsPerPage,
-    search: searchQuery,
-  });
-
-  const communicationReport = externalData ?? internalData;
-
-  const filteredData = useMemo(() => {
-    return communicationReport ?? [];
-  }, [communicationReport]);
-
-  const totalItems = filteredData.length;
-  const paginatedData = filteredData;
-
-  const handlePageSizeChange = (newPageSize: number) => {
-    setRowsPerPage(newPageSize);
-    setCurrentPage(1);
-  };
-  // --- End of added pagination state and handlers ---
+  const paginatedData = communicationData;
 
   const handleRowClick = (rowData: CommunicationReportData) => {
     setSelectedRow(rowData);
@@ -218,8 +200,8 @@ export function CommunicationTable({
           currentPage={currentPage}
           totalItems={totalItems}
           pageSize={rowsPerPage}
-          onPageChange={setCurrentPage}
-          onPageSizeChange={handlePageSizeChange}
+          onPageChange={onPageChange}
+          onPageSizeChange={onPageSizeChange}
         />
       </div>
 

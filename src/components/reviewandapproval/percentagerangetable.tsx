@@ -1,6 +1,6 @@
 "use client";
 // components/PercentageRangeTable.tsx
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import {
   Table,
@@ -34,11 +34,19 @@ interface PercentageRangeTableProps {
   setSelectedPercentageRangeCodes: React.Dispatch<
     React.SetStateAction<string[]>
   >;
+  searchTerm?: string;
+  sortBy?: string | null;
+  sortDirection?: "asc" | "desc" | null;
+  type?: string;
 }
 
 const PercentageRangeTable = ({
   selectedPercentageRangeCodes,
   setSelectedPercentageRangeCodes,
+  searchTerm = "",
+  sortBy = null,
+  sortDirection = null,
+  type = "pending-state",
 }: PercentageRangeTableProps) => {
   const [fetchParams, setFetchParams] = useState<FetchParams>({
     page: 1,
@@ -63,10 +71,22 @@ const PercentageRangeTable = ({
   const { percentageRanges, isLoading, isError, error, reviewMutation } =
     usePercentageRanges(fetchParams);
 
+  useEffect(() => {
+    setFetchParams((previous) => ({
+      ...previous,
+      page: 1,
+      searchTerm,
+      sortBy,
+      sortDirection,
+      type,
+    }));
+  }, [searchTerm, sortBy, sortDirection, type]);
+
   // Filter out approved percentage ranges
-  const filteredPercentageRanges = percentageRanges.filter(
-    (item) => item.approveStatus !== "Approved",
-  );
+  const filteredPercentageRanges =
+    type === "approved"
+      ? percentageRanges
+      : percentageRanges.filter((item) => item.approveStatus !== "Approved");
 
   const totalData = filteredPercentageRanges.length;
 
@@ -337,6 +357,7 @@ const PercentageRangeTable = ({
         action={confirmAction ?? "approve"}
         onConfirm={handleConfirmAction}
         selectedItem={selectedItem}
+        isSubmitting={reviewMutation.isPending}
       />
     </Card>
   );

@@ -45,6 +45,10 @@ export default function CommunicationReportPage() {
   const [openDialog, setOpenDialog] = useState(false);
   const [activeTab, setActiveTab] = useState<"MD" | "Non-MD">("MD");
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeFilters, setActiveFilters] = useState<Record<string, boolean>>({});
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [liveStatuses, setLiveStatuses] = useState<
     Record<string, MeterStatusData>
   >({});
@@ -53,11 +57,28 @@ export default function CommunicationReportPage() {
     setOpenDialog(true);
   };
 
-  // Fetch all data for export
-  const { data: allCommunicationData } = useAllCommunicationReports({
+  const connectionType = useMemo(() => {
+    if (activeFilters.ONLINE) return "ONLINE";
+    if (activeFilters.OFFLINE) return "OFFLINE";
+    return "";
+  }, [activeFilters]);
+
+  const { data: communicationResponse, isLoading } = useAllCommunicationReports({
+    type: activeTab,
+    page: currentPage - 1,
+    size: rowsPerPage,
+    search: searchQuery,
+    connectionType,
+    sortDirection,
+  });
+
+  const { data: exportResponse } = useAllCommunicationReports({
     type: activeTab,
     page: 0,
-    size: 1000,
+    size: 0,
+    search: searchQuery,
+    connectionType,
+    sortDirection,
   });
 
   const handleLiveStatus = useCallback((status: MeterStatusData) => {
@@ -70,24 +91,22 @@ export default function CommunicationReportPage() {
   useMeterStatusStream(handleLiveStatus);
 
   const communicationData = useMemo(() => {
-    return (allCommunicationData ?? []).map((report) =>
+    return (communicationResponse?.data ?? []).map((report) =>
       applyLiveStatus(
         report,
         report.meterNo ? liveStatuses[report.meterNo] : undefined,
       ),
     );
-  }, [allCommunicationData, liveStatuses]);
+  }, [communicationResponse, liveStatuses]);
 
-  // Filter data based on search query
-  const filteredData = useMemo(() => {
-    if (!searchQuery) return communicationData;
-    const searchLower = searchQuery.toLowerCase();
-    return communicationData.filter(
-      (item) =>
-        item.meterNo?.toLowerCase().includes(searchLower) ??
-        item.connectionType?.toLowerCase().includes(searchLower),
+  const exportData = useMemo(() => {
+    return (exportResponse?.data ?? []).map((report) =>
+      applyLiveStatus(
+        report,
+        report.meterNo ? liveStatuses[report.meterNo] : undefined,
+      ),
     );
-  }, [communicationData, searchQuery]);
+  }, [exportResponse, liveStatuses]);
 
   const formatDateTime = (value: unknown) => {
     if (!value) return "-";
@@ -137,7 +156,10 @@ export default function CommunicationReportPage() {
       <Tabs
         defaultValue="MD"
         className="mb-4"
-        onValueChange={(value) => setActiveTab(value as "MD" | "Non-MD")}
+        onValueChange={(value) => {
+          setActiveTab(value as "MD" | "Non-MD");
+          setCurrentPage(1);
+        }}
       >
         <TabsList style={{ border: "2px solid #161CCA" }} className="h-12">
           <TabsTrigger
@@ -167,22 +189,55 @@ export default function CommunicationReportPage() {
           <SearchControl
             placeholder="Search by meter no., account no..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onSearchChange={(value) => {
+              setSearchQuery(value);
+              setCurrentPage(1);
+            }}
           />
-          <FilterControl />
-          <SortControl />
+          <FilterControl
+            sections={[
+              {
+                title: "Connection",
+                options: [
+                  { label: "Online", id: "ONLINE" },
+                  { label: "Offline", id: "OFFLINE" },
+                ],
+              },
+            ]}
+            onApply={(filters) => {
+              setActiveFilters(filters);
+              setCurrentPage(1);
+            }}
+            onReset={() => {
+              setActiveFilters({});
+              setCurrentPage(1);
+            }}
+          />
+          <SortControl
+            onSortChange={(direction) => {
+              setSortDirection(direction === "desc" ? "desc" : "asc");
+              setCurrentPage(1);
+            }}
+            currentSort={sortDirection}
+          />
         </div>
         <ExportButton
-          data={filteredData}
+          data={exportData}
           columns={exportColumns}
           fileName="communication_report"
         />
       </div>
-      {/* Pass the selected data to the CommunicationTable component */}
       <CommunicationTable
-        searchQuery={searchQuery}
-        activeTab={activeTab}
         communicationData={communicationData}
+        isLoading={isLoading}
+        currentPage={currentPage}
+        rowsPerPage={rowsPerPage}
+        totalItems={communicationResponse?.totalData ?? 0}
+        onPageChange={setCurrentPage}
+        onPageSizeChange={(pageSize) => {
+          setRowsPerPage(pageSize);
+          setCurrentPage(1);
+        }}
       />
       <DailyReportDialog
         open={openDialog}

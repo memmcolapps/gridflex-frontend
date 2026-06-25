@@ -78,16 +78,9 @@ const filterSections = [
   {
     title: "Meter Class",
     options: [
-      { label: "Single-Phase", id: "singlePhase" },
-      { label: "Three-Phase", id: "threePhase" },
+      { label: "Single-phase", id: "singlePhase" },
+      { label: "Three-phase", id: "threePhase" },
       { label: "MD", id: "md" },
-    ],
-  },
-  {
-    title: "Meter Type",
-    options: [
-      { label: "Prepaid", id: "prepaid" },
-      { label: "Postpaid", id: "postPaid" },
     ],
   },
 ];
@@ -97,8 +90,6 @@ const mapFiltersToApi = (uiFilters: Record<string, boolean>): Partial<MeterInven
   if (uiFilters.singlePhase) apiFilters.meterClass = "Single-phase";
   else if (uiFilters.threePhase) apiFilters.meterClass = "Three-phase";
   else if (uiFilters.md) apiFilters.meterClass = "MD";
-  if (uiFilters.prepaid) apiFilters.category = "Prepaid";
-  else if (uiFilters.postPaid) apiFilters.category = "Postpaid";
   return apiFilters;
 };
 
@@ -148,7 +139,7 @@ export default function MeterInventoryPage() {
   const [sortConfig, setSortConfig] = useState<{
     key: keyof MeterInventoryItem | null;
     direction: "asc" | "desc";
-  }>({ key: "dateAdded", direction: "desc" });
+  }>({ key: "createdAt", direction: "desc" });
 
   const bulkUploadMutation = useBulkUploadMeters();
   const downloadCsvTemplateMutation = useDownloadMeterCsvTemplate();
@@ -160,9 +151,11 @@ export default function MeterInventoryPage() {
   const filters: MeterInventoryFilters = useMemo(() => ({
     page: currentPage - 1,
     size: rowsPerPage,
-    meterNumber: searchTerm ?? undefined,
+    search: searchTerm.trim() || undefined,
+    sortBy: sortConfig.key,
+    sortDirection: sortConfig.direction,
     ...apiFilters,
-  }), [currentPage, rowsPerPage, searchTerm, apiFilters]);
+  }), [currentPage, rowsPerPage, searchTerm, sortConfig, apiFilters]);
 
   const { data, isLoading, isError, error, refetch } = useMeterInventory(filters);
 
@@ -423,10 +416,12 @@ export default function MeterInventoryPage() {
     setApiFilters(mapFiltersToApi(filters));
   };
 
-  const handleSortChange = () => {
-    const sortKey: keyof MeterInventoryItem = sortConfig.key ?? "meterNumber";
-    const newDirection = sortConfig.direction === "asc" ? "desc" : "asc";
-    setSortConfig({ key: sortKey, direction: newDirection });
+  const handleSortChange = (
+    key: keyof MeterInventoryItem,
+    direction: "asc" | "desc",
+  ) => {
+    setCurrentPage(1);
+    setSortConfig({ key, direction });
   };
 
   const handlePageSizeChange = (newPageSize: number) => {
@@ -443,20 +438,6 @@ export default function MeterInventoryPage() {
     setSelectedMeter(meter);
     setViewInfoDialogOpen(true);
   };
-
-  const sortedMeters = useMemo(() => {
-    const sortableItems = [...meters];
-    if (sortConfig.key) {
-      sortableItems.sort((a, b) => {
-        const aValue = a[sortConfig.key! as keyof typeof a] ?? "";
-        const bValue = b[sortConfig.key! as keyof typeof b] ?? "";
-        if (aValue < bValue) return sortConfig.direction === "asc" ? -1 : 1;
-        if (aValue > bValue) return sortConfig.direction === "asc" ? 1 : -1;
-        return 0;
-      });
-    }
-    return sortableItems;
-  }, [meters, sortConfig]);
 
   const startRange = totalData > 0 ? (currentPage - 1) * rowsPerPage + 1 : 0;
   const endRange = Math.min(currentPage * rowsPerPage, totalData);
@@ -558,16 +539,28 @@ export default function MeterInventoryPage() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
                 <DropdownMenuItem
-                  onClick={handleSortChange}
+                  onClick={() => handleSortChange("createdAt", "asc")}
                   className="cursor-pointer text-sm hover:bg-gray-100"
                 >
-                  Ascending - Descending
+                  Date Added: Oldest first
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={handleSortChange}
+                  onClick={() => handleSortChange("createdAt", "desc")}
                   className="cursor-pointer text-sm hover:bg-gray-100"
                 >
-                  Descending - Ascending
+                  Date Added: Newest first
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleSortChange("meterNumber", "asc")}
+                  className="cursor-pointer text-sm hover:bg-gray-100"
+                >
+                  Meter Number: A to Z
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleSortChange("meterNumber", "desc")}
+                  className="cursor-pointer text-sm hover:bg-gray-100"
+                >
+                  Meter Number: Z to A
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -721,8 +714,8 @@ export default function MeterInventoryPage() {
                 </TableCell>
               </TableRow>
             )}
-            {!isLoading && sortedMeters.length > 0 ? (
-              sortedMeters.map((meter, index) => (
+            {!isLoading && meters.length > 0 ? (
+              meters.map((meter, index) => (
                 <TableRow key={meter.meterNumber}>
                   <TableCell className="px-4 py-3">
                     <div className="flex items-center gap-2">

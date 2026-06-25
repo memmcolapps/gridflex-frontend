@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import {
     Table,
@@ -31,9 +31,20 @@ import { usePermissions } from '@/hooks/use-permissions';
 interface BandTableProps {
     selectedBandNames: string[];
     setSelectedBandNames: React.Dispatch<React.SetStateAction<string[]>>;
+    searchTerm?: string;
+    sortBy?: string | null;
+    sortDirection?: "asc" | "desc" | null;
+    type?: string;
 }
 
-const BandTable = ({ selectedBandNames, setSelectedBandNames }: BandTableProps) => {
+const BandTable = ({
+    selectedBandNames,
+    setSelectedBandNames,
+    searchTerm = '',
+    sortBy = null,
+    sortDirection = null,
+    type = 'pending-state',
+}: BandTableProps) => {
     const { canApprove } = usePermissions();
     const [fetchParams, setFetchParams] = useState<FetchParams>({
         page: 1,
@@ -53,8 +64,22 @@ const BandTable = ({ selectedBandNames, setSelectedBandNames }: BandTableProps) 
 
     const { bands, isLoading, isError, error, reviewMutation } = useBands(fetchParams);
 
+    useEffect(() => {
+        setFetchParams((previous) => ({
+            ...previous,
+            page: 1,
+            searchTerm,
+            sortBy,
+            sortDirection,
+            type,
+        }));
+    }, [searchTerm, sortBy, sortDirection, type]);
+
     // Filter out approved bands
-    const filteredBands = bands.filter(item => item.approveStatus !== 'Approved');
+    const filteredBands =
+        type === 'approved'
+            ? bands
+            : bands.filter(item => item.approveStatus !== 'Approved');
 
     // We are now getting the total count from the filtered data
     const totalCount = filteredBands.length;
@@ -265,6 +290,7 @@ const BandTable = ({ selectedBandNames, setSelectedBandNames }: BandTableProps) 
                 action={confirmAction ?? 'approve'}
                 onConfirm={handleConfirmAction}
                 selectedItem={selectedItem}
+                isSubmitting={reviewMutation.isPending}
             />
         </Card>
     );

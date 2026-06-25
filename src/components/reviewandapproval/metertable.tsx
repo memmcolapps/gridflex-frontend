@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { SetStateAction, useState } from "react";
+import { SetStateAction, useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import {
   Table,
@@ -32,11 +32,19 @@ import { usePrefetchAuthImage } from "@/hooks/use-auth-image";
 interface MeterTableProps {
   selectedMeterNumbers: string[];
   setSelectedMeterNumbers: React.Dispatch<React.SetStateAction<string[]>>;
+  searchTerm?: string;
+  sortBy?: string | null;
+  sortDirection?: "asc" | "desc" | null;
+  type?: string;
 }
 
 const MeterTable = ({
   selectedMeterNumbers,
   setSelectedMeterNumbers,
+  searchTerm = "",
+  sortBy = null,
+  sortDirection = null,
+  type = "pending-state",
 }: MeterTableProps) => {
   const { canApprove } = usePermissions();
   const [fetchParams, setFetchParams] = useState<FetchParams>({
@@ -59,6 +67,17 @@ const MeterTable = ({
 
   const { meters, isLoading, isError, error, reviewMutation } =
     useMeters(fetchParams);
+
+  useEffect(() => {
+    setFetchParams((previous) => ({
+      ...previous,
+      page: 1,
+      searchTerm,
+      sortBy,
+      sortDirection,
+      type,
+    }));
+  }, [searchTerm, sortBy, sortDirection, type]);
   const totalCount = meters.length; // API already paginates, so this is the current page's data length
   const totalPages = Math.ceil(totalCount / fetchParams.pageSize); // This might not be accurate if API doesn't provide total
 
@@ -343,6 +362,7 @@ const MeterTable = ({
         action={confirmAction ?? "approve"}
         onConfirm={handleConfirmAction}
         selectedItem={selectedItem}
+        isSubmitting={reviewMutation.isPending}
       />
     </Card>
   );

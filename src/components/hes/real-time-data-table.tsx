@@ -7,11 +7,13 @@ import { useObisData } from "@/hooks/use-hes-hierarchy";
 interface RealTimeDataTableProps {
   meterType?: string;
   onMeterSelection?: (meters: string[]) => void;
+  sortDirection?: "asc" | "desc" | null;
 }
 
 export function RealTimeDataTable({
   meterType: currentMeterType = "MD",
   onMeterSelection,
+  sortDirection = null,
 }: RealTimeDataTableProps) {
   const { data, selectedReading, isStreaming, error, run } = useRealtimeStream();
 
@@ -29,6 +31,16 @@ export function RealTimeDataTable({
       });
     return map;
   }, [obisData]);
+
+  const displayData = useMemo(() => {
+    if (!sortDirection) return data;
+
+    return [...data].sort((a, b) =>
+      sortDirection === "asc"
+        ? a.meter.localeCompare(b.meter)
+        : b.meter.localeCompare(a.meter),
+    );
+  }, [data, sortDirection]);
 
   const handleRun = async (filters: {
     hierarchy: string;
@@ -56,9 +68,9 @@ export function RealTimeDataTable({
       {error && <p className="text-sm text-red-500">{error}</p>}
 
       <div>
-        {data.length > 0 && (
+        {displayData.length > 0 && (
           <DataTable
-            data={data}
+            data={displayData}
             reading={selectedReading}
             readingLabelMap={readingLabelMap}
             loading={isStreaming}

@@ -29,12 +29,28 @@ export async function fetchMeterConfigurations(
       throw new Error("Authentication token not found.");
     }
 
-    const { page = 0, size = 10 } = params;
+    const {
+      page = 0,
+      size = 10,
+      search,
+      meterClass,
+      status,
+      sortBy,
+      sortDirection,
+    } = params;
 
     const response = await axiosInstance.get(
       `${API_URL}/hes/service/meter-configuration`,
       {
-        params: { page, size },
+        params: {
+          page,
+          size,
+          search: search ?? undefined,
+          meterClass: meterClass ?? undefined,
+          status: status ?? undefined,
+          sortBy,
+          sortDirection,
+        },
         headers: {
           custom: CUSTOM_HEADER,
           Authorization: `Bearer ${token}`,
@@ -101,9 +117,7 @@ export async function setCTPTRatio(
   }
 }
 
-export async function setAPN(
-  data: SetAPNPayload,
-): Promise<ConfigureResponse> {
+export async function setAPN(data: SetAPNPayload): Promise<ConfigureResponse> {
   try {
     const token = localStorage.getItem("auth_token");
     if (!token) {
@@ -214,8 +228,8 @@ export async function setIpPort(
 }
 
 export async function readMeter(
-  data: ReadMeterPayload,               
-): Promise<ReadMeterResponse> {        
+  data: ReadMeterPayload,
+): Promise<ReadMeterResponse> {
   try {
     const token = localStorage.getItem("auth_token");
     if (!token) {
@@ -245,9 +259,7 @@ export async function readMeter(
   }
 }
 
-export async function relayControl(
-  data: RelayControlPayload,
-): Promise<{
+export async function relayControl(data: RelayControlPayload): Promise<{
   responsecode: string;
   responsedesc: string;
   responsedata: {
@@ -280,9 +292,7 @@ export async function relayControl(
       response.data.responsecode !== "000" &&
       response.data.responsecode !== "131"
     ) {
-      throw new Error(
-        response.data.responsedesc ?? "Failed to control relay.",
-      );
+      throw new Error(response.data.responsedesc ?? "Failed to control relay.");
     }
 
     return response.data;
@@ -353,9 +363,7 @@ export async function setToken(
     );
 
     if (response.data.responsecode !== "000") {
-      throw new Error(
-        response.data.responsedesc ?? "Failed to send token.",
-      );
+      throw new Error(response.data.responsedesc ?? "Failed to send token.");
     }
 
     return response.data;

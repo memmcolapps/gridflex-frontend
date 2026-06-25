@@ -44,6 +44,7 @@ export interface GetCustomersParams {
   page: number;
   pageSize: number;
   searchTerm: string;
+  status?: string | null;
   sortBy: keyof Customer | null;
   sortDirection: "asc" | "desc" | null;
 }
@@ -52,6 +53,7 @@ export async function getCustomers({
   page,
   pageSize,
   searchTerm,
+  status,
   sortBy,
   sortDirection,
 }: GetCustomersParams): Promise<CustomersApiResponse> {
@@ -64,9 +66,12 @@ export async function getCustomers({
     const params = new URLSearchParams();
     // API expects 0-based page index (page 0 = first page), UI uses 1-based
     params.append("page", String(page - 1));
-    params.append("pageSize", String(pageSize));
+    params.append("size", String(pageSize));
     if (searchTerm) {
       params.append("search", searchTerm);
+    }
+    if (status) {
+      params.append("status", status);
     }
     if (sortBy) {
       params.append("sortBy", sortBy);
@@ -127,6 +132,33 @@ export async function getAllCustomerIds(): Promise<string[]> {
       .filter((id: string | undefined): id is string => !!id);
   } catch (error) {
     throw new Error(handleApiError(error));
+  }
+}
+
+export async function getCustomerByCustomerId(
+  customerId: string,
+): Promise<Customer | null> {
+  try {
+    const token = localStorage.getItem("auth_token");
+    if (!token) throw new Error("Authentication token not found.");
+
+    const response = await axiosInstance.get(
+      `${API_URL}/customer/service/all`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    if (response.data.responsecode !== "000") return null;
+
+    const customers: Customer[] = response.data.responsedata?.data ?? [];
+    return customers.find((c) => c.customerId === customerId) ?? null;
+  } catch {
+    return null;
   }
 }
 

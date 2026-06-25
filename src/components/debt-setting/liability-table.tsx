@@ -107,6 +107,7 @@ const LiabilityTable = ({
 }: LiabilityTableProps) => {
   const { canEdit } = usePermissions();
   const [searchTerm, setSearchTerm] = useState("");
+  const [sort, setSort] = useState<"asc" | "desc" | "">("");
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeactivateDialogOpen, setIsDeactivateDialogOpen] = useState(false);
   const [isActivateDialogOpen, setIsActivateDialogOpen] = useState(false);
@@ -118,14 +119,16 @@ const LiabilityTable = ({
     data: liabilityData,
     isLoading: isLoadingLiabilities,
     refetch: refetchLiabilities,
-  } = useAllLiabilityCauses(searchTerm);
+  } = useAllLiabilityCauses(searchTerm, sort);
   const {
     data: percentageData,
     isLoading: isLoadingPercentages,
     refetch: refetchPercentages,
-  } = useAllPercentageRanges(searchTerm);
-  const { mutate: updateLiability } = useUpdateLiabilityCause();
-  const { mutate: updatePercentage } = useUpdatePercentageRange();
+  } = useAllPercentageRanges(searchTerm, sort);
+  const { mutate: updateLiability, isPending: isUpdatingLiability } =
+    useUpdateLiabilityCause();
+  const { mutate: updatePercentage, isPending: isUpdatingPercentage } =
+    useUpdatePercentageRange();
   const { mutate: changeLiabilityStatus } = useChangeLiabilityCauseStatus();
   const { mutate: changePercentageStatus } = useChangePercentageRangeStatus();
   const { bands } = useBand();
@@ -160,6 +163,8 @@ const LiabilityTable = ({
   }, [view, liabilityData, percentageData, onDataChange]);
 
   const isLoading = isLoadingLiabilities || isLoadingPercentages;
+  const isUpdatingEdit =
+    view === "liability" ? isUpdatingLiability : isUpdatingPercentage;
 
   const handleEditClick = (row: TableData) => {
     setSelectedRow(row);
@@ -566,31 +571,32 @@ const LiabilityTable = ({
               className="w-fit border-gray-300 pl-10 text-sm focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50 lg:text-base"
             />
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                className="w-full gap-2 border-gray-300 ring-gray-100/20 lg:w-auto"
-              >
-                <ArrowUpDown className="text-gray-500" size={14} />
-                <span className="text-sm text-gray-800 lg:text-base">Sort</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-full p-3 shadow-lg">
-              <DropdownMenuItem className="cursor-pointer">
-                Newest - Oldest
-              </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer">
-                Oldest - Newest
-              </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer">
-                Highest - Lowest
-              </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer">
-                Lowest - Highest
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Select
+            value={sort || "none"}
+            onValueChange={(value) =>
+              setSort(value === "none" ? "" : (value as "asc" | "desc"))
+            }
+          >
+            <SelectTrigger
+              aria-label={`Sort by ${
+                view === "liability" ? "liability name" : "percentage"
+              }`}
+              className={`w-44 border-gray-300 bg-white ${
+                sort ? "border-[#161CCA] text-[#161CCA]" : ""
+              }`}
+            >
+              <ArrowUpDown
+                className={sort ? "text-[#161CCA]" : "text-gray-500"}
+                size={14}
+              />
+              <SelectValue placeholder="Sort" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">Sort</SelectItem>
+              <SelectItem value="asc">Ascending (A–Z)</SelectItem>
+              <SelectItem value="desc">Descending (Z–A)</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
       <Card className="mt-10 overflow-auto rounded-lg border-gray-100 bg-transparent">
@@ -655,7 +661,12 @@ const LiabilityTable = ({
         </Table>
       </Card>
 
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+      <Dialog
+        open={isEditDialogOpen}
+        onOpenChange={(open) => {
+          if (!isUpdatingEdit) setIsEditDialogOpen(open);
+        }}
+      >
         <DialogContent className="h-fit w-full border-none bg-white">
           <DialogHeader>
             <DialogTitle>
@@ -796,6 +807,7 @@ const LiabilityTable = ({
           <DialogFooter>
             <Button
               variant="outline"
+              disabled={isUpdatingEdit}
               onClick={() => setIsEditDialogOpen(false)}
               className="border-[#161CCA] text-[#161CCA]"
             >
@@ -805,6 +817,7 @@ const LiabilityTable = ({
               onClick={handleEditSubmit}
               className="bg-[#161CCA] text-white"
               disabled={
+                isUpdatingEdit ||
                 view === "percentage" &&
                 (!("percentage" in editFormData && editFormData.percentage) ||
                   !(
@@ -822,7 +835,7 @@ const LiabilityTable = ({
                   ))
               }
             >
-              Save Changes
+              {isUpdatingEdit ? "Saving..." : "Save Changes"}
             </Button>
           </DialogFooter>
         </DialogContent>

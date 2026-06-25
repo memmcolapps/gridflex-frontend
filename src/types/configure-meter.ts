@@ -13,7 +13,14 @@ export interface SetAPNPayload {
 
 export interface ReadMeterPayload {
   serial: string;
-  type: "READ_RATIO" | "READ_IP" | "READ_CLOCK" | "READ_RELAY_MODE" | "READ_APN" | "READ_RELAY_STATUS";
+  type:
+    | "READ_RATIO"
+    | "READ_IP"
+    | "READ_CLOCK"
+    | "READ_RELAY_MODE"
+    | "READ_APN"
+    | "READ_RELAY_STATUS"
+    | "READ_PUBLIC_CREDIT";
 }
 
 interface ReadMeterResponseData {
@@ -27,10 +34,21 @@ interface ReadMeterResponseData {
   message: string;
 }
 
+export interface NonMdReadMeterItem {
+  "Meter No": string;
+  obisCode: string;
+  attributeIndex: number;
+  dataIndex: number;
+  value: string;
+  scaler: number;
+  status: string;
+  description: string;
+}
+
 export interface ReadMeterResponse {
   responsecode: string;
   responsedesc: string;
-  responsedata: ReadMeterResponseData;
+  responsedata: ReadMeterResponseData | NonMdReadMeterItem[];
 }
 
 export interface SetDateTimePayload {
@@ -138,6 +156,11 @@ export interface RelayControlPayload {
 export interface FetchMeterConfigParams {
   page?: number;
   size?: number;
+  search?: string;
+  meterClass?: string;
+  status?: string;
+  sortBy?: "sN" | "meterNumber" | "status";
+  sortDirection?: "asc" | "desc";
 }
 
 export interface SetRelayModePayload {
@@ -161,6 +184,8 @@ export interface ConfigureResponse {
       message: string;
       [key: string]: unknown;
     };
+    serial?: string;
+    message?: string;
     status: string;
     timestamp: string;
   };

@@ -35,6 +35,10 @@ export interface UseMetersParams {
   searchTerm: string;
   sortBy?: keyof MeterAPIItem | null;
   sortDirection?: "asc" | "desc" | null;
+  meterStage?: string;
+  meterClass?: string;
+  category?: string;
+  status?: string;
   type?: string;
 }
 
@@ -174,6 +178,10 @@ export const useMeters = ({
   searchTerm,
   sortBy,
   sortDirection,
+  meterStage,
+  meterClass,
+  category,
+  status,
   type,
 }: UseMetersParams) => {
   return useQuery<
@@ -192,6 +200,10 @@ export const useMeters = ({
       searchTerm,
       sortBy,
       sortDirection,
+      meterStage,
+      meterClass,
+      category,
+      status,
       type,
     ],
     queryFn: () =>
@@ -201,6 +213,10 @@ export const useMeters = ({
         searchTerm,
         sortBy: sortBy ?? null,
         sortDirection: sortDirection ?? null,
+        meterStage,
+        meterClass,
+        category,
+        status,
         type,
       }),
     staleTime: 1000 * 60 * 5,

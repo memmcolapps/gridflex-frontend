@@ -20,6 +20,7 @@ const CUSTOM_HEADER = env.NEXT_PUBLIC_CUSTOM_HEADER;
 
 export const fetchAllLiabilityCauses = async (
   searchTerm?: string,
+  sort?: "asc" | "desc" | "",
 ): Promise<
   { success: true; data: LiabilityCause[] } | { success: false; error: string }
 > => {
@@ -28,6 +29,7 @@ export const fetchAllLiabilityCauses = async (
 
     const params: Record<string, string> = {};
     if (searchTerm) params.search = searchTerm;
+    if (sort) params.sort = sort;
 
     const response = await axiosInstance.get<ApiResponse<LiabilityCause[]>>(
       `${API_URL}/debt-setting/service/liability-cause/all`,
@@ -183,6 +185,7 @@ export const changeLiabilityCauseStatus = async (
 
 export const fetchAllPercentageRanges = async (
   searchTerm?: string,
+  sort?: "asc" | "desc" | "",
 ): Promise<
   { success: true; data: PercentageRange[] } | { success: false; error: string }
 > => {
@@ -191,6 +194,7 @@ export const fetchAllPercentageRanges = async (
 
     const params: Record<string, string> = {};
     if (searchTerm) params.search = searchTerm;
+    if (sort) params.sort = sort;
 
     const response = await axiosInstance.get<ApiResponse<PercentageRange[]>>(
       `${API_URL}/debt-setting/service/percentage-range/all`,

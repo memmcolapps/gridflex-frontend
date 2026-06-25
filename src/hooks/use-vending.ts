@@ -1,7 +1,7 @@
 // use-vending.ts
 
-import { generateCreditToken, printToken, calculateCreditToken, generateKCTToken, generateClearTamperToken, generateClearCreditToken, generateKCTAndClearTamperToken, generateCompensationToken, getVendingDashboardData, getVendingTransactions } from "@/service/vending-service";
-import type { GenerateCreditTokenPayload, PrintTokenPayload, GenerateKCTPayload, GenerateClearTamperPayload, GenerateClearCreditPayload, GenerateKCTAndClearTamperPayload, GenerateCompensationPayload, VendingDashboardPayload } from "@/types/vending";
+import { generateCreditToken, printToken, calculateCreditToken, generateKCTToken, generateClearTamperToken, generateClearCreditToken, generateKCTAndClearTamperToken, generateCompensationToken, getVendingDashboardData, getVendingTransactions, getMeterKctPrefill } from "@/service/vending-service";
+import type { GenerateCreditTokenPayload, PrintTokenPayload, GenerateKCTPayload, GenerateClearTamperPayload, GenerateClearCreditPayload, GenerateKCTAndClearTamperPayload, GenerateCompensationPayload, VendingDashboardPayload, MeterKctPrefillPayload } from "@/types/vending";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -178,7 +178,28 @@ export const useGenerateCompensationToken = () => {
   });
 };
 
-export const useVendingTransactions = (payload?: { page?: number; size?: number }) => {
+export const useGetMeterKctPrefill = () => {
+  return useMutation({
+    mutationFn: async (payload: MeterKctPrefillPayload) => {
+      const response = await getMeterKctPrefill(payload);
+      if (!response.success) {
+        throw new Error(response.error);
+      }
+      return response.data;
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to fetch meter details");
+    },
+  });
+};
+
+export const useVendingTransactions = (payload?: {
+  page?: number;
+  size?: number;
+  search?: string;
+  status?: string;
+  sortDirection?: "asc" | "desc";
+}) => {
   return useQuery({
     queryKey: ["vending-transactions", payload],
     queryFn: async () => {

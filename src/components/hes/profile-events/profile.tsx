@@ -214,7 +214,7 @@ const profileColumns: Record<string, { key: string; label: string }[]> = {
   ],
   "load-profile-one-household": [
     { key: "meterModel", label: "Meter Model" },
-    { key: "meterHealthIndicator", label: "Meter Health Indicator" },
+    { key: "activeEnergyImport", label: "Active Energy Import" },
     { key: "activeEnergyImportOngrid", label: "Active Energy Import Ongrid" },
     { key: "activeEnergyImportOffgrid", label: "Active Energy Import Offgrid" },
     { key: "activeEnergyExport", label: "Active Energy Export" },
@@ -222,9 +222,13 @@ const profileColumns: Record<string, { key: string; label: string }[]> = {
     { key: "activeEnergyExportOffgrid", label: "Active Energy Export Offgrid" },
   ],
   "load-profile-two-household": [
-    { key: "instantaneousVoltageL1", label: "Voltage L1" },
-    { key: "instantaneousCurrentL1", label: "Current L1" },
-    { key: "instantaneousCurrentL2", label: "Current L2" },
+    { key: "voltageL1", label: "Voltage L1" },
+     { key: "voltageL2", label: "Voltage L2" },
+    { key: "currentL1", label: "Current L1" },
+    { key: "currentL2", label: "Current L2" },
+     { key: "currentL3", label: "Current L3" },
+      { key: "voltAngleL1L2", label: "Voltage Angle L1-L2" },
+       { key: "voltAngleL1L3", label: "Voltage Angle L1-L3" },
   ],
   "daily-billing-data-household": [
     { key: "meterModel", label: "Meter Model" },

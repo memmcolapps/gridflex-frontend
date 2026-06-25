@@ -1,40 +1,49 @@
 "use client";
-import { Button } from "@/components/ui/button";
 import { ContentHeader } from "@/components/ui/content-header";
 import VendTokenDialog from "@/components/vending/vending-dialog";
 import VendingTable from "@/components/vending/vending-table";
 import { ExportButton } from "@/components/ui/export-button";
-import { ArrowUpDown, ListFilter, Search } from "lucide-react";
 import { useState, useMemo } from "react";
 import { usePermissions } from "@/hooks/use-permissions";
 import { useVendingTransactions } from "@/hooks/use-vending";
+import { FilterControl, SearchControl, SortControl } from "@/components/search-control";
 
 export default function VendingPage() {
     const [searchQuery, setSearchQuery] = useState("");
+    const [activeFilters, setActiveFilters] = useState<Record<string, boolean>>({});
+    const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
     const { canEdit } = usePermissions();
+
+    const statusFilter = useMemo(() => {
+        if (activeFilters.successful) return "Successful";
+        if (activeFilters.pending) return "Pending";
+        if (activeFilters.failed) return "Failed";
+        return "";
+    }, [activeFilters]);
 
     // Fetch transactions data for export
     const { data: rawTransactionsData } = useVendingTransactions({
         page: 1,
         size: 1000,
+        search: searchQuery,
+        status: statusFilter,
+        sortDirection,
     });
 
     const transactionsData = useMemo(() => {
         return rawTransactionsData?.messages ?? [];
     }, [rawTransactionsData]);
 
-    // Filter transactions based on search query (same as table)
-    const filteredTransactions = useMemo(() => {
-        if (!searchQuery) return transactionsData;
-        const searchLower = searchQuery.toLowerCase();
-        return transactionsData.filter((transaction) =>
-            transaction.meterAccountNumber?.toLowerCase().includes(searchLower) ||
-            transaction.meterNumber?.toLowerCase().includes(searchLower) ||
-            transaction.tokenType?.toLowerCase().includes(searchLower) ||
-            transaction.tariffName?.toLowerCase().includes(searchLower) ||
-            transaction.status?.toLowerCase().includes(searchLower)
-        );
-    }, [transactionsData, searchQuery]);
+    const filterSections = [
+        {
+            title: "Status",
+            options: [
+                { label: "Successful", id: "successful" },
+                { label: "Pending", id: "pending" },
+                { label: "Failed", id: "failed" },
+            ],
+        },
+    ];
 
     // Export columns
     const exportColumns = [
@@ -66,41 +75,39 @@ export default function VendingPage() {
             {/* Search and filter section */}
             <div className="mb-8 flex items-center justify-between">
                 <div className="mb-8 flex items-center gap-10">
-                    <div className="flex w-[219px] gap-2 rounded-md border border-[rgba(228,231,236,1)] px-3 py-2">
-                        <Search
-                            size={14}
-                            strokeWidth={2.75}
-                            className="ml-2 text-gray-500"
-                        />
-                        <input
-                            type="text"
-                            placeholder="Search by name, cont..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full flex-grow border-none text-sm text-[rgba(95,95,95,1)] placeholder-[rgba(95,95,95,1)] outline-none"
-                        />
-                    </div>
+                    <SearchControl
+                        onSearchChange={setSearchQuery}
+                        value={searchQuery}
+                        placeholder="Search transactions..."
+                    />
                     <div className="flex gap-2">
-                        <Button className="flex cursor-pointer items-center gap-2 rounded-md border border-[rgba(228,231,236,1)] px-4 py-2 text-sm text-gray-700 focus:outline-none">
-                            <ListFilter size={14} />
-                            Filter
-                        </Button>
-                        <Button className="flex cursor-pointer items-center gap-2 rounded-md border border-[rgba(228,231,236,1)] px-4 py-2 text-sm text-gray-700 focus:outline-none">
-                            <ArrowUpDown size={14} />
-                            Sort
-                        </Button>
+                        <FilterControl
+                            sections={filterSections}
+                            onApply={setActiveFilters}
+                            onReset={() => setActiveFilters({})}
+                        />
+                        <SortControl
+                            onSortChange={(direction) =>
+                                setSortDirection(direction === "desc" ? "desc" : "asc")
+                            }
+                            currentSort={sortDirection}
+                        />
                     </div>
                 </div>
                 <div className="flex gap-5">
                     <ExportButton
-                        data={filteredTransactions}
+                        data={transactionsData}
                         columns={exportColumns}
                         fileName="vending_transactions"
                     />
                 </div>
             </div>
             {/* Table section */}
-            <VendingTable searchQuery={searchQuery} transactionsData={transactionsData} />
+            <VendingTable
+                searchQuery={searchQuery}
+                status={statusFilter}
+                sortDirection={sortDirection}
+            />
         </div>
     );
 }
