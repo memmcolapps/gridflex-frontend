@@ -856,7 +856,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                     placeholder={getDynamicPlaceholder()}
                     value={meterNumber}
                     disabled={isKctStepOpen}
-                    onChange={(e) => setMeterNumber(e.target.value)}
+                    onChange={(e) => setMeterNumber(e.target.value.trim())}
                   />
               </div>
             </div>
