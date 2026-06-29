@@ -35,6 +35,7 @@ import type {
 import { usePermissions } from "@/hooks/use-permissions";
 import SendTokenDialog from "@/components/hes/dashboard/send-token-dialog";
 import { useSetToken } from "@/hooks/use-configure-meter";
+import { getVendingTransactions } from "@/service/vending-service";
 
 interface TokenFormDialogProps {
   tokenType: string;
@@ -405,8 +406,26 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
         const debitBalance = calculatedTokenData?.totalDebitBalance
           ? Number(calculatedTokenData.totalDebitBalance)
           : 0;
+
+        // Try to fetch full transaction record from listing API for address/tariff/rate
+        let fullTransaction: typeof result | undefined;
+        try {
+          const listingResult = await getVendingTransactions({
+            search: result.receiptNo,
+            page: 1,
+            size: 1,
+          });
+          if (listingResult.success) {
+            fullTransaction = listingResult.data.messages.find(
+              (t) => t.receiptNo === result.receiptNo,
+            );
+          }
+        } catch {
+          // Fall back to result if listing fetch fails
+        }
+
         const mergedData = {
-          ...result,
+          ...(fullTransaction ?? result),
           creditAdjustment:
             calculatedTokenData?.creditDeducted ??
             result.creditAdjustment ??
