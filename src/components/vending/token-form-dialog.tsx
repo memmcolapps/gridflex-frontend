@@ -431,7 +431,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
             result.creditAdjustment ??
             0,
           debitAdjustment:
-            (calculatedTokenData?.debitDeducted || result.debitAdjustment) ?? 0,
+            (calculatedTokenData?.debitDeducted ?? result.debitAdjustment) ?? 0,
           creditAdjustmentBalance: calculatedTokenData?.totalCreditUnits ?? 0,
           debitAdjustmentBalance: debitBalance,
           kct1:
