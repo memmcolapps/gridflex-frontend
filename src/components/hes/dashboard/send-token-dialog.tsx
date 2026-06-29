@@ -25,6 +25,7 @@ const SendTokenDialog = ({ isOpen, onClose, onSubmit, meterNumber, initialToken 
     useEffect(() => {
         if (isOpen) {
             setToken(initialToken ?? "");
+            setIsSubmitting(false);
         } else {
             setToken("");
         }

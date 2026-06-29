@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/dialog";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { useVendingTransactions, usePrintToken } from "@/hooks/use-vending";
+import { getVendingTransactions, calculateCreditToken } from "@/service/vending-service";
 import {
   type PrintTokenPayload,
   type VendingTransaction,
@@ -95,8 +96,42 @@ const VendingTable = ({
     setCurrentPage(1);
   };
 
-  const handleReprintToken = (transaction: VendingTransaction) => {
-    setSelectedTransaction(transaction);
+  const handleReprintToken = async (transaction: VendingTransaction) => {
+    let txData = transaction;
+    try {
+      const listingResult = await getVendingTransactions({
+        search: transaction.receiptNo,
+        page: 1,
+        size: 1,
+      });
+      if (listingResult.success) {
+        const found = listingResult.data.messages.find(
+          (t) => t.receiptNo === transaction.receiptNo,
+        );
+        if (found) txData = found;
+      }
+    } catch {}
+
+    let creditAdjBalance = 0;
+    let debitAdjBalance = 0;
+    try {
+      const calcPayload = transaction.meterNumber
+        ? { meterNumber: transaction.meterNumber, initialAmount: transaction.initialAmount }
+        : { accountNumber: transaction.meterAccountNumber, initialAmount: transaction.initialAmount };
+      const calcResult = await calculateCreditToken(calcPayload);
+      if (calcResult.success) {
+        creditAdjBalance = calcResult.data.totalCreditUnits ?? 0;
+        debitAdjBalance = calcResult.data.totalDebitBalance
+          ? Number(calcResult.data.totalDebitBalance)
+          : 0;
+      }
+    } catch {}
+
+    setSelectedTransaction({
+      ...txData,
+      creditAdjustmentBalance: creditAdjBalance,
+      debitAdjustmentBalance: debitAdjBalance,
+    });
     setShowTokenDialog(true);
   };
 
