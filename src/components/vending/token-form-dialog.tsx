@@ -35,6 +35,7 @@ import type {
 import { usePermissions } from "@/hooks/use-permissions";
 import SendTokenDialog from "@/components/hes/dashboard/send-token-dialog";
 import { useSetToken } from "@/hooks/use-configure-meter";
+import { getVendingTransactions } from "@/service/vending-service";
 
 interface TokenFormDialogProps {
   tokenType: string;
@@ -405,14 +406,33 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
         const debitBalance = calculatedTokenData?.totalDebitBalance
           ? Number(calculatedTokenData.totalDebitBalance)
           : 0;
+
+        // Try to fetch full transaction record from listing API for address/tariff/rate
+        let fullTransaction: typeof result | undefined;
+        try {
+          const listingResult = await getVendingTransactions({
+            search: result.receiptNo,
+            page: 1,
+            size: 1,
+          });
+          if (listingResult.success) {
+            fullTransaction = listingResult.data.messages.find(
+              (t) => t.receiptNo === result.receiptNo,
+            );
+          }
+        } catch {
+          // Fall back to result if listing fetch fails
+        }
+
         const mergedData = {
-          ...result,
+          ...(fullTransaction ?? result),
           creditAdjustment:
-            calculatedTokenData?.totalCreditUnits ??
+            calculatedTokenData?.creditDeducted ??
             result.creditAdjustment ??
             0,
-          debitAdjustment: (debitBalance || result.debitAdjustment) ?? 0,
-          creditAdjustmentBalance: calculatedTokenData?.creditDeducted ?? 0,
+          debitAdjustment:
+            (calculatedTokenData?.debitDeducted ?? result.debitAdjustment) ?? 0,
+          creditAdjustmentBalance: calculatedTokenData?.totalCreditUnits ?? 0,
           debitAdjustmentBalance: debitBalance,
           kct1:
             generatedKctData?.kct1 ??
@@ -1070,7 +1090,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                       className="border border-gray-300"
                       placeholder="Enter Old SGC"
                       value={oldSgc}
-                      disabled={tokenType === "creditToken" && isKctStepOpen}
+                      disabled={isKctStepOpen}
                       onChange={(e) => setOldSgc(e.target.value)}
                     />
                   </div>
@@ -1083,7 +1103,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                       className="border border-gray-300"
                       placeholder="Enter New SGC"
                       value={newSgc}
-                      disabled={tokenType === "creditToken" && isKctStepOpen}
+                      disabled={isKctStepOpen}
                       onChange={(e) => setNewSgc(e.target.value)}
                     />
                   </div>
@@ -1098,7 +1118,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                       className="border border-gray-300"
                       placeholder="Enter Old KRN"
                       value={oldKrn}
-                      disabled={tokenType === "creditToken" && isKctStepOpen}
+                      disabled={isKctStepOpen}
                       onChange={(e) => setOldKrn(e.target.value)}
                     />
                   </div>
@@ -1111,7 +1131,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                       className="border border-gray-300"
                       placeholder="Enter New KRN"
                       value={newKrn}
-                      disabled={tokenType === "creditToken" && isKctStepOpen}
+                      disabled={isKctStepOpen}
                       onChange={(e) => setNewKrn(e.target.value)}
                     />
                   </div>
@@ -1126,7 +1146,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                       className="border border-gray-300"
                       placeholder="Enter Old Tariff Index"
                       value={oldTariffIndex}
-                      disabled={tokenType === "creditToken" && isKctStepOpen}
+                      disabled={isKctStepOpen}
                       onChange={(e) => setOldTariffIndex(e.target.value)}
                     />
                   </div>
@@ -1139,7 +1159,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                       className="border border-gray-300"
                       placeholder="Enter New Tariff Index"
                       value={newTariffIndex}
-                      disabled={tokenType === "creditToken" && isKctStepOpen}
+                      disabled={isKctStepOpen}
                       onChange={(e) => setNewTariffIndex(e.target.value)}
                     />
                   </div>
