@@ -264,7 +264,7 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
   const { data: profileEventsData } = useProfileEventsData();
   const { data: eventTypesData } = useEventNames();
   const { data: metersData } = useMeters({
-    page: 0,
+    page: 1,
     pageSize: 1000,
     searchTerm: "",
     sortBy: null,
