@@ -1,12 +1,11 @@
-// app/communication-report/page.tsx
 "use client";
 import { RealTimeDataTable } from "@/components/hes/real-time-data-table";
+import type { MeterData } from "@/hooks/use-realtime-stream";
 import { SortControl } from "@/components/search-control";
-import { Button } from "@/components/ui/button";
 import { ContentHeader } from "@/components/ui/content-header";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ExternalLink, Wifi, WifiOff } from "lucide-react";
-import { useState, useEffect } from "react";
+import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
+import { useState, useEffect, useMemo } from "react";
 import {
   useSSEManagement,
   useMeterConnections,
@@ -26,6 +25,27 @@ export default function RealtimeDataPage() {
   const [sortDirection, setSortDirection] = useState<"asc" | "desc" | null>(null);
   const [selectedHierarchy] = useState<string>("");
   const [, setUnitOptions] = useState<{ label: string; id: string }[]>([]);
+  const [exportData, setExportData] = useState<{
+    displayData: MeterData[];
+    selectedReading: string[];
+    readingLabelMap: Record<string, string>;
+  }>({ displayData: [], selectedReading: [], readingLabelMap: {} });
+
+  const exportColumns = useMemo<ExportColumn[]>(() => {
+    const readingCols = exportData.selectedReading
+      .filter((r) => r !== "meter-serial-number" && r !== "clock object")
+      .map((r) => ({
+        key: r,
+        label: exportData.readingLabelMap[r] ?? r,
+        transform: (_: unknown, item?: unknown) =>
+          String((item as Record<string, unknown>)?.[r] ?? ""),
+      }));
+    return [
+      { key: "meter", label: "Meter Serial Number" },
+      { key: "time", label: "Time" },
+      ...readingCols,
+    ];
+  }, [exportData.selectedReading, exportData.readingLabelMap]);
 
   // Use TanStack Query hooks for state management
   const { baseUrl } = useSSEManagement();
@@ -150,13 +170,11 @@ export default function RealtimeDataPage() {
             <ExternalLink size={14} />
             Reconnect
           </Button> */}
-          <Button
-            variant="outline"
-            className="border-[#161CCA] py-4 text-[#161CCA]"
-          >
-            <ExternalLink size={14} />
-            Export
-          </Button>
+          <ExportButton
+            data={exportData.displayData}
+            columns={exportColumns}
+            fileName={`real_time_data_${activeTab.toLowerCase()}`}
+          />
         </div>
       </div>
       <div className="flex flex-row justify-between">
@@ -195,13 +213,10 @@ export default function RealtimeDataPage() {
         </div>
       </div>
       <RealTimeDataTable
-        // sseData={sseData}
-        // connectionStatus={connectionStatus}
-        // selectedMeters={selectedMeters}
         onMeterSelection={handleMeterSelection}
         meterType={activeTab} 
         sortDirection={sortDirection}
-        // onRunStream={runRealtimeStream}
+        onExportDataChange={setExportData}
       />
     </div>
   );

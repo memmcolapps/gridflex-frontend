@@ -271,9 +271,13 @@ const profileColumns: Record<string, { key: string; label: string }[]> = {
 interface ProfileProps {
   selectedHierarchy: string | null;
   selectedUnits: string;
+  onExportDataChange?: (data: {
+    exportData: ProfileData[];
+    exportColumns: { key: string; label: string }[];
+  }) => void;
 }
 
-export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
+export function Profile({ selectedHierarchy, selectedUnits, onExportDataChange }: ProfileProps) {
   const [startDateOpen, setStartDateOpen] = useState(false);
   const [endDateOpen, setEndDateOpen] = useState(false);
   const [startDate, setStartDate] = useState<Date>();
@@ -480,6 +484,10 @@ export function Profile({ selectedHierarchy, selectedUnits }: ProfileProps) {
     setCurrentPage(page);
     handleRun(page - 1, rowsPerPageRef.current);
   };
+
+  useEffect(() => {
+    onExportDataChange?.({ exportData: tableData, exportColumns: tableColumns });
+  }, [tableData, tableColumns, onExportDataChange]);
 
   return (
     <div className="space-y-6">

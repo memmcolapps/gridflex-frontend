@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useEffect } from "react";
 import { FilterPanel } from "./FilterPanel";
 import { DataTable } from "./DataTable";
 import { useRealtimeStream } from "@/hooks/use-realtime-stream";
@@ -8,12 +8,18 @@ interface RealTimeDataTableProps {
   meterType?: string;
   onMeterSelection?: (meters: string[]) => void;
   sortDirection?: "asc" | "desc" | null;
+  onExportDataChange?: (data: {
+    displayData: import("@/hooks/use-realtime-stream").MeterData[];
+    selectedReading: string[];
+    readingLabelMap: Record<string, string>;
+  }) => void;
 }
 
 export function RealTimeDataTable({
   meterType: currentMeterType = "MD",
   onMeterSelection,
   sortDirection = null,
+  onExportDataChange,
 }: RealTimeDataTableProps) {
   const { data, selectedReading, isStreaming, error, run } = useRealtimeStream();
 
@@ -41,6 +47,10 @@ export function RealTimeDataTable({
         : b.meter.localeCompare(a.meter),
     );
   }, [data, sortDirection]);
+
+  useEffect(() => {
+    onExportDataChange?.({ displayData, selectedReading, readingLabelMap });
+  }, [displayData, selectedReading, readingLabelMap, onExportDataChange]);
 
   const handleRun = async (filters: {
     hierarchy: string;
