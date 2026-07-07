@@ -741,7 +741,7 @@ const VendingTable = ({
         onSubmit={(token) => {
           return new Promise<void>((resolve, reject) => {
             sendTokenMutation.mutate(
-              { serial: selectedTransaction?.meterNumber ?? "", credit: token },
+              { serial: selectedTransaction?.meterNumber ?? "", token: token },
               {
                 onSuccess: () => resolve(),
                 onError: (error) => reject(error),

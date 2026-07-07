@@ -1529,7 +1529,7 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
             sendTokenMutation.mutate(
               {
                 serial: generatedTokenData?.meterNumber ?? "",
-                credit: token,
+                token: token,
               },
               {
                 onSuccess: () => resolve(),

@@ -796,7 +796,7 @@ export default function MeterRemoteConfigPage() {
           onSubmit={(token) => {
             return new Promise<void>((resolve, reject) => {
               setTokenMutation.mutate(
-                { serial: selectedMeter.meterNumber, credit: token },
+                { serial: selectedMeter.meterNumber, token: token },
                 {
                   onSuccess: () => resolve(),
                   onError: (error) => reject(error),

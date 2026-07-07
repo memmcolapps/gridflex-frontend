@@ -236,9 +236,13 @@ const formatCellValue = (value: unknown) => {
 interface EventsProps {
   selectedHierarchy: string | null;
   selectedUnits: string;
+  onExportDataChange?: (data: {
+    exportData: EventData[];
+    exportColumns: { key: string; label: string }[];
+  }) => void;
 }
 
-export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
+export function Events({ selectedHierarchy, selectedUnits, onExportDataChange }: EventsProps) {
   const [startDateOpen, setStartDateOpen] = useState(false);
   const [endDateOpen, setEndDateOpen] = useState(false);
   const [startDate, setStartDate] = useState<Date>();
@@ -421,6 +425,10 @@ export function Events({ selectedHierarchy, selectedUnits }: EventsProps) {
     setCurrentPage(page);
     handleRun(page - 1, rowsPerPageRef.current);
   };
+
+  useEffect(() => {
+    onExportDataChange?.({ exportData: tableData, exportColumns: tableColumns });
+  }, [tableData, tableColumns, onExportDataChange]);
 
   return (
     <div className="space-y-6">

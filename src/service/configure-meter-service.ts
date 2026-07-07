@@ -348,13 +348,13 @@ export async function setToken(
       throw new Error("Authentication token not found.");
     }
 
-    const { serial, credit } = data;
+    const { serial, token: meterToken } = data;
 
     const response = await axiosInstance.post(
       `${API_URL}/hes/service/dlms/set-token`,
       null,
       {
-        params: { serial, credit },
+        params: { serial, token: meterToken },
         headers: {
           custom: CUSTOM_HEADER,
           Authorization: `Bearer ${token}`,
