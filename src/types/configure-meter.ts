@@ -170,7 +170,7 @@ export interface SetRelayModePayload {
 
 export interface SetTokenPayload {
   serial: string;
-  credit: string;
+  token: string;
 }
 
 export interface ConfigureResponse {
