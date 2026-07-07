@@ -3,20 +3,11 @@
 import { useState, useMemo, useEffect } from "react";
 import { ContentHeader } from "@/components/ui/content-header";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Events } from "@/components/hes/profile-events/events";
 import { Profile } from "@/components/hes/profile-events/profile";
+import { ExportButton } from "@/components/ui/export-button";
 import {
-  SquareArrowOutUpRight,
-  Check,
-  ChevronDown,
   Grid2X2,
   Building,
   Wrench,
@@ -26,11 +17,8 @@ import {
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { useProfileEventsData } from "@/hooks/use-profile-events";
-import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/auth-context";
-
-type ExportFormat = "CSV" | "XLSX" | "PDF" | null;
 
 const normalizeType = (type: string): string => {
   const lowerType = type.toLowerCase();
@@ -76,13 +64,27 @@ const getIconForType = (type: string) => {
 
 export default function HesProfileEvents() {
   const { user } = useAuth();
-  const [selectedExportFormat, setSelectedExportFormat] =
-    useState<ExportFormat>(null);
   const [selectedHierarchy, setSelectedHierarchy] = useState<string | null>(
     null,
   );
   const [selectedUnits, setSelectedUnits] = useState<string>(""); // assetId
   const [activeTab, setActiveTab] = useState<string>("events");
+  const [profileExport, setProfileExport] = useState<{
+    exportData: { sn: number; meterNumber: string; time: string; [key: string]: string | number }[];
+    exportColumns: { key: string; label: string }[];
+  }>({ exportData: [], exportColumns: [] });
+  const [eventsExport, setEventsExport] = useState<{
+    exportData: {
+      sn: number;
+      meterNo: string;
+      feeder: string;
+      time: string;
+      eventType: string;
+      criticalLevel?: string;
+      [key: string]: unknown;
+    }[];
+    exportColumns: { key: string; label: string }[];
+  }>({ exportData: [], exportColumns: [] });
 
   const { data: profileEventsData } = useProfileEventsData();
 
@@ -141,23 +143,15 @@ export default function HesProfileEvents() {
   }, [user]);
 
 
-  const handleExportFormatSelect = (format: ExportFormat) => {
-    setSelectedExportFormat(format);
-    // Add your export logic here
-    switch (format) {
-      case "CSV":
-        // Handle CSV export
-        break;
-      case "XLSX":
-        // Handle XLSX export
-        break;
-      case "PDF":
-        // Handle PDF export
-        break;
-      default:
-        break;
-    }
-  };
+  const activeExport =
+    activeTab === "profile" ? profileExport : eventsExport;
+
+  const exportColumns = activeExport.exportColumns
+    .filter((col) => col.key !== "sn")
+    .map((col) => ({
+      key: col.key,
+      label: col.label,
+    }));
 
   return (
     <div className="h-screen overflow-y-auto bg-transparent p-6">
@@ -168,61 +162,11 @@ export default function HesProfileEvents() {
           description="Access detailed profiles and event logs from your meter."
         />
 
-        {/* Export Dropdown */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="outline"
-              className="flex cursor-pointer items-center gap-2 border border-[#161CCA] font-medium text-[#161CCA] hover:bg-[#161CCA]/5"
-            >
-              <SquareArrowOutUpRight
-                size={12}
-                strokeWidth={2.3}
-                className="text-[#161CCA]"
-              />
-              <span className="text-sm font-medium">Export</span>
-              <ChevronDown size={14} className="text-[#161CCA]" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            className="w-[140px] border border-gray-200 bg-white"
-            align="end"
-          >
-            <DropdownMenuItem
-              onClick={() => handleExportFormatSelect("CSV")}
-              className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-50"
-            >
-              <span className="text-sm">CSV</span>
-              {selectedExportFormat === "CSV" && (
-                <Check size={14} className="text-black" />
-              )}
-            </DropdownMenuItem>
-
-            <div className="mx-2 border-t border-dotted border-[#4ECDC4]" />
-
-            <DropdownMenuItem
-              onClick={() => handleExportFormatSelect("XLSX")}
-              className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-50"
-            >
-              <span className="text-sm">XLSX</span>
-              {selectedExportFormat === "XLSX" && (
-                <Check size={14} className="text-black" />
-              )}
-            </DropdownMenuItem>
-
-            <div className="mx-2 border-t border-dotted border-[#4ECDC4]" />
-
-            <DropdownMenuItem
-              onClick={() => handleExportFormatSelect("PDF")}
-              className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-50"
-            >
-              <span className="text-sm">PDF</span>
-              {selectedExportFormat === "PDF" && (
-                <Check size={14} className="text-black" />
-              )}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <ExportButton
+          data={activeExport.exportData}
+          columns={exportColumns}
+          fileName={`${activeTab}_data`}
+        />
       </div>
 
       {/* Tabs Card */}
@@ -285,6 +229,7 @@ export default function HesProfileEvents() {
               <Profile
                 selectedHierarchy={selectedHierarchy}
                 selectedUnits={selectedUnits}
+                onExportDataChange={setProfileExport}
               />
             </Card>
           </TabsContent>
@@ -294,6 +239,7 @@ export default function HesProfileEvents() {
               <Events
                 selectedHierarchy={selectedHierarchy}
                 selectedUnits={selectedUnits}
+                onExportDataChange={setEventsExport}
               />
             </Card>
           </TabsContent>

@@ -9,7 +9,7 @@ import { toast } from "sonner";
 export interface ExportColumn {
   key: string;
   label: string;
-  transform?: (value: unknown) => string;
+  transform?: (value: unknown, item?: unknown) => string;
 }
 
 export interface ExportButtonProps {
@@ -47,7 +47,7 @@ export function ExportButton({
           value = (value as Record<string, unknown>)?.[k];
         }
         // Apply transform function if provided
-        row[col.label] = col.transform ? col.transform(value) : (value ?? "");
+        row[col.label] = col.transform ? col.transform(value, item) : (value ?? "");
       });
       return row;
     });
