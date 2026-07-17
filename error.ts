@@ -28,6 +28,7 @@ const extractErrorMessage = (error: unknown): string => {
       const errors = error.errors as Record<string, string[]>;
       return Object.values(errors).flat().join(", ");
     }
+    
   }
 
   return "An unexpected error occurred";
