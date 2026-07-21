@@ -390,16 +390,17 @@ const VendingTable = ({
                                                 <title>Token Receipt</title>
                                                 <style>
                                                     @page {
-                                                        size: 80mm 297mm;
+                                                        size: 80mm auto;
                                                         margin: 2mm;
                                                     }
-                                                    body {
+                                                    html, body {
                                                         font-family: 'Courier New', monospace;
                                                         margin: 0;
                                                         padding: 0;
                                                         background: white;
                                                         font-size: 10px;
                                                         line-height: 1.3;
+                                                        height: fit-content;
                                                     }
                                                     .receipt {
                                                         width: 72.1mm;
@@ -407,6 +408,7 @@ const VendingTable = ({
                                                         border: 1px solid #000;
                                                         padding: 2mm;
                                                         box-sizing: border-box;
+                                                        height: fit-content;
                                                     }
                                                     .header {
                                                         text-align: center;
@@ -441,6 +443,7 @@ const VendingTable = ({
                                                         flex: 1 1 auto;
                                                         min-width: 0;
                                                         overflow: hidden;
+                                                        font-weight: bold;
                                                     }
                                                     .amount-section {
                                                         border-top: 1px solid #000;
@@ -459,7 +462,7 @@ const VendingTable = ({
                                                         margin-bottom: 3px;
                                                     }
                                                     .token-value {
-                                                        font-size: 11px;
+                                                        font-size: 14px;
                                                         font-weight: bolder;
                                                         letter-spacing: 1px;
                                                         word-break: break-all;
@@ -468,18 +471,22 @@ const VendingTable = ({
                                                     }
                                                     .footer {
                                                         border-top: 1px solid #000;
-                                                        margin-top: 3mm;
-                                                        padding-top: 2mm;
+                                                        margin-top: 2mm;
+                                                        padding-top: 1mm;
                                                         text-align: center;
                                                         font-size: 8px;
+                                                        font-weight: bold;
                                                     }
+                                                        .copy{
+                                                        font-weight: bold;
+                                                        }
                                                 </style>
                                             </head>
                                             <body>
                                                 <div class="receipt">
                                                     <div class="header">
                                                         <div class="company-name">TOKEN RECEIPT</div>
-                                                        <div>Customer Copy</div>
+                                                        <div class="copy">Customer Copy</div>
                                                     </div>
 
                                                     <div class="info-row">
