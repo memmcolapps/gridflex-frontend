@@ -131,7 +131,7 @@ jobs:
           Invoke-Download -Uri "$nodeDownloadRoot/$env:NODE_ARCHIVE" -OutFile $nodeArchivePath
           Invoke-Download -Uri "$nodeDownloadRoot/SHASUMS256.txt" -OutFile $nodeChecksumsPath
           $checksums = Get-Content -LiteralPath $nodeChecksumsPath -Raw
-          $checksumPattern = '(?m)^([a-f0-9]{64})\s+{0}\r?$' -f [regex]::Escape($env:NODE_ARCHIVE)
+          $checksumPattern = '(?m)^([a-f0-9]{64})\s+' + [regex]::Escape($env:NODE_ARCHIVE) + '\r?$'
           $checksumMatch = [regex]::Match($checksums, $checksumPattern)
           if (-not $checksumMatch.Success) { throw "Official Node.js checksum was not found." }
 
