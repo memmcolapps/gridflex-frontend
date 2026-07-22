@@ -1,0 +1,110 @@
+name: Deploy Alfutam frontend to Windows
+
+on:
+  push:
+    branches:
+      - alfutam-branch-v1
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gridflex-alfutam-windows-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy to 41.216.166.166
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SERVER_PUBLIC_ADDRESS: 41.216.166.166
+      SERVER_PORT: "22"
+      RELEASE_ARCHIVE: gridflex-release.zip
+      REMOTE_SCRIPT: deploy-gridflex.ps1
+      APPLICATION_BASE_URL: https://alfuttaim-gridflex.memmserve.com:8081
+      NEXT_PUBLIC_CUSTOM_HEADER: ${{ vars.NEXT_PUBLIC_CUSTOM_HEADER }}
+
+    steps:
+      - name: Check out the deployment commit
+        uses: actions/checkout@v7.0.1
+
+      - name: Validate deployment settings
+        shell: bash
+        env:
+          SERVER_USERNAME: ${{ secrets.SERVER_USERNAME }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+
+          if [[ -z "$SERVER_USERNAME" ]]; then
+            echo "The SERVER_USERNAME secret is not configured." >&2
+            exit 1
+          fi
+
+          if [[ -z "$SSH_PRIVATE_KEY" ]]; then
+            echo "The SSH_PRIVATE_KEY secret is not configured." >&2
+            exit 1
+          fi
+
+          if [[ -z "$NEXT_PUBLIC_CUSTOM_HEADER" ]]; then
+            echo "The NEXT_PUBLIC_CUSTOM_HEADER repository variable is not configured." >&2
+            exit 1
+          fi
+
+          if [[ "$NEXT_PUBLIC_CUSTOM_HEADER" == *$'\n'* || "$NEXT_PUBLIC_CUSTOM_HEADER" == *$'\r'* ]]; then
+            echo "NEXT_PUBLIC_CUSTOM_HEADER must be a single-line value." >&2
+            exit 1
+          fi
+
+      - name: Create source release
+        shell: bash
+        run: git archive --format=zip --output="$RELEASE_ARCHIVE" "$GITHUB_SHA"
+
+      - name: Configure SSH
+        shell: bash
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          install -d -m 700 "$HOME/.ssh"
+          printf '%s\n' "$SSH_PRIVATE_KEY" > "$HOME/.ssh/gridflex_deploy_key"
+          chmod 600 "$HOME/.ssh/gridflex_deploy_key"
+          ssh-keyscan -H -p "$SERVER_PORT" "$SERVER_PUBLIC_ADDRESS" >> "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/known_hosts"
+
+      - name: Upload release to the Windows server
+        shell: bash
+        env:
+          SERVER_USERNAME: ${{ secrets.SERVER_USERNAME }}
+        run: |
+          set -euo pipefail
+          {
+            printf 'NEXT_PUBLIC_BASE_URL=%s\n' "$APPLICATION_BASE_URL"
+            printf 'NEXT_PUBLIC_CUSTOM_HEADER=%s\n' "$NEXT_PUBLIC_CUSTOM_HEADER"
+          } > gridflex-production.env
+
+          scp \
+            -P "$SERVER_PORT" \
+            -i "$HOME/.ssh/gridflex_deploy_key" \
+            -o BatchMode=yes \
+            -o ConnectTimeout=20 \
+            "$RELEASE_ARCHIVE" \
+            "scripts/$REMOTE_SCRIPT" \
+            gridflex-production.env \
+            "$SERVER_USERNAME@$SERVER_PUBLIC_ADDRESS:./"
+
+      - name: Build and activate release on Windows
+        shell: bash
+        env:
+          SERVER_USERNAME: ${{ secrets.SERVER_USERNAME }}
+        run: |
+          set -euo pipefail
+          ssh \
+            -p "$SERVER_PORT" \
+            -i "$HOME/.ssh/gridflex_deploy_key" \
+            -o BatchMode=yes \
+            -o ConnectTimeout=20 \
+            "$SERVER_USERNAME@$SERVER_PUBLIC_ADDRESS" \
+            'powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File .\deploy-gridflex.ps1'
