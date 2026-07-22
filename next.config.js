@@ -18,6 +18,12 @@ const nextConfig = {
         port: "8081",
         pathname: "/grid-flex/v1/api/uploads/**",
       },
+      {
+        protocol: "https",
+        hostname: "alfuttaim-gridflex.memmserve.com",
+        port: "8081",
+        pathname: "/grid-flex/v1/api/uploads/**",
+      },
     ],
   },
 };

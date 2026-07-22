@@ -17,27 +17,47 @@ jobs:
   deploy:
     name: Deploy to 41.216.166.166
     runs-on: windows-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     env:
       SERVER_PUBLIC_ADDRESS: 41.216.166.166
       SERVER_PORT: "22"
+      APPLICATION_ROOT: 'C:\momas'
+      APPLICATION_DIRECTORY: 'C:\momas\gridflex-frontend'
+      APPLICATION_PORT: "3000"
       APPLICATION_BASE_URL: https://alfuttaim-gridflex.memmserve.com:8081
+      FRONTEND_HEALTH_URL: ${{ vars.FRONTEND_HEALTH_URL }}
       NEXT_PUBLIC_CUSTOM_HEADER: ${{ vars.NEXT_PUBLIC_CUSTOM_HEADER }}
+      SERVER_SSH_HOST_KEY: ${{ vars.SERVER_SSH_HOST_KEY }}
       NODE_VERSION: 24.18.0
       NODE_ARCHIVE: node-v24.18.0-win-x64.zip
       RELEASE_ARCHIVE: gridflex-release.zip
+      SERVICE_NAME: GridflexAlfuttaimFrontend
       SERVICE_WRAPPER: GridflexAlfuttaimFrontend.exe
+      PREFLIGHT_SCRIPT: preflight-gridflex.ps1
       REMOTE_SCRIPT: deploy-gridflex.ps1
 
     steps:
       - name: Check out the deployment commit
         uses: actions/checkout@v7.0.1
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v7.0.0
-        with:
-          node-version: 24.18.0
-          cache: npm
+      - name: Validate Windows deployment scripts
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          foreach ($scriptName in @($env:PREFLIGHT_SCRIPT, $env:REMOTE_SCRIPT)) {
+              $scriptPath = Join-Path $PWD "scripts\$scriptName"
+              $tokens = $null
+              $parseErrors = $null
+              [Management.Automation.Language.Parser]::ParseFile(
+                  $scriptPath,
+                  [ref]$tokens,
+                  [ref]$parseErrors
+              ) | Out-Null
+              if ($parseErrors.Count -gt 0) {
+                  $messages = ($parseErrors | ForEach-Object { "$($_.Extent.StartLineNumber): $($_.Message)" }) -join "`n"
+                  throw "PowerShell syntax validation failed for $scriptName`n$messages"
+              }
+          }
 
       - name: Validate deployment settings
         shell: pwsh
@@ -50,18 +70,105 @@ jobs:
           if ([string]::IsNullOrWhiteSpace($env:SERVER_USERNAME)) {
               throw "The SERVER_USERNAME secret is not configured."
           }
-
           if ([string]::IsNullOrWhiteSpace($env:SSH_PRIVATE_KEY)) {
               throw "The SSH_PRIVATE_KEY secret is not configured."
           }
-
           if ([string]::IsNullOrWhiteSpace($env:NEXT_PUBLIC_CUSTOM_HEADER)) {
               throw "The NEXT_PUBLIC_CUSTOM_HEADER repository variable is not configured."
           }
-
           if ($env:NEXT_PUBLIC_CUSTOM_HEADER.Contains("`n") -or $env:NEXT_PUBLIC_CUSTOM_HEADER.Contains("`r")) {
               throw "NEXT_PUBLIC_CUSTOM_HEADER must be a single-line value."
           }
+
+          $apiUri = [Uri]$env:APPLICATION_BASE_URL
+          if ($apiUri.Scheme -ne "https" -or $apiUri.Host -ne "alfuttaim-gridflex.memmserve.com" -or $apiUri.Port -ne 8081 -or $apiUri.AbsolutePath -ne "/") {
+              throw "APPLICATION_BASE_URL must be exactly https://alfuttaim-gridflex.memmserve.com:8081 with no API route prefix."
+          }
+          Write-Host "Frontend API base URL: $env:APPLICATION_BASE_URL"
+
+      - name: Configure SSH
+        shell: pwsh
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          $ErrorActionPreference = "Stop"
+          $sshDirectory = Join-Path $HOME ".ssh"
+          $keyPath = Join-Path $sshDirectory "gridflex_deploy_key"
+          $knownHostsPath = Join-Path $sshDirectory "known_hosts"
+          New-Item -ItemType Directory -Path $sshDirectory -Force | Out-Null
+          [IO.File]::WriteAllText($keyPath, $env:SSH_PRIVATE_KEY.Trim() + "`n", [Text.UTF8Encoding]::new($false))
+
+          & icacls.exe $keyPath /inheritance:r | Out-Null
+          if ($LASTEXITCODE -ne 0) { throw "Could not remove inherited permissions from the SSH private key." }
+          & icacls.exe $keyPath /grant:r "$env:USERNAME`:(R)" | Out-Null
+          if ($LASTEXITCODE -ne 0) { throw "Could not restrict the SSH private key to the runner account." }
+
+          if (-not [string]::IsNullOrWhiteSpace($env:SERVER_SSH_HOST_KEY)) {
+              [IO.File]::WriteAllText($knownHostsPath, $env:SERVER_SSH_HOST_KEY.Trim() + "`n", [Text.UTF8Encoding]::new($false))
+              Write-Host "Using the pinned SERVER_SSH_HOST_KEY repository variable."
+          }
+          else {
+              Write-Warning "SERVER_SSH_HOST_KEY is not configured; trusting the host key returned by this connection."
+              $hostKeys = @()
+              for ($attempt = 1; $attempt -le 5 -and $hostKeys.Count -eq 0; $attempt++) {
+                  $hostKeys = @(& ssh-keyscan.exe -H -p $env:SERVER_PORT $env:SERVER_PUBLIC_ADDRESS 2>$null)
+                  if ($hostKeys.Count -eq 0) { Start-Sleep -Seconds 10 }
+              }
+              if ($hostKeys.Count -eq 0) { throw "Could not retrieve the server SSH host key after five attempts." }
+              [IO.File]::WriteAllLines($knownHostsPath, $hostKeys, [Text.UTF8Encoding]::new($false))
+          }
+
+      - name: Run fail-fast Windows preflight
+        shell: pwsh
+        env:
+          SERVER_USERNAME: ${{ secrets.SERVER_USERNAME }}
+        run: |
+          $ErrorActionPreference = "Stop"
+          $keyPath = Join-Path $HOME ".ssh\gridflex_deploy_key"
+          $preflightPath = Join-Path $PWD "scripts\$env:PREFLIGHT_SCRIPT"
+          $destination = "$env:SERVER_USERNAME@$env:SERVER_PUBLIC_ADDRESS`:./$env:PREFLIGHT_SCRIPT"
+
+          $uploaded = $false
+          for ($attempt = 1; $attempt -le 3 -and -not $uploaded; $attempt++) {
+              & scp.exe `
+                  -q `
+                  -P $env:SERVER_PORT `
+                  -i $keyPath `
+                  -o BatchMode=yes `
+                  -o ConnectTimeout=20 `
+                  -o ConnectionAttempts=3 `
+                  -o ServerAliveInterval=15 `
+                  -o ServerAliveCountMax=4 `
+                  $preflightPath `
+                  $destination
+              $uploaded = $LASTEXITCODE -eq 0
+              if (-not $uploaded) { Start-Sleep -Seconds 15 }
+          }
+          if (-not $uploaded) { throw "Could not upload the Windows preflight script after three attempts." }
+
+          $remotePreflightCommand = "powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File .\$env:PREFLIGHT_SCRIPT -ApplicationRoot $env:APPLICATION_ROOT -ApplicationDirectory $env:APPLICATION_DIRECTORY -ServiceName $env:SERVICE_NAME -ApplicationPort $env:APPLICATION_PORT"
+          $preflightPassed = $false
+          for ($attempt = 1; $attempt -le 3 -and -not $preflightPassed; $attempt++) {
+              & ssh.exe `
+                  -p $env:SERVER_PORT `
+                  -i $keyPath `
+                  -o BatchMode=yes `
+                  -o ConnectTimeout=20 `
+                  -o ConnectionAttempts=3 `
+                  -o ServerAliveInterval=15 `
+                  -o ServerAliveCountMax=4 `
+                  "$env:SERVER_USERNAME@$env:SERVER_PUBLIC_ADDRESS" `
+                  $remotePreflightCommand
+              $preflightPassed = $LASTEXITCODE -eq 0
+              if (-not $preflightPassed) { Start-Sleep -Seconds 15 }
+          }
+          if (-not $preflightPassed) { throw "Windows deployment preflight failed after three attempts." }
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7.0.0
+        with:
+          node-version: 24.18.0
+          cache: npm
 
       - name: Build standalone Windows release
         shell: pwsh
@@ -82,7 +189,10 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "npm run build failed with exit code $LASTEXITCODE." }
 
           $bundleDirectory = Join-Path $env:RUNNER_TEMP "gridflex-standalone"
-          New-Item -ItemType Directory -Path $bundleDirectory -Force | Out-Null
+          if (Test-Path -LiteralPath $bundleDirectory) {
+              Remove-Item -LiteralPath $bundleDirectory -Recurse -Force
+          }
+          New-Item -ItemType Directory -Path $bundleDirectory | Out-Null
           Copy-Item -Path (Join-Path $PWD ".next\standalone\*") -Destination $bundleDirectory -Recurse -Force
           Get-ChildItem -LiteralPath $bundleDirectory -Filter ".env*" -File -ErrorAction SilentlyContinue |
               Remove-Item -Force
@@ -102,6 +212,8 @@ jobs:
 
           $releasePath = Join-Path $env:RUNNER_TEMP $env:RELEASE_ARCHIVE
           Compress-Archive -Path (Join-Path $bundleDirectory "*") -DestinationPath $releasePath -CompressionLevel Optimal -Force
+          $releaseChecksum = (Get-FileHash -LiteralPath $releasePath -Algorithm SHA256).Hash.ToUpperInvariant()
+          Set-Content -LiteralPath "$releasePath.sha256" -Value $releaseChecksum -NoNewline
 
       - name: Download Windows runtime and service wrapper
         shell: pwsh
@@ -120,6 +232,7 @@ jobs:
                   --retry 5 `
                   --retry-all-errors `
                   --connect-timeout 20 `
+                  --max-time 600 `
                   --output $OutFile `
                   $Uri
               if ($LASTEXITCODE -ne 0) { throw "Download failed for $Uri with exit code $LASTEXITCODE." }
@@ -147,28 +260,6 @@ jobs:
           $wrapperChecksum = (Get-FileHash -LiteralPath $wrapperPath -Algorithm SHA256).Hash.ToUpperInvariant()
           Set-Content -LiteralPath "$wrapperPath.sha256" -Value $wrapperChecksum -NoNewline
 
-      - name: Configure SSH
-        shell: pwsh
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        run: |
-          $ErrorActionPreference = "Stop"
-          $sshDirectory = Join-Path $HOME ".ssh"
-          $keyPath = Join-Path $sshDirectory "gridflex_deploy_key"
-          $knownHostsPath = Join-Path $sshDirectory "known_hosts"
-          New-Item -ItemType Directory -Path $sshDirectory -Force | Out-Null
-          [IO.File]::WriteAllText($keyPath, $env:SSH_PRIVATE_KEY.Trim() + "`n", [Text.UTF8Encoding]::new($false))
-          & icacls.exe $keyPath /inheritance:r | Out-Null
-          & icacls.exe $keyPath /grant:r "$env:USERNAME`:(R)" | Out-Null
-
-          $hostKeys = @()
-          for ($attempt = 1; $attempt -le 5 -and $hostKeys.Count -eq 0; $attempt++) {
-              $hostKeys = @(& ssh-keyscan.exe -H -p $env:SERVER_PORT $env:SERVER_PUBLIC_ADDRESS 2>$null)
-              if ($hostKeys.Count -eq 0) { Start-Sleep -Seconds 10 }
-          }
-          if ($hostKeys.Count -eq 0) { throw "Could not retrieve the server SSH host key after five attempts." }
-          [IO.File]::WriteAllLines($knownHostsPath, $hostKeys, [Text.UTF8Encoding]::new($false))
-
       - name: Upload prepared Windows release
         shell: pwsh
         env:
@@ -181,6 +272,7 @@ jobs:
           $wrapperPath = Join-Path $env:RUNNER_TEMP $env:SERVICE_WRAPPER
           $files = @(
               $releasePath
+              "$releasePath.sha256"
               $nodeArchivePath
               "$nodeArchivePath.sha256"
               $wrapperPath
@@ -192,11 +284,14 @@ jobs:
           $uploaded = $false
           for ($attempt = 1; $attempt -le 3 -and -not $uploaded; $attempt++) {
               & scp.exe `
+                  -q `
                   -P $env:SERVER_PORT `
                   -i $keyPath `
                   -o BatchMode=yes `
                   -o ConnectTimeout=20 `
+                  -o ConnectionAttempts=3 `
                   -o ServerAliveInterval=15 `
+                  -o ServerAliveCountMax=4 `
                   @files `
                   $destination
               $uploaded = $LASTEXITCODE -eq 0
@@ -211,12 +306,67 @@ jobs:
         run: |
           $ErrorActionPreference = "Stop"
           $keyPath = Join-Path $HOME ".ssh\gridflex_deploy_key"
+          $remoteDeploymentCommand = "powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File .\$env:REMOTE_SCRIPT -ApplicationRoot $env:APPLICATION_ROOT -ApplicationDirectory $env:APPLICATION_DIRECTORY -ServiceName $env:SERVICE_NAME -ApplicationPort $env:APPLICATION_PORT -NodeVersion $env:NODE_VERSION"
+          $activated = $false
+          for ($attempt = 1; $attempt -le 3 -and -not $activated; $attempt++) {
+              & ssh.exe `
+                  -p $env:SERVER_PORT `
+                  -i $keyPath `
+                  -o BatchMode=yes `
+                  -o ConnectTimeout=20 `
+                  -o ConnectionAttempts=3 `
+                  -o ServerAliveInterval=15 `
+                  -o ServerAliveCountMax=4 `
+                  "$env:SERVER_USERNAME@$env:SERVER_PUBLIC_ADDRESS" `
+                  $remoteDeploymentCommand
+              $activated = $LASTEXITCODE -eq 0
+              if (-not $activated) { Start-Sleep -Seconds 15 }
+          }
+          if (-not $activated) { throw "Remote deployment failed after three attempts." }
+
+      - name: Verify public frontend endpoint
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          if ([string]::IsNullOrWhiteSpace($env:FRONTEND_HEALTH_URL)) {
+              Write-Warning "FRONTEND_HEALTH_URL is not configured. The service passed its server-local health check, but public TLS/routing was not tested."
+              exit 0
+          }
+
+          & curl.exe `
+              --fail `
+              --location `
+              --silent `
+              --show-error `
+              --retry 5 `
+              --retry-all-errors `
+              --connect-timeout 20 `
+              --max-time 60 `
+              --output NUL `
+              $env:FRONTEND_HEALTH_URL
+          if ($LASTEXITCODE -ne 0) {
+              throw "The frontend service is healthy locally, but the public endpoint failed: $env:FRONTEND_HEALTH_URL"
+          }
+          Write-Host "Public frontend health check passed at $env:FRONTEND_HEALTH_URL"
+
+      - name: Remove uploaded deployment files
+        if: success()
+        continue-on-error: true
+        shell: pwsh
+        env:
+          SERVER_USERNAME: ${{ secrets.SERVER_USERNAME }}
+        run: |
+          $keyPath = Join-Path $HOME ".ssh\gridflex_deploy_key"
           & ssh.exe `
               -p $env:SERVER_PORT `
               -i $keyPath `
               -o BatchMode=yes `
               -o ConnectTimeout=20 `
-              -o ServerAliveInterval=15 `
               "$env:SERVER_USERNAME@$env:SERVER_PUBLIC_ADDRESS" `
-              'powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File .\deploy-gridflex.ps1'
-          if ($LASTEXITCODE -ne 0) { throw "Remote deployment failed with exit code $LASTEXITCODE." }
+              'powershell.exe -NoLogo -NoProfile -NonInteractive -Command "Remove-Item -LiteralPath .\gridflex-release.zip,.\gridflex-release.zip.sha256,.\node-v24.18.0-win-x64.zip,.\node-v24.18.0-win-x64.zip.sha256,.\GridflexAlfuttaimFrontend.exe,.\GridflexAlfuttaimFrontend.exe.sha256,.\preflight-gridflex.ps1,.\deploy-gridflex.ps1 -Force -ErrorAction SilentlyContinue"'
+
+      - name: Remove runner SSH key
+        if: always()
+        shell: pwsh
+        run: |
+          Remove-Item -LiteralPath (Join-Path $HOME ".ssh\gridflex_deploy_key") -Force -ErrorAction SilentlyContinue

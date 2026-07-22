@@ -1,7 +1,9 @@
 [CmdletBinding()]
 param(
-    [string]$ApplicationDirectory = "C:\momas",
+    [string]$ApplicationRoot = "C:\momas",
+    [string]$ApplicationDirectory = "C:\momas\gridflex-frontend",
     [string]$ReleaseArchive = "$env:USERPROFILE\gridflex-release.zip",
+    [string]$ReleaseChecksumFile = "$env:USERPROFILE\gridflex-release.zip.sha256",
     [string]$NodeArchive = "$env:USERPROFILE\node-v24.18.0-win-x64.zip",
     [string]$NodeChecksumFile = "$env:USERPROFILE\node-v24.18.0-win-x64.zip.sha256",
     [string]$ServiceWrapperSource = "$env:USERPROFILE\GridflexAlfuttaimFrontend.exe",
@@ -14,6 +16,7 @@ param(
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
 
+$applicationRoot = [IO.Path]::GetFullPath($ApplicationRoot).TrimEnd([IO.Path]::DirectorySeparatorChar)
 $applicationDirectory = [IO.Path]::GetFullPath($ApplicationDirectory).TrimEnd([IO.Path]::DirectorySeparatorChar)
 $applicationParent = Split-Path -Parent $applicationDirectory
 $applicationName = Split-Path -Leaf $applicationDirectory
@@ -32,6 +35,7 @@ $newMoved = $false
 $serviceExisted = $false
 $serviceWasRunning = $false
 $serviceInstalled = $false
+$serviceTouched = $false
 
 function Assert-FileChecksum {
     param(
@@ -47,6 +51,10 @@ function Assert-FileChecksum {
     }
 
     $expected = ([string](Get-Content -LiteralPath $ChecksumPath -Raw)).Trim().ToUpperInvariant()
+    if ($expected -notmatch '^[A-F0-9]{64}$') {
+        throw "Checksum file does not contain a valid SHA-256 value: $ChecksumPath"
+    }
+
     $actual = (Get-FileHash -LiteralPath $FilePath -Algorithm SHA256).Hash.ToUpperInvariant()
     if ($actual -ne $expected) {
         throw "SHA-256 verification failed for $FilePath."
@@ -70,6 +78,40 @@ function Stop-FrontendService {
 
     Stop-Service -Name $ServiceName -Force
     $service.WaitForStatus([ServiceProcess.ServiceControllerStatus]::Stopped, [TimeSpan]::FromSeconds(45))
+}
+
+function Write-DeploymentDiagnostics {
+    Write-Host "--- Gridflex deployment diagnostics ---"
+    $service = Get-Service -Name $ServiceName -ErrorAction SilentlyContinue
+    if ($service) {
+        Write-Host "Service $ServiceName state: $($service.Status)"
+    }
+    else {
+        Write-Host "Service $ServiceName is not installed."
+    }
+
+    if (Get-Command Get-NetTCPConnection -ErrorAction SilentlyContinue) {
+        $listeners = @(Get-NetTCPConnection -State Listen -LocalPort $ApplicationPort -ErrorAction SilentlyContinue)
+        if ($listeners.Count -eq 0) {
+            Write-Host "No process is listening on port $ApplicationPort."
+        }
+        foreach ($listener in $listeners) {
+            $process = Get-Process -Id $listener.OwningProcess -ErrorAction SilentlyContinue
+            $processName = if ($process) { $process.ProcessName } else { "unknown" }
+            Write-Host "Port $ApplicationPort listener: PID $($listener.OwningProcess) ($processName)"
+        }
+    }
+
+    if (Test-Path -LiteralPath $serviceLogDirectory -PathType Container) {
+        $logFiles = Get-ChildItem -LiteralPath $serviceLogDirectory -File -ErrorAction SilentlyContinue |
+            Where-Object { $_.Name -like "$ServiceName*.log" } |
+            Sort-Object LastWriteTime -Descending |
+            Select-Object -First 3
+        foreach ($logFile in $logFiles) {
+            Write-Host "--- Last 60 lines of $($logFile.FullName) ---"
+            Get-Content -LiteralPath $logFile.FullName -Tail 60 -ErrorAction SilentlyContinue
+        }
+    }
 }
 
 function Wait-ForFrontend {
@@ -100,7 +142,22 @@ function Wait-ForFrontend {
 }
 
 try {
-    foreach ($requiredFile in @($ReleaseArchive, $NodeArchive, $NodeChecksumFile, $ServiceWrapperSource, $ServiceWrapperChecksumFile)) {
+    if (-not $applicationParent.Equals($applicationRoot, [StringComparison]::OrdinalIgnoreCase)) {
+        throw "The frontend must be deployed to a dedicated child directory of $applicationRoot. Received: $applicationDirectory"
+    }
+    if (-not (Test-Path -LiteralPath $applicationRoot -PathType Container)) {
+        throw "The shared application root does not exist or is inaccessible: $applicationRoot"
+    }
+
+    $requiredFiles = @(
+        $ReleaseArchive,
+        $ReleaseChecksumFile,
+        $NodeArchive,
+        $NodeChecksumFile,
+        $ServiceWrapperSource,
+        $ServiceWrapperChecksumFile
+    )
+    foreach ($requiredFile in $requiredFiles) {
         if (-not (Test-Path -LiteralPath $requiredFile -PathType Leaf)) {
             throw "Required deployment file was not found: $requiredFile"
         }
@@ -112,12 +169,14 @@ try {
         throw "The SSH deployment account must run with Administrator rights to manage the frontend service."
     }
 
+    Assert-FileChecksum -FilePath $ReleaseArchive -ChecksumPath $ReleaseChecksumFile
     Assert-FileChecksum -FilePath $NodeArchive -ChecksumPath $NodeChecksumFile
     Assert-FileChecksum -FilePath $ServiceWrapperSource -ChecksumPath $ServiceWrapperChecksumFile
 
     foreach ($directory in @($runtimeRoot, $serviceRoot, $serviceLogDirectory)) {
         New-Item -ItemType Directory -Path $directory -Force | Out-Null
     }
+
     if (-not (Test-Path -LiteralPath $nodePath -PathType Leaf)) {
         Write-Host "Installing uploaded portable Node.js $NodeVersion"
         if (Test-Path -LiteralPath $nodeDirectory) {
@@ -128,17 +187,31 @@ try {
     if (-not (Test-Path -LiteralPath $nodePath -PathType Leaf)) {
         throw "Node.js installation did not produce $nodePath."
     }
-    Write-Host "Using $(& $nodePath --version) from $nodePath"
+
+    $installedNodeVersion = ([string](& $nodePath --version)).Trim()
+    if ($LASTEXITCODE -ne 0 -or $installedNodeVersion -ne "v$NodeVersion") {
+        throw "Expected Node.js v$NodeVersion at $nodePath, but found '$installedNodeVersion'."
+    }
+    Write-Host "Using $installedNodeVersion from $nodePath"
+
+    if (-not (Test-Path -LiteralPath $applicationDirectory) -and (Test-Path -LiteralPath $previousDirectory -PathType Container)) {
+        Write-Host "Recovering the previous release before starting a new deployment."
+        Move-Item -LiteralPath $previousDirectory -Destination $applicationDirectory
+    }
 
     foreach ($path in @($stagingDirectory, $failedDirectory)) {
         if (Test-Path -LiteralPath $path) {
             Remove-Item -LiteralPath $path -Recurse -Force
         }
     }
+
     Write-Host "Expanding prepared release into $stagingDirectory"
     Expand-Archive -LiteralPath $ReleaseArchive -DestinationPath $stagingDirectory -Force
     if (-not (Test-Path -LiteralPath (Join-Path $stagingDirectory "server.js") -PathType Leaf)) {
         throw "Prepared release does not contain server.js."
+    }
+    if (-not (Test-Path -LiteralPath (Join-Path $stagingDirectory ".next\static") -PathType Container)) {
+        throw "Prepared release does not contain .next\static."
     }
 
     $service = Get-Service -Name $ServiceName -ErrorAction SilentlyContinue
@@ -146,6 +219,7 @@ try {
     $serviceWasRunning = $serviceExisted -and $service.Status -eq [ServiceProcess.ServiceControllerStatus]::Running
     if ($serviceExisted -and $service.Status -ne [ServiceProcess.ServiceControllerStatus]::Stopped) {
         Write-Host "Stopping Windows service $ServiceName"
+        $serviceTouched = $true
         Stop-FrontendService
     }
 
@@ -178,43 +252,87 @@ try {
   <onfailure action="restart" delay="30 sec" />
   <resetfailure>1 hour</resetfailure>
   <logpath>$serviceLogDirectory</logpath>
-  <log mode="append" />
+  <log mode="roll-by-size">
+    <sizeThreshold>10240</sizeThreshold>
+    <keepFiles>8</keepFiles>
+  </log>
 </service>
 "@
     [IO.File]::WriteAllText($serviceConfigPath, $serviceConfig, [Text.UTF8Encoding]::new($false))
 
     if (-not $serviceExisted) {
         Write-Host "Installing Windows service $ServiceName with WinSW"
+        $serviceTouched = $true
         Invoke-Wrapper -Arguments @("install")
         $serviceInstalled = $true
     }
 
+    $serviceTouched = $true
     Start-Service -Name $ServiceName
     (Get-Service -Name $ServiceName).WaitForStatus([ServiceProcess.ServiceControllerStatus]::Running, [TimeSpan]::FromSeconds(45))
     Wait-ForFrontend
     Write-Host "Deployment completed successfully at $applicationDirectory"
 }
 catch {
-    [Console]::Error.WriteLine("Deployment failed: $($_.Exception.Message)")
-
-    try { Stop-FrontendService } catch { [Console]::Error.WriteLine("Could not stop failed service: $($_.Exception.Message)") }
-
-    if ($serviceInstalled -and -not $serviceExisted) {
-        try { Invoke-Wrapper -Arguments @("uninstall") } catch { [Console]::Error.WriteLine("Could not uninstall failed service: $($_.Exception.Message)") }
+    $deploymentError = $_
+    [Console]::Error.WriteLine("Deployment failed: $($deploymentError.Exception.Message)")
+    try {
+        Write-DeploymentDiagnostics
     }
+    catch {
+        [Console]::Error.WriteLine("Could not collect deployment diagnostics: $($_.Exception.Message)")
+    }
+
+    if ($serviceTouched) {
+        try {
+            Stop-FrontendService
+        }
+        catch {
+            [Console]::Error.WriteLine("Could not stop the failed frontend service: $($_.Exception.Message)")
+        }
+    }
+
+    $newServiceExists = $null -ne (Get-Service -Name $ServiceName -ErrorAction SilentlyContinue)
+    if (-not $serviceExisted -and ($serviceInstalled -or $newServiceExists)) {
+        try {
+            Invoke-Wrapper -Arguments @("uninstall")
+        }
+        catch {
+            [Console]::Error.WriteLine("Could not uninstall the failed frontend service: $($_.Exception.Message)")
+        }
+    }
+
     if ($newMoved -and (Test-Path -LiteralPath $applicationDirectory)) {
-        Move-Item -LiteralPath $applicationDirectory -Destination $failedDirectory -ErrorAction SilentlyContinue
+        try {
+            if (Test-Path -LiteralPath $failedDirectory) {
+                Remove-Item -LiteralPath $failedDirectory -Recurse -Force
+            }
+            Move-Item -LiteralPath $applicationDirectory -Destination $failedDirectory
+        }
+        catch {
+            [Console]::Error.WriteLine("Could not preserve the failed release: $($_.Exception.Message)")
+        }
     }
+
     if ($currentMoved -and (Test-Path -LiteralPath $previousDirectory) -and -not (Test-Path -LiteralPath $applicationDirectory)) {
-        Move-Item -LiteralPath $previousDirectory -Destination $applicationDirectory -ErrorAction SilentlyContinue
+        try {
+            Move-Item -LiteralPath $previousDirectory -Destination $applicationDirectory
+        }
+        catch {
+            [Console]::Error.WriteLine("Could not restore the previous release: $($_.Exception.Message)")
+        }
     }
+
     if ($serviceExisted -and $serviceWasRunning -and (Test-Path -LiteralPath $applicationDirectory)) {
-        Start-Service -Name $ServiceName -ErrorAction SilentlyContinue
+        try {
+            Start-Service -Name $ServiceName
+            (Get-Service -Name $ServiceName).WaitForStatus([ServiceProcess.ServiceControllerStatus]::Running, [TimeSpan]::FromSeconds(45))
+            Write-Host "Previous frontend release was restored and restarted."
+        }
+        catch {
+            [Console]::Error.WriteLine("Could not restart the previous frontend service: $($_.Exception.Message)")
+        }
     }
-    throw
-}
-finally {
-    foreach ($uploadedFile in @($ReleaseArchive, $NodeArchive, $NodeChecksumFile, $ServiceWrapperSource, $ServiceWrapperChecksumFile)) {
-        Remove-Item -LiteralPath $uploadedFile -Force -ErrorAction SilentlyContinue
-    }
+
+    throw $deploymentError
 }
