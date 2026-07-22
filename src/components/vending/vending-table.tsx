@@ -384,94 +384,114 @@ const VendingTable = ({
                     await printTokenMutation.mutateAsync(payload);
 
                     // Create HTML content for printing (formatted like a receipt)
+                    const fmtToken = (val: string | null | undefined) => {
+                      if (!val) return "N/A";
+                      return val.replace(/(.{4})/g, "$1-").replace(/-$/, "");
+                    };
+
                     const printContent = `
                                             <html>
                                             <head>
                                                 <title>Token Receipt</title>
                                                 <style>
-                                                    body {
+                                                    @page {
+                                                        size: 80mm auto;
+                                                        margin: 2mm;
+                                                    }
+                                                    html, body {
                                                         font-family: 'Courier New', monospace;
                                                         margin: 0;
-                                                        padding: 20px;
+                                                        padding: 0;
                                                         background: white;
-                                                        font-size: 12px;
-                                                        line-height: 1.4;
+                                                        font-size: 10px;
+                                                        line-height: 1.3;
+                                                        height: fit-content;
                                                     }
                                                     .receipt {
-                                                        max-width: 400px;
+                                                        width: 72.1mm;
                                                         margin: 0 auto;
                                                         border: 1px solid #000;
-                                                        padding: 15px;
+                                                        padding: 2mm;
+                                                        box-sizing: border-box;
+                                                        height: fit-content;
                                                     }
                                                     .header {
                                                         text-align: center;
                                                         border-bottom: 1px solid #000;
-                                                        padding-bottom: 10px;
-                                                        margin-bottom: 15px;
+                                                        padding-bottom: 2mm;
+                                                        margin-bottom: 3mm;
                                                     }
                                                     .company-name {
-                                                        font-size: 18px;
+                                                        font-size: 14px;
                                                         font-weight: bold;
-                                                        margin-bottom: 5px;
+                                                        margin-bottom: 3px;
                                                         color: #000;
                                                     }
                                                     .receipt-title {
-                                                        font-size: 14px;
-                                                        margin-bottom: 5px;
+                                                        font-size: 11px;
+                                                        margin-bottom: 3px;
                                                         color: #000;
                                                     }
                                                     .info-row {
                                                         display: flex;
                                                         justify-content: space-between;
-                                                        margin-bottom: 5px;
-                                                        padding: 2px 0;
+                                                        margin-bottom: 2px;
+                                                        padding: 1px 0;
                                                     }
                                                     .label {
                                                         font-weight: bold;
-                                                        min-width: 140px;
+                                                        flex: 0 0 auto;
+                                                        margin-right: 4px;
                                                     }
                                                     .value {
                                                         text-align: right;
-                                                        flex: 1;
+                                                        flex: 1 1 auto;
+                                                        min-width: 0;
+                                                        overflow: hidden;
+                                                        font-weight: bold;
                                                     }
                                                     .amount-section {
                                                         border-top: 1px solid #000;
                                                         border-bottom: 1px solid #000;
-                                                        margin: 15px 0;
-                                                        padding: 10px 0;
+                                                        margin: 3mm 0;
+                                                        padding: 2mm 0;
                                                     }
                                                     .token-section {
                                                         border-top: 1px solid #000;
-                                                        margin-top: 15px;
-                                                        padding-top: 10px;
+                                                        margin-top: 3mm;
+                                                        padding-top: 2mm;
                                                         text-align: center;
                                                     }
                                                     .token-label {
                                                         font-weight: bold;
-                                                        margin-bottom: 5px;
+                                                        margin-bottom: 3px;
                                                     }
                                                     .token-value {
                                                         font-size: 14px;
                                                         font-weight: bolder;
-                                                        letter-spacing: 2px;
+                                                        letter-spacing: 1px;
                                                         word-break: break-all;
-                                                        margin-bottom: 10px;
+                                                        margin-bottom: 2mm;
                                                         color: #000;
                                                     }
                                                     .footer {
                                                         border-top: 1px solid #000;
-                                                        margin-top: 15px;
-                                                        padding-top: 10px;
+                                                        margin-top: 2mm;
+                                                        padding-top: 1mm;
                                                         text-align: center;
-                                                        font-size: 10px;
+                                                        font-size: 8px;
+                                                        font-weight: bold;
                                                     }
+                                                        .copy{
+                                                        font-weight: bold;
+                                                        }
                                                 </style>
                                             </head>
                                             <body>
                                                 <div class="receipt">
                                                     <div class="header">
                                                         <div class="company-name">TOKEN RECEIPT</div>
-                                                        <div>Customer Copy</div>
+                                                        <div class="copy">Customer Copy</div>
                                                     </div>
 
                                                     <div class="info-row">
@@ -629,7 +649,7 @@ const VendingTable = ({
                                                     </div>
                                                     <div class="token-section">
                                                         <div class="token-label">CREDIT TOKEN</div>
-                                                        <div class="token-value">${selectedTransaction?.token || "N/A"}</div>
+                                                        <div class="token-value">${fmtToken(selectedTransaction?.token)}</div>
                                                     </div>
                                                     <div class="info-row">
                                                         <span class="label">Debit Adjustment Balance:</span>
@@ -645,11 +665,11 @@ const VendingTable = ({
                                                           ? `
                                                     <div class="token-section">
                                                         <div class="token-label">KCT TOKENS</div>
-                                                        <div class="token-value">${selectedTransaction?.kct1 ?? "N/A"}</div>
-                                                        <div class="token-value" style="margin-top: 10px;">${selectedTransaction?.kct2 ?? ""}</div>
+                                                        <div class="token-value">${fmtToken(selectedTransaction?.kct1)}</div>
+                                                        <div class="token-value" style="margin-top: 10px;">${fmtToken(selectedTransaction?.kct2)}</div>
                                                         ${
                                                           selectedTransaction?.kct3
-                                                            ? `<div class="token-value" style="margin-top: 10px;">${selectedTransaction?.kct3}</div>`
+                                                            ? `<div class="token-value" style="margin-top: 10px;">${fmtToken(selectedTransaction?.kct3)}</div>`
                                                             : ""
                                                         }
                                                     </div>
@@ -659,7 +679,7 @@ const VendingTable = ({
                                                             ? `
                                                     <div class="token-section">
                                                         <div class="token-label">CLEAR TAMPER TOKEN</div>
-                                                        <div class="token-value">${selectedTransaction?.token || "N/A"}</div>
+                                                        <div class="token-value">${fmtToken(selectedTransaction?.token)}</div>
                                                     </div>
                                                     `
                                                             : selectedTransaction?.tokenType ===
@@ -667,7 +687,7 @@ const VendingTable = ({
                                                               ? `
                                                     <div class="token-section">
                                                         <div class="token-label">CLEAR CREDIT TOKEN</div>
-                                                        <div class="token-value">${selectedTransaction?.token || "N/A"}</div>
+                                                        <div class="token-value">${fmtToken(selectedTransaction?.token)}</div>
                                                     </div>
                                                     `
                                                               : selectedTransaction?.tokenType ===
@@ -675,9 +695,9 @@ const VendingTable = ({
                                                                 ? `
                                                     <div class="token-section">
                                                         <div class="token-label">KCT AND CLEAR TAMPER TOKENS</div>
-                                                        <div class="token-value">${selectedTransaction?.token || "N/A"}</div>
-                                                        <div class="token-value" style="margin-top: 10px;">${selectedTransaction?.token || "N/A"}</div>
-                                                        <div class="token-value" style="margin-top: 10px;">${selectedTransaction?.token}</div>
+                                                        <div class="token-value">${fmtToken(selectedTransaction?.token)}</div>
+                                                        <div class="token-value" style="margin-top: 10px;">${fmtToken(selectedTransaction?.token)}</div>
+                                                        <div class="token-value" style="margin-top: 10px;">${fmtToken(selectedTransaction?.token)}</div>
                                                     </div>
                                                     `
                                                                 : selectedTransaction?.tokenType ===
@@ -685,7 +705,7 @@ const VendingTable = ({
                                                                   ? `
                                                     <div class="token-section">
                                                         <div class="token-label">COMPENSATION TOKEN</div>
-                                                        <div class="token-value">${selectedTransaction?.token || "N/A"}</div>
+                                                        <div class="token-value">${fmtToken(selectedTransaction?.token)}</div>
                                                     </div>
                                                     `
                                                                   : ""
