@@ -384,6 +384,11 @@ const VendingTable = ({
                     await printTokenMutation.mutateAsync(payload);
 
                     // Create HTML content for printing (formatted like a receipt)
+                    const fmtToken = (val: string | null | undefined) => {
+                      if (!val) return "N/A";
+                      return val.replace(/(.{4})/g, "$1-").replace(/-$/, "");
+                    };
+
                     const printContent = `
                                             <html>
                                             <head>
@@ -644,7 +649,7 @@ const VendingTable = ({
                                                     </div>
                                                     <div class="token-section">
                                                         <div class="token-label">CREDIT TOKEN</div>
-                                                        <div class="token-value">${selectedTransaction?.token || "N/A"}</div>
+                                                        <div class="token-value">${fmtToken(selectedTransaction?.token)}</div>
                                                     </div>
                                                     <div class="info-row">
                                                         <span class="label">Debit Adjustment Balance:</span>
@@ -660,11 +665,11 @@ const VendingTable = ({
                                                           ? `
                                                     <div class="token-section">
                                                         <div class="token-label">KCT TOKENS</div>
-                                                        <div class="token-value">${selectedTransaction?.kct1 ?? "N/A"}</div>
-                                                        <div class="token-value" style="margin-top: 10px;">${selectedTransaction?.kct2 ?? ""}</div>
+                                                        <div class="token-value">${fmtToken(selectedTransaction?.kct1)}</div>
+                                                        <div class="token-value" style="margin-top: 10px;">${fmtToken(selectedTransaction?.kct2)}</div>
                                                         ${
                                                           selectedTransaction?.kct3
-                                                            ? `<div class="token-value" style="margin-top: 10px;">${selectedTransaction?.kct3}</div>`
+                                                            ? `<div class="token-value" style="margin-top: 10px;">${fmtToken(selectedTransaction?.kct3)}</div>`
                                                             : ""
                                                         }
                                                     </div>
@@ -674,7 +679,7 @@ const VendingTable = ({
                                                             ? `
                                                     <div class="token-section">
                                                         <div class="token-label">CLEAR TAMPER TOKEN</div>
-                                                        <div class="token-value">${selectedTransaction?.token || "N/A"}</div>
+                                                        <div class="token-value">${fmtToken(selectedTransaction?.token)}</div>
                                                     </div>
                                                     `
                                                             : selectedTransaction?.tokenType ===
@@ -682,7 +687,7 @@ const VendingTable = ({
                                                               ? `
                                                     <div class="token-section">
                                                         <div class="token-label">CLEAR CREDIT TOKEN</div>
-                                                        <div class="token-value">${selectedTransaction?.token || "N/A"}</div>
+                                                        <div class="token-value">${fmtToken(selectedTransaction?.token)}</div>
                                                     </div>
                                                     `
                                                               : selectedTransaction?.tokenType ===
@@ -690,9 +695,9 @@ const VendingTable = ({
                                                                 ? `
                                                     <div class="token-section">
                                                         <div class="token-label">KCT AND CLEAR TAMPER TOKENS</div>
-                                                        <div class="token-value">${selectedTransaction?.token || "N/A"}</div>
-                                                        <div class="token-value" style="margin-top: 10px;">${selectedTransaction?.token || "N/A"}</div>
-                                                        <div class="token-value" style="margin-top: 10px;">${selectedTransaction?.token}</div>
+                                                        <div class="token-value">${fmtToken(selectedTransaction?.token)}</div>
+                                                        <div class="token-value" style="margin-top: 10px;">${fmtToken(selectedTransaction?.token)}</div>
+                                                        <div class="token-value" style="margin-top: 10px;">${fmtToken(selectedTransaction?.token)}</div>
                                                     </div>
                                                     `
                                                                 : selectedTransaction?.tokenType ===
@@ -700,7 +705,7 @@ const VendingTable = ({
                                                                   ? `
                                                     <div class="token-section">
                                                         <div class="token-label">COMPENSATION TOKEN</div>
-                                                        <div class="token-value">${selectedTransaction?.token || "N/A"}</div>
+                                                        <div class="token-value">${fmtToken(selectedTransaction?.token)}</div>
                                                     </div>
                                                     `
                                                                   : ""
