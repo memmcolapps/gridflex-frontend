@@ -115,7 +115,9 @@ try {
     Assert-FileChecksum -FilePath $NodeArchive -ChecksumPath $NodeChecksumFile
     Assert-FileChecksum -FilePath $ServiceWrapperSource -ChecksumPath $ServiceWrapperChecksumFile
 
-    New-Item -ItemType Directory -Path $runtimeRoot, $serviceRoot, $serviceLogDirectory, $applicationParent -Force | Out-Null
+    foreach ($directory in @($runtimeRoot, $serviceRoot, $serviceLogDirectory)) {
+        New-Item -ItemType Directory -Path $directory -Force | Out-Null
+    }
     if (-not (Test-Path -LiteralPath $nodePath -PathType Leaf)) {
         Write-Host "Installing uploaded portable Node.js $NodeVersion"
         if (Test-Path -LiteralPath $nodeDirectory) {
