@@ -16,95 +16,207 @@ concurrency:
 jobs:
   deploy:
     name: Deploy to 41.216.166.166
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
+    runs-on: windows-latest
+    timeout-minutes: 45
     env:
       SERVER_PUBLIC_ADDRESS: 41.216.166.166
       SERVER_PORT: "22"
-      RELEASE_ARCHIVE: gridflex-release.zip
-      REMOTE_SCRIPT: deploy-gridflex.ps1
       APPLICATION_BASE_URL: https://alfuttaim-gridflex.memmserve.com:8081
       NEXT_PUBLIC_CUSTOM_HEADER: ${{ vars.NEXT_PUBLIC_CUSTOM_HEADER }}
+      NODE_VERSION: 24.18.0
+      NODE_ARCHIVE: node-v24.18.0-win-x64.zip
+      RELEASE_ARCHIVE: gridflex-release.zip
+      SERVICE_WRAPPER: GridflexAlfuttaimFrontend.exe
+      REMOTE_SCRIPT: deploy-gridflex.ps1
 
     steps:
       - name: Check out the deployment commit
         uses: actions/checkout@v7.0.1
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v7.0.0
+        with:
+          node-version: 24.18.0
+          cache: npm
+
       - name: Validate deployment settings
-        shell: bash
+        shell: pwsh
         env:
           SERVER_USERNAME: ${{ secrets.SERVER_USERNAME }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
-          set -euo pipefail
+          $ErrorActionPreference = "Stop"
 
-          if [[ -z "$SERVER_USERNAME" ]]; then
-            echo "The SERVER_USERNAME secret is not configured." >&2
-            exit 1
-          fi
+          if ([string]::IsNullOrWhiteSpace($env:SERVER_USERNAME)) {
+              throw "The SERVER_USERNAME secret is not configured."
+          }
 
-          if [[ -z "$SSH_PRIVATE_KEY" ]]; then
-            echo "The SSH_PRIVATE_KEY secret is not configured." >&2
-            exit 1
-          fi
+          if ([string]::IsNullOrWhiteSpace($env:SSH_PRIVATE_KEY)) {
+              throw "The SSH_PRIVATE_KEY secret is not configured."
+          }
 
-          if [[ -z "$NEXT_PUBLIC_CUSTOM_HEADER" ]]; then
-            echo "The NEXT_PUBLIC_CUSTOM_HEADER repository variable is not configured." >&2
-            exit 1
-          fi
+          if ([string]::IsNullOrWhiteSpace($env:NEXT_PUBLIC_CUSTOM_HEADER)) {
+              throw "The NEXT_PUBLIC_CUSTOM_HEADER repository variable is not configured."
+          }
 
-          if [[ "$NEXT_PUBLIC_CUSTOM_HEADER" == *$'\n'* || "$NEXT_PUBLIC_CUSTOM_HEADER" == *$'\r'* ]]; then
-            echo "NEXT_PUBLIC_CUSTOM_HEADER must be a single-line value." >&2
-            exit 1
-          fi
+          if ($env:NEXT_PUBLIC_CUSTOM_HEADER.Contains("`n") -or $env:NEXT_PUBLIC_CUSTOM_HEADER.Contains("`r")) {
+              throw "NEXT_PUBLIC_CUSTOM_HEADER must be a single-line value."
+          }
 
-      - name: Create source release
-        shell: bash
-        run: git archive --format=zip --output="$RELEASE_ARCHIVE" "$GITHUB_SHA"
+      - name: Build standalone Windows release
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $environmentFile = Join-Path $PWD ".env.production.local"
+          $environmentLines = @(
+              "NEXT_PUBLIC_BASE_URL=$env:APPLICATION_BASE_URL"
+              "NEXT_PUBLIC_CUSTOM_HEADER=$env:NEXT_PUBLIC_CUSTOM_HEADER"
+          )
+          [IO.File]::WriteAllLines($environmentFile, $environmentLines, [Text.UTF8Encoding]::new($false))
+
+          & npm.cmd ci --no-audit --no-fund
+          if ($LASTEXITCODE -ne 0) { throw "npm ci failed with exit code $LASTEXITCODE." }
+
+          $env:NODE_ENV = "production"
+          & npm.cmd run build
+          if ($LASTEXITCODE -ne 0) { throw "npm run build failed with exit code $LASTEXITCODE." }
+
+          $bundleDirectory = Join-Path $env:RUNNER_TEMP "gridflex-standalone"
+          New-Item -ItemType Directory -Path $bundleDirectory -Force | Out-Null
+          Copy-Item -Path (Join-Path $PWD ".next\standalone\*") -Destination $bundleDirectory -Recurse -Force
+          Get-ChildItem -LiteralPath $bundleDirectory -Filter ".env*" -File -ErrorAction SilentlyContinue |
+              Remove-Item -Force
+
+          $staticDirectory = Join-Path $bundleDirectory ".next\static"
+          New-Item -ItemType Directory -Path $staticDirectory -Force | Out-Null
+          Copy-Item -Path (Join-Path $PWD ".next\static\*") -Destination $staticDirectory -Recurse -Force
+
+          $publicDirectory = Join-Path $bundleDirectory "public"
+          New-Item -ItemType Directory -Path $publicDirectory -Force | Out-Null
+          Copy-Item -Path (Join-Path $PWD "public\*") -Destination $publicDirectory -Recurse -Force
+          Copy-Item -LiteralPath $environmentFile -Destination $bundleDirectory -Force
+
+          if (-not (Test-Path -LiteralPath (Join-Path $bundleDirectory "server.js") -PathType Leaf)) {
+              throw "The standalone Next.js build did not produce server.js."
+          }
+
+          $releasePath = Join-Path $env:RUNNER_TEMP $env:RELEASE_ARCHIVE
+          Compress-Archive -Path (Join-Path $bundleDirectory "*") -DestinationPath $releasePath -CompressionLevel Optimal -Force
+
+      - name: Download Windows runtime and service wrapper
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $ProgressPreference = "SilentlyContinue"
+          [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+          function Invoke-Download {
+              param([string]$Uri, [string]$OutFile)
+              & curl.exe `
+                  --fail `
+                  --location `
+                  --silent `
+                  --show-error `
+                  --retry 5 `
+                  --retry-all-errors `
+                  --connect-timeout 20 `
+                  --output $OutFile `
+                  $Uri
+              if ($LASTEXITCODE -ne 0) { throw "Download failed for $Uri with exit code $LASTEXITCODE." }
+          }
+
+          $nodeArchivePath = Join-Path $env:RUNNER_TEMP $env:NODE_ARCHIVE
+          $nodeDownloadRoot = "https://nodejs.org/dist/v$env:NODE_VERSION"
+          $nodeChecksumsPath = Join-Path $env:RUNNER_TEMP "SHASUMS256.txt"
+          Invoke-Download -Uri "$nodeDownloadRoot/$env:NODE_ARCHIVE" -OutFile $nodeArchivePath
+          Invoke-Download -Uri "$nodeDownloadRoot/SHASUMS256.txt" -OutFile $nodeChecksumsPath
+          $checksums = Get-Content -LiteralPath $nodeChecksumsPath -Raw
+          $checksumPattern = '(?m)^([a-f0-9]{64})\s+{0}\r?$' -f [regex]::Escape($env:NODE_ARCHIVE)
+          $checksumMatch = [regex]::Match($checksums, $checksumPattern)
+          if (-not $checksumMatch.Success) { throw "Official Node.js checksum was not found." }
+
+          $expectedNodeChecksum = $checksumMatch.Groups[1].Value.ToUpperInvariant()
+          $actualNodeChecksum = (Get-FileHash -LiteralPath $nodeArchivePath -Algorithm SHA256).Hash.ToUpperInvariant()
+          if ($actualNodeChecksum -ne $expectedNodeChecksum) { throw "Node.js checksum verification failed." }
+          Set-Content -LiteralPath "$nodeArchivePath.sha256" -Value $expectedNodeChecksum -NoNewline
+
+          $wrapperPath = Join-Path $env:RUNNER_TEMP $env:SERVICE_WRAPPER
+          Invoke-Download `
+              -Uri "https://github.com/winsw/winsw/releases/download/v2.12.0/WinSW-x64.exe" `
+              -OutFile $wrapperPath
+          $wrapperChecksum = (Get-FileHash -LiteralPath $wrapperPath -Algorithm SHA256).Hash.ToUpperInvariant()
+          Set-Content -LiteralPath "$wrapperPath.sha256" -Value $wrapperChecksum -NoNewline
 
       - name: Configure SSH
-        shell: bash
+        shell: pwsh
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
-          set -euo pipefail
-          install -d -m 700 "$HOME/.ssh"
-          printf '%s\n' "$SSH_PRIVATE_KEY" > "$HOME/.ssh/gridflex_deploy_key"
-          chmod 600 "$HOME/.ssh/gridflex_deploy_key"
-          ssh-keyscan -H -p "$SERVER_PORT" "$SERVER_PUBLIC_ADDRESS" >> "$HOME/.ssh/known_hosts"
-          chmod 600 "$HOME/.ssh/known_hosts"
+          $ErrorActionPreference = "Stop"
+          $sshDirectory = Join-Path $HOME ".ssh"
+          $keyPath = Join-Path $sshDirectory "gridflex_deploy_key"
+          $knownHostsPath = Join-Path $sshDirectory "known_hosts"
+          New-Item -ItemType Directory -Path $sshDirectory -Force | Out-Null
+          [IO.File]::WriteAllText($keyPath, $env:SSH_PRIVATE_KEY.Trim() + "`n", [Text.UTF8Encoding]::new($false))
+          & icacls.exe $keyPath /inheritance:r | Out-Null
+          & icacls.exe $keyPath /grant:r "$env:USERNAME`:(R)" | Out-Null
 
-      - name: Upload release to the Windows server
-        shell: bash
+          $hostKeys = @()
+          for ($attempt = 1; $attempt -le 5 -and $hostKeys.Count -eq 0; $attempt++) {
+              $hostKeys = @(& ssh-keyscan.exe -H -p $env:SERVER_PORT $env:SERVER_PUBLIC_ADDRESS 2>$null)
+              if ($hostKeys.Count -eq 0) { Start-Sleep -Seconds 10 }
+          }
+          if ($hostKeys.Count -eq 0) { throw "Could not retrieve the server SSH host key after five attempts." }
+          [IO.File]::WriteAllLines($knownHostsPath, $hostKeys, [Text.UTF8Encoding]::new($false))
+
+      - name: Upload prepared Windows release
+        shell: pwsh
         env:
           SERVER_USERNAME: ${{ secrets.SERVER_USERNAME }}
         run: |
-          set -euo pipefail
-          {
-            printf 'NEXT_PUBLIC_BASE_URL=%s\n' "$APPLICATION_BASE_URL"
-            printf 'NEXT_PUBLIC_CUSTOM_HEADER=%s\n' "$NEXT_PUBLIC_CUSTOM_HEADER"
-          } > gridflex-production.env
+          $ErrorActionPreference = "Stop"
+          $keyPath = Join-Path $HOME ".ssh\gridflex_deploy_key"
+          $releasePath = Join-Path $env:RUNNER_TEMP $env:RELEASE_ARCHIVE
+          $nodeArchivePath = Join-Path $env:RUNNER_TEMP $env:NODE_ARCHIVE
+          $wrapperPath = Join-Path $env:RUNNER_TEMP $env:SERVICE_WRAPPER
+          $files = @(
+              $releasePath
+              $nodeArchivePath
+              "$nodeArchivePath.sha256"
+              $wrapperPath
+              "$wrapperPath.sha256"
+              (Join-Path $PWD "scripts\$env:REMOTE_SCRIPT")
+          )
+          $destination = "$env:SERVER_USERNAME@$env:SERVER_PUBLIC_ADDRESS`:./"
 
-          scp \
-            -P "$SERVER_PORT" \
-            -i "$HOME/.ssh/gridflex_deploy_key" \
-            -o BatchMode=yes \
-            -o ConnectTimeout=20 \
-            "$RELEASE_ARCHIVE" \
-            "scripts/$REMOTE_SCRIPT" \
-            gridflex-production.env \
-            "$SERVER_USERNAME@$SERVER_PUBLIC_ADDRESS:./"
+          $uploaded = $false
+          for ($attempt = 1; $attempt -le 3 -and -not $uploaded; $attempt++) {
+              & scp.exe `
+                  -P $env:SERVER_PORT `
+                  -i $keyPath `
+                  -o BatchMode=yes `
+                  -o ConnectTimeout=20 `
+                  -o ServerAliveInterval=15 `
+                  @files `
+                  $destination
+              $uploaded = $LASTEXITCODE -eq 0
+              if (-not $uploaded) { Start-Sleep -Seconds 15 }
+          }
+          if (-not $uploaded) { throw "Release upload failed after three attempts." }
 
-      - name: Build and activate release on Windows
-        shell: bash
+      - name: Activate release as a Windows service
+        shell: pwsh
         env:
           SERVER_USERNAME: ${{ secrets.SERVER_USERNAME }}
         run: |
-          set -euo pipefail
-          ssh \
-            -p "$SERVER_PORT" \
-            -i "$HOME/.ssh/gridflex_deploy_key" \
-            -o BatchMode=yes \
-            -o ConnectTimeout=20 \
-            "$SERVER_USERNAME@$SERVER_PUBLIC_ADDRESS" \
-            'powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File .\deploy-gridflex.ps1'
+          $ErrorActionPreference = "Stop"
+          $keyPath = Join-Path $HOME ".ssh\gridflex_deploy_key"
+          & ssh.exe `
+              -p $env:SERVER_PORT `
+              -i $keyPath `
+              -o BatchMode=yes `
+              -o ConnectTimeout=20 `
+              -o ServerAliveInterval=15 `
+              "$env:SERVER_USERNAME@$env:SERVER_PUBLIC_ADDRESS" `
+              'powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File .\deploy-gridflex.ps1'
+          if ($LASTEXITCODE -ne 0) { throw "Remote deployment failed with exit code $LASTEXITCODE." }

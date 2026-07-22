@@ -9,6 +9,7 @@ import "./src/env.js";
 
 // export default config;
 const nextConfig = {
+  output: "standalone",
   images: {
     remotePatterns: [
       {
