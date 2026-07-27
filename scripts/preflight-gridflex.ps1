@@ -4,6 +4,7 @@ param(
     [string]$ApplicationDirectory = "C:\momas\gridflex-frontend",
     [string]$ServiceName = "GridflexAlfuttaimFrontend",
     [int]$ApplicationPort = 3000,
+    [string]$NodeVersion = "24.18.0",
     [long]$MinimumFreeBytes = 2GB
 )
 
@@ -32,6 +33,8 @@ function Assert-DirectoryWritable {
 $applicationRoot = [IO.Path]::GetFullPath($ApplicationRoot).TrimEnd([IO.Path]::DirectorySeparatorChar)
 $applicationDirectory = [IO.Path]::GetFullPath($ApplicationDirectory).TrimEnd([IO.Path]::DirectorySeparatorChar)
 $applicationParent = Split-Path -Parent $applicationDirectory
+$runtimeRoot = Join-Path $env:ProgramData "Gridflex\runtime"
+$nodePath = Join-Path $runtimeRoot "node-v$NodeVersion-win-x64\node.exe"
 $serviceRoot = Join-Path $env:ProgramData "Gridflex\service"
 $expectedWrapperPath = Join-Path $serviceRoot "$ServiceName.exe"
 
@@ -90,6 +93,13 @@ if ($listeners.Count -gt 0) {
     Write-Host "Port $ApplicationPort currently has $($listeners.Count) listener(s); the existing service will be stopped before activation."
 }
 
+$nodeRuntimeReady = $false
+if (Test-Path -LiteralPath $nodePath -PathType Leaf) {
+    $installedNodeVersion = ([string](& $nodePath --version)).Trim()
+    $nodeRuntimeReady = $LASTEXITCODE -eq 0 -and $installedNodeVersion -eq "v$NodeVersion"
+}
+$serviceWrapperReady = Test-Path -LiteralPath $expectedWrapperPath -PathType Leaf
+
 Write-Host "Windows deployment preflight passed."
 Write-Host "Identity: $($identity.Name)"
 Write-Host "Application root: $applicationRoot"
@@ -97,3 +107,5 @@ Write-Host "Frontend directory: $applicationDirectory"
 Write-Host "Free space: $([Math]::Round($drive.Free / 1GB, 2)) GB"
 Write-Host "Service name: $ServiceName"
 Write-Host "Frontend port: $ApplicationPort"
+Write-Host "GRIDFLEX_NODE_RUNTIME_READY=$($nodeRuntimeReady.ToString().ToLowerInvariant())"
+Write-Host "GRIDFLEX_SERVICE_WRAPPER_READY=$($serviceWrapperReady.ToString().ToLowerInvariant())"

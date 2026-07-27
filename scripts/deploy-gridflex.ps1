@@ -149,19 +149,7 @@ try {
         throw "The shared application root does not exist or is inaccessible: $applicationRoot"
     }
 
-    $requiredFiles = @(
-        $ReleaseArchive,
-        $ReleaseChecksumFile,
-        $NodeArchive,
-        $NodeChecksumFile,
-        $ServiceWrapperSource,
-        $ServiceWrapperChecksumFile
-    )
-    foreach ($requiredFile in $requiredFiles) {
-        if (-not (Test-Path -LiteralPath $requiredFile -PathType Leaf)) {
-            throw "Required deployment file was not found: $requiredFile"
-        }
-    }
+    Assert-FileChecksum -FilePath $ReleaseArchive -ChecksumPath $ReleaseChecksumFile
 
     $windowsIdentity = [Security.Principal.WindowsIdentity]::GetCurrent()
     $windowsPrincipal = [Security.Principal.WindowsPrincipal]::new($windowsIdentity)
@@ -169,15 +157,12 @@ try {
         throw "The SSH deployment account must run with Administrator rights to manage the frontend service."
     }
 
-    Assert-FileChecksum -FilePath $ReleaseArchive -ChecksumPath $ReleaseChecksumFile
-    Assert-FileChecksum -FilePath $NodeArchive -ChecksumPath $NodeChecksumFile
-    Assert-FileChecksum -FilePath $ServiceWrapperSource -ChecksumPath $ServiceWrapperChecksumFile
-
     foreach ($directory in @($runtimeRoot, $serviceRoot, $serviceLogDirectory)) {
         New-Item -ItemType Directory -Path $directory -Force | Out-Null
     }
 
     if (-not (Test-Path -LiteralPath $nodePath -PathType Leaf)) {
+        Assert-FileChecksum -FilePath $NodeArchive -ChecksumPath $NodeChecksumFile
         Write-Host "Installing uploaded portable Node.js $NodeVersion"
         if (Test-Path -LiteralPath $nodeDirectory) {
             Remove-Item -LiteralPath $nodeDirectory -Recurse -Force
@@ -193,6 +178,14 @@ try {
         throw "Expected Node.js v$NodeVersion at $nodePath, but found '$installedNodeVersion'."
     }
     Write-Host "Using $installedNodeVersion from $nodePath"
+
+    if (-not (Test-Path -LiteralPath $serviceWrapperPath -PathType Leaf)) {
+        Assert-FileChecksum -FilePath $ServiceWrapperSource -ChecksumPath $ServiceWrapperChecksumFile
+        Copy-Item -LiteralPath $ServiceWrapperSource -Destination $serviceWrapperPath -Force
+    }
+    if (-not (Test-Path -LiteralPath $serviceWrapperPath -PathType Leaf)) {
+        throw "WinSW service wrapper was not found at $serviceWrapperPath."
+    }
 
     if (-not (Test-Path -LiteralPath $applicationDirectory) -and (Test-Path -LiteralPath $previousDirectory -PathType Container)) {
         Write-Host "Recovering the previous release before starting a new deployment."
@@ -222,8 +215,6 @@ try {
         $serviceTouched = $true
         Stop-FrontendService
     }
-
-    Copy-Item -LiteralPath $ServiceWrapperSource -Destination $serviceWrapperPath -Force
 
     if (Test-Path -LiteralPath $previousDirectory) {
         Remove-Item -LiteralPath $previousDirectory -Recurse -Force

@@ -146,10 +146,11 @@ jobs:
           }
           if (-not $uploaded) { throw "Could not upload the Windows preflight script after three attempts." }
 
-          $remotePreflightCommand = "powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File .\$env:PREFLIGHT_SCRIPT -ApplicationRoot $env:APPLICATION_ROOT -ApplicationDirectory $env:APPLICATION_DIRECTORY -ServiceName $env:SERVICE_NAME -ApplicationPort $env:APPLICATION_PORT"
+          $remotePreflightCommand = "powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File .\$env:PREFLIGHT_SCRIPT -ApplicationRoot $env:APPLICATION_ROOT -ApplicationDirectory $env:APPLICATION_DIRECTORY -ServiceName $env:SERVICE_NAME -ApplicationPort $env:APPLICATION_PORT -NodeVersion $env:NODE_VERSION"
           $preflightPassed = $false
+          $preflightOutput = @()
           for ($attempt = 1; $attempt -le 3 -and -not $preflightPassed; $attempt++) {
-              & ssh.exe `
+              $attemptOutput = @(& ssh.exe `
                   -p $env:SERVER_PORT `
                   -i $keyPath `
                   -o BatchMode=yes `
@@ -158,11 +159,25 @@ jobs:
                   -o ServerAliveInterval=15 `
                   -o ServerAliveCountMax=4 `
                   "$env:SERVER_USERNAME@$env:SERVER_PUBLIC_ADDRESS" `
-                  $remotePreflightCommand
-              $preflightPassed = $LASTEXITCODE -eq 0
-              if (-not $preflightPassed) { Start-Sleep -Seconds 15 }
+                  $remotePreflightCommand 2>&1)
+              $preflightExitCode = $LASTEXITCODE
+              $attemptOutput | ForEach-Object { Write-Host $_ }
+              if ($preflightExitCode -eq 0) {
+                  $preflightPassed = $true
+                  $preflightOutput = $attemptOutput
+              }
+              else {
+                  Start-Sleep -Seconds 15
+              }
           }
           if (-not $preflightPassed) { throw "Windows deployment preflight failed after three attempts." }
+
+          $nodeRuntimeReady = $null -ne ($preflightOutput | Where-Object { ([string]$_).Trim() -eq "GRIDFLEX_NODE_RUNTIME_READY=true" } | Select-Object -First 1)
+          $serviceWrapperReady = $null -ne ($preflightOutput | Where-Object { ([string]$_).Trim() -eq "GRIDFLEX_SERVICE_WRAPPER_READY=true" } | Select-Object -First 1)
+          "NODE_RUNTIME_READY=$($nodeRuntimeReady.ToString().ToLowerInvariant())" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "SERVICE_WRAPPER_READY=$($serviceWrapperReady.ToString().ToLowerInvariant())" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          Write-Host "Cached Node.js runtime ready: $nodeRuntimeReady"
+          Write-Host "Cached frontend WinSW ready: $serviceWrapperReady"
 
       - name: Set up Node.js
         uses: actions/setup-node@v7.0.0
@@ -215,7 +230,7 @@ jobs:
           $releaseChecksum = (Get-FileHash -LiteralPath $releasePath -Algorithm SHA256).Hash.ToUpperInvariant()
           Set-Content -LiteralPath "$releasePath.sha256" -Value $releaseChecksum -NoNewline
 
-      - name: Download Windows runtime and service wrapper
+      - name: Prepare required Windows runtime files
         shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
@@ -238,27 +253,37 @@ jobs:
               if ($LASTEXITCODE -ne 0) { throw "Download failed for $Uri with exit code $LASTEXITCODE." }
           }
 
-          $nodeArchivePath = Join-Path $env:RUNNER_TEMP $env:NODE_ARCHIVE
-          $nodeDownloadRoot = "https://nodejs.org/dist/v$env:NODE_VERSION"
-          $nodeChecksumsPath = Join-Path $env:RUNNER_TEMP "SHASUMS256.txt"
-          Invoke-Download -Uri "$nodeDownloadRoot/$env:NODE_ARCHIVE" -OutFile $nodeArchivePath
-          Invoke-Download -Uri "$nodeDownloadRoot/SHASUMS256.txt" -OutFile $nodeChecksumsPath
-          $checksums = Get-Content -LiteralPath $nodeChecksumsPath -Raw
-          $checksumPattern = '(?m)^([a-f0-9]{64})\s+' + [regex]::Escape($env:NODE_ARCHIVE) + '\r?$'
-          $checksumMatch = [regex]::Match($checksums, $checksumPattern)
-          if (-not $checksumMatch.Success) { throw "Official Node.js checksum was not found." }
+          if ($env:NODE_RUNTIME_READY -ne "true") {
+              $nodeArchivePath = Join-Path $env:RUNNER_TEMP $env:NODE_ARCHIVE
+              $nodeDownloadRoot = "https://nodejs.org/dist/v$env:NODE_VERSION"
+              $nodeChecksumsPath = Join-Path $env:RUNNER_TEMP "SHASUMS256.txt"
+              Invoke-Download -Uri "$nodeDownloadRoot/$env:NODE_ARCHIVE" -OutFile $nodeArchivePath
+              Invoke-Download -Uri "$nodeDownloadRoot/SHASUMS256.txt" -OutFile $nodeChecksumsPath
+              $checksums = Get-Content -LiteralPath $nodeChecksumsPath -Raw
+              $checksumPattern = '(?m)^([a-f0-9]{64})\s+' + [regex]::Escape($env:NODE_ARCHIVE) + '\r?$'
+              $checksumMatch = [regex]::Match($checksums, $checksumPattern)
+              if (-not $checksumMatch.Success) { throw "Official Node.js checksum was not found." }
 
-          $expectedNodeChecksum = $checksumMatch.Groups[1].Value.ToUpperInvariant()
-          $actualNodeChecksum = (Get-FileHash -LiteralPath $nodeArchivePath -Algorithm SHA256).Hash.ToUpperInvariant()
-          if ($actualNodeChecksum -ne $expectedNodeChecksum) { throw "Node.js checksum verification failed." }
-          Set-Content -LiteralPath "$nodeArchivePath.sha256" -Value $expectedNodeChecksum -NoNewline
+              $expectedNodeChecksum = $checksumMatch.Groups[1].Value.ToUpperInvariant()
+              $actualNodeChecksum = (Get-FileHash -LiteralPath $nodeArchivePath -Algorithm SHA256).Hash.ToUpperInvariant()
+              if ($actualNodeChecksum -ne $expectedNodeChecksum) { throw "Node.js checksum verification failed." }
+              Set-Content -LiteralPath "$nodeArchivePath.sha256" -Value $expectedNodeChecksum -NoNewline
+          }
+          else {
+              Write-Host "Reusing Node.js $env:NODE_VERSION already installed on the Windows server."
+          }
 
-          $wrapperPath = Join-Path $env:RUNNER_TEMP $env:SERVICE_WRAPPER
-          Invoke-Download `
-              -Uri "https://github.com/winsw/winsw/releases/download/v2.12.0/WinSW-x64.exe" `
-              -OutFile $wrapperPath
-          $wrapperChecksum = (Get-FileHash -LiteralPath $wrapperPath -Algorithm SHA256).Hash.ToUpperInvariant()
-          Set-Content -LiteralPath "$wrapperPath.sha256" -Value $wrapperChecksum -NoNewline
+          if ($env:SERVICE_WRAPPER_READY -ne "true") {
+              $wrapperPath = Join-Path $env:RUNNER_TEMP $env:SERVICE_WRAPPER
+              Invoke-Download `
+                  -Uri "https://github.com/winsw/winsw/releases/download/v2.12.0/WinSW-x64.exe" `
+                  -OutFile $wrapperPath
+              $wrapperChecksum = (Get-FileHash -LiteralPath $wrapperPath -Algorithm SHA256).Hash.ToUpperInvariant()
+              Set-Content -LiteralPath "$wrapperPath.sha256" -Value $wrapperChecksum -NoNewline
+          }
+          else {
+              Write-Host "Reusing the cached frontend WinSW executable on the Windows server."
+          }
 
       - name: Upload prepared Windows release
         shell: pwsh
@@ -268,17 +293,21 @@ jobs:
           $ErrorActionPreference = "Stop"
           $keyPath = Join-Path $HOME ".ssh\gridflex_deploy_key"
           $releasePath = Join-Path $env:RUNNER_TEMP $env:RELEASE_ARCHIVE
-          $nodeArchivePath = Join-Path $env:RUNNER_TEMP $env:NODE_ARCHIVE
-          $wrapperPath = Join-Path $env:RUNNER_TEMP $env:SERVICE_WRAPPER
           $files = @(
               $releasePath
               "$releasePath.sha256"
-              $nodeArchivePath
-              "$nodeArchivePath.sha256"
-              $wrapperPath
-              "$wrapperPath.sha256"
               (Join-Path $PWD "scripts\$env:REMOTE_SCRIPT")
           )
+          if ($env:NODE_RUNTIME_READY -ne "true") {
+              $nodeArchivePath = Join-Path $env:RUNNER_TEMP $env:NODE_ARCHIVE
+              $files += $nodeArchivePath
+              $files += "$nodeArchivePath.sha256"
+          }
+          if ($env:SERVICE_WRAPPER_READY -ne "true") {
+              $wrapperPath = Join-Path $env:RUNNER_TEMP $env:SERVICE_WRAPPER
+              $files += $wrapperPath
+              $files += "$wrapperPath.sha256"
+          }
           $destination = "$env:SERVER_USERNAME@$env:SERVER_PUBLIC_ADDRESS`:./"
 
           $uploaded = $false
