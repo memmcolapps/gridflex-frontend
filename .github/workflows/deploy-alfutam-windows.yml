@@ -24,7 +24,7 @@ jobs:
       APPLICATION_ROOT: 'C:\momas'
       APPLICATION_DIRECTORY: 'C:\momas\gridflex-frontend'
       APPLICATION_PORT: "3000"
-      APPLICATION_BASE_URL: https://alfuttaim-gridflex.memmserve.com:8081
+      APPLICATION_BASE_URL: https://alfuttaim-gridflex.memmserve.com:8081/grid-flex/v1/api
       FRONTEND_HEALTH_URL: ${{ vars.FRONTEND_HEALTH_URL }}
       NEXT_PUBLIC_CUSTOM_HEADER: ${{ vars.NEXT_PUBLIC_CUSTOM_HEADER }}
       SERVER_SSH_HOST_KEY: ${{ vars.SERVER_SSH_HOST_KEY }}
@@ -81,8 +81,8 @@ jobs:
           }
 
           $apiUri = [Uri]$env:APPLICATION_BASE_URL
-          if ($apiUri.Scheme -ne "https" -or $apiUri.Host -ne "alfuttaim-gridflex.memmserve.com" -or $apiUri.Port -ne 8081 -or $apiUri.AbsolutePath -ne "/") {
-              throw "APPLICATION_BASE_URL must be exactly https://alfuttaim-gridflex.memmserve.com:8081 with no API route prefix."
+          if ($apiUri.Scheme -ne "https" -or $apiUri.Host -ne "alfuttaim-gridflex.memmserve.com" -or $apiUri.Port -ne 8081 -or $apiUri.AbsolutePath -ne "/grid-flex/v1/api") {
+              throw "APPLICATION_BASE_URL must be exactly https://alfuttaim-gridflex.memmserve.com:8081/grid-flex/v1/api."
           }
           Write-Host "Frontend API base URL: $env:APPLICATION_BASE_URL"
 
