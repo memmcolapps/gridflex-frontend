@@ -25,6 +25,7 @@ jobs:
       APPLICATION_DIRECTORY: 'C:\momas\gridflex-frontend'
       APPLICATION_PORT: "3000"
       APPLICATION_BASE_URL: https://alfuttaim-gridflex.memmserve.com:8081/grid-flex/v1/api
+      DEPLOYMENT_ID: ${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}
       FRONTEND_HEALTH_URL: ${{ vars.FRONTEND_HEALTH_URL }}
       NEXT_PUBLIC_CUSTOM_HEADER: ${{ vars.NEXT_PUBLIC_CUSTOM_HEADER }}
       SERVER_SSH_HOST_KEY: ${{ vars.SERVER_SSH_HOST_KEY }}
@@ -335,10 +336,29 @@ jobs:
         run: |
           $ErrorActionPreference = "Stop"
           $keyPath = Join-Path $HOME ".ssh\gridflex_deploy_key"
-          $remoteDeploymentCommand = "powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File .\$env:REMOTE_SCRIPT -ApplicationRoot $env:APPLICATION_ROOT -ApplicationDirectory $env:APPLICATION_DIRECTORY -ServiceName $env:SERVICE_NAME -ApplicationPort $env:APPLICATION_PORT -NodeVersion $env:NODE_VERSION"
-          $activated = $false
-          for ($attempt = 1; $attempt -le 3 -and -not $activated; $attempt++) {
-              & ssh.exe `
+          $remoteDeploymentCommand = "powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File .\$env:REMOTE_SCRIPT -ApplicationRoot $env:APPLICATION_ROOT -ApplicationDirectory $env:APPLICATION_DIRECTORY -ServiceName $env:SERVICE_NAME -ApplicationPort $env:APPLICATION_PORT -NodeVersion $env:NODE_VERSION -DeploymentId $env:DEPLOYMENT_ID"
+          $remoteStatusCommand = "powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File .\$env:REMOTE_SCRIPT -ServiceName $env:SERVICE_NAME -DeploymentId $env:DEPLOYMENT_ID -StatusOnly"
+
+          & ssh.exe `
+              -p $env:SERVER_PORT `
+              -i $keyPath `
+              -o BatchMode=yes `
+              -o ConnectTimeout=20 `
+              -o ConnectionAttempts=3 `
+              -o ServerAliveInterval=15 `
+              -o ServerAliveCountMax=4 `
+              "$env:SERVER_USERNAME@$env:SERVER_PUBLIC_ADDRESS" `
+              $remoteDeploymentCommand
+          $activationExitCode = $LASTEXITCODE
+          $activated = $activationExitCode -eq 0
+
+          if (-not $activated) {
+              Write-Warning "The activation SSH session exited with code $activationExitCode. The deployment will not be started again; checking its completion marker instead."
+          }
+
+          for ($statusAttempt = 1; $statusAttempt -le 18 -and -not $activated; $statusAttempt++) {
+              Start-Sleep -Seconds 10
+              $statusOutput = @(& ssh.exe `
                   -p $env:SERVER_PORT `
                   -i $keyPath `
                   -o BatchMode=yes `
@@ -347,11 +367,24 @@ jobs:
                   -o ServerAliveInterval=15 `
                   -o ServerAliveCountMax=4 `
                   "$env:SERVER_USERNAME@$env:SERVER_PUBLIC_ADDRESS" `
-                  $remoteDeploymentCommand
-              $activated = $LASTEXITCODE -eq 0
-              if (-not $activated) { Start-Sleep -Seconds 15 }
+                  $remoteStatusCommand 2>&1)
+              $statusExitCode = $LASTEXITCODE
+              $statusOutput | ForEach-Object { Write-Host $_ }
+
+              if ($statusExitCode -eq 0) {
+                  $activated = $true
+                  Write-Host "Remote deployment $env:DEPLOYMENT_ID completed successfully after the original SSH session ended."
+              }
+              elseif ($statusExitCode -eq 20) {
+                  throw "Remote deployment $env:DEPLOYMENT_ID reported failure. It was not executed again."
+              }
+              else {
+                  Write-Host "Deployment status is still pending or temporarily unreachable (attempt $statusAttempt of 18, exit code $statusExitCode)."
+              }
           }
-          if (-not $activated) { throw "Remote deployment failed after three attempts." }
+          if (-not $activated) {
+              throw "Could not confirm deployment $env:DEPLOYMENT_ID within three minutes. The deployment was not executed again; inspect its marker and Windows service state before rerunning."
+          }
 
       - name: Verify public frontend endpoint
         shell: pwsh

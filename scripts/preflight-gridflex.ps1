@@ -37,6 +37,9 @@ $runtimeRoot = Join-Path $env:ProgramData "Gridflex\runtime"
 $nodePath = Join-Path $runtimeRoot "node-v$NodeVersion-win-x64\node.exe"
 $serviceRoot = Join-Path $env:ProgramData "Gridflex\service"
 $expectedWrapperPath = Join-Path $serviceRoot "$ServiceName.exe"
+$serviceStateName = $ServiceName -replace '[^A-Za-z0-9._-]', '_'
+$deploymentStateRoot = Join-Path $env:ProgramData "Gridflex\deployments\$serviceStateName"
+$deploymentLockPath = Join-Path $deploymentStateRoot "deployment.lock"
 
 if (-not $applicationRoot -or -not $applicationDirectory) {
     throw "Application paths must not be empty."
@@ -64,6 +67,25 @@ Assert-DirectoryWritable -Directory $applicationRoot
 $gridflexDataRoot = Join-Path $env:ProgramData "Gridflex"
 New-Item -ItemType Directory -Path $gridflexDataRoot -Force | Out-Null
 Assert-DirectoryWritable -Directory $gridflexDataRoot
+
+New-Item -ItemType Directory -Path $deploymentStateRoot -Force | Out-Null
+$deploymentLockProbe = $null
+try {
+    $deploymentLockProbe = [IO.File]::Open(
+        $deploymentLockPath,
+        [IO.FileMode]::OpenOrCreate,
+        [IO.FileAccess]::ReadWrite,
+        [IO.FileShare]::None
+    )
+}
+catch [IO.IOException] {
+    throw "Another $ServiceName deployment is still running. Wait for it to finish before starting a new deployment."
+}
+finally {
+    if ($null -ne $deploymentLockProbe) {
+        $deploymentLockProbe.Dispose()
+    }
+}
 
 $applicationDriveRoot = [IO.Path]::GetPathRoot($applicationRoot)
 $driveName = $applicationDriveRoot.TrimEnd([IO.Path]::DirectorySeparatorChar).TrimEnd(':')

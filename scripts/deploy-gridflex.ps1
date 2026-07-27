@@ -10,7 +10,9 @@ param(
     [string]$ServiceWrapperChecksumFile = "$env:USERPROFILE\GridflexAlfuttaimFrontend.exe.sha256",
     [string]$ServiceName = "GridflexAlfuttaimFrontend",
     [int]$ApplicationPort = 3000,
-    [string]$NodeVersion = "24.18.0"
+    [string]$NodeVersion = "24.18.0",
+    [string]$DeploymentId = "",
+    [switch]$StatusOnly
 )
 
 $ErrorActionPreference = "Stop"
@@ -36,6 +38,34 @@ $serviceExisted = $false
 $serviceWasRunning = $false
 $serviceInstalled = $false
 $serviceTouched = $false
+$serviceStateCaptured = $false
+$deploymentLockStream = $null
+
+if ([string]::IsNullOrWhiteSpace($DeploymentId)) {
+    $DeploymentId = "manual-$([Guid]::NewGuid().ToString('N'))"
+}
+if ($DeploymentId -notmatch '^[A-Za-z0-9._-]{1,200}$') {
+    throw "DeploymentId contains unsupported characters."
+}
+
+$serviceStateName = $ServiceName -replace '[^A-Za-z0-9._-]', '_'
+$deploymentStateRoot = Join-Path $env:ProgramData "Gridflex\deployments\$serviceStateName"
+$deploymentLockPath = Join-Path $deploymentStateRoot "deployment.lock"
+$successMarkerPath = Join-Path $deploymentStateRoot "$DeploymentId.success"
+$failureMarkerPath = Join-Path $deploymentStateRoot "$DeploymentId.failed"
+
+if ($StatusOnly) {
+    if (Test-Path -LiteralPath $successMarkerPath -PathType Leaf) {
+        Get-Content -LiteralPath $successMarkerPath -ErrorAction SilentlyContinue
+        exit 0
+    }
+    if (Test-Path -LiteralPath $failureMarkerPath -PathType Leaf) {
+        Get-Content -LiteralPath $failureMarkerPath -ErrorAction SilentlyContinue
+        exit 20
+    }
+    Write-Host "Deployment $DeploymentId has not produced a completion marker."
+    exit 10
+}
 
 function Assert-FileChecksum {
     param(
@@ -142,6 +172,21 @@ function Wait-ForFrontend {
 }
 
 try {
+    New-Item -ItemType Directory -Path $deploymentStateRoot -Force | Out-Null
+    try {
+        $deploymentLockStream = [IO.File]::Open(
+            $deploymentLockPath,
+            [IO.FileMode]::OpenOrCreate,
+            [IO.FileAccess]::ReadWrite,
+            [IO.FileShare]::None
+        )
+    }
+    catch [IO.IOException] {
+        throw "Another $ServiceName deployment is still running."
+    }
+
+    Remove-Item -LiteralPath $successMarkerPath, $failureMarkerPath -Force -ErrorAction SilentlyContinue
+
     if (-not $applicationParent.Equals($applicationRoot, [StringComparison]::OrdinalIgnoreCase)) {
         throw "The frontend must be deployed to a dedicated child directory of $applicationRoot. Received: $applicationDirectory"
     }
@@ -210,6 +255,7 @@ try {
     $service = Get-Service -Name $ServiceName -ErrorAction SilentlyContinue
     $serviceExisted = $null -ne $service
     $serviceWasRunning = $serviceExisted -and $service.Status -eq [ServiceProcess.ServiceControllerStatus]::Running
+    $serviceStateCaptured = $true
     if ($serviceExisted -and $service.Status -ne [ServiceProcess.ServiceControllerStatus]::Stopped) {
         Write-Host "Stopping Windows service $ServiceName"
         $serviceTouched = $true
@@ -262,6 +308,14 @@ try {
     Start-Service -Name $ServiceName
     (Get-Service -Name $ServiceName).WaitForStatus([ServiceProcess.ServiceControllerStatus]::Running, [TimeSpan]::FromSeconds(45))
     Wait-ForFrontend
+    $successMarkerContent = @(
+        "DeploymentId=$DeploymentId"
+        "Status=success"
+        "CompletedAt=$([DateTimeOffset]::UtcNow.ToString('O'))"
+        "ServiceName=$ServiceName"
+        "ApplicationDirectory=$applicationDirectory"
+    )
+    [IO.File]::WriteAllLines($successMarkerPath, $successMarkerContent, [Text.UTF8Encoding]::new($false))
     Write-Host "Deployment completed successfully at $applicationDirectory"
 }
 catch {
@@ -284,7 +338,7 @@ catch {
     }
 
     $newServiceExists = $null -ne (Get-Service -Name $ServiceName -ErrorAction SilentlyContinue)
-    if (-not $serviceExisted -and ($serviceInstalled -or $newServiceExists)) {
+    if ($serviceStateCaptured -and -not $serviceExisted -and ($serviceInstalled -or $newServiceExists)) {
         try {
             Invoke-Wrapper -Arguments @("uninstall")
         }
@@ -314,7 +368,7 @@ catch {
         }
     }
 
-    if ($serviceExisted -and $serviceWasRunning -and (Test-Path -LiteralPath $applicationDirectory)) {
+    if ($serviceStateCaptured -and $serviceExisted -and $serviceWasRunning -and (Test-Path -LiteralPath $applicationDirectory)) {
         try {
             Start-Service -Name $ServiceName
             (Get-Service -Name $ServiceName).WaitForStatus([ServiceProcess.ServiceControllerStatus]::Running, [TimeSpan]::FromSeconds(45))
@@ -325,5 +379,23 @@ catch {
         }
     }
 
+    try {
+        $failureMarkerContent = @(
+            "DeploymentId=$DeploymentId"
+            "Status=failed"
+            "CompletedAt=$([DateTimeOffset]::UtcNow.ToString('O'))"
+            "Message=$($deploymentError.Exception.Message)"
+        )
+        [IO.File]::WriteAllLines($failureMarkerPath, $failureMarkerContent, [Text.UTF8Encoding]::new($false))
+    }
+    catch {
+        [Console]::Error.WriteLine("Could not write the deployment failure marker: $($_.Exception.Message)")
+    }
+
     throw $deploymentError
+}
+finally {
+    if ($null -ne $deploymentLockStream) {
+        $deploymentLockStream.Dispose()
+    }
 }
