@@ -546,7 +546,8 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                                 color: #000;
                             }
                             .receipt-title {
-                                font-size: 11px;
+                                font-size: 12px;
+                                font-weight: bold;
                                 margin-bottom: 3px;
                                 color: #000;
                             }
@@ -601,9 +602,10 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
                         </style>
                     </head>
                     <body>
+                        <div style="text-align: center; font-size: 14px; font-weight: bold; color: #000;">ALFUTTAIM NIGERIA LIMITED</div>
                         <div class="receipt">
                             <div class="header">
-                                <div class="company-name">TOKEN RECEIPT</div>
+                                <div class="receipt-title">TOKEN RECEIPT</div>
                                 <div>Customer Copy</div>
                             </div>
 
@@ -798,15 +800,13 @@ export default function TokenFormDialog({ tokenType }: TokenFormDialogProps) {
           printWindow.document.write(printContent);
           printWindow.document.close();
           printWindow.focus();
-
-          // Wait for content to load, then trigger print dialog
-          printWindow.onload = () => {
+          setShowTokenDialog(false);
+          setTimeout(() => {
             printWindow.print();
-          };
+          }, 500);
         } else {
           console.error("Failed to open print window");
         }
-        setShowTokenDialog(false);
       } catch (error) {
         console.error("Failed to reprint token:", error);
       }
