@@ -372,7 +372,6 @@ const VendingTable = ({
               size="lg"
               className="cursor-pointer bg-[#161CCA] text-white"
               onClick={async () => {
-                setShowTokenDialog(false);
                 if (selectedTransaction) {
                   try {
                     const payload = {
@@ -428,7 +427,8 @@ const VendingTable = ({
                                                         color: #000;
                                                     }
                                                     .receipt-title {
-                                                        font-size: 11px;
+                                                        font-size: 12px;
+                                                        font-weight: bold;
                                                         margin-bottom: 3px;
                                                         color: #000;
                                                     }
@@ -488,11 +488,12 @@ const VendingTable = ({
                                                 </style>
                                             </head>
                                             <body>
-                                                <div class="receipt">
-                                                    <div class="header">
-                                                        <div class="company-name">TOKEN RECEIPT</div>
-                                                        <div class="copy">Customer Copy</div>
-                                                    </div>
+                                                    <div style="text-align: center; font-size: 14px; font-weight: bold; color: #000;">ALFUTTAIM NIGERIA LIMITED</div>
+                                                    <div class="receipt">
+                                                        <div class="header">
+                                                            <div class="receipt-title">TOKEN RECEIPT</div>
+                                                            <div class="copy">Customer Copy</div>
+                                                        </div>
 
                                                     <div class="info-row">
                                                         <span class="label">Customer Name:</span>
@@ -730,21 +731,19 @@ const VendingTable = ({
                       printWindow.document.write(printContent);
                       printWindow.document.close();
                       printWindow.focus();
-
-                      // Wait for content to load, then trigger print dialog
-                      printWindow.onload = () => {
-                        printWindow.print();
-                      };
                       setShowTokenDialog(false);
+                      setTimeout(() => {
+                        printWindow.print();
+                        toast.success("Token printed successfully");
+                      }, 500);
                     } else {
                       console.error("Failed to open print window");
+                      toast.error("Failed to open print window");
                     }
-                    toast.success("Token printed successfully");
                   } catch {
                     toast.error("Failed to print token");
                   }
                 }
-                setShowTokenDialog(false);
               }}
               disabled={printTokenMutation.isPending}
             >
