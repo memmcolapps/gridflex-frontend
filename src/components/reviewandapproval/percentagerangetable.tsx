@@ -91,11 +91,11 @@ const PercentageRangeTable = ({
   const totalData = filteredPercentageRanges.length;
 
   const handlePageChange = (page: number) => {
-    setFetchParams({ ...fetchParams, page });
+    setFetchParams((prev) => ({ ...prev, page }));
   };
 
   const handlePageSizeChange = (pageSize: number) => {
-    setFetchParams({ ...fetchParams, pageSize, page: 1 });
+    setFetchParams((prev) => ({ ...prev, pageSize, page: 1 }));
   };
 
   const toggleSelection = (code: string) => {
@@ -168,8 +168,10 @@ const PercentageRangeTable = ({
     return <div>Error: {error?.message}</div>;
   }
 
-  // Use the filtered data
-  const dataToDisplay = filteredPercentageRanges;
+  const dataToDisplay = filteredPercentageRanges.slice(
+    (fetchParams.page - 1) * fetchParams.pageSize,
+    fetchParams.page * fetchParams.pageSize,
+  );
 
   return (
     <Card className="min-h-[calc(100vh-300px)] overflow-x-auto border-none bg-transparent shadow-none">
