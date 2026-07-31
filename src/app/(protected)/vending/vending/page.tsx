@@ -6,12 +6,16 @@ import { ExportButton } from "@/components/ui/export-button";
 import { useState, useMemo } from "react";
 import { usePermissions } from "@/hooks/use-permissions";
 import { useVendingTransactions } from "@/hooks/use-vending";
-import { FilterControl, SearchControl, SortControl } from "@/components/search-control";
+import { FilterControl, SearchControl, SortControl, DateRangeFilter } from "@/components/search-control";
 
 export default function VendingPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [activeFilters, setActiveFilters] = useState<Record<string, boolean>>({});
     const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+    const [dateRange, setDateRange] = useState<{
+        startDate?: string;
+        endDate?: string;
+    }>({});
     const { canEdit } = usePermissions();
 
     const statusFilter = useMemo(() => {
@@ -28,6 +32,8 @@ export default function VendingPage() {
         search: searchQuery,
         status: statusFilter,
         sortDirection,
+        startDate: dateRange.startDate,
+        endDate: dateRange.endDate,
     });
 
     const transactionsData = useMemo(() => {
@@ -92,6 +98,11 @@ export default function VendingPage() {
                             }
                             currentSort={sortDirection}
                         />
+                        <DateRangeFilter
+                            onApply={setDateRange}
+                            onReset={() => setDateRange({})}
+                            initialRange={dateRange}
+                        />
                     </div>
                 </div>
                 <div className="flex gap-5">
@@ -107,6 +118,8 @@ export default function VendingPage() {
                 searchQuery={searchQuery}
                 status={statusFilter}
                 sortDirection={sortDirection}
+                startDate={dateRange.startDate}
+                endDate={dateRange.endDate}
             />
         </div>
     );

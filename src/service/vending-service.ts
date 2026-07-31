@@ -543,6 +543,8 @@ export async function getVendingTransactions(payload?: {
   search?: string;
   status?: string;
   sortDirection?: "asc" | "desc";
+  startDate?: string;
+  endDate?: string;
 }): Promise<
   | { success: true; data: GetVendingTransactionsResponse["responsedata"] }
   | { success: false; error: string }
@@ -566,6 +568,9 @@ export async function getVendingTransactions(payload?: {
     if (payload?.status) params.append("status", payload.status);
     if (payload?.sortDirection)
       params.append("sortDirection", payload.sortDirection);
+    if (payload?.startDate)
+      params.append("startDate", payload.startDate);
+    if (payload?.endDate) params.append("endDate", payload.endDate);
 
     const response = await axiosInstance.get<GetVendingTransactionsResponse>(
       `${API_URL}/vending/service/generate/token/all?${params.toString()}`,
