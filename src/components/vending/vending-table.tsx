@@ -40,12 +40,16 @@ interface VendingTableProps {
   searchQuery?: string;
   status?: string;
   sortDirection?: "asc" | "desc";
+  startDate?: string;
+  endDate?: string;
 }
 
 const VendingTable = ({
   searchQuery = "",
   status = "",
   sortDirection = "desc",
+  startDate = "",
+  endDate = "",
 }: VendingTableProps = {}) => {
   const [rowsPerPage, setRowsPerPage] = useState<number>(10);
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -57,6 +61,8 @@ const VendingTable = ({
     search: searchQuery,
     status,
     sortDirection,
+    startDate,
+    endDate,
   });
 
   const transactions = rawTransactionsData?.messages ?? [];
@@ -66,7 +72,7 @@ const VendingTable = ({
   // Reset to first page when server-side query params change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, status, sortDirection]);
+  }, [searchQuery, status, sortDirection, startDate, endDate]);
 
   const getStatusColor = (status: string) => {
     switch (status) {

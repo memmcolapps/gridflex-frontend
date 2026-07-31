@@ -199,6 +199,8 @@ export const useVendingTransactions = (payload?: {
   search?: string;
   status?: string;
   sortDirection?: "asc" | "desc";
+  startDate?: string;
+  endDate?: string;
 }) => {
   return useQuery({
     queryKey: ["vending-transactions", payload],
