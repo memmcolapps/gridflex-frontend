@@ -80,8 +80,8 @@ export interface EventLog {
   eventTypeId: string;
   criticalLevel: number;
   eventTime: string;
-  eventName: string;
-  eventTypeName: string;
+  event: string;
+  eventType: string;
   obisCode: string;
   description: string;
 }
