@@ -171,8 +171,8 @@ export default function HESDashboardPage() {
                 time: event.eventTime
                   ? new Date(event.eventTime).toLocaleString()
                   : "N/A",
-                eventType: event.eventTypeName || "Unknown",
-                event: event.eventName || "Unknown Event",
+                eventType: event.eventType || "Unknown",
+                event: event.event || "Unknown Event",
                 eventTypeId: event.eventTypeId?.toString() ?? "",
                 criticalLevel: event.criticalLevel ?? 0,
               })) ?? []
