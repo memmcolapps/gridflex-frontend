@@ -7,9 +7,9 @@ export interface GenerateOtpPayload {
 }
 
 export interface ChangePasswordPayload {
-  username: string;
   oldPassword: string;
   newPassword: string;
+  confirmPassword: string;
 }
 
 interface ApiResponse {
@@ -54,19 +54,21 @@ export async function changePassword(
   data: ChangePasswordPayload,
 ): Promise<{ success: true } | { success: false; error: string }> {
   try {
-    // Correctly format data as application/x-www-form-urlencoded
-    const formData = new URLSearchParams();
-    formData.append("username", data.username);
-    formData.append("oldPassword", data.oldPassword);
-    formData.append("newPassword", data.newPassword);
+    const token = localStorage.getItem("auth_token");
 
     const response = await axiosInstance.post<ApiResponse>(
-      `${API_URL}/auth/service/forget-password`,
-      formData, // Send the URLSearchParams object
+      `${API_URL}/user/service/change-password`,
+      null,
       {
+        params: {
+          oldPassword: data.oldPassword,
+          newPassword: data.newPassword,
+          confirmPassword: data.confirmPassword,
+        },
         headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
+          "Content-Type": "application/json",
           custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
         },
       },
     );
