@@ -224,6 +224,7 @@ const profileColumns: Record<string, { key: string; label: string }[]> = {
   "load-profile-two-household": [
     { key: "voltageL1", label: "Voltage L1" },
      { key: "voltageL2", label: "Voltage L2" },
+      { key: "voltageL3", label: "Voltage L3" },
     { key: "currentL1", label: "Current L1" },
     { key: "currentL2", label: "Current L2" },
      { key: "currentL3", label: "Current L3" },
