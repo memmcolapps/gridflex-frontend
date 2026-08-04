@@ -7,9 +7,9 @@ export interface GenerateOtpPayload {
 }
 
 export interface ChangePasswordPayload {
-  usernam: string;
-  otp: string;
-  password: string;
+  username: string;
+  oldPassword: string;
+  newPassword: string;
 }
 
 interface ApiResponse {
@@ -56,9 +56,9 @@ export async function changePassword(
   try {
     // Correctly format data as application/x-www-form-urlencoded
     const formData = new URLSearchParams();
-    formData.append("username", data.usernam);
-    formData.append("otp", data.otp);
-    formData.append("password", data.password);
+    formData.append("username", data.username);
+    formData.append("oldPassword", data.oldPassword);
+    formData.append("newPassword", data.newPassword);
 
     const response = await axiosInstance.post<ApiResponse>(
       `${API_URL}/auth/service/forget-password`,

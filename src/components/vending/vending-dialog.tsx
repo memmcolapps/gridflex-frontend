@@ -56,7 +56,7 @@ export default function VendTokenDialog() {
                             <SelectContent>
                                 <SelectItem value="creditToken">Credit Token</SelectItem>
                                 <SelectItem value="kct">KCT</SelectItem>
-                                <SelectItem value="compensation">Compensation</SelectItem>
+                                {/* <SelectItem value="compensation">Compensation</SelectItem> */}
                                 {/* <SelectItem value="arrearsPayment">Arrears Payment</SelectItem> */}
                                 <SelectItem value="clearCredit">Clear Credit</SelectItem>
                                 <SelectItem value="clearTamper">Clear Tamper</SelectItem>
