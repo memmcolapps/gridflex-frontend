@@ -82,7 +82,10 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
         const { oldPassword, newPassword, confirmPassword } = formData;
         const oldPasswordError = validateField("oldPassword", oldPassword);
         const newPasswordError = validateField("newPassword", newPassword);
-        const confirmPasswordError = validateField("confirmPassword", confirmPassword);
+        let confirmPasswordError = validateField("confirmPassword", confirmPassword);
+        if (newPassword !== confirmPassword) {
+            confirmPasswordError = "Passwords don’t match";
+        }
 
         setErrors({
             oldPassword: oldPasswordError,
@@ -95,7 +98,7 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
         }
 
         const payload = {
-            username: user.email,
+            confirmPassword: confirmPassword,
             oldPassword: oldPassword,
             newPassword: newPassword,
         };
