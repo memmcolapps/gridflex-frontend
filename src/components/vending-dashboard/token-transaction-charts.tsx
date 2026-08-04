@@ -65,7 +65,7 @@ export default function TokenTransactionCharts({ tokenDistribution, transactionS
     { name: "Credit Token", value: parseFloat(tokenDistribution.creditToken) },
     { name: "Clear Credit Token", value: parseFloat(tokenDistribution.clearCreditToken) },
     { name: "KCT Clear Tamper Token", value: parseFloat(tokenDistribution.kctClearTamperToken) },
-    { name: "Compensation Token", value: parseFloat(tokenDistribution.compensationToken) },
+    // { name: "Compensation Token", value: parseFloat(tokenDistribution.compensationToken) },
     { name: "Clear Tamper Token", value: parseFloat(tokenDistribution.clearTamperToken) },
   ].filter(item => item.value > 0) : [];
 

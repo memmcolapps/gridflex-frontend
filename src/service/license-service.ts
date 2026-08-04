@@ -3,6 +3,12 @@ import { axiosInstance } from "@/lib/axios";
 
 const LICENSE_RESPONSE_CODE = "403";
 
+const LICENSE_WARNING_HEADER = "x-license-warning";
+
+const LICENSE_EXPIRY_PATTERN = /^License expires in (\d+) day\(s\)$/;
+const LICENSE_METER_COUNTDOWN_PATTERN =
+  /^License meter limit countdown: (\d+) meter\(s\) remaining out of (\d+)$/;
+
 const KNOWN_LICENSE_MESSAGES = [
   "Access denied: Organisation ID not found in token",
   "Access denied: License is inactive",
@@ -79,13 +85,35 @@ const handleLicenseDenied = (body: unknown) => {
   }
 };
 
+const handleLicenseWarnings = (headers: unknown) => {
+  if (!headers || typeof headers !== "object") return;
+
+  const headerValue = (headers as Record<string, string>)[LICENSE_WARNING_HEADER];
+  if (typeof headerValue !== "string" || headerValue.trim() === "") return;
+
+  const warnings = headerValue
+    .split(",")
+    .map((part) => part.trim())
+    .filter(
+      (part) =>
+        LICENSE_EXPIRY_PATTERN.test(part) ||
+        LICENSE_METER_COUNTDOWN_PATTERN.test(part),
+    );
+
+  warnings.forEach((warning) => {
+    toast.warning(warning, { id: `license-warning:${warning}` });
+  });
+};
+
 axiosInstance.interceptors.response.use(
   (response) => {
     handleLicenseDenied(response.data);
+    handleLicenseWarnings(response.headers);
     return response;
   },
   (error) => {
     handleLicenseDenied(error.response?.data);
+    handleLicenseWarnings(error.response?.headers);
     return Promise.reject(error);
   },
 );
