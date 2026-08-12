@@ -19,7 +19,7 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 60
     env:
-      SERVER_PUBLIC_ADDRESS: 41.216.166.166
+      SERVER_PUBLIC_ADDRESS: 62.173.48.42
       SERVER_PORT: "22"
       APPLICATION_ROOT: 'C:\momas'
       APPLICATION_DIRECTORY: 'C:\momas\gridflex-frontend'
