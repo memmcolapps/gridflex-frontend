@@ -293,7 +293,10 @@ export interface GetUsersQueryParams {
 
 export async function createUser(
   user: CreateUserPayload,
-): Promise<{ success: true } | { success: false; error: string }> {
+): Promise<
+  | { success: true; message?: string }
+  | { success: false; error: string }
+> {
   try {
     const token = localStorage.getItem("auth_token");
     const response = await axiosInstance.post(
@@ -315,6 +318,7 @@ export async function createUser(
     }
     return {
       success: true,
+      message: response.data.responsedesc,
     };
   } catch (error) {
     return {
