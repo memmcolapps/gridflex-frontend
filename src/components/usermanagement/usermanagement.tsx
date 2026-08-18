@@ -97,13 +97,13 @@ export default function UserManagement() {
 
   const handleCreateUser = (newUser: CreateUserPayload) => {
     createUser(newUser, {
-      onSuccess: () => {
-        console.log("User created successfully");
-        toast.success("User created successfully");
+      onSuccess: (data) => {
+        console.log("User created successfully:", data);
+        toast.success(data?.message ?? "User created successfully");
       },
       onError: (error) => {
         console.error("Error creating user:", error);
-        toast.error("Error creating user");
+        toast.error(error instanceof Error ? error.message : "Error creating user");
       },
     });
   };
