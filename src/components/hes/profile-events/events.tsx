@@ -72,7 +72,7 @@ interface EventData {
   feeder: string;
   time: string;
   eventType: string;
-  event?: string;
+  event?: string | null;
   eventTypeId?: string;
   criticalLevel?: string;
   [key: string]: unknown;
@@ -89,12 +89,13 @@ const baseEventColumns: EventTableColumn[] = [
   { key: "feeder", label: "Feeder" },
   { key: "time", label: "Time" },
   { key: "eventType", label: "Event Type" },
+  { key: "meterModel", label: "Meter Model" },
   { key: "criticalLevel", label: "Critical Level" },
+  { key: "event", label: "Event" },
 ];
 
 const fallbackEventColumns: EventTableColumn[] = [
   ...baseEventColumns,
-  { key: "event", label: "Event" },
 ];
 
 const mappedEventKeys = new Set([
@@ -201,7 +202,8 @@ const inferEventTableColumns = (records: Record<string, unknown>[]) => {
         (key) =>
           !mappedEventKeys.has(key) &&
           !ignoredEventKeys.has(key) &&
-          typeof record[key] !== "object",
+          typeof record[key] !== "object" &&
+          record[key] !== null,
       )
       .map((key) => ({
         key: normalizeHeaderKey(key),
@@ -386,7 +388,7 @@ export function Events({ selectedHierarchy, selectedUnits, onExportDataChange }:
               feederName: event.meter?.flatNode?.feederName || "N/A",
               time: event.eventTime,
               eventType: eventTypeName,
-              event: event.event ?? event.eventName ?? eventTypeName,
+              event: event.event ?? null,
               eventTypeId: event.eventTypeId?.toString() ?? "",
               criticalLevel: event.criticalLevel?.toString() ?? "",
               node: event.meter?.nodeId || "",
