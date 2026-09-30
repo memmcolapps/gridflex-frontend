@@ -25,6 +25,7 @@ import {
   XCircle,
   AlertTriangle,
   ArrowUpDown,
+  UserMinus,
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -50,6 +51,7 @@ import {
   useMeters,
   useAssignMeter,
   useChangeMeterState,
+  useDeallocateMeter,
 } from "@/hooks/use-assign-meter";
 import {
   useCustomerRecordQuery,
@@ -210,6 +212,7 @@ export default function MeterManagementPage() {
 
   const assignMeterMutation = useAssignMeter();
   const changeStateMutation = useChangeMeterState();
+  const deallocateMeterMutation = useDeallocateMeter();
   const bulkAssignMutation = useBulkAssignMeters();
   const downloadAssignCsvTemplateMutation = useDownloadAssignCsvTemplate();
   const downloadAssignExcelTemplateMutation = useDownloadAssignExcelTemplate();
@@ -1090,6 +1093,22 @@ export default function MeterManagementPage() {
                                         </span>
                                       </>
                                     )}
+                                  </DropdownMenuItem>
+
+                                  <DropdownMenuItem
+                                    className="flex cursor-pointer items-center gap-2"
+                                    disabled={deallocateMeterMutation.isPending}
+                                    onClick={(event) => {
+                                      event.stopPropagation();
+                                      deallocateMeterMutation.mutate(
+                                        item.meterNumber,
+                                      );
+                                    }}
+                                  >
+                                    <UserMinus size={14} />
+                                    <span className="text-sm text-gray-700">
+                                      Deallocate
+                                    </span>
                                   </DropdownMenuItem>
                                 </>
                               )}
