@@ -546,6 +546,37 @@ export async function detachMeter({
   }
 }
 
+export async function deallocateMeter(
+  meterNumber: string,
+): Promise<{ responsecode: string; responsedesc: string }> {
+  try {
+    const token = localStorage.getItem("auth_token");
+    if (!token) throw new Error("Authentication token not found.");
+
+    const response = await axiosInstance.post(
+      `${API_URL}/meter/service/deallocate`,
+      null,
+      {
+        params: { meterNumber },
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    if (response.data.responsecode !== "000") {
+      throw new Error(
+        response.data.responsedesc ?? "Failed to deallocate meter.",
+      );
+    }
+    return response.data;
+  } catch (error) {
+    throw new Error(handleApiError(error));
+  }
+}
+
 export async function bulkUploadMeters(
   data: object[],
 ): Promise<{ responsecode: string; responsedesc: string }> {

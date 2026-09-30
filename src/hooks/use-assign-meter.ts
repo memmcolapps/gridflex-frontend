@@ -14,6 +14,7 @@ import {
   changeMeterState,
   migrateMeter,
   detachMeter,
+  deallocateMeter,
   type MetersApiResponse,
   type MeterAPIItem,
   type GetMetersParams,
@@ -361,6 +362,24 @@ export const useDetachMeter = () => {
     },
     onError: (error: Error) => {
       toast.error(`Failed to detach meter: ${error.message}`);
+    },
+  });
+};
+
+export const useDeallocateMeter = () => {
+  const queryClient = useQueryClient();
+  return useMutation<
+    { responsecode: string; responsedesc: string },
+    Error,
+    string
+  >({
+    mutationFn: (meterNumber: string) => deallocateMeter(meterNumber),
+    onSuccess: (_data, meterNumber) => {
+      toast.success(`Meter ${meterNumber} deallocated successfully!`);
+      queryClient.invalidateQueries({ queryKey: ["meters"] });
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to deallocate meter: ${error.message}`);
     },
   });
 };
