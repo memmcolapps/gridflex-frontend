@@ -340,6 +340,31 @@ export async function bulkUploadCustomers(
   }
 }
 
+export async function exportCustomers(): Promise<Blob> {
+  try {
+    const token = localStorage.getItem("auth_token");
+    if (!token) {
+      throw new Error("Authentication token not found.");
+    }
+
+    const response = await axiosInstance.get(
+      `${API_URL}/customer/service/export`,
+      {
+        responseType: "blob",
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    return response.data;
+  } catch (error) {
+    throw new Error(handleApiError(error));
+  }
+}
+
 export async function downloadCustomerCsvTemplate(): Promise<void> {
   try {
     const token = localStorage.getItem("auth_token");

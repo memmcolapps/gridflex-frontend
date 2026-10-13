@@ -33,7 +33,7 @@ export const ManufacturerDistribution = () => {
                 <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                         data={chartData}
-                        margin={{left: -30}}
+                        margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
                         barSize={30}
                     >
                         <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false}  className='h-90'/>
@@ -45,6 +45,7 @@ export const ManufacturerDistribution = () => {
                             tick={{ fill: '#6b7280', fontSize: 12 }}
                         />
                         <YAxis
+                            width={45}
                             tick={{ fill: '#6b7280' }}
                             tickFormatter={(value) => `${value}`}
                             domain={[0, 'auto']}
