@@ -15,11 +15,11 @@ import {
   exportCustomers,
 } from "../service/customer-service";
 import {
-  type Customer,
-  type CustomersApiResponse,
-  type AddCustomerPayload,
-  type UpdateCustomerPayload,
-  type BlockCustomerPayload,
+    type Customer,
+    type CustomersApiResponse,
+    type AddCustomerPayload,
+    type UpdateCustomerPayload,
+    type BlockCustomerPayload,
 } from "@/types/customer-types";
 import type { FetchCustomerResponse } from "@/service/customer-service";
 
@@ -35,33 +35,10 @@ export interface UseCustomersParams {
 /**
  * A hook to fetch a paginated, searchable, and sortable list of customers.
  */
-export const useCustomers = ({
-  page,
-  pageSize,
-  searchTerm,
-  status,
-  sortBy,
-  sortDirection,
-}: UseCustomersParams) => {
+export const useCustomers = ({ page, pageSize, searchTerm, status, sortBy, sortDirection }: UseCustomersParams) => {
   return useQuery<CustomersApiResponse, Error>({
-    queryKey: [
-      "customers",
-      page,
-      pageSize,
-      searchTerm,
-      status,
-      sortBy,
-      sortDirection,
-    ],
-    queryFn: () =>
-      getCustomers({
-        page,
-        pageSize,
-        searchTerm,
-        status: status ?? null,
-        sortBy: sortBy ?? null,
-        sortDirection: sortDirection ?? null,
-      }),
+    queryKey: ["customers", page, pageSize, searchTerm, status, sortBy, sortDirection],
+        queryFn: () => getCustomers({ page, pageSize, searchTerm, status: status ?? null, sortBy: sortBy ?? null, sortDirection: sortDirection ?? null }),
   });
 };
 
@@ -148,6 +125,16 @@ export const useBulkUploadCustomer = () => {
 };
 
 /**
+ * A hook for exporting customers as an Excel file.
+ * It returns a mutation object to be used in components.
+ */
+export const useExportCustomer = () => {
+  return useMutation<Blob, Error, void>({
+    mutationFn: exportCustomers,
+  });
+};
+
+/**
  * A hook for downloading customer CSV templates.
  * It returns a mutation object to be used in components.
  */
@@ -176,11 +163,5 @@ export const useAllCustomerIds = () => {
     queryKey: ["allCustomerIds"],
     queryFn: getAllCustomerIds,
     staleTime: 1000 * 60 * 5,
-  });
-};
-
-export const useExportCustomers = () => {
-  return useMutation<Blob, Error, UseCustomersParams>({
-    mutationFn: exportCustomers,
   });
 };

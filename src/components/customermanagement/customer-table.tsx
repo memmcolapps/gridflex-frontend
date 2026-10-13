@@ -1,7 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Eye, Link, Lock, MoreVertical, Pencil } from "lucide-react";
+import {
+  Eye,
+  Link,
+  Lock,
+  MoreVertical,
+  Pencil,
+  SquareArrowOutUpRight,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -24,7 +31,6 @@ import { useCustomers } from "@/hooks/use-customer";
 import { toast } from "sonner";
 import { type Customer } from "@/types/customer-types";
 import { FilterControl, SearchControl, SortControl } from "../search-control";
-import { useExportCustomers, UseCustomersParams } from "@/hooks/use-customer";
 import { Card } from "../ui/card";
 import { LoadingAnimation } from "@/components/ui/loading-animation";
 import { usePermissions } from "@/hooks/use-permissions";
@@ -36,6 +42,8 @@ interface CustomerTableProps {
   onViewMeter: (customer: Customer) => void;
   onBlockCustomer: (customer: Customer) => void;
   onAssignMeter: (customer: Customer) => void;
+  onExport: () => void;
+  isExportPending: boolean;
 }
 
 export default function CustomerTable({
@@ -44,6 +52,8 @@ export default function CustomerTable({
   onViewMeter,
   onBlockCustomer,
   onAssignMeter,
+  onExport,
+  isExportPending,
 }: CustomerTableProps) {
   const { canEdit } = usePermissions();
   const { user } = useAuth();
@@ -71,8 +81,6 @@ export default function CustomerTable({
     sortBy: sortConfig?.key,
     sortDirection: sortConfig?.direction,
   });
-
-  const exportCustomersMutation = useExportCustomers();
 
   if (isError) {
     toast.error(error.message);
@@ -278,66 +286,27 @@ export default function CustomerTable({
           onApply={(filters) => {
             setActiveFilters(filters);
             setCurrentPage(1);
+            // Set active filters and reset page
           }}
           onReset={() => {
             setActiveFilters({});
             setCurrentPage(1);
+            // Reset filters and page
           }}
         />
         <SortControl
           onSortChange={handleSortControlChange}
           currentSort={sortConfig?.direction ?? ""}
         />
-        <div className="flex-1" />
         <Button
-          className="gap-1 border border-[#161CCA] bg-white text-[#161CCA] hover:bg-gray-50"
-          onClick={() => {
-            const exportParams: UseCustomersParams = {
-              page: 1,
-              pageSize: totalCustomers,
-              searchTerm,
-              status: selectedStatus,
-              sortBy: sortConfig?.key ?? null,
-              sortDirection: sortConfig?.direction ?? null,
-            };
-            exportCustomersMutation.mutate(exportParams, {
-              onSuccess: (blob) => {
-                const url = window.URL.createObjectURL(blob);
-                const link = document.createElement("a");
-                link.href = url;
-                link.setAttribute(
-                  "download",
-                  `customers_${new Date().toISOString().split("T")[0]}.xlsx`,
-                );
-                document.body.appendChild(link);
-                link.click();
-                link.remove();
-                window.URL.revokeObjectURL(url);
-                toast.success("Customers exported successfully!");
-              },
-              onError: (error) => {
-                toast.error(error.message || "Failed to export customers");
-              },
-            });
-          }}
-          disabled={exportCustomersMutation.isPending}
+          onClick={onExport}
+          variant="outline"
+          size={"lg"}
+          disabled={isExportPending}
+          className="ml-auto flex cursor-pointer items-center gap-2 border-[#161CCA] py-4 text-[#161CCA] hover:bg-gray-50"
         >
-          <svg
-            className="h-4 w-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-            />
-          </svg>
-          <span className="cursor-pointer">
-            {exportCustomersMutation.isPending ? "Exporting..." : "Export"}
-          </span>
+          <SquareArrowOutUpRight strokeWidth={2.5} size={14} />
+          <span>{isExportPending ? "Exporting..." : "Export"}</span>
         </Button>
       </div>
       <Card className="h-4/6 overflow-x-hidden border-none bg-transparent shadow-none">

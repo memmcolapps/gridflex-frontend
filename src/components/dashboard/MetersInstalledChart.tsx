@@ -25,7 +25,6 @@ export const MetersInstalledChart = () => {
   // Yearly data count is derived from the loaded dashboard data
   const yearlyDataCount = dashboardData?.installedOverYear?.length ?? 0;
   const yearlyAvailable = yearlyDataCount > 2;
-  const isMonthly = activeChart === "monthly";
   // If yearly data becomes unavailable, force switch back to monthly
   useEffect(() => {
     if (!yearlyAvailable && activeChart === "yearly") {
@@ -53,14 +52,27 @@ export const MetersInstalledChart = () => {
   const currentData = dataByType[activeChart];
 
   const maxValue = Math.max(...currentData.map((d) => d.value), 0);
-  const roundedMax = Math.ceil(maxValue / 5) * 5 || 5;
+
+  // Pick a "nice" tick step so the y-axis shows about 5-6 evenly spaced
+  // labels. This prevents the tick labels from overlapping (which happened
+  // when every multiple of 5 was rendered for large values).
+  const getNiceStep = (max: number): number => {
+    if (max <= 0) return 1;
+    const rawStep = max / 5;
+    const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep)));
+    const residual = rawStep / magnitude;
+    const nice =
+      residual <= 1 ? 1 : residual <= 2 ? 2 : residual <= 5 ? 5 : 10;
+    return nice * magnitude;
+  };
+
+  const tickStep = getNiceStep(maxValue);
+  const roundedMax = Math.ceil(maxValue / tickStep) * tickStep || tickStep;
 
   const dynamicTicks = Array.from(
-    { length: roundedMax / 5 + 1 },
-    (_, i) => i * 5,
+    { length: Math.round(roundedMax / tickStep) + 1 },
+    (_, i) => i * tickStep,
   );
-
-  const yearlyTicks = [0, 20, 40, 60, 80, 100, 120, 140, 160];
 
   return (
     <Card className="w-full max-w-full border-none border-gray-100 bg-transparent shadow-xs">
@@ -103,7 +115,7 @@ export const MetersInstalledChart = () => {
           {activeChart === "monthly" ? (
             <LineChart
               data={currentData}
-              margin={{ top: 5, right: 20, left: 50, bottom: 5 }}
+              margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
             >
               <CartesianGrid
                 strokeDasharray="3 3"
@@ -117,13 +129,11 @@ export const MetersInstalledChart = () => {
               />
               <YAxis
                 tick={{ fill: "#6b7280" }}
-                domain={isMonthly ? [0, roundedMax] : [0, 160]}
-                ticks={isMonthly ? dynamicTicks : yearlyTicks}
+                domain={[0, roundedMax]}
+                ticks={dynamicTicks}
                 interval={0}
                 allowDecimals={false}
-                tickFormatter={(value) =>
-                  value >= 1000 ? (value / 1000).toFixed(1) + "k" : `${value}`
-                }
+                tickFormatter={(value) => `${value}`}
               />
               <Tooltip
                 content={({ active, payload }) => {
@@ -163,7 +173,7 @@ export const MetersInstalledChart = () => {
           ) : (
             <BarChart
               data={currentData}
-              margin={{ top: 5, right: 20, left: 50, bottom: 5 }}
+              margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
             >
               <CartesianGrid
                 strokeDasharray="3 3"
@@ -177,17 +187,11 @@ export const MetersInstalledChart = () => {
               />
               <YAxis
                 tick={{ fill: "#6b7280" }}
-                domain={isMonthly ? [0, 4] : [0, 160]}
-                ticks={
-                  isMonthly
-                    ? [0, 1, 2, 3, 4]
-                    : [0, 20, 40, 60, 80, 100, 120, 140, 160]
-                }
+                domain={[0, roundedMax]}
+                ticks={dynamicTicks}
                 interval={0}
                 allowDecimals={false}
-                tickFormatter={(value) =>
-                  value >= 1000 ? (value / 1000).toFixed(1) + "k" : `${value}`
-                }
+                tickFormatter={(value) => `${value}`}
               />
               <Tooltip
                 content={({ active, payload }) => {

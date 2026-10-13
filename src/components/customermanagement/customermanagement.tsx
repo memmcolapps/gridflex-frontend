@@ -14,6 +14,7 @@ import {
   useBulkUploadCustomer,
   useDownloadCustomerCsvTemplate,
   useDownloadCustomerExcelTemplate,
+  useExportCustomer,
 } from "@/hooks/use-customer";
 import { type Customer } from "@/types/customer-types";
 import { toast } from "sonner";
@@ -40,6 +41,7 @@ export default function CustomerManagement() {
   const { user } = useAuth();
   const downloadCsvTemplateMutation = useDownloadCustomerCsvTemplate();
   const downloadExcelTemplateMutation = useDownloadCustomerExcelTemplate();
+  const exportCustomerMutation = useExportCustomer();
 
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -205,6 +207,28 @@ export default function CustomerManagement() {
     });
   };
 
+  const handleExport = () => {
+    exportCustomerMutation.mutate(undefined, {
+      onSuccess: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `customer_export_${new Date().toISOString().split("T")[0]}.xlsx`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+
+        toast.success("Customer export downloaded successfully!");
+      },
+      onError: (error: Error) => {
+        toast.error(
+          error.message || "Failed to export customer data. Please try again.",
+        );
+      },
+    });
+  };
+
   return (
     <div className="flex h-full flex-col overflow-hidden text-black">
       <div className="flex-grow">
@@ -213,38 +237,40 @@ export default function CustomerManagement() {
             title="Customer Management"
             description="Manage And Access Customer Records"
           />
-          {showAddButton && (
-            <div className="flex gap-4">
-              <Button
-                onClick={() => setIsBulkUploadDialogOpen(true)}
-                variant="outline"
-                size={"lg"}
-                className="cursor-pointer border-[#161CCA] py-4 text-[#161CCA]"
-              >
-                <div className="flex items-center justify-center p-0.5">
-                  <PlusCircleIcon className="text-[#161CCA]" size={12} />
-                </div>
-                <span>Bulk Upload New Customer</span>
-              </Button>
-              <CustomerForm
-                mode="add"
-                // eslint-disable-next-line @typescript-eslint/no-empty-function
-                onSave={() => {}}
-                triggerButton={
-                  <Button
-                    size={"lg"}
-                    className="flex cursor-pointer items-center gap-2 bg-[#161CCA] py-4 hover:bg-[#121eb3]"
-                  >
-                    <div className="flex items-center justify-center p-0.5">
-                      <PlusCircleIcon className="text-[#FEFEFE]" size={12} />
-                    </div>
+          <div className="flex gap-4">
+            {showAddButton && (
+              <>
+                <Button
+                  onClick={() => setIsBulkUploadDialogOpen(true)}
+                  variant="outline"
+                  size={"lg"}
+                  className="cursor-pointer border-[#161CCA] py-4 text-[#161CCA]"
+                >
+                  <div className="flex items-center justify-center p-0.5">
+                    <PlusCircleIcon className="text-[#161CCA]" size={12} />
+                  </div>
+                  <span>Bulk Upload New Customer</span>
+                </Button>
+                <CustomerForm
+                  mode="add"
+                  // eslint-disable-next-line @typescript-eslint/no-empty-function
+                  onSave={() => {}}
+                  triggerButton={
+                    <Button
+                      size={"lg"}
+                      className="flex cursor-pointer items-center gap-2 bg-[#161CCA] py-4 hover:bg-[#121eb3]"
+                    >
+                      <div className="flex items-center justify-center p-0.5">
+                        <PlusCircleIcon className="text-[#FEFEFE]" size={12} />
+                      </div>
 
-                    <span className="text-white">Add New Customer</span>
-                  </Button>
-                }
-              />
-            </div>
-          )}
+                      <span className="text-white">Add New Customer</span>
+                    </Button>
+                  }
+                />
+              </>
+            )}
+          </div>
         </div>
 
         <CustomerTable
@@ -261,6 +287,8 @@ export default function CustomerManagement() {
           onViewMeter={handleViewMeter}
           onBlockCustomer={handleBlockCustomer}
           onAssignMeter={handleAssignMeter}
+          onExport={handleExport}
+          isExportPending={exportCustomerMutation.isPending}
         />
 
         {editingCustomer && (

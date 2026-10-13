@@ -1,7 +1,7 @@
 // service/customer-service.ts
 
 import { env } from "@/env";
-import { handleApiError } from "error";
+import { handleApiError } from "../../error";
 import {
   type Customer,
   type CustomersApiResponse,
@@ -340,6 +340,31 @@ export async function bulkUploadCustomers(
   }
 }
 
+export async function exportCustomers(): Promise<Blob> {
+  try {
+    const token = localStorage.getItem("auth_token");
+    if (!token) {
+      throw new Error("Authentication token not found.");
+    }
+
+    const response = await axiosInstance.get(
+      `${API_URL}/customer/service/export`,
+      {
+        responseType: "blob",
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    return response.data;
+  } catch (error) {
+    throw new Error(handleApiError(error));
+  }
+}
+
 export async function downloadCustomerCsvTemplate(): Promise<void> {
   try {
     const token = localStorage.getItem("auth_token");
@@ -367,45 +392,6 @@ export async function downloadCustomerCsvTemplate(): Promise<void> {
     link.click();
     link.remove();
     window.URL.revokeObjectURL(url);
-  } catch (error) {
-    throw new Error(handleApiError(error));
-  }
-}
-
-export async function exportCustomers(
-  params: GetCustomersParams,
-): Promise<Blob> {
-  try {
-    const token = localStorage.getItem("auth_token");
-    if (!token) {
-      throw new Error("Authentication token not found.");
-    }
-
-    const queryParams = new URLSearchParams();
-    if (params.searchTerm) {
-      queryParams.append("search", params.searchTerm);
-    }
-    if (params.status) {
-      queryParams.append("status", params.status);
-    }
-    if (params.sortBy) {
-      queryParams.append("sortBy", params.sortBy);
-      queryParams.append("sortDirection", params.sortDirection ?? "asc");
-    }
-
-    const response = await axiosInstance.get(
-      `${API_URL}/customer/service/export`,
-      {
-        params: queryParams,
-        responseType: "blob",
-        headers: {
-          custom: CUSTOM_HEADER,
-          Authorization: `Bearer ${token}`,
-        },
-      },
-    );
-
-    return response.data;
   } catch (error) {
     throw new Error(handleApiError(error));
   }
