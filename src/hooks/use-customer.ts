@@ -12,6 +12,7 @@ import {
   downloadCustomerCsvTemplate,
   downloadCustomerExcelTemplate,
   unblockCustomer,
+  exportCustomers,
 } from "../service/customer-service";
 import {
     type Customer,
@@ -120,6 +121,16 @@ export const useBulkUploadCustomer = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["customers"] });
     },
+  });
+};
+
+/**
+ * A hook for exporting customers as an Excel file.
+ * It returns a mutation object to be used in components.
+ */
+export const useExportCustomer = () => {
+  return useMutation<Blob, Error, void>({
+    mutationFn: exportCustomers,
   });
 };
 
