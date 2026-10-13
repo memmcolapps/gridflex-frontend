@@ -372,6 +372,45 @@ export async function downloadCustomerCsvTemplate(): Promise<void> {
   }
 }
 
+export async function exportCustomers(
+  params: GetCustomersParams,
+): Promise<Blob> {
+  try {
+    const token = localStorage.getItem("auth_token");
+    if (!token) {
+      throw new Error("Authentication token not found.");
+    }
+
+    const queryParams = new URLSearchParams();
+    if (params.searchTerm) {
+      queryParams.append("search", params.searchTerm);
+    }
+    if (params.status) {
+      queryParams.append("status", params.status);
+    }
+    if (params.sortBy) {
+      queryParams.append("sortBy", params.sortBy);
+      queryParams.append("sortDirection", params.sortDirection ?? "asc");
+    }
+
+    const response = await axiosInstance.get(
+      `${API_URL}/customer/service/export`,
+      {
+        params: queryParams,
+        responseType: "blob",
+        headers: {
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+
+    return response.data;
+  } catch (error) {
+    throw new Error(handleApiError(error));
+  }
+}
+
 export async function downloadCustomerExcelTemplate(): Promise<void> {
   try {
     const token = localStorage.getItem("auth_token");

@@ -24,6 +24,7 @@ import { useCustomers } from "@/hooks/use-customer";
 import { toast } from "sonner";
 import { type Customer } from "@/types/customer-types";
 import { FilterControl, SearchControl, SortControl } from "../search-control";
+import { useExportCustomers, UseCustomersParams } from "@/hooks/use-customer";
 import { Card } from "../ui/card";
 import { LoadingAnimation } from "@/components/ui/loading-animation";
 import { usePermissions } from "@/hooks/use-permissions";
@@ -70,6 +71,8 @@ export default function CustomerTable({
     sortBy: sortConfig?.key,
     sortDirection: sortConfig?.direction,
   });
+
+  const exportCustomersMutation = useExportCustomers();
 
   if (isError) {
     toast.error(error.message);
@@ -210,7 +213,7 @@ export default function CustomerTable({
                     className="w-fit"
                   >
                     <div className="flex w-fit items-center gap-2">
-                       <Pencil size={14} />
+                      <Pencil size={14} />
                       <span className="w-fit cursor-pointer">
                         Edit Customer
                       </span>
@@ -226,7 +229,7 @@ export default function CustomerTable({
                 {canEdit && (
                   <DropdownMenuItem onSelect={() => onAssignMeter(customer)}>
                     <div className="flex w-full items-center gap-2">
-                       <Link size={14} />
+                      <Link size={14} />
                       <span className="cursor-pointer">Assign Meter</span>
                     </div>
                   </DropdownMenuItem>
@@ -234,7 +237,7 @@ export default function CustomerTable({
                 {canEdit && (
                   <DropdownMenuItem onSelect={() => onBlockCustomer(customer)}>
                     <div className="flex w-full items-center gap-2">
-                       <Lock size={14} />
+                      <Lock size={14} />
                       <span className="cursor-pointer">
                         {customer.status.toString() === "Block"
                           ? "Unblock"
@@ -285,6 +288,57 @@ export default function CustomerTable({
           onSortChange={handleSortControlChange}
           currentSort={sortConfig?.direction ?? ""}
         />
+        <div className="flex-1" />
+        <Button
+          className="gap-1 border border-[#161CCA] bg-white text-[#161CCA] hover:bg-gray-50"
+          onClick={() => {
+            const exportParams: UseCustomersParams = {
+              page: 1,
+              pageSize: totalCustomers,
+              searchTerm,
+              status: selectedStatus,
+              sortBy: sortConfig?.key ?? null,
+              sortDirection: sortConfig?.direction ?? null,
+            };
+            exportCustomersMutation.mutate(exportParams, {
+              onSuccess: (blob) => {
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                link.href = url;
+                link.setAttribute(
+                  "download",
+                  `customers_${new Date().toISOString().split("T")[0]}.xlsx`,
+                );
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                window.URL.revokeObjectURL(url);
+                toast.success("Customers exported successfully!");
+              },
+              onError: (error) => {
+                toast.error(error.message || "Failed to export customers");
+              },
+            });
+          }}
+          disabled={exportCustomersMutation.isPending}
+        >
+          <svg
+            className="h-4 w-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+            />
+          </svg>
+          <span className="cursor-pointer">
+            {exportCustomersMutation.isPending ? "Exporting..." : "Export"}
+          </span>
+        </Button>
       </div>
       <Card className="h-4/6 overflow-x-hidden border-none bg-transparent shadow-none">
         <Table className="h-fit">

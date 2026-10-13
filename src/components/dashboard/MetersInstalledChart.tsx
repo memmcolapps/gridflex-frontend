@@ -53,7 +53,7 @@ export const MetersInstalledChart = () => {
   const currentData = dataByType[activeChart];
 
   const maxValue = Math.max(...currentData.map((d) => d.value), 0);
-  const roundedMax = Math.ceil(maxValue / 5) * 5 || 5; 
+  const roundedMax = Math.ceil(maxValue / 5) * 5 || 5;
 
   const dynamicTicks = Array.from(
     { length: roundedMax / 5 + 1 },
@@ -103,7 +103,7 @@ export const MetersInstalledChart = () => {
           {activeChart === "monthly" ? (
             <LineChart
               data={currentData}
-              margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
+              margin={{ top: 5, right: 20, left: 50, bottom: 5 }}
             >
               <CartesianGrid
                 strokeDasharray="3 3"
@@ -121,7 +121,9 @@ export const MetersInstalledChart = () => {
                 ticks={isMonthly ? dynamicTicks : yearlyTicks}
                 interval={0}
                 allowDecimals={false}
-                tickFormatter={(value) => `${value}`}
+                tickFormatter={(value) =>
+                  value >= 1000 ? (value / 1000).toFixed(1) + "k" : `${value}`
+                }
               />
               <Tooltip
                 content={({ active, payload }) => {
@@ -161,7 +163,7 @@ export const MetersInstalledChart = () => {
           ) : (
             <BarChart
               data={currentData}
-              margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
+              margin={{ top: 5, right: 20, left: 50, bottom: 5 }}
             >
               <CartesianGrid
                 strokeDasharray="3 3"
@@ -183,7 +185,9 @@ export const MetersInstalledChart = () => {
                 }
                 interval={0}
                 allowDecimals={false}
-                tickFormatter={(value) => `${value}`}
+                tickFormatter={(value) =>
+                  value >= 1000 ? (value / 1000).toFixed(1) + "k" : `${value}`
+                }
               />
               <Tooltip
                 content={({ active, payload }) => {
