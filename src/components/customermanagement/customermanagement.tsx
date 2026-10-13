@@ -270,18 +270,6 @@ export default function CustomerManagement() {
                 />
               </>
             )}
-            <Button
-              onClick={handleExport}
-              variant="outline"
-              size={"lg"}
-              disabled={exportCustomerMutation.isPending}
-              className="flex cursor-pointer items-center gap-2 border-[#161CCA] py-4 text-[#161CCA] hover:bg-gray-50"
-            >
-              <SquareArrowOutUpRight strokeWidth={2.5} size={14} />
-              <span>
-                {exportCustomerMutation.isPending ? "Exporting..." : "Export"}
-              </span>
-            </Button>
           </div>
         </div>
 
@@ -299,6 +287,8 @@ export default function CustomerManagement() {
           onViewMeter={handleViewMeter}
           onBlockCustomer={handleBlockCustomer}
           onAssignMeter={handleAssignMeter}
+          onExport={handleExport}
+          isExportPending={exportCustomerMutation.isPending}
         />
 
         {editingCustomer && (

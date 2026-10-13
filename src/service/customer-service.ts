@@ -1,7 +1,7 @@
 // service/customer-service.ts
 
 import { env } from "@/env";
-import { handleApiError } from "error";
+import { handleApiError } from "../../error";
 import {
   type Customer,
   type CustomersApiResponse,
