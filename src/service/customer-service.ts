@@ -1,7 +1,7 @@
 // service/customer-service.ts
 
 import { env } from "@/env";
-import { handleApiError } from "error";
+import { handleApiError } from "../../error";
 import {
   type Customer,
   type CustomersApiResponse,
@@ -333,6 +333,31 @@ export async function bulkUploadCustomers(
         response.data.responsedesc ?? "Failed to bulk upload customers.",
       );
     }
+
+    return response.data;
+  } catch (error) {
+    throw new Error(handleApiError(error));
+  }
+}
+
+export async function exportCustomers(): Promise<Blob> {
+  try {
+    const token = localStorage.getItem("auth_token");
+    if (!token) {
+      throw new Error("Authentication token not found.");
+    }
+
+    const response = await axiosInstance.get(
+      `${API_URL}/customer/service/export`,
+      {
+        responseType: "blob",
+        headers: {
+          "Content-Type": "application/json",
+          custom: CUSTOM_HEADER,
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
 
     return response.data;
   } catch (error) {

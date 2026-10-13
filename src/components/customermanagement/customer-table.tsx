@@ -1,7 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { Eye, Link, Lock, MoreVertical, Pencil } from "lucide-react";
+import {
+  Eye,
+  Link,
+  Lock,
+  MoreVertical,
+  Pencil,
+  SquareArrowOutUpRight,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -35,6 +42,8 @@ interface CustomerTableProps {
   onViewMeter: (customer: Customer) => void;
   onBlockCustomer: (customer: Customer) => void;
   onAssignMeter: (customer: Customer) => void;
+  onExport: () => void;
+  isExportPending: boolean;
 }
 
 export default function CustomerTable({
@@ -43,6 +52,8 @@ export default function CustomerTable({
   onViewMeter,
   onBlockCustomer,
   onAssignMeter,
+  onExport,
+  isExportPending,
 }: CustomerTableProps) {
   const { canEdit } = usePermissions();
   const { user } = useAuth();
@@ -210,7 +221,7 @@ export default function CustomerTable({
                     className="w-fit"
                   >
                     <div className="flex w-fit items-center gap-2">
-                       <Pencil size={14} />
+                      <Pencil size={14} />
                       <span className="w-fit cursor-pointer">
                         Edit Customer
                       </span>
@@ -226,7 +237,7 @@ export default function CustomerTable({
                 {canEdit && (
                   <DropdownMenuItem onSelect={() => onAssignMeter(customer)}>
                     <div className="flex w-full items-center gap-2">
-                       <Link size={14} />
+                      <Link size={14} />
                       <span className="cursor-pointer">Assign Meter</span>
                     </div>
                   </DropdownMenuItem>
@@ -234,7 +245,7 @@ export default function CustomerTable({
                 {canEdit && (
                   <DropdownMenuItem onSelect={() => onBlockCustomer(customer)}>
                     <div className="flex w-full items-center gap-2">
-                       <Lock size={14} />
+                      <Lock size={14} />
                       <span className="cursor-pointer">
                         {customer.status.toString() === "Block"
                           ? "Unblock"
@@ -275,16 +286,28 @@ export default function CustomerTable({
           onApply={(filters) => {
             setActiveFilters(filters);
             setCurrentPage(1);
+            // Set active filters and reset page
           }}
           onReset={() => {
             setActiveFilters({});
             setCurrentPage(1);
+            // Reset filters and page
           }}
         />
         <SortControl
           onSortChange={handleSortControlChange}
           currentSort={sortConfig?.direction ?? ""}
         />
+        <Button
+          onClick={onExport}
+          variant="outline"
+          size={"lg"}
+          disabled={isExportPending}
+          className="ml-auto flex cursor-pointer items-center gap-2 border-[#161CCA] py-4 text-[#161CCA] hover:bg-gray-50"
+        >
+          <SquareArrowOutUpRight strokeWidth={2.5} size={14} />
+          <span>{isExportPending ? "Exporting..." : "Export"}</span>
+        </Button>
       </div>
       <Card className="h-4/6 overflow-x-hidden border-none bg-transparent shadow-none">
         <Table className="h-fit">
