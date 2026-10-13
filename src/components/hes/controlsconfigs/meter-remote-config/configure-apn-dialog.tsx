@@ -16,28 +16,39 @@ import { useSetAPN } from "@/hooks/use-configure-meter";
 interface ConfigureAPNDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  meter?: Meter | undefined;
+  meters: Meter[];
 }
 
 export default function ConfigureAPNDialog({
   isOpen,
   onClose,
-  meter,
+  meters,
 }: ConfigureAPNDialogProps) {
   const [apn, setApn] = useState("");
-  const { mutate: setAPN, isPending } = useSetAPN();
+  const { mutateAsync: setAPNAsync, isPending } = useSetAPN();
   const isFormValid = apn.trim() !== "";
 
-  const handleConfigure = () => {
-    if (!meter?.meterNumber) return;
-    setAPN(
-      { serial: meter.meterNumber, apn },
-      { onSuccess: () => { setApn(""); onClose(); } },
-    );
+  const handleConfigure = async () => {
+    if (!meters || meters.length === 0) return;
+    for (const meter of meters) {
+      try {
+        await setAPNAsync({ serial: meter.meterNumber, apn });
+      } catch (err) {
+        // Error toast already shown by mutation's onError
+      }
+    }
+    setApn("");
+    onClose();
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={() => { setApn(""); onClose(); }}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={() => {
+        setApn("");
+        onClose();
+      }}
+    >
       <DialogContent className="h-fit bg-white">
         <DialogHeader>
           <DialogTitle>Configure APN</DialogTitle>
@@ -61,7 +72,10 @@ export default function ConfigureAPNDialog({
         <div className="flex justify-between">
           <Button
             variant="outline"
-            onClick={() => { setApn(""); onClose(); }}
+            onClick={() => {
+              setApn("");
+              onClose();
+            }}
             className="cursor-pointer border-[#161CCA] text-[#161CCA]"
           >
             Cancel

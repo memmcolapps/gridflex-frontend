@@ -16,20 +16,20 @@ import { useSetCTPTRatio } from "@/hooks/use-configure-meter";
 interface ConfigureCTVTRatioDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  meter: Meter | undefined;
+  meters: Meter[];
 }
 
 export default function ConfigureCTVTRatioDialog({
   isOpen,
   onClose,
-  meter,
+  meters,
 }: ConfigureCTVTRatioDialogProps) {
   const [ctNumerator, setCtNumerator] = useState("");
   const [ctDenominator, setCtDenominator] = useState("");
   const [vtNumerator, setVtNumerator] = useState("");
   const [vtDenominator, setVtDenominator] = useState("");
 
-  const { mutate: setCTPTRatio, isPending } = useSetCTPTRatio();
+  const { mutateAsync: setCTPTRatioAsync, isPending } = useSetCTPTRatio();
 
   const isFormValid =
     ctNumerator.trim() !== "" &&
@@ -37,27 +37,34 @@ export default function ConfigureCTVTRatioDialog({
     vtNumerator.trim() !== "" &&
     vtDenominator.trim() !== "";
 
-  const handleConfigure = () => {
-    if (!meter?.meterNumber) return;
-    setCTPTRatio(
-      {
-        serial: meter.meterNumber,
-        ctNumerator: Number(ctNumerator),
-        ctDenominator: Number(ctDenominator),
-        ptNumerator: Number(vtNumerator),
-        ptDenominator: Number(vtDenominator),
-      },
-      {
-        onSuccess: () => {
-          setCtNumerator(""); setCtDenominator(""); setVtNumerator(""); setVtDenominator("");
-          onClose();
-        },
-      },
-    );
+  const handleConfigure = async () => {
+    if (!meters || meters.length === 0) return;
+    for (const meter of meters) {
+      try {
+        await setCTPTRatioAsync({
+          serial: meter.meterNumber,
+          ctNumerator: Number(ctNumerator),
+          ctDenominator: Number(ctDenominator),
+          ptNumerator: Number(vtNumerator),
+          ptDenominator: Number(vtDenominator),
+        });
+      } catch (err) {
+        // Error toast already shown by mutation's onError
+      }
+    }
+    // Reset form and close dialog
+    setCtNumerator("");
+    setCtDenominator("");
+    setVtNumerator("");
+    setVtDenominator("");
+    onClose();
   };
 
   const resetForm = () => {
-    setCtNumerator(""); setCtDenominator(""); setVtNumerator(""); setVtDenominator("");
+    setCtNumerator("");
+    setCtDenominator("");
+    setVtNumerator("");
+    setVtDenominator("");
     onClose();
   };
 
