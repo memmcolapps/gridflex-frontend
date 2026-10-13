@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { PlusCircleIcon, SquareArrowOutUpRight } from "lucide-react";
+import { PlusCircleIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import CustomerForm from "./customerform";
 import CustomerTable from "./customer-table";

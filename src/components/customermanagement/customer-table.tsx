@@ -286,12 +286,12 @@ export default function CustomerTable({
           onApply={(filters) => {
             setActiveFilters(filters);
             setCurrentPage(1);
-            comment: "Set active filters and reset page";
+            // Set active filters and reset page
           }}
           onReset={() => {
             setActiveFilters({});
             setCurrentPage(1);
-            comment: "Reset filters and page";
+            // Reset filters and page
           }}
         />
         <SortControl
