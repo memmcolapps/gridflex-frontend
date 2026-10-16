@@ -313,7 +313,7 @@ export function Profile({ selectedHierarchy, selectedUnits, onExportDataChange }
   const { data: profileTypesData } = useProfileNames();
   const { data: metersData } = useMeters({
     page: 1,
-    pageSize: 1000,
+    pageSize: 0,
     searchTerm: "",
     sortBy: null,
     sortDirection: null,
@@ -321,7 +321,7 @@ export function Profile({ selectedHierarchy, selectedUnits, onExportDataChange }
   });
   const { data: allocatedMetersData } = useMeters({
     page: 1,
-    pageSize: 1000,
+    pageSize: 0,
     searchTerm: "",
     sortBy: null,
     sortDirection: null,

@@ -271,7 +271,7 @@ export function Events({ selectedHierarchy, selectedUnits, onExportDataChange }:
   const { data: eventTypesData } = useEventNames();
   const { data: metersData } = useMeters({
     page: 1,
-    pageSize: 1000,
+    pageSize: 0,
     searchTerm: "",
     sortBy: null,
     sortDirection: null,
@@ -279,7 +279,7 @@ export function Events({ selectedHierarchy, selectedUnits, onExportDataChange }:
   });
   const { data: allocatedMetersData } = useMeters({
     page: 1,
-    pageSize: 1000,
+    pageSize: 0,
     searchTerm: "",
     sortBy: null,
     sortDirection: null,
