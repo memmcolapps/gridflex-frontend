@@ -24,13 +24,13 @@ import { toast } from "sonner";
 interface SetDateTimeDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  meter?: Meter;
+  meters: Meter[];
 }
 
 export default function SetDateTimeDialog({
   isOpen,
   onClose,
-  meter,
+  meters,
 }: SetDateTimeDialogProps) {
   const [hour, setHour] = useState("");
   const [minute, setMinute] = useState("");
@@ -38,7 +38,7 @@ export default function SetDateTimeDialog({
   const [month, setMonth] = useState("");
   const [year, setYear] = useState("");
 
-  const { mutate: setMeterClock, isPending } = useSetDateTime();
+  const { mutateAsync: setMeterClock, isPending } = useSetDateTime();
 
   const isFormComplete =
     hour.trim() !== "" &&
@@ -47,35 +47,35 @@ export default function SetDateTimeDialog({
     month.trim() !== "" &&
     year.trim() !== "";
 
-  const handleSet = () => {
-    if (!meter?.meterNumber) return;
+  const handleSet = async () => {
+    if (!meters || meters.length === 0) return;
     const formattedDate = `${year}-${month.padStart(2, "0")}-${date.padStart(2, "0")}`;
     const formattedTime = `${hour.padStart(2, "0")}:${minute.padStart(2, "0")}:00`;
     const dateTime = `${formattedDate} ${formattedTime}`;
-    setMeterClock(
-      { serial: meter.meterNumber, dateTime },
-      {
-        onSuccess: (data) => {
-          const { status, message } = data.responsedata;
-          if (status === "success") {
-            toast.success("Date and time set successfully");
-          } else {
-            toast.error(`${status}: ${message}`);
-          }
-          setHour(""); setMinute(""); setDate(""); setMonth(""); setYear("");
-          onClose();
-        },
-        onError: (error) => {
-          const match = /"details":"([^"]+)"/.exec(error.message);
-          const friendlyMsg = match?.[1] ?? error.message;
-          toast.error(friendlyMsg);
-        },
-      },
-    );
+    for (const meter of meters) {
+      try {
+        await setMeterClock({
+          serial: meter.meterNumber,
+          dateTime,
+        });
+      } catch (err) {
+        // Error toast already shown by mutation's onError
+      }
+    }
+    setHour("");
+    setMinute("");
+    setDate("");
+    setMonth("");
+    setYear("");
+    onClose();
   };
 
   const resetForm = () => {
-    setHour(""); setMinute(""); setDate(""); setMonth(""); setYear("");
+    setHour("");
+    setMinute("");
+    setDate("");
+    setMonth("");
+    setYear("");
     onClose();
   };
 

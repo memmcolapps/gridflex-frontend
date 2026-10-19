@@ -124,10 +124,13 @@ export default function MeterRemoteConfigPage() {
   const [activeFilters, setActiveFilters] = useState<
     Record<string, string | boolean>
   >({});
-  const [selectedMeters, setSelectedMeters] = useState<string[]>([]);
+  const [selectedMeterIndices, setSelectedMeterIndices] = useState<number[]>(
+    [],
+  );
   const [selectedConfigOption, setSelectedConfigOption] =
     useState<DialogType | null>(null);
   const [showOfflineDialog, setShowOfflineDialog] = useState(false);
+  const [metersToConfigure, setMetersToConfigure] = useState<Meter[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [rowsPerPage, setRowsPerPage] = useState<number>(10);
   const selectedClasses = [
@@ -159,28 +162,26 @@ export default function MeterRemoteConfigPage() {
   const setTokenMutation = useSetToken();
 
   const handleConfigureAction = (type: DialogType) => {
-    if (selectedMeters.length === 0) {
+    if (selectedMeterIndices.length === 0) {
       return;
     }
 
-    const offlineMeters = meterData.filter(
-      (m) => selectedMeters.includes(m.sN) && m.status === "Offline",
-    );
+    // Get the actual selected meters based on indices
+    const selectedMeters = selectedMeterIndices
+      .map((index) => meterData[index])
+      .filter((meter): meter is Meter => meter !== undefined);
+
+    const offlineMeters = selectedMeters.filter((m) => m.status === "Offline");
     if (offlineMeters.length > 0) {
       setShowOfflineDialog(true);
       setIsDialogOpen(false);
     } else {
-      // For now, we'll configure the first selected meter.
-      // A more complex implementation would handle bulk configurations.
-      const meterToConfigure = meterData.find(
-        (m) => m.sN === selectedMeters[0],
-      );
-      if (meterToConfigure) {
-        setSelectedMeter(meterToConfigure);
-        setDialogType(type);
-        setIsDialogOpen(true);
-        setSelectedConfigOption(type);
-      }
+      // Configure all selected online meters
+      const onlineMeters = selectedMeters.filter((m) => m.status === "Online");
+      setMetersToConfigure(onlineMeters);
+      setDialogType(type);
+      setIsDialogOpen(true);
+      setSelectedConfigOption(type);
     }
   };
 
@@ -203,6 +204,7 @@ export default function MeterRemoteConfigPage() {
     setDialogType(null);
     setShowOfflineDialog(false);
     setSelectedConfigOption(null);
+    setMetersToConfigure([]);
   };
 
   // Handle bulk upload save
@@ -240,17 +242,20 @@ export default function MeterRemoteConfigPage() {
     setCurrentPage(1);
   };
 
-  const toggleMeterSelection = (sN: string) => {
-    setSelectedMeters((prev) =>
-      prev.includes(sN) ? prev.filter((id) => id !== sN) : [...prev, sN],
+  const toggleMeterSelection = (index: number) => {
+    setSelectedMeterIndices((prev) =>
+      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index],
     );
   };
 
   const toggleSelectAll = () => {
-    if (selectedMeters.length === meterData.length && meterData.length > 0) {
-      setSelectedMeters([]);
+    if (
+      selectedMeterIndices.length === meterData.length &&
+      meterData.length > 0
+    ) {
+      setSelectedMeterIndices([]);
     } else {
-      setSelectedMeters(meterData.map((meter) => meter.sN));
+      setSelectedMeterIndices(meterData.map((_, index) => index));
     }
   };
 
@@ -261,7 +266,7 @@ export default function MeterRemoteConfigPage() {
     setCurrentPage(1);
   };
 
-  const isConfigureButtonDisabled = selectedMeters.length === 0;
+  const isConfigureButtonDisabled = selectedMeterIndices.length === 0;
 
   return (
     <div className="flex h-screen w-full flex-col overflow-y-auto p-6">
@@ -420,7 +425,7 @@ export default function MeterRemoteConfigPage() {
                 <div className="flex items-center gap-2">
                   <Checkbox
                     checked={
-                      selectedMeters.length === meterData.length &&
+                      selectedMeterIndices.length === meterData.length &&
                       meterData.length > 0
                     }
                     onCheckedChange={toggleSelectAll}
@@ -486,8 +491,8 @@ export default function MeterRemoteConfigPage() {
                   <TableCell className="p-2 text-sm text-gray-800">
                     <div className="flex items-center gap-2">
                       <Checkbox
-                        checked={selectedMeters.includes(meter.sN)}
-                        onCheckedChange={() => toggleMeterSelection(meter.sN)}
+                        checked={selectedMeterIndices.includes(index)}
+                        onCheckedChange={() => toggleMeterSelection(index)}
                         className="border-gray-300"
                       />
                       <span>{index + 1 + (currentPage - 1) * rowsPerPage}</span>
@@ -746,39 +751,45 @@ export default function MeterRemoteConfigPage() {
         </Pagination>
       </Card>
 
-      {isDialogOpen && dialogType === "apn" && selectedMeter && (
+      {isDialogOpen && dialogType === "apn" && metersToConfigure.length > 0 && (
         <ConfigureAPNDialog
           isOpen={true}
           onClose={closeDialog}
-          meter={selectedMeter}
+          meters={metersToConfigure}
         />
       )}
-      {isDialogOpen && dialogType === "ctvt" && selectedMeter && (
-        <ConfigureCTVTRatioDialog
-          isOpen={true}
-          onClose={closeDialog}
-          meter={selectedMeter}
-        />
-      )}
-      {isDialogOpen && dialogType === "relay" && selectedMeter && (
-        <ChangeRelayModeDialog
-          isOpen={true}
-          onClose={closeDialog}
-          meter={selectedMeter}
-        />
-      )}
-      {isDialogOpen && dialogType === "datetime" && selectedMeter && (
-        <SetDateTimeDialog
-          isOpen={true}
-          onClose={closeDialog}
-          meter={selectedMeter}
-        />
-      )}
-      {isDialogOpen && dialogType === "ip" && selectedMeter && (
+      {isDialogOpen &&
+        dialogType === "ctvt" &&
+        metersToConfigure.length > 0 && (
+          <ConfigureCTVTRatioDialog
+            isOpen={true}
+            onClose={closeDialog}
+            meters={metersToConfigure}
+          />
+        )}
+      {isDialogOpen &&
+        dialogType === "relay" &&
+        metersToConfigure.length > 0 && (
+          <ChangeRelayModeDialog
+            isOpen={true}
+            onClose={closeDialog}
+            meters={metersToConfigure}
+          />
+        )}
+      {isDialogOpen &&
+        dialogType === "datetime" &&
+        metersToConfigure.length > 0 && (
+          <SetDateTimeDialog
+            isOpen={true}
+            onClose={closeDialog}
+            meters={metersToConfigure}
+          />
+        )}
+      {isDialogOpen && dialogType === "ip" && metersToConfigure.length > 0 && (
         <ConfigureIPDialog
           isOpen={true}
           onClose={closeDialog}
-          meter={selectedMeter}
+          meters={metersToConfigure}
         />
       )}
       {isDialogOpen && dialogType === "viewDetails" && selectedMeter && (
@@ -800,7 +811,7 @@ export default function MeterRemoteConfigPage() {
                 {
                   onSuccess: () => resolve(),
                   onError: (error) => reject(error),
-                }
+                },
               );
             });
           }}
