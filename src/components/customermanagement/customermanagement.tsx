@@ -210,10 +210,11 @@ export default function CustomerManagement() {
   const handleExport = () => {
     exportCustomerMutation.mutate(undefined, {
       onSuccess: (blob) => {
-        const url = window.URL.createObjectURL(blob);
+        const csvBlob = new Blob([blob], { type: "text/csv;charset=utf-8;" });
+        const url = window.URL.createObjectURL(csvBlob);
         const link = document.createElement("a");
         link.href = url;
-        link.download = `customer_export_${new Date().toISOString().split("T")[0]}.xlsx`;
+        link.download = `customer_export_${new Date().toISOString().split("T")[0]}.csv`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);

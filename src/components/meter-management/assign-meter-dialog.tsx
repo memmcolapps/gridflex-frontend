@@ -389,7 +389,7 @@ export function AssignMeterDialog({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onOpenChange}>
-        <DialogContent className="h-fit border-none bg-white text-black">
+        <DialogContent className="h-fit max-h-[90vh] overflow-y-auto border-none bg-white text-black">
           {/* {customer?.category === "Prepaid" && <Progress value={progress} className="w-full" />} */}
           <DialogHeader>
             <DialogTitle>Assign meter to customer</DialogTitle>
@@ -731,7 +731,7 @@ export function AssignMeterDialog({
                   <SelectTrigger className="w-full border-gray-100 text-gray-600">
                     <SelectValue placeholder="Select State" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent avoidCollisions={true}>
                     {isLoadingStates ? (
                       <SelectItem value="loading" disabled>
                         Loading states...
@@ -774,7 +774,7 @@ export function AssignMeterDialog({
                       }
                     />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent avoidCollisions={true}>
                     {isLoadingCities ? (
                       <SelectItem value="loading" disabled>
                         Loading cities...

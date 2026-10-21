@@ -243,6 +243,7 @@ export const useTariffs = (params: FetchParams): UseTariffsResult => {
 // Hook for Meters
 interface UseMetersResult {
   meters: Meter[];
+  totalData: number;
   isLoading: boolean;
   isError: boolean;
   error: Error | null;
@@ -301,12 +302,13 @@ export const useMeters = (params: FetchParams): UseMetersResult => {
 
   return {
     meters: data?.data ?? [],
+    totalData: data?.totalData ?? 0,
     isLoading,
     isError,
     error,
     reviewMutation,
     bulkApproveMutation,
-  }; 
+  };
 };
 
 // Single item fetching hooks

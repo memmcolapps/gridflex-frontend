@@ -35,6 +35,7 @@ import {
   useGetMeterManufactures,
   useUpdateMeter,
 } from "@/hooks/use-meter";
+import { useMeterLimitReached } from "@/hooks/use-meter-limit";
 import { toast } from "sonner";
 
 interface AddMeterDialogProps {
@@ -42,6 +43,7 @@ interface AddMeterDialogProps {
   onClose: () => void;
   onSaveMeter: (meter: MeterInventoryItem) => void;
   editMeter?: MeterInventoryItem | null;
+  onMeterAdded?: () => void;
 }
 
 export function AddMeterDialog({
@@ -49,6 +51,7 @@ export function AddMeterDialog({
   onClose,
   onSaveMeter,
   editMeter,
+  onMeterAdded,
 }: AddMeterDialogProps) {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
@@ -92,6 +95,7 @@ export function AddMeterDialog({
   const { mutateAsync: updateMeter, isPending: isUpdatePending } =
     useUpdateMeter();
   const isPending = isCreatePending || isUpdatePending;
+  const isMeterAddBlocked = useMeterLimitReached() && !editMeter;
 
   useEffect(() => {
     console.log("useEffect fired", { editMeter: !!editMeter, isOpen });
@@ -304,6 +308,12 @@ export function AddMeterDialog({
   };
 
   const saveMeter = async () => {
+    if (isMeterAddBlocked) {
+      toast.error("Meter limit reached. You cannot add more meters.", {
+        duration: 5000,
+      });
+      return;
+    }
     if (step === 2 && formData.meterClass === "MD" && !validateStep2()) return;
     if (step === 3 && !validateStep3()) return;
 
@@ -423,6 +433,7 @@ export function AddMeterDialog({
         toast.success("Meter saved successfully!", {
           duration: 3000,
         });
+        onMeterAdded?.();
         onClose();
         // Reset form data only on successful creation
         setStep(1);
@@ -513,6 +524,12 @@ export function AddMeterDialog({
                 : "Smart Parameter"}
           </p>
         </DialogHeader>
+
+        {isMeterAddBlocked && (
+          <div className="mt-2 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            Meter limit reached. You cannot add more meters.
+          </div>
+        )}
 
         <div className="max-h-[60vh] overflow-y-auto px-1">
           {step === 1 ? (
@@ -1186,7 +1203,8 @@ export function AddMeterDialog({
                   !formData.newKrn ||
                   !formData.oldTariffIndex ||
                   !formData.newTariffIndex ||
-                  isPending
+                  isPending ||
+                  isMeterAddBlocked
                 }
                 className="bg-[#161CCA] text-sm font-medium text-white hover:bg-[#1e2abf]"
               >
@@ -1219,7 +1237,8 @@ export function AddMeterDialog({
                       !formData.dial ||
                       !formData.longitude ||
                       !formData.latitude)) ||
-                  isPending
+                  isPending ||
+                  isMeterAddBlocked
                 }
                 className="cursor-pointer bg-[#161CCA] text-sm font-medium text-white hover:bg-[#1e2abf]"
               >
@@ -1246,7 +1265,8 @@ export function AddMeterDialog({
                       !formData.protocol ||
                       !formData.authentication ||
                       !formData.password)) ||
-                  isPending
+                  isPending ||
+                  isMeterAddBlocked
                 }
                 className="cursor-pointer bg-[#161CCA] text-sm font-medium text-white hover:bg-[#1e2abf]"
               >

@@ -85,13 +85,13 @@ const BandTable = ({
     const totalCount = filteredBands.length;
     const totalPages = Math.ceil(totalCount / fetchParams.pageSize);
 
-    const handlePageChange = (page: number) => {
-        setFetchParams({ ...fetchParams, page });
-    };
+  const handlePageChange = (page: number) => {
+    setFetchParams((prev) => ({ ...prev, page }));
+  };
 
-    const handlePageSizeChange = (pageSize: number) => {
-        setFetchParams({ ...fetchParams, pageSize, page: 1 });
-    };
+  const handlePageSizeChange = (pageSize: number) => {
+    setFetchParams((prev) => ({ ...prev, pageSize, page: 1 }));
+  };
 
     const toggleSelection = (name: string) => {
         setSelectedBandNames((prev) =>
