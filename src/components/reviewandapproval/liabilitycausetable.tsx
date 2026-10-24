@@ -104,11 +104,11 @@ const LiabilityCauseTable = ({
   const totalPages = Math.ceil(totalCount / fetchParams.pageSize);
 
   const handlePageChange = (page: number) => {
-    setFetchParams({ ...fetchParams, page });
+    setFetchParams((prev) => ({ ...prev, page }));
   };
 
   const handlePageSizeChange = (pageSize: number) => {
-    setFetchParams({ ...fetchParams, pageSize, page: 1 });
+    setFetchParams((prev) => ({ ...prev, pageSize, page: 1 }));
   };
 
   const toggleSelection = (name: string) => {

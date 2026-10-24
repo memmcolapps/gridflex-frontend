@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import type { ChangeEventHandler } from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -271,11 +271,19 @@ export function Events({ selectedHierarchy, selectedUnits, onExportDataChange }:
   const { data: eventTypesData } = useEventNames();
   const { data: metersData } = useMeters({
     page: 1,
-    pageSize: 1000,
+    pageSize: 0,
     searchTerm: "",
     sortBy: null,
     sortDirection: null,
     type: "assigned",
+  });
+  const { data: allocatedMetersData } = useMeters({
+    page: 1,
+    pageSize: 0,
+    searchTerm: "",
+    sortBy: null,
+    sortDirection: null,
+    type: "allocated",
   });
 
   const eventTypes = eventTypesData?.responsedata ?? [];
@@ -297,8 +305,18 @@ export function Events({ selectedHierarchy, selectedUnits, onExportDataChange }:
     }
   };
 
-  const filteredMeters =
-    metersData?.actualMeters.filter((meter) => meter.type !== "VIRTUAL") ?? [];
+  const filteredMeters = useMemo(() => {
+    const merged = [
+      ...(metersData?.actualMeters ?? []),
+      ...(allocatedMetersData?.actualMeters ?? []),
+    ];
+    const seen = new Set<string>();
+    return merged.filter((meter) => {
+      if (meter.type === "VIRTUAL" || seen.has(meter.meterNumber)) return false;
+      seen.add(meter.meterNumber);
+      return true;
+    });
+  }, [metersData, allocatedMetersData]);
 
   const handleEventTypeChange = (eventTypeId: number) => {
     setSelectedEventType(eventTypeId);

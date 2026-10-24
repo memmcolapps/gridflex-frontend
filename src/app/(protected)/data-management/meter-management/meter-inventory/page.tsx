@@ -49,6 +49,8 @@ import { ViewMeterInfoDialog } from "@/components/meter-management/view-meter-in
 import type { MeterInventoryItem } from "@/types/meter-inventory";
 import { getStatusStyle } from "@/components/status-style";
 import { useMeterInventory, useBusinessHubs, useAllocateMeter } from "@/hooks/use-meter";
+import { useMeterLimitReached } from "@/hooks/use-meter-limit";
+import { resetMeterLimitReached } from "@/service/license-service";
 import type { MeterInventoryFilters, BusinessHub } from "@/types/meter-inventory";
 import { useAuth } from '@/context/auth-context';
 import { useBulkUploadMeters, useDownloadMeterCsvTemplate, useDownloadMeterExcelTemplate, useDownloadAllocateCsvTemplate, useDownloadAllocateExcelTemplate, useBulkAllocateMeters } from "@/hooks/use-meter-bulk";
@@ -142,6 +144,7 @@ export default function MeterInventoryPage() {
   }>({ key: "createdAt", direction: "desc" });
 
   const bulkUploadMutation = useBulkUploadMeters();
+  const meterLimitReached = useMeterLimitReached();
   const downloadCsvTemplateMutation = useDownloadMeterCsvTemplate();
   const downloadExcelTemplateMutation = useDownloadMeterExcelTemplate();
   const bulkAllocateMutation = useBulkAllocateMeters();
@@ -336,6 +339,7 @@ export default function MeterInventoryPage() {
 
                   // Show brief success toast if any succeeded
                   if (res.responsedata.successCount > 0) {
+                      resetMeterLimitReached();
                       toast.success(`${res.responsedata.successCount} of ${res.responsedata.totalRecords} meters uploaded successfully!`);
                       refetch();
                   }
@@ -486,6 +490,7 @@ export default function MeterInventoryPage() {
                 variant="outline"
                 size="lg"
                 onClick={() => setIsBulkUploadDialogOpen(true)}
+                disabled={meterLimitReached}
               >
                 <CirclePlus size={14} strokeWidth={2.3} className="md:h-4 h-2 md:w-4 text-[161CCA]" />
                 <span className="text-sm md:text-base">Bulk Upload New Meters</span>
@@ -496,6 +501,7 @@ export default function MeterInventoryPage() {
                   setSelectedMeter(null);
                   setIsAddMeterDialogOpen(true);
                 }}
+                disabled={meterLimitReached}
                 className="flex w-full cursor-pointer items-center gap-2 bg-[#161CCA] font-medium text-white hover:bg-[#1e2abf] md:w-auto"
               >
                 <CirclePlus size={14} strokeWidth={2.3} className="h-4 w-4" />
@@ -1073,6 +1079,7 @@ export default function MeterInventoryPage() {
           setSelectedMeter(null);
         }}
         onSaveMeter={handleSaveMeter}
+        onMeterAdded={resetMeterLimitReached}
         editMeter={selectedMeter}
       />
 

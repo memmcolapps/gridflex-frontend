@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 import {
   ChevronDown,
+  ChevronsUpDown,
+  Check,
+  Square,
   Building2,
   Zap,
   Grid2X2,
@@ -15,6 +18,20 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+} from "@/components/ui/command";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -101,6 +118,7 @@ export function FilterPanel({ onRun, meterType = "MD" }: FilterPanelProps) {
     useState<HierarchyType | "">(user?.nodeInfo.type as HierarchyType) ?? "";
   const [unit, setUnit] = useState<string>(user?.nodeInfo.name ?? "");
   const [meters, setMeters] = useState<string[]>([]);
+  const [metersDropdownOpen, setMetersDropdownOpen] = useState(false);
   const [reading, setReading] = useState<string[]>([]);
   const [hierarchyData, setHierarchyData] = useState<HierarchyResponse | null>(
     null,
@@ -332,54 +350,82 @@ const readingOptions: ReadingOption[] = obisData
             ({meters.length}/{MAX_METERS})
           </span>
         </Label>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
+        <Popover open={metersDropdownOpen} onOpenChange={setMetersDropdownOpen}>
+          <PopoverTrigger asChild>
             <Button
               variant="outline"
-              className="h-12 w-full justify-between text-left text-base"
+              className="h-12 w-full justify-between border-gray-300 text-left text-base"
               disabled={metersLoading}
             >
               <span>{getMetersLabel()}</span>
-              <ChevronDown size={16} />
+              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-full">
-            <div
-              className="flex cursor-pointer items-center justify-between gap-3 px-2 py-2 text-base"
-              onClick={() => handleMetersSelect("all-meters")}
-            >
-              <span>All Meters</span>
-              <Checkbox
-                checked={meters.length === metersOptions.length - 1}
-                className="h-5 w-5 border-gray-300 data-[state=checked]:border-green-500 data-[state=checked]:bg-green-500"
-              />
-            </div>
-            {metersOptions
-              .filter((o) => o.value !== "all-meters")
-              .map((option) => {
-                const isSelected = meters.includes(option.value as string);
-                const atCap = meters.length >= MAX_METERS && !isSelected;
-                return (
-                  <div
-                    key={option.value}
-                    className={`flex items-center justify-between gap-3 px-2 py-2 text-base ${
-                      atCap ? "cursor-not-allowed opacity-50" : "cursor-pointer"
-                    }`}
-                    onClick={() => {
-                      if (!atCap) handleMetersSelect(option.value);
-                    }}
+          </PopoverTrigger>
+          <PopoverContent
+            className="border-none p-0"
+            style={{ width: "var(--radix-popover-trigger-width)" }}
+            align="start"
+          >
+            <Command className="border-none bg-white">
+              <div className="p-2 [&_[cmdk-input-wrapper]]:rounded-md [&_[cmdk-input-wrapper]]:border [&_[cmdk-input-wrapper]]:border-gray-300 [&_[cmdk-input-wrapper]]:px-3">
+                <CommandInput
+                  placeholder="Search meter numbers..."
+                  className="border-none"
+                />
+              </div>
+              <CommandList>
+                <CommandEmpty>No meter found.</CommandEmpty>
+                <CommandGroup>
+                  <CommandItem
+                    value="All Meters"
+                    onSelect={() => handleMetersSelect("all-meters")}
+                    className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-50"
                   >
-                    <span>{option.label}</span>
-                    <Checkbox
-                      checked={isSelected}
-                      disabled={atCap}
-                      className="h-5 w-5 border-gray-300 data-[state=checked]:border-green-500 data-[state=checked]:bg-green-500"
-                    />
-                  </div>
-                );
-              })}
-          </DropdownMenuContent>
-        </DropdownMenu>
+                    <span className="text-sm">All Meters</span>
+                    <div className="flex h-4 w-4 items-center justify-center">
+                      {meters.length === metersOptions.length - 1 ? (
+                        <div className="flex h-4 w-4 items-center justify-center rounded-sm bg-green-100">
+                          <Check size={12} className="text-green-600" />
+                        </div>
+                      ) : (
+                        <Square size={14} className="text-gray-400" />
+                      )}
+                    </div>
+                  </CommandItem>
+                  <CommandSeparator />
+                  {metersOptions
+                    .filter((o) => o.value !== "all-meters")
+                    .map((option) => {
+                      const isSelected = meters.includes(option.value as string);
+                      const atCap = meters.length >= MAX_METERS && !isSelected;
+                      return (
+                        <CommandItem
+                          key={option.value}
+                          value={option.value}
+                          disabled={atCap}
+                          onSelect={() => {
+                            if (!atCap) handleMetersSelect(option.value);
+                          }}
+                          className="flex cursor-pointer items-center justify-between px-3 py-2 hover:bg-gray-50"
+                        >
+                          <span className="text-sm">{option.label}</span>
+                          <div className="flex h-4 w-4 items-center justify-center">
+                            {isSelected ? (
+                              <div className="flex h-4 w-4 items-center justify-center rounded-sm bg-green-100">
+                                <Check size={12} className="text-green-600" />
+                              </div>
+                            ) : (
+                              <Square size={14} className="text-gray-400" />
+                            )}
+                          </div>
+                        </CommandItem>
+                      );
+                    })}
+                </CommandGroup>
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
       </div>
 
       <div>
@@ -396,7 +442,7 @@ const readingOptions: ReadingOption[] = obisData
           <DropdownMenuTrigger asChild>
             <Button
               variant="outline"
-              className="h-12 w-full justify-between text-left text-base"
+              className="h-12 w-full justify-between border-gray-300 text-left text-base"
             >
               <span>{getReadingLabel()}</span>
               <ChevronDown size={16} />

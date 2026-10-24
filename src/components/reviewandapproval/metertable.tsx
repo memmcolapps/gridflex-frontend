@@ -65,7 +65,7 @@ const MeterTable = ({
   const [selectedItem, setSelectedItem] = useState<Meter | null>(null);
   const [dropdownOpenId, setDropdownOpenId] = useState<string | null>(null);
 
-  const { meters, isLoading, isError, error, reviewMutation } =
+  const { meters, totalData, isLoading, isError, error, reviewMutation } =
     useMeters(fetchParams);
 
   useEffect(() => {
@@ -78,8 +78,14 @@ const MeterTable = ({
       type,
     }));
   }, [searchTerm, sortBy, sortDirection, type]);
-  const totalCount = meters.length; // API already paginates, so this is the current page's data length
-  const totalPages = Math.ceil(totalCount / fetchParams.pageSize); // This might not be accurate if API doesn't provide total
+
+  const handlePageChange = (page: number) => {
+    setFetchParams((prev) => ({ ...prev, page }));
+  };
+
+  const handlePageSizeChange = (pageSize: number) => {
+    setFetchParams((prev) => ({ ...prev, pageSize, page: 1 }));
+  };
 
   const toggleSelection = (meterNumber: string) => {
     setSelectedMeterNumbers((prev) =>
@@ -336,12 +342,10 @@ const MeterTable = ({
 
       <PaginationControls
         currentPage={fetchParams.page}
-        totalItems={totalCount}
+        totalItems={totalData}
         pageSize={fetchParams.pageSize}
-        onPageChange={(page) => setFetchParams({ ...fetchParams, page })}
-        onPageSizeChange={(pageSize) =>
-          setFetchParams({ ...fetchParams, pageSize, page: 1 })
-        }
+        onPageChange={handlePageChange}
+        onPageSizeChange={handlePageSizeChange}
         pageSizeOptions={[10, 20, 30, 40, 50, 60, 70, 80, 90, 100]}
         className="mt-4"
         rowsPerPageLabel="Rows per page"
