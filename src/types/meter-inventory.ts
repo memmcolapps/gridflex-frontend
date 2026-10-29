@@ -70,7 +70,7 @@ export interface MeterInventoryItem {
   meterNumber: string;
   meterManufacturer: string;
   meterClass: string;
-  // meterType?: string;
+  meterType?: string;
   // meterCategory: string;
   dateAdded?: string;
   oldSgc?: string;

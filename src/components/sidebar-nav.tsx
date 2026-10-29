@@ -85,7 +85,7 @@ const navItems: NavItemProps[] = [
         hasSubmenu: true,
         submenuItems: [
           {
-            title: "Meter Manufacturers",
+            title: "Meter Model",
             href: "/data-management/meter-management/meter-manufacturer",
             permission: {
               module: "Data Management",

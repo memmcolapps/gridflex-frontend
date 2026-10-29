@@ -552,7 +552,7 @@ export function AssignMeterDialog({
               </div>
 
               {/* )} */}
-              <div className="space-y-2">
+              <div className="col-span-2 space-y-2">
                 <Label>
                   Account Number<span className="text-red-700">*</span>
                 </Label>
@@ -566,7 +566,26 @@ export function AssignMeterDialog({
               </div>
               <div className="space-y-2">
                 <Label>
-                  Tariff<span className="text-red-700">*</span>
+                 On-grid Tariff<span className="text-red-700">*</span>
+                </Label>
+                <Select onValueChange={setTariff} value={tariff}>
+                  <SelectTrigger className="w-full border-gray-200 text-gray-600">
+                    <SelectValue placeholder="Select Tariff" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {tariffs
+                      .filter((t) => t.approve_status === "Approved")
+                      .map((t) => (
+                        <SelectItem key={t.id} value={t.id}>
+                          {t.name}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+               <div className="space-y-2">
+                <Label>
+                Off-grid Tariff
                 </Label>
                 <Select onValueChange={setTariff} value={tariff}>
                   <SelectTrigger className="w-full border-gray-200 text-gray-600">

@@ -30,11 +30,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { MeterInventoryItem } from "@/types/meter-inventory";
 import type { CreateMeterPayload, UpdateMeterPayload } from "@/types/meter";
-import {
-  useCreateMeter,
-  useGetMeterManufactures,
-  useUpdateMeter,
-} from "@/hooks/use-meter";
+import { useCreateMeter, useUpdateMeter } from "@/hooks/use-meter";
 import { useMeterLimitReached } from "@/hooks/use-meter-limit";
 import { toast } from "sonner";
 
@@ -59,6 +55,7 @@ export function AddMeterDialog({
     meterNumber: "",
     simNumber: "",
     meterClass: "",
+    meterType: "",
     meterManufacturer: "",
     oldSgc: "",
     newSgc: "",
@@ -66,6 +63,12 @@ export function AddMeterDialog({
     newKrn: "",
     oldTariffIndex: 0,
     newTariffIndex: 0,
+    offGridOldSgc: "",
+    offGridNewSgc: "",
+    offGridOldKrn: "",
+    offGridNewKrn: "",
+    offGridOldTariffIndex: 0,
+    offGridNewTariffIndex: 0,
     smartStatus: false,
     meterModel: "",
     protocol: "",
@@ -110,12 +113,19 @@ export function AddMeterDialog({
         meterClass: editMeter.meterClass ?? "",
         meterManufacturer:
           editMeter.manufacturer?.id ?? editMeter.meterManufacturer ?? "",
+        meterType: editMeter.meterType ?? "",
         oldSgc: editMeter.oldSgc ?? "",
         newSgc: editMeter.newSgc ?? "",
         oldKrn: editMeter.oldKrn ?? "",
         newKrn: editMeter.newKrn ?? "",
         oldTariffIndex: editMeter.oldTariffIndex ?? 0,
         newTariffIndex: editMeter.newTariffIndex ?? 0,
+        offGridOldSgc: "",
+        offGridNewSgc: "",
+        offGridOldKrn: "",
+        offGridNewKrn: "",
+        offGridOldTariffIndex: 0,
+        offGridNewTariffIndex: 0,
         smartStatus: editMeter.smartStatus ?? false, // Ensure smartStatus is boolean
         meterModel: editMeter.smartMeterInfo?.meterModel ?? "",
         protocol: editMeter.smartMeterInfo?.protocol ?? "",
@@ -150,12 +160,19 @@ export function AddMeterDialog({
         simNumber: "", // Corrected
         meterClass: "",
         meterManufacturer: "",
+        meterType: "",
         oldSgc: "",
         newSgc: "",
         oldKrn: "",
         newKrn: "",
         oldTariffIndex: 0,
         newTariffIndex: 0,
+        offGridOldSgc: "",
+        offGridNewSgc: "",
+        offGridOldKrn: "",
+        offGridNewKrn: "",
+        offGridOldTariffIndex: 0,
+        offGridNewTariffIndex: 0,
         smartStatus: false,
         meterModel: "",
         protocol: "",
@@ -188,8 +205,7 @@ export function AddMeterDialog({
       newErrors.meterNumber = "Meter Number is required";
     if (!formData.simNumber) newErrors.simNumber = "Sim Card is required";
     if (!formData.meterClass) newErrors.meterClass = "Meter Class is required";
-    if (!formData.meterManufacturer)
-      newErrors.meterManufacturer = "Meter Manufacturer is required";
+    if (!formData.meterType) newErrors.meterType = "Meter Type is required";
     if (!formData.oldSgc) newErrors.oldSgc = "Old SGC is required";
     if (!formData.newSgc) newErrors.newSgc = "New SGC is required";
     if (!formData.oldKrn) newErrors.oldKrn = "Old KRN is required";
@@ -241,6 +257,24 @@ export function AddMeterDialog({
     return Object.keys(newErrors).length === 0;
   };
 
+  const validateStep4 = () => {
+    const newErrors: Record<string, string> = {};
+    if (!formData.offGridOldSgc)
+      newErrors.offGridOldSgc = "Old SGC is required";
+    if (!formData.offGridNewSgc)
+      newErrors.offGridNewSgc = "New SGC is required";
+    if (!formData.offGridOldKrn)
+      newErrors.offGridOldKrn = "Old KRN is required";
+    if (!formData.offGridNewKrn)
+      newErrors.offGridNewKrn = "New KRN is required";
+    if (!formData.offGridOldTariffIndex)
+      newErrors.offGridOldTariffIndex = "Old Tariff Index is required";
+    if (!formData.offGridNewTariffIndex)
+      newErrors.offGridNewTariffIndex = "New Tariff Index is required";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
 
@@ -278,6 +312,8 @@ export function AddMeterDialog({
         setStep(2);
       } else if (formData.smartStatus) {
         setStep(3);
+      } else if (formData.meterType === "Dual Tariff") {
+        setStep(4);
       } else {
         saveMeter();
       }
@@ -295,7 +331,9 @@ export function AddMeterDialog({
   };
 
   const handleBack = () => {
-    if (step === 3) {
+    if (step === 4) {
+      setStep(1);
+    } else if (step === 3) {
       if (formData.meterClass === "MD") {
         setStep(2);
       } else {
@@ -316,6 +354,7 @@ export function AddMeterDialog({
     }
     if (step === 2 && formData.meterClass === "MD" && !validateStep2()) return;
     if (step === 3 && !validateStep3()) return;
+    if (step === 4 && !validateStep4()) return;
 
     if (editMeter) {
       // Logic for UpdateMeter
@@ -324,7 +363,7 @@ export function AddMeterDialog({
         meterNumber: formData.meterNumber,
         simNumber: formData.simNumber,
         meterClass: formData.meterClass,
-        meterManufacturer: formData.meterManufacturer,
+        meterManufacturer: formData.meterType,
         meterCategory: "Prepaid",
         meterType: "electricity",
         oldSgc: formData.oldSgc,
@@ -387,7 +426,7 @@ export function AddMeterDialog({
         meterNumber: formData.meterNumber,
         simNumber: formData.simNumber,
         meterClass: formData.meterClass,
-        meterManufacturer: formData.meterManufacturer,
+        meterManufacturer: formData.meterType,
         meterCategory: "Prepaid",
         meterType: "electricity",
         oldSgc: formData.oldSgc,
@@ -443,12 +482,19 @@ export function AddMeterDialog({
           simNumber: "",
           meterClass: "",
           meterManufacturer: "",
+          meterType: "",
           oldSgc: "",
           newSgc: "",
           oldKrn: "",
           newKrn: "",
           oldTariffIndex: 0,
           newTariffIndex: 0,
+          offGridOldSgc: "",
+          offGridNewSgc: "",
+          offGridOldKrn: "",
+          offGridNewKrn: "",
+          offGridOldTariffIndex: 0,
+          offGridNewTariffIndex: 0,
           smartStatus: false,
           meterModel: "",
           protocol: "",
@@ -482,14 +528,12 @@ export function AddMeterDialog({
       }
     }
   };
-  const {
-    data: manufacturers,
-    isLoading: isManufacturersLoading,
-    error: manufacturersError,
-  } = useGetMeterManufactures();
   const dialogTitle = editMeter ? "Edit Meter" : "Add new meter";
 
-  const shouldShowNext = formData.meterClass === "MD" || formData.smartStatus;
+  const shouldShowNext =
+    formData.meterClass === "MD" ||
+    formData.smartStatus ||
+    formData.meterType === "Dual Tariff";
 
   let step1ButtonText = "Add Meter";
   if (editMeter) {
@@ -504,11 +548,18 @@ export function AddMeterDialog({
         <DialogHeader className="flex flex-col">
           {(formData.meterClass === "MD" ||
             formData.smartStatus ||
+            (formData.meterType === "Dual Tariff" && step >= 1) ||
             (editMeter && formData.meterClass === "MD")) && (
             <div className="mt-6 mb-4 h-2 w-full rounded-full bg-gray-200">
               <div
                 className={`h-full rounded-full bg-[#161CCA] transition-all duration-300 ${
-                  step === 1 ? "w-1/3" : step === 2 ? "w-2/3" : "w-full"
+                  step === 1
+                    ? "w-1/4"
+                    : step === 2
+                      ? "w-2/4"
+                      : step === 3
+                        ? "w-3/4"
+                        : "w-full"
                 }`}
               ></div>
             </div>
@@ -521,7 +572,9 @@ export function AddMeterDialog({
               ? "Basic Information"
               : step === 2
                 ? "Basic Parameter"
-                : "Smart Parameter"}
+                : step === 3
+                  ? "Smart Parameter"
+                  : "Dual Tariff Configurations / Off-Grid"}
           </p>
         </DialogHeader>
 
@@ -592,7 +645,7 @@ export function AddMeterDialog({
                   htmlFor="meterClass"
                   className="text-sm font-medium text-gray-700"
                 >
-                  Meter Class <span className="text-red-500">*</span>
+                  Meter Model <span className="text-red-500">*</span>
                 </Label>
                 <Select
                   onValueChange={(value) =>
@@ -624,53 +677,42 @@ export function AddMeterDialog({
               </div>
               <div className="space-y-1">
                 <Label
-                  htmlFor="meterManufacturer"
+                  htmlFor="meterType"
                   className="text-sm font-medium text-gray-700"
                 >
-                  Meter Manufacturer <span className="text-red-500">*</span>
+                  Meter Type <span className="text-red-500">*</span>
                 </Label>
                 <Select
                   onValueChange={(value) =>
-                    handleSelectChange("meterManufacturer", value)
+                    handleSelectChange("meterType", value)
                   }
-                  value={formData.meterManufacturer}
+                  value={formData.meterType}
                 >
                   <SelectTrigger
-                    id="meterManufacturer"
+                    id="meterType"
                     className={`w-full border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500 ${
-                      errors.meterManufacturer ? "border-red-500" : ""
+                      errors.meterType ? "border-red-500" : ""
                     }`}
                   >
                     <SelectValue>
-                      {manufacturers?.find(
-                        (m) => m.id === formData.meterManufacturer,
-                      )?.name ??
-                        formData.meterManufacturer ??
-                        "Select Manufacturer"}
+                      {formData.meterType || "Select Type"}
                     </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
-                    {manufacturers && manufacturers.length > 0 ? (
-                      manufacturers.map((manufacturer) => (
-                        <SelectItem
-                          key={manufacturer.id}
-                          value={manufacturer.id || "unknown"}
-                        >
-                          {manufacturer.name}
-                        </SelectItem>
-                      ))
-                    ) : (
-                      <SelectItem value="no-manufacturers-available" disabled>
-                        No manufacturers available
-                      </SelectItem>
-                    )}
+                    <SelectItem value="Single Tariff">Single Tariff</SelectItem>
+                    <SelectItem value="Dual Tariff">Dual Tariff</SelectItem>
                   </SelectContent>
                 </Select>
-                {errors.meterManufacturer && (
+                {errors.meterType && (
                   <p className="mt-1 text-xs text-red-500">
-                    {errors.meterManufacturer}
+                    {errors.meterType}
                   </p>
                 )}
+              </div>
+              <div className="col-span-2">
+                <Label className="text-black-900 text-sm font-medium">
+                  On-Grid
+                </Label>
               </div>
               <div className="space-y-1">
                 <Label
@@ -814,7 +856,7 @@ export function AddMeterDialog({
                   </p>
                 )}
               </div>
-              <div className="col-span-2 space-y-1">
+              {/* <div className="col-span-2 space-y-1">
                 <Label
                   htmlFor="smartMeter"
                   className="text-sm font-medium text-gray-700"
@@ -830,7 +872,7 @@ export function AddMeterDialog({
                     className="rounded-md border-gray-500 focus:ring-1 focus:ring-green-500 focus:ring-offset-0 data-[state=checked]:bg-green-500 data-[state=checked]:text-white"
                   />
                 </div>
-              </div>
+              </div> */}
             </div>
           ) : step === 2 ? (
             <div className="grid grid-cols-1 gap-x-6 gap-y-4 py-4 md:grid-cols-2">
@@ -1075,7 +1117,7 @@ export function AddMeterDialog({
                 )}
               </div>
             </div>
-          ) : (
+          ) : step === 3 ? (
             <div className="grid grid-cols-1 gap-x-6 gap-y-4 py-4 md:grid-cols-2">
               <div className="space-y-1">
                 <Label
@@ -1174,7 +1216,160 @@ export function AddMeterDialog({
                 )}
               </div>
             </div>
-          )}
+          ) : step === 4 ? (
+            <div className="grid grid-cols-1 gap-x-6 gap-y-4 py-4 md:grid-cols-2">
+              <div className="space-y-1">
+                <Label
+                  htmlFor="offGridOldSgc"
+                  className="text-sm font-medium text-gray-700"
+                >
+                  Old SGC <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  type="text"
+                  id="offGridOldSgc"
+                  name="offGridOldSgc"
+                  value={formData.offGridOldSgc}
+                  onChange={handleInputChange}
+                  placeholder="Enter Old SGC"
+                  className={`w-full border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500 ${
+                    errors.offGridOldSgc ? "border-red-500" : ""
+                  }`}
+                  required
+                />
+                {errors.offGridOldSgc && (
+                  <p className="mt-1 text-xs text-red-500">
+                    {errors.offGridOldSgc}
+                  </p>
+                )}
+              </div>
+              <div className="space-y-1">
+                <Label
+                  htmlFor="offGridNewSgc"
+                  className="text-sm font-medium text-gray-700"
+                >
+                  New SGC <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  type="text"
+                  id="offGridNewSgc"
+                  name="offGridNewSgc"
+                  value={formData.offGridNewSgc}
+                  onChange={handleInputChange}
+                  placeholder="Enter New SGC"
+                  className={`w-full border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500 ${
+                    errors.offGridNewSgc ? "border-red-500" : ""
+                  }`}
+                  required
+                />
+                {errors.offGridNewSgc && (
+                  <p className="mt-1 text-xs text-red-500">
+                    {errors.offGridNewSgc}
+                  </p>
+                )}
+              </div>
+              <div className="space-y-1">
+                <Label
+                  htmlFor="offGridOldKrn"
+                  className="text-sm font-medium text-gray-700"
+                >
+                  Old KRN <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  type="text"
+                  id="offGridOldKrn"
+                  name="offGridOldKrn"
+                  value={formData.offGridOldKrn}
+                  onChange={handleInputChange}
+                  placeholder="Enter Old KRN"
+                  className={`w-full border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500 ${
+                    errors.offGridOldKrn ? "border-red-500" : ""
+                  }`}
+                  required
+                />
+                {errors.offGridOldKrn && (
+                  <p className="mt-1 text-xs text-red-500">
+                    {errors.offGridOldKrn}
+                  </p>
+                )}
+              </div>
+              <div className="space-y-1">
+                <Label
+                  htmlFor="offGridNewKrn"
+                  className="text-sm font-medium text-gray-700"
+                >
+                  New KRN <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  type="text"
+                  id="offGridNewKrn"
+                  name="offGridNewKrn"
+                  value={formData.offGridNewKrn}
+                  onChange={handleInputChange}
+                  placeholder="Enter New KRN"
+                  className={`w-full border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500 ${
+                    errors.offGridNewKrn ? "border-red-500" : ""
+                  }`}
+                  required
+                />
+                {errors.offGridNewKrn && (
+                  <p className="mt-1 text-xs text-red-500">
+                    {errors.offGridNewKrn}
+                  </p>
+                )}
+              </div>
+              <div className="space-y-1">
+                <Label
+                  htmlFor="offGridOldTariffIndex"
+                  className="text-sm font-medium text-gray-700"
+                >
+                  Old Tariff Index <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  type="text"
+                  id="offGridOldTariffIndex"
+                  name="offGridOldTariffIndex"
+                  value={formData.offGridOldTariffIndex}
+                  onChange={handleInputChange}
+                  placeholder="Enter Old Tariff Index"
+                  className={`w-full border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500 ${
+                    errors.offGridOldTariffIndex ? "border-red-500" : ""
+                  }`}
+                  required
+                />
+                {errors.offGridOldTariffIndex && (
+                  <p className="mt-1 text-xs text-red-500">
+                    {errors.offGridOldTariffIndex}
+                  </p>
+                )}
+              </div>
+              <div className="space-y-1">
+                <Label
+                  htmlFor="offGridNewTariffIndex"
+                  className="text-sm font-medium text-gray-700"
+                >
+                  New Tariff Index <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  type="text"
+                  id="offGridNewTariffIndex"
+                  name="offGridNewTariffIndex"
+                  value={formData.offGridNewTariffIndex}
+                  onChange={handleInputChange}
+                  placeholder="Enter New Tariff Index"
+                  className={`w-full border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500 ${
+                    errors.offGridNewTariffIndex ? "border-red-500" : ""
+                  }`}
+                  required
+                />
+                {errors.offGridNewTariffIndex && (
+                  <p className="mt-1 text-xs text-red-500">
+                    {errors.offGridNewTariffIndex}
+                  </p>
+                )}
+              </div>
+            </div>
+          ) : null}
         </div>
 
         <DialogFooter className="mt-4 flex justify-end gap-3 pt-4">
@@ -1196,7 +1391,7 @@ export function AddMeterDialog({
                   !formData.meterNumber ||
                   !formData.simNumber ||
                   !formData.meterClass ||
-                  !formData.meterManufacturer ||
+                  !formData.meterType ||
                   !formData.oldSgc ||
                   !formData.newSgc ||
                   !formData.oldKrn ||
@@ -1242,7 +1437,40 @@ export function AddMeterDialog({
                 }
                 className="cursor-pointer bg-[#161CCA] text-sm font-medium text-white hover:bg-[#1e2abf]"
               >
-                {isPending ? "Saving..." : formData.smartStatus ? "Next" : "Save"}
+                {isPending
+                  ? "Saving..."
+                  : formData.smartStatus
+                    ? "Next"
+                    : "Save"}
+              </Button>
+            </>
+          ) : step === 4 ? (
+            <>
+              <Button
+                variant="outline"
+                onClick={handleBack}
+                size="lg"
+                disabled={isPending}
+                className="cursor-pointer border-[#161CCA] text-sm font-medium text-[#161CCA] hover:bg-gray-50"
+              >
+                Back
+              </Button>
+              <Button
+                onClick={saveMeter}
+                size="lg"
+                disabled={
+                  !formData.offGridOldSgc ||
+                  !formData.offGridNewSgc ||
+                  !formData.offGridOldKrn ||
+                  !formData.offGridNewKrn ||
+                  !formData.offGridOldTariffIndex ||
+                  !formData.offGridNewTariffIndex ||
+                  isPending ||
+                  isMeterAddBlocked
+                }
+                className="cursor-pointer bg-[#161CCA] text-sm font-medium text-white hover:bg-[#1e2abf]"
+              >
+                {isPending ? "Saving..." : "Add Meter"}
               </Button>
             </>
           ) : (
@@ -1270,7 +1498,11 @@ export function AddMeterDialog({
                 }
                 className="cursor-pointer bg-[#161CCA] text-sm font-medium text-white hover:bg-[#1e2abf]"
               >
-                {isPending ? "Saving..." : editMeter ? "Update Meter" : "Add Meter"}
+                {isPending
+                  ? "Saving..."
+                  : editMeter
+                    ? "Update Meter"
+                    : "Add Meter"}
               </Button>
             </>
           )}

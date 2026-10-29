@@ -25,6 +25,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter,
@@ -39,14 +40,82 @@ import { SearchControl, SortControl } from "@/components/search-control";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { Label } from "@/components/ui/label";
 import { type Manufacturer } from "@/types/meters-manufacturers";
-import {
-  useCreateManufacturer,
-  useGetMeterManufactures,
-  useUpdateManufacturer,
-} from "@/hooks/use-meter";
+import { useGetMeterManufactures } from "@/hooks/use-meter";
 import { useNigerianCities, useNigerianStates } from "@/hooks/use-location";
 import { toast } from "sonner";
 import { usePermissions } from "@/hooks/use-permissions";
+
+type MeterModelFormData = {
+  manufacturerName: string;
+  manufacturerId: string;
+  meterModel: string;
+  meterClass: string;
+  serialNo: string;
+  protocol: string;
+  authentication: string;
+  password: string;
+  ctRatioNum: string;
+  ctRatioDenom: string;
+  voltRatioNum: string;
+  voltRatioDenom: string;
+  multiplier: string;
+  meterRating: string;
+  initialReading: string;
+  dial: string;
+  longitude: string;
+  latitude: string;
+};
+
+const METER_CLASS_OPTIONS = ["MD", "Single-Phase", "Three-Phase"] as const;
+
+// Shared form state between Add and Edit Manufacturer dialogs
+const EMPTY_METER_MODEL_FORM: MeterModelFormData = {
+  manufacturerName: "",
+  manufacturerId: "",
+  meterModel: "",
+  meterClass: "",
+  serialNo: "",
+  protocol: "",
+  authentication: "",
+  password: "",
+  ctRatioNum: "0",
+  ctRatioDenom: "0",
+  voltRatioNum: "0",
+  voltRatioDenom: "0",
+  multiplier: "0",
+  meterRating: "0",
+  initialReading: "0",
+  dial: "0",
+  longitude: "0.0",
+  latitude: "0.0",
+};
+
+const fieldInputClassName =
+  "h-10 w-full rounded-md border border-gray-300 bg-white text-sm shadow-none focus-visible:border-[#161CCA] focus-visible:ring-[#161CCA]/20";
+
+function FormField({
+  label,
+  required,
+  htmlFor,
+  className,
+  children,
+}: {
+  label: string;
+  required?: boolean;
+  htmlFor?: string;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className={className}>
+      <Label htmlFor={htmlFor} className="text-sm font-medium text-gray-700">
+        {label}
+        {required ? <span className="text-red-500"> *</span> : null}
+      </Label>
+      <div className="mt-1.5">{children}</div>
+    </div>
+  );
+}
 
 function AddManufacturerDialog({
   isOpen,
@@ -56,106 +125,80 @@ function AddManufacturerDialog({
 }: {
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (
-    manufacturer: Omit<
-      Manufacturer,
-      "id" | "orgId" | "createdAt" | "updatedAt"
-    >,
-  ) => void;
+  onAdd: (meterModel: MeterModelFormData) => void;
   data: Manufacturer[];
   isSubmitting: boolean;
 }) {
-  const [formData, setFormData] = useState({
-    manufacturerName: "",
-    manufacturerId: "",
-    contactPerson: "",
-    phoneNumber: "",
-    state: "",
-    city: "",
-    street: "",
-    houseNo: "",
-  });
+  const [step, setStep] = useState<1 | 2>(1);
+  const [formData, setFormData] = useState<MeterModelFormData>(
+    EMPTY_METER_MODEL_FORM,
+  );
 
-  const { data: states, isLoading: isLoadingStates, isError: isErrorStates } = useNigerianStates();
-  const { data: cities, isLoading: isLoadingCities, isError: isErrorCities } = useNigerianCities(formData.state);
+  const isMdSelected = formData.meterClass === "MD";
 
-  const handleChange = (value: string, field: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const handleChange = (value: string, field: keyof MeterModelFormData) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const clearForm = () => {
-    setFormData({
-      manufacturerName: "",
-      manufacturerId: "",
-      contactPerson: "",
-      phoneNumber: "",
-      state: "",
-      city: "",
-      street: "",
-      houseNo: "",
-    });
+    setFormData(EMPTY_METER_MODEL_FORM);
+    setStep(1);
   };
 
-  const handleAdd = () => {
-    const trimmedValues = {
-      manufacturerName: formData.manufacturerName.trim(),
-      manufacturerId: formData.manufacturerId.trim(),
-      contactPerson: formData.contactPerson.trim(),
-      phoneNumber: formData.phoneNumber.trim(),
-      city: formData.city.trim(),
-      street: formData.street.trim(),
-      houseNo: formData.houseNo.trim(),
-    };
+  const validateStep1 = () => {
+    const missingFields: string[] = [];
+    if (!formData.manufacturerName.trim())
+      missingFields.push("Meter Manufacturer");
+    if (!formData.meterModel.trim()) missingFields.push("Meter Model");
+    if (!formData.meterClass.trim()) missingFields.push("Meter Class");
+    if (!formData.serialNo.trim()) missingFields.push("Meter Serial no.");
 
-    if (
-      !trimmedValues.manufacturerName ||
-      !trimmedValues.manufacturerId ||
-      !trimmedValues.contactPerson ||
-      !trimmedValues.phoneNumber ||
-      !formData.state ||
-      !trimmedValues.city ||
-      !trimmedValues.street ||
-      !trimmedValues.houseNo
-    ) {
-      const missingFields = [];
-      if (!trimmedValues.manufacturerName)
-        missingFields.push("Manufacturer Name");
-      if (!trimmedValues.manufacturerId) missingFields.push("Manufacturer ID");
-      if (!trimmedValues.contactPerson) missingFields.push("Contact Person");
-      if (!trimmedValues.phoneNumber) missingFields.push("Phone Number");
-      if (!formData.state) missingFields.push("State");
-      if (!trimmedValues.city) missingFields.push("City");
-      if (!trimmedValues.street) missingFields.push("Street Name");
-      if (!trimmedValues.houseNo) missingFields.push("House Number");
-
-      console.log("Missing fields:", missingFields);
+    if (missingFields.length > 0) {
       toast.error(
         `Please fill the following required fields: ${missingFields.join(", ")}`,
       );
+      return false;
+    }
+    return true;
+  };
+
+  const validateStep2 = () => {
+    const missingFields: string[] = [];
+    if (!formData.ctRatioNum.trim()) missingFields.push("CT Ratio Numerator");
+    if (!formData.ctRatioDenom.trim())
+      missingFields.push("CT Ratio Denominator");
+    if (!formData.voltRatioNum.trim())
+      missingFields.push("Voltage Ratio Numerator");
+    if (!formData.voltRatioDenom.trim())
+      missingFields.push("Voltage Ratio Denominator");
+    if (!formData.multiplier.trim()) missingFields.push("Multiplier");
+    if (!formData.meterRating.trim()) missingFields.push("Meter Rating");
+    if (!formData.initialReading.trim()) missingFields.push("Initial Reading");
+    if (!formData.dial.trim()) missingFields.push("Dial");
+    if (!formData.longitude.trim()) missingFields.push("Longitude");
+    if (!formData.latitude.trim()) missingFields.push("Latitude");
+    if (missingFields.length > 0) {
+      toast.error(
+        `Please fill the following required fields: ${missingFields.join(", ")}`,
+      );
+      return false;
+    }
+    return true;
+  };
+
+  const handlePrimaryAction = () => {
+    if (step === 1) {
+      if (!validateStep1()) return;
+      if (isMdSelected) {
+        setStep(2);
+        return;
+      }
+      onAdd(formData);
       return;
     }
 
-    if (trimmedValues.phoneNumber.length !== 11) {
-      console.log("Validation failed - phone number length");
-      toast.error("Phone number must be 11 digits long.");
-      return;
-    }
-
-    const newManufacturer: Omit<
-      Manufacturer,
-      "id" | "orgId" | "createdAt" | "updatedAt"
-    > = {
-      name: trimmedValues.manufacturerName,
-      manufacturerId: trimmedValues.manufacturerId,
-      contactPerson: trimmedValues.contactPerson,
-      phoneNo: trimmedValues.phoneNumber,
-      state: formData.state,
-      city: trimmedValues.city,
-      street: trimmedValues.street,
-      houseNo: trimmedValues.houseNo,
-    };
-
-    onAdd(newManufacturer);
+    if (!validateStep2()) return;
+    onAdd(formData);
   };
 
   useEffect(() => {
@@ -168,214 +211,248 @@ function AddManufacturerDialog({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="h-auto rounded-lg bg-white shadow-lg sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle className="text-lg font-semibold text-gray-900">
-            Add Manufacturer
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) handleClose();
+      }}
+    >
+      <DialogContent className="h-auto gap-5 rounded-2xl bg-white p-6 shadow-lg sm:max-w-[560px]">
+        <DialogHeader className="gap-1 space-y-0">
+          <DialogTitle className="text-xl font-semibold text-gray-900">
+            Add Meter Model
           </DialogTitle>
+          {step === 2 ? (
+            <DialogDescription className="text-sm text-gray-500">
+              MD Information
+            </DialogDescription>
+          ) : null}
         </DialogHeader>
-        <div className="grid grid-cols-1 gap-x-6 gap-y-4 py-4 sm:grid-cols-2">
-          <div className="space-y-4">
-            <div>
-              <label
-                htmlFor="manufacturerName"
-                className="block text-xs font-medium text-gray-700"
-              >
-                Manufacturer Name <span className="text-red-500">*</span>
-              </label>
-              <Input
-                id="manufacturerName"
-                required
-                value={formData.manufacturerName}
-                onChange={(e) => handleChange(e.target.value, "manufacturerName")}
-                disabled={isSubmitting}
-                className="mt-1 h-9 w-full border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
-              />
-            </div>
-          </div>
-          <div className="space-y-4">
-            <div>
-              <label
-                htmlFor="manufacturerId"
-                className="block text-xs font-medium text-gray-700"
-              >
-                Manufacturer ID <span className="text-red-500">*</span>
-              </label>
-              <Input
-                id="manufacturerId"
-                required
-                type="text"
-                placeholder="e.g. 123456"
-                value={formData.manufacturerId}
-                onChange={(e) => handleChange(e.target.value, "manufacturerId")}
-                disabled={isSubmitting}
-                className="mt-1 h-9 w-full border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
-              />
-            </div>
-          </div>
-          <div className="space-y-4">
-            <div>
-              <label
-                htmlFor="contactPerson"
-                className="block text-xs font-medium text-gray-700"
-              >
-                Contact Person <span className="text-red-500">*</span>
-              </label>
-              <Input
-                id="contactPerson"
-                required
-                value={formData.contactPerson}
-                onChange={(e) => handleChange(e.target.value, "contactPerson")}
-                disabled={isSubmitting}
-                className="mt-1 h-9 w-full border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
-              />
-            </div>
-          </div>
-          <div className="space-y-4">
-            <div>
-              <label
-                htmlFor="phoneNumber"
-                className="block text-xs font-medium text-gray-700"
-              >
-                Phone Number <span className="text-red-500">*</span>
-              </label>
-              <Input
-                id="phoneNumber"
-                required
-                type="text"
-                placeholder="e.g. 08012345678"
-                maxLength={11}
-                value={formData.phoneNumber}
-                onChange={(e) => handleChange(e.target.value.replace(/\D/g, ''), "phoneNumber")}
-                disabled={isSubmitting}
-                className="mt-1 h-9 w-full border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
-              />
-            </div>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="state">State<span className="text-red-600">*</span></Label>
-            <Select
-              value={formData.state}
-              onValueChange={(value) => {
-                setFormData(prev => ({ ...prev, state: value, city: "" }));
-              }}
-            >
-              <SelectTrigger className="border-[rgba(228,231,236,1)] w-full">
-                <SelectValue placeholder="Select state" />
-              </SelectTrigger>
-              <SelectContent>
-                {isLoadingStates ? (
-                  <SelectItem value="loading" disabled>Loading states...</SelectItem>
-                ) : isErrorStates ? (
-                  <SelectItem value="error-states" disabled>Error loading states</SelectItem>
-                ) : states?.length === 0 ? (
-                  <SelectItem value="no-states-found" disabled>No states found</SelectItem>
-                ) : (
-                  states?.map((state) => (
-                    <SelectItem key={state.id} value={state.id}>
-                      {state.name}
-                    </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2 w-full">
-            <Label htmlFor="city">City<span className="text-red-600">*</span></Label>
-            <Select
-              value={formData.city}
-              onValueChange={(value) => handleChange(value, "city")}
-              disabled={!formData.state || isLoadingCities || isSubmitting}
-              required
-            >
-              <SelectTrigger id="city" className="w-full">
-                <SelectValue
-                  placeholder={
-                    isLoadingCities
-                      ? "Loading cities..."
-                      : formData.state
-                        ? "Select City"
-                        : "Select a state first"
-                  }
-                />
-              </SelectTrigger>
-              <SelectContent>
-                {isLoadingCities ? (
-                  <SelectItem value="loading" disabled>Loading cities...</SelectItem>
-                ) : isErrorCities ? (
-                  <SelectItem value="error-cities" disabled>Error loading cities</SelectItem>
-                ) : cities?.length === 0 && formData.state ? (
-                  <SelectItem value="no-cities-found" disabled>No cities found for this state</SelectItem>
-                ) : (
-                  cities?.map((city) => (
-                    <SelectItem key={city.id} value={city.id}>
-                      {city.name}
-                    </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
-          </div>
 
-          <div className="space-y-4">
-            <div>
-              <label
-                htmlFor="street"
-                className="block text-xs font-medium text-gray-700"
-              >
-                Street Name <span className="text-red-500">*</span>
-              </label>
+        {step === 1 ? (
+          <div className="grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2">
+            <FormField
+              label="Meter Manufacturer"
+              required
+              htmlFor="meterManufacturer"
+            >
               <Input
-                id="street"
-                required
-                value={formData.street}
-                onChange={(e) => handleChange(e.target.value, "street")}
+                id="meterManufacturer"
+                value={formData.manufacturerName}
+                onChange={(e) =>
+                  handleChange(e.target.value, "manufacturerName")
+                }
                 disabled={isSubmitting}
-                className="mt-1 h-9 w-full border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
+                className={fieldInputClassName}
               />
-            </div>
-          </div>
-          <div className="space-y-4">
-            <div>
-              <label
-                htmlFor="houseNo"
-                className="block text-xs font-medium text-gray-700"
-              >
-                House number <span className="text-red-500">*</span>
-              </label>
+            </FormField>
+            <FormField label="Meter Model" required htmlFor="meterModel">
               <Input
-                id="houseNo"
-                required
-                value={formData.houseNo}
-                onChange={(e) => handleChange(e.target.value, "houseNo")}
+                id="meterModel"
+                value={formData.meterModel}
+                onChange={(e) => handleChange(e.target.value, "meterModel")}
                 disabled={isSubmitting}
-                className="mt-1 h-9 w-full [appearance:textfield] border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                className={fieldInputClassName}
               />
-            </div>
+            </FormField>
+            <FormField
+              label="Meter Class"
+              required
+              htmlFor="meterClass"
+              className="sm:col-span-2"
+            >
+              <Select
+                value={formData.meterClass}
+                onValueChange={(value) => {
+                  handleChange(value, "meterClass");
+                  if (value !== "MD") setStep(1);
+                }}
+                disabled={isSubmitting}
+              >
+                <SelectTrigger id="meterClass" className={fieldInputClassName}>
+                  <SelectValue placeholder="Select class" />
+                </SelectTrigger>
+                <SelectContent>
+                  {METER_CLASS_OPTIONS.map((meterClass) => (
+                    <SelectItem key={meterClass} value={meterClass}>
+                      {meterClass}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FormField>
+            <FormField label="Meter Serial no." required htmlFor="serialNo">
+              <Input
+                id="serialNo"
+                value={formData.serialNo}
+                onChange={(e) => handleChange(e.target.value, "serialNo")}
+                disabled={isSubmitting}
+                className={fieldInputClassName}
+              />
+            </FormField>
+            <FormField label="Protocol" htmlFor="protocol">
+              <Input
+                id="protocol"
+                value={formData.protocol}
+                onChange={(e) => handleChange(e.target.value, "protocol")}
+                disabled={isSubmitting}
+                className={fieldInputClassName}
+              />
+            </FormField>
+            <FormField label="Authentication" htmlFor="authentication">
+              <Input
+                id="authentication"
+                value={formData.authentication}
+                onChange={(e) => handleChange(e.target.value, "authentication")}
+                disabled={isSubmitting}
+                className={fieldInputClassName}
+              />
+            </FormField>
+            <FormField label="Password" htmlFor="password">
+              <Input
+                id="password"
+                type="text"
+                value={formData.password}
+                onChange={(e) => handleChange(e.target.value, "password")}
+                disabled={isSubmitting}
+                className={fieldInputClassName}
+              />
+            </FormField>
           </div>
-        </div>
-        <DialogFooter className="pt-4">
+        ) : (
+          <div className="grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2">
+            <FormField label="CT Ratio Numerator" required htmlFor="ctRatioNum">
+              <Input
+                id="ctRatioNum"
+                value={formData.ctRatioNum}
+                onChange={(e) => handleChange(e.target.value, "ctRatioNum")}
+                disabled={isSubmitting}
+                className={fieldInputClassName}
+              />
+            </FormField>
+            <FormField
+              label="CT Ratio Denominator"
+              required
+              htmlFor="ctRatioDenom"
+            >
+              <Input
+                id="ctRatioDenom"
+                value={formData.ctRatioDenom}
+                onChange={(e) => handleChange(e.target.value, "ctRatioDenom")}
+                disabled={isSubmitting}
+                className={fieldInputClassName}
+              />
+            </FormField>
+            <FormField
+              label="Voltage Ratio Numerator"
+              required
+              htmlFor="voltRatioNum"
+            >
+              <Input
+                id="voltRatioNum"
+                value={formData.voltRatioNum}
+                onChange={(e) => handleChange(e.target.value, "voltRatioNum")}
+                disabled={isSubmitting}
+                className={fieldInputClassName}
+              />
+            </FormField>
+            <FormField
+              label="Voltage Ratio Denominator"
+              required
+              htmlFor="voltRatioDenom"
+            >
+              <Input
+                id="voltRatioDenom"
+                value={formData.voltRatioDenom}
+                onChange={(e) => handleChange(e.target.value, "voltRatioDenom")}
+                disabled={isSubmitting}
+                className={fieldInputClassName}
+              />
+            </FormField>
+            <FormField label="Multiplier" required htmlFor="multiplier">
+              <Input
+                id="multiplier"
+                value={formData.multiplier}
+                onChange={(e) => handleChange(e.target.value, "multiplier")}
+                disabled={isSubmitting}
+                className={fieldInputClassName}
+              />
+            </FormField>
+            <FormField label="Meter Rating" required htmlFor="meterRating">
+              <Input
+                id="meterRating"
+                value={formData.meterRating}
+                onChange={(e) => handleChange(e.target.value, "meterRating")}
+                disabled={isSubmitting}
+                className={fieldInputClassName}
+              />
+            </FormField>
+            <FormField
+              label="Initial Reading"
+              required
+              htmlFor="initialReading"
+            >
+              <Input
+                id="initialReading"
+                value={formData.initialReading}
+                onChange={(e) => handleChange(e.target.value, "initialReading")}
+                disabled={isSubmitting}
+                className={fieldInputClassName}
+              />
+            </FormField>
+            <FormField label="Dial" required htmlFor="dial">
+              <Input
+                id="dial"
+                value={formData.dial}
+                onChange={(e) => handleChange(e.target.value, "dial")}
+                disabled={isSubmitting}
+                className={fieldInputClassName}
+              />
+            </FormField>
+            <FormField label="Longitude" required htmlFor="longitude">
+              <Input
+                id="longitude"
+                value={formData.longitude}
+                onChange={(e) => handleChange(e.target.value, "longitude")}
+                disabled={isSubmitting}
+                className={fieldInputClassName}
+              />
+            </FormField>
+            <FormField label="Latitude" required htmlFor="latitude">
+              <Input
+                id="latitude"
+                value={formData.latitude}
+                onChange={(e) => handleChange(e.target.value, "latitude")}
+                disabled={isSubmitting}
+                className={fieldInputClassName}
+              />
+            </FormField>
+          </div>
+        )}
+
+        <DialogFooter className="flex w-full flex-row items-center justify-between gap-2 sm:justify-between">
           <Button
             variant="outline"
             onClick={handleClose}
             size="lg"
             disabled={isSubmitting}
-            className="mr-2 h-8 border-[#161CCA] bg-transparent text-xs text-[#161CCA]"
+            className="h-10 rounded-md border-[#161CCA] bg-transparent px-6 text-sm text-[#161CCA]"
           >
             Cancel
           </Button>
           <Button
-            onClick={handleAdd}
+            onClick={handlePrimaryAction}
             size="lg"
             disabled={isSubmitting}
-            className="h-8 bg-[#161CCA] text-xs text-white hover:bg-[#161CCA]/90 disabled:cursor-not-allowed disabled:opacity-50"
+            className="h-10 rounded-md bg-[#161CCA] px-6 text-sm text-white hover:bg-[#161CCA]/90 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Adding...
               </>
+            ) : step === 1 && isMdSelected ? (
+              "Next"
             ) : (
               "Add"
             )}
@@ -395,113 +472,86 @@ function EditManufacturerDialog({
 }: {
   isOpen: boolean;
   onClose: () => void;
-  onEdit: (
-    updatedManufacturer: Omit<
-      Manufacturer,
-      "orgId" | "createdAt" | "updatedAt"
-    >,
-  ) => void;
-  manufacturer: Manufacturer | null;
+  onEdit: (updatedManufacturer: MeterModelFormData) => void;
+  manufacturer: MeterModelFormData | null;
   isSubmitting: boolean;
 }) {
-  const [formData, setFormData] = useState({
-    manufacturerName: "",
-    manufacturerId: "",
-    contactPerson: "",
-    phoneNumber: "",
-    state: "",
-    city: "",
-    street: "",
-    houseNo: "",
-  });
+  const [step, setStep] = useState<1 | 2>(1);
+  const [formData, setFormData] = useState<MeterModelFormData>(
+    EMPTY_METER_MODEL_FORM,
+  );
 
-  const { data: states, isLoading: isLoadingStates, isError: isErrorStates } = useNigerianStates();
-  const { data: cities, isLoading: isLoadingCities, isError: isErrorCities } = useNigerianCities(formData.state);
+  const isMdSelected = formData.meterClass === "MD";
 
-  const handleChange = (value: string, field: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const handleChange = (value: string, field: keyof MeterModelFormData) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const clearForm = () => {
+    setFormData(EMPTY_METER_MODEL_FORM);
+    setStep(1);
+  };
+
+  const validateStep1 = () => {
+    const missingFields: string[] = [];
+    if (!formData.manufacturerName.trim())
+      missingFields.push("Meter Manufacturer");
+    if (!formData.meterModel.trim()) missingFields.push("Meter Model");
+    if (!formData.meterClass.trim()) missingFields.push("Meter Class");
+    if (!formData.serialNo.trim()) missingFields.push("Meter Serial no.");
+
+    if (missingFields.length > 0) {
+      toast.error(
+        `Please fill the following required fields: ${missingFields.join(", ")}`,
+      );
+      return false;
+    }
+    return true;
+  };
+
+  const validateStep2 = () => {
+    const missingFields: string[] = [];
+    if (!formData.ctRatioNum.trim()) missingFields.push("CT Ratio Numerator");
+    if (!formData.ctRatioDenom.trim())
+      missingFields.push("CT Ratio Denominator");
+    if (!formData.voltRatioNum.trim())
+      missingFields.push("Voltage Ratio Numerator");
+    if (!formData.voltRatioDenom.trim())
+      missingFields.push("Voltage Ratio Denominator");
+    if (!formData.multiplier.trim()) missingFields.push("Multiplier");
+    if (!formData.meterRating.trim()) missingFields.push("Meter Rating");
+    if (!formData.initialReading.trim()) missingFields.push("Initial Reading");
+    if (!formData.dial.trim()) missingFields.push("Dial");
+    if (!formData.longitude.trim()) missingFields.push("Longitude");
+    if (!formData.latitude.trim()) missingFields.push("Latitude");
+
+    if (missingFields.length > 0) {
+      toast.error(
+        `Please fill the following required fields: ${missingFields.join(", ")}`,
+      );
+      return false;
+    }
+    return true;
+  };
+
+  const handlePrimaryAction = () => {
+    if (step === 1) {
+      if (!validateStep1()) return;
+      if (isMdSelected) {
+        setStep(2);
+        return;
+      }
+      onEdit(formData);
+      return;
+    }
+
+    if (!validateStep2()) return;
+    onEdit(formData);
   };
 
   useEffect(() => {
-    if (manufacturer) {
-      setFormData({
-        manufacturerName: manufacturer.name || "",
-        manufacturerId: manufacturer.manufacturerId || "",
-        contactPerson: manufacturer.contactPerson || "",
-        phoneNumber: manufacturer.phoneNo || "",
-        state: manufacturer.state || "",
-        city: manufacturer.city || "",
-        street: manufacturer.street || "",
-        houseNo: manufacturer.houseNo || "",
-      });
-    }
-  }, [manufacturer]);
-
-  const clearForm = () => {
-    setFormData({
-      manufacturerName: "",
-      manufacturerId: "",
-      contactPerson: "",
-      phoneNumber: "",
-      state: "",
-      city: "",
-      street: "",
-      houseNo: "",
-    });
-  };
-
-  const handleEdit = () => {
-    // Trim all values and check all required fields
-    const trimmedValues = {
-      manufacturerName: formData.manufacturerName.trim(),
-      manufacturerId: formData.manufacturerId.trim(),
-      contactPerson: formData.contactPerson.trim(),
-      phoneNumber: formData.phoneNumber.trim(),
-      city: formData.city.trim(),
-      street: formData.street.trim(),
-      houseNo: formData.houseNo.trim(),
-    };
-
-    if (
-      !trimmedValues.manufacturerName ||
-      !trimmedValues.manufacturerId ||
-      !trimmedValues.contactPerson ||
-      !trimmedValues.phoneNumber ||
-      !formData.state ||
-      !trimmedValues.city ||
-      !trimmedValues.street ||
-      !trimmedValues.houseNo
-    ) {
-      toast.error("Please fill all required fields.");
-      return;
-    }
-
-    if (trimmedValues.phoneNumber.length !== 11) {
-      toast.error("Phone number must be 11 digits long.");
-      return;
-    }
-
-    if (!manufacturer?.id) {
-      return;
-    }
-
-    const newManufacturer: Omit<
-      Manufacturer,
-      "orgId" | "createdAt" | "updatedAt"
-    > = {
-      id: manufacturer.id,
-      name: trimmedValues.manufacturerName,
-      manufacturerId: trimmedValues.manufacturerId,
-      contactPerson: trimmedValues.contactPerson,
-      phoneNo: trimmedValues.phoneNumber,
-      state: formData.state,
-      city: trimmedValues.city,
-      street: trimmedValues.street,
-      houseNo: trimmedValues.houseNo,
-    };
-
-    onEdit(newManufacturer);
-  };
+    if (!isOpen) clearForm();
+  }, [isOpen]);
 
   const handleClose = () => {
     clearForm();
@@ -509,214 +559,251 @@ function EditManufacturerDialog({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="h-auto rounded-lg bg-white shadow-lg sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle className="text-lg font-semibold text-gray-900">
-            Edit Manufacturer
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) handleClose();
+      }}
+    >
+      <DialogContent className="h-auto gap-5 rounded-2xl bg-white p-6 shadow-lg sm:max-w-[560px]">
+        <DialogHeader className="gap-1 space-y-0">
+          <DialogTitle className="text-xl font-semibold text-gray-900">
+            Edit Meter Model
           </DialogTitle>
+          {step === 2 ? (
+            <DialogDescription className="text-sm text-gray-500">
+              MD Information
+            </DialogDescription>
+          ) : null}
         </DialogHeader>
-        <div className="grid grid-cols-1 gap-x-6 gap-y-4 py-4 sm:grid-cols-2">
-          <div className="space-y-4">
-            <div>
-              <label
-                htmlFor="manufacturerName"
-                className="block text-xs font-medium text-gray-700"
-              >
-                Manufacturer Name <span className="text-red-500">*</span>
-              </label>
-              <Input
-                id="manufacturerName"
-                required
-                value={formData.manufacturerName}
-                onChange={(e) => handleChange(e.target.value, "manufacturerName")}
-                className="mt-1 h-9 w-full border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
-              />
-            </div>
-          </div>
-          <div className="space-y-4">
-            <div>
-              <label
-                htmlFor="manufacturerId"
-                className="block text-xs font-medium text-gray-700"
-              >
-                Manufacturer ID <span className="text-red-500">*</span>
-              </label>
-              <Input
-                id="manufacturerId"
-                required
-                type="text"
-                placeholder="e.g. 123456"
-                value={formData.manufacturerId}
-                onChange={(e) => handleChange(e.target.value, "manufacturerId")}
-                className="mt-1 h-9 w-full border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
-              />
-            </div>
-          </div>
-          <div className="space-y-4">
-            <div>
-              <label
-                htmlFor="contactPerson"
-                className="block text-xs font-medium text-gray-700"
-              >
-                Contact Person <span className="text-red-500">*</span>
-              </label>
-              <Input
-                id="contactPerson"
-                required
-                value={formData.contactPerson}
-                onChange={(e) => handleChange(e.target.value, "contactPerson")}
-                className="mt-1 h-9 w-full border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
-              />
-            </div>
-          </div>
-          <div className="space-y-4">
-            <div>
-              <label
-                htmlFor="phoneNumber"
-                className="block text-xs font-medium text-gray-700"
-              >
-                Phone Number <span className="text-red-500">*</span>
-              </label>
-              <Input
-                id="phoneNumber"
-                required
-                type="text"
-                placeholder="e.g. 08012345678"
-                maxLength={11}
-                value={formData.phoneNumber}
-                onChange={(e) => handleChange(e.target.value.replace(/\D/g, ''), "phoneNumber")}
-                className="mt-1 h-9 w-full border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
-              />
-            </div>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="state">State<span className="text-red-600">*</span></Label>
-            <Select
-              value={formData.state}
-              onValueChange={(value) => {
-                setFormData(prev => ({ ...prev, state: value, city: "" }));
-              }}
-            >
-              <SelectTrigger className="border-[rgba(228,231,236,1)] w-full">
-                <SelectValue placeholder="Select state" />
-              </SelectTrigger>
-              <SelectContent>
-                {isLoadingStates ? (
-                  <SelectItem value="loading" disabled>Loading states...</SelectItem>
-                ) : isErrorStates ? (
-                  <SelectItem value="error-states" disabled>Error loading states</SelectItem>
-                ) : states?.length === 0 ? (
-                  <SelectItem value="no-states-found" disabled>No states found</SelectItem>
-                ) : (
-                  states?.map((state) => (
-                    <SelectItem key={state.id} value={state.id}>
-                      {state.name}
-                    </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2 w-full">
-            <Label htmlFor="city">City<span className="text-red-600">*</span></Label>
-            <Select
-              value={formData.city}
-              onValueChange={(value) => handleChange(value, "city")}
-              disabled={!formData.state || isLoadingCities}
-              required
-            >
-              <SelectTrigger id="city" className="w-full">
-                <SelectValue
-                  placeholder={
-                    isLoadingCities
-                      ? "Loading cities..."
-                      : formData.state
-                        ? "Select City"
-                        : "Select a state first"
-                  }
-                />
-              </SelectTrigger>
-              <SelectContent>
-                {isLoadingCities ? (
-                  <SelectItem value="loading" disabled>Loading cities...</SelectItem>
-                ) : isErrorCities ? (
-                  <SelectItem value="error-cities" disabled>Error loading cities</SelectItem>
-                ) : cities?.length === 0 && formData.state ? (
-                  <SelectItem value="no-cities-found" disabled>No cities found for this state</SelectItem>
-                ) : (
-                  cities?.map((city) => (
-                    <SelectItem key={city.id} value={city.id}>
-                      {city.name}
-                    </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
-          </div>
 
-          <div className="space-y-4">
-            <div>
-              <label
-                htmlFor="street"
-                className="block text-xs font-medium text-gray-700"
-              >
-                Street Name <span className="text-red-500">*</span>
-              </label>
+        {step === 1 ? (
+          <div className="grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2">
+            <FormField
+              label="Meter Manufacturer"
+              required
+              htmlFor="meterManufacturer"
+            >
               <Input
-                id="street"
-                required
-                value={formData.street}
-                onChange={(e) => handleChange(e.target.value, "street")}
-                className="mt-1 h-9 w-full border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50"
+                id="meterManufacturer"
+                value={formData.manufacturerName}
+                onChange={(e) =>
+                  handleChange(e.target.value, "manufacturerName")
+                }
+                disabled={isSubmitting}
+                className={fieldInputClassName}
               />
-            </div>
-          </div>
-          <div className="space-y-4">
-            <div>
-              <label
-                htmlFor="houseNo"
-                className="block text-xs font-medium text-gray-700"
-              >
-                House number <span className="text-red-500">*</span>
-              </label>
+            </FormField>
+            <FormField label="Meter Model" required htmlFor="meterModel">
               <Input
-                id="houseNo"
-                required
-                value={formData.houseNo}
-                onChange={(e) => handleChange(e.target.value, "houseNo")}
-                className="mt-1 h-9 w-full [appearance:textfield] border-gray-300 text-xs focus:border-[#161CCA]/30 focus:ring-[#161CCA]/50 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                id="meterModel"
+                value={formData.meterModel}
+                onChange={(e) => handleChange(e.target.value, "meterModel")}
+                disabled={isSubmitting}
+                className={fieldInputClassName}
               />
-            </div>
+            </FormField>
+            <FormField
+              label="Meter Class"
+              required
+              htmlFor="meterClass"
+              className="sm:col-span-2"
+            >
+              <Select
+                value={formData.meterClass}
+                onValueChange={(value) => {
+                  handleChange(value, "meterClass");
+                  if (value !== "MD") setStep(1);
+                }}
+                disabled={isSubmitting}
+              >
+                <SelectTrigger id="meterClass" className={fieldInputClassName}>
+                  <SelectValue placeholder="Select class" />
+                </SelectTrigger>
+                <SelectContent>
+                  {METER_CLASS_OPTIONS.map((meterClass) => (
+                    <SelectItem key={meterClass} value={meterClass}>
+                      {meterClass}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </FormField>
+            <FormField label="Meter Serial no." required htmlFor="serialNo">
+              <Input
+                id="serialNo"
+                value={formData.serialNo}
+                onChange={(e) => handleChange(e.target.value, "serialNo")}
+                disabled={isSubmitting}
+                className={fieldInputClassName}
+              />
+            </FormField>
+            <FormField label="Protocol" htmlFor="protocol">
+              <Input
+                id="protocol"
+                value={formData.protocol}
+                onChange={(e) => handleChange(e.target.value, "protocol")}
+                disabled={isSubmitting}
+                className={fieldInputClassName}
+              />
+            </FormField>
+            <FormField label="Authentication" htmlFor="authentication">
+              <Input
+                id="authentication"
+                value={formData.authentication}
+                onChange={(e) => handleChange(e.target.value, "authentication")}
+                disabled={isSubmitting}
+                className={fieldInputClassName}
+              />
+            </FormField>
+            <FormField label="Password" htmlFor="password">
+              <Input
+                id="password"
+                type="text"
+                value={formData.password}
+                onChange={(e) => handleChange(e.target.value, "password")}
+                disabled={isSubmitting}
+                className={fieldInputClassName}
+              />
+            </FormField>
           </div>
-        </div>
-        <DialogFooter className="pt-4">
+        ) : (
+          <div className="grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2">
+            <FormField label="CT Ratio Numerator" required htmlFor="ctRatioNum">
+              <Input
+                id="ctRatioNum"
+                value={formData.ctRatioNum}
+                onChange={(e) => handleChange(e.target.value, "ctRatioNum")}
+                disabled={isSubmitting}
+                className={fieldInputClassName}
+              />
+            </FormField>
+            <FormField
+              label="CT Ratio Denominator"
+              required
+              htmlFor="ctRatioDenom"
+            >
+              <Input
+                id="ctRatioDenom"
+                value={formData.ctRatioDenom}
+                onChange={(e) => handleChange(e.target.value, "ctRatioDenom")}
+                disabled={isSubmitting}
+                className={fieldInputClassName}
+              />
+            </FormField>
+            <FormField
+              label="Voltage Ratio Numerator"
+              required
+              htmlFor="voltRatioNum"
+            >
+              <Input
+                id="voltRatioNum"
+                value={formData.voltRatioNum}
+                onChange={(e) => handleChange(e.target.value, "voltRatioNum")}
+                disabled={isSubmitting}
+                className={fieldInputClassName}
+              />
+            </FormField>
+            <FormField
+              label="Voltage Ratio Denominator"
+              required
+              htmlFor="voltRatioDenom"
+            >
+              <Input
+                id="voltRatioDenom"
+                value={formData.voltRatioDenom}
+                onChange={(e) => handleChange(e.target.value, "voltRatioDenom")}
+                disabled={isSubmitting}
+                className={fieldInputClassName}
+              />
+            </FormField>
+            <FormField label="Multiplier" required htmlFor="multiplier">
+              <Input
+                id="multiplier"
+                value={formData.multiplier}
+                onChange={(e) => handleChange(e.target.value, "multiplier")}
+                disabled={isSubmitting}
+                className={fieldInputClassName}
+              />
+            </FormField>
+            <FormField label="Meter Rating" required htmlFor="meterRating">
+              <Input
+                id="meterRating"
+                value={formData.meterRating}
+                onChange={(e) => handleChange(e.target.value, "meterRating")}
+                disabled={isSubmitting}
+                className={fieldInputClassName}
+              />
+            </FormField>
+            <FormField
+              label="Initial Reading"
+              required
+              htmlFor="initialReading"
+            >
+              <Input
+                id="initialReading"
+                value={formData.initialReading}
+                onChange={(e) => handleChange(e.target.value, "initialReading")}
+                disabled={isSubmitting}
+                className={fieldInputClassName}
+              />
+            </FormField>
+            <FormField label="Dial" required htmlFor="dial">
+              <Input
+                id="dial"
+                value={formData.dial}
+                onChange={(e) => handleChange(e.target.value, "dial")}
+                disabled={isSubmitting}
+                className={fieldInputClassName}
+              />
+            </FormField>
+            <FormField label="Longitude" required htmlFor="longitude">
+              <Input
+                id="longitude"
+                value={formData.longitude}
+                onChange={(e) => handleChange(e.target.value, "longitude")}
+                disabled={isSubmitting}
+                className={fieldInputClassName}
+              />
+            </FormField>
+            <FormField label="Latitude" required htmlFor="latitude">
+              <Input
+                id="latitude"
+                value={formData.latitude}
+                onChange={(e) => handleChange(e.target.value, "latitude")}
+                disabled={isSubmitting}
+                className={fieldInputClassName}
+              />
+            </FormField>
+          </div>
+        )}
+
+        <DialogFooter className="flex w-full flex-row items-center justify-between gap-2 sm:justify-between">
           <Button
             variant="outline"
             onClick={handleClose}
             size="lg"
             disabled={isSubmitting}
-            className="mr-2 h-8 border-[#161CCA] bg-transparent text-xs text-[#161CCA]"
+            className="h-10 rounded-md border-[#161CCA] bg-transparent px-6 text-sm text-[#161CCA]"
           >
             Cancel
           </Button>
           <Button
-            onClick={handleEdit}
+            onClick={handlePrimaryAction}
             size="lg"
-            className="h-8 bg-[#161CCA] text-xs text-white hover:bg-[#161CCA]/90"
-            disabled={
-              isSubmitting ||
-              !formData.manufacturerName.trim() ||
-              !formData.manufacturerId.trim() ||
-              !formData.contactPerson.trim() ||
-              !formData.phoneNumber.trim() ||
-              !formData.state.trim() ||
-              !formData.city.trim() ||
-              !formData.street.trim() ||
-              !formData.houseNo.trim()
-            }
+            disabled={isSubmitting}
+            className="h-10 rounded-md bg-[#161CCA] px-6 text-sm text-white hover:bg-[#161CCA]/90 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {isSubmitting ? "Saving..." : "Save"}
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : step === 1 && isMdSelected ? (
+              "Next"
+            ) : (
+              "Save"
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -726,18 +813,15 @@ function EditManufacturerDialog({
 
 export default function ManufacturersPage() {
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const { data } = useGetMeterManufactures ();
+  const { data } = useGetMeterManufactures();
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [rowsPerPage, setRowsPerPage] = useState<number>(10);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedManufacturer, setSelectedManufacturer] =
-    useState<Manufacturer | null>(null);
+    useState<MeterModelFormData | null>(null);
 
   const { canEdit } = usePermissions();
-  const { mutate: createManufacturer } = useCreateManufacturer();
-  const { mutate: updateManufacturer, isPending: isUpdatingManufacturer } =
-    useUpdateManufacturer();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [sortConfig, setSortConfig] = useState<{
@@ -797,48 +881,27 @@ export default function ManufacturersPage() {
     currentPage * rowsPerPage,
   );
 
-  const handleAddManufacturer = (
-    newManufacturer: Omit<
-      Manufacturer,
-      "id" | "orgId" | "createdAt" | "updatedAt"
-    >,
-  ) => {
+  const handleAddManufacturer = (meterModel: MeterModelFormData) => {
     setIsSubmitting(true);
-    createManufacturer(newManufacturer, {
-      onSuccess: (data) => {
-        toast.success(data?.message || "Manufacturer created successfully");
-        setSearchTerm("");
-        setIsAddDialogOpen(false);
-      },
-      onError: (error) => {
-        console.error("Failed to create manufacturer:", error);
-        toast.error(error?.message || "Failed to create manufacturer");
-      },
-      onSettled: () => {
-        setIsSubmitting(false);
-      },
-    });
+    toast.success(
+      meterModel.meterClass === "MD"
+        ? "MD meter model added successfully"
+        : "Meter model added successfully",
+    );
+    setSearchTerm("");
+    setIsAddDialogOpen(false);
+    setIsSubmitting(false);
   };
 
-  const handleEditManufacturer = (
-    updatedManufacturer: Omit<
-      Manufacturer,
-      "orgId" | "createdAt" | "updatedAt"
-    >,
-  ) => {
-    updateManufacturer(updatedManufacturer, {
-      onSuccess: () => {
-        toast.success("Manufacturer updated successfully");
-      },
-      onError: (error) => {
-        console.error("Failed to update manufacturer:", error);
-        toast.error("Failed to update manufacturer");
-      },
-      onSettled: () => {
-        setSearchTerm("");
-        setIsEditDialogOpen(false);
-      },
-    });
+  const handleEditManufacturer = (updatedMeterModel: MeterModelFormData) => {
+    setIsSubmitting(true);
+    toast.success(
+      updatedMeterModel.meterClass === "MD"
+        ? "MD meter model updated successfully"
+        : "Meter model updated successfully",
+    );
+    setIsEditDialogOpen(false);
+    setIsSubmitting(false);
   };
 
   const handlePageSizeChange = (newPageSize: number) => {
@@ -850,8 +913,8 @@ export default function ManufacturersPage() {
     <main className="h-screen overflow-auto p-6">
       <div className="mb-4 flex flex-col items-center justify-between gap-4 md:flex-row">
         <ContentHeader
-          title="Manufacturer"
-          description="Manage and Access Manufacturers."
+          title="Meter Model"
+          description="Manage and access meter models."
         />
         {canEdit && (
           <Button
@@ -860,7 +923,7 @@ export default function ManufacturersPage() {
             size="lg"
           >
             <CirclePlus size={14} strokeWidth={2.3} className="mr-2" />
-            <span className="hidden sm:inline">Add Manufacturer</span>
+            <span className="hidden sm:inline">Add Meter Model</span>
             <span className="sm:hidden">Add</span>
           </Button>
         )}
@@ -902,17 +965,17 @@ export default function ManufacturersPage() {
                 Manufacturer
               </TableHead>
               <TableHead className="px-2 py-2 text-left text-xs font-semibold text-gray-700 sm:px-4 sm:py-3 sm:text-sm">
-                Manufacturer ID
+                Model
               </TableHead>
               <TableHead className="px-2 py-2 text-left text-xs font-semibold text-gray-700 sm:px-4 sm:py-3 sm:text-sm md:table-cell">
-                Contact Person
+                Class
               </TableHead>
               <TableHead className="px-2 py-2 text-left text-xs font-semibold text-gray-700 sm:px-4 sm:py-3 sm:text-sm lg:table-cell">
-                State
+                Serial No
               </TableHead>
-              <TableHead className="px-2 py-2 text-left text-xs font-semibold text-gray-700 sm:px-4 sm:py-3 sm:text-sm xl:table-cell">
+              {/* <TableHead className="px-2 py-2 text-left text-xs font-semibold text-gray-700 sm:px-4 sm:py-3 sm:text-sm xl:table-cell">
                 Address
-              </TableHead>
+              </TableHead> */}
               <TableHead className="px-2 py-2 text-right text-xs font-semibold text-gray-700 sm:px-4 sm:py-3 sm:text-sm">
                 Actions
               </TableHead>
@@ -946,12 +1009,15 @@ export default function ManufacturersPage() {
                   <TableCell className="px-2 py-2 text-xs sm:px-4 sm:py-3 sm:text-sm md:table-cell">
                     {item.contactPerson}
                   </TableCell>
-                  <TableCell className="px-2 py-2 text-xs sm:px-4 sm:py-3 sm:text-sm lg:table-cell">
+                  <TableCell className="px-2 py-2 text-xs sm:px-4 sm:py-3 sm:text-sm md:table-cell">
+                    {item.contactPerson}
+                  </TableCell>
+                  {/* <TableCell className="px-2 py-2 text-xs sm:px-4 sm:py-3 sm:text-sm lg:table-cell">
                     {item.state}
                   </TableCell>
                   <TableCell className="px-2 py-2 text-xs sm:px-4 sm:py-3 sm:text-sm xl:table-cell">
                     {item.houseNo + " " + item.street + ", " + item.city}
-                  </TableCell>
+                  </TableCell> */}
                   <TableCell className="px-4 py-3 text-right">
                     {canEdit && (
                       <DropdownMenu>
@@ -971,13 +1037,17 @@ export default function ManufacturersPage() {
                           <DropdownMenuItem
                             className="flex cursor-pointer items-center gap-2"
                             onClick={() => {
-                              setSelectedManufacturer(item);
+                              setSelectedManufacturer({
+                                ...EMPTY_METER_MODEL_FORM,
+                                manufacturerName: item.name || "",
+                                manufacturerId: item.manufacturerId || "",
+                              });
                               setIsEditDialogOpen(true);
                             }}
                           >
                             <Pencil size={14} className="text-gray-500" />
                             <span className="text-sm text-gray-700">
-                              Edit Manufacturer
+                              Edit Meter Model
                             </span>
                           </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -1018,7 +1088,7 @@ export default function ManufacturersPage() {
         }}
         onEdit={handleEditManufacturer}
         manufacturer={selectedManufacturer}
-        isSubmitting={isUpdatingManufacturer}
+        isSubmitting={isSubmitting}
       />
     </main>
   );
